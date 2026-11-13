@@ -49,6 +49,8 @@ export interface FeeRunInput {
     open_change_requests: number
     /** Mitglieder in mehreren Untereinheiten (Datenaudit 08.11. FD-05) */
     multi_units?: number
+    /** Beitrag über einen Haushalt, der noch keinen Zahler hat (H2) */
+    household_without_payer?: number
   }
 }
 
@@ -117,6 +119,18 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
           '{n} Mitglieder gehören zu mehreren Untereinheiten; die Rechnung geht jeweils an die mit dem frühesten Beginn.',
           c.multi_units ?? 0,
         ),
+      })
+    if ((c.household_without_payer ?? 0) > 0)
+      items.push({
+        key: 'household_payer',
+        ok: false,
+        text: tn(
+          '{n} Mitglied zahlt über einen Haushalt oder eine Firma ohne Zahler; es bekommt eine eigene Rechnung.',
+          '{n} Mitglieder zahlen über einen Haushalt oder eine Firma ohne Zahler; sie bekommen eigene Rechnungen.',
+          c.household_without_payer ?? 0,
+        ),
+        fix: t('Zahler unter Mitglieder › Haushalte und Firmen eintragen.'),
+        to: '/mitglieder/haushalte',
       })
     if (c.open_change_requests > 0)
       items.push({

@@ -5104,6 +5104,115 @@ msgid_plural "überfällig seit {n} Tagen"
 msgstr[0] "overdue for {n} day"
 msgstr[1] "overdue for {n} days"
 
+#: qualifications
+msgid "Qualifikationen"
+msgstr "Qualifications"
+
+msgid "Nachweise mit Ablaufdatum wie Erste Hilfe, Übungsleiter oder Führungszeugnis, Erinnerung vor dem Ablauf"
+msgstr "Certificates with an expiry date such as first aid, coach licence or criminal record certificate, reminder before expiry"
+
+msgid "Voraussetzung"
+msgstr "Requirement"
+
+#, python-brace-format
+msgid "„{name}“ fehlt"
+msgstr "“{name}” missing"
+
+#, python-brace-format
+msgid "„{name}“ nur bis {date}"
+msgstr "“{name}” only until {date}"
+
+msgid "Unbekannte Qualifikation."
+msgstr "Unknown qualification."
+
+msgid "gültig für Monate"
+msgstr "valid for months"
+
+msgid "Erinnerung Tage vorher"
+msgstr "reminder days before"
+
+msgid "nur Einsichtsvermerk"
+msgstr "inspection note only"
+
+msgid "nicht mehr verwendet"
+msgstr "no longer used"
+
+msgid "Qualifikationsart"
+msgstr "Qualification type"
+
+msgid "Qualifikationsarten"
+msgstr "Qualification types"
+
+msgid "Qualifikation"
+msgstr "Qualification"
+
+msgid "erworben am"
+msgstr "obtained on"
+
+msgid "gültig bis"
+msgstr "valid until"
+
+#, python-brace-format
+msgid "Erinnerung: „{name}“ läuft am {date} ab"
+msgstr "Reminder: “{name}” expires on {date}"
+
+#, python-brace-format
+msgid "dein Nachweis „{name}“ ist laut unseren Unterlagen bis {date} gültig."
+msgstr "according to our records, your certificate “{name}” is valid until {date}."
+
+msgid "Bitte denk rechtzeitig an die Verlängerung und gib dem Vorstand Bescheid, sobald du den neuen Nachweis hast."
+msgstr "Please remember to renew it in time and let the board know as soon as you have the new certificate."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig. Bei dir ist das nicht eingetragen; bitte wende dich an den Vorstand."
+msgstr "This duty requires “{name}”. It is not recorded for you; please contact the board."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig; beim Mitglied ist nichts eingetragen."
+msgstr "This duty requires “{name}”; nothing is recorded for the member."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig. Dein Nachweis gilt nur bis {date}; bitte wende dich an den Vorstand."
+msgstr "This duty requires “{name}”. Your certificate is only valid until {date}; please contact the board."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig; der Nachweis gilt nur bis {date}."
+msgstr "This duty requires “{name}”; the certificate is only valid until {date}."
+
+msgid "Diese Qualifikation gibt es schon."
+msgstr "This qualification already exists."
+
+msgid "Bitte mindestens einen Monat angeben."
+msgstr "Please enter at least one month."
+
+msgid "Einträge dieser Art haben Bemerkungen. Bitte diese zuerst entfernen."
+msgstr "Entries of this type have remarks. Please remove them first."
+
+#, python-brace-format
+msgid "„{name}“ ist bei Mitgliedern eingetragen und kann nur archiviert werden."
+msgstr "“{name}” is recorded for members and can only be archived."
+
+msgid "Diese Qualifikation ist archiviert."
+msgstr "This qualification is archived."
+
+msgid "Das Ablaufdatum liegt vor dem Beginn."
+msgstr "The expiry date is before the start."
+
+msgid "Bei einem Einsichtsvermerk ist keine Bemerkung möglich."
+msgstr "An inspection note cannot have a remark."
+
+#, python-brace-format
+msgid "{n} abgelaufen"
+msgid_plural "{n} abgelaufen"
+msgstr[0] "{n} expired"
+msgstr[1] "{n} expired"
+
+#, python-brace-format
+msgid "{n} läuft bald ab"
+msgid_plural "{n} laufen bald ab"
+msgstr[0] "{n} expires soon"
+msgstr[1] "{n} expire soon"
+
 msgid "Dokument ohne Zugriff"
 msgstr "Document without access"
 
@@ -11035,9 +11144,6 @@ msgstr "Next deadline"
 msgid "Wiederholung in Monaten"
 msgstr "Repetition in months"
 
-msgid "Erinnerung Tage vorher"
-msgstr "Reminder days before"
-
 msgid "Frist"
 msgstr "Deadline"
 
@@ -11100,6 +11206,247 @@ msgstr "See the club’s obligations and deadlines"
 
 msgid "Pflichten anlegen, ändern und als erledigt vermerken"
 msgstr "Create and change obligations and mark them as done"
+msgid "Das Mitglied gehört schon zu diesem Haushalt."
+msgstr "The member already belongs to this household."
+
+msgid "Das Mitglied gehört zu einem anderen Verein."
+msgstr "The member belongs to another club."
+
+msgid "Das Mitglied ist zu diesem Datum kein Mitglied."
+msgstr "The person is not a member on this date."
+
+msgid "Der Haushalt"
+msgstr "The household"
+
+msgid "Die Art lässt sich nur ändern, solange niemand zugeordnet ist."
+msgstr "The type can only be changed while nobody is assigned."
+
+msgid "Erwachsener"
+msgstr "Adult"
+
+#, python-brace-format
+msgid "Familie {name}"
+msgstr "{name} family"
+
+msgid "Familie/Haushalt"
+msgstr "Family/household"
+
+msgid "Kind"
+msgstr "Child"
+
+msgid "Unbekannte Rolle im Haushalt."
+msgstr "Unknown role in the household."
+
+msgid "ohne Angabe"
+msgstr "not specified"
+
+msgid ""
+"Organisationsmitglieder gehören keinem Haushalt an; ihre Ansprechpartner "
+"stehen in der Akte."
+msgstr ""
+"Organization members do not belong to a household; their contact persons are "
+"listed in the member file."
+
+msgid ""
+"Das Mitglied gehörte zu diesem Datum noch zu einem anderen Haushalt. Bitte "
+"ein späteres Datum wählen."
+msgstr ""
+"On this date the member still belonged to another household. Please choose a "
+"later date."
+
+#, python-brace-format
+msgid ""
+"Das Mitglied gehört schon zu „{name}“. Dort zuerst beenden oder „wechseln“ "
+"wählen."
+msgstr ""
+"The member already belongs to “{name}”. End it there first or choose “move”."
+
+msgid "Der Wechsel muss nach dem Beginn im bisherigen Haushalt liegen."
+msgstr "The move must be after the start in the previous household."
+
+msgid ""
+"Der Haushalt hat noch Mitglieder. Bitte zuerst deren Zugehörigkeit beenden."
+msgstr ""
+"The household still has members. Please end their membership in it first."
+
+msgid "Das Mitglied gehört inzwischen zu einem anderen Haushalt."
+msgstr "The member now belongs to another household."
+
+msgid "Bitte Familie oder Firma wählen."
+msgstr "Please choose family or company."
+
+msgid "Bitte einen Geschäftspartner wählen."
+msgstr "Please choose a business partner."
+
+msgid "Bitte einen Haushalt wählen."
+msgstr "Please choose a household."
+
+msgid "Bitte einen Wert zwischen 0 und 100 angeben."
+msgstr "Please enter a value between 0 and 100."
+
+msgid "Bitte mindestens eine Ermäßigung angeben."
+msgstr "Please enter at least one reduction."
+
+#, python-brace-format
+msgid "Der Beitrag läuft schon über „{name}“. Dort zuerst ausschalten."
+msgstr "The fee is already paid via “{name}”. Switch it off there first."
+
+msgid ""
+"Für eine Organisation bitte „Organisationsmitglied“ wählen, sonst „Mitglied“."
+msgstr ""
+"For an organisation please choose “Organisation member”, otherwise “Member”."
+
+msgid "Haushalt/Firma"
+msgstr "Household/company"
+
+msgid "Höchstbetrag"
+msgstr "Maximum amount"
+
+msgid "Organisationsmitglied"
+msgstr "Organisation member"
+
+msgid "Pauschale"
+msgstr "Flat rate"
+
+msgid "Person ohne Mitgliedschaft"
+msgstr "Person without membership"
+
+msgid "Rechnungen an einen Haushalt entstehen im Beitragslauf."
+msgstr "Invoices to a household are created in the fee run."
+
+msgid "Staffel"
+msgstr "Graduated"
+
+msgid "Unbekannter Geschäftspartner."
+msgstr "Unknown business partner."
+
+msgid "keine Ermäßigung"
+msgstr "no reduction"
+
+msgid ""
+"Über ein Mandat dieses Haushalts wurde schon eingezogen. Der Haushalt bleibt "
+"deshalb erhalten; er ist ohne Mitglieder nur noch unter „ehemalige“ zu sehen."
+msgstr ""
+"A direct debit has already been collected via a mandate of this household. "
+"The household is therefore kept; without members it only appears under "
+"“former”."
+
+msgid ""
+"Erziehungsberechtigte gibt es nur bei minderjährigen Mitgliedern (mit "
+"Geburtsdatum)."
+msgstr "Guardians are only possible for members under 18 (with date of birth)."
+
+#, python-brace-format
+msgid "{name}: Elternzugang endet mit dem 18. Geburtstag"
+msgstr "{name}: parent access ends on the 18th birthday"
+
+#, python-brace-format
+msgid ""
+"Guten Tag,\n"
+"\n"
+"{first_name} {last_name} wird am {day} volljährig. Ab dann endet bei {club} Ihr Zugang als Erziehungsberechtigte bzw. Erziehungsberechtigter, und Ihre Kontaktangaben werden beim Mitglied gelöscht. Einwilligungen, die Sie gegeben haben, gelten weiter, bis das Mitglied sie widerruft.\n"
+"\n"
+"Das Mitglied kann danach einen eigenen Zugang bekommen.\n"
+"\n"
+"Viele Grüße\n"
+"{club}\n"
+msgstr ""
+"Hello,\n"
+"\n"
+"{first_name} {last_name} turns 18 on {day}. From then on, your access as a guardian at {club} ends and your contact details are removed from the member's record. Consents you have given remain valid until the member withdraws them.\n"
+"\n"
+"The member can then get their own access.\n"
+"\n"
+"Kind regards\n"
+"{club}\n"
+
+msgid ""
+"Bitte erteilen Sie dem Verein ein Lastschriftmandat oder überweisen Sie den "
+"Beitrag künftig selbst.\n"
+msgstr ""
+"Please give the club a direct debit mandate or transfer the fee yourself "
+"from now on.\n"
+
+msgid "{company} zahlt nicht mehr für {name}"
+msgstr "{company} no longer pays for {name}"
+
+msgid ""
+"{company} zahlt den Mitgliedsbeitrag für {name} nur noch bis {day}. Die "
+"Mitgliedschaft bleibt bestehen; danach zahlt das Mitglied selbst.\n"
+msgstr ""
+"{company} pays the membership fee for {name} only until {day}. The "
+"membership continues; afterwards the member pays themselves.\n"
+
+msgid "Das Datum liegt in der Vergangenheit."
+msgstr "The date is in the past."
+
+msgid ""
+"Der Verein hat keinen Online-Antrag eingeschaltet. Bitte meldet Mitarbeiter "
+"direkt beim Verein."
+msgstr ""
+"The club has not enabled an online application. Please report employees "
+"directly to the club."
+
+msgid "Mitgliedsantrag bei {club}"
+msgstr "Membership application at {club}"
+
+msgid ""
+"Guten Tag {first_name} {last_name},\n"
+"\n"
+"{company} hat Sie bei {club} als Mitglied angemeldet und zahlt Ihren Mitgliedsbeitrag. Bitte ergänzen Sie Ihre Angaben im Online-Antrag und bestätigen Sie ihn per Mail:\n"
+"\n"
+"{url}\n"
+"\n"
+"Der Link gilt {days} Tage. Möchten Sie nicht Mitglied werden, müssen Sie nichts tun.\n"
+"\n"
+"Viele Grüße\n"
+"{club}\n"
+msgstr ""
+"Hello {first_name} {last_name},\n"
+"\n"
+"{company} has registered you as a member of {club} and pays your membership fee. Please complete your details in the online application and confirm it by email:\n"
+"\n"
+"{url}\n"
+"\n"
+"The link is valid for {days} days. If you do not want to become a member, you do not need to do anything.\n"
+"\n"
+"Kind regards\n"
+"{club}\n"
+
+msgid ""
+"Der Link der Firma ist abgelaufen. Bitte bei der Firma einen neuen "
+"anfordern."
+msgstr "The company link has expired. Please ask the company for a new one."
+
+msgid "Beitrag zahlt"
+msgstr "Fee paid by"
+
+msgid "Der Haushalt hat keinen Zahler mehr."
+msgstr "The household no longer has a payer."
+
+msgid ""
+"Rolle im Haushalt: „{value}“ ist unbekannt (erlaubt: Erwachsener, Kind oder "
+"leer)."
+msgstr ""
+"Role in household: “{value}” is unknown (allowed: Erwachsener, Kind or "
+"empty)."
+
+msgid ""
+"Beitrag über: „{value}“ ist unbekannt (erlaubt: Haushalt, Firma oder leer)."
+msgstr "Fee via: “{value}” is unknown (allowed: Haushalt, Firma or empty)."
+
+msgid "Beitrag über {value}: Spalte „{column}“ ist leer."
+msgstr "Fee via {value}: column “{column}” is empty."
+
+msgid ""
+"Weitere Familienmitglieder kann nur eine volljährige Person mit beantragen."
+msgstr "Only an adult can apply for further family members."
+
+msgid "Höchstens {n} weitere Personen."
+msgstr "At most {n} further people."
+
+msgid "Weitere Person"
+msgstr "Further person"
 msgid "Kündigung"
 msgstr "Cancellation"
 

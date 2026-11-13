@@ -125,6 +125,15 @@ export interface RunPreview {
   members?: number
   members_total?: string
   departments?: { id: number; name: string; members: number; total: string }[]
+  /** Rechnungen an Haushalte und Firmen mit Familien- bzw. Firmenbeitrag (H2/H3) */
+  households?: {
+    id: number
+    name: string
+    kind: 'family' | 'company'
+    members: number
+    discount: string
+    total: string
+  }[]
   skipped?: { membership: number; name: string; reason: string }[]
   /** Zahlen für die Prüfliste */
   checks?: {
@@ -133,6 +142,8 @@ export interface RunPreview {
     open_change_requests: number
     /** Mitglieder in mehreren Untereinheiten (Datenaudit 08.11. FD-05) */
     multi_units?: number
+    /** Beitrag über einen Haushalt, der noch keinen Zahler hat */
+    household_without_payer?: number
   }
   // Dachverband
   clubs?: { id: number; name: string; members: number; total: string }[]
@@ -411,6 +422,7 @@ export interface Mandate {
   scheme_label: string
   membership: number | null
   club: number | null
+  household: number | null
   payer_name: string
   holder: string
   iban: string
@@ -489,6 +501,7 @@ export const sepaApi = {
     data: {
       membership?: number | null
       club?: number | null
+      household?: number | null
       holder: string
       iban: string
       bic: string

@@ -43,6 +43,8 @@ export interface CircularFilters {
   honorary_titles?: number[]
   include?: string[]
   exclude?: string[]
+  /** Briefe (und Mails an dieselbe Adresse) je Familienhaushalt zusammenfassen; fehlt = ja */
+  households_merge?: boolean
   /** Rundschreiben zu einem Termin: nur Eingeladene mit dieser Rückmeldung */
   event_responses?: EventResponseFilter[]
   /** Listen im Modus „nur ausgewählte“; leer heißt dort niemand statt alle. */
@@ -149,6 +151,9 @@ export interface Candidate {
   excluded?: boolean
   included?: boolean
   opted_out?: boolean
+  /** Haushalt (Name) und Schlüssel des gemeinsamen Schreibens */
+  household?: string
+  merged_into?: string
   // nur im Versandprotokoll
   status?: string
   status_label?: string
@@ -164,6 +169,8 @@ export interface RecipientCounts {
   letter: number
   opted_out?: number
   excluded?: number
+  /** im gemeinsamen Schreiben an einen Haushalt (H1) */
+  merged?: number
   failed?: number
   pending?: number
 }

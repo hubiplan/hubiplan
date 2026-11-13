@@ -6,7 +6,13 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import type { SignatureInput } from '../../api/finance.ts'
 import { ApiError } from '../../api/client.ts'
 import { joinApi, solveChallenge } from '../../api/admission.ts'
-import type { FieldState, Guardian, JoinSchema, JoinSubmission } from '../../api/admission.ts'
+import type {
+  FamilyMember,
+  FieldState,
+  Guardian,
+  JoinSchema,
+  JoinSubmission,
+} from '../../api/admission.ts'
 import { SignaturePad } from '../../components/SignaturePad.tsx'
 import { errorMessage } from '../../components/forms.ts'
 import { Logo } from '../../components/Logo.tsx'
@@ -43,6 +49,7 @@ interface Values {
   confirmations: string[]
   consents: string[]
   guardians: Guardian[]
+  family: FamilyMember[]
   homepage: string
 }
 
@@ -72,8 +79,17 @@ const empty: Values = {
   confirmations: [],
   consents: [],
   guardians: [{ last_name: '', first_name: '', email: '', phone: '' }],
+  family: [],
   homepage: '',
 }
+
+const FAMILY_LIMIT = 8
+const newRelative = (): FamilyMember => ({
+  first_name: '',
+  last_name: '',
+  birth_date: '',
+  member_type: '',
+})
 
 /** In welchem Schritt steht das Feld? (für Fehler vom Server) */
 function stepOf(key: string): Step {
@@ -105,6 +121,13 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
   const [search] = useSearchParams()
   const key = (kiosk ? params.token : params.key) ?? ''
   const unitHint = search.get('einheit') ?? ''
+  // Link „Mitarbeiter melden“ einer Firma (Haushalte und Firmen H5)
+  const companyToken = kiosk ? '' : (search.get('firma') ?? '')
+  const preset = useRef({
+    first_name: search.get('vorname') ?? '',
+    last_name: search.get('name') ?? '',
+    email: search.get('mail') ?? '',
+  })
   const [schema, setSchema] = useState<JoinSchema | null>(null)
   const [invalid, setInvalid] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -123,13 +146,19 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
 
   useEffect(() => {
     let alive = true
-    const load = kiosk ? joinApi.kiosk(key, lang()) : joinApi.form(key, lang(), unitHint)
+    const load = kiosk
+      ? joinApi.kiosk(key, lang())
+      : joinApi.form(key, lang(), unitHint, companyToken)
     load
       .then((d) => {
         if (!alive) return
         setSchema(d)
+        const given = d.company ? preset.current : null
         setValues((v) => ({
           ...v,
+          first_name: v.first_name || given?.first_name || '',
+          last_name: v.last_name || given?.last_name || '',
+          email: v.email || given?.email || '',
           member_type: v.member_type || (d.types.length === 1 ? String(d.types[0].id) : ''),
           unit: v.unit || (d.unit ? String(d.unit) : ''),
           pay: v.pay || d.sepa === 'required',
@@ -148,7 +177,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
     return () => {
       alive = false
     }
-  }, [key, kiosk, unitHint, attempt])
+  }, [key, kiosk, unitHint, companyToken, attempt])
 
   useEffect(() => {
     heading.current?.focus()
@@ -177,6 +206,13 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
     setValues((old) => ({
       ...old,
       [k]: on ? [...new Set([...old[k], item])] : old[k].filter((x) => x !== item),
+    }))
+  }
+
+  function setRelative(i: number, k: keyof FamilyMember, v: string) {
+    setValues((old) => ({
+      ...old,
+      family: old.family.map((g, n) => (n === i ? { ...g, [k]: v } : g)),
     }))
   }
 
@@ -224,6 +260,8 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
 
   const s = schema
   const f = s.fields
+  // Familienantrag (Haushalte H6): ältere Server kennen das Feld nicht
+  const familyOn = person && !minor && (f.family ?? 'off') !== 'off'
   const confirmations = [
     ...s.confirmations,
     ...(minor
@@ -327,8 +365,19 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       confirmations: values.confirmations.filter((k) => confirmations.some((c) => c.key === k)),
       consents: values.consents,
       guardians: minor ? values.guardians.filter((g) => g.last_name || g.email) : [],
+      family: familyOn
+        ? values.family
+            .filter((r) => r.first_name.trim())
+            .map((r) => ({
+              first_name: r.first_name.trim(),
+              last_name: r.last_name.trim(),
+              birth_date: f.birth_date !== 'off' && r.birth_date ? r.birth_date : undefined,
+              member_type: r.member_type ? Number(r.member_type) : undefined,
+            }))
+        : [],
       signature,
       homepage: values.homepage,
+      ...(s.company && companyToken ? { company: companyToken } : {}),
     }
     try {
       if (kiosk) {
@@ -435,6 +484,11 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
           ))}
         </ol>
         {step === 0 && s.intro && <p className="rsvp-public-text">{s.intro}</p>}
+        {s.company && (
+          <p className="alert alert-info">
+            {t('Den Mitgliedsbeitrag zahlt {x}.', { x: s.company })}
+          </p>
+        )}
 
         {step === 0 && (
           <>
@@ -668,6 +722,86 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                 )}
               </fieldset>
             )}
+            {familyOn && (
+              <fieldset className="stack-sm">
+                <legend>{t('Weitere Familienmitglieder')}</legend>
+                <p className="muted small">
+                  {t(
+                    'Familienmitglieder mit derselben Anschrift kannst du hier gleich mit anmelden. Ihr bekommt Post und Beitragsrechnung gemeinsam.',
+                  )}
+                </p>
+                {values.family.map((r, i) => (
+                  <div
+                    key={i}
+                    className="stack-sm"
+                    role="group"
+                    aria-label={t('Familienmitglied {n}', { n: i + 1 })}
+                  >
+                    <div className="grid-2">
+                      <Field
+                        label={t('Vorname')}
+                        value={r.first_name}
+                        required
+                        onChange={(e) => setRelative(i, 'first_name', e.target.value)}
+                      />
+                      <Field
+                        label={t('Nachname (wenn anders)')}
+                        value={r.last_name}
+                        placeholder={values.last_name}
+                        onChange={(e) => setRelative(i, 'last_name', e.target.value)}
+                      />
+                    </div>
+                    {f.birth_date !== 'off' && (
+                      <Field
+                        label={label(t('Geburtsdatum'), f.birth_date)}
+                        type="date"
+                        value={r.birth_date}
+                        onChange={(e) => setRelative(i, 'birth_date', e.target.value)}
+                      />
+                    )}
+                    {s.types.length > 1 && (
+                      <SelectField
+                        label={t('Mitgliedsart')}
+                        value={r.member_type || values.member_type}
+                        onChange={(e) => setRelative(i, 'member_type', e.target.value)}
+                      >
+                        {s.types.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.label}
+                          </option>
+                        ))}
+                      </SelectField>
+                    )}
+                    <div className="button-row">
+                      <button
+                        type="button"
+                        className="button button-ghost"
+                        onClick={() =>
+                          set(
+                            'family',
+                            values.family.filter((_, n) => n !== i),
+                          )
+                        }
+                      >
+                        {t('Entfernen')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {err('family') && <p className="field-error">{err('family')}</p>}
+                {values.family.length < FAMILY_LIMIT && (
+                  <div className="button-row">
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={() => set('family', [...values.family, newRelative()])}
+                    >
+                      {t('Familienmitglied hinzufügen')}
+                    </button>
+                  </div>
+                )}
+              </fieldset>
+            )}
             {f.unit !== 'off' && s.units.length > 0 && (
               <SelectField
                 label={label(s.unit_label, f.unit)}
@@ -776,7 +910,15 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                   : ` · ${t('Den Beitrag nennt dir der Verein.')}`}
               </p>
             )}
-            {s.sepa === 'off' && (
+            {s.company && (
+              <p className="muted">
+                {t(
+                  'Beitrag zahlt {x}. Eine Lastschrift ist nur nötig, wenn du selbst zahlen möchtest.',
+                  { x: s.company },
+                )}
+              </p>
+            )}
+            {s.sepa === 'off' && !s.company && (
               <p className="muted">
                 {t('Wie der Beitrag gezahlt wird, erfährst du nach der Aufnahme.')}
               </p>

@@ -10,6 +10,8 @@ Circulars go by email, letter or to the app to members, boards or holders of cer
 
 For organisations as members, the circular goes to every contact person marked “receives circulars”. Without such an address it goes to the organisation's email address or as a letter marked “attn.” of the primary contact. The placeholder {Organisation} inserts the organisation's name; the salutation addresses the contact person.
 
+If members belong to a household at the same address, they get one joint letter, and emails to the same address become one email. The preview shows the others as “im gemeinsamen Schreiben an den Haushalt” (in the joint letter to the household). Under **Recipient** you switch this off with **Combine letters per household**. The placeholder {Haushalt} inserts the household name. You create households under [Members › Households and companies](/mitglieder/haushalte).
+
 For a single letter, Circulars › Letter creates a Word template with the club letterhead and your sender details. The board designs the letterhead under Settings › Letterhead; you store your signature under My account.
 
 A mailing list turns a mail sent to a club address into a circular. Anyone may write to an open mailing list. So that outsiders cannot reach many members unchecked, their mails go out directly only up to an adjustable number of recipients (50 by default) and up to a number per day. Anything beyond that is kept as a draft. Those allowed to write to the list are notified and release or delete the mail.

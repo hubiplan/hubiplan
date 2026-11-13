@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.db import transaction
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
@@ -27,12 +28,15 @@ def _billing_on(club) -> bool:
 
 
 def _own(issuer, access):
+    """Eigene Rechnungen und Rechnungen an Haushalte, für die das Mitglied zahlt (H2)."""
     return (
-        Invoice.objects.filter(
-            organization=issuer,
-            membership_id=access.membership_id,
-            recipient_kind=Invoice.Recipient.MEMBER,
-            status__in=VISIBLE,
+        Invoice.objects.filter(organization=issuer, status__in=VISIBLE)
+        .filter(
+            Q(membership_id=access.membership_id, recipient_kind=Invoice.Recipient.MEMBER)
+            | Q(
+                household__payer__membership_id=access.membership_id,
+                recipient_kind=Invoice.Recipient.HOUSEHOLD,
+            )
         )
         .select_related("organization", "department", "run")
         .order_by("-date", "-pk")
@@ -57,10 +61,17 @@ class PortalInvoicesView(APIView):
             collective = (
                 InvoiceLine.objects.filter(
                     membership_id=access.membership_id,
-                    invoice__recipient_kind=Invoice.Recipient.DEPARTMENT,
+                    invoice__recipient_kind__in=[
+                        Invoice.Recipient.DEPARTMENT,
+                        Invoice.Recipient.HOUSEHOLD,
+                    ],
                     invoice__status__in=VISIBLE,
                 )
-                .select_related("invoice__organization", "invoice__department")
+                # Haushaltsrechnungen, die das Mitglied selbst zahlt, stehen schon oben
+                .exclude(invoice__household__payer__membership_id=access.membership_id)
+                .select_related(
+                    "invoice__organization", "invoice__department", "invoice__household"
+                )
                 .order_by("-invoice__date")
             )
             return Response(
@@ -76,7 +87,13 @@ class PortalInvoicesView(APIView):
                             "number": line.invoice.display_number,
                             "date": line.invoice.date,
                             "subject": line.invoice.subject,
-                            "department_name": line.invoice.department.name,
+                            "department_name": (
+                                line.invoice.department.name
+                                if line.invoice.department_id
+                                else line.invoice.household.name
+                                if line.invoice.household_id
+                                else ""
+                            ),
                             "amount": f"{line.amount:.2f}",
                             "status": line.invoice.status,
                             "status_label": line.invoice.get_status_display(),

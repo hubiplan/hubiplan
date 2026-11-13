@@ -152,7 +152,10 @@ def invoice_story(
         story.append(Paragraph(_lines(cfg.intro_text), st["normal"]))
     story.append(Spacer(1, 4 * mm))
 
-    collective = invoice.recipient_kind == Invoice.Recipient.DEPARTMENT
+    collective = invoice.recipient_kind in (
+        Invoice.Recipient.DEPARTMENT,
+        Invoice.Recipient.HOUSEHOLD,
+    )
     head = ["Nr.", "Mitglied" if collective else "Posten", "", "Betrag"]
     rows = [[Paragraph(f"<b>{h}</b>", st["small"]) for h in head]]
     for n, line in enumerate(invoice.lines.all(), start=1):
@@ -401,7 +404,10 @@ def cancellation_story(invoice: Invoice) -> list:
         story.append(Paragraph(f"Grund: {escape(invoice.cancel_reason)}", st["normal"]))
     story.append(Spacer(1, 4 * mm))
 
-    collective = invoice.recipient_kind == Invoice.Recipient.DEPARTMENT
+    collective = invoice.recipient_kind in (
+        Invoice.Recipient.DEPARTMENT,
+        Invoice.Recipient.HOUSEHOLD,
+    )
     head = ["Nr.", "Mitglied" if collective else "Posten", "", "Betrag"]
     rows = [[Paragraph(f"<b>{h}</b>", st["small"]) for h in head]]
     lines = list(invoice.lines.all())

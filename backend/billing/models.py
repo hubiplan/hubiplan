@@ -27,6 +27,7 @@ from core.encfields import (
 )
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
+from members.models import Household
 
 ZERO = Decimal("0.00")
 
@@ -793,6 +794,8 @@ class Invoice(models.Model):
         PARTNER = "partner", gettext_lazy("Geschäftspartner")
         # Nach Ablauf der Aufbewahrungsfrist: ohne Bezug auf eine Person (Audit 02.11. BP-F03)
         ANONYMIZED = "anonymized", gettext_lazy("anonymisiert")
+        # Haushalt oder Firma: eine Rechnung an den Zahler (Konzept Familien, H2)
+        HOUSEHOLD = "household", gettext_lazy("Haushalt/Firma")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -821,6 +824,16 @@ class Invoice(models.Model):
         blank=True,
         related_name="invoices",
         verbose_name="Mitglied",
+    )
+    # Haushalts- bzw. Firmenrechnung (H2); Empfänger ist eingefroren, der Haushalt darf
+    # später entfallen (Löschfrist), die Rechnung bleibt
+    household = models.ForeignKey(
+        "members.Household",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invoices",
+        verbose_name="Haushalt/Firma",
     )
     department = models.ForeignKey(
         "organizations.Department",
@@ -917,6 +930,7 @@ class Invoice(models.Model):
                     | models.Q(recipient_kind="club", club__isnull=False)
                     | models.Q(recipient_kind="partner", partner__isnull=False)
                     | models.Q(recipient_kind="anonymized", membership__isnull=True)
+                    | models.Q(recipient_kind="household", membership__isnull=True)
                 ),
                 name="rechnung_empfaenger",
             ),
@@ -1164,7 +1178,8 @@ class Dunning(models.Model):
 
 
 class Mandate(models.Model):
-    """SEPA-Lastschriftmandat (Basislastschrift) eines Mitglieds oder Vereins."""
+    """SEPA-Lastschriftmandat eines Mitglieds, eines Vereins oder des Zahlers eines
+    Haushalts bzw. einer Firma."""
 
     class Source(models.TextChoices):
         PAPER = "paper", gettext_lazy("schriftlich")
@@ -1192,6 +1207,15 @@ class Mandate(models.Model):
         blank=True,
         related_name="+",
         verbose_name="Verein (Dachverband zieht ein)",
+    )
+    # Zahler eines Haushalts oder einer Firma ohne eigene Mitgliedschaft (H2)
+    household = models.ForeignKey(
+        "members.Household",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="mandates",
+        verbose_name="Haushalt/Firma",
     )
     reference = models.CharField("Mandatsreferenz", max_length=35)
     # Basislastschrift oder Firmenlastschrift (nur Organisationen und Vereine, J8b)
@@ -1225,9 +1249,12 @@ class Mandate(models.Model):
                 fields=["organization", "reference"], name="mandatsreferenz_eindeutig"
             ),
             models.CheckConstraint(
-                condition=models.Q(membership__isnull=False, club__isnull=True)
-                | models.Q(membership__isnull=True, club__isnull=False),
-                name="mandat_zahler",
+                condition=models.Q(
+                    membership__isnull=False, club__isnull=True, household__isnull=True
+                )
+                | models.Q(membership__isnull=True, club__isnull=False, household__isnull=True)
+                | models.Q(membership__isnull=True, club__isnull=True, household__isnull=False),
+                name="mandat_zahler_haushalt",
             ),
         ]
 
@@ -1297,3 +1324,109 @@ class DebitItem(models.Model):
 
     def __str__(self) -> str:
         return self.end_to_end_id
+
+
+class HouseholdPayer(models.Model):
+    """Wer für einen Haushalt oder eine Firma zahlt (Konzept Familien, Haushalte und
+    Firmen, H2). Fehlt der Eintrag, gehen die Beiträge wie bisher (selbst oder Zug).
+
+    - ``member``: ein Mitglied (meist des Haushalts) mit eigener Anschrift und Mandat
+    - ``external``: eine Person ohne Mitgliedschaft (Elternteil, Großeltern); Anschrift
+      und Mail stehen hier, das Mandat hängt am Haushalt
+    - ``organization``: ein Organisationsmitglied (Firma ist auch Mitglied)
+    - ``partner``: ein Geschäftspartner (Firma ist nicht Mitglied); Mandat am Haushalt
+    """
+
+    class Kind(models.TextChoices):
+        MEMBER = "member", gettext_lazy("Mitglied")
+        EXTERNAL = "external", gettext_lazy("Person ohne Mitgliedschaft")
+        ORGANIZATION = "organization", gettext_lazy("Organisationsmitglied")
+        PARTNER = "partner", gettext_lazy("Geschäftspartner")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    household = models.OneToOneField(
+        "members.Household", on_delete=models.CASCADE, related_name="payer"
+    )
+    kind = models.CharField("Zahler", max_length=12, choices=Kind.choices)
+    membership = models.ForeignKey(
+        "members.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="zahlendes Mitglied",
+    )
+    partner = models.ForeignKey(
+        BusinessPartner,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
+    name = EncryptedCharField("Name", max_length=200, blank=True)
+    attention = EncryptedCharField("z. Hd.", max_length=200, blank=True)
+    street = EncryptedCharField("Straße oder Postfach", max_length=200, blank=True)
+    postal_code = EncryptedCharField("PLZ", max_length=20, blank=True)
+    city = EncryptedCharField("Ort", max_length=100, blank=True)
+    country = models.CharField("Land", max_length=100, blank=True, default="")
+    email = EncryptedEmailField("E-Mail-Adresse", blank=True)
+    order_reference = models.CharField("Bestellnummer", max_length=100, blank=True, default="")
+    leitweg_id = models.CharField("Leitweg-ID", max_length=50, blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Zahler eines Haushalts"
+        verbose_name_plural = "Zahler von Haushalten"
+
+    def __str__(self) -> str:
+        return f"Zahler {self.pk}"
+
+
+class HouseholdFeeRule(models.Model):
+    """Familien- bzw. Firmenbeitrag (H3): wirkt auf die Summe der Einzelbeiträge einer
+    Haushalts- oder Firmenrechnung. Die Einzelbeiträge rechnet der Beitragslauf wie bisher.
+
+    - ``cap``: höchstens ``amount`` je Rechnung
+    - ``flat``: genau ``amount`` (nie mehr als die Summe), ab ``min_persons``
+    - ``stagger``: zweite Person ``second_percent`` % weniger, ab der dritten
+      ``third_percent`` % weniger (teuerste Beiträge zuerst)
+    """
+
+    class Mode(models.TextChoices):
+        NONE = "none", gettext_lazy("keine Ermäßigung")
+        CAP = "cap", gettext_lazy("Höchstbetrag")
+        FLAT = "flat", gettext_lazy("Pauschale")
+        STAGGER = "stagger", gettext_lazy("Staffel")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    kind = models.CharField("für", max_length=10, choices=Household.Kind.choices)
+    mode = models.CharField("Form", max_length=10, choices=Mode.choices, default=Mode.NONE)
+    amount = models.DecimalField(
+        "Betrag je Jahr", max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    min_persons = models.PositiveSmallIntegerField("ab Personen", default=2)
+    adult_required = models.BooleanField("mindestens ein Erwachsener", default=False)
+    second_percent = models.DecimalField(
+        "zweite Person weniger (%)", max_digits=5, decimal_places=2, default=0
+    )
+    third_percent = models.DecimalField(
+        "ab der dritten Person weniger (%)", max_digits=5, decimal_places=2, default=0
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Familien- bzw. Firmenbeitrag"
+        verbose_name_plural = "Familien- und Firmenbeiträge"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "kind"], name="ein_familienbeitrag_je_art"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"Familienbeitrag {self.pk}"

@@ -71,6 +71,15 @@ class Duty(models.Model):
     min_age = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=[MaxValueValidator(99)]
     )
+    # Voraussetzung (Modul Qualifikationen), z. B. Standaufsicht: Hinweis bei der Einteilung
+    qualification = models.ForeignKey(
+        "qualifications.QualificationType",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name=_("Voraussetzung"),
+    )
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

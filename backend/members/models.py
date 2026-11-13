@@ -636,6 +636,9 @@ class ContactPerson(models.Model):
     receives_invoices = models.BooleanField("erhält Rechnungen", default=True)
     represents = models.BooleanField("vertritt in Versammlungen", default=True)
     member_access = models.BooleanField("Mitgliederzugang", default=False)
+    # Erziehungsberechtigt für ein minderjähriges Mitglied (Konzept Familien, H4): endet
+    # mit dem 18. Geburtstag samt Zugang und Zeile
+    is_guardian = models.BooleanField("erziehungsberechtigt", default=False, db_default=False)
     since = models.DateField("Ansprechpartner seit", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -710,6 +713,94 @@ class BillingAddress(models.Model):
     @property
     def has_address(self) -> bool:
         return bool(self.city.strip() or self.street.strip())
+
+
+class Household(models.Model):
+    """Haushalt einer Familie oder Firma, die mehrere Mitglieder des Vereins verbindet
+    (Konzept Familien, Haushalte und Firmen, H1). Briefe an einen Familienhaushalt mit
+    gleicher Anschrift gehen als ein Brief; Beitrag und Zahler folgen in H2.
+
+    Gilt je Verein. Haushaltsmitglieder sind nur Mitgliedschaften; die Zugehörigkeit hat
+    Zeiträume (``HouseholdMember``), damit nichts überschrieben wird."""
+
+    class Kind(models.TextChoices):
+        FAMILY = "family", gettext_lazy("Familie/Haushalt")
+        COMPANY = "company", gettext_lazy("Firma")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    kind = models.CharField("Art", max_length=10, choices=Kind.choices, default=Kind.FAMILY)
+    name = EncryptedCharField("Name", max_length=200)
+    note = EncryptedCharField("Notiz", max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Haushalt"
+        verbose_name_plural = "Haushalte"
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
+        return f"Haushalt {self.pk}"
+
+
+class HouseholdMember(models.Model):
+    """Zugehörigkeit einer Mitgliedschaft zu einem Haushalt, mit Zeitraum.
+
+    Eine Mitgliedschaft gehört gleichzeitig zu höchstens einem Familienhaushalt und
+    höchstens einer Firma (Fachfrage FH-3); ``kind`` ist dafür aus dem Haushalt kopiert."""
+
+    class Role(models.TextChoices):
+        ADULT = "adult", gettext_lazy("Erwachsener")
+        CHILD = "child", gettext_lazy("Kind")
+        NONE = "", gettext_lazy("ohne Angabe")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    household = models.ForeignKey(Household, on_delete=models.CASCADE, related_name="members")
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="household_links"
+    )
+    kind = models.CharField(max_length=10, choices=Household.Kind.choices)
+    role = models.CharField(
+        "Rolle im Haushalt", max_length=10, choices=Role.choices, blank=True, default=""
+    )
+    valid_from = models.DateField("seit")
+    valid_until = models.DateField("bis", null=True, blank=True)
+    # Beitrag läuft über die Rechnung an den Zahler des Haushalts bzw. der Firma (H2);
+    # gilt für den Zeitraum dieser Zugehörigkeit (Fachfrage FH-4: nur ausdrücklich)
+    pays_via = models.BooleanField("Beitrag über den Haushalt", default=False, db_default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Haushaltsmitglied"
+        verbose_name_plural = "Haushaltsmitglieder"
+        ordering = ["valid_from", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["membership", "kind"],
+                condition=Q(valid_until__isnull=True),
+                name="ein_offener_haushalt_je_art",
+            ),
+            models.UniqueConstraint(
+                fields=["membership"],
+                condition=Q(valid_until__isnull=True, pays_via=True),
+                name="beitrag_ueber_einen_haushalt",
+            ),
+            models.CheckConstraint(
+                condition=Q(valid_until__isnull=True) | Q(valid_until__gte=models.F("valid_from")),
+                name="haushalt_bis_nach_seit",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Haushaltsmitglied {self.pk}"
+
+    def current(self, on: datetime.date | None = None) -> bool:
+        on = on or today()
+        return self.valid_from <= on and (self.valid_until is None or self.valid_until >= on)
 
 
 class HonoraryTitle(models.Model):

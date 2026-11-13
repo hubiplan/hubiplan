@@ -31,7 +31,7 @@ type Values = Omit<
   'choices' | 'form_url' | 'public_key' | 'rule_text' | 'statute_docs' | 'sepa_available'
 >
 
-const FIELD_LABELS: Record<FieldKey, () => string> = {
+const FIELD_LABELS: Record<Exclude<FieldKey, 'family'>, () => string> = {
   phone: () => t('Telefon'),
   gender: () => t('Geschlecht'),
   birth_date: () => t('Geburtsdatum'),
@@ -285,7 +285,7 @@ function SettingsForm({
           <p className="muted small">
             {t('Name, E-Mail-Adresse und Anschrift fragt das Formular immer ab.')}
           </p>
-          {(Object.keys(FIELD_LABELS) as FieldKey[]).map((k) => (
+          {(Object.keys(FIELD_LABELS) as Exclude<FieldKey, 'family'>[]).map((k) => (
             <SelectField
               key={k}
               label={FIELD_LABELS[k]()}
@@ -297,6 +297,11 @@ function SettingsForm({
               <option value="off">{t('nicht abfragen')}</option>
             </SelectField>
           ))}
+          <Checkbox
+            label={t('Familienantrag: weitere Personen mit derselben Anschrift im selben Antrag')}
+            checked={(v.fields.family ?? 'off') !== 'off'}
+            onChange={(on) => set('fields', { ...v.fields, family: on ? 'optional' : 'off' })}
+          />
           {c.custom_fields.length > 0 && (
             <Chips
               label={t('Zusatzfelder im Formular (freiwillig)')}

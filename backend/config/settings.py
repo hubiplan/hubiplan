@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "meetings",
     "helpers",
     "obligations",
+    "qualifications",
     "places",
     "admission",
     "django.contrib.admin",
@@ -272,6 +273,8 @@ SPECTACULAR_SETTINGS = {
         "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
         "CashAuditStatusEnum": "finance.models.CashAudit.Status",
+        "HouseholdKindEnum": "members.models.Household.Kind",
+        "HouseholdPayerKindEnum": "billing.models.HouseholdPayer.Kind",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
     },
 }
@@ -320,6 +323,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,
     },
+    "qualifikationen-erinnerungen": {
+        "task": "qualifications.tasks.send_reminders",
+        "schedule": 6 * 3600.0,
+    },
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
     "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
     "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
@@ -334,6 +341,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "loeschfrist": {
         "task": "members.tasks.purge_expired_members",
+        "schedule": 24 * 60 * 60,  # täglich
+    },
+    "erziehungsberechtigte-volljaehrig": {
+        "task": "members.tasks.end_guardianships",
         "schedule": 24 * 60 * 60,  # täglich
     },
     "termin-erinnerungen": {

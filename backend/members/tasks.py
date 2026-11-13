@@ -19,3 +19,15 @@ def purge_expired_members() -> int:
     count = purge_expired()
     logger.info("Löschfrist: %s Mitgliedschaften bereinigt", count)
     return count
+
+
+@shared_task
+def end_guardianships() -> int:
+    """Täglich: Erziehungsberechtigte vier Wochen vor dem 18. Geburtstag benachrichtigen und
+    am Geburtstag samt Elternzugang beenden (Konzept Familien, H4)."""
+    from . import guardians
+
+    sent = guardians.send_notices()
+    ended = guardians.end_adults()
+    logger.info("Erziehungsberechtigte: %s Hinweise, %s beendet", sent, ended)
+    return ended

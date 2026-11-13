@@ -27,6 +27,12 @@ derselben Person oder ist die Person jünger als das Mindestalter, fragt HUBIpla
 **Trotzdem einteilen** geht es dennoch. Telefonnummern sieht nur, wer Dienstpläne bearbeiten
 darf.
 
+Voraussetzung: Ist das Modul „Qualifikationen“ eingeschaltet, wählst du an einem Dienst unter
+**Voraussetzung** eine Qualifikation, etwa Standaufsicht für den Schießstand. Fehlt sie bei der
+Person oder läuft sie vor dem Ende der Schicht ab, fragt HUBIplan beim Einteilen nach, und an der
+Person steht ein Hinweis. Mitglieder, die sich selbst eintragen, sehen die Voraussetzung und
+können sich ohne gültigen Nachweis nicht eintragen.
+
 Drucken: **Aushang als PDF** erzeugt je Dienst eine Seite mit den Schichten und freien Zeilen
 zum Eintragen. **Liste als Excel** enthält alle Schichten mit den Eingeteilten.
 

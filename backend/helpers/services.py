@@ -77,8 +77,22 @@ def shift_label(shift: Shift) -> str:
     return f"{shift.duty.name} {start:%d.%m. %H:%M}–{end:%H:%M}"
 
 
-def warnings(shift: Shift, membership=None, quota: ShiftQuota | None = None) -> list[dict]:
-    """Hinweise vor einer Einteilung: Schicht oder Kontingent voll, Überschneidung, Alter."""
+def qualification_problem(shift: Shift, membership, *, own: bool = False) -> dict | None:
+    """Fehlt die Voraussetzung des Dienstes (Modul Qualifikationen) oder läuft sie vorher ab?"""
+    from qualifications import services as qualifications
+
+    kind = shift.duty.qualification
+    if kind is None or not qualifications.module_on(shift.duty.plan.organization):
+        return None
+    day = timezone.localtime(shift.ends_at).date()
+    return qualifications.problem(shift.organization_id, membership.person_id, kind, day, own=own)
+
+
+def warnings(
+    shift: Shift, membership=None, quota: ShiftQuota | None = None, *, own: bool = False
+) -> list[dict]:
+    """Hinweise vor einer Einteilung: Schicht oder Kontingent voll, Überschneidung, Alter,
+    fehlende Qualifikation. ``own``: das Mitglied trägt sich selbst ein."""
     found = []
     if quota is not None:
         if filled(quota) >= quota.count:
@@ -108,6 +122,9 @@ def warnings(shift: Shift, membership=None, quota: ShiftQuota | None = None) -> 
                     ),
                 }
             )
+    missing = qualification_problem(shift, membership, own=own)
+    if missing:
+        found.append(missing)
     return found
 
 

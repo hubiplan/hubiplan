@@ -16,7 +16,9 @@ from accounts import (
 )
 from admission import urls as admission_urls
 from billing import agreements as partner_agreements
+from billing import company_portal as billing_company_portal
 from billing import einvoice_views, partner_fields, partner_files
+from billing import household_views as billing_household_views
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -49,6 +51,7 @@ from mcpserver import urls as mcp_urls
 from meetings import portal as meeting_portal
 from members import (
     federation_views,
+    household_views,
     jubilee_views,
     open_tasks,
     photo_views,
@@ -92,6 +95,7 @@ from organizations.platform_public import (
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
+from qualifications import views as qualification_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
@@ -201,8 +205,12 @@ org_router.register("department-roles", org_views.DepartmentRoleViewSet, basenam
 org_router.register("roles", access_views.RoleViewSet, basename="role")
 org_router.register("assignments", access_views.AssignmentViewSet, basename="assignment")
 org_router.register("member-types", member_views.MemberTypeViewSet, basename="member-type")
+org_router.register("households", household_views.HouseholdViewSet, basename="household")
 org_router.register(
     "honorary-titles", honorary_views.HonoraryTitleViewSet, basename="honorary-title"
+)
+org_router.register(
+    "qualification-types", qualification_views.TypeViewSet, basename="qualification-type"
 )
 org_router.register("fields", field_views.FieldDefinitionViewSet, basename="field")
 org_router.register("social-links", social_views.SocialLinkViewSet, basename="social-link")
@@ -237,6 +245,9 @@ member_router.register(
 )
 member_router.register(
     "honorary-titles", honorary_views.MemberAwardViewSet, basename="member-honorary-title"
+)
+member_router.register(
+    "qualifications", qualification_views.MemberRecordViewSet, basename="member-qualification"
 )
 
 federation_member_router = SimpleRouter()
@@ -578,6 +589,16 @@ org_patterns = [
     ),
     path("billing/settings/", billing_views.BillingSettingsView.as_view(), name="billing-settings"),
     path("billing/fees/", billing_views.FeeRatesView.as_view(), name="billing-fees"),
+    path(
+        "billing/households/<int:pk>/payer/",
+        billing_household_views.HouseholdPayerView.as_view(),
+        name="billing-household-payer",
+    ),
+    path(
+        "billing/household-fee-rules/",
+        billing_household_views.HouseholdFeeRulesView.as_view(),
+        name="billing-household-fee-rules",
+    ),
     path("billing/payments/<int:pk>/", billing_views.PaymentView.as_view(), name="billing-payment"),
     path(
         "billing/payments/<int:pk>/receipt/",
@@ -741,6 +762,11 @@ org_patterns = [
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
     *entry_urls.org_patterns,
+    path(
+        "qualifications/",
+        qualification_views.OverviewView.as_view(),
+        name="qualification-overview",
+    ),
     path("offices/", office_views.OfficesView.as_view(), name="offices"),
     path("offices/<int:pk>/", office_views.OfficeEntryView.as_view(), name="office-entry"),
     path(
@@ -937,6 +963,15 @@ urlpatterns = [
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("portal/<int:access_id>/company/", billing_company_portal.CompanyView.as_view()),
+    path(
+        "portal/<int:access_id>/company/<int:pk>/report/",
+        billing_company_portal.CompanyReportView.as_view(),
+    ),
+    path(
+        "portal/<int:access_id>/company/<int:pk>/members/<int:link_id>/end/",
+        billing_company_portal.CompanyEndView.as_view(),
+    ),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/<int:pk>/motions/", meeting_portal.MotionsView.as_view()),

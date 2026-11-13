@@ -37,6 +37,9 @@ MODULE_MODELS = (
     "finance.DonationSettings",
     "finance.DonationStatement",
     "finance.Donation",
+    # Haushalte und Firmen (H1) vor Rechnungen und Mandaten (Verweise darauf)
+    "members.Household",
+    "members.HouseholdMember",
     "billing.BillingSettings",
     "billing.FeeRate",
     "billing.AgeRate",
@@ -64,6 +67,9 @@ MODULE_MODELS = (
     "billing.Mandate",
     "billing.DebitRun",
     "billing.DebitItem",
+    # Zahler und Familienbeitrag (H2/H3)
+    "billing.HouseholdPayer",
+    "billing.HouseholdFeeRule",
     "finance.BankStatement",
     "finance.BankLine",
     # Rücklagen (Finanzamt-Prüfung C4)
@@ -79,6 +85,9 @@ MODULE_MODELS = (
     "todos.TodoAttachment",
     "members.HonoraryTitle",
     "members.HonoraryTitleAward",
+    # Qualifikationen vor den Helferdiensten (ein Dienst kann eine voraussetzen)
+    "qualifications.QualificationType",
+    "qualifications.Qualification",
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
     "members.BillingAddress",
@@ -242,6 +251,8 @@ DEPARTMENT_MODELS = {
 MEMBER_MODELS = {
     "members.honorarytitle",
     "members.honorarytitleaward",
+    "qualifications.qualificationtype",
+    "qualifications.qualification",
     "events.eventresponse",
     "circulars.circularrecipient",
     "website.publicationconsent",
@@ -295,6 +306,7 @@ DROP_IF_MISSING = {
     "materials.materialphoto": "item",
     "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
+    "qualifications.qualification": "person",
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
     "circulars.circularrecipient": "club",
