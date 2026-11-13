@@ -471,7 +471,13 @@ class ProjectSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "result",
             "booking_count",
             "event_count",
+            "plan_income",
+            "plan_expense",
         ]
+        extra_kwargs = {
+            "plan_income": {"min_value": Decimal("0")},
+            "plan_expense": {"min_value": Decimal("0")},
+        }
 
     def _totals(self, obj) -> dict:
         cache = self.context.setdefault("totals", {})

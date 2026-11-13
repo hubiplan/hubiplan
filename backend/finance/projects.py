@@ -118,6 +118,9 @@ def _evaluation(project: Project) -> dict:
         "categories": categories,
         "tax_areas": areas,
         "totals": {"income": income, "expense": expense, "result": income - expense},
+        "plan": _plan(project),
+        "plan_income": project.plan_income,
+        "plan_expense": project.plan_expense,
         "booking_count": len(bookings),
         "bookings": [
             {
@@ -149,6 +152,15 @@ def _evaluation(project: Project) -> dict:
         ],
         "open_invoices": open_invoices,
     }
+
+
+def _plan(project: Project) -> dict | None:
+    """Planwerte der Veranstaltung (Haushaltsplan) oder None, wenn nichts geplant ist."""
+    if project.plan_income is None and project.plan_expense is None:
+        return None
+    income = project.plan_income or ZERO
+    expense = project.plan_expense or ZERO
+    return {"income": income, "expense": expense, "result": income - expense}
 
 
 def _open_invoices(project: Project):

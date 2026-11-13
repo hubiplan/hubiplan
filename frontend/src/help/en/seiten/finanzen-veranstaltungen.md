@@ -8,3 +8,5 @@ stichworte: [festival, event, project, cash report]
 ---
 
 For a festival or another project you group all related bookings here and produce a cash report at the end. This shows whether an event covered its costs.
+
+Under **Planned income (optional)** and **Planned expenses (optional)** you enter what you expect. The evaluation then shows the plan next to income, expenses and result. The budget for the whole year is under Finance › Evaluate & close › Budget.
