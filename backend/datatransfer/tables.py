@@ -9,6 +9,8 @@ der Reihenfolge, in der sie angelegt werden müssen (Verweisziele zuerst).
 
 from __future__ import annotations
 
+import base64
+import binascii
 import datetime
 from decimal import Decimal
 
@@ -25,6 +27,8 @@ MODULE_MODELS = (
     "music.Skill",
     "todos.TodoSeries",
     "todos.Todo",
+    # Aufräumregel der Aufgaben je Einheit
+    "todos.TodoCleanupSetting",
     "finance.Account",
     "finance.Category",
     "finance.ProjectSeries",
@@ -37,6 +41,8 @@ MODULE_MODELS = (
     "finance.Booking",
     "finance.Receipt",
     "finance.YearClosing",
+    # Aufgehobene Abschlüsse bleiben als Nachweis (GoBD)
+    "finance.ReopenedClosing",
     "finance.DonationSettings",
     "finance.DonationStatement",
     "finance.Donation",
@@ -98,6 +104,8 @@ MODULE_MODELS = (
     "honors.Reign",
     "honors.Companion",
     "honors.ReignPhoto",
+    # Orte vor der Webseite (Abschnitt „Anfahrt“ verweist darauf)
+    "places.Place",
     "events.EventCategory",
     # Fremde Kalender vor den Terminen (Verweis der Kopien); Token und Link kommen nicht mit
     "events.ExternalCalendar",
@@ -166,6 +174,9 @@ MODULE_MODELS = (
     "competitions.Placing",
     "competitions.Award",
     "competitions.AwardGrant",
+    # Einwilligung des Vereins und gesammelte Spiegelausschnitte (ohne Namen)
+    "competitions.PhotoSampleConsent",
+    "competitions.PhotoSample",
     # Meldungen nach den Wettbewerben (Verweise auf Wettbewerb, Mannschaft und Starter)
     "entries.Call",
     "entries.CallBlock",
@@ -203,6 +214,8 @@ MODULE_MODELS = (
     "circulars.Circular",
     "circulars.CircularAttachment",
     "circulars.CircularRecipient",
+    # Verteiler nach ihrem Muster-Rundschreiben; Absender (Konten) kommen nicht mit
+    "circulars.MailingList",
     "website.Website",
     "website.WebsiteImage",
     "website.WebsiteText",
@@ -218,6 +231,17 @@ MODULE_MODELS = (
     "website.SocialFeed",
     "website.SocialPost",
     "website.SocialPostImage",
+    # Frühere Fassungen der Gestaltung und Entwürfe für Beiträge: nach Bildern, Alben und
+    # Dokumenten (Verweise darauf werden umgestellt)
+    "website.DesignVersion",
+    "website.SocialDraft",
+    # Änderungs- und Kündigungswünsche aus dem Mitgliederbereich (nach den Mitgliedschaften)
+    "portal.ChangeRequest",
+    "portal.CancellationRequest",
+    # Vorlagen für Export und Import zuletzt: ihre Filter verweisen auf Mitgliedsarten,
+    # Untereinheiten, Ehrentitel und Haushalte
+    "exchange.ExportTemplate",
+    "exchange.ImportTemplate",
 )
 
 # Diese Tabellen gehören zu jeder Organisation und zu Abteilungen (Spalte department),
@@ -293,6 +317,9 @@ MEMBER_MODELS = {
     "meetings.motion",
     # Einteilungen nennen Mitglieder und Externe mit Telefon
     "helpers.shiftassignment",
+    # Wünsche aus dem Mitgliederbereich nennen das Mitglied und seine Angaben
+    "portal.changerequest",
+    "portal.cancellationrequest",
 }
 # Ein Abteilungsimport legt eine neue Untereinheit im bestehenden Verein an. Er darf nur
 # die Tabellen schreiben, die auch der Export einer Abteilung enthält, nie Kasse oder
@@ -315,6 +342,8 @@ DROP_IF_MISSING = {
     "circulars.circularrecipient": "club",
     # Bild nicht in der Datei (Export ohne Dateien): fällt aus dem Album
     "website.galleryitem": "image",
+    "portal.changerequest": "membership",
+    "portal.cancellationrequest": "membership",
 }
 
 
@@ -414,6 +443,22 @@ SECRET_FIELDS = {
         "last_sync_at",
         "warned_at",
     },
+    # Konten kommen nicht mit; die Namen stehen bei aufgehobenen Abschlüssen in eigenen Feldern
+    "finance.reopenedclosing": {"reopened_by"},
+    "website.designversion": {"published_by"},
+    "portal.changerequest": {"user", "decided_by"},
+    "portal.cancellationrequest": {"user", "decided_by"},
+}
+
+# Zeitpunkte, die der Import sonst neu setzen würde (``auto_now_add``/``auto_now``), die aber
+# etwas belegen: Eingang einer Kündigung, Aufhebung eines Abschlusses, Einwilligung.
+KEEP_DATES = {
+    "finance.reopenedclosing": ("reopened_at",),
+    "portal.changerequest": ("created_at",),
+    "portal.cancellationrequest": ("created_at",),
+    "competitions.photosampleconsent": ("changed_at",),
+    "competitions.photosample": ("created_on",),
+    "website.socialdraft": ("created_at",),
 }
 
 SKIP = {
@@ -628,6 +673,167 @@ def fix_json_ids(name: str, obj, ids: IdMap) -> None:
         obj.voter_types = [
             new for old in obj.voter_types or [] if (new := ids.get("member_type", old))
         ]
+    if name == "website.socialdraft":
+        # Bilder sind Nummern aus der Bilderverwaltung der Webseite
+        obj.images = [
+            new
+            for old in (obj.images if isinstance(obj.images, list) else [])
+            if isinstance(old, int) and (new := ids.get("website.websiteimage", old))
+        ]
+    if name == "website.designversion":
+        obj.data = remap_design(obj.data, ids)
+    if name == "exchange.exporttemplate":
+        obj.filters = _remap_values(obj.filters, EXPORT_FILTER_TARGETS, ids)
+    if name == "exchange.importtemplate":
+        mapping = obj.value_mapping if isinstance(obj.value_mapping, dict) else {}
+        obj.value_mapping = {
+            target: _remap_values(values, dict.fromkeys(values, table), ids)
+            if (table := IMPORT_VALUE_TARGETS.get(target)) and isinstance(values, dict)
+            else values
+            for target, values in mapping.items()
+        }
+
+
+# Filter gespeicherter Exportvorlagen, die Nummern tragen (members.views.filter_members)
+EXPORT_FILTER_TARGETS = {
+    "art": "member_type",
+    "abteilung": "department",
+    "ehrentitel": "members.honorarytitle",
+    "haushalt": "members.household",
+}
+# Wertzuordnung gespeicherter Importvorlagen: Ziel → Tabelle der zugeordneten Nummern
+IMPORT_VALUE_TARGETS = {
+    "member_type": "member_type",
+    "departments": "department",
+    "board_role": "role",
+}
+
+
+def _remap_values(values, targets: dict, ids: IdMap) -> dict:
+    """Nummern in einem Wörterbuch umstellen; was am Ziel fehlt, fällt weg. Werte, die keine
+    Nummer sind (z. B. „mit“/„ohne“), bleiben."""
+    if not isinstance(values, dict):
+        return {}
+    result = {}
+    for key, value in values.items():
+        table = targets.get(key)
+        if table is None or not str(value).isdigit():
+            result[key] = value
+            continue
+        new = ids.get(table, int(value))
+        if new is not None:
+            result[key] = str(new) if isinstance(value, str) else new
+    return result
+
+
+def _binary(value) -> bytes:
+    """Binärspalte aus der Datei (Base64); Unlesbares wird leer."""
+    try:
+        return base64.b64decode(value, validate=True) if isinstance(value, str) else b""
+    except (binascii.Error, ValueError):
+        return b""
+
+
+def _is_jpeg(content) -> bool:
+    from core.filecheck import sniff
+
+    return bool(content) and sniff(bytes(content)) == "image/jpeg"
+
+
+def fix_mailing_list(obj) -> None:
+    """Adressen von Verteilern sind auf der ganzen Instanz eindeutig. Ist eine am Ziel schon
+    vergeben oder ungültig, bekommt der Verteiler eine freie und bleibt aus, bis jemand
+    die Adresse geprüft hat."""
+    from rest_framework import serializers
+
+    from circulars import inbound
+    from circulars.models import LOCAL_PART_MAX
+
+    def free(value) -> str | None:
+        try:
+            return inbound.clean_local_part(value) if isinstance(value, str) else None
+        except serializers.ValidationError:
+            return None
+
+    wanted = free(obj.local_part)
+    if wanted is None:
+        base = inbound.plain_local(obj.local_part if isinstance(obj.local_part, str) else "")
+        if not inbound.LOCAL_RE.match(base) or ".." in base or base in inbound.RESERVED:
+            base = "verteiler"
+        base = base[: LOCAL_PART_MAX - 4].rstrip("._-") or "verteiler"
+        wanted = next((c for n in range(2, 1000) if (c := free(f"{base}-{n}"))), None)
+        if wanted is None:
+            raise ValidationError(
+                gettext("Für den Verteiler „{name}“ ist keine Adresse frei.").format(name=obj.name)
+            )
+        obj.is_active = False
+    obj.local_part = wanted
+    aliases = []
+    for value in obj.aliases if isinstance(obj.aliases, list) else []:
+        local = free(value)
+        if local and local != wanted and local not in aliases:
+            aliases.append(local)
+    obj.aliases = aliases[: inbound.MAX_ALIASES]
+
+
+def _menu_key(ids: IdMap):
+    """Menüpunkte verweisen mit ``dignity:<Nummer>`` auf Würden und mit
+    ``membertype:<Nummer>`` auf Mitgliedsarten: neue Nummern, sonst None."""
+    targets = {"dignity": "honors.dignity", "membertype": "member_type"}
+
+    def remap(key):
+        prefix = key.split(":", 1)[0] if isinstance(key, str) else None
+        if prefix not in targets:
+            return key
+        try:
+            new = ids.get(targets[prefix], key.split(":", 1)[1])
+        except ValueError:
+            return None
+        return f"{prefix}:{new}" if new is not None else None
+
+    return remap
+
+
+def _remap_menu(menu, remap) -> list:
+    return [
+        {
+            **node,
+            "key": remap(node.get("key")),
+            "children": [
+                {**c, "key": remap(c.get("key"))}
+                for c in node.get("children") or []
+                if isinstance(c, dict) and remap(c.get("key")) is not None
+            ],
+        }
+        for node in menu
+        if isinstance(node, dict) and remap(node.get("key")) is not None
+    ]
+
+
+def remap_design(data, ids: IdMap) -> dict:
+    """Frühere Fassung der Gestaltung: Bilder, Abschnitte und Menü auf neue Nummern."""
+    from website.home import remap as remap_sections
+
+    if not isinstance(data, dict):
+        return {}
+    data = dict(data)
+    remap = _menu_key(ids)
+    if "header_image" in data:
+        old = data["header_image"]
+        data["header_image"] = (
+            ids.get("website.websiteimage", old) if isinstance(old, int) else None
+        )
+    if "home_sections" in data:
+        data["home_sections"] = remap_sections(data["home_sections"], ids.get)
+    if isinstance(data.get("menu"), list):
+        data["menu"] = _remap_menu(data["menu"], remap)
+    if isinstance(data.get("block_names"), dict):
+        data["block_names"] = {
+            remap(k): v for k, v in data["block_names"].items() if remap(k) is not None
+        }
+    if data.get("menu_button"):
+        data["menu_button"] = remap(data["menu_button"]) or ""
+    return data
 
 
 def fix_website_keys(name: str, obj, ids: IdMap) -> None:
@@ -648,36 +854,11 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
                 renamed[obj.key] = new
             obj.key = new
     elif name == "website.website":
-        # Menü und Häkchen verweisen mit ``dignity:<Nummer>`` auf Würden und mit
-        # ``membertype:<Nummer>`` auf Mitgliedsarten: neue Nummern
-        targets = {"dignity": "honors.dignity", "membertype": "member_type"}
-
-        def remap(key):
-            prefix = key.split(":", 1)[0] if isinstance(key, str) else None
-            if prefix not in targets:
-                return key
-            try:
-                new = ids.get(targets[prefix], key.split(":", 1)[1])
-            except ValueError:
-                return None
-            return f"{prefix}:{new}" if new is not None else None
-
+        remap = _menu_key(ids)
         if isinstance(obj.blocks, dict):
             obj.blocks = {remap(k): v for k, v in obj.blocks.items() if remap(k) is not None}
         if isinstance(obj.menu, list):
-            obj.menu = [
-                {
-                    **node,
-                    "key": remap(node.get("key")),
-                    "children": [
-                        {**c, "key": remap(c.get("key"))}
-                        for c in node.get("children") or []
-                        if isinstance(c, dict) and remap(c.get("key")) is not None
-                    ],
-                }
-                for node in obj.menu
-                if isinstance(node, dict) and remap(node.get("key")) is not None
-            ]
+            obj.menu = _remap_menu(obj.menu, remap)
         if isinstance(obj.block_names, dict):
             obj.block_names = {
                 remap(k): v for k, v in obj.block_names.items() if remap(k) is not None
@@ -786,10 +967,16 @@ def _plain(value):
     return value
 
 
+def row_fields(model) -> list:
+    """Spalten, die mitkommen: alles außer Protokollfeldern und Geheimem."""
+    name = label(model)
+    leave = (SKIP - set(KEEP_DATES.get(name, ()))) | SECRET_FIELDS.get(name, set())
+    return [f for f in model._meta.concrete_fields if f.name not in leave]
+
+
 def dump_rows(model, org, packer, department=None) -> list[dict]:
     rows = []
-    secret = SECRET_FIELDS.get(label(model), set())
-    fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
+    fields = row_fields(model)
     qs = model.objects.filter(organization=org)
     if model._meta.app_label == "materials":
         from materials.exports import rows as material_rows
@@ -846,6 +1033,8 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
                 row[f.name] = getattr(obj, f.attname)
             elif isinstance(f, models.FileField):
                 row[f.name] = packer.add(getattr(obj, f.name), label(model).replace(".", "-"))
+            elif isinstance(f, models.BinaryField):
+                row[f.name] = base64.b64encode(bytes(getattr(obj, f.attname) or b"")).decode()
             else:
                 row[f.name] = _plain(getattr(obj, f.attname))
         if label(model) == "materials.materialitem":
@@ -1027,8 +1216,8 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
     for model in module_models():
         name = label(model)
         rows = (tables or {}).get(name) or []
-        secret = SECRET_FIELDS.get(name, set())
-        fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
+        fields = row_fields(model)
+        keep_dates = KEEP_DATES.get(name, ())
         drop_key = DROP_IF_MISSING.get(name)
         if name == "website.galleryalbum":
             # Oberalben zuerst, damit Unteralben ihr Oberalbum finden
@@ -1065,12 +1254,18 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 elif isinstance(f, models.FileField):
                     if value:
                         pending_files.append((f.name, value))
+                elif isinstance(f, models.BinaryField):
+                    setattr(obj, f.attname, _binary(value))
                 else:
                     setattr(obj, f.attname, f.to_python(value))
             for field_name, make in FRESH_VALUES.get(name, {}).items():
                 setattr(obj, field_name, make())
             fix_website_keys(name, obj, ids)
             fix_json_ids(name, obj, ids)
+            if name == "circulars.mailinglist":
+                fix_mailing_list(obj)
+            if name == "competitions.photosample" and not _is_jpeg(obj.image):
+                continue  # kein Bild: Ausschnitt fällt weg
             if name.startswith("materials."):
                 if name == "materials.materialitem":
                     if obj.location_kind == "member" and not obj.member_id:
@@ -1113,6 +1308,12 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 continue  # Beleg ohne Datei (Export ohne Dateien) wird nicht angelegt
             validate_urls(obj)
             obj.save()
+            dates = {
+                d: model._meta.get_field(d).to_python(row[d]) for d in keep_dates if row.get(d)
+            }
+            if dates:
+                # an ``auto_now_add`` vorbei: der Zeitpunkt der Quelle bleibt
+                model.objects.filter(pk=obj.pk).update(**dates)
             ids.set(name, row.get("id"), obj.pk)
             count += 1
     if (tables or {}).get("bookings.booking"):
