@@ -105,3 +105,12 @@ def test_gleiche_liste_wie_die_webseite():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
             assert values is None or set(values) <= set(style.OPTIONS[key])
+
+
+def test_kopfhoehe_mittel(club, site, client_web):
+    """Zwischenstufe „mittel“ zwischen niedrig und normal (Webseite #68)."""
+    assert style.OPTIONS["header_height"] == ("low", "medium", "normal", "high")
+    resp = put(client_web, club, {"style": {"header_height": "medium"}})
+    assert resp.status_code == 200, resp.content
+    site.refresh_from_db()
+    assert site.style == {"header_height": "medium"}

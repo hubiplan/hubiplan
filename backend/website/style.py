@@ -35,7 +35,7 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "logo": bool,
     "logo_pos": ("left", "center", "right"),
     "name": bool,
-    "header_height": ("low", "normal", "high"),
+    "header_height": ("low", "medium", "normal", "high"),
     "line": ("none", "thin", "strong"),
     "nav": ("bar", "buttons", "text"),
     "nav_active": ("underline", "filled"),
