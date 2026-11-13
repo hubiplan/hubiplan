@@ -37,6 +37,7 @@ import { ContactPersons } from './ContactPersons.tsx'
 import { MemberHouseholds } from './MemberHouseholds.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
+import { QualificationsCard } from './QualificationsCard.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
 import { MemberAccessSection } from '../../components/AccessPanel.tsx'
 import { AuditUndo } from '../../components/AuditUndo.tsx'
@@ -510,6 +511,9 @@ function MembershipTab({
           canEdit={canEdit}
           onChanged={reload}
         />
+      )}
+      {org.modules.includes('qualifications') && (
+        <QualificationsCard orgId={org.id} memberId={member.id} canEdit={canEdit} />
       )}
 
       <Section title={t('Mitgliedsdauer')}>

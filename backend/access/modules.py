@@ -85,6 +85,18 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "qualifications",
+        gettext_noop("Qualifikationen"),
+        "members",
+        gettext_noop(
+            "Nachweise mit Ablaufdatum wie Erste Hilfe, Übungsleiter oder Führungszeugnis, "
+            "Erinnerung vor dem Ablauf"
+        ),
+        default=True,
+        requires=("members",),
+        org_types=("federation", "club"),
+    ),
+    Module(
         "honors",
         gettext_noop("Würden"),
         "members",

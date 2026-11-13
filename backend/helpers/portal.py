@@ -61,7 +61,9 @@ def cancel_until(plan: HelperPlan, shift: Shift) -> datetime.datetime:
 
 def plan_data(plan: HelperPlan, membership_id: int, now) -> dict:
     duties = []
-    for duty in plan.duties.prefetch_related("shifts__assignments", "shifts__quotas__assignments"):
+    for duty in plan.duties.select_related("qualification").prefetch_related(
+        "shifts__assignments", "shifts__quotas__assignments"
+    ):
         shifts = []
         for shift in duty.shifts.all():
             people = [a for a in shift.assignments.all() if a.status == "active"]
@@ -89,6 +91,7 @@ def plan_data(plan: HelperPlan, membership_id: int, now) -> dict:
                 "description": duty.description,
                 "location": duty.location,
                 "min_age": duty.min_age,
+                "qualification": duty.qualification.name if duty.qualification_id else "",
                 "shifts": shifts,
             }
         )
@@ -184,7 +187,7 @@ class SignupView(Base):
                         ).format(n=plan.max_shifts)
                     }
                 )
-        found = services.warnings(shift, membership)
+        found = services.warnings(shift, membership, own=True)
         if found:
             raise ValidationError({"detail": " ".join(w["text"] for w in found)})
         ShiftAssignment.objects.create(

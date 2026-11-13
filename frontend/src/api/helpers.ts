@@ -13,6 +13,8 @@ export interface Assignment {
   done: boolean | null
   quota: number | null
   phone?: string
+  /** Voraussetzung des Dienstes fehlt oder läuft vorher ab (leer: in Ordnung) */
+  qualification_issue?: string
 }
 
 export interface Quota {
@@ -40,6 +42,9 @@ export interface Duty {
   description: string
   location: string
   min_age: number | null
+  /** vorausgesetzte Qualifikation (Modul Qualifikationen) */
+  qualification: number | null
+  qualification_name: string
   position: number
   shifts: Shift[]
 }
@@ -122,6 +127,8 @@ export const helperApi = {
     api.patch<Assignment>(`${base}assignments/${id}/`, data),
   removeAssignment: (base: string, id: number) => api.del(`${base}assignments/${id}/`),
   units: (base: string) => api.get<{ id: number; name: string }[]>(`${base}units/`),
+  qualifications: (base: string) =>
+    api.get<{ id: number; name: string }[]>(`${base}qualifications/`),
   setQuota: (base: string, shift: number, department: number, count: number) =>
     api.post<Shift>(`${base}shifts/${shift}/quotas/`, { department, count }),
   unitQuotas: (base: string) => api.get<UnitQuota[]>(`${base}quotas/`),
@@ -165,6 +172,8 @@ export interface PortalPlan {
     description: string
     location: string
     min_age: number | null
+    /** vorausgesetzte Qualifikation (leer: keine) */
+    qualification?: string
     shifts: PortalShift[]
   }[]
 }
