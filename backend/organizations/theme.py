@@ -163,6 +163,44 @@ def clean_gradients(value) -> list[dict]:
     return result
 
 
+# Wofür eine Palettenfarbe da ist (Ralf 13.11.2026); jede Rolle hat höchstens eine Farbe
+PALETTE_ROLES = ("text", "muted", "surface", "background")
+
+
+def clean_palette_roles(value) -> dict:
+    """Farbrollen prüfen: {rolle: platz}, Platz 0 = Hauptfarbe, 1 = Zweitfarbe, 2 … weitere."""
+    if value in (None, ""):
+        return {}
+    if not isinstance(value, dict):
+        raise ValidationError(gettext("Farbrollen bitte als Zuordnung angeben."))
+    result = {}
+    for role, slot in value.items():
+        if role not in PALETTE_ROLES:
+            raise ValidationError(gettext("Diese Farbrolle gibt es nicht."))
+        if slot is None:
+            continue
+        if isinstance(slot, bool) or not isinstance(slot, int):
+            raise ValidationError(gettext("Eine Farbrolle braucht eine Farbe aus der Palette."))
+        if not 0 <= slot < 2 + MAX_EXTRA_COLORS:
+            raise ValidationError(gettext("Eine Farbrolle braucht eine Farbe aus der Palette."))
+        result[role] = slot
+    return result
+
+
+def resolve_palette_roles(stored, palette: list[dict]) -> dict:
+    """Gespeicherte Farbrollen, deren Platz es in der Palette gibt: {rolle: platz}."""
+    if not isinstance(stored, dict):
+        return {}
+    return {
+        role: slot
+        for role, slot in stored.items()
+        if role in PALETTE_ROLES
+        and isinstance(slot, int)
+        and not isinstance(slot, bool)
+        and 0 <= slot < len(palette)
+    }
+
+
 def text_color_on_pair(a: str, b: str) -> str:
     """Schriftfarbe, die auf beiden Enden eines Verlaufs am besten lesbar ist."""
     light = min(contrast(a, LIGHT_TEXT), contrast(b, LIGHT_TEXT))
@@ -249,6 +287,7 @@ def effective_theme(chain: list) -> dict:
         if color and HEX_COLOR.match(color):
             palette.append(_entry(color.lower(), item.get("name", ""), item.get("use", "")))
     palette = palette[: 2 + MAX_EXTRA_COLORS]
+    roles = resolve_palette_roles(getattr(primary_src, "palette_roles", None), palette)
     return {
         "primary": primary,
         "on_primary": text_color_on(primary),
@@ -259,6 +298,11 @@ def effective_theme(chain: list) -> dict:
         "palette": palette,
         # Verläufe erben wie die Palette mit der Hauptfarbe
         "gradients": resolve_gradients(getattr(primary_src, "gradients", None), palette),
+        # Farbrollen erben ebenso; die Oberfläche rechnet daraus im hellen Modus Text,
+        # Flächen und Hintergrund (theme.ts appColors), nur wenn palette_roles_in_app
+        "palette_roles": roles,
+        "palette_roles_in_app": bool(roles)
+        and bool(getattr(primary_src, "palette_roles_in_app", False)),
         "inherited_from": {
             "colors": getattr(primary_src, "name", None),
             "logo": getattr(logo_src, "name", None),

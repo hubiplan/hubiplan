@@ -67,8 +67,10 @@ class ClubContext(Context):
     def org_id(self) -> int:
         return self.grant.organization_id
 
-    def call(self, view_cls: type, method: str, path: str, data=None, **kwargs):
-        """Ansicht der Oberfläche aufrufen; liefert die Daten der Antwort oder ToolError."""
+    def call(self, view_cls: type, method: str, path: str, data=None, multipart=None, **kwargs):
+        """Ansicht der Oberfläche aufrufen; liefert die Daten der Antwort oder ToolError.
+
+        ``multipart``: Formular mit Dateien (POST), z. B. für das Logo."""
         outer = self.request
         factory = RequestFactory()
         extra = {
@@ -79,6 +81,8 @@ class ClubContext(Context):
         full = f"/api/orgs/{self.org_id}/{path}"
         if method == "GET":
             inner = factory.get(full, **extra)
+        elif multipart is not None:
+            inner = factory.post(full, multipart, **extra)
         else:
             inner = factory.generic(
                 method,
@@ -227,6 +231,16 @@ def _texts(args: dict, ctx: ClubContext) -> str:
     )
 
 
+def _image_summary(image: dict | None) -> dict | None:
+    if not image:
+        return None
+    return {
+        "nummer": image["id"],
+        "schluessel": image.get("key"),
+        "beschreibung": image.get("alt_text") or image.get("caption") or "",
+    }
+
+
 def _text_read(args: dict, ctx: ClubContext) -> str:
     _v, content_views = _views()
     pk = _int(args, "nummer")
@@ -239,7 +253,12 @@ def _text_read(args: dict, ctx: ClubContext) -> str:
         "veroeffentlicht": t["is_published"],
         "entwurf_geaendert": t["has_changes"],
         "text": t.get("body", ""),
+        "bild": _image_summary(t.get("image_data")),
     }
+    if t.get("gallery"):
+        data["bilder"] = t["gallery"]
+        data["bilder_takt"] = t.get("gallery_interval")
+        data["bilder_zufall"] = t.get("gallery_random")
     if t.get("has_changes") and t.get("is_published"):
         data["veroeffentlichter_titel"] = t.get("published_title")
         data["veroeffentlichter_text"] = t.get("published_body")
@@ -256,6 +275,59 @@ def _text_read(args: dict, ctx: ClubContext) -> str:
     )
 
 
+def _image_args(args: dict, body: dict, *, carousel: bool) -> None:
+    """Bild oben auf der Seite und Bilderkarussell wie in der Oberfläche (#415)."""
+    if "bild" in args:
+        value = args["bild"]
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, int) or value < 1
+        ):
+            raise ToolError(_("„bild“ muss eine Bildnummer oder null sein."))
+        body["image"] = value
+    if not carousel:
+        return
+    if "bilder" in args:
+        value = args["bilder"]
+        if not isinstance(value, list) or not all(
+            isinstance(v, int) and not isinstance(v, bool) for v in value
+        ):
+            raise ToolError(_("„bilder“ muss eine Liste von Bildnummern sein."))
+        body["gallery"] = value
+    if "bilder_takt" in args:
+        value = args["bilder_takt"]
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ToolError(_("„bilder_takt“ muss eine Zahl (Sekunden) sein."))
+        body["gallery_interval"] = value
+    if "bilder_zufall" in args:
+        if not isinstance(args["bilder_zufall"], bool):
+            raise ToolError(_("„bilder_zufall“ muss wahr oder falsch sein."))
+        body["gallery_random"] = args["bilder_zufall"]
+
+
+def _alt_hint(ctx: ClubContext, ids: list[int]) -> str:
+    """Hinweis auf gewählte Bilder ohne Alternativtext (wie in der Oberfläche)."""
+    if not ids:
+        return ""
+    _v, content_views = _views()
+    images = ctx.call(content_views.ImageListView, "GET", "website/images/") or []
+    missing = [
+        str(i["id"])
+        for i in images
+        if i["id"] in ids and not i.get("decorative") and not (i.get("alt_text") or "").strip()
+    ]
+    if not missing:
+        return ""
+    return " " + _(
+        "Hinweis: Bild {numbers} hat noch keinen Alternativtext. Bitte mit bild_beschreiben "
+        "ergänzen, damit die Seite auch vorgelesen verständlich ist."
+    ).format(numbers=", ".join(missing))
+
+
+def _chosen_images(body: dict) -> list[int]:
+    ids = [body["image"]] if body.get("image") else []
+    return ids + [v for v in body.get("gallery") or [] if v not in ids]
+
+
 def _text_change(args: dict, ctx: ClubContext) -> str:
     _v, content_views = _views()
     pk = _int(args, "nummer")
@@ -268,13 +340,15 @@ def _text_change(args: dict, ctx: ClubContext) -> str:
         body["title"] = title.strip()
     if text is not None:
         body["body"] = text
+    _image_args(args, body, carousel=True)
     if not body:
-        raise ToolError(_("Bitte titel oder text angeben."))
+        raise ToolError(_("Bitte titel, text, bild oder bilder angeben."))
     t = ctx.call(content_views.TextDetailView, "PUT", f"website/texts/{pk}/", body, pk=pk)
     return (
         _("Text „{title}“ (Nummer {pk}) geändert.").format(title=t["title"], pk=t["id"])
         + " "
         + _draft_hint()
+        + _alt_hint(ctx, _chosen_images(body))
     )
 
 
@@ -283,18 +357,16 @@ def _page_create(args: dict, ctx: ClubContext) -> str:
     title = _str(args, "titel", MAX_TITLE, required=True).strip()
     slug = _str(args, "adresse", 80, required=True).strip()
     text = _str(args, "text", MAX_BODY) or ""
-    t = ctx.call(
-        content_views.TextListView,
-        "POST",
-        "website/texts/",
-        {"kind": "page", "title": title, "slug": slug, "body": text},
-    )
+    body = {"kind": "page", "title": title, "slug": slug, "body": text}
+    _image_args(args, body, carousel=False)
+    t = ctx.call(content_views.TextListView, "POST", "website/texts/", body)
     return (
         _("Textseite „{title}“ angelegt (Nummer {pk}, Adresse {slug}).").format(
             title=t["title"], pk=t["id"], slug=t["slug"]
         )
         + " "
         + _draft_hint()
+        + _alt_hint(ctx, _chosen_images(body))
     )
 
 
@@ -416,6 +488,13 @@ def _check(args: dict, ctx: ClubContext) -> str:
 
 
 NUMBER = {"type": "integer", "minimum": 1, "description": gettext_lazy("Nummer des Textes.")}
+IMAGE_OR_NULL = {
+    "type": ["integer", "null"],
+    "minimum": 1,
+    "description": gettext_lazy(
+        "Bildnummer aus webseite_bilder für das Bild oben auf der Seite; null entfernt es."
+    ),
+}
 
 
 def _schema(props: dict | None = None, required: list | None = None) -> dict:
@@ -456,7 +535,7 @@ CLUB_TOOLS: tuple[Tool, ...] = (
         name="webseite_text_lesen",
         title=gettext_lazy("Text lesen"),
         description=gettext_lazy(
-            "Liefert Titel und Inhalt (Markdown) eines Textes im Entwurf, dazu den "
+            "Liefert Titel, Inhalt (Markdown) und Bild eines Textes im Entwurf, dazu den "
             "veröffentlichten Stand, wenn er abweicht."
         ),
         schema=_schema({"nummer": NUMBER}, ["nummer"]),
@@ -508,9 +587,11 @@ CLUB_TOOLS: tuple[Tool, ...] = (
         name="webseite_text_aendern",
         title=gettext_lazy("Text ändern (Entwurf)"),
         description=gettext_lazy(
-            "Ändert Titel und/oder Inhalt (Markdown) eines Textes im Entwurf. Den bisherigen "
-            "Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn ganz. "
-            "Veröffentlicht wird nur in HUBIplan."
+            "Ändert Titel, Inhalt (Markdown) und/oder Bild eines Textes im Entwurf. Den "
+            "bisherigen Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn ganz. "
+            "„bild“ ist das Bild oben auf der Seite (bei der Begrüßung das große Titelbild der "
+            "Startseite), „bilder“ das Bilderkarussell der Begrüßung. Bildnummern liefert "
+            "webseite_bilder. Veröffentlicht wird nur in HUBIplan."
         ),
         schema=_schema(
             {
@@ -520,6 +601,26 @@ CLUB_TOOLS: tuple[Tool, ...] = (
                     "type": "string",
                     "maxLength": MAX_BODY,
                     "description": gettext_lazy("Neuer Inhalt in Markdown (ersetzt den alten)."),
+                },
+                "bild": IMAGE_OR_NULL,
+                "bilder": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 1},
+                    "maxItems": 10,
+                    "description": gettext_lazy(
+                        "Bilderkarussell der Begrüßung oder einer Untereinheit: Bildnummern in "
+                        "der Reihenfolge (ersetzt die alte Liste, leere Liste entfernt es)."
+                    ),
+                },
+                "bilder_takt": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 30,
+                    "description": gettext_lazy("Sekunden bis zum nächsten Bild im Karussell."),
+                },
+                "bilder_zufall": {
+                    "type": "boolean",
+                    "description": gettext_lazy("Karussell mit einem zufälligen Bild beginnen."),
                 },
             },
             ["nummer"],
@@ -532,8 +633,8 @@ CLUB_TOOLS: tuple[Tool, ...] = (
         name="webseite_textseite_anlegen",
         title=gettext_lazy("Textseite anlegen (Entwurf)"),
         description=gettext_lazy(
-            "Legt eine neue Textseite an. Sie bleibt unveröffentlicht, bis jemand sie in "
-            "HUBIplan veröffentlicht."
+            "Legt eine neue Textseite an, auf Wunsch mit Bild oben auf der Seite. Sie bleibt "
+            "unveröffentlicht, bis jemand sie in HUBIplan veröffentlicht."
         ),
         schema=_schema(
             {
@@ -547,6 +648,7 @@ CLUB_TOOLS: tuple[Tool, ...] = (
                     ),
                 },
                 "text": {"type": "string", "maxLength": MAX_BODY},
+                "bild": IMAGE_OR_NULL,
             },
             ["titel", "adresse"],
         ),
@@ -583,6 +685,8 @@ CLUB_TOOLS: tuple[Tool, ...] = (
 def tools_for(ctx: Context):
     """Hilfe immer; Webseite je nach Bereich der Zustimmung."""
     from .club_design import DESIGN_TOOLS
+    from .club_theme import THEME_TOOLS
 
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
-    return (*TOOLS, *(t for t in (*CLUB_TOOLS, *DESIGN_TOOLS) if t.scope in scopes))
+    club = (*CLUB_TOOLS, *DESIGN_TOOLS, *THEME_TOOLS)
+    return (*TOOLS, *(t for t in club if t.scope in scopes))

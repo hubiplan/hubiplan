@@ -167,19 +167,23 @@ def resolve(
     color_roles: dict | None = None,
     extra: dict | None = None,
     gradients: list[dict] | None = None,
+    palette_roles: dict | None = None,
 ) -> dict:
     """Farben je Rolle für ein Design: {rolle: {color, on_color[, gradient]}}.
 
     ``gradients`` aus ``effective_theme``; ein Verlauf liefert seine erste Farbe als
     ``color`` (für ältere Webseiten) und ``gradient`` = {from, to, direction}. Rollen aus
-    COMMON_ROLES erscheinen nur, wenn jemand sie gewählt hat."""
+    COMMON_ROLES erscheinen nur, wenn jemand sie gewählt hat: hier im Design oder als
+    Farbrolle der Palette (``palette_roles`` aus ``effective_theme``, Ralf 13.11.2026); die
+    Wahl im Design geht vor."""
     specs = _role_specs(extra)
     spec = specs.get(design, DESIGNS[DEFAULT_DESIGN]["roles"])
     chosen = normalize_color_roles(color_roles or {}, extra).get(design, {})
+    defaults = {r: v for r, v in (palette_roles or {}).items() if r in COMMON_ROLES}
     result = {}
-    roles = {**spec, **{r: None for r in COMMON_ROLES if r in chosen}}
+    roles = {**spec, **{r: None for r in COMMON_ROLES if r in chosen or r in defaults}}
     for role, default in roles.items():
-        choice = chosen.get(role)
+        choice = chosen.get(role, defaults.get(role))
         entry = None
         if isinstance(choice, int):
             if choice < len(palette):

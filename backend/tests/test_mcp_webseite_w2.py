@@ -17,7 +17,7 @@ from PIL import Image
 from core import safehttp
 from core.tenancy import rls_bypass
 from website import upload_views
-from website.models import ImageUploadLink, SocialDraft, WebsiteImage
+from website.models import ImageUploadLink, SocialDraft, WebsiteImage, WebsiteText
 
 from .factories import give_role, make_user
 from .test_mcp_verein import call, club, connect, editor, rpc, site  # noqa: F401
@@ -374,3 +374,103 @@ def test_neue_tabellen_haben_rls():
             "website_imageuploadlink",
             "website_socialdraft",
         }
+
+
+# --- Bild und Bilderkarussell eines Textes (#415) ---
+
+
+def test_titelbild_und_karussell_setzen(club, site, editor):  # noqa: F811
+    token = connect(editor, club)["access_token"]
+    call(token, "webseite_texte")  # legt die Begrüßung an
+    greeting = WebsiteText.objects.get(website=site, kind="greeting")
+    with_alt = add_image(site, editor, alt_text="Festzug am Markt")
+    without_alt = add_image(site, editor)
+    text, failed = call(
+        token,
+        "webseite_text_aendern",
+        nummer=greeting.pk,
+        bild=with_alt.pk,
+        bilder=[with_alt.pk, without_alt.pk],
+        bilder_takt=5,
+        bilder_zufall=True,
+    )
+    assert not failed, text
+    # Hinweis nur für das Bild ohne Alternativtext
+    assert f"Bild {without_alt.pk} hat noch keinen Alternativtext" in text
+    assert str(with_alt.pk) not in text.split("Hinweis:")[1]
+    greeting.refresh_from_db()
+    assert greeting.image_id == with_alt.pk and greeting.published_image_id is None
+    assert greeting.gallery == [with_alt.pk, without_alt.pk]
+    assert greeting.gallery_interval == 5 and greeting.gallery_random is True
+    text, failed = call(token, "webseite_text_lesen", nummer=greeting.pk)
+    data = data_of(text)
+    assert data["bild"] == {
+        "nummer": with_alt.pk,
+        "schluessel": with_alt.key,
+        "beschreibung": "Festzug am Markt",
+    }
+    assert data["bilder"] == [with_alt.pk, without_alt.pk] and data["bilder_zufall"] is True
+    # Entfernen mit null bzw. leerer Liste
+    text, failed = call(token, "webseite_text_aendern", nummer=greeting.pk, bild=None, bilder=[])
+    assert not failed, text
+    greeting.refresh_from_db()
+    assert greeting.image_id is None and greeting.gallery == []
+    assert data_of(call(token, "webseite_text_lesen", nummer=greeting.pk)[0])["bild"] is None
+
+
+def test_textseite_mit_bild_und_fremde_bilder_abgelehnt(club, site, editor, orgs):  # noqa: F811
+    from website.models import Website
+
+    token = connect(editor, club)["access_token"]
+    image = add_image(site, editor, alt_text="Vereinsheim")
+    text, failed = call(
+        token, "webseite_textseite_anlegen", titel="Über uns", adresse="ueber-uns", bild=image.pk
+    )
+    assert not failed, text
+    assert "Alternativtext" not in text
+    page = WebsiteText.objects.get(website=site, slug="ueber-uns")
+    assert page.image_id == image.pk
+    # Bild einer anderen Einheit
+    other = Website.objects.create(organization=orgs["b"], public_key="mcp-b")
+    with rls_bypass():
+        foreign = add_image(other, editor)
+    text, failed = call(token, "webseite_text_aendern", nummer=page.pk, bild=foreign.pk)
+    assert failed, text
+    # Karussell gibt es auf Textseiten nicht
+    text, failed = call(token, "webseite_text_aendern", nummer=page.pk, bilder=[image.pk])
+    assert failed and "karussell" in text.lower()
+    text, failed = call(token, "webseite_text_aendern", nummer=page.pk, bild="1")
+    assert failed and "bild" in text
+    page.refresh_from_db()
+    assert page.image_id == image.pk
+
+
+def test_bild_im_text_eines_abschnitts_wird_ausgeliefert(club, site, editor):  # noqa: F811
+    image = add_image(site, editor, alt_text="Fahne")
+    hidden = add_image(site, editor, alt_text="Noch geheim")
+    public = f"/api/public/site/v1/{site.public_key}/images/{image.public_key}/"
+    assert HttpClient().get(public).status_code == 404
+    site.home_sections = [
+        {"key": "greeting", "on": True},
+        {
+            "key": "c:t1",
+            "kind": "text",
+            "on": True,
+            "data": {"title": "Über uns", "text": f"Seit 1900.\n\n![Fahne](bild:{image.key})"},
+        },
+        {
+            "key": "c:t2",
+            "kind": "text",
+            "on": False,
+            "data": {"title": "Später", "text": f"![x](bild:{hidden.key})"},
+        },
+    ]
+    site.save()
+    assert HttpClient().get(public).status_code == 200
+    assert (
+        HttpClient().get(f"/api/public/site/v1/{site.public_key}/images/{image.key}/").status_code
+        == 200
+    )
+    # Ausgeschaltete Abschnitte geben ihre Bilder nicht frei
+    hidden_url = f"/api/public/site/v1/{site.public_key}/images/{hidden.key}/"
+    assert HttpClient().get(hidden_url).status_code == 404

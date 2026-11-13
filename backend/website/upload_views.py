@@ -160,9 +160,10 @@ class PublicImageUploadView(APIView):
                 image,
                 {"Bild": [None, f"{image} (über Hochladelink)"]},
             )
-        link.refresh_from_db(fields=["uploaded"])
+            # Zählerstand im Mandantenkontext lesen: ohne ihn findet RLS die Zeile nicht (#413)
+            uploaded = ImageUploadLink.objects.values_list("uploaded", flat=True).get(pk=link.pk)
         return Response(
-            {"id": image.pk, "remaining": link.max_files - link.uploaded},
+            {"id": image.pk, "remaining": link.max_files - uploaded},
             status=status.HTTP_201_CREATED,
         )
 

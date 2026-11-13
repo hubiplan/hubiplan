@@ -10067,6 +10067,15 @@ msgstr "A gradient needs two colours from the palette."
 msgid "Ein Verlauf braucht zwei verschiedene Farben."
 msgstr "A gradient needs two different colours."
 
+msgid "Farbrollen bitte als Zuordnung angeben."
+msgstr "Please give colour roles as a mapping."
+
+msgid "Diese Farbrolle gibt es nicht."
+msgstr "This colour role does not exist."
+
+msgid "Eine Farbrolle braucht eine Farbe aus der Palette."
+msgstr "A colour role needs a colour from the palette."
+
 msgid "Diese Richtung gibt es nicht."
 msgstr "This direction does not exist."
 msgid "Startseite"
@@ -10356,8 +10365,8 @@ msgstr ""
 msgid "„titel“ darf nicht leer sein."
 msgstr "“titel” must not be empty."
 
-msgid "Bitte titel oder text angeben."
-msgstr "Please give titel or text."
+msgid "Bitte titel, text, bild oder bilder angeben."
+msgstr "Please give titel, text, bild or bilder."
 
 msgid "Text „{title}“ (Nummer {pk}) geändert."
 msgstr "Text “{title}” (number {pk}) changed."
@@ -10432,11 +10441,11 @@ msgid "Text lesen"
 msgstr "Read text"
 
 msgid ""
-"Liefert Titel und Inhalt (Markdown) eines Textes im Entwurf, dazu den "
+"Liefert Titel, Inhalt (Markdown) und Bild eines Textes im Entwurf, dazu den "
 "veröffentlichten Stand, wenn er abweicht."
 msgstr ""
-"Returns title and content (Markdown) of a text in the draft, plus the "
-"published version if it differs."
+"Returns title, content (Markdown) and image of a text in the draft, plus the"
+" published version if it differs."
 
 msgid "Bilder der Webseite"
 msgstr "Website images"
@@ -10479,13 +10488,18 @@ msgid "Text ändern (Entwurf)"
 msgstr "Change text (draft)"
 
 msgid ""
-"Ändert Titel und/oder Inhalt (Markdown) eines Textes im Entwurf. Den "
+"Ändert Titel, Inhalt (Markdown) und/oder Bild eines Textes im Entwurf. Den "
 "bisherigen Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn "
-"ganz. Veröffentlicht wird nur in HUBIplan."
+"ganz. „bild“ ist das Bild oben auf der Seite (bei der Begrüßung das große "
+"Titelbild der Startseite), „bilder“ das Bilderkarussell der Begrüßung. "
+"Bildnummern liefert webseite_bilder. Veröffentlicht wird nur in HUBIplan."
 msgstr ""
-"Changes title and/or content (Markdown) of a text in the draft. Fetch the "
-"current content with webseite_text_lesen first; “text” replaces it "
-"completely. Publishing happens only in HUBIplan."
+"Changes title, content (Markdown) and/or image of a text in the draft. Fetch"
+" the current content with webseite_text_lesen first; “text” replaces it "
+"completely. “bild” is the image at the top of the page (for the greeting the"
+" large title image of the home page), “bilder” the image carousel of the "
+"greeting. Image numbers come from webseite_bilder. Publishing happens only "
+"in HUBIplan."
 
 msgid "Neuer Inhalt in Markdown (ersetzt den alten)."
 msgstr "New content in Markdown (replaces the old one)."
@@ -10494,11 +10508,11 @@ msgid "Textseite anlegen (Entwurf)"
 msgstr "Create text page (draft)"
 
 msgid ""
-"Legt eine neue Textseite an. Sie bleibt unveröffentlicht, bis jemand sie in "
-"HUBIplan veröffentlicht."
+"Legt eine neue Textseite an, auf Wunsch mit Bild oben auf der Seite. Sie "
+"bleibt unveröffentlicht, bis jemand sie in HUBIplan veröffentlicht."
 msgstr ""
-"Creates a new text page. It stays unpublished until someone publishes it in "
-"HUBIplan."
+"Creates a new text page, optionally with an image at the top of the page. It"
+" stays unpublished until someone publishes it in HUBIplan."
 
 msgid ""
 "Adresse der Seite, nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. "
@@ -11075,6 +11089,134 @@ msgstr "Only board members with role management can confirm."
 msgid "{reason} (beantragt von {by}, bestätigt von {confirmed})"
 msgstr "{reason} (requested by {by}, confirmed by {confirmed})"
 
+msgid "Fristenkalender"
+msgstr "Deadline calendar"
+
+msgid "Vereinspflicht"
+msgstr "Club obligation"
+
+#, python-brace-format
+msgid "überfällig seit {date}"
+msgstr "overdue since {date}"
+
+#, python-brace-format
+msgid "Frist {date}"
+msgstr "deadline {date}"
+
+#, python-brace-format
+msgid "Gewählt in „{meeting}“ am {day}:"
+msgstr "Elected at “{meeting}” on {day}:"
+
+msgid "Steuererklärung und Freistellungsbescheid"
+msgstr "Tax return and exemption notice"
+
+msgid "Gemeinnützige Vereine geben in der Regel alle drei Jahre eine Steuererklärung ab (mit Anlage Gem). Das Finanzamt prüft dabei die Gemeinnützigkeit und erteilt einen neuen Freistellungsbescheid. Zuwendungsbestätigungen darf der Verein nur ausstellen, solange der Bescheid nicht älter als fünf Jahre ist (§ 63 Abs. 5 AO). Die genaue Frist steht im Schreiben des Finanzamts."
+msgstr "Non-profit associations usually file a tax return every three years (with the annex “Gem”). The tax office then reviews the non-profit status and issues a new exemption notice. The club may only issue donation receipts while the notice is no more than five years old (§ 63 (5) AO). The exact deadline is stated in the letter from the tax office."
+
+msgid "Kassenprüfung vor der Jahreshauptversammlung"
+msgstr "Cash audit before the annual general meeting"
+
+msgid "Die Kassenprüfer prüfen Kasse, Konten und Belege des abgelaufenen Jahres und berichten der Mitgliederversammlung; danach folgt die Entlastung des Vorstands. Wer prüft und wann, regelt die Satzung."
+msgstr "The cash auditors check the cash, accounts and receipts of the past year and report to the general meeting; the discharge of the board follows. Who audits and when is set out in the statutes."
+
+msgid "Angaben im Transparenzregister prüfen"
+msgstr "Check the entries in the transparency register"
+
+msgid "Eingetragene Vereine stehen mit den Angaben aus dem Vereinsregister im Transparenzregister. Weichen die wirtschaftlich Berechtigten davon ab (zum Beispiel nach einer Vorstandswahl vor der Eintragung oder bei besonderen Stimmrechten), muss der Vorstand sie selbst melden (§ 20 GwG)."
+msgstr "Registered associations appear in the transparency register with the details from the register of associations. If the beneficial owners differ from these (for example after a board election before it is registered, or with special voting rights), the board has to report them itself (§ 20 GwG)."
+
+msgid "Vorstandsänderung beim Registergericht anmelden"
+msgstr "Report the change of the board to the register court"
+
+msgid "Jede Änderung des Vorstands ist zum Vereinsregister anzumelden (§ 67 BGB), durch Vorstandsmitglieder in vertretungsberechtigter Zahl und öffentlich beglaubigt, meist über einen Notar (§ 77 BGB). Eine Abschrift des Wahlprotokolls gehört dazu. Nach jeder Wahl in ein Amt, das den Verein vertritt, legt HUBIplan dafür eine Aufgabe an."
+msgstr "Every change of the board must be reported to the register of associations (§ 67 BGB), by board members in the number required for representation and publicly certified, usually through a notary (§ 77 BGB). A copy of the election minutes is part of it. After every election to an office that represents the club, HUBIplan creates a task for this."
+
+msgid "Versicherungen prüfen"
+msgstr "Review insurance"
+
+msgid "Vereinshaftpflicht, Veranstaltungen, Unfallversicherung der Helfer, Gebäude und Inventar: Passen Deckung und Beiträge noch zu Mitgliederzahl und Vorhaben? Oft lohnt ein Blick auf die Sammelverträge des Verbands."
+msgstr "Club liability, events, accident insurance for volunteers, buildings and inventory: do cover and premiums still match the number of members and your plans? The federation’s group contracts are often worth a look."
+
+msgid "Bestandsmeldung an Verband oder Sportbund"
+msgstr "Membership report to the federation or sports association"
+
+msgid "Viele Verbände und Landessportbünde erheben einmal im Jahr die Mitgliederzahlen, oft zum 1. Januar. Davon hängen Beiträge und Zuschüsse ab."
+msgstr "Many federations and regional sports associations collect membership figures once a year, often as of 1 January. Fees and grants depend on them."
+
+msgid "Datenschutz prüfen"
+msgstr "Review data protection"
+
+msgid "Verzeichnis der Verarbeitungstätigkeiten, Datenschutzhinweise, Einwilligungen für Fotos und die Zugriffsrechte im Vorstand einmal im Jahr durchsehen (Art. 30 DSGVO)."
+msgstr "Go through the record of processing activities, privacy notices, consents for photos and the access rights within the board once a year (Art. 30 GDPR)."
+
+msgid "Nächste Frist"
+msgstr "Next deadline"
+
+msgid "Wiederholung in Monaten"
+msgstr "Repetition in months"
+
+msgid "Frist"
+msgstr "Deadline"
+
+msgid "nach einer Vorstandswahl"
+msgstr "after a board election"
+
+#, python-brace-format
+msgid "Überfällig: {title} (Frist {day})"
+msgstr "Overdue: {title} (deadline {day})"
+
+#, python-brace-format
+msgid "Erinnerung: {title} bis {day}"
+msgstr "Reminder: {title} by {day}"
+
+#, python-brace-format
+msgid "im Fristenkalender von {org} steht eine Pflicht an:"
+msgstr "an obligation is coming up in the deadline calendar of {org}:"
+
+#, python-brace-format
+msgid "Frist: {day}"
+msgstr "Deadline: {day}"
+
+#, python-brace-format
+msgid "Wenn es erledigt ist, vermerke es bitte im Fristenkalender: {url}"
+msgstr "Once it is done, please record it in the deadline calendar: {url}"
+
+#, python-brace-format
+msgid "Zuständig: {role}"
+msgstr "Responsible: {role}"
+
+msgid "Die Pflicht wurde inzwischen geändert. Bitte neu laden."
+msgstr "The obligation has been changed in the meantime. Please reload."
+
+msgid "Erledigt"
+msgstr "Done"
+
+msgid "Bitte eine Bezeichnung eingeben."
+msgstr "Please enter a name."
+
+msgid "Höchstens 100 Pflichten je Einheit."
+msgstr "At most 100 obligations per unit."
+
+msgid "Diese Pflicht hat keine offene Frist."
+msgstr "This obligation has no open deadline."
+
+msgid "Bitte eine Frist eingeben."
+msgstr "Please enter a deadline."
+
+msgid "Unbekannter Vorschlag."
+msgstr "Unknown suggestion."
+
+msgid "Dieser Vorschlag ist schon übernommen."
+msgstr "This suggestion has already been adopted."
+
+msgid "Wiederkehrende Pflichten des Vereins mit Erinnerung, zum Beispiel Freistellungsbescheid, Kassenprüfung und Anmeldungen zum Vereinsregister"
+msgstr "Recurring obligations of the club with reminders, for example exemption notice, cash audit and filings with the register of associations"
+
+msgid "Pflichten und Fristen des Vereins sehen"
+msgstr "See the club’s obligations and deadlines"
+
+msgid "Pflichten anlegen, ändern und als erledigt vermerken"
+msgstr "Create and change obligations and mark them as done"
 msgid "Das Mitglied gehört schon zu diesem Haushalt."
 msgstr "The member already belongs to this household."
 
@@ -11842,3 +11984,159 @@ msgid ""
 msgstr ""
 "The password is incorrect. Please use your password for {instanz}, not the "
 "password of your email mailbox."
+
+msgid "„bild“ muss eine Bildnummer oder null sein."
+msgstr "“bild” must be an image number or null."
+
+msgid "„bilder“ muss eine Liste von Bildnummern sein."
+msgstr "“bilder” must be a list of image numbers."
+
+msgid "„bilder_takt“ muss eine Zahl (Sekunden) sein."
+msgstr "“bilder_takt” must be a number (seconds)."
+
+msgid "„bilder_zufall“ muss wahr oder falsch sein."
+msgstr "“bilder_zufall” must be true or false."
+
+msgid ""
+"Hinweis: Bild {numbers} hat noch keinen Alternativtext. Bitte mit "
+"bild_beschreiben ergänzen, damit die Seite auch vorgelesen verständlich ist."
+msgstr ""
+"Note: image {numbers} has no alternative text yet. Please add it with "
+"bild_beschreiben so the page is also understandable when read aloud."
+
+msgid ""
+"Bilderkarussell der Begrüßung oder einer Untereinheit: Bildnummern in der "
+"Reihenfolge (ersetzt die alte Liste, leere Liste entfernt es)."
+msgstr ""
+"Image carousel of the greeting or of a sub-unit: image numbers in order "
+"(replaces the old list, an empty list removes it)."
+
+msgid "Sekunden bis zum nächsten Bild im Karussell."
+msgstr "Seconds until the next image in the carousel."
+
+msgid "Karussell mit einem zufälligen Bild beginnen."
+msgstr "Start the carousel with a random image."
+
+msgid ""
+"Bildnummer aus webseite_bilder für das Bild oben auf der Seite; null "
+"entfernt es."
+msgstr ""
+"Image number from webseite_bilder for the image at the top of the page; null"
+" removes it."
+
+msgid "Bitte angeben, was sich am Erscheinungsbild ändern soll."
+msgstr "Please say what should change in the appearance."
+
+msgid ""
+"Die Einheit hat noch keine eigenen Farben und erbt sie; wer eigene setzt, "
+"legt die ganze Palette neu fest."
+msgstr ""
+"The unit has no colours of its own yet and inherits them; setting its own "
+"defines the whole palette anew."
+
+msgid "Erscheinungsbild ansehen"
+msgstr "View appearance"
+
+msgid ""
+"Erscheinungsbild der Einheit. Platz 0 ist die Hauptfarbe, 1 die Zweitfarbe, "
+"2–5 weitere Farben. Farbrollen: text (Fließtext), muted (Sekundärtext), "
+"surface (Flächen), background (Seitenhintergrund), jeweils ein "
+"Palettenplatz."
+msgstr ""
+"Appearance of the unit. Slot 0 is the main colour, 1 the second colour, 2–5 "
+"further colours. Colour roles: text (body text), muted (secondary text), "
+"surface (surfaces), background (page background), each a palette slot."
+
+msgid ""
+"Erscheinungsbild geändert ({keys}). Es gilt ab sofort in HUBIplan und auf "
+"der Webseite; zurücknehmen lässt es sich im Änderungsprotokoll mit "
+"„Rückgängig“."
+msgstr ""
+"Appearance changed ({keys}). It applies immediately in HUBIplan and on the "
+"website; it can be taken back in the change log with “Undo”."
+
+msgid ""
+"Erscheinungsbild ändern: Farben, Verläufe, Farbrollen und Logo der Einheit "
+"(gilt sofort für HUBIplan und Webseite, rückgängig im Änderungsprotokoll)"
+msgstr ""
+"Change appearance: colours, gradients, colour roles and logo of the unit "
+"(applies immediately to HUBIplan and the website, undo in the change log)"
+
+msgid "Ersetzt alle Verläufe."
+msgstr "Replaces all gradients."
+
+msgid "Ersetzt alle weiteren Farben (Plätze 2–5)."
+msgstr "Replaces all further colours (slots 2–5)."
+
+msgid ""
+"Es gilt ab sofort in HUBIplan und auf der Webseite; das vorherige Logo ist "
+"ersetzt."
+msgstr ""
+"It applies immediately in HUBIplan and on the website; the previous logo "
+"has been replaced."
+
+msgid ""
+"Farben der Einheit mit Namen und Verwendung, Verläufe, Farbrollen und ob "
+"ein Logo gesetzt ist (Einstellungen › Erscheinungsbild)."
+msgstr ""
+"Colours of the unit with names and use, gradients, colour roles and whether "
+"a logo is set (Settings › Appearance)."
+
+msgid "Logo aus einem Bild setzen"
+msgstr "Set logo from an image"
+
+msgid "Logo für den Dunkelmodus gesetzt."
+msgstr "Logo for dark mode set."
+
+msgid "Logo gesetzt."
+msgstr "Logo set."
+
+msgid "Rolle → Palettenplatz; null entfernt."
+msgstr "Role → palette slot; null removes it."
+
+msgid ""
+"Setzt ein Bild aus der Bilderverwaltung der Webseite als Logo (oder als "
+"Logo für den Dunkelmodus). Gilt sofort. Neue Bilder: "
+"bild_hochladen_vorbereiten."
+msgstr ""
+"Sets an image from the website media library as the logo (or as the dark "
+"mode logo). Applies immediately. New images: bild_hochladen_vorbereiten."
+
+msgid "Weißen Rand durchsichtig machen."
+msgstr "Make the white border transparent."
+
+msgid ""
+"Ändert Farben, Namen, Verwendung, weitere Farben, Verläufe und Farbrollen "
+"der Einheit. Gilt SOFORT für HUBIplan und Webseite, es gibt keinen Entwurf: "
+"vorher die Person fragen. Text auf jeder Farbe muss lesbar sein. Braucht "
+"das Recht, das Erscheinungsbild zu bearbeiten."
+msgstr ""
+"Changes colours, names, use, further colours, gradients and colour roles of "
+"the unit. Applies IMMEDIATELY to HUBIplan and the website, there is no "
+"draft: ask the person first. Text on every colour must be readable. Needs "
+"permission to edit the appearance."
+
+msgid "„farbrollen_in_hubiplan“ ist ja oder nein."
+msgstr "“farbrollen_in_hubiplan” is yes or no."
+
+msgid ""
+"HUBIplan, eine freie Vereinsverwaltung. Diese Verbindung gilt für genau "
+"eine Einheit und darf nie mehr als die Person, die sie erlaubt hat. Die "
+"Webseite lässt sich lesen und als Entwurf bearbeiten (Texte, Startseite, "
+"Gestaltung, Menü, neue Textseiten). Das Erscheinungsbild (Farben, Verläufe, "
+"Logo) lässt sich ändern; das gilt sofort, daher vorher fragen. Bilder "
+"kommen über einen Hochladelink oder von freigegebenen Servern; Beiträge für "
+"soziale Medien werden nur als Entwurf abgelegt. Veröffentlichen, Zustand "
+"und Domains gibt es hier nicht; das macht ein Mensch in HUBIplan. Nach "
+"Änderungen webseite_vorschau anbieten. Für Fragen zur Bedienung die "
+"Hilfe-Werkzeuge nutzen."
+msgstr ""
+"HUBIplan, a free club management system. This connection applies to exactly "
+"one unit and may never do more than the person who allowed it. The website "
+"can be read and edited as a draft (texts, home page, design, menu, new text "
+"pages). The appearance (colours, gradients, logo) can be changed; this "
+"applies immediately, so ask first. Images come via an upload link or from "
+"approved servers; social media posts are only stored as drafts. Publishing, "
+"status and domains are not available here; a person does that in HUBIplan. "
+"Offer webseite_vorschau after changes. Use the help tools for questions "
+"about using HUBIplan."

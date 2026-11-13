@@ -130,13 +130,13 @@ Die Einheit kommt immer aus der Verbindung, nie aus den Eingaben.
 |---|---|---|
 | `webseite_ansehen` | lesen | Zustand, Adresse, Menü, Bausteine, offener Entwurf |
 | `webseite_texte` | lesen | alle Texte mit Nummer, Art, Titel, Stand |
-| `webseite_text_lesen` | lesen | `nummer` → Titel und Markdown im Entwurf, veröffentlichter Stand |
+| `webseite_text_lesen` | lesen | `nummer` → Titel, Markdown und Bild (samt Karussell) im Entwurf, veröffentlichter Stand |
 | `webseite_bilder` | lesen | Bilder mit Markdown-Zeile `![…](bild:…)` |
 | `startseite_ansehen` | lesen | Abschnitte der Startseite im Entwurf mit Art und Inhalt |
 | `webseite_pruefen` | lesen | Prüfpunkte (Impressum, Datenschutz) und offene Entwürfe |
 | `webseite_vorschau` | lesen | kurz gültiger Link zur Vorschau mit allen Entwürfen |
-| `webseite_text_aendern` | entwurf | `nummer`, `titel`, `text` → Entwurf des Textes |
-| `webseite_textseite_anlegen` | entwurf | `titel`, `adresse`, `text` → neue, unveröffentlichte Textseite |
+| `webseite_text_aendern` | entwurf | `nummer`, `titel`, `text`, `bild` (Bildnummer oder `null`), `bilder`, `bilder_takt`, `bilder_zufall` (Karussell der Begrüßung bzw. Untereinheit) → Entwurf des Textes; Hinweis bei Bildern ohne Alternativtext |
+| `webseite_textseite_anlegen` | entwurf | `titel`, `adresse`, `text`, `bild` → neue, unveröffentlichte Textseite |
 | `startseite_abschnitt_aendern` | entwurf | `schluessel`, `inhalt` (nur geänderte Felder) → Entwurf; Aufbau, Reihenfolge, Aussehen bleiben |
 
 Bewusst nicht: Veröffentlichen, Zustand, Domains, Kontaktnachrichten, Löschen.
@@ -185,7 +185,21 @@ Adressen liegen unter dem Modul „Social Media“.
 Neue Tabellen mit RLS (Migration `website/0046`). Hochladelinks und Beitragsentwürfe gehen nicht
 in den Datenumzug.
 
+## Erscheinungsbild (Bereich `verein.erscheinungsbild`)
+
+Ralf 13.11.2026: Das Erscheinungsbild der Einheit hat keinen Entwurf, Änderungen gelten sofort
+(HUBIplan und Webseite) und lassen sich im Änderungsprotokoll zurücknehmen. Eigener Bereich
+`verein.erscheinungsbild` (Vorgabe bei neuen Verbindungen; ältere Verbindungen neu verbinden),
+Recht `theme.edit`, Ansichten `ThemeView` (PATCH `theme/`) und `OrganizationLogoView`/
+`OrganizationLogoDarkView` (Formular mit Datei über `ClubContext.call(..., multipart=…)`).
+
+| Werkzeug | Bereich | Was |
+|---|---|---|
+| `erscheinungsbild_ansehen` | lesen | Palette (Platz 0–5), Verläufe, Farbrollen, Logo gesetzt |
+| `erscheinungsbild_aendern` | erscheinungsbild | `hauptfarbe`/`zweitfarbe` {farbe, name, verwendung}, `weitere_farben` und `verlaeufe` (ersetzen), `farbrollen` (ergänzen, `null` entfernt), `farbrollen_in_hubiplan` |
+| `logo_aus_bild` | erscheinungsbild | Bild der Bilderverwaltung als Logo oder Dunkel-Logo, optional Hintergrund entfernen |
+
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
-`club_design.py` (W2/W3), `website/upload_views.py` (Hochladelink, Bild per Adresse),
-`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`,
+`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `website/upload_views.py` (Hochladelink, Bild per Adresse),
+`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`,
 `frontend/src/test/McpConnect.test.tsx`.

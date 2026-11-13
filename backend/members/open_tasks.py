@@ -511,6 +511,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         from entries.open_tasks import entry_tasks
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
+        from obligations.open_tasks import obligation_tasks
         from organizations.setup_status import setup_tasks
         from qualifications.open_tasks import qualification_tasks
         from todos.open_tasks import todo_tasks
@@ -549,6 +550,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
             ("accounts", lambda: account_tasks(org, perms)),
             ("meetings", lambda: meeting_tasks(org, perms)),
             ("helpers", lambda: helper_tasks(org, perms)),
+            ("obligations", lambda: obligation_tasks(request.user, org, perms)),
             ("entries", lambda: entry_tasks(org, perms)),
             ("todos", lambda: todo_tasks(request.user, org, perms)),
             # Unvollständige Pflichtpunkte der Einrichtung (S-02 + S-04)

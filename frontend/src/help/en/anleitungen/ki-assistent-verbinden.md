@@ -43,9 +43,11 @@ Then you can write to the assistant, for example: “Revise the ‘About us’ t
 What else the assistant can do:
 
 - Design, menu and home page: choose design, colours, fine-tuning and header image, arrange the menu (headings, external links, button) and add, move or hide custom home page sections. This needs the “Manage website” permission and goes into the draft. Switching blocks on or off is only possible in HUBIplan.
+- Title image and image carousel: the assistant can set the large image at the top of the home page (image or image carousel of the greeting) and the image at the top of a text page, for example “Use the new photo of the parade as the title image”. This also goes into the draft. If the image has no alternative text, it points this out.
 - Upload images: write, for example, “I want to upload photos from the summer festival”. The assistant gives you a link that is valid for 30 minutes and up to 20 images. Open it on your phone or PC and choose the photos; they go straight to HUBIplan, not through the chat, and end up under Website › Images.
 - Describe images: the assistant sees the images in a small size and suggests alternative text and caption. For images already on the website it only fills in missing texts; you change existing ones yourself. It does not recognise or name people.
 - Images by address: HUBIplan fetches an image itself from servers you approve under [Website › Web address](/webseite/domain) at “Images for AI assistants” (such as the club’s Nextcloud). The source goes into the caption. Without an entry this is not possible.
+- Appearance: change colours with names and use, further colours, gradients, colour roles and the logo (from an image under Website › Images). This applies immediately to HUBIplan and the website, there is no draft; the assistant asks first. Any change can be taken back in the change log with “Undo”. It needs the permission for the appearance, and connections made before this change must be connected once more.
 - Posts for Instagram or Facebook: the assistant stores text and images as a draft under [Website › Social media](/webseite/beitraege). There you copy the text, save the images and post yourself; HUBIplan publishes nothing on Meta.
 
 New images only become public once they are in a published text or section.

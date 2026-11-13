@@ -7,11 +7,18 @@ export interface ThemeColors {
   on_primary: string
   accent: string
   on_accent: string
+  /** Palette und Farbrollen (Ralf 13.11.2026); fehlen bei Seiten ohne Einheit */
+  palette?: { color: string }[]
+  palette_roles?: Partial<Record<AppRole, number>>
+  palette_roles_in_app?: boolean
 }
 
 import { contrastRatio, readableOn } from './contrast.ts'
 
-const VARS = [
+/** Rollen, die eine Vereinsfarbe in der Oberfläche übernehmen kann */
+export type AppRole = 'text' | 'muted' | 'surface' | 'background'
+
+const BASE_VARS = [
   '--color-primary',
   '--color-primary-hover',
   '--color-link',
@@ -26,6 +33,11 @@ const VARS = [
   '--button-brand-primary-hover',
   '--button-brand-on-primary',
 ] as const
+/** Nur mit Farbrollen und nur im hellen Modus gesetzt */
+const ROLE_VARS = ['--color-text', '--color-text-muted', '--color-surface', '--color-bg'] as const
+const VARS = [...BASE_VARS, ...ROLE_VARS]
+type ThemeVars = Record<(typeof BASE_VARS)[number], string> &
+  Partial<Record<(typeof ROLE_VARS)[number], string>>
 
 /** Seitenhintergrund (--color-bg in theme.css): Links stehen auf Weiß und auf ihm. */
 export const PAGE_BG = '#eef0ed'
@@ -178,16 +190,71 @@ export function buttonColorsDark(primary: string, onPrimary: string) {
   return { background, foreground, hover }
 }
 
+/** Vorgaben der hellen Oberfläche (theme.css) für Text, Flächen und Hintergrund */
+export const APP_DEFAULTS: Record<AppRole, string> = {
+  text: TEXT_COLOR,
+  muted: '#5d6763',
+  surface: '#ffffff',
+  background: PAGE_BG,
+}
+const APP_VARS: Record<AppRole, (typeof ROLE_VARS)[number]> = {
+  text: '--color-text',
+  muted: '--color-text-muted',
+  surface: '--color-surface',
+  background: '--color-bg',
+}
+/** Text auf Flächen und Hintergrund: mindestens 4,5 : 1 (WCAG 1.4.3) */
+const APP_PAIRS: [AppRole, AppRole][] = [
+  ['text', 'surface'],
+  ['text', 'background'],
+  ['muted', 'surface'],
+  ['muted', 'background'],
+]
+
+/**
+ * Farbrollen in der hellen Oberfläche (Ralf 13.11.2026): welche Vereinsfarben für Fließtext,
+ * Sekundärtext, Flächen und Hintergrund gelten. Wäre Text darauf schlechter lesbar als
+ * 4,5 : 1, fällt eine Rolle auf die Vorgabe zurück (zuerst Fläche oder Hintergrund, die der
+ * Text nicht selbst gewählt hat); `dropped` nennt sie für den Hinweis in den Einstellungen.
+ */
+export function appColors(
+  palette: { color: string }[],
+  roles: Partial<Record<AppRole, number>>,
+): { colors: Partial<Record<AppRole, string>>; dropped: AppRole[] } {
+  const colors: Partial<Record<AppRole, string>> = {}
+  for (const role of Object.keys(APP_DEFAULTS) as AppRole[]) {
+    const slot = roles[role]
+    const color = slot === undefined ? undefined : palette[slot]?.color
+    if (color && /^#[0-9a-f]{6}$/i.test(color)) colors[role] = color
+  }
+  const dropped: AppRole[] = []
+  const value = (r: AppRole) => colors[r] ?? APP_DEFAULTS[r]
+  for (let guard = 0; guard < 8; guard++) {
+    const bad = APP_PAIRS.find(([a, b]) => contrastRatio(value(a), value(b)) < 4.5)
+    if (!bad) break
+    const [a, b] = bad
+    const drop = colors[b] !== undefined ? b : a
+    if (colors[drop] === undefined) break
+    delete colors[drop]
+    dropped.push(drop)
+  }
+  return { colors, dropped }
+}
+
 /** CSS-Variablen, die ein Erscheinungsbild setzt (Namen wie in theme.css). */
-export function themeVars(
-  theme: ThemeColors,
-  scheme: Scheme = 'light',
-): Record<(typeof VARS)[number], string> {
+export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVars {
   const dark = scheme === 'dark'
   const button = (dark ? buttonColorsDark : buttonColors)(theme.primary, theme.on_primary)
   const link = (dark ? linkColorDark : linkColor)(theme.primary)
   const sidebar = sidebarColor(theme.primary)
+  // Farbrollen nur im hellen Modus; im dunklen bleiben Grund, Flächen und Text aus theme.css
+  const roles: Partial<Record<(typeof ROLE_VARS)[number], string>> = {}
+  if (!dark && theme.palette_roles_in_app && theme.palette && theme.palette_roles) {
+    const { colors } = appColors(theme.palette, theme.palette_roles)
+    for (const [role, color] of Object.entries(colors)) roles[APP_VARS[role as AppRole]] = color
+  }
   return {
+    ...roles,
     '--color-primary': theme.primary,
     '--button-brand-primary': button.background,
     '--button-brand-primary-hover': button.hover,
@@ -220,8 +287,12 @@ export function applyTheme(
     for (const v of VARS) root.style.removeProperty(v)
     return
   }
-  for (const [name, value] of Object.entries(themeVars(theme, scheme)))
-    root.style.setProperty(name, value)
+  const vars: Partial<Record<(typeof VARS)[number], string>> = themeVars(theme, scheme)
+  for (const name of VARS) {
+    const value = vars[name]
+    if (value) root.style.setProperty(name, value)
+    else root.style.removeProperty(name)
+  }
 }
 
 let scheme: Scheme = 'light'

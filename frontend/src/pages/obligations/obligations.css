@@ -1,0 +1,21 @@
+/* Fristenkalender */
+.obligation-note {
+  margin: var(--space-1) 0 0;
+  white-space: pre-line;
+  max-width: 60rem;
+}
+.obligation-history {
+  margin: var(--space-1) 0 0;
+  padding-left: 1.25rem;
+}
+.obligation-done {
+  margin-top: var(--space-3);
+}
+.obligation-marked {
+  outline: 2px solid var(--color-primary);
+  outline-offset: var(--space-1);
+  border-radius: var(--radius);
+}
+.obligation-list > li + li {
+  border-top: 1px solid var(--color-border);
+}

@@ -1189,14 +1189,16 @@ class SiteView:
                 or image.pk in (t.published_gallery or [])
                 or image.pk in content.timeline_images(t.published_timeline)
                 or image.pk in content._section_images(t.published_sections)
+                or image.key in self.section_text_keys(t.published_sections)
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
         if image.pk == self.header_image_pk:
             # Kopfbild der Webseite (Ralf 05.11.), in der Vorschau auch das des Entwurfs
             return image
-        if image.pk in self.home_image_ids:
-            # Bilder eingeschalteter Abschnitte der Startseite (G3), in der Vorschau des Entwurfs
+        if image.pk in self.home_image_ids or image.key in self.home_text_image_keys:
+            # Bilder eingeschalteter Abschnitte der Startseite (G3), in der Vorschau des Entwurfs,
+            # auch als ``bild:`` im Text eines Abschnitts (#415)
             return image
         # Galerie (Ralf 05.11.): Bilder und Titelbilder sichtbarer Alben
         from . import gallery
@@ -1211,6 +1213,19 @@ class SiteView:
         from .models import normalize_home_sections
 
         return image_ids(normalize_home_sections(self.site.home_sections))
+
+    @cached_property
+    def home_text_image_keys(self) -> set[str]:
+        from .home import text_image_keys
+        from .models import normalize_home_sections
+
+        return text_image_keys(normalize_home_sections(self.site.home_sections))
+
+    @staticmethod
+    def section_text_keys(sections) -> set[str]:
+        from .home import normalize_page, text_image_keys
+
+        return text_image_keys(normalize_page(sections)) if sections else set()
 
     @cached_property
     def header_image_pk(self) -> int | None:

@@ -279,4 +279,8 @@ def release(meeting: Meeting, user) -> MinutesVersion:
     if document is not None:
         version.document = document
         version.save(update_fields=["document"])
+    # Fristenkalender: nach einer Vorstandswahl die Anmeldung beim Registergericht
+    from obligations.election import after_release
+
+    after_release(meeting, user)
     return version
