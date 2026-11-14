@@ -39,7 +39,8 @@ Passkeys nutzen darf; die App zeigt den Knopf nur dann.
 Die Verwaltung (`POST /api/app/v1/admin/unlock/`) lässt sich statt mit `password` und `code`
 auch mit `passkey_challenge_id` und `passkey_credential` freischalten (Aufgabe ebenfalls aus
 `passkey/begin/`, der Passkey muss zum Konto des Geräts gehören). Eine eingerichtete
-Authenticator-App ist dafür nicht nötig.
+Authenticator-App ist dafür nicht nötig. `GET /api/app/v1/admin/` nennt in `passkey`, ob für
+diese Adresse ein Passkey eingerichtet ist (`two_factor`: Authenticator-App).
 
 ## Was der Geräteschlüssel darf
 
