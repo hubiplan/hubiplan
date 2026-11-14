@@ -117,10 +117,18 @@
 }
 
 /*
- * Dunkelmodus (X-02, Stufe D1, konzepte/dunkelmodus-web.md). colorScheme.ts setzt
- * data-theme="dark" nur auf den Seiten für Mitglieder (Anmeldung, Start, Termine, Mein Konto,
- * Mitgliederbereich) und nur, wenn das Konto oder das Gerät dunkel will. Vereinsfarben
- * rechnet theme.ts dann gegen den dunklen Grund (linkColorDark, buttonColorsDark).
+ * Helle Darstellung ausdrücklich nennen: Sonst zeichnet der Browser eigene Aufklapplisten
+ * (Vorschläge aus <datalist>, Auswahllisten, Kalender) nach dem Dunkelmodus des Geräts,
+ * also schwarz auf heller Seite.
+ */
+:root:not([data-theme='dark']) {
+  color-scheme: light;
+}
+
+/*
+ * Dunkelmodus (X-02, Design „Frisch“ Teil 5). colorScheme.ts setzt data-theme="dark" auf allen
+ * Seiten, wenn das Konto „Dunkel“ gewählt hat oder bei „Wie Gerät“ das Gerät dunkel will.
+ * Vereinsfarben rechnet theme.ts dann gegen den dunklen Grund (linkColorDark, buttonColorsDark).
  */
 :root[data-theme='dark'] {
   color-scheme: dark;

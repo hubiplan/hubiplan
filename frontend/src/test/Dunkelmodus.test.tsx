@@ -44,6 +44,14 @@ afterEach(() => {
   applyTheme(null)
 })
 
+describe('Native Aufklapplisten folgen der gewählten Darstellung', () => {
+  it('nennt hell und dunkel ausdrücklich, damit Vorschläge nicht dem Gerät folgen', () => {
+    const css = CSS['../theme/theme.css']
+    expect(css).toMatch(/:root:not\(\[data-theme='dark'\]\) \{\s*color-scheme: light;/)
+    expect(DARK).toMatch(/color-scheme: dark;/)
+  })
+})
+
 describe('X-02 Umfang D2: alle Seiten', () => {
   it.each([
     '/',
