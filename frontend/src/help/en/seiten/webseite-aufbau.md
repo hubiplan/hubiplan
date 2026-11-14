@@ -43,7 +43,7 @@ Repertoire and press: “Repertoire” shows the pieces from the sheet music lib
 
 Bookings: “Bookings” shows facilities and material whose booking calendar is not set to “do not show” under “On the website”, as a week view with a calendar subscription. Depending on the setting it shows only “Booked” or, for public bookings, also the purpose; names never appear.
 
-Search: With the “Search” section a magnifying glass appears in the menu. It searches text pages, albums, documents and events, not people.
+Search: With the “Search” section a magnifying glass appears in the menu. It searches everything the website shows publicly: the greeting and sections of the home page (including tiles, buttons and questions), text pages with their sections, the chronicle, units, area introductions, albums, documents and events. Drafts and people are not searched. Part of a word is enough, and case and accents do not matter: “flag” finds “Flag bearers”.
 
 People: “Show titles before names” puts the title from the member record before the name (e.g. “Dr. Max Muster”) for the board, lists and results; when off, names appear without a title. “Show main instrument below the name” takes the main instrument from Music › Musicians. “Show postal address for the board” only applies to people with the consent “Postal address” in their member record.
 

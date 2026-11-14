@@ -502,7 +502,7 @@ class DocumentFileView(_Public):
 
 
 class SearchView(_Public):
-    """GET ?q=…: Suche in Textseiten, Alben und Terminen (Lupe, Ralf 05.11.)."""
+    """GET ?q=…: Suche in allen öffentlichen Texten, Alben und Terminen (Lupe, Ralf 05.11.)."""
 
     def get(self, request, key: str):
         site = self.load(request, key)
