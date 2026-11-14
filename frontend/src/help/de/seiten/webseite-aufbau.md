@@ -42,7 +42,7 @@ Repertoire und Presse: „Repertoire“ zeigt die Stücke aus dem Notenarchiv mi
 
 Belegung: „Belegung“ zeigt Infrastruktur und Material, deren Buchungskalender unter „Auf der Webseite“ nicht „nicht zeigen“ steht, als Wochenansicht mit Kalender-Abo. Je nach Einstellung erscheint nur „Belegt“ oder bei öffentlichen Buchungen auch der Zweck; Namen erscheinen nie.
 
-Suche: Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in Textseiten, Alben, Dokumenten und Terminen, nicht in Personen.
+Suche: Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in allem, was die Webseite öffentlich zeigt: Begrüßung und Abschnitte der Startseite (auch Kacheln, Knöpfe und Fragen), Textseiten mit ihren Abschnitten, Chronik, Untereinheiten, Einleitungen der Bereiche, Alben, Dokumente und Termine. Entwürfe und Personen werden nicht durchsucht. Ein Wortteil genügt, Groß- und Kleinschreibung und Akzente spielen keine Rolle: „fahnenschwenker“ findet „Fahnenschwenkern“.
 
 Personen: „Titel vor dem Namen nennen“ setzt den Titel aus der Mitgliedsakte vor den Namen (z. B. „Dr. Max Muster“), bei Vorstand, Listen und Ergebnissen; ausgeschaltet erscheinen Namen ohne Titel. „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.
 

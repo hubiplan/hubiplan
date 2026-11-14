@@ -65,7 +65,7 @@ BLOCK_HINTS = {
     "contact": "Kontaktformular",
     "join": "Online-Mitgliedsantrag (Mitglieder › Online-Antrag einschalten)",
     "social": "oben im Kopf, auf dem Handy im Menü",
-    "search": "Lupe im Menü: sucht in Textseiten, Terminen und Alben",
+    "search": "Lupe im Menü: sucht in allen öffentlichen Texten, Alben und Terminen",
 }
 # Neue Bereiche, die erst nach dem Einschalten erscheinen (die Galerie, Ralf 05.11.)
 # Mitgliederlisten, Gedenken und Suche (Ralf 05.11., Kapelle) ebenso
