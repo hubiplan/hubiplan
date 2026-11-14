@@ -131,6 +131,13 @@ const SOURCES_DATA = {
     full: 'European Payments Council: SEPA Direct Debit Business to Business Scheme Rulebook (EPC222-07), in der jeweils geltenden Fassung.',
     url: 'https://www.europeanpaymentscouncil.eu/what-we-do/sepa-direct-debit',
   },
+  sgb8: {
+    full: 'Sozialgesetzbuch (SGB) Achtes Buch (VIII) – Kinder- und Jugendhilfe – in der Fassung der Bekanntmachung vom 11. September 2012 (BGBl. I S. 2022), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/sgb_8/',
+  },
+  bmfSponsoring: {
+    full: 'Bundesministerium der Finanzen: Ertragsteuerliche Behandlung des Sponsoring, Schreiben vom 18. Februar 1998 (BStBl I S. 212); Anwendungserlass zur Abgabenordnung (AEAO) zu § 64 Abs. 1 AO, in der jeweils geltenden Fassung.',
+  },
 } satisfies Record<string, Source>
 
 export type SourceKey = keyof typeof SOURCES_DATA
@@ -164,6 +171,9 @@ export type Feature =
   | 'helpers'
   | 'material'
   | 'bookings'
+  | 'surveys'
+  | 'obligations'
+  | 'qualifications'
 
 export interface Decision {
   title: Text
@@ -1068,6 +1078,130 @@ const DECISIONS_DATA = {
     place: d('Helferdienste → Dienst bearbeiten'),
     phase: 'organizing',
     feature: 'helpers',
+  },
+  application_fee_rules: {
+    title: d('Beitragsordnung bestätigen lassen?'),
+    text: d(
+      'Beiträge schuldet ein Mitglied nur, wenn die Satzung oder eine Beitragsordnung auf ihrer Grundlage sie regelt (§ 58 Nr. 2 BGB). Mit der Bestätigung im Antrag ist festgehalten, welche Fassung das neue Mitglied kannte. Das hilft, wenn später jemand Höhe oder Einzug des Beitrags bestreitet.',
+    ),
+    sources: ['bgb'],
+    place: d('Mitglieder → Online-Antrag'),
+    phase: 'setup',
+  },
+  application_consents: {
+    title: d('Welche Einwilligungen abfragen?'),
+    text: d(
+      'Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was ihr nach einem Widerruf auch wieder abstellen könnt.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Mitglieder → Online-Antrag'),
+    phase: 'privacy',
+  },
+  application_minors: {
+    title: d('Minderjährige online beantragen lassen?'),
+    text: d(
+      'Ein Beitritt bringt die Pflicht zum Beitrag und braucht deshalb die Zustimmung der Eltern (§ 107 BGB); im Antrag bestätigt das mindestens eine erziehungsberechtigte Person. Willigt ein Kind unter 16 Jahren online ein, etwa in Fotos auf der Webseite, zählt ebenfalls die Zustimmung der Eltern (Art. 8 DSGVO). Ohne den Schalter nimmt das Formular keine Anträge von Minderjährigen an.',
+    ),
+    sources: ['bgb', 'dsgvo'],
+    place: d('Mitglieder → Online-Antrag'),
+    phase: 'privacy',
+  },
+  cancellation_notice: {
+    title: d('Welche Kündigungsfrist eintragen?'),
+    text: d(
+      'Trag genau die Frist und den Termin aus eurer Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.',
+    ),
+    sources: ['bgb'],
+    place: d('Mitglieder → Einstellungen'),
+    phase: 'setup',
+  },
+  meeting_online: {
+    title: d('Teilnahme aus der Ferne erlauben?'),
+    text: d(
+      'Wer einlädt, darf vorsehen, dass Mitglieder elektronisch teilnehmen und abstimmen, solange es auch einen Saal gibt (hybride Versammlung, § 32 Abs. 2 BGB). Eine rein virtuelle Versammlung braucht dagegen einen Beschluss der Mitglieder oder eine Regel in der Satzung. In der Einladung muss stehen, wie Mitglieder aus der Ferne ihre Rechte ausüben, etwa Anmelden und Abstimmen per App.',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlung → Anmelden per App und Online-Abstimmung'),
+    phase: 'meetings',
+    feature: 'meetings',
+  },
+  meeting_secret: {
+    title: d('Geheim abstimmen?'),
+    text: d(
+      'Geheime Abstimmung schützt vor Druck und ist bei Wahlen und heiklen Personalfragen üblich. Dafür lässt sich hinterher nicht mehr nachprüfen, wer wie gestimmt hat, auch nicht bei Streit über das Ergebnis. Pflicht ist sie nur, wenn Satzung, Wahlordnung oder ein Beschluss der Versammlung sie verlangen (§§ 32, 40 BGB).',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlung → Online-Abstimmungen'),
+    phase: 'meetings',
+    feature: 'meetings',
+  },
+  survey_not_resolution: {
+    title: d('Warum ist eine Umfrage kein Beschluss?'),
+    text: d(
+      'Beschlüsse fasst die Mitgliederversammlung (§ 32 Abs. 1 BGB). Ohne Versammlung gilt ein Beschluss nur, wenn alle Mitglieder in Textform zustimmen, sofern die Satzung nichts anderes regelt (§ 32 Abs. 3, § 40 BGB), und das erreicht eine Umfrage praktisch nie. Nutze Umfragen für Meinungsbilder und Absprachen und bring echte Entscheidungen in die Versammlung.',
+    ),
+    sources: ['bgb'],
+    place: d('Umfragen'),
+    phase: 'meetings',
+    feature: 'surveys',
+  },
+  survey_anonymous: {
+    title: d('Namen zeigen oder anonym fragen?'),
+    text: d(
+      'Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl braucht ihr die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Umfragen → Namen und Ergebnis'),
+    phase: 'meetings',
+    feature: 'surveys',
+  },
+  vat_flat_rate: {
+    title: d('Vorsteuer pauschal nach § 23a UStG?'),
+    text: d(
+      'Statt jede Vorsteuer aus Belegen zu sammeln, zieht der Verein pauschal 7 % der steuerpflichtigen Umsätze ab (§ 23a Abs. 1 UStG). Das spart Arbeit und lohnt sich, wenn die tatsächliche Vorsteuer kleiner ist; HUBIplan zeigt beide Beträge zum Vergleich. Erlaubt ist es nur gemeinnützigen Vereinen ohne Buchführungspflicht bis 50.000 € steuerpflichtigem Umsatz im Vorjahr, und die Wahl bindet mindestens fünf Kalenderjahre (§ 23a Abs. 2 und 3 UStG).',
+    ),
+    sources: ['ustg'],
+    place: d('Finanzen → Umsatzsteuer'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  sponsoring_tax: {
+    title: d('Nur Nennung oder aktive Werbung?'),
+    text: d(
+      'Weist der Verein nur auf den Sponsor hin, etwa mit Name oder Logo auf Plakat oder Webseite ohne besondere Hervorhebung, bleibt die Einnahme steuerfreie Vermögensverwaltung (AEAO zu § 64 Abs. 1 AO). Wirbt er aktiv, etwa mit Trikotwerbung oder Werbesprüchen, gehört die Einnahme zum wirtschaftlichen Geschäftsbetrieb und zählt zur Freigrenze (§ 64 Abs. 3 AO). Halte im Vertrag fest, welche Gegenleistung vereinbart ist.',
+    ),
+    sources: ['ao', 'bmfSponsoring'],
+    place: d('Geschäftspartner → Vereinbarung'),
+    phase: 'closing',
+  },
+  contract_renewal: {
+    title: d('Erinnerung vor der Kündigungsfrist setzen?'),
+    text: d(
+      'Verlängert sich ein Vertrag automatisch, zählt der letzte Tag der Kündigungsfrist, nicht das Vertragsende; wer ihn verpasst, ist oft ein weiteres Jahr gebunden. Frist und Verlängerung stehen im Vertrag, Grenzen setzt das Gesetz vor allem bei Allgemeinen Geschäftsbedingungen (§ 309 Nr. 9 BGB). Lege die Erinnerung so, dass vor Ablauf der Frist noch Zeit für eine Entscheidung im Vorstand bleibt.',
+    ),
+    sources: ['bgb'],
+    place: d('Geschäftspartner → Vereinbarung'),
+    phase: 'closing',
+  },
+  obligations_calendar: {
+    title: d('Welche Pflichten eintragen?'),
+    text: d(
+      'Typisch sind die Steuererklärung, die das Finanzamt bei gemeinnützigen Vereinen meist alle drei Jahre anfordert (§ 149 AO), und die Anmeldung eines neuen Vorstands beim Registergericht (§ 67 BGB). Dazu kommen Fristen aus Verträgen, Versicherungen und Zuschüssen, die in keinem Gesetz stehen. Eine Erinnerung mit Zuständigkeit sorgt dafür, dass eine Frist auch nach einem Vorstandswechsel nicht vergessen wird.',
+    ),
+    sources: ['ao', 'bgb'],
+    place: d('Fristenkalender'),
+    phase: 'setup',
+    feature: 'obligations',
+  },
+  qualification_inspection: {
+    title: d('Nur Einsichtsvermerk festhalten?'),
+    text: d(
+      'Beim erweiterten Führungszeugnis für Betreuer von Kindern und Jugendlichen darf der Verein nur festhalten, dass er es eingesehen hat, das Datum des Zeugnisses und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).',
+    ),
+    sources: ['sgb8', 'dsgvo'],
+    place: d('Mitglieder → Qualifikationen'),
+    phase: 'privacy',
+    feature: 'qualifications',
   },
 } satisfies Record<string, Decision>
 
@@ -2176,6 +2310,31 @@ const TERMS_DATA = {
     section: 'organizing',
     feature: 'material',
   },
+  budget: {
+    name: d('Haushaltsplan'),
+    meaning: d(
+      'Plan der erwarteten Einnahmen und Ausgaben für ein Geschäftsjahr, meist je Bereich oder Kategorie. Pflicht ist er nur, wenn die Satzung ihn vorsieht; beschließt ihn die Versammlung, richtet sich der Vorstand danach wie nach einer Weisung (§ 27 Abs. 3, § 665 BGB).',
+    ),
+    example: d(
+      'Beispiel: Plan 4.000 € für das Schützenfest, Ist im Oktober 4.600 €; die 600 € Abweichung erklärt der Kassierer in der Versammlung.',
+    ),
+    sources: ['bgb'],
+    section: 'cash',
+    feature: 'finance',
+  },
+  vat_return: {
+    symbol: 'UStVA',
+    name: d('Umsatzsteuer-Voranmeldung'),
+    meaning: d(
+      'Elektronische Meldung der Umsatzsteuer für einen Monat oder ein Vierteljahr, fällig am 10. Tag danach (§ 18 Abs. 1 UStG). Monatlich, wenn die Steuer im Vorjahr über 9.000 € lag; bei höchstens 2.000 € kann das Finanzamt davon befreien (§ 18 Abs. 2 UStG).',
+    ),
+    example: d(
+      'Beispiel: Vorjahressteuer 3.200 €, also vierteljährlich; die Meldung für Juli bis September ist am 10. Oktober fällig.',
+    ),
+    sources: ['ustg'],
+    section: 'tax',
+    feature: 'finance',
+  },
 } satisfies Record<string, TermEntry>
 
 export type TermKey = keyof typeof TERMS_DATA
@@ -2546,6 +2705,14 @@ const HOWTOS_DATA = {
     ),
     sources: [],
     feature: 'bookings',
+  },
+  how_cancellation: {
+    kind: 'how',
+    title: d('Was passiert beim Bestätigen einer Kündigung?'),
+    text: d(
+      'Beim Bestätigen trägt HUBIplan den Austritt zum angegebenen Datum ein, das du vorher noch anpassen kannst; Mitgliedsart, Untereinheiten und Ämter enden am selben Tag. Das Mitglied bekommt die Bestätigung per E-Mail und in der App, beim Ablehnen mit deiner Begründung. Rechnungen und Lastschriftmandat ändert das Bestätigen nicht, prüfe also vor dem Austritt, ob noch etwas offen ist.',
+    ),
+    sources: [],
   },
 } satisfies Record<string, HowEntry>
 

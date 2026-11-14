@@ -9,6 +9,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { t } from '../../i18n/index.ts'
 import { Loading } from '../../components/ui.tsx'
 import { checkinLink } from './live.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 function pollStatusLabel(poll: Poll) {
   if (poll.status === 'draft') return t('vorbereitet')
@@ -69,6 +70,9 @@ export function LiveCard({
   return (
     <section className="card stack live-card">
       <h2>{t('Anmelden per App und Online-Abstimmung')}</h2>
+      <div className="aid-row">
+        <Why k="meeting_online" />
+      </div>
       <p className="muted">
         {t(
           'Mitglieder scannen den Code mit der HUBIplan-App oder der Handykamera und tippen „Ich bin da“. Der Code wechselt alle 30 Sekunden, ein Foto davon hilft also niemandem außerhalb des Saals.',
@@ -139,6 +143,9 @@ export function LiveCard({
         </div>
       )}
       <h3>{t('Online-Abstimmungen')}</h3>
+      <div className="aid-row">
+        <Why k="meeting_secret" />
+      </div>
       {!state.online_voting ? (
         <p className="muted">
           {t(
