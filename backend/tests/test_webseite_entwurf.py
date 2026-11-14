@@ -156,8 +156,8 @@ def test_nur_mit_recht(club, site, api):
     assert c.put(url(club), {"draft": {"style": {}}}, "application/json").status_code == 403
 
 
-def page(site, path, preview=False):
-    headers = {"HTTP_X_PREVIEW_SESSION": preview_session(site)} if preview else {}
+def page(path, session=None):
+    headers = {"HTTP_X_PREVIEW_SESSION": session} if session else {}
     return Client().get(f"/api/public/site/v1/{KEY}/{path}", **headers)
 
 
@@ -181,16 +181,18 @@ def test_vorschau_zeigt_entwurf_der_texte(club, site, client_web):
         organization=club, website=site, kind="page", slug="neu", title="Ganz neu", body="Bald."
     )
 
-    seen = page(site, "pages/mitmachen/").json()
+    seen = page("pages/mitmachen/").json()
     assert seen["title"] == "Mitmachen" and "Erste Fassung." in seen["text"]
     assert [s["width"] for s in seen["sections"]] == ["content"]
-    assert page(site, "pages/neu/").status_code == 404
+    assert page("pages/neu/").status_code == 404
 
-    draft = page(site, "pages/mitmachen/", preview=True).json()
+    # der kurze Vorschau-Schlüssel gilt nur einmal: eine Sitzung für beide Abrufe
+    session = preview_session(site)
+    draft = page("pages/mitmachen/", session).json()
     assert draft["title"] == "Mitmachen im Verein" and "Zweite Fassung." in draft["text"]
     assert [(s["kind"], s["width"]) for s in draft["sections"]] == [("body", "full")]
     # auch eine noch nie veröffentlichte Seite lässt sich in der Vorschau ansehen
-    assert page(site, "pages/neu/", preview=True).json()["title"] == "Ganz neu"
+    assert page("pages/neu/", session).json()["title"] == "Ganz neu"
 
     # nur angezeigt, nichts gespeichert
     text.refresh_from_db()
