@@ -31,7 +31,9 @@ MAX_SOCIAL = 2200
 KIND_FIELDS = {
     "text": "title, text (Markdown)",
     "text_image": (
-        "title, text (Markdown), image (Bildnummer), side (left|right), size (small|half)"
+        "title, text (Markdown), image (Bildnummer), side (left|right|top|bottom: Bild links, "
+        "rechts, über oder unter dem Text), "
+        "size (small|half; bei top/bottom: klein oder ganze Breite)"
     ),
     "banner": "image (Bildnummer), line, height (low|high)",
     "buttons": "title, buttons [{label, target}] (höchstens 3), align (left|center|right)",
@@ -65,12 +67,15 @@ KIND_FIELDS = {
     "program": "title, items [{day, time, text}] (höchstens 40, gleiche Tage hintereinander), text",
     "callout": "title, text (Markdown), style (info|warning|success)",
     "accordion": "title, items [{title, text (Markdown)}] (höchstens 12)",
-    "images": "title, items [{image (Bildnummer), caption}] (2–8), columns (2|3|4)",
+    "images": (
+        "title, items [{image (Bildnummer), caption}] (1–8; ein einzelnes Bild "
+        "steht groß über die ganze Breite), columns (2|3|4)"
+    ),
     "downloads": "title, documents [Dokumentnummern] (höchstens 10)",
     "unit_honors": "title, unit (Nummer aus auswahl.units)",
-    "competition": "title, competition (Nummer aus auswahl.competitions)",
-    "albums": "title, count (2–8)",
-    "posts": "title, count (1–6), channel (all|instagram|facebook)",
+    "competition": "title, competition (Nummer aus auswahl.competitions), days (Frist)",
+    "albums": "title, count (2–8), days (Frist)",
+    "posts": "title, count (1–6), channel (all|instagram|facebook), days (Frist)",
     "app": "title, text (Markdown), qr (true|false), store (true|false)",
     "live_facts": "title, items [{fact (members|years|units), label (optional)}]",
 }
@@ -399,7 +404,9 @@ def _new_key(taken: set[str]) -> str:
             return key
 
 
-LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column"}
+LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column", "tage": "days"}
+# Frist „wie lange aktuell“: Tage nach Wettbewerb, Album oder Beitrag; null = immer
+DAYS_HINT = "3, 7, 14, 30, 60, 90, 180, 365 oder null (immer); danach verschwindet es"
 
 
 def _rebuild(sections: list[dict], args: dict) -> tuple[list[dict], list[str]]:
@@ -544,7 +551,9 @@ def _home_options(args: dict, ctx: ClubContext) -> str:
             "hintergrund": "none, light, p0–p9 (Palette), g0, g1 (Verlauf)",
             "breite": "content, text, full",
             "spalte": "main, side (nur Design „Zeitung“)",
+            "tage": "nur fester Bereich „results“: " + DAYS_HINT,
         },
+        "frist": "days bei competition, albums, posts: " + DAYS_HINT,
         "auswahl": choices,
     }
     return (

@@ -139,6 +139,8 @@ export function Layout() {
       if (!heading && ++tries < 20) return
       clearInterval(timer)
       if (!main) return
+      // Liegt schon ein Dialog über der Seite (Seite „inert“), bleibt der Fokus dort.
+      if (main.closest('[inert]')) return
       const current = document.activeElement
       if (
         current instanceof HTMLElement &&

@@ -115,7 +115,7 @@ function kindLabel(kind: HomeKind): string {
 function kindHint(kind: HomeKind): string {
   return {
     text: t('Überschrift und Text'),
-    text_image: t('Überschrift, Text und ein Bild daneben'),
+    text_image: t('Überschrift, Text und ein Bild daneben, darüber oder darunter'),
     banner: t('ein breites Bild, auf Wunsch mit einer Zeile darauf'),
     buttons: t('ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen'),
     tiles: t('zwei bis sechs Kacheln mit Bild, Titel und Ziel'),
@@ -142,7 +142,7 @@ function kindHint(kind: HomeKind): string {
     program: t('Ablauf eines Fests mit Tagen und Uhrzeiten'),
     callout: t('farbiger Kasten für Info, Achtung oder Erfolg'),
     accordion: t('Überschriften mit Text zum Aufklappen'),
-    images: t('zwei bis acht eigene Bilder mit Bildunterschrift'),
+    images: t('ein bis acht eigene Bilder mit Bildunterschrift'),
     downloads: t('mehrere Dateien aus Webseite › Dokumente als Liste'),
     unit_honors: t('die aktuellen Majestäten einer Untereinheit'),
     competition: t('Sieger und Stand eines bestimmten Wettbewerbs'),
@@ -777,6 +777,35 @@ function Segments<T extends string | number>({
   )
 }
 
+/** Auswahl der Frist „wie lange aktuell“ (Ralf 14.11.2026); muss zu DAYS_CHOICES passen */
+const DAYS_CHOICES = [3, 7, 14, 30, 60, 90, 180, 365]
+
+function DaysField({
+  value,
+  hint,
+  onChange,
+}: {
+  value: number | null | undefined
+  hint: string
+  onChange: (days: number | null) => void
+}) {
+  return (
+    <SelectField
+      label={t('Wie lange zeigen')}
+      value={value ?? ''}
+      hint={hint}
+      onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+    >
+      <option value="">{t('Immer')}</option>
+      {DAYS_CHOICES.map((n) => (
+        <option key={n} value={n}>
+          {t('{x} Tage danach', { x: n })}
+        </option>
+      ))}
+    </SelectField>
+  )
+}
+
 function SectionDialog({
   data,
   website,
@@ -831,6 +860,15 @@ function SectionDialog({
             section={s}
             setData={setData}
             imageField={imageField}
+          />
+        )}
+        {s.key === 'results' && !s.kind && (
+          <DaysField
+            value={s.days}
+            hint={t(
+              'Ein Wettbewerb verschwindet so viele Tage nach dem Wettbewerbstag. Laufende und vorläufige Wettbewerbe bleiben stehen. Ist nichts mehr aktuell, verschwindet der Abschnitt.',
+            )}
+            onChange={(days) => setS({ ...s, days })}
           />
         )}
         {looks && <h3>{t('Aussehen')}</h3>}
@@ -973,6 +1011,8 @@ function SectionContent({
             options={[
               ['left', t('links')],
               ['right', t('rechts')],
+              ['top', t('über dem Text')],
+              ['bottom', t('unter dem Text')],
             ]}
             onChange={(side) => setData({ side })}
           />
@@ -981,7 +1021,10 @@ function SectionContent({
             value={d.size ?? 'half'}
             options={[
               ['small', t('klein')],
-              ['half', t('halbe Breite')],
+              [
+                'half',
+                d.side === 'top' || d.side === 'bottom' ? t('ganze Breite') : t('halbe Breite'),
+              ],
             ]}
             onChange={(size) => setData({ size })}
           />
@@ -1851,16 +1894,22 @@ function SectionContent({
               </>
             )}
           />
-          <Segments
-            label={t('Spalten')}
-            value={d.columns === 2 || d.columns === 4 ? d.columns : 3}
-            options={[
-              [2, '2'],
-              [3, '3'],
-              [4, '4'],
-            ]}
-            onChange={(columns) => setData({ columns })}
-          />
+          {(d.items ?? []).length > 1 ? (
+            <Segments
+              label={t('Spalten')}
+              value={d.columns === 2 || d.columns === 4 ? d.columns : 3}
+              options={[
+                [2, '2'],
+                [3, '3'],
+                [4, '4'],
+              ]}
+              onChange={(columns) => setData({ columns })}
+            />
+          ) : (
+            <p className="muted small">
+              {t('Ein einzelnes Bild steht groß über die ganze Breite des Abschnitts.')}
+            </p>
+          )}
         </>
       )
     case 'downloads': {
@@ -1929,6 +1978,13 @@ function SectionContent({
             ))}
           </SelectField>
           {titleField()}
+          <DaysField
+            value={d.days}
+            hint={t(
+              'Der Abschnitt verschwindet so viele Tage nach dem Wettbewerbstag. Solange der Wettbewerb läuft oder vorläufig ist, bleibt er stehen.',
+            )}
+            onChange={(days) => setData({ days })}
+          />
         </>
       )
     case 'albums':
@@ -1946,6 +2002,13 @@ function SectionContent({
               </option>
             ))}
           </SelectField>
+          <DaysField
+            value={d.days}
+            hint={t(
+              'Nur Alben, deren Datum höchstens so viele Tage zurückliegt; Alben ohne Datum fallen dann weg. Ist keins mehr aktuell, verschwindet der Abschnitt.',
+            )}
+            onChange={(days) => setData({ days })}
+          />
         </>
       )
     case 'posts':
@@ -1973,6 +2036,13 @@ function SectionContent({
               </option>
             ))}
           </SelectField>
+          <DaysField
+            value={d.days}
+            hint={t(
+              'Nur Beiträge, die höchstens so viele Tage alt sind. Ist keiner mehr aktuell, verschwindet der Abschnitt.',
+            )}
+            onChange={(days) => setData({ days })}
+          />
         </>
       )
     case 'app':

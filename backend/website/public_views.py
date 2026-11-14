@@ -543,7 +543,11 @@ class ResultsView(_ResultsBase):
         if not results.enabled(site):
             raise Http404
         if request.query_params.get("start"):
-            items = results.home(site)
+            from .home import builtin_days
+            from .models import normalize_home_sections
+
+            days = builtin_days(normalize_home_sections(site.site.home_sections), "results")
+            items = results.home(site, days=days)
             data = {"competitions": items, "poll_seconds": results.POLL_SECONDS}
             live = any(not c["final"] for c in items)
         else:

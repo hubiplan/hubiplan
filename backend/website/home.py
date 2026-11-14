@@ -63,7 +63,7 @@ KINDS = {
 }
 KIND_HINTS = {
     "text": "Überschrift und Text",
-    "text_image": "Überschrift, Text und ein Bild daneben",
+    "text_image": "Überschrift, Text und ein Bild daneben, darüber oder darunter",
     "banner": "ein breites Bild, auf Wunsch mit einer Zeile darauf",
     "buttons": "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen",
     "tiles": "zwei bis sechs Kacheln mit Bild, Titel und Ziel",
@@ -90,7 +90,7 @@ KIND_HINTS = {
     "program": "Ablauf eines Fests mit Tagen und Uhrzeiten",
     "callout": "farbiger Kasten für Info, Achtung oder Erfolg",
     "accordion": "Überschriften mit Text zum Aufklappen",
-    "images": "zwei bis acht eigene Bilder mit Bildunterschrift",
+    "images": "ein bis acht eigene Bilder mit Bildunterschrift",
     "downloads": "mehrere Dateien aus Webseite › Dokumente als Liste",
     "unit_honors": "die aktuellen Majestäten einer Untereinheit",
     "competition": "Sieger und Stand eines bestimmten Wettbewerbs",
@@ -114,6 +114,13 @@ KIND_NEEDS_BLOCK = {
     "albums": "gallery",
     "posts": "posts",
 }
+
+# Wie lange etwas als aktuell gilt (Ralf 14.11.2026): Tage nach dem Wettbewerb, Album oder
+# Beitrag; ``None`` heißt immer. Gilt für den festen Baustein „Aktuelle Ergebnisse“ und die
+# Arten unten. Ist nichts mehr aktuell, verschwindet der Abschnitt.
+DAYS_CHOICES = (3, 7, 14, 30, 60, 90, 180, 365)
+DAYS_BUILTINS = {"results"}
+DAYS_KINDS = {"competition", "albums", "posts"}
 
 CUSTOM_KEY = re.compile(r"^c:[a-z0-9]{1,24}$")
 MAX_CUSTOM = 30
@@ -183,6 +190,25 @@ def _layout(item: dict, key_or_kind: str) -> dict:
     }
 
 
+def clean_days(value) -> int | None:
+    """Frist in Tagen aus gespeicherten Daten; Unbekanntes heißt „immer“."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if value in DAYS_CHOICES else None
+
+
+def cutoff(days_value: int | None) -> datetime.date | None:
+    """Ältester Tag, der bei dieser Frist noch als aktuell gilt (Ortszeit)."""
+    if days_value is None:
+        return None
+    return timezone.localdate() - datetime.timedelta(days=days_value)
+
+
+def builtin_days(sections: list[dict], key: str) -> int | None:
+    """Frist eines festen Bausteins aus der (normalisierten) Liste."""
+    return next((s.get("days") for s in sections if s.get("key") == key and "kind" not in s), None)
+
+
 def normalize(value, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
     """Gespeicherte Liste → vollständige Liste in Reihenfolge (neue Bausteine hinten)."""
     result, seen = [], set()
@@ -192,7 +218,10 @@ def normalize(value, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
             continue
         if key in builtin_keys:
             seen.add(key)
-            result.append({"key": key, "on": bool(item.get("on", True)), **_layout(item, key)})
+            entry = {"key": key, "on": bool(item.get("on", True)), **_layout(item, key)}
+            if key in DAYS_BUILTINS:
+                entry["days"] = clean_days(item.get("days"))
+            result.append(entry)
         elif is_custom(key) and item.get("kind") in kinds:
             seen.add(key)
             data = item.get("data")
@@ -207,7 +236,10 @@ def normalize(value, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
             )
     for key in builtin_keys:
         if key not in seen:
-            result.append({"key": key, "on": key not in default_off, **_layout({}, key)})
+            entry = {"key": key, "on": key not in default_off, **_layout({}, key)}
+            if key in DAYS_BUILTINS:
+                entry["days"] = None
+            result.append(entry)
     return result
 
 
@@ -317,7 +349,7 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
             "title": title,
             "text": _text(data.get("text"), TEXT_MAX, gettext("Text")),
             "image": _ref(data.get("image"), refs["images"]),
-            "side": _choice(data.get("side"), ("left", "right"), "right"),
+            "side": _choice(data.get("side"), ("left", "right", "top", "bottom"), "right"),
             "size": _choice(data.get("size"), ("small", "half"), "half"),
         }
     if kind == "banner":
@@ -597,16 +629,25 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
     if kind == "unit_honors":
         return {"title": title, "unit": _ref(data.get("unit"), refs["units"])}
     if kind == "competition":
-        return {"title": title, "competition": _ref(data.get("competition"), refs["competitions"])}
+        return {
+            "title": title,
+            "competition": _ref(data.get("competition"), refs["competitions"]),
+            "days": clean_days(data.get("days")),
+        }
     if kind == "albums":
         count = data.get("count")
-        return {"title": title, "count": count if isinstance(count, int) and 2 <= count <= 8 else 4}
+        return {
+            "title": title,
+            "count": count if isinstance(count, int) and 2 <= count <= 8 else 4,
+            "days": clean_days(data.get("days")),
+        }
     if kind == "posts":
         count = data.get("count")
         return {
             "title": title,
             "count": count if isinstance(count, int) and 1 <= count <= 6 else 3,
             "channel": _choice(data.get("channel"), ("all", "instagram", "facebook"), "all"),
+            "days": clean_days(data.get("days")),
         }
     if kind == "app":
         return {
@@ -1144,13 +1185,23 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
     if kind == "albums":
         from . import gallery
 
-        albums = gallery.public_list(site.site, site.image)[: data.get("count", 4)]
+        albums = gallery.public_list(site.site, site.image)
+        since = cutoff(clean_days(data.get("days")))
+        if since is not None:
+            # Alben ohne Datum lassen sich nicht einordnen und gelten dann nicht als aktuell
+            albums = [a for a in albums if a.get("date") and a["date"] >= since.isoformat()]
+        albums = albums[: data.get("count", 4)]
         return {"title": title, "albums": albums} if albums else None
     if kind == "posts":
         if not site.site.block_on("posts"):
             return None
         channel = data.get("channel", "all")
-        posts = site.posts(None if channel == "all" else channel, None, data.get("count", 3))
+        posts = site.posts(
+            None if channel == "all" else channel,
+            None,
+            data.get("count", 3),
+            days=clean_days(data.get("days")),
+        )
         return {"title": title, "posts": posts, "channel": channel} if posts else None
     if kind == "app":
         from organizations.addresses import base_url
@@ -1225,7 +1276,7 @@ def _competition(site, title, data) -> dict | None:
     from . import results
 
     comp = next((c for c in results.published(site) if c.pk == data.get("competition")), None)
-    if comp is None:
+    if comp is None or not results.current(comp, clean_days(data.get("days"))):
         return None
     entry = results.home_entry(site, comp)
     return {"title": title, "competition": entry}

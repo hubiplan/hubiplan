@@ -277,7 +277,7 @@ def test_bestehende_orte_werden_zu_raeumen(orgs):
 
     from core.tenancy import rls_bypass
 
-    migration = importlib.import_module("places.migrations.0002_raeume")
+    migration = importlib.import_module("places.migrations.0003_raeume_zusammenfuehren")
     club = orgs["a"]
     anschrift = "Musterweg 18, 12345 Musterstadt"
     with rls_bypass():
@@ -308,3 +308,36 @@ def test_bestehende_orte_werden_zu_raeumen(orgs):
     # Einzelner Raum oder andere Anschrift: bleibt, wie es war
     assert allein.parent_id is None and allein.name == "Kirmesplatz, Schießstand"
     assert anders.parent_id is None and anders.name == "Bürgerhaus, Keller"
+
+
+@pytest.mark.langsam
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
+def test_migration_fuehrt_bestand_zusammen(orgs):
+    """Echter Migrationslauf mit zusammenzuführenden Orten (scheiterte am 14.11. mit
+    „pending trigger events“, solange Schema und Datenumbau in einer Transaktion lagen)."""
+    from django.db import connection
+    from django.db.migrations.executor import MigrationExecutor
+
+    from core.tenancy import rls_bypass
+
+    club = orgs["a"]
+    anschrift = "Musterweg 18, 12345 Musterstadt"
+    executor = MigrationExecutor(connection)
+    latest = executor.loader.graph.leaf_nodes()
+    previous = [("places", "0001_orte")]
+    with rls_bypass():
+        try:
+            executor.migrate(previous)
+            old = executor.loader.project_state(previous).apps.get_model("places", "Place")
+            saal = old.objects.create(
+                organization_id=club.pk, name="Bürgerhaus, Saal", address=anschrift
+            )
+            stand = old.objects.create(
+                organization_id=club.pk, name="Bürgerhaus, Schießstand", address=anschrift
+            )
+        finally:
+            MigrationExecutor(connection).migrate(latest)
+        haus = Place.objects.get(organization=club, name="Bürgerhaus", parent=None)
+        raeume = {p.pk: (p.parent_id, p.name) for p in Place.objects.filter(parent=haus)}
+    assert raeume == {saal.pk: (haus.pk, "Saal"), stand.pk: (haus.pk, "Schießstand")}
