@@ -10,6 +10,8 @@ COPY frontend/ ./
 ARG HUBIPLAN_SOURCE_URL=https://github.com/hubiplan/hubiplan
 ENV VITE_HUBIPLAN_SOURCE_URL=$HUBIPLAN_SOURCE_URL
 RUN npm run build
+# Brotli- und gzip-Fassungen für Caddys „precompressed“ (deploy/caddy/site.caddy)
+RUN node scripts/vorkomprimieren.mjs dist
 
 FROM caddy:2-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
 COPY deploy/Caddyfile deploy/Caddyfile.proxy /etc/caddy/

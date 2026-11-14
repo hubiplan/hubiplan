@@ -51,7 +51,11 @@ handle {
 	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 	root * /srv
 	try_files {path} /index.html
-	file_server
+	# Fertig komprimierte Fassungen aus dem Bau (frontend/scripts/vorkomprimieren.mjs):
+	# Brotli, sonst gzip; fehlt eine, komprimiert „encode“ oben wie bisher beim Abruf
+	file_server {
+		precompressed br gzip
+	}
 }
 
 header {
