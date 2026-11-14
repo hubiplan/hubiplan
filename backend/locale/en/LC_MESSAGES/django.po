@@ -12442,3 +12442,6 @@ msgstr "You cannot link this document here."
 
 msgid "Das Dokument hängt schon an diesem Termin."
 msgstr "This document is already attached to this event."
+
+msgid "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
+msgstr "Only attachments of public events appear on the website."

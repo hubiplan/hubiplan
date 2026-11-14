@@ -14,7 +14,7 @@ import type {
   Occurrence,
 } from '../../api/events.ts'
 import { errorMessage, useLoad } from '../forms.ts'
-import { Alert, Field, Loading } from '../ui.tsx'
+import { Alert, Checkbox, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
@@ -591,6 +591,24 @@ export function EventDialog({
                       >
                         {t('entfernen')}
                       </button>
+                    )}
+                    {data.can_edit && data.visibility === 'public' && a.available !== false && (
+                      <Checkbox
+                        label={t('auf der Webseite zeigen')}
+                        checked={!!a.on_website}
+                        busy={busy}
+                        onChange={async (value) => {
+                          setBusy(true)
+                          setMessage(null)
+                          try {
+                            changed(await eventApi.showOnWebsite(a.url, value))
+                          } catch (err) {
+                            setMessage({ kind: 'error', text: errorMessage(err) })
+                          } finally {
+                            setBusy(false)
+                          }
+                        }}
+                      />
                     )}
                   </li>
                 ))}
