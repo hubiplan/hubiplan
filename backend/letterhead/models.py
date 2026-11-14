@@ -35,6 +35,53 @@ class Letterhead(models.Model):
         GEORGIA = "Georgia", gettext_lazy("Georgia")
         TIMES = "Times New Roman", gettext_lazy("Times New Roman")
         VERDANA = "Verdana", gettext_lazy("Verdana")
+        # Schriften der Webseite; im PDF eingebettet, in Word mit Ersatzschrift (Issue #470)
+        SOURCE_SANS = "Source Sans 3", gettext_lazy("Source Sans 3")
+        CRIMSON = "Crimson Pro", gettext_lazy("Crimson Pro")
+        ATKINSON = "Atkinson Hyperlegible", gettext_lazy("Atkinson Hyperlegible")
+        OPEN_SANS = "Open Sans", gettext_lazy("Open Sans")
+        ROBOTO = "Roboto", gettext_lazy("Roboto")
+        OSWALD = "Oswald", gettext_lazy("Oswald")
+        FRAKTUR = "UnifrakturMaguntia", gettext_lazy("UnifrakturMaguntia (Fraktur)")
+
+    class OfficeFont(models.TextChoices):
+        """Ersatzschrift in Word, wenn die gewählte Schrift dort nicht installiert ist."""
+
+        ARIAL = "Arial", gettext_lazy("Arial")
+        CALIBRI = "Calibri", gettext_lazy("Calibri")
+        CAMBRIA = "Cambria", gettext_lazy("Cambria")
+        GEORGIA = "Georgia", gettext_lazy("Georgia")
+        TIMES = "Times New Roman", gettext_lazy("Times New Roman")
+        VERDANA = "Verdana", gettext_lazy("Verdana")
+
+    class LogoSize(models.TextChoices):
+        SMALL = "small", gettext_lazy("klein")
+        MEDIUM = "medium", gettext_lazy("mittel")
+        LARGE = "large", gettext_lazy("groß")
+
+    class Slot(models.TextChoices):
+        """Platz in der Palette der Einheit (0 Hauptfarbe, 1 Zweitfarbe, 2–5 weitere)."""
+
+        P0 = "0", gettext_lazy("Hauptfarbe")
+        P1 = "1", gettext_lazy("Zweitfarbe")
+        P2 = "2", gettext_lazy("Farbe 3")
+        P3 = "3", gettext_lazy("Farbe 4")
+        P4 = "4", gettext_lazy("Farbe 5")
+        P5 = "5", gettext_lazy("Farbe 6")
+
+    class TitleColor(models.TextChoices):
+        BLACK = "black", gettext_lazy("Schwarz")
+        PRIMARY = "primary", gettext_lazy("Hauptfarbe")
+
+    class Stripe(models.TextChoices):
+        GREY = "grey", gettext_lazy("hellgrau")
+        NONE = "none", gettext_lazy("keine Streifen")
+        P0 = "0", gettext_lazy("Hauptfarbe, hell")
+        P1 = "1", gettext_lazy("Zweitfarbe, hell")
+        P2 = "2", gettext_lazy("Farbe 3, hell")
+        P3 = "3", gettext_lazy("Farbe 4, hell")
+        P4 = "4", gettext_lazy("Farbe 5, hell")
+        P5 = "5", gettext_lazy("Farbe 6, hell")
 
     organization = models.OneToOneField(
         Organization, on_delete=models.CASCADE, related_name="letterhead"
@@ -51,6 +98,63 @@ class Letterhead(models.Model):
         help_text="z. B. „gegründet 1920“; leer: keine Zusatzzeile.",
     )
     font = models.CharField("Schriftart", max_length=40, choices=Font.choices, default=Font.ARIAL)
+    # Gestaltung (Issue #470); die Grundwerte entsprechen dem bisherigen festen Aussehen
+    heading_font = models.CharField(
+        "Schrift für Name und Überschriften",
+        max_length=40,
+        choices=[("", gettext_lazy("wie der Text")), *Font.choices],
+        default="",
+        db_default="",
+        blank=True,
+    )
+    font_fallback = models.CharField(
+        "Ersatzschrift in Word (Text)",
+        max_length=40,
+        choices=OfficeFont.choices,
+        default=OfficeFont.ARIAL,
+        db_default=OfficeFont.ARIAL,
+    )
+    heading_font_fallback = models.CharField(
+        "Ersatzschrift in Word (Überschriften)",
+        max_length=40,
+        choices=OfficeFont.choices,
+        default=OfficeFont.GEORGIA,
+        db_default=OfficeFont.GEORGIA,
+    )
+    show_name = models.BooleanField("Name neben dem Logo zeigen", default=True, db_default=True)
+    logo_size = models.CharField(
+        "Größe von Logo/Wappen",
+        max_length=10,
+        choices=LogoSize.choices,
+        default=LogoSize.MEDIUM,
+        db_default=LogoSize.MEDIUM,
+    )
+    line_color = models.CharField(
+        "Linienfarbe", max_length=1, choices=Slot.choices, default=Slot.P1, db_default=Slot.P1
+    )
+    head_line = models.BooleanField("Linie unter dem Kopf", default=True, db_default=True)
+    footer_line = models.BooleanField("Linie über der Fußzeile", default=True, db_default=True)
+    title_color = models.CharField(
+        "Farbe von Titel und Betreff",
+        max_length=10,
+        choices=TitleColor.choices,
+        default=TitleColor.BLACK,
+        db_default=TitleColor.BLACK,
+    )
+    table_line_color = models.CharField(
+        "Linien in Tabellen",
+        max_length=1,
+        choices=Slot.choices,
+        default=Slot.P0,
+        db_default=Slot.P0,
+    )
+    table_stripe = models.CharField(
+        "Streifen in Tabellen",
+        max_length=4,
+        choices=Stripe.choices,
+        default=Stripe.GREY,
+        db_default=Stripe.GREY,
+    )
     salutation = models.CharField(
         "Anrede", max_length=100, default="Sehr geehrte Damen und Herren,"
     )

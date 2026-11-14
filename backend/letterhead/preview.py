@@ -2,8 +2,8 @@
 
 Sie zeigt dieselben Angaben an denselben Stellen wie die Word-Datei (gleiche
 Maße aus ``docx.FORMS``), damit niemand für jeden Versuch Word öffnen muss.
-Schriften werden angenähert: serifenlose Schriften als Helvetica, Serifenschriften
-als Times.
+Office-Schriften werden angenähert (serifenlose als Helvetica, Serifenschriften als
+Times); die Schriften der Webseite stehen eingebettet so da wie im PDF-Brief.
 """
 
 from __future__ import annotations
@@ -35,7 +35,8 @@ def render(data: LetterData) -> bytes:
     width, height = A4
     c = canvas.Canvas(buf, pagesize=A4)
     c.setTitle(f"Vorschau Briefvorlage {data.unit.name}")
-    regular, bold = fonts(data.font)
+    regular, _ = fonts(data.font)
+    _, heading_bold = fonts(data.heading_font)
     form = FORMS[data.form]
     lh = data.settings
 
@@ -74,8 +75,9 @@ def render(data: LetterData) -> bytes:
 
     # Betreff, Anrede, Text, Gruß
     pos = field_top + 45 + 8.5 + 4
-    c.setFillColor(LIGHT)
-    c.setFont(bold, 11)
+    title_black = data.title_color.lower() == "#000000"
+    c.setFillColor(LIGHT if title_black else colors.HexColor(data.title_color))
+    c.setFont(heading_bold, 11)
     c.drawString(MARGIN_LEFT * mm, y(pos), "Betreff")
     pos += 12.5
     c.setFillColor(colors.black)

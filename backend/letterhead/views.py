@@ -18,10 +18,12 @@ from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
 from core.tenancy import rls_bypass
 from organizations.models import Department, Organization
+from organizations.theme import contrast
 
 from . import data as service
 from . import docx, preview
 from .models import Letterhead, LetterheadChoice
+from .typefaces import WEB_FONTS
 
 EDIT_FIELDS = [
     "mode",
@@ -39,6 +41,18 @@ EDIT_FIELDS = [
     "show_board",
     "show_register",
     "show_social",
+    # Gestaltung (Issue #470)
+    "heading_font",
+    "font_fallback",
+    "heading_font_fallback",
+    "show_name",
+    "logo_size",
+    "line_color",
+    "head_line",
+    "footer_line",
+    "title_color",
+    "table_line_color",
+    "table_stripe",
 ]
 
 MAX_SIGNATURE_BYTES = 1_000_000
@@ -93,7 +107,40 @@ def _hints(owner: Organization, letter: service.LetterData) -> list[str]:
         hints.append("Es ist kein Logo/Wappen hinterlegt (Einstellungen › Erscheinungsbild).")
     if not (owner.street and owner.city):
         hints.append("Die Anschrift ist unvollständig.")
+    hints += design_hints(letter)
     return hints
+
+
+def design_hints(letter: service.LetterData) -> list[str]:
+    """Hinweise zur Gestaltung, z. B. zu blasse Linien auf weißem Papier (Issue #470)."""
+    hints = []
+    lh = letter.settings
+    if (lh.head_line or lh.footer_line) and contrast(letter.line_color, "#ffffff") < 3:
+        hints.append(
+            gettext(
+                "Die Linienfarbe hebt sich auf Weiß kaum ab (Kontrast {ratio}:1, empfohlen "
+                "mindestens 3:1)."
+            ).format(ratio=f"{contrast(letter.line_color, '#ffffff'):.1f}".replace(".", ","))
+        )
+    if contrast(letter.table_line_color, "#ffffff") < 3:
+        hints.append(
+            gettext(
+                "Die Linien in Tabellen heben sich auf Weiß kaum ab (Kontrast {ratio}:1)."
+            ).format(ratio=f"{contrast(letter.table_line_color, '#ffffff'):.1f}".replace(".", ","))
+        )
+    if not lh.show_name and lh.logo_position == Letterhead.LogoPosition.NONE:
+        hints.append(
+            gettext("Ohne Logo/Wappen steht der Name trotzdem im Kopf, sonst fehlte er ganz.")
+        )
+    return hints
+
+
+def palette_state(letter: service.LetterData) -> list[dict]:
+    """Palette der Einheit mit Kontrast auf Weiß, für die Farbauswahl."""
+    return [
+        {"slot": i, "color": color, "contrast": round(contrast(color, "#ffffff"), 2)}
+        for i, color in enumerate(letter.palette)
+    ]
 
 
 def _state(org: Organization) -> dict:
@@ -107,6 +154,8 @@ def _state(org: Organization) -> dict:
         "owner": {"id": owner.pk, "name": owner.name, "is_self": owner.pk == org.pk},
         "accounts": service.bank_accounts(owner),
         "board": letter.board,
+        "palette": palette_state(letter),
+        "web_fonts": sorted(WEB_FONTS),
         "hints": _hints(owner, letter),
     }
 

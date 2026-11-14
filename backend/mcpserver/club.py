@@ -688,8 +688,9 @@ CLUB_TOOLS: tuple[Tool, ...] = (
 def tools_for(ctx: Context):
     """Hilfe immer; Webseite je nach Bereich der Zustimmung."""
     from .club_design import DESIGN_TOOLS
+    from .club_letterhead import LETTERHEAD_TOOLS
     from .club_theme import THEME_TOOLS
 
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
-    club = (*CLUB_TOOLS, *DESIGN_TOOLS, *THEME_TOOLS)
+    club = (*CLUB_TOOLS, *DESIGN_TOOLS, *THEME_TOOLS, *LETTERHEAD_TOOLS)
     return (*TOOLS, *(t for t in club if t.scope in scopes))
