@@ -79,7 +79,7 @@ export function DesignChooser({
         {t(
           'Das Design bestimmt, wie die Webseite aussieht: Kopf, Menü, Fuß und die Anordnung der Startseite. Inhalte und Bausteine (unter',
         )}{' '}
-        <Link to="/webseite/aufbau">{t('Webseite › Menü und Bereiche')}</Link>
+        <Link to="/webseite/aufbau">{t('Webseite › Menü und Bausteine')}</Link>
         {t(') bleiben bei jedem Design gleich. Die Farben legst du hier fest:')}{' '}
         <Link to="/einstellungen/erscheinungsbild">{t('Einstellungen › Erscheinungsbild')}</Link>.
       </p>

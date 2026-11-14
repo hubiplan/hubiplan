@@ -102,7 +102,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 36
+    assert len(style.OPTIONS) == 48
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
@@ -138,3 +138,64 @@ def test_neue_regler(club, site, client_web):
     assert put(client_web, club, {"style": {"carousel": "fast"}}).status_code == 400
     assert put(client_web, club, {"style": {"contrast": "on"}}).status_code == 400
     assert style.LOCKS["sidebar"]["nav_mobile"] is None
+
+
+def test_regler_vom_14_11(club, site, client_web):
+    """Ralf 14.11.: Titelbild abdunkeln/färben, Ausschnitt, Lage des Namens, Trenner,
+    Unterseitenkopf, Schrift der Überschriften, Menüschrift, Einblenden, Tabellen, Datum."""
+    values = {
+        "hero_shade": "strong",
+        "hero_tint": "accent",
+        "hero_focus": "bottom",
+        "hero_text": "center",
+        "sections": "alternate",
+        "page_title": "image",
+        "heading_font": "modern",
+        "nav_case": "upper",
+        "nav_size": "large",
+        "motion": "subtle",
+        "stripes": True,
+        "date_text": "short",
+    }
+    resp = put(client_web, club, {"style": values})
+    assert resp.status_code == 200, resp.content
+    site.refresh_from_db()
+    assert site.style == values
+    assert put(client_web, club, {"style": {"hero_tint": "rot"}}).status_code == 400
+    assert put(client_web, club, {"style": {"stripes": "ja"}}).status_code == 400
+
+
+def test_vorgaben_je_design():
+    """Die Oberfläche markiert die Stufe, die das Design zeigt; nur gültige Stufen."""
+    from website.designs import DESIGNS
+
+    for design in DESIGNS:
+        given = style.defaults(design)
+        assert given, design
+        for key, value in given.items():
+            allowed = style.OPTIONS[key]
+            if allowed is bool:
+                assert isinstance(value, bool), (design, key)
+            else:
+                assert value in allowed, (design, key, value)
+    assert style.defaults("classic")["nav"] == "buttons"
+    assert style.defaults("stage")["sticky"] is True
+    # Ecken mit 10 px liegen zwischen den Stufen: keine Markierung
+    assert "corners" not in style.defaults("classic")
+    assert style.defaults("festive")["corners"] == "slight"
+    assert style.defaults("paket-unbekannt") == {}
+
+
+def test_voreinstellungen_sind_gueltig(club, site, client_web):
+    assert set(style.PRESETS) == {"calm", "festive", "modern", "readable"}
+    for name, values in style.PRESETS.items():
+        assert style.validate(values) == {k: values[k] for k in style.OPTIONS if k in values}, name
+    resp = put(client_web, club, {"style": style.PRESETS["festive"]})
+    assert resp.status_code == 200, resp.content
+
+
+def test_katalog_mit_vorgaben_und_voreinstellungen(club, site, client_web):
+    resp = client_web.get(f"/api/orgs/{club.pk}/website/")
+    cat = resp.json()["style_catalog"]
+    assert cat["defaults"]["classic"]["header_bg"] == "white"
+    assert cat["presets"]["readable"]["size"] == "large"

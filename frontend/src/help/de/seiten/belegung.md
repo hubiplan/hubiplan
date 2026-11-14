@@ -41,7 +41,7 @@ Aus dem Bedarf buchen: Ist ein Material mit Buchungskalender einem Termin zugeor
 auf seiner Detailseite **Verbindlich buchen**. Das öffnet die Buchung mit diesem Termin; bei
 „Nur dieser Termin“ wird genau dieses Vorkommen gebucht.
 
-Auf der Webseite: Unter **Buchungskalender** wählst du je Objekt, ob die Webseite im Bereich „Belegung“ nichts, nur belegte Zeiten oder bei öffentlichen Buchungen auch den Zweck zeigt. Den Bereich schaltest du unter Webseite › Menü und Bereiche ein.
+Auf der Webseite: Unter **Buchungskalender** wählst du je Objekt, ob die Webseite im Bereich „Belegung“ nichts, nur belegte Zeiten oder bei öffentlichen Buchungen auch den Zweck zeigt. Den Bereich schaltest du unter Webseite › Menü und Bausteine ein.
 
 Anfragen aus dem Mitgliederbereich: Mit **Mitglieder dürfen im Mitgliederbereich anfragen**
 erscheint ein Objekt in Mein Bereich auf der Kachel Belegung. Solche Anfragen brauchen immer eine Freigabe.

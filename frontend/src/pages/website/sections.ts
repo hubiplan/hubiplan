@@ -11,6 +11,7 @@ export interface NavItem {
 }
 
 const content = t('Inhalte')
+const design = t('Gestaltung')
 const structure = t('Aufbau')
 const operation = t('Betrieb')
 
@@ -22,22 +23,25 @@ const ALL: NavItem[] = [
   { to: '/webseite/galerie', label: t('Galerie'), section: content },
   { to: '/webseite/dokumente', label: t('Dokumente'), section: content },
   { to: '/webseite/beitraege', label: t('Social Media'), section: content },
-  { to: '/webseite/aufbau', label: t('Menü und Bereiche'), section: structure },
-  { to: '/webseite/gestaltung', label: t('Gestaltung'), section: structure },
+  // S1/S3 (Ralf 14.11.2026): Gestaltung in eigenen Punkten, jeder mit Vorschau
+  { to: '/webseite/gestaltung', label: t('Design und Farben'), section: design },
+  { to: '/webseite/feinabstimmung', label: t('Feinabstimmung'), section: design },
+  { to: '/webseite/bereiche', label: t('Bereiche'), section: design },
+  { to: '/webseite/fassungen', label: t('Fassungen'), section: design },
+  { to: '/webseite/aufbau', label: t('Menü und Bausteine'), section: structure },
   { to: '/webseite/kontakt', label: t('Kontaktformular'), section: operation },
   { to: '/webseite/domain', label: t('Internetadresse'), section: operation },
 ]
 
-/** Wer nur Inhalte pflegt, sieht nur „Startseite“ (Inhalte der Abschnitte), „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
+/** Verwalter sehen alles. Wer nur Inhalte pflegt, sieht nur „Startseite“ (Inhalte der Abschnitte), „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
 export function websiteSections(org: OrgSummary | null): NavItem[] {
   if (!org) return []
   // Social Media ist ein eigenes Modul
   const all = org.modules.includes('social')
     ? ALL
     : ALL.filter((s) => s.to !== '/webseite/beitraege')
-  // Verwalter stellen die Startseite unter „Gestaltung“ zusammen
-  if (org.permissions.includes(PERM.websiteManage))
-    return all.filter((s) => s.to !== '/webseite/startseite')
+  // S2 (Ralf 14.11.2026): eine Startseite für alle; Verwalter stellen dort auch zusammen
+  if (org.permissions.includes(PERM.websiteManage)) return all
   if (org.permissions.includes(PERM.websiteContent)) {
     return all.filter((s) =>
       [

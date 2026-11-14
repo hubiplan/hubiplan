@@ -11,6 +11,7 @@ import type { AutoSave } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import type { PreviewFocus } from './StyleTuning.tsx'
 
 /** Hinweis „Nicht veröffentlichte Änderungen · Veröffentlichen · Verwerfen“ */
 export function DraftBar({
@@ -245,8 +246,23 @@ function stampOf(website: Website): string {
   ])
 }
 
-/** Die echte Webseite in der Vorschau, umschaltbar Handy / Tablet / Bildschirm */
-export function PreviewFrame({ website }: { website: Website }) {
+/** Adresse der Vorschau: Startseite oder eine feste Unterseite, dazu eine Sprungmarke, die
+ * die Webseite kurz hervorhebt (Ralf 14.11.2026, Punkt 5) */
+export function previewUrl(base: string, n: number, focus: PreviewFocus = {}): string {
+  const params = [`neu=${n}`]
+  if (focus.target === 'unterseite' || focus.target === 'termine')
+    params.push(`ziel=${focus.target}`)
+  const hash =
+    focus.target === 'kopf' || focus.target === 'fuss' || focus.target === 'inhalt'
+      ? `#${focus.target}`
+      : ''
+  return `${base}vorschau/design/?${params.join('&')}${hash}`
+}
+
+/** Die echte Webseite in der Vorschau, umschaltbar Handy / Tablet / Bildschirm. Nach einer
+ * Änderung zeigt sie die Stelle, die ``focus`` nennt (z. B. den Fuß), und wechselt für das
+ * Handymenü auf „Handy“. */
+export function PreviewFrame({ website, focus }: { website: Website; focus?: PreviewFocus }) {
   const org = useActiveOrg()
   const [device, setDevice] = useState<Device>('desktop')
   const [src, setSrc] = useState<string | null>(null)
@@ -290,9 +306,14 @@ export function PreviewFrame({ website }: { website: Website }) {
     }
     if (!base || !isConnected(website)) return
     count.current += 1
-    setSrc(`${base}vorschau/design/?neu=${count.current}`)
+    setSrc(previewUrl(base, count.current, focus))
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp])
+
+  // Handymenü verstellt: gleich die Handyansicht zeigen
+  useEffect(() => {
+    if (focus?.device === 'phone') setDevice('phone')
+  }, [focus])
 
   useLayoutEffect(() => {
     const el = pane.current

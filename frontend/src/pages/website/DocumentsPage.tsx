@@ -59,7 +59,7 @@ export function DocumentsPage() {
     <div className="stack">
       <p className="muted">
         {t(
-          'Zeitungsartikel und andere Dateien als PDF oder Bild. Der Pressespiegel erscheint im Bereich „Presse“, eigene Dokumente unter „Dokumente“ neben Satzung und Beitragsordnung. Beide Bereiche schaltest du unter „Menü und Bereiche“ ein.',
+          'Zeitungsartikel und andere Dateien als PDF oder Bild. Der Pressespiegel erscheint im Bereich „Presse“, eigene Dokumente unter „Dokumente“ neben Satzung und Beitragsordnung. Beide Bereiche schaltest du unter „Menü und Bausteine“ ein.',
         )}
       </p>
       <section className="card stack">

@@ -15,4 +15,4 @@ Photos: “Upload photos” takes many photos at once; you can also drag them on
 
 Sorting: by default the gallery sorts images by date taken and albums by date (newest first). Choose “custom order” to sort by dragging. The cover is the chosen image, otherwise the first one.
 
-Visibility: an album appears on the website only with “Show on the website”; a sub-album only if its parent album is shown as well. The “Gallery” section must also be switched on under “Menu and sections”. Only show photos of recognisable people with their consent.
+Visibility: an album appears on the website only with “Show on the website”; a sub-album only if its parent album is shown as well. The “Gallery” section must also be switched on under “Menu and building blocks”. Only show photos of recognisable people with their consent.

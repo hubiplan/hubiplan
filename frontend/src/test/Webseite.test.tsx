@@ -170,7 +170,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: withHome }),
         [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
       },
-      '/webseite/gestaltung',
+      '/webseite/startseite',
     )
     const user = userEvent.setup()
     expect(
@@ -210,7 +210,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: withHome }),
         [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
       },
-      '/webseite/gestaltung',
+      '/webseite/startseite',
     )
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Abschnitt hinzufügen' }))
@@ -257,7 +257,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: withHome }),
         [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
       },
-      '/webseite/gestaltung',
+      '/webseite/startseite',
     )
     const user = userEvent.setup()
     const lastSent = () => {
@@ -317,7 +317,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: withLayouts }),
         [`PUT ${base}`]: () => ({ status: 200, body: withLayouts }),
       },
-      '/webseite/gestaltung',
+      '/webseite/bereiche',
     )
     const user = userEvent.setup()
     const group = await screen.findByRole('group', { name: 'Termine und Kalender-Abo' })
@@ -441,7 +441,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: site }),
         [`PUT ${base}`]: () => ({ status: 200, body: site }),
       },
-      '/webseite/gestaltung',
+      '/webseite/fassungen',
     )
     const user = userEvent.setup()
     expect(await screen.findByRole('button', { name: 'Gestaltung speichern' })).toBeVisible()
@@ -608,7 +608,7 @@ describe('Webseite', () => {
         [`PUT ${base}`]: () => ({ status: 200, body }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
       },
-      '/webseite/gestaltung',
+      '/webseite/feinabstimmung',
     )
     const user = userEvent.setup()
     const lastStyle = () => {
@@ -620,9 +620,12 @@ describe('Webseite', () => {
     await user.click(modern)
     expect(modern).toHaveAttribute('aria-pressed', 'true')
     await waitFor(() => expect(lastStyle()).toEqual({ font: 'modern' }), { timeout: 4000 })
-    // Seitenleiste legt die Lage des Wappens selbst fest
-    await user.click(screen.getByText('Kopf und Menü'))
-    expect(screen.getByRole('button', { name: 'mittig' })).toBeDisabled()
+    // Seitenleiste legt die Lage des Wappens selbst fest: eine Zeile statt ausgegraut
+    await user.click(screen.getByText('Kopf', { selector: 'summary' }))
+    expect(
+      screen.getByText('Legt das Design „Seitenleiste“ selbst fest: Lage des Wappens.'),
+    ).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'mittig' })).toBeNull()
     // Wappen aus, dann Name aus: das Wappen geht wieder an (nie beide aus)
     await user.click(screen.getByRole('switch', { name: 'Wappen zeigen' }))
     await user.click(screen.getByRole('switch', { name: 'Vereinsnamen zeigen' }))
@@ -655,14 +658,14 @@ describe('Webseite', () => {
         [`PUT ${base}`]: () => ({ status: 200, body }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
       },
-      '/webseite/gestaltung',
+      '/webseite/feinabstimmung',
     )
     const user = userEvent.setup()
     const lastStyle = () => {
       const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
       return JSON.parse(String(last?.init?.body ?? '{}')).style
     }
-    await user.click(await screen.findByText('Seite'))
+    await user.click(await screen.findByText('Lesbarkeit'))
     await user.click(screen.getByRole('button', { name: 'nach Gerät' }))
     await user.click(screen.getByRole('switch', { name: /^Kontrast erhöht/ }))
     await user.click(screen.getByText('Startseite', { selector: 'summary' }))
@@ -678,6 +681,95 @@ describe('Webseite', () => {
         }),
       { timeout: 4000 },
     )
+  })
+
+  it('Feinabstimmung: Design-Stufe, Voreinstellung, Chips, Suche und Zurücksetzen (Ralf 14.11.)', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const body = {
+      ...data(
+        website('maintenance', {
+          design: 'classic',
+          color_roles: {},
+          style: {},
+          home_sections: [{ key: 'carousel', on: false }],
+          blocks: { board: true, events: true, search: false },
+        }),
+      ),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false }],
+      style_catalog: {
+        options: {
+          font: ['system', 'modern', 'festive'],
+          corners: ['square', 'slight', 'round'],
+          logo: 'switch',
+          logo_pos: ['left', 'center', 'right'],
+          search: ['nav', 'header', 'footer'],
+          hero_shade: ['none', 'light', 'strong'],
+          hero_tint: ['dark', 'primary', 'accent'],
+          size: ['normal', 'large', 'xlarge'],
+          contrast: 'switch',
+        },
+        locks: {},
+        defaults: { classic: { font: 'system', logo: true, logo_pos: 'left' } },
+        presets: { readable: { size: 'large', contrast: true }, calm: { corners: 'slight' } },
+      },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`PUT ${base}`]: () => ({ status: 200, body }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/feinabstimmung',
+    )
+    const user = userEvent.setup()
+    const lastStyle = () => {
+      const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+      return JSON.parse(String(last?.init?.body ?? '{}')).style
+    }
+    // Die Stufe des Designs ist markiert
+    const system = await screen.findByRole('button', { name: 'System' })
+    expect(system).toHaveClass('is-default')
+    expect(screen.getByRole('button', { name: 'Modern' })).not.toHaveClass('is-default')
+    // Nur, was zutrifft: ohne Titelbild keine Titelbild-Regler, ohne Baustein keine Suche
+    expect(screen.queryByText('Titelbild abdunkeln')).toBeNull()
+    expect(screen.queryByText('Suche', { selector: '.style-label' })).toBeNull()
+    // Voreinstellung setzt mehrere Regler
+    await user.click(screen.getByRole('button', { name: 'Gut lesbar' }))
+    await waitFor(() => expect(lastStyle()).toEqual({ size: 'large', contrast: true }), {
+      timeout: 4000,
+    })
+    // Verstellte Regler als Chips; × stellt einen zurück
+    const chips = screen.getByRole('list', { name: 'Verstellte Regler' })
+    expect(within(chips).getByRole('button', { name: /Schriftgröße: größer/ })).toBeVisible()
+    await user.click(within(chips).getByRole('button', { name: 'Kontrast erhöht zurücksetzen' }))
+    await waitFor(() => expect(lastStyle()).toEqual({ size: 'large' }), { timeout: 4000 })
+    // Suche filtert die Regler und öffnet die Gruppe
+    await user.type(screen.getByRole('searchbox', { name: 'Regler suchen' }), 'Wappen')
+    expect(screen.getByRole('switch', { name: 'Wappen zeigen' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'System' })).toBeNull()
+    await user.clear(screen.getByRole('searchbox', { name: 'Regler suchen' }))
+    await user.type(screen.getByRole('searchbox', { name: 'Regler suchen' }), 'gibtesnicht')
+    expect(screen.getByText('Kein Regler gefunden.')).toBeVisible()
+    await user.clear(screen.getByRole('searchbox', { name: 'Regler suchen' }))
+    // ↺ am Regler stellt zurück
+    const reading = screen.getByText('Lesbarkeit', { selector: 'summary' })
+    await user.click(reading)
+    const group = reading.closest('details') as HTMLElement
+    await user.click(within(group).getByRole('button', { name: 'Schriftgröße zurücksetzen' }))
+    await waitFor(() => expect(lastStyle()).toEqual({}), { timeout: 4000 })
+  })
+
+  it('Vorschau springt zur geänderten Stelle (Ralf 14.11.)', async () => {
+    const { previewUrl } = await import('../pages/website/DesignPreview.tsx')
+    const { previewFocus } = await import('../pages/website/StyleTuning.tsx')
+    const b = 'https://www.beispiel.test/'
+    expect(previewUrl(b, 2, previewFocus('footer', true))).toBe(`${b}vorschau/design/?neu=2#fuss`)
+    expect(previewUrl(b, 3, previewFocus('page_title', true))).toBe(
+      `${b}vorschau/design/?neu=3&ziel=unterseite`,
+    )
+    expect(previewUrl(b, 4, previewFocus('date_text', false))).toBe(`${b}vorschau/design/?neu=4`)
+    expect(previewFocus('nav_mobile', true)).toEqual({ target: 'kopf', device: 'phone' })
+    expect(previewUrl(b, 5, previewFocus('font', true))).toBe(`${b}vorschau/design/?neu=5`)
   })
 
   it('legt Gestaltung als Entwurf an, zeigt die Vorschau und veröffentlicht (G2)', async () => {
@@ -710,7 +802,7 @@ describe('Webseite', () => {
         [`POST ${base}design/publish/`]: () => ({ status: 200, body: site({}, versions) }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
       },
-      '/webseite/gestaltung',
+      '/webseite/feinabstimmung',
     )
     const user = userEvent.setup()
     expect(await screen.findByText('Alles veröffentlicht.')).toBeInTheDocument()
@@ -742,6 +834,8 @@ describe('Webseite', () => {
     await user.click(screen.getByRole('button', { name: 'Veröffentlichen' }))
     expect(await screen.findByText('Alles veröffentlicht.')).toBeInTheDocument()
     expect(calls.some((c) => c.key === `POST ${base}design/publish/`)).toBe(true)
+    // Frühere Fassungen stehen unter „Fassungen“ (S3, Ralf 14.11.)
+    await user.click(screen.getByRole('link', { name: 'Fassungen' }))
     expect(await screen.findByText('Frühere Fassungen')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
   })
