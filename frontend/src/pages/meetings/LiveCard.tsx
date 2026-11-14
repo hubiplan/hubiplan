@@ -341,8 +341,8 @@ function NewPoll({
       }}
     >
       <h4>{t('Neue Abstimmung')}</h4>
-      <label>
-        {t('Tagesordnungspunkt')}
+      <label className="field">
+        <span>{t('Tagesordnungspunkt')}</span>
         <select
           value={item}
           onChange={(e) => setItem(e.target.value ? Number(e.target.value) : '')}
@@ -356,20 +356,24 @@ function NewPoll({
           ))}
         </select>
       </label>
-      <label>
-        {election
-          ? t('Frage (leer: Titel des Punkts)')
-          : t('Antrag oder Frage (leer: Titel des Punkts)')}
+      <label className="field">
+        <span>
+          {election
+            ? t('Frage (leer: Titel des Punkts)')
+            : t('Antrag oder Frage (leer: Titel des Punkts)')}
+        </span>
         <input value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={2000} />
       </label>
       {election && (
         <>
-          <label>
-            {t('Amt')}
+          <label className="field">
+            <span>{t('Amt')}</span>
             <input value={office} onChange={(e) => setOffice(e.target.value)} maxLength={200} />
           </label>
-          <label>
-            {t('Zur Wahl (eine Person je Zeile; bei einer Person: Ja, Nein, Enthaltung)')}
+          <label className="field">
+            <span>
+              {t('Zur Wahl (eine Person je Zeile; bei einer Person: Ja, Nein, Enthaltung)')}
+            </span>
             <textarea
               rows={3}
               value={candidates}

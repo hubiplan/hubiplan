@@ -24,7 +24,7 @@ Use Target unit to share with allowed neighbouring levels on the same instance. 
 
 ## Tasks linked to events
 
-Link a task to an event in your own calendar. The event offers links to its tasks and to creating a linked task. The task owner can change or remove the link under “Linked event”. Calendar and task permissions remain independent: linking does not share either object. Without calendar permission, only “Event unavailable” appears. Deleting the event keeps the task and removes its link. Due dates do not move automatically with the event. A recurring event is linked as a whole series, rather than an individual occurrence.
+Link a task to an event in your own calendar. In the event, the button “+ Create a task for this event” creates a new task; the link “Show tasks for this event” opens the filtered task view. The task owner can change or remove the link under “Linked event”. Calendar and task permissions remain independent: linking does not share either object. Without calendar permission, only “Event unavailable” appears. Deleting the event keeps the task and removes its link. Due dates do not move automatically with the event. A recurring event is linked as a whole series, rather than an individual occurrence.
 
 ## Member tasks
 

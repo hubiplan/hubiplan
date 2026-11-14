@@ -79,8 +79,16 @@ class TestStandZaehler:
 
         # Früher schrieb jeder Aufruf den Zähler mit neuer Laufzeit zurück (cache.set); im
         # Dauerbetrieb lief er nie ab (K-01). Jetzt zählt nur noch too_many (add + incr).
-        def kein_set(*args, **kwargs):
-            raise AssertionError("cache.set verlängert die Laufzeit des Zählers")
+        # Erlaubt bleibt der Merker „…:bis“ für die Wartezeit in der Meldung: Er entsteht
+        # einmal je Fenster und läuft mit ihm ab, den Zähler berührt er nicht.
+        echtes_set = cache.set
+        gemerkt = []
+
+        def kein_set(key, *args, **kwargs):
+            if not str(key).endswith(":bis"):
+                raise AssertionError("cache.set verlängert die Laufzeit des Zählers")
+            gemerkt.append(key)
+            return echtes_set(key, *args, **kwargs)
 
         monkeypatch.setattr(cache, "set", kein_set)
         view = stand_views._StandPublic()
@@ -90,6 +98,8 @@ class TestStandZaehler:
                 view.resolve(f"geraten-{i}")
         with pytest.raises(ValidationError):
             view.resolve("geraten-neu")
+        # ein Fenster, ein Merker: weitere Aufrufe schreiben ihn nicht neu
+        assert len(gemerkt) == 1
         # eine andere Adresse zählt für sich
         view.request = RequestFactory().get("/", REMOTE_ADDR="203.0.113.8")
         with pytest.raises(Http404):
