@@ -18,6 +18,29 @@
   font-display: swap;
   src: url('../assets/fonts/outfit-latin-800-normal.woff2') format('woff2');
 }
+/* Textschrift Inter (SIL OFL, Design „Frisch“ D1, konzepte/design-frisch.md): eine variable
+   Datei für alle Stärken; Erweitertes Latein lädt der Browser nur, wenn ein Zeichen es braucht. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
 
 :root {
   /* Hubi-Grün und Hubi-Gold (Gestaltungshandbuch 31.10.2026) */
@@ -35,12 +58,14 @@
 
   --color-bg: #eef0ed;
   --color-surface: #ffffff;
+  /* Zweite Fläche: Tabellenkopf, Segmentschalter, gesperrte Felder (Design „Frisch“) */
+  --color-surface-2: color-mix(in srgb, var(--color-text) 3%, var(--color-surface));
   /* Fließtext; Links halten dazu 3 : 1 (linkColor in theme.ts, W-16) */
   --color-text: #121614;
   --color-text-muted: #5d6763;
   --color-border: #dde1de;
   /* Rand von Karten: mind. 1,5 : 1 gegen Weiß, damit Karten sich vom Grund abheben (W-17) */
-  --color-card-border: #bcc3bf;
+  --color-card-border: #c9cfcb;
   /* Rahmen von Eingabefeldern: mind. 3:1 gegen Weiß (WCAG 1.4.11) */
   --color-input-border: #828b87;
   --color-error: #b3261e;
@@ -49,17 +74,28 @@
   --color-success: #1d6b46;
   /* Hinweisflächen (Info, offen/Warnung) */
   --color-info-bg: #eef3fb;
+  --color-info: #1f4f8f;
   --color-warning-bg: #fdf1d8;
   --color-warning: #7a5200;
+  /* Ehrungen, Jubiläen, Ehrenmitglieder (Abzeichen „gold“) */
+  --color-gold-bg: #fbf1cf;
+  --color-gold: #7a5a00;
+  /* Getönte Flächen in Vereinsfarbe: markierter Menüpunkt, Symbolkästchen, getönter Knopf.
+     Schrift darauf ist --color-link (hält dort 4,5 : 1, Tokentest). */
+  --color-brand-soft: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  --color-brand-softer: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
 
-  --sidebar-bg: #17332c;
+  --sidebar-bg: #0a5a4a;
   --sidebar-text: #d7e4df;
   /* Fokusrahmen in der Seitenleiste (hell auf dunkel, UI-Audit NUI-04) */
   --sidebar-focus: #ffffff;
   --sidebar-active-bg: rgba(255, 255, 255, 0.12);
   --sidebar-width: 15rem;
 
-  --radius: 0.5rem;
+  /* Rundung: sachlich und klar (Ralf 14.11.: kein Apple-Look), Knöpfe und Felder 6 px,
+     Karten und Dialoge 8 px; keine Pillenform außer bei Abzeichen-Zählern */
+  --radius: 0.375rem;
+  --radius-lg: 0.5rem;
 
   /* Einheitliche Abstände und Größen (Ralf 06.11.2026). Neue Regeln nehmen diese Stufen
      statt eigener Werte; so bleiben Leisten, Formulare und Karten überall gleich. */
@@ -74,8 +110,10 @@
   --control-height: 2.75rem;
   --control-padding-y: 0.5rem;
   --control-padding-x: 0.75rem;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --shadow: 0 1px 2px rgba(16, 24, 20, 0.06);
+  --transition-fast: 140ms ease;
+  --font-family:
+    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /*
@@ -86,9 +124,9 @@
  */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  /* linkColorDark(Hubi-Grün): 4,5 : 1 auf Grund und Karte */
-  --color-link: #399482;
-  --color-focus: #399482;
+  /* linkColorDark(Hubi-Grün): 4,5 : 1 auf Grund, Karte und getönter Fläche */
+  --color-link: #56a394;
+  --color-focus: #56a394;
   --color-bg: #111614;
   --color-surface: #1a201d;
   --color-text: #dfe5e2;
@@ -101,8 +139,13 @@
   --color-success-bg: #15302a;
   --color-success: #8fd6b0;
   --color-info-bg: #18263a;
+  --color-info: #a9c7f2;
   --color-warning-bg: #3a2c10;
   --color-warning: #f4cf86;
+  --color-gold-bg: #33290c;
+  --color-gold: #f1d27a;
+  --color-brand-soft: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+  --color-brand-softer: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 

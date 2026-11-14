@@ -88,6 +88,21 @@ export function Layout() {
   const subNavApi = useMemo(() => ({ set: setSub }), [setSub])
   const toggleRef = useRef<HTMLButtonElement>(null)
   const navRef = useRef<HTMLElement>(null)
+  const topbarRef = useRef<HTMLElement>(null)
+  // Höhe der Kopfzeile für die feste Seitenleiste (index.css --topbar-height)
+  useEffect(() => {
+    const el = topbarRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const root = document.documentElement
+    const measure = () => root.style.setProperty('--topbar-height', `${el.offsetHeight}px`)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty('--topbar-height')
+    }
+  }, [])
 
   // Übrige Bereiche nach der Anmeldung im Hintergrund nachladen, damit spätere
   // Seitenwechsel ohne Wartezeit gehen
@@ -374,7 +389,7 @@ export function Layout() {
                 <a href="#inhalt" className="skip-link">
                   {t('Zum Inhalt springen')}
                 </a>
-                <header className="topbar" inert={navOpen || undefined}>
+                <header className="topbar" inert={navOpen || undefined} ref={topbarRef}>
                   <button
                     type="button"
                     className="nav-toggle"
