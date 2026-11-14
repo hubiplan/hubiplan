@@ -269,6 +269,12 @@ export function Layout() {
 
   const ws = { dept: activeDept, portal: activePortal }
   const visible = modules.filter((m) => m.visible(active, ws))
+  // Untere Leiste auf dem Handy: Start, Termine und für die Verwaltung Mitglieder, sonst
+  // Mein Bereich; höchstens drei Bereiche plus „Mehr“
+  const bottomNav = ['start', 'termine', 'mitglieder', 'mein-bereich']
+    .map((id) => visible.find((m) => m.id === id))
+    .filter((m): m is (typeof visible)[number] => !!m)
+    .slice(0, 3)
   const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
   const inModule = (m: (typeof modules)[number]) =>
     modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -492,6 +498,50 @@ export function Layout() {
                   </div>
                 </nav>
                 <div className="sidebar-backdrop" aria-hidden="true" onClick={closeNav} />
+                {narrow && (
+                  // Handy und Tablet: die wichtigsten Bereiche unten im Daumenbereich, „Mehr“
+                  // öffnet das ganze Menü (Design „Frisch“ D3, konzepte/design-frisch.md)
+                  <nav
+                    className="bottom-nav"
+                    aria-label={t('Schnellwahl')}
+                    inert={navOpen || undefined}
+                  >
+                    {bottomNav.map((m) => (
+                      <NavLink
+                        key={m.id}
+                        to={m.linkFor?.(active, ws) ?? m.path}
+                        end={m.path === '/'}
+                        className="bottom-nav-link"
+                      >
+                        {m.icon}
+                        <span>
+                          {m.id === 'start' ? t('Start') : (m.labelFor?.(active, ws) ?? m.label)}
+                        </span>
+                      </NavLink>
+                    ))}
+                    <button
+                      type="button"
+                      className="bottom-nav-link"
+                      aria-controls="hauptnavigation"
+                      aria-expanded={navOpen}
+                      onClick={() => setNavOpen(true)}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        aria-hidden="true"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                      </svg>
+                      <span>{t('Mehr')}</span>
+                    </button>
+                  </nav>
+                )}
 
                 <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
                   {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
