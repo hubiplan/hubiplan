@@ -423,6 +423,8 @@ class Website(models.Model):
         for key in HEADER_IMAGE_FIELDS:
             if key in draft:
                 setattr(self, f"draft_{key}", draft[key])
+        # auch die Texte zeigen ihren Entwurf (SiteView.published_texts)
+        self.draft_shown = True
 
     def design_choices(self) -> set[str]:
         return set(DESIGNS) | {p.key for p in self.packages()}
