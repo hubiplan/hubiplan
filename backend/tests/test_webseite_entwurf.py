@@ -154,3 +154,46 @@ def test_nur_mit_recht(club, site, api):
     c = api(user)
     assert c.post(url(club, "design/publish/")).status_code == 403
     assert c.put(url(club), {"draft": {"style": {}}}, "application/json").status_code == 403
+
+
+def page(site, path, preview=False):
+    headers = {"HTTP_X_PREVIEW_SESSION": preview_session(site)} if preview else {}
+    return Client().get(f"/api/public/site/v1/{KEY}/{path}", **headers)
+
+
+def test_vorschau_zeigt_entwurf_der_texte(club, site, client_web):
+    """Webseite #101: Die Vorschau zeigt auch die Entwürfe der Texte samt Abschnitten und
+    Breite; Besucher sehen weiter nur die veröffentlichte Fassung."""
+    from website import content
+    from website.content_models import WebsiteText
+
+    user = make_user("web-text@example.org")
+    text = WebsiteText.objects.create(
+        organization=club, website=site, kind="page", slug="mitmachen", title="Mitmachen"
+    )
+    text.body = "Erste Fassung."
+    content.publish(text, user)
+    text.title = "Mitmachen im Verein"
+    text.body = "Zweite Fassung."
+    text.sections = [{"key": "body", "width": "full"}]
+    text.save()
+    neu = WebsiteText.objects.create(
+        organization=club, website=site, kind="page", slug="neu", title="Ganz neu", body="Bald."
+    )
+
+    seen = page(site, "pages/mitmachen/").json()
+    assert seen["title"] == "Mitmachen" and "Erste Fassung." in seen["text"]
+    assert [s["width"] for s in seen["sections"]] == ["content"]
+    assert page(site, "pages/neu/").status_code == 404
+
+    draft = page(site, "pages/mitmachen/", preview=True).json()
+    assert draft["title"] == "Mitmachen im Verein" and "Zweite Fassung." in draft["text"]
+    assert [(s["kind"], s["width"]) for s in draft["sections"]] == [("body", "full")]
+    # auch eine noch nie veröffentlichte Seite lässt sich in der Vorschau ansehen
+    assert page(site, "pages/neu/", preview=True).json()["title"] == "Ganz neu"
+
+    # nur angezeigt, nichts gespeichert
+    text.refresh_from_db()
+    neu.refresh_from_db()
+    assert text.published_title == "Mitmachen" and text.published_sections == []
+    assert neu.published_at is None
