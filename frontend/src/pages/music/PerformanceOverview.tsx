@@ -169,10 +169,16 @@ export function PerformanceOverview() {
               )
             )}
             <div className="music-actions">
-              <Link to={href(row, 'staffing')}>{t('Besetzung planen')}</Link>
-              <Link to={href(row, 'program')}>{t('Musikalisches Programm')}</Link>
+              <Link className="button button-ghost" to={href(row, 'staffing')}>
+                {t('Besetzung planen')}
+              </Link>
+              <Link className="button button-ghost" to={href(row, 'program')}>
+                {t('Musikalisches Programm')}
+              </Link>
               {load.data?.finance_visible && (
-                <Link to={href(row, 'settlement')}>{t('Auftrittsabrechnung')}</Link>
+                <Link className="button button-ghost" to={href(row, 'settlement')}>
+                  {t('Auftrittsabrechnung')}
+                </Link>
               )}
             </div>
           </article>

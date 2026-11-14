@@ -125,8 +125,12 @@ export function ProgramPanel({ performance }: { performance: number }) {
         <a className="button button-ghost" href={url + '?export=parts&filetype=pdf'}>
           {t('Stimmenliste als PDF')}
         </a>
-        <Link to={`/aufgaben?termin=${event.event}`}>{t('Aufgaben für Notenvorbereitung')}</Link>
-        <Link to="/musik/noten">{t('Zum Notenbestand')}</Link>
+        <Link className="button button-ghost" to={`/aufgaben?termin=${event.event}`}>
+          {t('Aufgaben für Notenvorbereitung')}
+        </Link>
+        <Link className="button button-ghost" to="/musik/noten">
+          {t('Zum Notenbestand')}
+        </Link>
       </div>
       {canEdit && (
         <button
