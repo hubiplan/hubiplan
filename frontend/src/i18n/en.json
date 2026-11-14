@@ -8974,7 +8974,6 @@
   "Unterpunkt hinzufügen": "Add sub-item",
   "TOP {n}: {title}": "Item {n}: {title}",
   "auf der Webseite zeigen": "show on the website",
-  "auf der Webseite zeigen": "show on the website",
   "Raum „{name}“ gespeichert.": "Room “{name}” saved.",
   "Als Raum speichern": "Save as room",
   "Eigener Ort mit Anschrift": "Separate place with address",
@@ -9081,5 +9080,13 @@
   "Ein Wettbewerb verschwindet so viele Tage nach dem Wettbewerbstag. Laufende und vorläufige Wettbewerbe bleiben stehen. Ist nichts mehr aktuell, verschwindet der Abschnitt.": "A competition disappears this many days after the day of the competition. Running and provisional competitions stay. If nothing is current any more, the section disappears.",
   "Der Abschnitt verschwindet so viele Tage nach dem Wettbewerbstag. Solange der Wettbewerb läuft oder vorläufig ist, bleibt er stehen.": "The section disappears this many days after the day of the competition. While the competition is running or provisional, it stays.",
   "Nur Alben, deren Datum höchstens so viele Tage zurückliegt; Alben ohne Datum fallen dann weg. Ist keins mehr aktuell, verschwindet der Abschnitt.": "Only albums dated at most this many days ago; albums without a date are left out. If none is current any more, the section disappears.",
-  "Nur Beiträge, die höchstens so viele Tage alt sind. Ist keiner mehr aktuell, verschwindet der Abschnitt.": "Only posts at most this many days old. If none is current any more, the section disappears."
+  "Nur Beiträge, die höchstens so viele Tage alt sind. Ist keiner mehr aktuell, verschwindet der Abschnitt.": "Only posts at most this many days old. If none is current any more, the section disappears.",
+  "kurze Linie": "short line",
+  "Größe der Überschriften": "Heading size",
+  "Helle Abschnitte": "Light sections",
+  "warm": "warm",
+  "Farbe der Abschnitte mit hellem Hintergrund auf der Startseite.": "Colour of home page sections with a light background.",
+  "weiß mit Streifen": "white with stripe",
+  "Weiß mit Streifen: weiße Karten mit feiner Kante, Termine mit Farbstreifen links, Kacheln der Untereinheiten oben.": "White with stripe: white cards with a fine edge, events with a colour stripe on the left, subunit tiles on top.",
+  "Etikett": "Label"
 }

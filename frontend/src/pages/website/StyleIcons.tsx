@@ -79,6 +79,21 @@ const ICONS: Record<string, Record<string, () => ReactNode>> = {
       ),
     flat: () =>
       svg(<rect x="4" y="3" width="24" height="14" rx="2" fill="currentColor" opacity=".3" />),
+    accent: () =>
+      svg(
+        <>
+          <rect
+            x="4"
+            y="3"
+            width="24"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+          />
+          <rect x="4" y="3" width="3" height="14" fill="currentColor" />
+        </>,
+      ),
   },
   nav: {
     bar: () =>

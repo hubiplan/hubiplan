@@ -971,6 +971,9 @@ msgstr "Template not found."
 msgid "Rundschreiben nicht gefunden."
 msgstr "Circular not found."
 
+msgid "Für den Verteiler „{name}“ ist keine Adresse frei."
+msgstr "No address is available for the mailing list “{name}”."
+
 msgid "Bitte den Verteiler selbst löschen."
 msgstr "Please delete the mailing list itself."
 
