@@ -318,6 +318,9 @@ class EventAttachment(models.Model):
     )
     name = models.CharField("Dateiname", max_length=200)
     content_type = models.CharField(max_length=100, blank=True)
+    # Nur bei öffentlichen Terminen: auch auf der Webseite anbieten (Ralf 14.11.2026,
+    # je Anhang freigeben; Standard aus, damit nichts Internes aus Versehen hinausgeht)
+    on_website = models.BooleanField("auf der Webseite zeigen", default=False, db_default=False)
     size = models.PositiveIntegerField("Größe", default=0)
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

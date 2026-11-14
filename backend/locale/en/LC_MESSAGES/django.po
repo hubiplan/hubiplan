@@ -12508,3 +12508,5 @@ msgstr "Each number only once."
 
 msgid "Unbekannte Zahl."
 msgstr "Unknown number."
+msgid "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
+msgstr "Only attachments of public events appear on the website."

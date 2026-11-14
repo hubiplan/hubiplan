@@ -769,8 +769,22 @@ def _foreign_owner(site: SiteView, event) -> str | None:
 
 
 def _events(site: SiteView, unit_slug: str | None):
-    from events.models import Event
     from events.recurrence import occurrences
+
+    qs = _site_events(site, unit_slug)
+    now = timezone.now()
+    return occurrences(
+        qs.select_related("category", "department", "organization")
+        .prefetch_related("attachments")
+        .distinct(),
+        now - datetime.timedelta(days=EVENT_DAYS_BACK),
+        now + datetime.timedelta(days=EVENT_DAYS_AHEAD),
+    )
+
+
+def _site_events(site: SiteView, unit_slug: str | None):
+    """Öffentliche Termine, die diese Webseite zeigt (ohne Zeitraum)."""
+    from events.models import Event
 
     qs = Event.objects.filter(
         organization=site.area, visibility=Event.Visibility.PUBLIC, source_stale=False
@@ -788,12 +802,7 @@ def _events(site: SiteView, unit_slug: str | None):
         qs = qs.filter(**own)
     if not unit_slug and site.site.include_parent_events:
         qs = qs | _parent_events(site)
-    now = timezone.now()
-    return occurrences(
-        qs.select_related("category", "department", "organization").distinct(),
-        now - datetime.timedelta(days=EVENT_DAYS_BACK),
-        now + datetime.timedelta(days=EVENT_DAYS_AHEAD),
-    )
+    return qs
 
 
 def event_entry(site: SiteView, o) -> dict:
@@ -815,7 +824,58 @@ def event_entry(site: SiteView, o) -> dict:
         "owner": _foreign_owner(site, o.event),
         "is_cancelled": o.is_cancelled,
         "note": o.note,
+        # Nur einzeln freigegebene Anhänge öffentlicher Termine (Ralf 14.11.2026)
+        "attachments": _event_attachments(site, o.event),
     }
+
+
+def _event_attachments(site: SiteView, event) -> list[dict]:
+    from events import attachments
+
+    return [
+        {
+            "name": attachments.display_name(a),
+            "kind": "pdf" if attachments.file_of(a)[2] == "application/pdf" else "image",
+            "url": site.url(f"events/attachments/{a.pk}/"),
+        }
+        for a in attachments.for_website(event)
+    ]
+
+
+class EventAttachmentView(_Public):
+    """Freigegebener Anhang eines Termins, der auf dieser Webseite steht."""
+
+    def get(self, request, key: str, pk: int):
+        site = self.load(request, key)
+        if not site.site.block_on("events"):
+            raise Http404
+        from core import virenscan
+        from events import attachments
+        from events.models import Event, EventAttachment
+
+        att = EventAttachment.objects.select_related("event").filter(pk=pk, on_website=True).first()
+        if att is None or att not in attachments.for_website(att.event):
+            raise Http404
+        # Nur Termine, die diese Webseite auch zeigt (eigene, Untereinheiten, darüber)
+        shown = _site_events(site, None) | Event.objects.filter(
+            organization=site.area, department__in=site.units, visibility=Event.Visibility.PUBLIC
+        )
+        if not shown.filter(pk=att.event_id).exists():
+            raise Http404
+        found = attachments.file_of(att)
+        if found is None:
+            raise Http404
+        file, name, ctype, _ = found
+        # Öffentliche Weitergabe: nur geprüft (wie Rundschreiben-Anhänge)
+        try:
+            virenscan.release_ok(
+                file, name, "Anhang eines Termins (Webseite)", key=f"termin-anhang:{att.pk}"
+            )
+        except Exception as exc:
+            raise Http404 from exc
+        response = FileResponse(file.open("rb"), content_type=ctype or "application/octet-stream")
+        response["Content-Disposition"] = "inline"
+        return self.decorate(response, site)
 
 
 class EventsView(_Public):

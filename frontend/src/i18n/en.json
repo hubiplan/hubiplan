@@ -8904,6 +8904,7 @@
   "Der Ordner „{folder}“ ist enger sichtbar ({visibility}). Am Termin sehen das Dokument alle, die den Termin sehen.": "The folder “{folder}” has narrower visibility ({visibility}). On the event, everyone who can see the event can see the document.",
   "aus der Ablage": "from the document store",
   "Das Dokument bleibt in der Ablage.": "The document stays in the document store.",
+  "auf der Webseite zeigen": "show on the website",
   "Countdown": "Countdown",
   "Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt": "days, hours, minutes and seconds until an event or a point in time",
   "Zählt herunter bis": "Counts down to",

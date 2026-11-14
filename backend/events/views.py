@@ -904,6 +904,36 @@ class _Attachment(APIView):
         return attachments.response(request, att, cache)
 
     @transaction.atomic
+    def patch(self, request, pk: int, att_id: int, **kwargs):
+        """Anhang auf der Webseite zeigen (nur bei öffentlichen Terminen wirksam)."""
+        event = self.own_event(pk)
+        att = get_object_or_404(EventAttachment, event=event, pk=att_id)
+        value = request.data.get("on_website")
+        if not isinstance(value, bool):
+            raise serializers.ValidationError(
+                {"on_website": gettext("Bitte ja oder nein angeben.")}
+            )
+        if value and event.visibility != Event.Visibility.PUBLIC:
+            raise serializers.ValidationError(
+                {
+                    "on_website": gettext(
+                        "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
+                    )
+                }
+            )
+        if att.on_website != value:
+            att.on_website = value
+            att.save(update_fields=["on_website"])
+            label = attachments.display_name(att)
+            self.audit(
+                "update",
+                event,
+                {"Anhang auf der Webseite": [None, label] if value else [label, None]},
+            )
+        event = self.visible_event(event.pk)
+        return Response(event_data(event, self.viewer, self.base_url))
+
+    @transaction.atomic
     def delete(self, request, pk: int, att_id: int, **kwargs):
         event = self.own_event(pk)
         att = get_object_or_404(EventAttachment, event=event, pk=att_id)
