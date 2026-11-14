@@ -879,7 +879,7 @@ function AgendaEditor({
           {initial.map((item, index) => (
             <li key={item.key} className={item.level ? 'agenda-sub' : undefined}>
               <strong>
-                {t('TOP {n}', { n: numbers[index] })}: {item.title}
+                {t('TOP {n}', { n: numbers[index] })}: <span>{item.title}</span>
               </strong>
               {item.description && <p className="muted">{item.description}</p>}
             </li>
@@ -1865,7 +1865,7 @@ function MinutesEditor({
           {agenda.map((a, index) => (
             <li key={a.id!} className={a.level ? 'agenda-sub' : undefined}>
               <strong>
-                {t('TOP {n}', { n: a.number || index + 1 })}: {a.title}
+                {t('TOP {n}', { n: a.number || index + 1 })}: <span>{a.title}</span>
               </strong>
               {a.minutes && <p className="minutes-text">{a.minutes}</p>}
               {(a.resolutions ?? []).map((r) => (
@@ -1921,7 +1921,8 @@ function MinutesEditor({
             className={agenda[index].level ? 'agenda-row agenda-sub' : 'agenda-row'}
           >
             <h3>
-              {t('TOP {n}', { n: agenda[index].number || index + 1 })}: {agenda[index].title}
+              {t('TOP {n}', { n: agenda[index].number || index + 1 })}:{' '}
+              <span>{agenda[index].title}</span>
             </h3>
             <label className="field">
               <span>{t('Protokoll zu TOP {n}', { n: agenda[index].number || index + 1 })}</span>

@@ -75,7 +75,7 @@ export function PortalMeetings({ accessId }: { accessId: number }) {
               <ol className="portal-agenda">
                 {m.agenda.map((item) => (
                   <li key={item.position} className={item.level ? 'portal-agenda-sub' : undefined}>
-                    {t('TOP {n}', { n: item.number || item.position })}: {item.title}
+                    {t('TOP {n}', { n: item.number || item.position })}: <span>{item.title}</span>
                     {item.description && (
                       <div className="muted small" style={{ whiteSpace: 'pre-wrap' }}>
                         {item.description}
