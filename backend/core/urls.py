@@ -988,6 +988,18 @@ urlpatterns = [
         meeting_portal.WithdrawView.as_view(),
     ),
     path("portal/<int:access_id>/meetings/<int:pk>/minutes/", meeting_portal.MinutesView.as_view()),
+    path("portal/<int:access_id>/meetings/<int:pk>/live/", meeting_portal.LiveView.as_view()),
+    path(
+        "portal/<int:access_id>/meetings/<int:pk>/live/checkin/",
+        meeting_portal.CheckinView.as_view(),
+    ),
+    path(
+        "portal/<int:access_id>/meetings/<int:pk>/live/leave/", meeting_portal.LeaveView.as_view()
+    ),
+    path(
+        "portal/<int:access_id>/meetings/<int:pk>/polls/<int:poll>/vote/",
+        meeting_portal.VoteView.as_view(),
+    ),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
     path(

@@ -22,12 +22,12 @@ import time
 from django.conf import settings
 from django.utils.translation import gettext
 from rest_framework import status
-from rest_framework.exceptions import APIException, PermissionDenied, Throttled
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.ratelimit import too_many
+from core.ratelimit import TooMany, too_many
 
 from .mfa_policy import has_mfa
 
@@ -142,7 +142,7 @@ class StepUpView(APIView):
         user = request.user
         key = f"step-up:{user.pk}"
         if too_many(key, RATE[0], RATE[1]):
-            raise Throttled(detail=gettext("Zu viele Versuche. Bitte später erneut."))
+            raise TooMany(key)
         if has_mfa(user):
             if not check_second_factor(user, str(request.data.get("code") or "")):
                 raise PermissionDenied(gettext("Der Code stimmt nicht."))

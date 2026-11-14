@@ -21,7 +21,10 @@ Konzept und Ausbaustufen: `konzepte/versammlungen.md` im Projektordner (V1 bis V
 | `AgendaItem` | Tagesordnungspunkt mit Nummer, Titel, Art und Erläuterung |
 | `Resolution` | Beschluss oder Wahl zu einem TOP: Text, Ja/Nein/Enthaltung oder einstimmig, Ergebnis, bei Wahlen Amt und gewählte Person (verschlüsselt, optional Mitgliedschaft), später Nummer im Beschlussbuch |
 | `MinutesVersion` | Freigegebenes Protokoll: PDF (privater Speicher), SHA-256, Zeitpunkt, abgelegtes Dokument |
-| `Attendance` | Anwesenheit: Mitgliedschaft oder Gast, Name (verschlüsselt), Stand (anwesend, entschuldigt, vertreten), Vertreter |
+| `Attendance` | Anwesenheit: Mitgliedschaft oder Gast, Name (verschlüsselt), Stand (anwesend, entschuldigt, vertreten, durch Vertreter, gegangen), Vertreter, Weg (`mode`: von Hand, `app`, `online`) |
+| `Poll`, `PollOption` | Online-Abstimmung zu einem TOP (Beschluss oder Wahl): Frage, Amt, Person (verschlüsselt), offen oder geheim, Stand (vorbereitet, läuft, beendet), Antworten Ja/Nein/Enthaltung oder Personen |
+| `VoteCast` | Wer für welche Stimme abgestimmt hat (eigene, Vollmacht, Organisation), ohne Antwort und ohne Zeitpunkt |
+| `Ballot` | Stimmzettel mit zufälliger Nummer (UUID), ohne Zeitpunkt; geheim ohne Person, offen mit der Stimme |
 
 Leitung, Protokollführung, Notiz sowie Titel und Erläuterung der Tagesordnung sind
 verschlüsselt gespeichert. Titel, Zeit und Ort stehen im Termin. RLS trennt nach Organisation;
@@ -33,7 +36,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V6)
+## Abläufe (Stand V7)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -92,7 +95,36 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   `decision` (`accept` hängt einen Tagesordnungspunkt „Antrag von …“ vom Typ Beschluss an,
   `reject` braucht `reply`) geht in den Ständen „in Vorbereitung“ und „eingeladen“. Anträge
   kommen nur zusammen mit den Mitgliedsdaten in Export und Import und stehen in der Datenauskunft.
-- Offen aus V6 (später, Konzept A2): Anwesenheit per App, Online-Abstimmung.
+- Anmelden per App (V7, `meetings/live.py`): `POST …/live/` mit `open` öffnet oder schließt die
+  Anmeldung (`Meeting.checkin_open`; beim Schließen fällt der Schlüssel weg, alte Codes gelten
+  nicht mehr). `GET …/live/` liefert den Code für den QR-Code: HMAC über Versammlung und
+  30-Sekunden-Fenster mit `Meeting.checkin_key`, gültig im laufenden und im vorigen Fenster. Der
+  QR-Code führt auf `/mein-bereich/versammlungen/da/<id>?v=<Verein>&c=<Code>`; die App liest
+  daraus Versammlung und Code. Im Mitgliederbereich `POST /api/portal/<zugang>/meetings/<pk>/live/checkin/`
+  mit `code` trägt das Mitglied als anwesend ein (`mode = app`, Nichtstimmberechtigte als Gast),
+  `…/live/leave/` setzt „gegangen“ und hebt seine Vollmachten auf. Organisationsmitglieder trägt
+  weiter die Leitung ein. Geht in den Ständen „in Vorbereitung“, „eingeladen“, „durchgeführt“.
+- Teilnahme aus der Ferne (V7): `MeetingKind.remote_allowed` (Satzungsgrundlage nach § 32 Abs. 2
+  BGB, Verantwortung des Vereins), je Versammlung `Meeting.remote` über `POST …/live/` mit
+  `remote`. Dann meldet sich ein Stimmberechtigter mit `checkin/` und `remote: true` ohne Code an
+  (`mode = online`). Die Anwesenheitsliste zeigt „per App“ und „aus der Ferne“, `online` zählt
+  die Stimmberechtigten aus der Ferne.
+- Online-Abstimmung (V7): Nur mit `MeetingKind.online_voting`. `POST …/polls/` legt zu einem TOP
+  vom Typ Beschluss oder Wahl eine Abstimmung an (`question`, `secret`, bei Wahlen `office` und
+  `candidates`; eine Person: Ja/Nein/Enthaltung, mehrere: Personen und Enthaltung). `POST
+  …/polls/<id>/` mit `action` `open`, `close` oder `apply`; `DELETE` nur, solange vorbereitet.
+  Abstimmen (`POST /api/portal/<zugang>/meetings/<pk>/polls/<id>/vote/`, `votes` je Stimme mit
+  `attendance` und `option`) dürfen anwesende Stimmberechtigte für sich, für jede Vollmacht
+  (`represented_by`) und als Vertreter eines Organisationsmitglieds mit eigener Mitgliedschaft
+  (`delegate_membership`). Jede Stimme einmal, nicht änderbar. Geheime Stimmzettel tragen keine
+  Person, werden gemischt gespeichert und haben keinen Zeitpunkt; `VoteCast` hält nur fest, wer
+  schon abgestimmt hat. Das Ergebnis gibt es erst nach `close` (`entitled` = mögliche Stimmen beim
+  Schließen), bei offenen Abstimmungen für die Leitung auch „wer wie“. `apply` schreibt es in
+  einen Beschluss des TOP (Ja/Nein/Enthaltung, einfache Mehrheit; Wahl mit mehreren Personen:
+  Stimmen der Gewählten als Ja, der anderen als Nein, Gleichstand abgelehnt) und hebt
+  Bestätigungen des Protokolls auf; Mehrheiten wie Zweidrittel passt die Leitung im Protokoll an.
+  Online-Abstimmungen kommen nicht in Export und Import (das Ergebnis steht im Beschluss); die
+  Datenauskunft nennt sie, geheime ohne Antwort.
 - Wahlen ins Amt (V5, nach dem Rollenumbau): Das Beschlussbuch liefert `elected` (Mitgliedschaft
   der gewählten Person). Im Verein öffnet „Ins Amt übernehmen“ mit Recht `roles.manage` den
   Dialog „Rolle besetzen“ (`AssignRoleDialog`) mit der Rolle gleichen Namens, Beginn am Tag der
@@ -113,6 +145,8 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `POST …/meetings/<pk>/minutes/confirm/` | Protokoll bestätigen (Leitung, Protokollführung) |
 | `GET …/meetings/<pk>/minutes/pdf/` | Protokoll als PDF (Entwurf oder freigegeben) |
 | `GET/POST …/meetings/<pk>/attendance/`, `DELETE …/attendance/<id>/` | Anwesenheit |
+| `GET/POST …/meetings/<pk>/live/` | Anmelden per App, Code, Teilnahme aus der Ferne, Abstimmungen |
+| `POST …/meetings/<pk>/polls/`, `POST/DELETE …/polls/<id>/` | Online-Abstimmung anlegen, starten, beenden, übernehmen |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |
 | `GET …/meetings/resolutions/` | Beschlussbuch mit Filtern |
 | `GET …/meetings/resolutions/export/` | Beschlussbuch als Excel |
@@ -123,3 +157,6 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `POST /api/portal/<zugang>/meetings/<pk>/motions/` | Antrag stellen |
 | `POST /api/portal/<zugang>/meetings/motions/<pk>/withdraw/` | Antrag zurückziehen |
 | `POST …/meetings/<pk>/motions/<id>/` | Antrag aufnehmen oder ablehnen |
+| `GET /api/portal/<zugang>/meetings/<pk>/live/` | Stand für das Mitglied: Anmeldung, eigene Stimmen, Abstimmungen |
+| `POST /api/portal/<zugang>/meetings/<pk>/live/checkin/`, `…/live/leave/` | „Ich bin da“ (Code oder `remote`), „Ich gehe“ |
+| `POST /api/portal/<zugang>/meetings/<pk>/polls/<id>/vote/` | Stimmen abgeben |

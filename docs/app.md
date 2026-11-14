@@ -97,6 +97,11 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `GET /api/portal/<Zugang>/music/folders/` | Notenmappen des Musikers: feste Mappen (Marschbuch, Repertoire) und Mappen je Auftritt/Probe in Programmreihenfolge mit den Noten der eigenen Stimme (`musician` im Zugang; siehe [musik.md](musik.md)) |
 | `GET /api/portal/<Zugang>/music/files/<id>/?format=&transpose=&layout=` | Notendatei (eigene Stimme aus Partituren); `format` leer, `musicxml`, `pdf` oder `midi`; `layout=<Höhe je 1000 Breite>x<Notengröße>` (z. B. `1778x60`, 800–3000 und 25–120) setzt das PDF für den Bildschirm der App neu um; `ETag` mit Fassungsnummer, `If-None-Match` → 304 |
 | `GET/POST /api/portal/<Zugang>/music/live/<Ziel>/` | Live-Vorgabe der Leitung (Stück an alle Geräte); die App fragt bei offenem Notenpult alle `poll_seconds` nach |
+| `GET /api/portal/<Zugang>/meetings/` | Versammlungen mit Einladung (`checkin_open`, `remote`: Anmeldung offen, Teilnahme aus der Ferne) |
+| `GET /api/portal/<Zugang>/meetings/<id>/live/` | Stand in der Versammlung: eigene Anmeldung, Stimmen, Abstimmungen (die App fragt bei offener Ansicht alle 4 Sekunden) |
+| `POST /api/portal/<Zugang>/meetings/<id>/live/checkin/` | „Ich bin da“: `code` aus dem QR-Code der Leitung (`…/mein-bereich/versammlungen/da/<id>?v=<Verein>&c=<Code>`) oder `remote: true` |
+| `POST /api/portal/<Zugang>/meetings/<id>/live/leave/` | „Ich gehe“ |
+| `POST /api/portal/<Zugang>/meetings/<id>/polls/<Abstimmung>/vote/` | Stimmen abgeben: `votes` mit `attendance` und `option` je Stimme ([versammlungen.md](versammlungen.md)) |
 
 Bescheid per Push (`{"t":"info","access":…,"title":…,"text":…}`), wenn der Vorstand ein Foto
 freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.

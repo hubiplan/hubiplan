@@ -28,7 +28,7 @@ from accounts import step_up
 from accounts.language import MyLanguageView
 from core.features import app_features
 from core.i18n import available, user_language
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import set_rls
 from core.version import running_version
 from portal import services as portal_services
@@ -49,8 +49,10 @@ RATE = (10, 15 * 60)  # 10 Versuche je 15 Minuten und IP
 MAX_DEVICES = 10  # je Konto
 
 
-def _rate_limited(request, kind: str) -> bool:
-    return too_many(f"app:{kind}:{client_ip(request)}", RATE[0], RATE[1])
+def _limit(request, kind: str) -> None:
+    key = f"app:{kind}:{client_ip(request)}"
+    if too_many(key, RATE[0], RATE[1]):
+        raise TooMany(key)
 
 
 def device_data(device: Device, current: Device | None = None) -> dict:
@@ -164,10 +166,9 @@ class PairingCodeView(APIView):
 
     def post(self, request):
         step_up.require(request)
-        if too_many(f"app:pairing:{request.user.pk}", RATE[0], RATE[1]):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        key = f"app:pairing:{request.user.pk}"
+        if too_many(key, RATE[0], RATE[1]):
+            raise TooMany(key)
         if not portal_services.portal_accesses(request.user):
             raise ValidationError(
                 gettext(
@@ -220,10 +221,7 @@ class PairView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        if _rate_limited(request, "pair"):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(request, "pair")
         data = PairSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         v = data.validated_data
@@ -507,10 +505,7 @@ class DeviceRenewView(APIView):
             )
         cache_key = f"app-renew:{device.pk}"
         if not request.data:
-            if _rate_limited(request, "renew"):
-                return Response(
-                    {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-                )
+            _limit(request, "renew")
             challenge = secrets.token_urlsafe(24)
             cache.set(cache_key, challenge, devicekey.CHALLENGE_SECONDS)
             return Response(

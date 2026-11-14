@@ -1120,6 +1120,7 @@ NOT_INCLUDED = [
     "Zugangsdaten für Instagram/Facebook (neu verbinden)",
     "Anmeldung an der Nextcloud (neu eintragen, neues Geheimnis)",
     "Benutzerkonten und Passwörter",
+    "Online-Abstimmungen in Versammlungen (das Ergebnis steht im Beschluss)",
 ]
 
 

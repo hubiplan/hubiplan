@@ -59,6 +59,8 @@ def kind_data(kind):
         "quorum_count": kind.quorum_count,
         "proxies_allowed": kind.proxies_allowed,
         "motion_days": kind.motion_days,
+        "online_voting": kind.online_voting,
+        "remote_allowed": kind.remote_allowed,
         "minutes_for": kind.minutes_for,
         "position": kind.position,
         "active": kind.active,
@@ -140,6 +142,10 @@ def meeting_data(meeting, scope, *, full=False):
         "can_invite": scope.can_edit and can_write_circulars(scope),
         "can_attendance": members_allowed(scope),
         "motions_open": meeting.motions.filter(status=Motion.Status.SUBMITTED).count(),
+        "online_voting": meeting.kind.online_voting,
+        "remote_allowed": meeting.kind.remote_allowed,
+        "checkin_open": meeting.checkin_open,
+        "remote": meeting.remote,
     }
     if full:
         released = meeting.minutes_versions.first()
@@ -184,6 +190,8 @@ class KindInput(serializers.Serializer):
     motion_days = serializers.IntegerField(
         min_value=0, max_value=90, allow_null=True, required=False
     )
+    online_voting = serializers.BooleanField(required=False)
+    remote_allowed = serializers.BooleanField(required=False)
     minutes_for = serializers.ChoiceField(choices=MeetingKind.MinutesFor.choices, required=False)
     position = serializers.IntegerField(min_value=0, max_value=1000, required=False)
     active = serializers.BooleanField(required=False)
@@ -549,6 +557,7 @@ def attendance_data(meeting, scope):
                 "kind": m.person.kind,
                 "voter": True,
                 "status": r.status if r else "",
+                "mode": r.mode if r else "",
                 "represented_by": r.represented_by_id if r else None,
                 "delegate_name": r.delegate_name if r else "",
                 "delegates": delegates.get(m.pk, []),
@@ -566,6 +575,7 @@ def attendance_data(meeting, scope):
                 "kind": "",
                 "voter": False,
                 "status": r.status,
+                "mode": r.mode,
                 "represented_by": r.represented_by_id,
                 "delegate_name": r.delegate_name,
                 "delegates": [],
@@ -580,11 +590,17 @@ def attendance_data(meeting, scope):
         1 for r in records if r.membership_id in voter_ids and r.status == "represented"
     )
     guests = sum(1 for r in records if r.membership_id not in voter_ids and r.status == "present")
+    online = sum(
+        1
+        for r in records
+        if r.membership_id in voter_ids and r.status == "present" and r.mode == "online"
+    )
     return {
         "voters": len(voter_ids),
         "present": present,
         "represented": represented,
         "guests": guests,
+        "online": online,
         "quorum": services.quorum(meeting, len(voter_ids), present + represented),
         "proxies_allowed": meeting.kind.proxies_allowed,
         "editable": scope.can_edit and meeting.status in OPEN_FOR_ATTENDANCE,
@@ -676,6 +692,7 @@ class AttendanceView(Base):
                 raise ValidationError({"name": _("Bitte einen Namen angeben.")})
             record_ = Attendance(organization=self.scope.org, meeting=meeting, name=name)
         record_.status = data["status"]
+        record_.mode = Attendance.Mode.MANUAL
         record_.represented_by = None
         record_.delegate_name = ""
         record_.delegate_membership = None

@@ -1,4 +1,4 @@
-// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V5): Übersicht,
+// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V7): Übersicht,
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -30,6 +30,8 @@ import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { meetingInviteChecks } from '../../learning/checks.ts'
 import { MotionsCard } from './MotionsCard.tsx'
+import { LiveCard } from './LiveCard.tsx'
+import { LIVE_STATES } from './live.ts'
 import { ResolutionBook } from './ResolutionBook.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
@@ -495,9 +497,12 @@ function MeetingDetail({
       {(meeting.status === 'minutes' || meeting.status === 'done') && (
         <ReleaseCard base={base} meeting={meeting} onChanged={loaded.reload} />
       )}
+      {meeting.can_edit && meeting.can_attendance && LIVE_STATES.includes(meeting.status) && (
+        <LiveCard base={base} meeting={meeting} onChanged={loaded.reload} />
+      )}
       {meeting.can_attendance && meeting.status !== 'cancelled' && (
         <AttendanceCard
-          key={`t${meeting.status}`}
+          key={`t${meeting.status}${meeting.checkin_open ? 'o' : ''}`}
           base={base}
           meeting={meeting}
           onChanged={loaded.reload}
@@ -988,6 +993,8 @@ function KindForm({
     quorum_percent: kind?.quorum_percent ? String(kind.quorum_percent) : '',
     proxies_allowed: kind?.proxies_allowed ?? false,
     motion_days: kind ? (kind.motion_days === null ? '' : String(kind.motion_days)) : '7',
+    online_voting: kind?.online_voting ?? false,
+    remote_allowed: kind?.remote_allowed ?? false,
     active: kind?.active ?? true,
   }
   const [form, setForm] = useState(initial)
@@ -1093,6 +1100,29 @@ function KindForm({
         />
         {t('Vertretung mit Vollmacht erlaubt')}
       </label>
+      <label className="checkbox">
+        <input
+          type="checkbox"
+          checked={form.online_voting}
+          onChange={(e) => setForm({ ...form, online_voting: e.target.checked })}
+        />
+        {t('Online-Abstimmung am Handy erlaubt')}
+      </label>
+      <label className="checkbox">
+        <input
+          type="checkbox"
+          checked={form.remote_allowed}
+          onChange={(e) => setForm({ ...form, remote_allowed: e.target.checked })}
+        />
+        {t('Teilnahme aus der Ferne erlaubt (hybride Versammlung)')}
+      </label>
+      {form.remote_allowed && (
+        <p className="muted small">
+          {t(
+            'Teilnahme und Abstimmung aus der Ferne braucht eine Grundlage in der Satzung oder einen Beschluss der Mitgliederversammlung (§ 32 Abs. 2 BGB). Bitte vorher prüfen.',
+          )}
+        </p>
+      )}
       <label>
         {t('Anträge von Mitgliedern bis Tage vorher (leer: keine Anträge)')}
         <input
@@ -1216,6 +1246,7 @@ function attendanceLabel(status: AttendanceStatus) {
   if (status === 'present') return t('Anwesend')
   if (status === 'excused') return t('Entschuldigt')
   if (status === 'delegate') return t('Durch Vertreter')
+  if (status === 'left') return t('Gegangen')
   return t('Vertreten')
 }
 
@@ -1291,6 +1322,18 @@ function AttendanceCard({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const data = list ?? loaded.data
+  // Während die Anmeldung per App offen ist, kommen Einträge von selbst hinzu
+  useEffect(() => {
+    if (!meeting.checkin_open) return
+    const timer = window.setInterval(() => {
+      if (document.hidden) return
+      meetingApi
+        .attendance(base, meeting.id)
+        .then(setList)
+        .catch(() => undefined)
+    }, 10000)
+    return () => window.clearInterval(timer)
+  }, [base, meeting.id, meeting.checkin_open])
   if (loaded.error) return <p role="alert">{loaded.error}</p>
   if (!data) return <Loading />
   const send = async (action: () => Promise<AttendanceList | unknown>, reload = false) => {
@@ -1338,6 +1381,7 @@ function AttendanceCard({
             guests: data.guests,
           },
         )}
+        {(data.online ?? 0) > 0 && ` ${t('Davon aus der Ferne: {n}.', { n: data.online ?? 0 })}`}
       </p>
       {data.quorum.rule ? (
         <p className={data.quorum.reached ? undefined : 'alert alert-error'} role="status">
@@ -1379,6 +1423,13 @@ function AttendanceCard({
                 <td>
                   {row.name}
                   {!row.voter && <span className="badge">{t('Gast')}</span>}
+                  {row.status === 'present' && row.mode === 'app' && (
+                    <span className="badge">{t('per App')}</span>
+                  )}
+                  {row.status === 'present' && row.mode === 'online' && (
+                    <span className="badge">{t('aus der Ferne')}</span>
+                  )}
+                  {row.status === 'left' && <span className="badge">{t('gegangen')}</span>}
                   {row.status === 'delegate' && row.delegate_name && (
                     <div className="muted small">
                       {t('anwesend durch {name}', { name: row.delegate_name })}

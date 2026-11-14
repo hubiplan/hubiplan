@@ -57,7 +57,7 @@ for (const language of ['de', 'en']) {
     })
     const page = await context.newPage()
     await page.goto(`${base}/anmelden`)
-    await page.locator('input[autocomplete="username"]').fill(user)
+    await page.locator('input[autocomplete^="username"]').fill(user)
     await page.locator('input[autocomplete="current-password"]').fill(password)
     await page.locator('button[type="submit"]').first().click()
     await page.waitForURL((u) => !u.pathname.startsWith('/anmelden'))
@@ -94,7 +94,7 @@ for (const language of ['de', 'en']) {
           // Neue Browsersitzung: normale Anmeldung muss beide Zielparameter erhalten.
           await context.clearCookies()
           await page.goto(`${base}${target}`)
-          await page.locator('input[autocomplete="username"]').fill(user)
+          await page.locator('input[autocomplete^="username"]').fill(user)
           await page.locator('input[autocomplete="current-password"]').fill(password)
           await page.locator('button[type="submit"]').first().click()
           await heading.waitFor()

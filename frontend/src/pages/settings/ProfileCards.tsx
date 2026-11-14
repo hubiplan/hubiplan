@@ -7,6 +7,7 @@ import { useAuth } from '../../auth/AuthContext.tsx'
 import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { instanceName } from '../../theme/platform.ts'
 
 /** Mein Konto › Profil: Name */
 export function NameSection() {
@@ -143,6 +144,9 @@ function EmailCard({ data, onSaved }: { data: AccountData; onSaved: (d: AccountD
             {data.has_password && (
               <Field
                 label={t('Dein Passwort zur Bestätigung')}
+                hint={t('Dein Passwort für {name}, nicht das Passwort deines E-Mail-Postfachs.', {
+                  name: instanceName(),
+                })}
                 type="password"
                 required
                 autoComplete="current-password"

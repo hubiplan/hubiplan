@@ -16,6 +16,10 @@ address. If you have no password of your own and only sign in with links, you al
 the change with the link sent to your previous address. After the change your other browsers are
 signed out; the app stays connected.
 
+To confirm, HUBIplan asks for your HUBIplan password, not the password of your email mailbox.
+You have five attempts per hour for the sign-in email and ten for the password. After that the
+message tells you in how many minutes you can try again. The hour starts with the first attempt.
+
 If someone enters a wrong password for your account several times in a row, signing in with a
 password is blocked for a few minutes, but only on unknown devices. On devices you have signed in
 with before, and with a passkey, you can still get in. You will receive an email about it.
