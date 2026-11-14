@@ -399,6 +399,30 @@
     "section": "Beitragsregeln → Altersstufen"
    },
    {
+    "key": "application_consents",
+    "kind": "decision",
+    "name": "Welche Einwilligungen abfragen?",
+    "text": "Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was ihr nach einem Widerruf auch wieder abstellen könnt.",
+    "example": "",
+    "section": "Mitglieder → Online-Antrag"
+   },
+   {
+    "key": "application_fee_rules",
+    "kind": "decision",
+    "name": "Beitragsordnung bestätigen lassen?",
+    "text": "Beiträge schuldet ein Mitglied nur, wenn die Satzung oder eine Beitragsordnung auf ihrer Grundlage sie regelt (§ 58 Nr. 2 BGB). Mit der Bestätigung im Antrag ist festgehalten, welche Fassung das neue Mitglied kannte. Das hilft, wenn später jemand Höhe oder Einzug des Beitrags bestreitet.",
+    "example": "",
+    "section": "Mitglieder → Online-Antrag"
+   },
+   {
+    "key": "application_minors",
+    "kind": "decision",
+    "name": "Minderjährige online beantragen lassen?",
+    "text": "Ein Beitritt bringt die Pflicht zum Beitrag und braucht deshalb die Zustimmung der Eltern (§ 107 BGB); im Antrag bestätigt das mindestens eine erziehungsberechtigte Person. Willigt ein Kind unter 16 Jahren online ein, etwa in Fotos auf der Webseite, zählt ebenfalls die Zustimmung der Eltern (Art. 8 DSGVO). Ohne den Schalter nimmt das Formular keine Anträge von Minderjährigen an.",
+    "example": "",
+    "section": "Mitglieder → Online-Antrag"
+   },
+   {
     "key": "artist_fee_mark",
     "kind": "decision",
     "name": "Welche Ausgaben als Künstlerhonorar kennzeichnen?",
@@ -535,12 +559,28 @@
     "section": "Kassenbuch → Buchung"
    },
    {
+    "key": "budget",
+    "kind": "term",
+    "name": "Haushaltsplan",
+    "text": "Plan der erwarteten Einnahmen und Ausgaben für ein Geschäftsjahr, meist je Bereich oder Kategorie. Pflicht ist er nur, wenn die Satzung ihn vorsieht; beschließt ihn die Versammlung, richtet sich der Vorstand danach wie nach einer Weisung (§ 27 Abs. 3, § 665 BGB).",
+    "example": "Beispiel: Plan 4.000 € für das Schützenfest, Ist im Oktober 4.600 €; die 600 € Abweichung erklärt der Kassierer in der Versammlung.",
+    "section": "Kasse und Abschluss"
+   },
+   {
     "key": "camt",
     "kind": "term",
     "name": "CAMT.053 – Elektronischer Kontoauszug",
     "text": "Kontoauszug als Datei im Format camt.053 nach ISO 20022, den fast jedes Online-Banking anbietet; anders als eine CSV-Datei enthält er eindeutige Angaben wie IBAN, Verwendungszweck und Endsaldo.",
     "example": "Beispiel: Auszug Oktober mit 37 Umsätzen und Endsaldo 4.812,55 € als XML-Datei.",
     "section": "Kasse und Abschluss"
+   },
+   {
+    "key": "cancellation_notice",
+    "kind": "decision",
+    "name": "Welche Kündigungsfrist eintragen?",
+    "text": "Trag genau die Frist und den Termin aus eurer Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.",
+    "example": "",
+    "section": "Mitglieder → Einstellungen"
    },
    {
     "key": "cash_audit",
@@ -943,6 +983,14 @@
     "section": "Recht und Datenschutz"
    },
    {
+    "key": "contract_renewal",
+    "kind": "decision",
+    "name": "Erinnerung vor der Kündigungsfrist setzen?",
+    "text": "Verlängert sich ein Vertrag automatisch, zählt der letzte Tag der Kündigungsfrist, nicht das Vertragsende; wer ihn verpasst, ist oft ein weiteres Jahr gebunden. Frist und Verlängerung stehen im Vertrag, Grenzen setzt das Gesetz vor allem bei Allgemeinen Geschäftsbedingungen (§ 309 Nr. 9 BGB). Lege die Erinnerung so, dass vor Ablauf der Frist noch Zeit für eine Entscheidung im Vorstand bleibt.",
+    "example": "",
+    "section": "Geschäftspartner → Vereinbarung"
+   },
+   {
     "key": "creditor_id",
     "kind": "term",
     "name": "Gläubiger-ID",
@@ -1327,6 +1375,14 @@
     "section": "Versammlungen → Arten und Fristen"
    },
    {
+    "key": "meeting_online",
+    "kind": "decision",
+    "name": "Teilnahme aus der Ferne erlauben?",
+    "text": "Wer einlädt, darf vorsehen, dass Mitglieder elektronisch teilnehmen und abstimmen, solange es auch einen Saal gibt (hybride Versammlung, § 32 Abs. 2 BGB). Eine rein virtuelle Versammlung braucht dagegen einen Beschluss der Mitglieder oder eine Regel in der Satzung. In der Einladung muss stehen, wie Mitglieder aus der Ferne ihre Rechte ausüben, etwa Anmelden und Abstimmen per App.",
+    "example": "",
+    "section": "Versammlung → Anmelden per App und Online-Abstimmung"
+   },
+   {
     "key": "meeting_proxies",
     "kind": "decision",
     "name": "Vertretung mit Vollmacht zulassen?",
@@ -1341,6 +1397,14 @@
     "text": "Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn eure Satzung ihn vorschreibt (§ 40 BGB).",
     "example": "",
     "section": "Versammlungen → Arten und Fristen"
+   },
+   {
+    "key": "meeting_secret",
+    "kind": "decision",
+    "name": "Geheim abstimmen?",
+    "text": "Geheime Abstimmung schützt vor Druck und ist bei Wahlen und heiklen Personalfragen üblich. Dafür lässt sich hinterher nicht mehr nachprüfen, wer wie gestimmt hat, auch nicht bei Streit über das Ergebnis. Pflicht ist sie nur, wenn Satzung, Wahlordnung oder ein Beschluss der Versammlung sie verlangen (§§ 32, 40 BGB).",
+    "example": "",
+    "section": "Versammlung → Online-Abstimmungen"
    },
    {
     "key": "member_type",
@@ -1389,6 +1453,14 @@
     "text": "Aufstellung von Konten, Anlagen, Forderungen und Schulden zum Jahresende. Sie gehört zur Rechenschaft des Vorstands gegenüber der Mitgliederversammlung (§ 27 Abs. 3, § 666 BGB).",
     "example": "Beispiel: 8.000 € Konten + 4.200 € Anlagen + 300 € offene Beiträge − 1.190 € offene Rechnungen = 11.310 €.",
     "section": "Kasse und Abschluss"
+   },
+   {
+    "key": "obligations_calendar",
+    "kind": "decision",
+    "name": "Welche Pflichten eintragen?",
+    "text": "Typisch sind die Steuererklärung, die das Finanzamt bei gemeinnützigen Vereinen meist alle drei Jahre anfordert (§ 149 AO), und die Anmeldung eines neuen Vorstands beim Registergericht (§ 67 BGB). Dazu kommen Fristen aus Verträgen, Versicherungen und Zuschüssen, die in keinem Gesetz stehen. Eine Erinnerung mit Zuständigkeit sorgt dafür, dass eine Frist auch nach einem Vorstandswechsel nicht vergessen wird.",
+    "example": "",
+    "section": "Fristenkalender"
    },
    {
     "key": "open_till",
@@ -1509,6 +1581,14 @@
     "text": "Ein Geschäftsbetrieb, der den Satzungszweck unmittelbar verwirklicht und anders nicht zu erreichen ist. Er bleibt steuerbegünstigt wie der ideelle Bereich (§§ 64 Abs. 1, 65 AO).",
     "example": "Beispiel: Eintritt zum Vereinswettbewerb, 650,00 €: Die Veranstaltung selbst dient dem Vereinszweck.",
     "section": "Steuer"
+   },
+   {
+    "key": "qualification_inspection",
+    "kind": "decision",
+    "name": "Nur Einsichtsvermerk festhalten?",
+    "text": "Beim erweiterten Führungszeugnis für Betreuer von Kindern und Jugendlichen darf der Verein nur festhalten, dass er es eingesehen hat, das Datum des Zeugnisses und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).",
+    "example": "",
+    "section": "Mitglieder → Qualifikationen"
    },
    {
     "key": "receipt",
@@ -1663,6 +1743,14 @@
     "section": "Kassenbuch → Buchung aufteilen"
    },
    {
+    "key": "sponsoring_tax",
+    "kind": "decision",
+    "name": "Nur Nennung oder aktive Werbung?",
+    "text": "Weist der Verein nur auf den Sponsor hin, etwa mit Name oder Logo auf Plakat oder Webseite ohne besondere Hervorhebung, bleibt die Einnahme steuerfreie Vermögensverwaltung (AEAO zu § 64 Abs. 1 AO). Wirbt er aktiv, etwa mit Trikotwerbung oder Werbesprüchen, gehört die Einnahme zum wirtschaftlichen Geschäftsbetrieb und zählt zur Freigrenze (§ 64 Abs. 3 AO). Halte im Vertrag fest, welche Gegenleistung vereinbart ist.",
+    "example": "",
+    "section": "Geschäftspartner → Vereinbarung"
+   },
+   {
     "key": "statute_amendment",
     "kind": "term",
     "name": "Satzungsänderung",
@@ -1677,6 +1765,22 @@
     "text": "Bescheid, dass die Satzung die Voraussetzungen der Gemeinnützigkeit erfüllt (§ 60a AO). Neu gegründete Vereine bekommen ihn, bevor es den ersten Freistellungsbescheid gibt.",
     "example": "Beispiel: Feststellung vom 2. Mai 2025: HUBIplan stellt Bestätigungen bis 2. Mai 2028 aus.",
     "section": "Spenden"
+   },
+   {
+    "key": "survey_anonymous",
+    "kind": "decision",
+    "name": "Namen zeigen oder anonym fragen?",
+    "text": "Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl braucht ihr die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).",
+    "example": "",
+    "section": "Umfragen → Namen und Ergebnis"
+   },
+   {
+    "key": "survey_not_resolution",
+    "kind": "decision",
+    "name": "Warum ist eine Umfrage kein Beschluss?",
+    "text": "Beschlüsse fasst die Mitgliederversammlung (§ 32 Abs. 1 BGB). Ohne Versammlung gilt ein Beschluss nur, wenn alle Mitglieder in Textform zustimmen, sofern die Satzung nichts anderes regelt (§ 32 Abs. 3, § 40 BGB), und das erreicht eine Umfrage praktisch nie. Nutze Umfragen für Meinungsbilder und Absprachen und bring echte Entscheidungen in die Versammlung.",
+    "example": "",
+    "section": "Umfragen"
    },
    {
     "key": "tax_areas",
@@ -1727,11 +1831,27 @@
     "section": "Steuer"
    },
    {
+    "key": "vat_flat_rate",
+    "kind": "decision",
+    "name": "Vorsteuer pauschal nach § 23a UStG?",
+    "text": "Statt jede Vorsteuer aus Belegen zu sammeln, zieht der Verein pauschal 7 % der steuerpflichtigen Umsätze ab (§ 23a Abs. 1 UStG). Das spart Arbeit und lohnt sich, wenn die tatsächliche Vorsteuer kleiner ist; HUBIplan zeigt beide Beträge zum Vergleich. Erlaubt ist es nur gemeinnützigen Vereinen ohne Buchführungspflicht bis 50.000 € steuerpflichtigem Umsatz im Vorjahr, und die Wahl bindet mindestens fünf Kalenderjahre (§ 23a Abs. 2 und 3 UStG).",
+    "example": "",
+    "section": "Finanzen → Umsatzsteuer"
+   },
+   {
     "key": "vat_id",
     "kind": "term",
     "name": "USt-IdNr. – Steuernummer und Umsatzsteuer-Identifikationsnummer",
     "text": "Die Steuernummer vergibt das Finanzamt, die USt-IdNr. das Bundeszentralamt für Steuern. Eine davon gehört auf jede Rechnung mit Umsatzsteuer (§ 14 Abs. 4 Satz 1 Nr. 2 UStG).",
     "example": "Beispiel: USt-IdNr. DE123456789: „DE“ und neun Ziffern.",
+    "section": "Steuer"
+   },
+   {
+    "key": "vat_return",
+    "kind": "term",
+    "name": "UStVA – Umsatzsteuer-Voranmeldung",
+    "text": "Elektronische Meldung der Umsatzsteuer für einen Monat oder ein Vierteljahr, fällig am 10. Tag danach (§ 18 Abs. 1 UStG). Monatlich, wenn die Steuer im Vorjahr über 9.000 € lag; bei höchstens 2.000 € kann das Finanzamt davon befreien (§ 18 Abs. 2 UStG).",
+    "example": "Beispiel: Vorjahressteuer 3.200 €, also vierteljährlich; die Meldung für Juli bis September ist am 10. Oktober fällig.",
     "section": "Steuer"
    },
    {
@@ -1823,6 +1943,30 @@
     "text": "Age bands set the fee automatically by age at the start of the financial year, without you having to change the membership type. A separate membership type such as “Youth” is better if rights or reporting also change with age. Different fees need a basis in the constitution or fee regulations (§ 58 no. 2 BGB).",
     "example": "",
     "section": "Fee rules → age bands"
+   },
+   {
+    "key": "application_consents",
+    "kind": "decision",
+    "name": "Which consents should you ask for?",
+    "text": "What membership requires, such as address and bank details, the club processes without consent because it needs it for the membership (Art. 6 Abs. 1 lit. b GDPR). Consents belong only to voluntary things such as photos or the birthday on the website, each one separately and with no disadvantage for a no (Art. 7 GDPR). They can be withdrawn at any time, so only offer what you can switch off again after a withdrawal.",
+    "example": "",
+    "section": "Members → Online application"
+   },
+   {
+    "key": "application_fee_rules",
+    "kind": "decision",
+    "name": "Have applicants confirm the fee rules?",
+    "text": "A member owes fees only if the statutes, or fee rules based on them, provide for them (§ 58 Nr. 2 BGB). The confirmation in the application records which version the new member knew. This helps if someone later disputes the amount or the collection of a fee.",
+    "example": "",
+    "section": "Members → Online application"
+   },
+   {
+    "key": "application_minors",
+    "kind": "decision",
+    "name": "Let minors apply online?",
+    "text": "Joining creates the duty to pay fees and therefore needs the parents' consent (§ 107 BGB); in the application at least one person with parental responsibility confirms it. If a child under 16 consents online, for example to photos on the website, the parents' consent is needed as well (Art. 8 GDPR). Without this switch the form does not accept applications from minors.",
+    "example": "",
+    "section": "Members → Online application"
    },
    {
     "key": "artist_fee_mark",
@@ -1961,12 +2105,28 @@
     "section": "Cash book → entry"
    },
    {
+    "key": "budget",
+    "kind": "term",
+    "name": "Budget",
+    "text": "Plan of the expected income and expenses for a financial year, usually by area or category. It is required only if the statutes provide for it; if the meeting adopts it, the board follows it like an instruction (§ 27 Abs. 3, § 665 BGB).",
+    "example": "Example: plan 4,000 € for the club festival, actual 4,600 € in October; the treasurer explains the 600 € difference at the meeting.",
+    "section": "Treasury and closing"
+   },
+   {
     "key": "camt",
     "kind": "term",
     "name": "CAMT.053 – Electronic bank statement (elektronischer Kontoauszug)",
     "text": "Bank statement as a file in camt.053 format under ISO 20022, offered by almost every online banking system; unlike a CSV file it contains unambiguous details such as IBAN, reference and closing balance.",
     "example": "Example: October statement with 37 transactions and closing balance €4,812.55 as an XML file.",
     "section": "Treasury and closing"
+   },
+   {
+    "key": "cancellation_notice",
+    "kind": "decision",
+    "name": "Which notice period should you enter?",
+    "text": "Enter exactly the period and date from your statutes; HUBIplan calculates the earliest exit date from them. Every member may leave, and the statutes may bind leaving to a notice period of at most two years (§ 39 BGB). If your statutes say nothing, choose no notice period.",
+    "example": "",
+    "section": "Members → Settings"
    },
    {
     "key": "cash_audit",
@@ -2369,6 +2529,14 @@
     "section": "Law and data protection"
    },
    {
+    "key": "contract_renewal",
+    "kind": "decision",
+    "name": "Set a reminder before the notice period?",
+    "text": "If a contract renews automatically, the last day of the notice period counts, not the end of the contract; whoever misses it is often bound for another year. Notice period and renewal are set in the contract; the law sets limits mainly for standard business terms (§ 309 Nr. 9 BGB). Set the reminder so that there is still time for a board decision before the period runs out.",
+    "example": "",
+    "section": "Business partners → Agreement"
+   },
+   {
     "key": "creditor_id",
     "kind": "term",
     "name": "Creditor ID (Gläubiger-ID)",
@@ -2753,6 +2921,14 @@
     "section": "Meetings → types and deadlines"
    },
    {
+    "key": "meeting_online",
+    "kind": "decision",
+    "name": "Allow remote participation?",
+    "text": "Whoever convenes the meeting may allow members to take part and vote electronically, as long as there is also a venue (hybrid meeting, § 32 Abs. 2 BGB). A purely virtual meeting, by contrast, needs a resolution of the members or a rule in the statutes. The invitation must say how members exercise their rights remotely, for example checking in and voting in the app.",
+    "example": "",
+    "section": "Meeting → Check in with the app and online voting"
+   },
+   {
     "key": "meeting_proxies",
     "kind": "decision",
     "name": "Allow voting by proxy?",
@@ -2767,6 +2943,14 @@
     "text": "The law sets no minimum: a properly convened meeting can pass resolutions however many attend (§ 32 BGB). A minimum protects against decisions by small groups but can paralyse the meeting if too few turn up. Only enter a value if your constitution requires one (§ 40 BGB).",
     "example": "",
     "section": "Meetings → types and deadlines"
+   },
+   {
+    "key": "meeting_secret",
+    "kind": "decision",
+    "name": "Vote by secret ballot?",
+    "text": "A secret ballot protects against pressure and is common for elections and sensitive personnel matters. In return, nobody can check afterwards who voted how, not even in a dispute about the result. It is required only if the statutes, election rules or a resolution of the meeting demand it (§§ 32, 40 BGB).",
+    "example": "",
+    "section": "Meeting → Online votes"
    },
    {
     "key": "member_type",
@@ -2815,6 +2999,14 @@
     "text": "List of accounts, fixed assets, receivables and liabilities at the end of the year. It is part of the board’s accounting to the general meeting (§ 27(3), § 666 BGB).",
     "example": "Example: €8,000 accounts + €4,200 assets + €300 unpaid fees − €1,190 unpaid invoices = €11,310.",
     "section": "Treasury and closing"
+   },
+   {
+    "key": "obligations_calendar",
+    "kind": "decision",
+    "name": "Which obligations should you enter?",
+    "text": "Typical ones are the tax return, which the tax office usually requests from non-profit clubs every three years (§ 149 AO), and registering a new board with the register court (§ 67 BGB). Add deadlines from contracts, insurance and grants that are in no law. A reminder with a responsible person ensures that a deadline is not forgotten even after a change of board.",
+    "example": "",
+    "section": "Deadline calendar"
    },
    {
     "key": "open_till",
@@ -2935,6 +3127,14 @@
     "text": "A business operation that directly fulfils the statutory purpose and cannot be achieved otherwise. It remains tax-privileged like the non-profit sphere (§§ 64(1), 65 AO).",
     "example": "Example: entry fees for the club competition, €650.00: the event itself serves the club's purpose.",
     "section": "Tax"
+   },
+   {
+    "key": "qualification_inspection",
+    "kind": "decision",
+    "name": "Record only that it was inspected?",
+    "text": "For the extended certificate of good conduct of people supervising children and young people, the club may only record that it inspected it, the date of the certificate and whether there is a relevant conviction (§ 72a Abs. 5 SGB VIII). The certificate itself is not copied or uploaded, and the data must be deleted at the latest six months after the activity ends. An expiry date is only worthwhile for certificates that really expire, such as first aid (Art. 5 Abs. 1 lit. c GDPR).",
+    "example": "",
+    "section": "Members → Qualifications"
    },
    {
     "key": "receipt",
@@ -3089,6 +3289,14 @@
     "section": "Cash book → split booking"
    },
    {
+    "key": "sponsoring_tax",
+    "kind": "decision",
+    "name": "Mention only or active advertising?",
+    "text": "If the club only refers to the sponsor, for example with name or logo on a poster or the website without special emphasis, the income remains tax-free asset management (AEAO zu § 64 Abs. 1 AO). If it actively advertises, for example with shirt advertising or slogans, the income belongs to the commercial business and counts towards the exemption limit (§ 64 Abs. 3 AO). Record in the contract which consideration has been agreed.",
+    "example": "",
+    "section": "Business partners → Agreement"
+   },
+   {
     "key": "statute_amendment",
     "kind": "term",
     "name": "Amendment to the constitution (Satzungsänderung)",
@@ -3103,6 +3311,22 @@
     "text": "Notice that the constitution meets the requirements for non-profit status (§ 60a AO). Newly founded clubs receive it before there is a first exemption notice.",
     "example": "Example: determination of 2 May 2025: HUBIplan issues receipts until 2 May 2028.",
     "section": "Donations"
+   },
+   {
+    "key": "survey_anonymous",
+    "kind": "decision",
+    "name": "Show names or ask anonymously?",
+    "text": "Anonymous answers are often more honest, for example on criticism of the board. In return nobody can ask follow-up questions, and for arrangements such as car pools or meal choices you need the names. Only ask for as much personal information as the purpose requires (Art. 5 Abs. 1 lit. c GDPR).",
+    "example": "",
+    "section": "Surveys → Names and result"
+   },
+   {
+    "key": "survey_not_resolution",
+    "kind": "decision",
+    "name": "Why is a survey not a resolution?",
+    "text": "Resolutions are passed by the general meeting (§ 32 Abs. 1 BGB). Without a meeting a resolution is valid only if all members agree in text form, unless the statutes say otherwise (§ 32 Abs. 3, § 40 BGB), and a survey practically never achieves that. Use surveys for opinions and arrangements, and take real decisions to the meeting.",
+    "example": "",
+    "section": "Surveys"
    },
    {
     "key": "tax_areas",
@@ -3153,11 +3377,27 @@
     "section": "Tax"
    },
    {
+    "key": "vat_flat_rate",
+    "kind": "decision",
+    "name": "Flat-rate input tax under § 23a UStG?",
+    "text": "Instead of collecting every input tax from receipts, the club deducts a flat 7 % of its taxable turnover (§ 23a Abs. 1 UStG). This saves work and pays off if the actual input tax is lower; HUBIplan shows both amounts for comparison. It is allowed only for non-profit clubs without bookkeeping obligation up to 50,000 € taxable turnover in the previous year, and the choice binds for at least five calendar years (§ 23a Abs. 2 and 3 UStG).",
+    "example": "",
+    "section": "Finance → VAT"
+   },
+   {
     "key": "vat_id",
     "kind": "term",
     "name": "USt-IdNr. – Tax number and VAT ID (Steuernummer, USt-IdNr.)",
     "text": "The tax number is issued by the tax office, the VAT ID by the Federal Central Tax Office. One of them belongs on every invoice with VAT (§ 14(4) sentence 1 no. 2 UStG).",
     "example": "Example: VAT ID DE123456789: “DE” and nine digits.",
+    "section": "Tax"
+   },
+   {
+    "key": "vat_return",
+    "kind": "term",
+    "name": "UStVA – Advance VAT return",
+    "text": "Electronic return of the VAT for a month or a quarter, due on the 10th day after it (§ 18 Abs. 1 UStG). Monthly if the tax in the previous year exceeded 9,000 €; at 2,000 € or less the tax office can exempt the club (§ 18 Abs. 2 UStG).",
+    "example": "Example: previous year's tax 3,200 €, so quarterly; the return for July to September is due on 10 October.",
     "section": "Tax"
    },
    {

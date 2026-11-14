@@ -18,6 +18,7 @@ import { Alert, Field, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
+import { Term } from '../../learning/Aids.tsx'
 
 interface Draft extends BudgetLineInput {
   key: string
@@ -450,7 +451,9 @@ export function BudgetPage({ canEdit }: { canEdit: boolean }) {
 
   return (
     <div className="stack">
-      <h2 className="section-heading">{t('Haushaltsplan')}</h2>
+      <h2 className="section-heading">
+        <Term k="budget">{t('Haushaltsplan')}</Term>
+      </h2>
       <div className="card card-wide filters">
         <label>
           {t('Geschäftsjahr')}{' '}

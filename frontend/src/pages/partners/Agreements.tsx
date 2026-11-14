@@ -23,6 +23,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { TextArea } from '../settings/TextArea.tsx'
+import { Why } from '../../learning/Aids.tsx'
 
 function agreementKindLabel(kind: AgreementKind): string {
   return {
@@ -320,6 +321,10 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
               value={draft.remind_days ?? 60}
               onChange={(e) => setDraft({ ...draft, remind_days: Number(e.target.value) || 0 })}
             />
+          </div>
+          <div className="aid-row">
+            <Why k="sponsoring_tax" />
+            <Why k="contract_renewal" />
           </div>
           <Checkbox
             label={t('Verlängert sich automatisch, wenn niemand kündigt')}

@@ -12,6 +12,7 @@ import { DeleteIcon, EditIcon, IconButton, RestoreIcon } from '../../components/
 import { Alert, Checkbox, Field, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Draft = Pick<
   QualificationType,
@@ -124,6 +125,9 @@ function TypeForm({
         value={draft.remind_days ?? ''}
         onChange={(e) => set({ remind_days: number(e.target.value) })}
       />
+      <div className="aid-row">
+        <Why k="qualification_inspection" />
+      </div>
       <Checkbox
         label={t('Nur Einsichtsvermerk (z. B. Führungszeugnis)')}
         hint={t(

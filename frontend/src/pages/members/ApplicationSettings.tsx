@@ -25,6 +25,7 @@ import { Segmented } from '../../components/PageHeader.tsx'
 import { Alert, Checkbox, Field, Loading, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Values = Omit<
   FormSettings,
@@ -338,6 +339,10 @@ function SettingsForm({
         </Section>
 
         <Section title={t('Bestätigungen und Einwilligungen')}>
+          <div className="aid-row">
+            <Why k="application_fee_rules" />
+            <Why k="application_consents" />
+          </div>
           <Checkbox
             label={t('Satzung bestätigen lassen')}
             hint={
@@ -405,6 +410,9 @@ function SettingsForm({
         </Section>
 
         <Section title={t('Minderjährige')}>
+          <div className="aid-row">
+            <Why k="application_minors" />
+          </div>
           <Checkbox
             label={t('Minderjährige dürfen online beantragen (mit Erziehungsberechtigten)')}
             checked={v.minors}

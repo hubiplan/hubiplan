@@ -6,6 +6,7 @@ import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Term, Why } from '../../learning/Aids.tsx'
 
 function periodOptions(): { value: VatPeriod; label: string }[] {
   return [
@@ -75,7 +76,9 @@ function VatReportView({
 
   return (
     <div className="stack" data-testid="vat">
-      <h2 className="section-heading">{t('Umsatzsteuer-Voranmeldung')}</h2>
+      <h2 className="section-heading">
+        <Term k="vat_return">{t('Umsatzsteuer-Voranmeldung')}</Term>
+      </h2>
       <p className="muted small">
         {t(
           'Vorlage zum Übertragen in ELSTER. Gezählt werden Buchungen mit Steuersatz; der Betrag im Kassenbuch ist brutto. Vorsteuer zählt nur bei Ausgaben außerhalb des ideellen Bereichs.',
@@ -194,6 +197,9 @@ function VatReportView({
             </option>
           ))}
         </SelectField>
+        <div className="aid-row">
+          <Why k="vat_flat_rate" />
+        </div>
         <Checkbox
           label={t('Vorsteuer pauschal nach § 23a UStG (7 % der steuerpflichtigen Umsätze)')}
           hint={t(
