@@ -838,6 +838,8 @@ REF_TABLES = {
     "place": "places.place",
     "category": "events.eventcategory",
     "document": "website.websitedocument",
+    "unit": "organizations.department",
+    "competition": "competitions.competition",
 }
 
 
