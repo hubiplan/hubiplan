@@ -94,6 +94,9 @@
   flex-wrap: wrap;
   gap: 0.75rem;
 }
+.booking-times > .field {
+  flex: 1 1 12rem;
+}
 .booking-form,
 .booking-detail {
   margin-bottom: 1rem;

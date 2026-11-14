@@ -119,8 +119,8 @@ export function TodoEditor({
           </p>
         )}
         <summary>{t('Beschreibung und Frist')}</summary>
-        <label>
-          {t('Beschreibung')}
+        <label className="field">
+          <span>{t('Beschreibung')}</span>
           <textarea
             rows={8}
             maxLength={50000}
