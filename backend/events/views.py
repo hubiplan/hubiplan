@@ -14,21 +14,21 @@ from __future__ import annotations
 import datetime
 
 from django.db import transaction
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import DEPT_EVENTS_MANAGE, EVENTS_MANAGE, EVENTS_VIEW
+from access.catalog import DEPT_EVENTS_MANAGE, DOCS_VIEW, EVENTS_MANAGE, EVENTS_VIEW
 from audit.log import diff, record, snapshot
-from core.api_base import OrgScopedMixin
+from core.api_base import OrgScopedMixin, has_needed
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import DepartmentMembership, Membership, today
 from organizations.models import Organization
@@ -36,7 +36,18 @@ from organizations.terms import fill
 from organizations.tree import UnitTree
 from portal.views import DepartmentScopedMixin, _portal_access
 
-from . import external, ical, maps, notify, participants, pdf, recurrence, rsvp, services
+from . import (
+    attachments,
+    external,
+    ical,
+    maps,
+    notify,
+    participants,
+    pdf,
+    recurrence,
+    rsvp,
+    services,
+)
 from .models import (
     MAX_ATTACHMENT_BYTES,
     MAX_ATTACHMENTS,
@@ -165,13 +176,7 @@ def response_data(r: EventResponse) -> dict:
 
 
 def attachment_data(att: EventAttachment, base: str) -> dict:
-    return {
-        "id": att.pk,
-        "name": att.name,
-        "size": att.size,
-        "content_type": att.content_type,
-        "url": f"{base}attachments/{att.pk}/",
-    }
+    return attachments.data(att, f"{base}attachments/{att.pk}/")
 
 
 def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
@@ -204,7 +209,9 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "level": services.level(event),
         "department_id": event.department_id,
         "can_edit": can_edit,
-        "attachments": [attachment_data(a, f"{base}{event.pk}/") for a in event.attachments.all()],
+        "attachments": [
+            attachment_data(a, f"{base}{event.pk}/") for a in attachments.shown(event, can_edit)
+        ],
         "exceptions": [exception_data(e) for e in event.exceptions.all()],
         "rsvp": rsvp_data(event, viewer),
         "source": (
@@ -779,16 +786,80 @@ class _AttachmentList(APIView):
     # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
     virus_quarantine = True
 
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def document_viewer(self):
+        """Sicht auf die Ablage dieser Einheit, ``None`` ohne Leserecht."""
+        return None
+
+    def linkable(self):
+        from documents.models import Document
+
+        viewer = self.document_viewer()
+        if viewer is None:
+            return Document.objects.none()
+        return (
+            Document.objects.filter(folder__in=viewer.all_folders(), deleted_at__isnull=True)
+            .filter(versions__isnull=False)
+            .distinct()
+            .select_related("folder", "folder__department")
+            .order_by("title", "pk")
+        )
+
+    def get(self, request, pk: int, **kwargs):
+        """Dokumente der Ablage, die sich an diesen Termin hängen lassen."""
+        event = self.own_event(pk)
+        linked = set(event.attachments.exclude(document=None).values_list("document_id", flat=True))
+        return Response(
+            {
+                "documents": [
+                    {
+                        "id": d.pk,
+                        "title": d.title,
+                        "folder": (
+                            f"{d.folder.name} ({d.folder.department.name})"
+                            if d.folder.department_id
+                            else d.folder.name
+                        ),
+                        "folder_visibility": d.folder.get_visibility_display(),
+                        "narrower": attachments.narrower(d.folder, event.visibility),
+                    }
+                    for d in self.linkable()
+                    if d.pk not in linked
+                ]
+            }
+        )
+
+    def link(self, request, event: Event, raw) -> Response:
+        try:
+            doc_id = int(raw)
+        except (TypeError, ValueError):
+            doc_id = 0
+        doc = self.linkable().filter(pk=doc_id).first()
+        if doc is None:
+            raise serializers.ValidationError(
+                {"document": gettext("Dieses Dokument kannst du hier nicht verknüpfen.")}
+            )
+        if event.attachments.filter(document=doc).exists():
+            raise serializers.ValidationError(
+                {"document": gettext("Das Dokument hängt schon an diesem Termin.")}
+            )
+        att = EventAttachment(
+            event=event,
+            organization=event.organization,
+            kind=EventAttachment.Kind.DOCUMENT,
+            document=doc,
+            name=doc.title[:200],
+            uploaded_by=request.user,
+        )
+        att.save()
+        self.audit("update", event, {"Dokument verknüpft": [None, doc.title]})
+        event = self.visible_event(event.pk)
+        return Response(event_data(event, self.viewer, self.base_url), status=201)
 
     @transaction.atomic
     def post(self, request, pk: int, **kwargs):
         event = self.own_event(pk)
-        upload = request.FILES.get("file")
-        if upload is None:
-            raise serializers.ValidationError({"file": gettext("Bitte eine Datei wählen.")})
-        if upload.size > MAX_ATTACHMENT_BYTES:
-            raise serializers.ValidationError({"file": gettext("Die Datei ist größer als 15 MB.")})
         if event.attachments.count() >= MAX_ATTACHMENTS:
             raise serializers.ValidationError(
                 {
@@ -797,6 +868,13 @@ class _AttachmentList(APIView):
                     )
                 }
             )
+        if request.data.get("document") not in (None, ""):
+            return self.link(request, event, request.data.get("document"))
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise serializers.ValidationError({"file": gettext("Bitte eine Datei wählen.")})
+        if upload.size > MAX_ATTACHMENT_BYTES:
+            raise serializers.ValidationError({"file": gettext("Die Datei ist größer als 15 MB.")})
         ctype = _sniff(upload)
         att = EventAttachment(
             event=event,
@@ -817,24 +895,22 @@ class _Attachment(APIView):
     def get(self, request, pk: int, att_id: int, **kwargs):
         event = self.visible_event(pk)
         att = get_object_or_404(EventAttachment, event=event, pk=att_id)
-        from core.virenscan import ensure_released
-
-        ensure_released(att.file)
-        response = FileResponse(
-            att.file.open("rb"),
-            content_type=att.content_type,
-            as_attachment=request.query_params.get("download") == "1",
-            filename=att.name,
+        # Verknüpfte Dokumente können sich ändern (neue Fassung): kürzer zwischenspeichern
+        cache = (
+            "private, max-age=3600"
+            if att.kind == EventAttachment.Kind.FILE
+            else "private, max-age=300"
         )
-        response["Cache-Control"] = "private, max-age=3600"
-        response["X-Content-Type-Options"] = "nosniff"
-        return response
+        return attachments.response(request, att, cache)
 
     @transaction.atomic
     def delete(self, request, pk: int, att_id: int, **kwargs):
         event = self.own_event(pk)
         att = get_object_or_404(EventAttachment, event=event, pk=att_id)
-        self.audit("update", event, {"Anhang": [att.name, None]})
+        if att.kind == EventAttachment.Kind.DOCUMENT:
+            self.audit("update", event, {"Dokument verknüpft": [att.name, None]})
+        else:
+            self.audit("update", event, {"Anhang": [att.name, None]})
         att.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -1628,7 +1704,12 @@ class OrgEventOccurrenceView(OrgCalendarMixin, _EventOccurrence):
 
 
 class OrgAttachmentListView(OrgCalendarMixin, _AttachmentList):
-    pass
+    def document_viewer(self):
+        from documents.services import org_viewer
+
+        if not has_needed(self.org_permissions, DOCS_VIEW):
+            return None
+        return org_viewer(self.org, self.org_permissions)
 
 
 class OrgAttachmentView(OrgCalendarMixin, _Attachment):
@@ -1705,7 +1786,12 @@ class DeptEventOccurrenceView(DeptCalendarMixin, _EventOccurrence):
 
 
 class DeptAttachmentListView(DeptCalendarMixin, _AttachmentList):
-    pass
+    def document_viewer(self):
+        from documents.services import department_viewer
+
+        if not has_needed(self.ctx.permissions, DOCS_VIEW):
+            return None
+        return department_viewer(self.ctx)
 
 
 class DeptAttachmentView(DeptCalendarMixin, _Attachment):

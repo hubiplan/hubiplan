@@ -18,6 +18,7 @@ import { Alert, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
+import { EventDocumentLink } from './EventDocumentLink.tsx'
 import { berlin, formatDay, formatRange, toApi } from './time.ts'
 import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { circularApi } from '../../api/circulars.ts'
@@ -550,10 +551,19 @@ export function EventDialog({
               <ul className="plain-list">
                 {data.attachments.map((a) => (
                   <li key={a.id}>
-                    <a href={a.url} target="_blank" rel="noreferrer">
-                      {a.name}
-                    </a>{' '}
-                    <span className="muted small">{formatSize(a.size)}</span>
+                    {a.available === false ? (
+                      <span className="muted">{a.name}</span>
+                    ) : (
+                      <a href={a.url} target="_blank" rel="noreferrer">
+                        {a.name}
+                      </a>
+                    )}{' '}
+                    {a.available !== false && (
+                      <span className="muted small">{formatSize(a.size)}</span>
+                    )}
+                    {a.kind === 'document' && (
+                      <span className="muted small"> · {t('aus der Ablage')}</span>
+                    )}
                     {data.can_edit && (
                       <button
                         type="button"
@@ -563,6 +573,10 @@ export function EventDialog({
                           if (
                             !(await confirmDialog({
                               title: t('Anhang „{name}“ entfernen?', { name: a.name }),
+                              message:
+                                a.kind === 'document'
+                                  ? t('Das Dokument bleibt in der Ablage.')
+                                  : undefined,
                               confirmLabel: t('Entfernen'),
                             }))
                           )
@@ -595,6 +609,9 @@ export function EventDialog({
                     }}
                   />
                 </label>
+              )}
+              {data.can_edit && (
+                <EventDocumentLink base={base} event={data} disabled={busy} onChanged={changed} />
               )}
             </div>
           )}

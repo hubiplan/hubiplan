@@ -8897,5 +8897,11 @@
   "Ergebnis:": "Result:",
   "Zur Versammlung: online teilnehmen und abstimmen": "To the meeting: take part online and vote",
   "Zur Versammlung: Anmeldung und Abstimmungen": "To the meeting: check-in and votes",
-  "Für diesen Verein hast du keinen Mitgliederzugang.": "You have no member access for this club."
+  "Für diesen Verein hast du keinen Mitgliederzugang.": "You have no member access for this club.",
+  "Dokument aus der Ablage verknüpfen": "Link a document from the document store",
+  "In der Ablage gibt es kein weiteres Dokument, das du hier verknüpfen kannst.": "There is no other document in the document store that you can link here.",
+  "Dokument aus der Ablage": "Document from the document store",
+  "Der Ordner „{folder}“ ist enger sichtbar ({visibility}). Am Termin sehen das Dokument alle, die den Termin sehen.": "The folder “{folder}” has narrower visibility ({visibility}). On the event, everyone who can see the event can see the document.",
+  "aus der Ablage": "from the document store",
+  "Das Dokument bleibt in der Ablage.": "The document stays in the document store."
 }

@@ -295,10 +295,29 @@ class EventAttachment(models.Model):
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
+
+    class Kind(models.TextChoices):
+        FILE = "file", gettext_lazy("Datei")
+        DOCUMENT = "document", gettext_lazy("Dokument aus der Ablage")
+
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="attachments")
-    file = PrivateFileField("Datei", storage=private_storage, upload_to=attachment_path)
+    # Datei: hier hochgeladen. Dokument: Verweis auf die Ablage, gezeigt wird immer
+    # die neueste Fassung. Wer den Termin sieht, sieht auch das verknüpfte Dokument.
+    # db_default: Ältere Fassung legt Anhänge ohne Art an (Rückweg)
+    kind = models.CharField(
+        "Art", max_length=8, choices=Kind.choices, default=Kind.FILE, db_default=Kind.FILE
+    )
+    file = PrivateFileField("Datei", storage=private_storage, upload_to=attachment_path, blank=True)
+    document = models.ForeignKey(
+        "documents.Document",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Dokument",
+    )
     name = models.CharField("Dateiname", max_length=200)
-    content_type = models.CharField(max_length=100)
+    content_type = models.CharField(max_length=100, blank=True)
     size = models.PositiveIntegerField("Größe", default=0)
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -309,6 +328,13 @@ class EventAttachment(models.Model):
         verbose_name = "Anhang eines Termins"
         verbose_name_plural = "Anhänge von Terminen"
         ordering = ["uploaded_at", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(kind="file", document__isnull=True)
+                | models.Q(kind="document", file=""),
+                name="event_attachment_kind",
+            )
+        ]
 
     def __str__(self) -> str:
         return self.name
