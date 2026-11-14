@@ -50,12 +50,12 @@ def rls(apps, schema_editor):
                 RAISE EXCEPTION 'survey scope mismatch' USING ERRCODE = '23514';
               END IF;
             END IF;
-            IF NEW.department_id IS NOT NULL THEN
-              SELECT organization_id INTO parent_org
-                FROM organizations_department WHERE id = NEW.department_id;
-              IF parent_org IS DISTINCT FROM NEW.organization_id THEN
-                RAISE EXCEPTION 'survey scope mismatch' USING ERRCODE = '23514';
-              END IF;
+            -- Untereinheiten sind Organisationen vom Typ „unit“ (seit organizations 0014)
+            IF NEW.department_id IS NOT NULL AND NOT EXISTS (
+                SELECT 1 FROM organizations_organization
+                 WHERE id = NEW.department_id AND type = 'unit'
+                   AND organization_id = NEW.organization_id) THEN
+              RAISE EXCEPTION 'survey scope mismatch' USING ERRCODE = '23514';
             END IF;
             RETURN NEW;
           ELSIF TG_TABLE_NAME = 'surveys_surveyoption' THEN
