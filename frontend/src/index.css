@@ -257,7 +257,10 @@ code {
   margin-bottom: 0.3rem;
 }
 
-.field input {
+/* Kästchen und Auswahlknöpfe nicht wie ein Textfeld auf volle Breite ziehen: sonst rutscht der
+   Knopf über die Beschriftung daneben (Abschnittsdialog › Hintergrund). :where hält die
+   Spezifität bei .field input, damit spätere Regeln weiter greifen. */
+.field input:not(:where([type='checkbox'], [type='radio'])) {
   width: 100%;
   padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
@@ -267,7 +270,7 @@ code {
   border-radius: var(--radius);
 }
 
-.field input:focus {
+.field input:not(:where([type='checkbox'], [type='radio'])):focus {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
   border-color: var(--color-focus);
@@ -6084,6 +6087,7 @@ label:has(> .file-input:focus-visible) {
 }
 .home-bg-swatch {
   display: inline-grid;
+  flex-shrink: 0;
   place-items: center;
   width: 2rem;
   height: 1.6rem;
