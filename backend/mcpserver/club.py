@@ -396,6 +396,8 @@ def _home_read(args: dict, ctx: ClubContext) -> str:
         else:
             row["name"] = str(labels.get(s.get("key"), s.get("key")))
             row["fester_bereich"] = True
+            if "days" in s:
+                row["tage"] = s["days"]
         rows.append(row)
     return (
         _(

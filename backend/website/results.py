@@ -443,9 +443,23 @@ def overview(site) -> dict:
     }
 
 
-def home(site, limit: int = 3) -> list:
-    """Startseite „Aktuelle Ergebnisse“: die neuesten Wettbewerbe mit ihren Siegern."""
-    return [home_entry(site, comp) for comp in published(site)[:limit]]
+def current(comp, days: int | None) -> bool:
+    """Gilt der Wettbewerb bei dieser Frist (Tage nach dem Wettbewerb) noch als aktuell?
+
+    Ohne Frist immer; laufende und vorläufige Wettbewerbe bleiben immer stehen."""
+    from competitions.models import Competition
+
+    from .home import cutoff
+
+    since = cutoff(days)
+    return since is None or comp.status != Competition.Status.FINAL or comp.date >= since
+
+
+def home(site, limit: int = 3, days: int | None = None) -> list:
+    """Startseite „Aktuelle Ergebnisse“: die neuesten Wettbewerbe mit ihren Siegern,
+    auf Wunsch nur bis ``days`` Tage nach dem Wettbewerb (Ralf 14.11.2026)."""
+    comps = [c for c in published(site) if current(c, days)]
+    return [home_entry(site, comp) for comp in comps[:limit]]
 
 
 def home_entry(site, comp) -> dict:
