@@ -10,7 +10,7 @@ celery==5.6.3
 # kombu 5.7 braucht packaging für den Redis-Transport, gibt es aber nicht als Abhängigkeit an
 packaging==26.3
 redis==8.1.0
-gunicorn==26.2.0
+gunicorn==27.0.0
 whitenoise==6.12.0
 pillow==13.0.0
 python-dateutil==4.0.0
