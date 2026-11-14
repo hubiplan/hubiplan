@@ -5802,7 +5802,7 @@ label:has(> .file-input:focus-visible) {
   margin-top: 0.25rem;
 }
 
-/* Webseite › Gestaltung › Feinabstimmung (Stilregler): Leisten mit 2 oder 3 gleich breiten Feldern */
+/* Webseite › Gestaltung › Feinabstimmung (Stilregler): Leisten mit 2 bis 5 gleich breiten Feldern */
 .style-group {
   border-top: 1px solid var(--color-border);
   padding: 0.3rem 0 0.5rem;
@@ -5846,6 +5846,13 @@ label:has(> .file-input:focus-visible) {
 }
 .style-segments.style-n2 {
   width: 12rem;
+}
+.style-segments.style-n5 {
+  width: 25rem;
+}
+.style-select {
+  width: 18rem;
+  max-width: 100%;
 }
 .style-segments button {
   font: inherit;

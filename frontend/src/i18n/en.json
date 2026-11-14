@@ -9215,5 +9215,11 @@
   "Farbe der Abschnitte mit hellem Hintergrund auf der Startseite.": "Colour of home page sections with a light background.",
   "weiß mit Streifen": "white with stripe",
   "Weiß mit Streifen: weiße Karten mit feiner Kante, Termine mit Farbstreifen links, Kacheln der Untereinheiten oben.": "White with stripe: white cards with a fine edge, events with a colour stripe on the left, subunit tiles on top.",
-  "Etikett": "Label"
+  "Etikett": "Label",
+  "Klar": "Clear",
+  "Elegant": "Elegant",
+  "Modern: Open Sans und Roboto. Festlich: Open Sans, Überschriften mit Serifen. Klar: Source Sans 3. Elegant: Source Sans 3, Überschriften in Crimson Pro. Gut lesbar: Atkinson Hyperlegible.": "Modern: Open Sans and Roboto. Festive: Open Sans, headings with serifs. Clear: Source Sans 3. Elegant: Source Sans 3, headings in Crimson Pro. Easy to read: Atkinson Hyperlegible.",
+  "Fraktur": "Blackletter",
+  "Kräftig": "Bold",
+  "Fraktur: UnifrakturMaguntia. Kräftig: Oswald, schmal und fett.": "Blackletter: UnifrakturMaguntia. Bold: Oswald, narrow and bold."
 }

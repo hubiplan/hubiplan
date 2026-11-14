@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: New fonts under Design › Fine-tuning › Font: **Clear** (Source Sans 3), **Elegant** (Source Sans 3, headings in Crimson Pro) and **Easy to read** (Atkinson Hyperlegible), plus **Blackletter** and **Bold** (Oswald) for headings. The “Easy to read” preset now uses Atkinson Hyperlegible. Like all other fonts they are stored on the website itself.
 - **Surveys and polls** (new module): find a date, meal choice, “who is coming along?”, yes/no/abstain polls or free questions, open, with names for administrators only or anonymous. You can ask the club, a subunit, selected people or those invited to an event; guests count for meal choices. Members answer in the member area, in the app or via the link in the email. The best option of a date finder becomes an event with one click, and everyone who said “yes” accepts it with one tap. Results as PDF and Excel.
 - Website: In **Text with image** the image can now also stand **above or below the text**, small or across the full width. The **Images** section also shows a **single image** with caption large across the whole width.
 - Website: **How long something is current.** For “Current results”, **Results of a competition**, **Gallery overview** and **Latest posts** you choose under **Edit** how many days after the competition, album or post it is still shown. Running competitions stay; if nothing is current any more, the section disappears by itself.

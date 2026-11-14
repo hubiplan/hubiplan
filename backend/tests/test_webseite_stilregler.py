@@ -70,7 +70,14 @@ def test_nur_bekannte_stufen(club, site, client_web, value):
 def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     data = client_web.get(f"/api/orgs/{club.pk}/website/").json()
     catalog = data["style_catalog"]
-    assert catalog["options"]["font"] == ["system", "modern", "festive"]
+    assert catalog["options"]["font"] == [
+        "system",
+        "modern",
+        "festive",
+        "clear",
+        "elegant",
+        "readable",
+    ]
     assert catalog["options"]["sticky"] == "switch"
     assert catalog["locks"]["sidebar"]["logo_pos"] is None
     assert catalog["locks"]["stage"]["width"] == ["narrow"]
@@ -79,6 +86,10 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     for key, options in catalog["options"].items():
         # und Überschriften und Karten mit vier Stufen (Webseite #89)
         most = 4 if key in ("header_height", "hero", "headings", "cards") else 3
+        # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)
+        if key in ("font", "heading_font"):
+            assert 6 <= len(options) <= 8
+            continue
         assert options == "switch" or 2 <= len(options) <= most
 
 

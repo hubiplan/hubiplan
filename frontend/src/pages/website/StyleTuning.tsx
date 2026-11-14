@@ -1,6 +1,7 @@
 // Webseite › Feinabstimmung (Ralf 10.11.2026, Konzept webseite-baukasten G1; neu gegliedert
 // 14.11.2026): feste Stufen statt CSS. Neun aufklappbare Gruppen, jeder Regler eine Leiste mit
-// 2 bis 4 gleich breiten Feldern (mit Bildzeichen, wo es hilft) oder ein Schalter.
+// 2 bis 5 gleich breiten Feldern (mit Bildzeichen, wo es hilft), eine Ausklappliste ab sechs
+// Stufen (Schriften) oder ein Schalter.
 // Nicht verstellt = wie das Design; die Stufe des Designs ist markiert. Oben: Voreinstellungen,
 // Suche und die verstellten Regler als Chips; ↺ stellt einen Regler oder eine Gruppe zurück.
 // Stufen, Sperren, Vorgaben und Voreinstellungen kommen aus HUBIplan (website/style.py),
@@ -28,12 +29,31 @@ function GROUPS(): Group[] {
         {
           key: 'font',
           label: t('Schriftart'),
-          options: { system: t('System'), modern: t('Modern'), festive: t('Festlich') },
+          options: {
+            system: t('System'),
+            modern: t('Modern'),
+            festive: t('Festlich'),
+            clear: t('Klar'),
+            elegant: t('Elegant'),
+            readable: t('Gut lesbar'),
+          },
+          hint: t(
+            'Modern: Open Sans und Roboto. Festlich: Open Sans, Überschriften mit Serifen. Klar: Source Sans 3. Elegant: Source Sans 3, Überschriften in Crimson Pro. Gut lesbar: Atkinson Hyperlegible.',
+          ),
         },
         {
           key: 'heading_font',
           label: t('Schrift der Überschriften'),
-          options: { text: t('wie der Text'), modern: t('Modern'), festive: t('Festlich') },
+          options: {
+            text: t('wie der Text'),
+            modern: t('Modern'),
+            festive: t('Festlich'),
+            clear: t('Klar'),
+            elegant: t('Elegant'),
+            fraktur: t('Fraktur'),
+            strong: t('Kräftig'),
+          },
+          hint: t('Fraktur: UnifrakturMaguntia. Kräftig: Oswald, schmal und fett.'),
         },
         {
           key: 'headings',
@@ -664,6 +684,24 @@ export function StyleTuning({
                         </span>
                         {!own && <small className="muted">{t('wie das Design')}</small>}
                       </label>
+                    ) : options.length > 5 ? (
+                      <select
+                        className="style-select"
+                        aria-labelledby={id}
+                        value={typeof value[row.key] === 'string' ? String(value[row.key]) : ''}
+                        onChange={(e) => setKey(row.key, e.target.value || null)}
+                      >
+                        <option value="">
+                          {typeof defaults[row.key] === 'string'
+                            ? `${t('wie das Design')} (${row.options?.[String(defaults[row.key])] ?? defaults[row.key]})`
+                            : t('wie das Design')}
+                        </option>
+                        {options.map((option) => (
+                          <option key={option} value={option} disabled={locked(row.key, option)}>
+                            {row.options?.[option] ?? option}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <div
                         className={`style-segments style-n${options.length}`}
