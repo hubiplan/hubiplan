@@ -1,6 +1,6 @@
 // Webseite › Feinabstimmung (Ralf 10.11.2026, Konzept webseite-baukasten G1; neu gegliedert
 // 14.11.2026): feste Stufen statt CSS. Neun aufklappbare Gruppen, jeder Regler eine Leiste mit
-// 2 bis 4 gleich breiten Feldern (mit Bildzeichen, wo es hilft) oder ein Schalter.
+// 2 bis 5 gleich breiten Feldern (mit Bildzeichen, wo es hilft) oder ein Schalter.
 // Nicht verstellt = wie das Design; die Stufe des Designs ist markiert. Oben: Voreinstellungen,
 // Suche und die verstellten Regler als Chips; ↺ stellt einen Regler oder eine Gruppe zurück.
 // Stufen, Sperren, Vorgaben und Voreinstellungen kommen aus HUBIplan (website/style.py),
@@ -28,12 +28,27 @@ function GROUPS(): Group[] {
         {
           key: 'font',
           label: t('Schriftart'),
-          options: { system: t('System'), modern: t('Modern'), festive: t('Festlich') },
+          options: {
+            system: t('System'),
+            modern: t('Modern'),
+            festive: t('Festlich'),
+            clear: t('Klar'),
+            elegant: t('Elegant'),
+          },
+          hint: t(
+            'Modern: Open Sans und Roboto. Festlich: Open Sans, Überschriften mit Serifen. Klar: Source Sans 3. Elegant: Source Sans 3, Überschriften in Crimson Pro.',
+          ),
         },
         {
           key: 'heading_font',
           label: t('Schrift der Überschriften'),
-          options: { text: t('wie der Text'), modern: t('Modern'), festive: t('Festlich') },
+          options: {
+            text: t('wie der Text'),
+            modern: t('Modern'),
+            festive: t('Festlich'),
+            clear: t('Klar'),
+            elegant: t('Elegant'),
+          },
         },
         {
           key: 'headings',

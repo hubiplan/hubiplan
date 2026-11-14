@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 # Regler → Stufen; ``bool`` = Schalter
 OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Schrift
-    "font": ("system", "modern", "festive"),
+    "font": ("system", "modern", "festive", "clear", "elegant"),
     "size": ("normal", "large", "xlarge"),
     "leading": ("tight", "normal", "airy"),
     "headings": ("plain", "line", "color", "short"),
@@ -76,7 +76,7 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Ralf 14.11.2026: Überschrift der Unterseiten, Schrift der Überschriften, Menüschrift,
     # sanftes Einblenden, gestreifte Tabellen, Datum neben dem Datumsfeld
     "page_title": ("plain", "band", "image"),
-    "heading_font": ("text", "modern", "festive"),
+    "heading_font": ("text", "modern", "festive", "clear", "elegant"),
     "nav_case": ("normal", "upper"),
     "nav_size": ("normal", "large"),
     "motion": ("off", "subtle"),

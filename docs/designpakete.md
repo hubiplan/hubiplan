@@ -12,8 +12,8 @@ harmlosen Vorlagen, Bedingungen, Kommentaren oder Includes. Die frühere DTL-Fil
 ist keine Sicherheitsgrenze mehr. CSS darf weiterhin keine externen Ressourcen laden
 (`url`, `@import`, `@font-face` usw.); die CSP bleibt aktiv.
 
-Eingebaute Schriften und Ansatzpunkte: Die Webseite bringt Open Sans, Roboto und die
-Schreibschrift Great Vibes lokal mit; ein Paket nutzt sie über `font-family`. Die
+Eingebaute Schriften und Ansatzpunkte: Die Webseite bringt Open Sans, Roboto, Source Sans 3,
+Crimson Pro und die Schreibschrift Great Vibes lokal mit; ein Paket nutzt sie über `font-family`. Die
 Startseite trägt `<body data-seite="start">`, damit ein Paket sie anders gestalten kann
 (z. B. Menü über dem Kopfbild). Personen haben `.instrument` und `.anschrift`, die Lupe
 der Suche steht in `.suche-punkt`.
@@ -41,8 +41,8 @@ No imported HTML or Django template source is compiled, including conditional or
 apparently harmless templates. Built-in export/import and per-site release continue
 to work. The layout identifier contributes to the content hash.
 
-Built-in fonts and hooks: the website ships Open Sans, Roboto and the script font Great
-Vibes; packages use them via `font-family`. The start page has `<body data-seite="start">`.
+Built-in fonts and hooks: the website ships Open Sans, Roboto, Source Sans 3, Crimson Pro
+and the script font Great Vibes; packages use them via `font-family`. The start page has `<body data-seite="start">`.
 People carry `.instrument` and `.anschrift`; the search icon sits in `.suche-punkt`.
 
 Legacy free-template packages remain stored for administrators but are quarantined

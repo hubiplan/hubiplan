@@ -160,6 +160,14 @@ def _design_read(args: dict, ctx: ClubContext) -> str:
         "verlaeufe": [f"g{i}" for i, _g in enumerate(data.get("gradients") or [])],
         "stil": v.get("style") or {},
         "stilregler": style_catalog.get("options", {}),
+        # Welche Schrift hinter den Stufen von font/heading_font steckt (Text / Überschriften)
+        "schriften": {
+            "system": "system-ui",
+            "modern": "Open Sans / Roboto",
+            "festive": "Open Sans / Georgia",
+            "clear": "Source Sans 3",
+            "elegant": "Source Sans 3 / Crimson Pro",
+        },
         "vom_design_gesperrt": (style_catalog.get("locks") or {}).get(design, {}),
         "darstellung": v.get("layouts") or {},
         "darstellungen": [
