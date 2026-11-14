@@ -1,6 +1,6 @@
 """Stilregler der Webseite (Webseite › Gestaltung › Feinabstimmung, Konzept webseite-baukasten G1).
 
-Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe, Titelbild und Seitentitel 4) oder ist ein Schalter.
+Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe, Titelbild, Seitentitel 4) oder ist ein Schalter.
 Gespeichert werden nur verstellte Regler (``Website.style``); fehlt ein Regler, gilt die
 Vorgabe des Designs. Die Webseite (hubiplan-website, ``seite/stil.py``) hat dieselbe Liste
 und für jede Stufe feste CSS-Regeln; niemand schreibt CSS. Die Namen der Regler und Stufen
