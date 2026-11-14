@@ -3080,7 +3080,7 @@ button.tab.active {
 .event-danger-row {
   justify-content: flex-end;
 }
-@media (max-width: 36rem) {
+@media (max-width: 40rem) {
   .event-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.35rem;

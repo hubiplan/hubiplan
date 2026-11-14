@@ -21,7 +21,7 @@ If the event is only for a sub-unit that does not manage its own events (for exa
 Then only its members are invited, and you keep managing the event in the unit's calendar.
 Sub-units that manage themselves create their own events.
 
-Attach files: Open the saved event. In the **Attachments** row under **For this event**, **+ Add file** uploads a file (PDF, JPEG or PNG, at most 15 MB), and **From the document store** attaches an existing document; the event then always shows its newest version.
+Attach files: Open the saved event. In the **Attachments** row under **For this event**, + **Add file** uploads a file (PDF, JPEG or PNG, at most 15 MB), and **From the document store** attaches an existing document; the event then always shows its newest version.
 For a recurring event, the attachments apply to all occurrences.
 
 Invitees receive an email and accept or decline there or in the member area.
