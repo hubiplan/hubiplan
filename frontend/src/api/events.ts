@@ -142,6 +142,8 @@ export interface Attachment {
   content_type: string
   /** Verknüpftes Dokument liegt im Papierkorb oder ist gelöscht */
   available?: boolean
+  /** Bei öffentlichen Terminen auch auf der Webseite angeboten */
+  on_website?: boolean
   url: string
 }
 
@@ -387,6 +389,8 @@ export const eventApi = {
     return api.post<EventDetail>(`${base}events/${id}/attachments/`, form)
   },
   removeAttachment: (url: string) => api.del(url),
+  showOnWebsite: (url: string, value: boolean) =>
+    api.patch<EventDetail>(url, { on_website: value }),
   linkableDocuments: (base: CalendarBase, id: number) =>
     api.get<{ documents: LinkableDocument[] }>(`${base}events/${id}/attachments/`),
   linkDocument: (base: CalendarBase, id: number, document: number) =>

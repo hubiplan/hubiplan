@@ -286,6 +286,11 @@ public_patterns = [
         name="site-founding-deed-preview",
     ),
     path(f"{SITE}events/", public_views.EventsView.as_view(), name="site-events"),
+    path(
+        f"{SITE}events/attachments/<int:pk>/",
+        public_views.EventAttachmentView.as_view(),
+        name="site-event-attachment",
+    ),
     path(f"{SITE}events.ics", public_views.EventsIcsView.as_view(), name="site-events-ics"),
     path(f"{SITE}bookings/", public_views.BookingsView.as_view(), name="site-bookings"),
     path(f"{SITE}bookings.ics", public_views.BookingsIcsView.as_view(), name="site-bookings-ics"),

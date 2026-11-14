@@ -8912,5 +8912,6 @@
   "TOP {n} verschieben": "Move item {n}",
   "Ziehen zum Verschieben (Pfeiltasten: ↑ ↓ verschieben, → Unterpunkt, ← eigener Punkt)": "Drag to move (arrow keys: ↑ ↓ move, → sub-item, ← own item)",
   "Unterpunkt hinzufügen": "Add sub-item",
-  "TOP {n}: {title}": "Item {n}: {title}"
+  "TOP {n}: {title}": "Item {n}: {title}",
+  "auf der Webseite zeigen": "show on the website"
 }
