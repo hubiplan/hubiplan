@@ -1,6 +1,6 @@
 """Stilregler der Webseite (Webseite › Gestaltung › Feinabstimmung, Konzept webseite-baukasten G1).
 
-Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe und Titelbild 4) oder ist ein Schalter.
+Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe, Titelbild, Seitentitel 4) oder ist ein Schalter.
 Gespeichert werden nur verstellte Regler (``Website.style``); fehlt ein Regler, gilt die
 Vorgabe des Designs. Die Webseite (hubiplan-website, ``seite/stil.py``) hat dieselbe Liste
 und für jede Stufe feste CSS-Regeln; niemand schreibt CSS. Die Namen der Regler und Stufen
@@ -21,6 +21,9 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "heading_align": ("left", "center"),
     # Webseite #89: Seiten- und Abschnittstitel etwas größer
     "heading_size": ("normal", "large"),
+    # Webseite #96: Seitentitel eigens einstellbar, auch kleiner als die Grundstellung, damit er
+    # nicht größer wirkt als der Name im Kopf; unverstellt gilt für ihn weiter ``heading_size``
+    "title_size": ("small", "medium", "normal", "large"),
     "script_greeting": bool,
     # Seite
     "width": ("narrow", "normal", "wide"),
@@ -112,6 +115,7 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "headings": "plain",
     "heading_align": "left",
     "heading_size": "normal",
+    "title_size": "normal",
     "script_greeting": False,
     "width": "normal",
     "background": "light",

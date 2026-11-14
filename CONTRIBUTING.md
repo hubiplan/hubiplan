@@ -48,6 +48,9 @@ Hinweise zum Stil:
   [docs/uebersetzung.md](docs/uebersetzung.md).
 - Wer eine Seite oder einen Ablauf ändert, passt die Hilfe in `frontend/src/help/` (Deutsch und
   Englisch) im selben Pull Request an ([docs/hilfe.md](docs/hilfe.md)).
+- Änderungen an der Schnittstelle für die Apps (`/api/app/v1/`, [docs/app.md](docs/app.md))
+  ziehen beide Apps nach: [hubiplan-android](https://github.com/hubiplan/hubiplan-android) und
+  [hubiplan-ios](https://github.com/hubiplan/hubiplan-ios).
 - GitHub Actions laufen nur von Hand; vor dem Merge testet der Betreuer jeden Pull Request
   lokal mit `scripts/test.sh`.
 

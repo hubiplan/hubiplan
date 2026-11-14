@@ -9210,6 +9210,8 @@
   "Nur Beiträge, die höchstens so viele Tage alt sind. Ist keiner mehr aktuell, verschwindet der Abschnitt.": "Only posts at most this many days old. If none is current any more, the section disappears.",
   "kurze Linie": "short line",
   "Größe der Überschriften": "Heading size",
+  "Größe des Seitentitels": "Page title size",
+  "Nur die Überschrift oben auf der Seite; geht vor „Größe der Überschriften“. Klein oder mittel, wenn der Titel größer wirkt als der Name im Kopf.": "Only the heading at the top of the page; takes precedence over “Heading size”. Small or medium if the title looks larger than the name in the header.",
   "Helle Abschnitte": "Light sections",
   "warm": "warm",
   "Farbe der Abschnitte mit hellem Hintergrund auf der Startseite.": "Colour of home page sections with a light background.",

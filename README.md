@@ -16,13 +16,14 @@ einzeln ein- und ausschalten.
 > receipts) and the developer documentation are in German. Issues, questions and security
 > reports in English are welcome.
 
-Zu HUBIplan gehören vier Repositories:
+Zu HUBIplan gehören fünf Repositories:
 
 | Repository | Inhalt |
 | --- | --- |
 | **hubiplan** (dieses) | die Vereinsverwaltung: Backend, Oberfläche, Betrieb |
 | [hubiplan-website](https://github.com/hubiplan/hubiplan-website) | öffentliche Vereinswebseiten aus den Daten von HUBIplan |
 | [hubiplan-android](https://github.com/hubiplan/hubiplan-android) | Android-App für Mitglieder, Vorstand und Kasse |
+| [hubiplan-ios](https://github.com/hubiplan/hubiplan-ios) | App für iPhone und iPad (im Aufbau) |
 | [hubiplan-website-product](https://github.com/hubiplan/hubiplan-website-product) | Produktwebseite, die HUBIplan vorstellt (statische Seiten) |
 
 ## Inhalt
@@ -56,6 +57,9 @@ Schützenverein, Musikverein oder Sportverein.
 - Aufnahme mit Dublettenprüfung im Dachverband, Austritt, Wiedereintritt, Wechsel der
   Untereinheit oder des Vereins, Löschfrist; Mitgliedsnummer auf Wunsch automatisch
 - Titel (Dr., Prof. … oder frei) in Akte, Anrede und Anschrift; Geburtsdatum freiwillig
+- Familien und Haushalte: gemeinsame Anschrift und Post, Familienbeitrag, ein Zahler für
+  mehrere Mitglieder, Zugang für Erziehungsberechtigte; Firmen zahlen für ihre Mitarbeiter
+- Kündigung im Mitgliederbereich, die der Vorstand bestätigt
 - **Organisationen als Mitglieder** (Firmen, Vereine, Behörden): Rechtsform, Ansprechpartner
   mit eigenem Zugang, Rechnungsanschrift, Beitrag nach Größe, Firmenlastschrift (SEPA B2B)
 - Zusatzfelder (auch Jahreszeiträume), Mitgliederfotos mit Einwilligung
@@ -96,8 +100,11 @@ Schützenverein, Musikverein oder Sportverein.
 - Aufgaben mit Fristen, Serien, Anhängen und Freigaben über Ebenen
   ([docs/aufgaben.md](docs/aufgaben.md))
 - Versammlungen und Sitzungen: Einladung mit Tagesordnung, Anträge, Anwesenheit, Protokoll,
-  Beschlussbuch und Wahlen, die direkt ins Amt übernommen werden
+  Beschlussbuch und Wahlen, die direkt ins Amt übernommen werden; Anmelden per QR-Code
+  und Online-Abstimmung
   ([docs/versammlungen.md](docs/versammlungen.md))
+- Umfragen und Meinungsbilder: Termin finden, Essenswahl, freie Fragen, auf Wunsch anonym,
+  mit Übernahme der Zusage in den Termin ([docs/umfragen.md](docs/umfragen.md))
 - Helferdienste: Schichtpläne mit Selbsteintragung, Kontingenten für Untereinheiten und
   Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md))
 - Fristenkalender für Vereinspflichten (Freistellungsbescheid, Kassenprüfung,
@@ -149,6 +156,8 @@ Schützenverein, Musikverein oder Sportverein.
   ZIP-Export für die Prüfung nach GoBD
   ([Verfahrensdokumentation](docs/verfahrensdokumentation-kasse.md))
 - Kassenprüfung als Ablauf: Prüfauftrag, Stichproben, Kontenabgleich, Prüfbericht
+- Haushaltsplan: Plan und Ist je Kategorie und Untereinheit, als PDF und Excel
+  ([docs/haushaltsplan.md](docs/haushaltsplan.md))
 - Kassenbericht, Jahresabschluss mit Sperre, Vermögensübersicht, Anlagenverzeichnis mit
   Abschreibung
 - Steuerliche Auswertung nach den vier Bereichen eines gemeinnützigen Vereins mit
@@ -170,13 +179,15 @@ Schützenverein, Musikverein oder Sportverein.
   Alben, Chronik, Belegung, eigene Beiträge von Instagram und Facebook) mit Entwurf, Vorschau
   und Veröffentlichen
 - Gestaltung über Designpakete ([docs/designpakete.md](docs/designpakete.md)), Feinabstimmung
-  mit Reglern statt CSS, Vorschau als Handy, Tablet und Bildschirm, die letzten fünf
-  Fassungen zum Zurückholen
+  mit Reglern statt CSS, mitgelieferte Schriften zur Auswahl (ohne fremde Server), Vorschau
+  als Handy, Tablet und Bildschirm, die letzten fünf Fassungen zum Zurückholen
 - Erscheinungsbild je Einheit mit Farbpalette, Verläufen und eigenem Logo für den Dunkelmodus
 - öffentliche, versionierte Schnittstelle für
   [hubiplan-website](https://github.com/hubiplan/hubiplan-website)
-- Schnittstelle für die [Android-App](https://github.com/hubiplan/hubiplan-android):
-  Verbinden per QR-Code, Geräteschlüssel je Gerät, Push über Web-Push/UnifiedPush
+- Schnittstelle für die Apps ([Android](https://github.com/hubiplan/hubiplan-android),
+  [iOS](https://github.com/hubiplan/hubiplan-ios)): Verbinden per QR-Code, Geräteschlüssel
+  je Gerät, Push über Web-Push/UnifiedPush und als verschlüsseltes Wecksignal über Apple
+  (APNs) ([docs/app.md](docs/app.md))
 - KI-Schnittstelle (Model Context Protocol): KI-Assistenten durchsuchen die Hilfe ohne
   Anmeldung; mit Anmeldung und Zusatzrecht lesen sie die Webseite der Einheit und bearbeiten
   sie als Entwurf ([docs/mcp.md](docs/mcp.md))
@@ -194,7 +205,8 @@ Schützenverein, Musikverein oder Sportverein.
 - Oberfläche, Hinweis-Mails und Push auf Deutsch oder Englisch, je Benutzer wählbar, sobald
   der Betreiber Englisch freischaltet (`HUBIPLAN_LANGUAGES=de,en`,
   [docs/uebersetzung.md](docs/uebersetzung.md))
-- Mitgliederseiten auch im Dunkelmodus
+- Oberfläche im Design „Frisch“: sachliche Formen, Seitenleiste in der Vereinsfarbe, Schrift
+  Inter (liegt in der Anwendung, keine fremden Server); Mitgliederseiten auch im Dunkelmodus
 - Hilfe-Seite mit Suche, Anleitungen mit Bildschirmfotos und „Hilfe zu dieser Seite“
   (Taste `?`, [docs/hilfe.md](docs/hilfe.md))
 - Erklärungen und Glossar direkt in der Oberfläche, Prüflisten für wiederkehrende Aufgaben
@@ -230,7 +242,7 @@ Daten aus, Ende-zu-Ende verschlüsselt und signiert ([docs/verbund.md](docs/verb
 Browser ──HTTPS──> Caddy ──> Oberfläche (React, statisch)
                         └──> Backend (Django REST) ──> PostgreSQL
                                      └── Celery-Worker und Zeitplan ──> Redis
-Vereinswebseite ──> /api/public/site/v1/      Android-App ──> /api/app/v1/
+Vereinswebseite ──> /api/public/site/v1/      Apps (Android, iOS) ──> /api/app/v1/
 ```
 
 Die Oberfläche spricht ausschließlich über die REST-API mit dem Backend.
@@ -402,11 +414,13 @@ backend/
   peering/         Verbund mit anderen Instanzen
   mcpserver/       KI-Schnittstelle (Model Context Protocol)
   devices/         App-Geräte, Push, Schnittstelle /api/app/v1/
-  pushgateway/     eigenständiges Push-Gateway für die Play-Fassung der App
+  pushgateway/     eigenständiges Push-Gateway (Google für die Play-Fassung, Apple für iOS)
   todos/           Aufgaben
   meetings/        Versammlungen, Protokolle, Beschlussbuch
   helpers/         Helferdienste und Schichtpläne
   obligations/     Fristenkalender für Vereinspflichten
+  qualifications/  Qualifikationen mit Ablaufdatum
+  surveys/         Umfragen und Meinungsbilder
   materials/       Material, Räume und Anlagen
   bookings/        Belegung und Anfragen
   music/           Musik: Auftritte, Besetzung, Proben, Notenarchiv
@@ -442,12 +456,13 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md) | Ansicht als Rolle |
 | [docs/verbund.md](docs/verbund.md) | Verbund mit anderen Instanzen |
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
-| [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |
+| [docs/app.md](docs/app.md) | Schnittstelle für die Apps (Android, iOS), Push |
 | [docs/mcp.md](docs/mcp.md) | KI-Schnittstelle (Model Context Protocol) |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
 | [docs/geschaeftspartner.md](docs/geschaeftspartner.md) | Geschäftspartner, Sponsoring, Verträge |
 | [docs/e-rechnungen.md](docs/e-rechnungen.md) | Leistungsrechnungen, E-Rechnungen, Rechnungspostfach |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
+| [docs/haushaltsplan.md](docs/haushaltsplan.md) | Haushaltsplan: Plan und Ist |
 | [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |
 | [docs/rueckgaengig.md](docs/rueckgaengig.md) | Autospeichern, Rückgängig, Papierkorb |
@@ -455,6 +470,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/aufgaben.md](docs/aufgaben.md) | Aufgaben |
 | [docs/fremde-kalender.md](docs/fremde-kalender.md) | Fremde Kalender (Vereinsplaner, iCal) |
 | [docs/versammlungen.md](docs/versammlungen.md) | Versammlungen, Protokolle, Beschlussbuch |
+| [docs/umfragen.md](docs/umfragen.md) | Umfragen und Meinungsbilder |
 | [docs/helferdienste.md](docs/helferdienste.md) | Helferdienste und Schichtpläne |
 | [docs/fristenkalender.md](docs/fristenkalender.md) | Fristenkalender für Vereinspflichten |
 | [docs/qualifikationen.md](docs/qualifikationen.md) | Qualifikationen mit Ablaufdatum |
