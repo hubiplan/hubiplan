@@ -10,6 +10,7 @@ import { DateBox } from './DateBox.tsx'
 import { RsvpBadge } from './Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from './time.ts'
 import { t, tc } from '../../i18n/index.ts'
+import { TileIcon } from '../icons.tsx'
 
 export function UpcomingTile({ base }: { base: CalendarBase }) {
   const from = today()
@@ -27,7 +28,10 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
   return (
     <div className="card tile upcoming-overview">
       <div className="task-overview-head">
-        <h2>{t('Nächste Termine')}</h2>
+        <h2>
+          <TileIcon name="calendar" />
+          {t('Nächste Termine')}
+        </h2>
       </div>
       {error && <p className="muted small">{t('Termine konnten nicht geladen werden.')}</p>}
       {data && items.length === 0 && (

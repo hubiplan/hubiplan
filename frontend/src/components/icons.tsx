@@ -49,6 +49,32 @@ export const RestoreIcon = () => (
   </Svg>
 )
 
+const TILE_ICONS = {
+  calendar: 'M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4',
+  check: 'M4 5h16v15H4zM8 12l3 3 5-7',
+  bell: 'M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0',
+  bolt: 'M13 3 5 13.5h6L10 21l8-10.5h-6z',
+  cake: 'M4 21h16v-7H4zM4 17c2.7 1.6 5.3 1.6 8 0 2.7 1.6 5.3 1.6 8 0M12 14V9.5M12 6.6v.1',
+  star: 'm12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z',
+  inbox: 'M4 13.5 6.5 5h11L20 13.5V19H4zM4 13.5h4.5a3.5 3.5 0 0 0 7 0H20',
+} as const
+
+export type TileIconName = keyof typeof TILE_ICONS
+
+/**
+ * Symbol im getönten Kästchen für Kartenköpfe und Leerzustände (Design „Frisch“ 3.5).
+ * Immer Schmuck: der Text daneben trägt die Bedeutung.
+ */
+export function TileIcon({ name, round = false }: { name: TileIconName; round?: boolean }) {
+  return (
+    <span className={`tile-icon${round ? ' tile-icon-round' : ''}`} aria-hidden="true">
+      <Svg>
+        <path d={TILE_ICONS[name]} />
+      </Svg>
+    </span>
+  )
+}
+
 /** Knopf nur mit Icon; `label` ist Tooltip und Name für Screenreader. */
 export function IconButton({
   label,

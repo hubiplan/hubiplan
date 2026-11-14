@@ -6610,3 +6610,60 @@ html body select:not([multiple]):not([size]):disabled {
 .home-date {
   margin: 0 0 var(--space-1);
 }
+
+/* --- Design „Frisch“ D6: Kartenköpfe, Leerzustände, Suchfelder, gesetzte Filter --- */
+
+/* Symbol im getönten Kästchen (Kartenkopf) oder im Kreis (Leerzustand); nur Schmuck */
+.tile-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-link);
+  background: var(--color-brand-soft);
+  border-radius: var(--radius);
+}
+.tile-icon-round {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+}
+.tile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* Mittig nur mit Symbol (EmptyState); einfache Hinweiskarten ohne Symbol bleiben linksbündig */
+.empty-state:has(> .tile-icon) {
+  text-align: center;
+  justify-items: center;
+}
+.empty-state:has(> .tile-icon) .button-row {
+  justify-content: center;
+}
+
+/* Suchfelder mit Lupe im Feld; das Feld bleibt ein gewöhnliches Eingabefeld */
+html body input[type='search'],
+html body .search-input {
+  padding-inline-start: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m20 20-4.2-4.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.625rem 50%;
+  background-size: 1.125rem;
+}
+html[dir='rtl'] body input[type='search'],
+html[dir='rtl'] body .search-input {
+  background-position: calc(100% - 0.625rem) 50%;
+}
+
+/* Gesetzter Filter ist getönt: man sieht auf einen Blick, wonach die Liste eingegrenzt ist.
+   Nur Auswahllisten, die mit „alle …“ (leerer Wert) beginnen; Listen mit einer Vorgabe wie
+   „aktuelle Mitglieder“ oder dem laufenden Jahr bleiben weiß. */
+.filters select:has(option:first-child[value='']):has(option:checked:not(:first-child)),
+.booking-toolbar select:has(option:first-child[value='']):has(option:checked:not(:first-child)) {
+  background-color: var(--color-brand-soft);
+  border-color: var(--color-link);
+}
