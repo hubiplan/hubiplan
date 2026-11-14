@@ -70,7 +70,14 @@ def test_nur_bekannte_stufen(club, site, client_web, value):
 def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     data = client_web.get(f"/api/orgs/{club.pk}/website/").json()
     catalog = data["style_catalog"]
-    assert catalog["options"]["font"] == ["system", "modern", "festive", "clear", "elegant"]
+    assert catalog["options"]["font"] == [
+        "system",
+        "modern",
+        "festive",
+        "clear",
+        "elegant",
+        "readable",
+    ]
     assert catalog["options"]["sticky"] == "switch"
     assert catalog["locks"]["sidebar"]["logo_pos"] is None
     assert catalog["locks"]["stage"]["width"] == ["narrow"]
