@@ -168,6 +168,15 @@ def save_response(
     response.source = source
     response.updated_by = user
     response.save()
+    if (
+        status != EventResponse.Status.YES
+        and before
+        and before["status"] == EventResponse.Status.YES
+    ):
+        # Umfragen „nur wer zugesagt hat“: Antworten mit Namen entfallen mit der Zusage
+        from surveys.services import drop_after_decline
+
+        drop_after_decline(event.pk, membership.pk)
     return response, before
 
 

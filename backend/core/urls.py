@@ -98,6 +98,8 @@ from peering import urls as peering_urls
 from portal import views as portal_views
 from qualifications import views as qualification_views
 from statutes import views as statute_views
+from surveys import link as survey_link
+from surveys import portal as survey_portal
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
 from todos import portal as todo_portal
@@ -287,6 +289,7 @@ org_patterns = [
     path("bookings/", include("bookings.urls")),
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
+    path("surveys/", include("surveys.urls")),
     path("obligations/", include("obligations.urls")),
     path("places/", include("places.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
@@ -792,6 +795,7 @@ dept_patterns = [
     path("bookings/", include("bookings.urls")),
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
+    path("surveys/", include("surveys.urls")),
     path("places/", include("places.urls")),
     *entry_urls.dept_patterns,
     path(
@@ -1000,6 +1004,10 @@ urlpatterns = [
         "portal/<int:access_id>/meetings/<int:pk>/polls/<int:poll>/vote/",
         meeting_portal.VoteView.as_view(),
     ),
+    path("portal/<int:access_id>/surveys/", survey_portal.ListView.as_view()),
+    path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
+    path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
+    path("portal/<int:access_id>/surveys/<int:pk>/follow/", survey_portal.FollowView.as_view()),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
     path(
@@ -1059,6 +1067,9 @@ urlpatterns = [
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     *admission_urls.public_patterns,
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
+    path(
+        "public/survey/<str:token>/", survey_link.PublicSurveyView.as_view(), name="public-survey"
+    ),
     path(
         "public/rsvp/<str:token>/attachments/<int:att_id>/",
         rsvp_link.PublicRsvpAttachmentView.as_view(),

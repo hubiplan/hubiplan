@@ -562,6 +562,10 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     membership.photo_consent_at = None
     membership.photo_consent_source = ""
     ContactDetails.objects.filter(person=person, organization=club).delete()
+    # Umfragen: Teilnahmen bleiben gezählt, ohne Person
+    from surveys.services import forget_membership
+
+    forget_membership(membership)
     membership.club_number = ""
     membership.purged_at = timezone.now()
     membership.save()

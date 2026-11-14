@@ -513,6 +513,37 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from surveys.models import SurveyAnswer, SurveyParticipation
+
+    # Umfragen: eigene Antworten mit Namen; anonyme Antworten sind keiner Person zuzuordnen
+    files["umfragen.json"] = _dump(
+        [
+            {
+                "umfrage": p.survey.title,
+                "beantwortet": p.answered_at,
+                "anonym": p.survey.anonymous,
+                "antworten": []
+                if p.survey.anonymous
+                else [
+                    {
+                        "frage": a.question.text,
+                        "antwort": a.option.label if a.option_id else "",
+                        "termin": a.option.starts_at if a.option_id else None,
+                        "wert": a.value,
+                        "menge": a.quantity,
+                        "text": a.text,
+                    }
+                    for a in SurveyAnswer.objects.filter(participation=p).select_related(
+                        "question", "option"
+                    )
+                ],
+            }
+            for p in SurveyParticipation.objects.filter(membership=membership).select_related(
+                "survey"
+            )
+        ]
+    )
+
     from qualifications.models import Qualification
 
     files["qualifikationen.json"] = _dump(

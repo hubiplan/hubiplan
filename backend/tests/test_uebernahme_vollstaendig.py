@@ -64,6 +64,12 @@ NICHT = {
     "todos.TodoReminderConfig": "Erinnerung eines Kontos; Konten kommen nicht mit",
     "todos.TodoProgress": "Verteilung an andere Einheiten, am Ziel neu verteilen",
     "todos.TodoPortalPublication": "Freigabe im Mitgliederbereich, am Ziel neu vergeben",
+    # Umfragen sind kurzlebige Meinungsbilder; Ergebnisse vorher als PDF oder Excel sichern
+    "surveys.Survey": "Umfrage (Meinungsbild, kein Beschluss), Ergebnis als PDF/Excel sichern",
+    "surveys.SurveyQuestion": "Frage einer Umfrage, kommt mit der Umfrage nicht mit",
+    "surveys.SurveyOption": "Antwortmöglichkeit einer Umfrage, kommt mit der Umfrage nicht mit",
+    "surveys.SurveyParticipation": "Teilnahme an einer Umfrage der alten Instanz",
+    "surveys.SurveyAnswer": "Antworten, anonyme ohne Person, bleiben auf der alten Instanz",
 }
 
 

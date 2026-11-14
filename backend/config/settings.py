@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "bookings",
     "meetings",
     "helpers",
+    "surveys",
     "obligations",
     "qualifications",
     "places",
@@ -319,6 +320,7 @@ CELERY_BEAT_SCHEDULE = {
     "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
+    "umfragen-stuendlich": {"task": "surveys.tasks.hourly", "schedule": 900.0},
     "fristenkalender-erinnerungen": {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,
