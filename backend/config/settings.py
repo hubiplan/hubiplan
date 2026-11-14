@@ -190,6 +190,12 @@ PASSKEYS_ENABLED = env_bool("HUBIPLAN_PASSKEYS", True)
 if PASSKEYS_ENABLED:
     MFA_SUPPORTED_TYPES.append("webauthn")
 MFA_PASSKEY_LOGIN_ENABLED = PASSKEYS_ENABLED
+# Passkeys in den Apps (devices/passkey.py, docs/app.md): Die Instanz bestätigt unter
+# /.well-known/, dass die offiziellen Apps Passkeys dieser Adresse nutzen dürfen. Eigene Builds
+# ergänzen ihren Signatur-Fingerabdruck (SHA-256, hex) bzw. Team-ID.Bundle-ID; Musterwerte nur.
+APP_ANDROID_PACKAGE = os.environ.get("HUBIPLAN_APP_ANDROID_PACKAGE", "de.hubiplan.app")
+APP_ANDROID_FINGERPRINTS = env_list("HUBIPLAN_APP_ANDROID_FINGERPRINTS")
+APP_IOS_APP_IDS = env_list("HUBIPLAN_APP_IOS_APP_IDS")
 MFA_PASSKEY_SIGNUP_ENABLED = False  # keine Selbstregistrierung
 # Nur zum Entwickeln über http://: Herkunft nicht prüfen. Im Betrieb immer https.
 MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG

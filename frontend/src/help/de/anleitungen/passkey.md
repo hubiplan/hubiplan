@@ -41,5 +41,13 @@ Melde dich mit Passwort und einem Wiederherstellungscode an und entferne den alt
 Passkey bei Google, Apple, Microsoft oder in einem Passwortmanager gespeichert, ist er auf einem
 neuen Gerät mit demselben Konto meist schon da.
 
-Die HUBIplan-App verbindest du, indem du dich im Browser mit Passkey anmeldest und den QR-Code
-unter **Mein Konto** › App & andere Instanzen scannst.
+## In der App
+
+In der HUBIplan-App (Android ab Version 9, iPhone ab iOS 16) tippst du beim Verbinden auf
+**Mit Passkey anmelden**, gibst die Adresse deines Vereins ein und bestätigst mit Fingerabdruck,
+Gesicht oder PIN. Es gilt derselbe Passkey wie im Browser, wenn er bei Google, Apple oder in
+deinem Passwortmanager gespeichert ist. Auch die **Verwaltung** in der App kannst du statt mit
+Passwort und Code mit **Mit Passkey freischalten** öffnen.
+
+Bietet die App keinen Passkey an, hat deine Instanz die App dafür noch nicht freigegeben. Dann
+verbindest du die App wie bisher per QR-Code unter **Mein Konto** › App & andere Instanzen.

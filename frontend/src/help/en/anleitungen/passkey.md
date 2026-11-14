@@ -40,5 +40,14 @@ Without codes, the board can reset your two-factor authentication. If your passk
 with Google, Apple, Microsoft or in a password manager, it is usually already available on a
 new device with the same account.
 
-To connect the HUBIplan app, sign in with your passkey in the browser and scan the QR code under
-**My account** › App & other instances.
+## In the app
+
+In the HUBIplan app (Android 9 or later, iPhone with iOS 16 or later), tap **Sign in with
+passkey** when connecting, enter your club’s address and confirm with your fingerprint, face or
+PIN. The same passkey as in the browser works if it is stored with Google, Apple or in your
+password manager. You can also open **Administration** in the app with **Unlock with passkey**
+instead of your password and code.
+
+If the app does not offer a passkey, your instance has not yet enabled the app for this. In
+that case, connect the app as before with the QR code under **My account** › App & other
+instances.

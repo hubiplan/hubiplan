@@ -12,6 +12,7 @@ APP_FEATURES: dict[str, str] = {
     "app-verwaltung": "Verwaltung in der App (admin/)",
     "app-senden": "Senden aus der App (send/)",
     "app-sprache": "Sprache je Konto (me/language/)",
+    "app-passkey": "Anmelden mit Passkey (passkey/begin/, passkey/; nutzbar laut passkey)",
 }
 
 # /api/public/site/v1/instance/

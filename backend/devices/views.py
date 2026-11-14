@@ -153,6 +153,18 @@ def push_ways() -> list[dict]:
     return ways
 
 
+def passkey_ways() -> list[str]:
+    """Plattformen, deren App Passkeys dieser Adresse nutzen darf (``android``, ``ios``)."""
+    from accounts import passkeys
+
+    from .passkey import android_fingerprints, ios_app_ids
+
+    if not passkeys.enabled():
+        return []
+    ways = (("android", android_fingerprints()), ("ios", ios_app_ids()))
+    return [name for name, ok in ways if ok]
+
+
 class InstanceView(APIView):
     """Selbstauskunft der Instanz für die App (ohne Anmeldung)."""
 
@@ -172,6 +184,8 @@ class InstanceView(APIView):
                 "url": settings.FRONTEND_URL,
                 # Push-Wege der Instanz; Abruf geht immer
                 "push": push_ways(),
+                # Anmelden mit Passkey: eingeschaltet und diese App bestätigt (devices/passkey.py)
+                "passkey": passkey_ways(),
             }
         )
 

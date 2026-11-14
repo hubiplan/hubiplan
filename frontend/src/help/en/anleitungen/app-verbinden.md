@@ -20,6 +20,8 @@ With your phone only:
 2. Tap **Connect app** and then “Open in the HUBIplan app”. If nothing happens, the app is not installed yet.
 3. The app shows your club’s address. If it is correct, tap “Yes, connect”.
 
+With a passkey: If you have set up a passkey in the browser, tap “Sign in with passkey” in the app, enter your club’s address and confirm with your fingerprint, face or PIN (see [Sign in with a passkey](/hilfe/passkey)).
+
 With email and password: In the app, tap “Sign in with email and password” and enter your club’s address, your email and your password. Password managers (e.g. from Google or Bitwarden) offer to fill in the fields and can save the sign-in.
 
 If you only see a note under “My account › App & other instances” instead of the **Connect app** button, your account has no access to the member area yet: it must be linked to your membership, and your club must have switched on the member area.

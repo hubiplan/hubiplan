@@ -2,13 +2,15 @@ from django.urls import include, path
 
 from finance import quittung_views
 
-from . import admin_api, send, views
+from . import admin_api, passkey, send, views
 
 urlpatterns = [
     path("instance/", views.InstanceView.as_view(), name="app-instance"),
     path("pairing/", views.PairingCodeView.as_view(), name="app-pairing"),
     path("pairing/<int:pk>/", views.PairingStatusView.as_view(), name="app-pairing-status"),
     path("pair/", views.PairView.as_view(), name="app-pair"),
+    path("passkey/begin/", passkey.PasskeyBeginView.as_view(), name="app-passkey-begin"),
+    path("passkey/", passkey.PasskeyLoginView.as_view(), name="app-passkey"),
     path("devices/", views.DeviceListView.as_view(), name="app-devices"),
     path("devices/current/push/", views.PushView.as_view(), name="app-device-push"),
     path("devices/current/key/", views.DeviceKeyView.as_view(), name="app-device-key"),

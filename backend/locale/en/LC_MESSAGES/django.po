@@ -12781,3 +12781,12 @@ msgstr "Administrators cannot enter answers in anonymous surveys."
 
 msgid "Aus dieser Umfrage gibt es schon einen Termin."
 msgstr "An event has already been created from this survey."
+
+msgid "Passkeys sind auf dieser Instanz ausgeschaltet."
+msgstr "Passkeys are switched off on this instance."
+
+msgid "Der Passkey wurde nicht erkannt. Bitte noch einmal versuchen."
+msgstr "The passkey was not recognised. Please try again."
+
+msgid "Die Anmeldung ist abgelaufen. Bitte noch einmal versuchen."
+msgstr "The sign-in has expired. Please try again."

@@ -20,6 +20,8 @@ Nur mit dem Handy:
 2. Tippe auf **App verbinden** und dann auf „In der HUBIplan-App öffnen“. Passiert beim Tippen nichts, ist die App noch nicht installiert.
 3. Die App zeigt die Adresse deines Vereins. Stimmt sie, tippe auf „Ja, verbinden“.
 
+Mit Passkey: Hast du im Browser einen Passkey eingerichtet, tippe in der App auf „Mit Passkey anmelden“, gib die Adresse deines Vereins ein und bestätige mit Fingerabdruck, Gesicht oder PIN (siehe [Mit Passkey anmelden](/hilfe/passkey)).
+
 Mit E-Mail und Passwort: Tippe in der App auf „Mit E-Mail und Passwort anmelden“ und gib die Adresse deines Vereins, deine E-Mail und dein Passwort ein. Passwortmanager (z. B. von Google oder Bitwarden) bieten das Ausfüllen an und können die Anmeldung speichern.
 
 Siehst du unter „Mein Konto › App & andere Instanzen“ statt des Knopfs **App verbinden** nur einen Hinweis, hat dein Konto noch keinen Zugang zum Mitgliederbereich: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben.

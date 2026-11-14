@@ -14,9 +14,32 @@ Wege zum Schlüssel:
 |---|---|
 | QR-Code | Im Browser unter „Mein Konto › App & andere Instanzen › App auf dem Telefon“ `POST /api/app/v1/pairing/` (nur mit Sitzung). Der QR-Code enthält `https://<Instanz>/app/verbinden#code=<Code>`, 10 Minuten gültig, einmal nutzbar. Die App schickt `POST /api/app/v1/pair/` mit `{"code", "name", "platform", "app_version"}`. Der Browser fragt `GET /api/app/v1/pairing/<id>/` alle 3 Sekunden ab und zeigt nach dem Scannen „Verbunden: <Gerät>“. Die App zeigt vor dem Verbinden die Adresse der Instanz und fragt nach. |
 | Anmeldelink | Wie oben, aber `{"login_link": "<Token aus /anmelden/link/<Token>>"}`. Nicht für Vorstände und Konten mit 2FA (wie im Browser). |
+| Passkey | `POST /api/app/v1/passkey/begin/` (ohne Anmeldung) liefert `challenge_id`, `options` (WebAuthn-JSON wie `publicKey` für `navigator.credentials.get`, `userVerification` immer `required`) und `expires_in` (300 s). Die App lässt das Telefon einen Passkey für `options.rpId` (Adresse der Instanz) wählen und schickt `POST /api/app/v1/passkey/` mit `{"challenge_id", "credential", "name", "platform", "app_version", "device_key"}`; `credential` wie im Browser (`id`, `rawId`, `type`, `response` mit `clientDataJSON`, `authenticatorData`, `signature`, `userHandle`). Jede Aufgabe gilt einmal. Fehler: 400 (`passkey_expired`, `passkey_failed`), 403 ohne Mitgliederbereich, 404 wenn Passkeys aus sind. |
 | Passwort (+2FA) | allauth headless, Client `app`: `POST /_allauth/app/v1/auth/login`, ggf. `/auth/2fa/authenticate`; mit dem `session_token` dann `POST /api/app/v1/devices/` (Kopfzeile `X-Session-Token`). Die Sitzung wird danach gelöscht. |
 
 Antwort jeweils `201` mit `token`, `device`, `user`.
+
+### Passkeys: Freigabe der Apps
+
+Android und iOS bieten einer App einen Passkey nur an, wenn die Adresse die App bestätigt:
+
+- `GET /.well-known/assetlinks.json` (Android, Beziehung `delegate_permission/common.get_login_creds`,
+  Paket `de.hubiplan.app` und SHA-256-Fingerabdrücke der Signaturzertifikate). Die Android-App
+  unterschreibt mit der Herkunft `android:apk-key-hash:<base64url des Fingerabdrucks>`; HUBIplan
+  lässt genau diese Herkünfte zu.
+- `GET /.well-known/apple-app-site-association` (iOS, `webcredentials.apps` mit
+  `<Team-ID>.de.hubiplan.app`). Die iOS-App unterschreibt mit `https://<Adresse>`.
+
+Ohne bestätigte App antworten beide Pfade mit 404. Die offiziellen Werte stehen in
+`backend/devices/passkey.py`; eigene Builds ergänzen sie in der `.env`
+(`HUBIPLAN_APP_ANDROID_FINGERPRINTS`, `HUBIPLAN_APP_IOS_APP_IDS`, siehe [betrieb.md](betrieb.md)).
+`GET /api/app/v1/instance/` nennt in `passkey` die Plattformen (`android`, `ios`), deren App
+Passkeys nutzen darf; die App zeigt den Knopf nur dann.
+
+Die Verwaltung (`POST /api/app/v1/admin/unlock/`) lässt sich statt mit `password` und `code`
+auch mit `passkey_challenge_id` und `passkey_credential` freischalten (Aufgabe ebenfalls aus
+`passkey/begin/`, der Passkey muss zum Konto des Geräts gehören). Eine eingerichtete
+Authenticator-App ist dafür nicht nötig.
 
 ## Was der Geräteschlüssel darf
 

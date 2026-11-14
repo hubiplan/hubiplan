@@ -176,8 +176,15 @@ class AdminOverviewView(APIView):
 
 
 class UnlockSerializer(serializers.Serializer):
-    password = serializers.CharField(max_length=200, trim_whitespace=False)
-    code = serializers.CharField(max_length=20)
+    # Entweder Passwort + Code oder ein Passkey (Aufgabe aus passkey/begin/, docs/app.md)
+    password = serializers.CharField(
+        max_length=200, trim_whitespace=False, required=False, allow_blank=True, default=""
+    )
+    code = serializers.CharField(max_length=20, required=False, allow_blank=True, default="")
+    passkey_challenge_id = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=""
+    )
+    passkey_credential = serializers.JSONField(required=False, default=None)
     # Härtung H7: öffentlicher Teil des Vorstands-Schlüsselpaars (nur nach Entsperren nutzbar)
     admin_key = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
 
@@ -190,7 +197,7 @@ class UnlockSerializer(serializers.Serializer):
 
 
 class AdminUnlockView(APIView):
-    """Verwaltung freischalten (Passwort + 2FA) bzw. auf diesem Gerät sperren."""
+    """Verwaltung freischalten (Passwort + 2FA oder Passkey) bzw. auf diesem Gerät sperren."""
 
     authentication_classes = [DeviceTokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -204,8 +211,12 @@ class AdminUnlockView(APIView):
             raise TooMany(key)
         if not admin_units(user) and not admin_departments(user):
             raise ValidationError({"detail": gettext("Dein Konto hat keine Verwaltungsrechte.")})
+        data = UnlockSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        with_passkey = bool(v["passkey_challenge_id"])
         totp = Authenticator.objects.filter(user=user, type=Authenticator.Type.TOTP).first()
-        if totp is None:
+        if totp is None and not with_passkey:
             raise ValidationError(
                 {
                     "detail": gettext(
@@ -214,10 +225,8 @@ class AdminUnlockView(APIView):
                     )
                 }
             )
-        data = UnlockSerializer(data=request.data)
-        data.is_valid(raise_exception=True)
         # Fachfrage 3 (31.10.b): Verwaltung nur mit Schlüsselbindung (Gerät und Vorstand)
-        if not device.device_key or not data.validated_data["admin_key"]:
+        if not device.device_key or not v["admin_key"]:
             raise ValidationError(
                 {
                     "detail": gettext(
@@ -226,22 +235,41 @@ class AdminUnlockView(APIView):
                     )
                 }
             )
-        code = data.validated_data["code"].replace(" ", "")
-        if not user.check_password(data.validated_data["password"]) or not TOTP(totp).validate_code(
-            code
-        ):
-            if too_many(f"app-admin-unlock-fail:{device.pk}", 3, 60 * 60):
-                from . import notify
+        if with_passkey:
+            # Ein Passkey zählt als volle Zwei-Faktor-Anmeldung (Gerät + Entsperren)
+            from . import passkey
 
-                notify.admin_unlock_failed(user, device)
-            raise ValidationError({"detail": gettext("Passwort oder Code stimmt nicht.")})
+            try:
+                _, authenticator = passkey.verify(
+                    request, v["passkey_challenge_id"], v["passkey_credential"], user=user
+                )
+            except ValidationError:
+                if too_many(f"app-admin-unlock-fail:{device.pk}", 3, 60 * 60):
+                    from . import notify
+
+                    notify.admin_unlock_failed(user, device)
+                raise
+            authenticator.record_usage()
+        else:
+            code = v["code"].replace(" ", "")
+            if (
+                not v["password"]
+                or not code
+                or not user.check_password(v["password"])
+                or not TOTP(totp).validate_code(code)
+            ):
+                if too_many(f"app-admin-unlock-fail:{device.pk}", 3, 60 * 60):
+                    from . import notify
+
+                    notify.admin_unlock_failed(user, device)
+                raise ValidationError({"detail": gettext("Passwort oder Code stimmt nicht.")})
         token = Device.new_admin_token()
         now = timezone.now()
         device.admin_token_hash = hash_token(token)
         device.admin_until = now + datetime.timedelta(days=ADMIN_DAYS)
         device.admin_used_at = now
         # Mit Schlüsselpaar muss ab jetzt jede Anfrage unterschrieben sein
-        device.admin_key = data.validated_data["admin_key"]
+        device.admin_key = v["admin_key"]
         device.save(update_fields=["admin_token_hash", "admin_until", "admin_used_at", "admin_key"])
         logger.info("Verwaltung in der App freigeschaltet: Gerät %s", device.pk)
         from . import notify
