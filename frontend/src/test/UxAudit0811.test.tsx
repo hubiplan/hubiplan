@@ -134,10 +134,13 @@ describe('W-15: Kontrast der Seitenleiste', () => {
     expect(vars['--sidebar-muted']).toBe(sidebarMuted(bg))
   })
 
-  it('dunkle Vereinsfarben behalten Seitenleiste und gedämpfte Schrift wie bisher', () => {
-    // Musterstadt: unverändert 55 % abgedunkelt, 70 % Deckkraft
-    expect(sidebarColor('#14365d')).toBe('#09182a')
-    expect(sidebarMuted('#09182a')).toBe(blend(SIDEBAR_TEXT, '#09182a', 0.7))
+  it('Seitenleiste in Vereinsfarbe: dunkle Farben bleiben, helle werden abgedunkelt', () => {
+    // Design „Frisch“ (Ralf 14.11.2026): Musterstadt-Blau bleibt unverändert, 70 % Deckkraft
+    expect(sidebarColor('#14365d')).toBe('#14365d')
+    expect(sidebarMuted('#14365d')).toBe(blend(SIDEBAR_TEXT, '#14365d', 0.7))
+    // Hubi-Grün etwas dunkler, Gold kräftig dunkler
+    expect(sidebarColor('#0e7c66')).toBe('#0a5a4a')
+    expect(contrastRatio('#ffffff', sidebarColor('#ffd700'))).toBeGreaterThanOrEqual(7)
   })
 })
 

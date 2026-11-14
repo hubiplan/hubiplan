@@ -52,9 +52,10 @@ JSON; ihre Dateien (Bootstrap, jQuery, Font Awesome mit OFL-Schriften) sammelt
 (Lizenzaudit 31.10., L06). Wer die HTML-Ansicht wieder einschaltet, muss deren
 Lizenzhinweise mitliefern.
 
-Schriften: Text und Bedienung nutzen die Systemschriften. Nur der Schriftzug „HUBIplan“ im
-Logo nutzt die Schrift Outfit (SIL OFL 1.1), zwei Schnitte als Dateien in
-`frontend/src/assets/fonts/`; der Lizenztext steht in `frontend/lizenzen/zusatz.txt`.
+Schriften: Text und Bedienung nutzen die Schrift Inter (SIL OFL 1.1, eine variable Datei je
+Zeichenbereich), der Schriftzug „HUBIplan“ im Logo die Schrift Outfit (SIL OFL 1.1, zwei
+Schnitte). Beide liegen als Dateien in `frontend/src/assets/fonts/` und werden selbst
+ausgeliefert (keine fremden Server); die Lizenztexte stehen in `frontend/lizenzen/zusatz.txt`.
 
 ## Server (Backend und Dienste)
 

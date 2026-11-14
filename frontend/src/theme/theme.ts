@@ -62,11 +62,26 @@ export function lighten(hex: string, amount: number): string {
 /** Fließtext (--color-text in theme.css). */
 export const TEXT_COLOR = '#121614'
 
-/** Erreicht ein Link-Ton beide Ziele: 4,5 : 1 zum Grund und 3 : 1 zum Fließtext? */
-function linkContrastOk(c: string): boolean {
+/** Anteil der Vereinsfarbe in --color-brand-soft (theme.css), hell und dunkel. */
+export const BRAND_SOFT = 0.1
+export const BRAND_SOFT_DARK = 0.22
+
+/** Getönte Fläche in Vereinsfarbe (--color-brand-soft): markierter Menüpunkt, Symbolkästchen. */
+export function brandSoft(primary: string, surface = '#ffffff'): string {
+  return blend(primary, surface, surface === '#ffffff' ? BRAND_SOFT : BRAND_SOFT_DARK)
+}
+
+/**
+ * Erreicht ein Link-Ton beide Ziele: 4,5 : 1 zum Grund (auch zur getönten Fläche der
+ * Vereinsfarbe, auf der markierte Punkte stehen) und 3 : 1 zum Fließtext?
+ */
+function linkContrastOk(c: string, primary: string): boolean {
   return (
-    Math.min(contrastRatio(c, '#ffffff'), contrastRatio(c, PAGE_BG)) >= 4.5 &&
-    contrastRatio(c, TEXT_COLOR) >= 3
+    Math.min(
+      contrastRatio(c, '#ffffff'),
+      contrastRatio(c, PAGE_BG),
+      contrastRatio(c, brandSoft(primary)),
+    ) >= 4.5 && contrastRatio(c, TEXT_COLOR) >= 3
   )
 }
 
@@ -79,10 +94,10 @@ function linkContrastOk(c: string): boolean {
  * selbst bleibt.
  */
 export function linkColor(primary: string): string {
-  if (linkContrastOk(primary)) return primary
+  if (linkContrastOk(primary, primary)) return primary
   for (let step = 1; step <= 100; step++) {
     for (const c of [darken(primary, step / 100), lighten(primary, step / 100)]) {
-      if (linkContrastOk(c)) return c
+      if (linkContrastOk(c, primary)) return c
     }
   }
   // Kommt bei den heutigen Grundfarben nicht vor: neutrales Grau, das beide Ziele erfüllt
@@ -102,11 +117,13 @@ export function blend(a: string, b: string, alpha: number): string {
 }
 
 /**
- * Seitenleiste aus der Primärfarbe (stark abgedunkelt). Bei hellen Vereinsfarben so weit
- * dunkler, dass die Schrift auch auf dem markierten Punkt 4,5 : 1 erreicht (UX-Audit 08.11., W-15).
+ * Seitenleiste in Vereinsfarbe (Design „Frisch“, Ralf 14.11.2026: hebt sich von den weißen
+ * Karten ab). Nur so weit abgedunkelt wie nötig, dass die Schrift auch auf dem markierten
+ * Punkt 4,5 : 1 erreicht (UX-Audit 08.11., W-15); helle Farben wie Gold werden dabei kräftig
+ * dunkler, dunkle bleiben fast unverändert.
  */
 export function sidebarColor(primary: string): string {
-  for (let amount = 0.55; amount < 1; amount += 0.025) {
+  for (let amount = 0; amount < 1; amount += 0.025) {
     const bg = darken(primary, amount)
     // Markierter Punkt: 12 % Weiß darüber (--sidebar-active-bg)
     if (contrastRatio(SIDEBAR_TEXT, blend('#ffffff', bg, 0.12)) >= 4.5) return bg
@@ -165,7 +182,11 @@ export const DARK_SURFACE = '#1a201d'
  */
 export function linkColorDark(primary: string): string {
   const ok = (c: string) =>
-    Math.min(contrastRatio(c, DARK_BG), contrastRatio(c, DARK_SURFACE)) >= 4.5
+    Math.min(
+      contrastRatio(c, DARK_BG),
+      contrastRatio(c, DARK_SURFACE),
+      contrastRatio(c, brandSoft(primary, DARK_SURFACE)),
+    ) >= 4.5
   if (ok(primary)) return primary
   for (let step = 1; step <= 100; step++) {
     for (const c of [lighten(primary, step / 100), darken(primary, step / 100)]) {

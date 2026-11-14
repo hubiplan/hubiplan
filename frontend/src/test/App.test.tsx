@@ -344,7 +344,7 @@ describe('Theme', () => {
     })
     const style = document.documentElement.style
     expect(style.getPropertyValue('--color-primary')).toBe('#c00000')
-    expect(style.getPropertyValue('--sidebar-bg')).toBe('#560000')
+    expect(style.getPropertyValue('--sidebar-bg')).toBe('#bb0000')
     applyTheme(null)
     expect(style.getPropertyValue('--color-primary')).toBe('')
   })
