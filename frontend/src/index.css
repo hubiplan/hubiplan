@@ -6636,11 +6636,12 @@ html body select:not([multiple]):not([size]):disabled {
   align-items: center;
   gap: 0.5rem;
 }
-.empty-state {
+/* Mittig nur mit Symbol (EmptyState); einfache Hinweiskarten ohne Symbol bleiben linksbündig */
+.empty-state:has(> .tile-icon) {
   text-align: center;
   justify-items: center;
 }
-.empty-state .button-row {
+.empty-state:has(> .tile-icon) .button-row {
   justify-content: center;
 }
 
@@ -6658,9 +6659,11 @@ html[dir='rtl'] body .search-input {
   background-position: calc(100% - 0.625rem) 50%;
 }
 
-/* Gesetzter Filter ist getönt: man sieht auf einen Blick, wonach die Liste eingegrenzt ist */
-.filters select:has(option:checked:not([value=''])),
-.booking-toolbar select:has(option:checked:not([value=''])) {
+/* Gesetzter Filter ist getönt: man sieht auf einen Blick, wonach die Liste eingegrenzt ist.
+   Nur Auswahllisten, die mit „alle …“ (leerer Wert) beginnen; Listen mit einer Vorgabe wie
+   „aktuelle Mitglieder“ oder dem laufenden Jahr bleiben weiß. */
+.filters select:has(option:first-child[value='']):has(option:checked:not(:first-child)),
+.booking-toolbar select:has(option:first-child[value='']):has(option:checked:not(:first-child)) {
   background-color: var(--color-brand-soft);
   border-color: var(--color-link);
 }
