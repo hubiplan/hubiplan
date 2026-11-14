@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from audit.log import diff, record, snapshot
 
 from . import access
-from .models import Place
+from .models import Place, join_name
 
 # Vorschläge: Orte, die in dieser Zeit mindestens so oft vorkamen
 SUGGEST_YEARS = 2
@@ -27,6 +27,7 @@ class PlaceSerializer(serializers.ModelSerializer):
         model = Place
         fields = [
             "id",
+            "parent",
             "name",
             "address",
             "directions",
@@ -39,15 +40,68 @@ class PlaceSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError(_("Bitte einen Namen angeben."))
-        org = self.context["org"]
-        clash = Place.objects.filter(organization=org, name__iexact=value)
-        if self.instance is not None:
-            clash = clash.exclude(pk=self.instance.pk)
-        if clash.exists():
-            raise serializers.ValidationError(_("Einen Ort mit diesem Namen gibt es schon."))
         return value
 
+    def validate_parent(self, value):
+        if value is None:
+            return None
+        if value.organization_id != self.context["org"].pk or value.parent_id:
+            raise serializers.ValidationError(_("Räume gehören in einen eigenen Ort."))
+        if self.instance is not None:
+            if value.pk == self.instance.pk:
+                raise serializers.ValidationError(_("Räume gehören in einen eigenen Ort."))
+            if self.instance.rooms.exists():
+                raise serializers.ValidationError(
+                    _("Ein Ort mit Räumen kann nicht selbst Raum werden.")
+                )
+        return value
+
+    def _check_names(self, parent, name):
+        org = self.context["org"]
+        own = Place.objects.filter(organization=org)
+        if self.instance is not None:
+            own = own.exclude(pk=self.instance.pk)
+        siblings = own.filter(parent=parent) if parent else own.filter(parent__isnull=True)
+        if siblings.filter(name__iexact=name).exists():
+            if parent:
+                raise serializers.ValidationError(
+                    {"name": _("Einen Raum mit diesem Namen gibt es hier schon.")}
+                )
+            raise serializers.ValidationError(
+                {"name": _("Einen Ort mit diesem Namen gibt es schon.")}
+            )
+        # „Gebäude, Raum“ darf keinem anderen Ort gleichen (sonst ist die Auswahl mehrdeutig)
+        full = join_name(parent.name, name) if parent else name
+        names = {p.full_name.lower() for p in own.select_related("parent")}
+        if full.lower() in names:
+            raise serializers.ValidationError(
+                {"name": _("Einen Ort mit diesem Namen gibt es schon.")}
+            )
+        if len(full) > 200:
+            raise serializers.ValidationError(
+                {"name": _("Gebäude und Raum zusammen dürfen höchstens 200 Zeichen lang sein.")}
+            )
+        if self.instance is not None and not parent and name != self.instance.name:
+            for room in self.instance.rooms.all():
+                if len(join_name(name, room.name)) > 200:
+                    raise serializers.ValidationError(
+                        {
+                            "name": _(
+                                "Gebäude und Raum zusammen dürfen höchstens 200 Zeichen lang sein."
+                            )
+                        }
+                    )
+
     def validate(self, attrs):
+        parent = attrs.get("parent", getattr(self.instance, "parent", None))
+        name = attrs.get("name", getattr(self.instance, "name", ""))
+        if "name" in attrs or "parent" in attrs or self.instance is None:
+            self._check_names(parent, name)
+        if parent is not None:
+            # Anschrift und Kartenpunkt kommen vom Gebäude
+            attrs["address"] = ""
+            attrs["latitude"] = None
+            attrs["longitude"] = None
         lat = attrs.get("latitude", getattr(self.instance, "latitude", None))
         lon = attrs.get("longitude", getattr(self.instance, "longitude", None))
         if (lat is None) != (lon is None):
@@ -57,10 +111,20 @@ class PlaceSerializer(serializers.ModelSerializer):
         return attrs
 
 
+def _number(value):
+    return None if value is None else float(value)
+
+
 def place_data(place: Place, scope: access.Scope) -> dict:
     data = PlaceSerializer(place).data
     for key in ("latitude", "longitude"):
-        data[key] = None if data[key] is None else float(data[key])
+        data[key] = _number(data[key])
+    data["full_name"] = place.full_name
+    # Was ein Formular beim Auswählen übernimmt (Räume: Anschrift usw. vom Gebäude)
+    pick = place.effective()
+    pick["latitude"] = _number(pick["latitude"])
+    pick["longitude"] = _number(pick["longitude"])
+    data["pick"] = pick
     own = place.organization_id == scope.org.pk
     data["own"] = own
     data["owner"] = None if own else place.organization.name
@@ -79,7 +143,9 @@ class Base(APIView):
         ids = [org.pk]
         if org.parent_id and org.parent and org.parent.type == "federation":
             ids.append(org.parent_id)
-        return Place.objects.filter(organization_id__in=ids).select_related("organization")
+        return Place.objects.filter(organization_id__in=ids).select_related(
+            "organization", "parent"
+        )
 
     def own(self, pk: int) -> Place:
         return get_object_or_404(Place, organization=self.scope.org, pk=pk)
@@ -89,8 +155,10 @@ class ListView(Base):
     def get(self, request, **kwargs):
         qs = self.visible()
         if request.query_params.get("alle") != "1":
-            qs = qs.filter(is_active=True)
-        rows = sorted(qs, key=lambda p: (p.organization_id != self.scope.org.pk, p.name.lower()))
+            qs = qs.filter(is_active=True).exclude(parent__is_active=False)
+        rows = sorted(
+            qs, key=lambda p: (p.organization_id != self.scope.org.pk, p.full_name.lower())
+        )
         return Response(
             {
                 "places": [place_data(p, self.scope) for p in rows],
@@ -177,8 +245,9 @@ def suggestions(org) -> list[dict]:
         entry["count"] += count
         if address and not entry["address"]:
             entry["address"] = address[:300]
-    names = Place.objects.filter(organization=org).values_list("name", flat=True)
-    saved = {n.lower() for n in names}
+    saved = {
+        p.full_name.lower() for p in Place.objects.filter(organization=org).select_related("parent")
+    }
     rows = [e for k, e in by_name.items() if k not in saved and e["count"] >= SUGGEST_MIN]
     rows.sort(key=lambda e: (-e["count"], e["name"].lower()))
     return rows[:SUGGEST_LIMIT]

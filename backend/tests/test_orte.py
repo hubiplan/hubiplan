@@ -1,6 +1,7 @@
 """Gespeicherte Orte (konzepte/termin-rundschreiben-rueckmeldung.md, O1)."""
 
 import datetime
+import importlib
 
 import pytest
 from django.utils import timezone
@@ -187,3 +188,123 @@ def test_stand_der_einrichtung(setup):
     # Ohne Recht dazu kein Punkt
     items = ok(s["reader"].get(f"/api/orgs/{s['club'].pk}/setup-status/"))["items"]
     assert "/einstellungen/orte" not in items
+
+
+def test_raeume_im_ort(setup):
+    s = setup
+    haus = ok(
+        s["chef"].post(
+            s["url"],
+            {
+                "name": "Bürgerhaus",
+                "address": "Musterweg 18, 12345 Musterstadt",
+                "directions": "Parkplatz am Rhein",
+                "latitude": 51.2,
+                "longitude": 6.7,
+            },
+            content_type=JSON,
+        )
+    )
+    # Raum: Anschrift und Kartenpunkt kommen vom Gebäude, eigene Angaben fallen weg
+    saal = ok(
+        s["chef"].post(
+            s["url"],
+            {
+                "parent": haus["id"],
+                "name": "Saal",
+                "address": "Woanders 1",
+                "directions": "Eingang über den Hof",
+                "latitude": 1,
+                "longitude": 1,
+            },
+            content_type=JSON,
+        ),
+        201,
+    )
+    assert saal["address"] == "" and saal["latitude"] is None
+    assert saal["full_name"] == "Bürgerhaus, Saal"
+    assert saal["pick"] == {
+        "name": "Bürgerhaus, Saal",
+        "address": "Musterweg 18, 12345 Musterstadt",
+        "directions": "Parkplatz am Rhein\nEingang über den Hof",
+        "latitude": pytest.approx(51.2),
+        "longitude": pytest.approx(6.7),
+    }
+    # Gleicher Raumname in einem anderen Gebäude geht, im selben nicht
+    halle = ok(s["chef"].post(s["url"], {"name": "Halle"}, content_type=JSON))
+    ok(s["chef"].post(s["url"], {"parent": halle["id"], "name": "Saal"}, content_type=JSON))
+    dup = s["chef"].post(s["url"], {"parent": haus["id"], "name": "saal"}, content_type=JSON)
+    assert dup.status_code == 400
+    # „Gebäude, Raum“ darf keinem anderen Ort gleichen
+    same = s["chef"].post(s["url"], {"name": "Bürgerhaus, Saal"}, content_type=JSON)
+    assert same.status_code == 400
+    # Nur eine Ebene: kein Raum im Raum, ein Gebäude mit Räumen wird kein Raum
+    deep = s["chef"].post(s["url"], {"parent": saal["id"], "name": "Ecke"}, content_type=JSON)
+    assert deep.status_code == 400
+    move = s["chef"].patch(f"{s['url']}{haus['id']}/", {"parent": halle["id"]}, content_type=JSON)
+    assert move.status_code == 400
+    # Liste: Räume direkt hinter ihrem Gebäude
+    rows = ok(s["chef"].get(s["url"]))["places"]
+    assert [p["full_name"] for p in rows] == [
+        "Bürgerhaus",
+        "Bürgerhaus, Saal",
+        "Halle",
+        "Halle, Saal",
+    ]
+    # Archiviertes Gebäude nimmt seine Räume aus der Auswahl
+    ok(s["chef"].patch(f"{s['url']}{haus['id']}/", {"is_active": False}, content_type=JSON))
+    rows = ok(s["chef"].get(s["url"]))["places"]
+    assert [p["full_name"] for p in rows] == ["Halle", "Halle, Saal"]
+    # Löschen des Gebäudes löscht seine Räume
+    ok(s["chef"].delete(f"{s['url']}{haus['id']}/"), 204)
+    assert not Place.objects.filter(name="Saal", parent__isnull=True).exists()
+    assert Place.objects.filter(name="Saal").count() == 1
+
+
+def test_raum_nur_in_eigenem_ort(setup):
+    s = setup
+    fed = ok(s["fed"].post(s["fed_url"], {"name": "Bundesfestplatz"}, content_type=JSON))
+    resp = s["chef"].post(s["url"], {"parent": fed["id"], "name": "Zelt"}, content_type=JSON)
+    assert resp.status_code == 400
+    # Räume des Dachverbands sieht der Verein als „Gebäude, Raum“
+    ok(s["fed"].post(s["fed_url"], {"parent": fed["id"], "name": "Zelt"}, content_type=JSON))
+    rows = ok(s["chef"].get(s["url"]))["places"]
+    assert [p["full_name"] for p in rows] == ["Bundesfestplatz", "Bundesfestplatz, Zelt"]
+
+
+def test_bestehende_orte_werden_zu_raeumen(orgs):
+    from django.apps import apps
+
+    from core.tenancy import rls_bypass
+
+    migration = importlib.import_module("places.migrations.0002_raeume")
+    club = orgs["a"]
+    anschrift = "Musterweg 18, 12345 Musterstadt"
+    with rls_bypass():
+        saal = Place.objects.create(
+            organization=club, name="Bürgerhaus, Saal", address=anschrift, directions="Parkplatz"
+        )
+        stand = Place.objects.create(
+            organization=club,
+            name="Bürgerhaus, Schießstand",
+            address=anschrift,
+            directions="Parkplatz",
+        )
+        allein = Place.objects.create(organization=club, name="Kirmesplatz, Schießstand")
+        anders = Place.objects.create(
+            organization=club, name="Bürgerhaus, Keller", address="Anderer Weg 1"
+        )
+        migration._merge_rooms(apps)
+        haus = Place.objects.get(organization=club, name="Bürgerhaus")
+        saal.refresh_from_db()
+        stand.refresh_from_db()
+        allein.refresh_from_db()
+        anders.refresh_from_db()
+    assert haus.address == anschrift and haus.directions == "Parkplatz" and haus.parent is None
+    # Nummern bleiben, damit Verweise weiter stimmen
+    assert (saal.parent_id, saal.name, saal.address, saal.directions) == (haus.pk, "Saal", "", "")
+    assert (stand.parent_id, stand.name) == (haus.pk, "Schießstand")
+    assert saal.full_name == "Bürgerhaus, Saal"
+    # Einzelner Raum oder andere Anschrift: bleibt, wie es war
+    assert allein.parent_id is None and allein.name == "Kirmesplatz, Schießstand"
+    assert anders.parent_id is None and anders.name == "Bürgerhaus, Keller"

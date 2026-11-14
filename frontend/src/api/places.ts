@@ -1,9 +1,23 @@
 // Gespeicherte Orte (Einstellungen › Orte und Ortsfelder in Formularen).
 import { api } from './client.ts'
 
+/** Was ein Formular beim Auswählen übernimmt (Räume: Anschrift usw. vom Gebäude) */
+export interface PlacePick {
+  name: string
+  address: string
+  directions: string
+  latitude: number | null
+  longitude: number | null
+}
+
 export interface Place {
   id: number
+  /** Gesetzt: Raum in diesem Ort (Gebäude) */
+  parent: number | null
   name: string
+  /** „Gebäude, Raum“ bei Räumen, sonst der Name */
+  full_name: string
+  pick: PlacePick
   address: string
   directions: string
   latitude: number | null
@@ -28,7 +42,7 @@ export interface PlaceSuggestion {
 }
 
 export type PlaceInput = Partial<
-  Pick<Place, 'name' | 'address' | 'directions' | 'latitude' | 'longitude' | 'is_active'>
+  Pick<Place, 'parent' | 'name' | 'address' | 'directions' | 'latitude' | 'longitude' | 'is_active'>
 >
 
 export const placeApi = {

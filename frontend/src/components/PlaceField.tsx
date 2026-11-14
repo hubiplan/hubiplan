@@ -3,7 +3,7 @@
 import { useId, useState } from 'react'
 import { placeApi } from '../api/places.ts'
 import type { Place } from '../api/places.ts'
-import { findPlace, usePlaces } from './places.ts'
+import { findPlace, roomTarget, usePlaces } from './places.ts'
 import { Field } from './ui.tsx'
 import { errorMessage } from './forms.ts'
 import { t } from '../i18n/index.ts'
@@ -46,9 +46,18 @@ export function PlaceField({
     if (!base) return
     setSaving(true)
     try {
-      const place = await placeApi.create(base, { name: value.trim(), address: address.trim() })
+      // „Gebäude, Raum“ zu einem eigenen Gebäude: als Raum dort speichern
+      const room = roomTarget(places, value.trim())
+      const place = await placeApi.create(
+        base,
+        room ?? { name: value.trim(), address: address.trim() },
+      )
       add(place)
-      setNote(t('Ort „{name}“ gespeichert.', { name: place.name }))
+      setNote(
+        room
+          ? t('Raum „{name}“ gespeichert.', { name: place.full_name })
+          : t('Ort „{name}“ gespeichert.', { name: place.name }),
+      )
     } catch (err) {
       setNote(errorMessage(err))
     } finally {
@@ -80,7 +89,7 @@ export function PlaceField({
       )}
       {base && canEdit && value.trim() && !known && (
         <button type="button" className="link-button place-save" disabled={saving} onClick={save}>
-          {t('Als Ort speichern')}
+          {roomTarget(places, value.trim()) ? t('Als Raum speichern') : t('Als Ort speichern')}
         </button>
       )}
       {note && (
