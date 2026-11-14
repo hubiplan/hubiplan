@@ -1,6 +1,7 @@
-// Versammlungen im Mitgliederbereich (konzepte/versammlungen.md, Schritte V5 und V6):
+// Versammlungen im Mitgliederbereich (konzepte/versammlungen.md, Schritte V5 bis V7):
 // Einladungen mit Tagesordnung, eigene Anträge und freigegebene Protokolle für Stimmberechtigte.
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { saveBlob } from '../../api/client.ts'
 import { portalMeetingApi } from '../../api/meetings.ts'
 import type { PortalMeetings as Data } from '../../api/meetings.ts'
@@ -61,6 +62,15 @@ export function PortalMeetings({ accessId }: { accessId: number }) {
                 {m.location && ` · ${m.location}`}
                 {m.address && <span className="muted"> · {m.address}</span>}
               </p>
+              {(m.checkin_open || m.remote) && (
+                <p>
+                  <Link className="button" to={`/mein-bereich/versammlungen/live/${m.id}`}>
+                    {m.remote
+                      ? t('Zur Versammlung: online teilnehmen und abstimmen')
+                      : t('Zur Versammlung: Anmeldung und Abstimmungen')}
+                  </Link>
+                </p>
+              )}
               <h4>{t('Tagesordnung')}</h4>
               <ol>
                 {m.agenda.map((item) => (

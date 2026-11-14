@@ -20,8 +20,8 @@ from rest_framework.views import APIView
 
 from core.tenancy import scope_of, set_rls, user_view
 
-from . import services
-from .models import Meeting, MeetingKind, Motion
+from . import live, services
+from .models import Attendance, Meeting, MeetingKind, Motion, Poll
 
 # Protokolle der letzten Jahre; ältere stehen in der Dokumentenablage
 YEARS_BACK = 5
@@ -124,6 +124,8 @@ class ListView(Base):
                         "location": m.event.location,
                         "address": m.event.address,
                         "motion_until": motion_until(m),
+                        "checkin_open": m.checkin_open,
+                        "remote": m.remote and m.checkin_open,
                         "motions": own_motions(m, self.access.membership_id),
                         "agenda": [
                             {
@@ -222,3 +224,121 @@ class WithdrawView(Base):
         motion.status = Motion.Status.WITHDRAWN
         motion.save(update_fields=["status"])
         return Response(status=204)
+
+
+# --- Anmelden per App und Online-Abstimmung (Schritt V7) -----------------------------------
+
+
+class LiveBase(Base):
+    def live_meeting(self, pk, *, lock=False) -> Meeting:
+        qs = Meeting.objects.filter(
+            organization=self.access.organization, status__in=live.LIVE_STATES
+        ).select_related("event", "kind", "organization", "department")
+        if lock:
+            qs = qs.select_for_update(of=("self",))
+        meeting = qs.filter(pk=pk).first()
+        if meeting is None:
+            raise NotFound()
+        return meeting
+
+    def member_live(self, meeting: Meeting) -> dict:
+        membership_id = self.access.membership_id
+        voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
+        me, allowed = live.entitlements(meeting, membership_id, voter_ids)
+        if not meeting.checkin_open and me is None and not allowed:
+            raise NotFound()
+        involved = me is not None or bool(allowed) or membership_id in voter_ids
+        polls = (
+            meeting.polls.exclude(status=Poll.Status.DRAFT)
+            .select_related("agenda_item", "meeting")
+            .prefetch_related("options")
+            if involved
+            else []
+        )
+        return {
+            "id": meeting.pk,
+            "title": meeting.event.title,
+            "kind_name": meeting.kind.name,
+            "unit": unit_name(meeting),
+            "starts_at": meeting.event.starts_at,
+            "location": meeting.event.location,
+            "checkin_open": meeting.checkin_open,
+            "remote": meeting.remote and meeting.checkin_open,
+            "voter": membership_id in voter_ids,
+            "is_organization": self.access.membership.person.is_organization,
+            "status": me.status if me else "",
+            "mode": me.mode if me else "",
+            "votes": len(allowed),
+            "polls": [
+                live.poll_data(p, voter_ids=voter_ids, for_membership=membership_id) for p in polls
+            ],
+        }
+
+
+class LiveView(LiveBase):
+    def get(self, request, pk, **kwargs):
+        return Response(self.member_live(self.live_meeting(pk)))
+
+
+class CheckinInput(serializers.Serializer):
+    code = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    remote = serializers.BooleanField(required=False, default=False)
+
+
+class CheckinView(LiveBase):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """„Ich bin da“: mit dem Code vom Bildschirm oder aus der Ferne (``remote``)."""
+        meeting = self.live_meeting(pk, lock=True)
+        ser = CheckinInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        if not meeting.checkin_open:
+            raise ValidationError({"detail": _("Die Anmeldung ist nicht geöffnet.")})
+        if ser.validated_data["remote"]:
+            if not meeting.remote:
+                raise ValidationError(
+                    {
+                        "detail": _(
+                            "Bei dieser Versammlung ist keine Teilnahme aus der Ferne vorgesehen."
+                        )
+                    }
+                )
+            mode = Attendance.Mode.ONLINE
+        else:
+            if not live.code_valid(meeting, ser.validated_data.get("code", "")):
+                raise ValidationError(
+                    {"code": _("Der Code ist abgelaufen. Bitte den aktuellen Code scannen.")}
+                )
+            mode = Attendance.Mode.APP
+        live.check_in(meeting, self.access.membership, mode=mode)
+        return Response(self.member_live(meeting))
+
+
+class LeaveView(LiveBase):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """„Ich gehe“: abmelden, Vollmachten fallen weg."""
+        meeting = self.live_meeting(pk, lock=True)
+        live.check_out(meeting, self.access.membership)
+        return Response(self.member_live(meeting))
+
+
+class VoteInput(serializers.Serializer):
+    class Vote(serializers.Serializer):
+        attendance = serializers.IntegerField(min_value=1)
+        option = serializers.IntegerField(min_value=1)
+
+    votes = Vote(many=True, max_length=100)
+
+
+class VoteView(LiveBase):
+    @transaction.atomic
+    def post(self, request, pk, poll, **kwargs):
+        meeting = self.live_meeting(pk, lock=True)
+        target = meeting.polls.filter(pk=poll).select_related("meeting").first()
+        if target is None:
+            raise NotFound()
+        ser = VoteInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        live.cast(target, self.access.membership_id, ser.validated_data["votes"])
+        return Response(self.member_live(meeting))

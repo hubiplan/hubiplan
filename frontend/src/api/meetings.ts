@@ -17,6 +17,8 @@ export interface MeetingKind {
   proxies_allowed: boolean
   minutes_for: 'board' | 'voters'
   motion_days: number | null
+  online_voting: boolean
+  remote_allowed: boolean
   position: number
   active: boolean
   used: boolean
@@ -84,6 +86,10 @@ export interface Meeting {
   minutes_document?: number | null
   motions_open?: number
   motions?: Motion[]
+  online_voting?: boolean
+  remote_allowed?: boolean
+  checkin_open?: boolean
+  remote?: boolean
 }
 
 export type MotionStatus = 'submitted' | 'accepted' | 'rejected' | 'withdrawn'
@@ -114,7 +120,9 @@ export interface Confirmation {
   at: string
 }
 
-export type AttendanceStatus = 'present' | 'excused' | 'represented' | 'delegate'
+export type AttendanceStatus = 'present' | 'excused' | 'represented' | 'delegate' | 'left'
+/** Wie jemand angemeldet ist: von Hand, per App (Code) oder aus der Ferne */
+export type AttendanceMode = '' | 'app' | 'online'
 
 export interface AttendanceRow {
   id: number | null
@@ -122,6 +130,7 @@ export interface AttendanceRow {
   name: string
   voter: boolean
   status: '' | AttendanceStatus
+  mode?: AttendanceMode
   represented_by: number | null
   /** 'organization' bei Organisationsmitgliedern */
   kind?: string
@@ -138,6 +147,7 @@ export interface AttendanceList {
   present: number
   represented: number
   guests: number
+  online?: number
   quorum: { needed: number; reached: boolean; rule: boolean }
   proxies_allowed: boolean
   editable: boolean
@@ -187,13 +197,103 @@ export interface PortalMeetings {
     location: string
     address: string
     motion_until: string | null
+    checkin_open?: boolean
+    remote?: boolean
     motions: OwnMotion[]
     agenda: { position: number; title: string; description: string }[]
   }[]
   minutes: { id: number; title: string; kind_name: string; unit: string; starts_at: string }[]
 }
 
+export type PollStatus = 'draft' | 'open' | 'closed'
+
+export interface PollOption {
+  id: number
+  role: 'yes' | 'no' | 'abstain' | 'candidate'
+  label: string
+}
+
+export interface Poll {
+  id: number
+  agenda_item: number
+  agenda_position: number
+  agenda_title: string
+  kind: 'resolution' | 'election'
+  question: string
+  office: string
+  candidate: string
+  secret: boolean
+  status: PollStatus
+  opened_at: string | null
+  closed_at: string | null
+  cast: number
+  entitled: number
+  options: PollOption[]
+  /** Ergebnis erst nach dem Ende */
+  result: (PollOption & { votes: number })[] | null
+  resolution: number | null
+  /** Offene Abstimmung, beendet: wer wie gestimmt hat (nur Leitung) */
+  open_votes?: { name: string; option: string }[]
+  /** Mitgliederbereich: eigene Stimmen (eigene, Vollmachten, Organisationen) */
+  votes?: { attendance: number; name: string; how: 'own' | 'proxy' | 'delegate'; done: boolean }[]
+}
+
+export interface LiveState {
+  meeting: number
+  organization: number
+  status: MeetingStatus
+  online_voting: boolean
+  remote_allowed: boolean
+  checkin_open: boolean
+  remote: boolean
+  live: boolean
+  voters: number
+  present_app: number
+  present_online: number
+  entitled: number
+  polls: Poll[]
+  code?: string
+  refresh_in?: number
+}
+
+export interface PortalLive {
+  id: number
+  title: string
+  kind_name: string
+  unit: string
+  starts_at: string
+  location: string
+  checkin_open: boolean
+  remote: boolean
+  voter: boolean
+  is_organization: boolean
+  status: '' | AttendanceStatus
+  mode: AttendanceMode
+  votes: number
+  polls: Poll[]
+}
+
+export interface PollDraft {
+  agenda_item: number
+  question: string
+  secret: boolean
+  office: string
+  candidates: { name: string; membership?: number | null }[]
+}
+
 export const portalMeetingApi = {
+  live: (access: number, id: number) =>
+    api.get<PortalLive>(`/api/portal/${access}/meetings/${id}/live/`),
+  checkin: (access: number, id: number, data: { code?: string; remote?: boolean }) =>
+    api.post<PortalLive>(`/api/portal/${access}/meetings/${id}/live/checkin/`, data),
+  leave: (access: number, id: number) =>
+    api.post<PortalLive>(`/api/portal/${access}/meetings/${id}/live/leave/`),
+  vote: (
+    access: number,
+    id: number,
+    poll: number,
+    votes: { attendance: number; option: number }[],
+  ) => api.post<PortalLive>(`/api/portal/${access}/meetings/${id}/polls/${poll}/vote/`, { votes }),
   list: (access: number) => api.get<PortalMeetings>(`/api/portal/${access}/meetings/`),
   minutes: (access: number, id: number) =>
     requestBlob('GET', `/api/portal/${access}/meetings/${id}/minutes/`),
@@ -225,6 +325,15 @@ export const meetingApi = {
     api.post<AttendanceList>(`${base}${id}/attendance/`, data),
   removeAttendance: (base: string, id: number, entry: number) =>
     api.del(`${base}${id}/attendance/${entry}/`),
+  live: (base: string, id: number) => api.get<LiveState>(`${base}${id}/live/`),
+  setLive: (base: string, id: number, data: { open?: boolean; remote?: boolean }) =>
+    api.post<LiveState>(`${base}${id}/live/`, data),
+  createPoll: (base: string, id: number, data: PollDraft) =>
+    api.post<LiveState>(`${base}${id}/polls/`, data),
+  pollAction: (base: string, id: number, poll: number, action: 'open' | 'close' | 'apply') =>
+    api.post<LiveState>(`${base}${id}/polls/${poll}/`, { action }),
+  removePoll: (base: string, id: number, poll: number) =>
+    api.del(`${base}${id}/polls/${poll}/`) as Promise<LiveState>,
   kinds: (base: string) => api.get<MeetingKind[]>(`${base}kinds/`),
   createKind: (base: string, data: object) => api.post<MeetingKind>(`${base}kinds/`, data),
   updateKind: (base: string, id: number, data: object) =>

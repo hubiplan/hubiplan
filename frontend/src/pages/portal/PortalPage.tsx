@@ -4,12 +4,21 @@ import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
+import { PortalMeetingLive } from './PortalMeetingLive.tsx'
 import { PortalCompany } from './PortalCompany.tsx'
 import { PortalCancellation } from './PortalCancellation.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Link, Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import { FIELD_LABELS, portalApi } from '../../api/portal.ts'
 import type { ChangeRequest, PortalDetail, PortalEntry } from '../../api/portal.ts'
 import {
@@ -91,7 +100,47 @@ function currentValues(d: PortalDetail): Record<FieldKey, string> {
   }
 }
 
+/** QR-Code der Leitung (V7): passenden Zugang für den Verein wählen, dann anmelden. */
+function MeetingScanRoute({ meeting }: { meeting: string }) {
+  const { activePortal, portal, select } = useOrg()
+  const [params] = useSearchParams()
+  const club = Number(params.get('v'))
+  const code = params.get('c') ?? ''
+  const fitting =
+    portal.find((a) => a.club_id === club && a.member_kind !== 'organization') ??
+    portal.find((a) => a.club_id === club)
+  useEffect(() => {
+    if (fitting && activePortal?.id !== fitting.id) select(`p:${fitting.id}`)
+  }, [fitting, activePortal?.id, select])
+  if (!fitting)
+    return (
+      <Alert kind="error">
+        {t('Für diesen Verein hast du keinen Mitgliederzugang.')}{' '}
+        <Link to="/mein-bereich">{t('Zu meinem Bereich')}</Link>
+      </Alert>
+    )
+  if (activePortal?.id !== fitting.id)
+    return <p role="status">{t('Mitgliederzugang wird geöffnet …')}</p>
+  return (
+    <PortalSection title={t('Versammlung')}>
+      <PortalMeetingLive accessId={fitting.id} meetingId={Number(meeting)} code={code} />
+    </PortalSection>
+  )
+}
+
+function MeetingLiveRoute({ accessId }: { accessId: number }) {
+  const { meeting } = useParams()
+  return <PortalMeetingLive accessId={accessId} meetingId={Number(meeting)} />
+}
+
 export function PortalPage() {
+  const { pathname } = useLocation()
+  const scan = /\/versammlungen\/da\/(\d+)\/?$/.exec(pathname)
+  if (scan) return <MeetingScanRoute meeting={scan[1]} />
+  return <PortalRoutes />
+}
+
+function PortalRoutes() {
   const { activePortal, portal, select } = useOrg()
   const [params] = useSearchParams()
   const target = params.get('zugang')
@@ -140,6 +189,14 @@ export function PortalPage() {
         element={
           <PortalSection title={t('Versammlungen')}>
             <PortalMeetings key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="versammlungen/live/:meeting"
+        element={
+          <PortalSection title={t('Versammlung')}>
+            <MeetingLiveRoute key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />
