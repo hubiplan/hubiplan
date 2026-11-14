@@ -445,24 +445,24 @@ def overview(site) -> dict:
 
 def home(site, limit: int = 3) -> list:
     """Startseite „Aktuelle Ergebnisse“: die neuesten Wettbewerbe mit ihren Siegern."""
-    out = []
-    for comp in published(site)[:limit]:
-        d = detail(site, comp)
-        winners = []
-        for s in d["scorings"]:
-            # Bereits auf Preisplätze begrenzte Einzelwertungen vollständig übernehmen.
-            top = (
-                s["rows"]
-                if not s["complete"]
-                else [r for r in s["rows"] if r.get("place") is not None and r["place"] <= 3]
-            )
-            winners.append({"scoring": s["name"], "rows": top})
-        out.append(
-            {
-                **summary(site, comp),
-                "scorings": winners,
-                "prizes": [p for p in d["prizes"] if p.get("fallen")],
-                "version": d["version"],
-            }
+    return [home_entry(site, comp) for comp in published(site)[:limit]]
+
+
+def home_entry(site, comp) -> dict:
+    """Ein Wettbewerb mit Siegern (Startseite, Abschnitt „Ergebnisse eines Wettbewerbs“)."""
+    d = detail(site, comp)
+    winners = []
+    for s in d["scorings"]:
+        # Bereits auf Preisplätze begrenzte Einzelwertungen vollständig übernehmen.
+        top = (
+            s["rows"]
+            if not s["complete"]
+            else [r for r in s["rows"] if r.get("place") is not None and r["place"] <= 3]
         )
-    return out
+        winners.append({"scoring": s["name"], "rows": top})
+    return {
+        **summary(site, comp),
+        "scorings": winners,
+        "prizes": [p for p in d["prizes"] if p.get("fallen")],
+        "version": d["version"],
+    }

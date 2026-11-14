@@ -53,6 +53,26 @@ KIND_FIELDS = {
         "title, mode (event|date), event (Terminnummer aus auswahl.events, bei mode event), "
         "at (Ortszeit JJJJ-MM-TTTHH:MM, bei mode date), text, after (hide|text), after_text"
     ),
+    "join": "title, text (Markdown), label (Knopf zum Online-Antrag; Bereich join muss an sein)",
+    "donation": (
+        "title, text (Markdown), holder, iban, bic, purpose, goal (Euro, ganze Zahl), "
+        "raised (Euro), label, url (https://…, z. B. Spendenseite)"
+    ),
+    "hours": "title, items [{day, time, note}] (höchstens 14), text",
+    "columns": "title, items [{title, text (Markdown)}] (genau 2)",
+    "table": "title, head [Spaltenköpfe] (1–6), rows [[Zellen]] (höchstens 40), text",
+    "timeline": "title, items [{when, title, text}] (höchstens 12)",
+    "program": "title, items [{day, time, text}] (höchstens 40, gleiche Tage hintereinander), text",
+    "callout": "title, text (Markdown), style (info|warning|success)",
+    "accordion": "title, items [{title, text (Markdown)}] (höchstens 12)",
+    "images": "title, items [{image (Bildnummer), caption}] (2–8), columns (2|3|4)",
+    "downloads": "title, documents [Dokumentnummern] (höchstens 10)",
+    "unit_honors": "title, unit (Nummer aus auswahl.units)",
+    "competition": "title, competition (Nummer aus auswahl.competitions)",
+    "albums": "title, count (2–8)",
+    "posts": "title, count (1–6), channel (all|instagram|facebook)",
+    "app": "title, text (Markdown), qr (true|false), store (true|false)",
+    "live_facts": "title, items [{fact (members|years|units), label (optional)}]",
 }
 TARGET_HINT = (
     'target: {"page": "<Menüschlüssel>"}, {"event": <Terminnummer>} oder {"url": "https://…"}'

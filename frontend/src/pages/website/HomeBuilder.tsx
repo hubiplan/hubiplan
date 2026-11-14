@@ -19,7 +19,7 @@ import type {
   SectionSite,
 } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { formatDateTime, useLoad } from '../../components/forms.ts'
+import { formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Modal } from '../../components/Modal.tsx'
 import { SortHint } from '../../components/Sortable.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
@@ -50,6 +50,23 @@ const KINDS: HomeKind[] = [
   'facts',
   'divider',
   'countdown',
+  'join',
+  'donation',
+  'hours',
+  'columns',
+  'table',
+  'timeline',
+  'program',
+  'callout',
+  'accordion',
+  'images',
+  'downloads',
+  'unit_honors',
+  'competition',
+  'albums',
+  'posts',
+  'app',
+  'live_facts',
   'cover',
 ]
 
@@ -74,6 +91,23 @@ function kindLabel(kind: HomeKind): string {
     facts: t('Zahlen auf einen Blick'),
     divider: t('Trenner'),
     countdown: t('Countdown'),
+    join: t('Mitglied werden'),
+    donation: t('Spendenaufruf'),
+    hours: t('Öffnungs- und Trainingszeiten'),
+    columns: t('Zwei Spalten'),
+    table: t('Tabelle'),
+    timeline: t('Zeitstrahl'),
+    program: t('Festprogramm'),
+    callout: t('Hinweis-Kasten'),
+    accordion: t('Aufklappbare Abschnitte'),
+    images: t('Bilder'),
+    downloads: t('Download-Liste'),
+    unit_honors: t('Majestäten einer Untereinheit'),
+    competition: t('Ergebnisse eines Wettbewerbs'),
+    albums: t('Galerie-Übersicht'),
+    posts: t('Neueste Beiträge'),
+    app: t('Mitgliederbereich und App'),
+    live_facts: t('Zahlen aus HUBIplan'),
     cover: t('Titelbild'),
   }[kind]
 }
@@ -99,6 +133,23 @@ function kindHint(kind: HomeKind): string {
     facts: t('zwei bis sechs Zahlen mit kurzem Text'),
     divider: t('Linie oder Abstand zwischen Abschnitten'),
     countdown: t('Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt'),
+    join: t('kurzer Werbetext mit Knopf zum Online-Mitgliedsantrag'),
+    donation: t('Spendenzweck, Bankverbindung und auf Wunsch ein Fortschrittsbalken'),
+    hours: t('Wochentage mit Uhrzeiten, z. B. für Schießstand oder Probe'),
+    columns: t('zwei Textblöcke nebeneinander'),
+    table: t('eine einfache Tabelle mit Kopfzeile'),
+    timeline: t('eigene Stationen mit Zeitangabe und Text'),
+    program: t('Ablauf eines Fests mit Tagen und Uhrzeiten'),
+    callout: t('farbiger Kasten für Info, Achtung oder Erfolg'),
+    accordion: t('Überschriften mit Text zum Aufklappen'),
+    images: t('zwei bis acht eigene Bilder mit Bildunterschrift'),
+    downloads: t('mehrere Dateien aus Webseite › Dokumente als Liste'),
+    unit_honors: t('die aktuellen Majestäten einer Untereinheit'),
+    competition: t('Sieger und Stand eines bestimmten Wettbewerbs'),
+    albums: t('die ersten Alben der Galerie als Kacheln'),
+    posts: t('die neuesten Beiträge aus Instagram und Facebook'),
+    app: t('Knopf zum Mitgliederbereich, QR-Code und Hinweis auf die App'),
+    live_facts: t('Mitgliederzahl, Jahre seit der Gründung und Untereinheiten, immer aktuell'),
     cover: t('ein schmales Bild über der Überschrift der Seite'),
   }[kind]
 }
@@ -171,6 +222,124 @@ function Sketch({ kind }: { kind: HomeKind }) {
       box(59, 12, 14, 14, 0.6),
       box(8, 30, 65, 3, 0.35),
     ],
+    join: [box(14, 8, 52, 5, 0.6), ...lines(14, 17, 52, 2), box(26, 30, 28, 8, 0.6)],
+    donation: [
+      box(8, 6, 40, 5, 0.6),
+      ...lines(8, 15, 64, 2),
+      box(8, 30, 64, 5, 0.25),
+      box(8, 30, 40, 5, 0.6),
+    ],
+    hours: [
+      box(8, 8, 20, 4, 0.6),
+      box(40, 8, 32, 4, 0.35),
+      box(8, 18, 20, 4, 0.6),
+      box(40, 18, 32, 4, 0.35),
+      box(8, 28, 20, 4, 0.6),
+      box(40, 28, 32, 4, 0.35),
+    ],
+    columns: [
+      box(6, 6, 30, 5, 0.6),
+      ...lines(6, 15, 30, 4),
+      box(44, 6, 30, 5, 0.6),
+      ...lines(44, 15, 30, 4),
+    ],
+    table: [
+      box(6, 6, 68, 6, 0.6),
+      box(6, 15, 68, 5, 0.25),
+      box(6, 23, 68, 5, 0.25),
+      box(6, 31, 68, 5, 0.25),
+    ],
+    timeline: [
+      box(6, 20, 68, 2, 0.5),
+      box(10, 14, 6, 6, 0.6),
+      box(36, 14, 6, 6, 0.6),
+      box(62, 14, 6, 6, 0.6),
+      box(6, 28, 16, 3, 0.35),
+      box(32, 28, 16, 3, 0.35),
+      box(58, 28, 16, 3, 0.35),
+    ],
+    program: [
+      box(8, 6, 24, 5, 0.6),
+      box(8, 15, 12, 4, 0.5),
+      box(24, 15, 48, 4, 0.35),
+      box(8, 23, 12, 4, 0.5),
+      box(24, 23, 48, 4, 0.35),
+      box(8, 31, 12, 4, 0.5),
+      box(24, 31, 48, 4, 0.35),
+    ],
+    callout: [
+      box(6, 8, 68, 28, 0.25),
+      box(6, 8, 3, 28, 0.7),
+      box(14, 13, 30, 4, 0.6),
+      ...lines(14, 22, 54, 2),
+    ],
+    accordion: [
+      box(8, 6, 64, 7, 0.5),
+      box(8, 16, 64, 7, 0.5),
+      ...lines(12, 26, 56, 1),
+      box(8, 32, 64, 7, 0.5),
+    ],
+    images: [
+      box(6, 8, 20, 20),
+      box(30, 8, 20, 20),
+      box(54, 8, 20, 20),
+      box(6, 31, 14, 3, 0.35),
+      box(30, 31, 14, 3, 0.35),
+      box(54, 31, 14, 3, 0.35),
+    ],
+    unit_honors: [
+      box(10, 6, 26, 32),
+      box(44, 6, 26, 32),
+      box(16, 12, 14, 12, 0.5),
+      box(50, 12, 14, 12, 0.5),
+    ],
+    competition: [
+      box(8, 6, 40, 5, 0.6),
+      box(8, 16, 6, 6, 0.6),
+      box(18, 17, 40, 4, 0.35),
+      box(8, 25, 6, 6, 0.45),
+      box(18, 26, 34, 4, 0.35),
+      box(8, 34, 6, 6, 0.3),
+      box(18, 35, 28, 4, 0.35),
+    ],
+    albums: [
+      box(6, 6, 20, 24),
+      box(30, 6, 20, 24),
+      box(54, 6, 20, 24),
+      box(6, 33, 14, 3, 0.5),
+      box(30, 33, 14, 3, 0.5),
+      box(54, 33, 14, 3, 0.5),
+    ],
+    posts: [
+      box(6, 6, 32, 32, 0.2),
+      box(42, 6, 32, 32, 0.2),
+      box(9, 9, 26, 16),
+      box(45, 9, 26, 16),
+      box(9, 29, 22, 3, 0.35),
+      box(45, 29, 22, 3, 0.35),
+    ],
+    app: [
+      box(8, 8, 26, 28, 0.6),
+      box(42, 10, 30, 5, 0.6),
+      ...lines(42, 20, 30, 2),
+      box(42, 32, 20, 5, 0.5),
+    ],
+    live_facts: [
+      box(8, 12, 16, 10, 0.6),
+      box(32, 12, 16, 10, 0.6),
+      box(56, 12, 16, 10, 0.6),
+      box(8, 26, 16, 3, 0.35),
+      box(32, 26, 16, 3, 0.35),
+      box(56, 26, 16, 3, 0.35),
+    ],
+    downloads: [
+      box(8, 8, 6, 8, 0.5),
+      box(18, 10, 44, 4, 0.35),
+      box(8, 20, 6, 8, 0.5),
+      box(18, 22, 44, 4, 0.35),
+      box(8, 32, 6, 8, 0.5),
+      box(18, 34, 44, 4, 0.35),
+    ],
     cover: [box(2, 4, 76, 14), box(8, 24, 36, 5, 0.6), ...lines(8, 33, 64, 2)],
   }
   return (
@@ -240,6 +409,63 @@ function defaults(kind: HomeKind): HomeSectionData {
         after: 'hide',
         after_text: '',
       }
+    case 'join':
+      return { title: '', text: '', label: '' }
+    case 'donation':
+      return {
+        title: '',
+        text: '',
+        holder: '',
+        iban: '',
+        bic: '',
+        purpose: '',
+        goal: null,
+        raised: null,
+        label: '',
+        url: '',
+      }
+    case 'hours':
+      return { title: '', items: [emptyHours()], text: '' }
+    case 'columns':
+      return {
+        title: '',
+        items: [
+          { title: '', text: '' },
+          { title: '', text: '' },
+        ],
+      }
+    case 'table':
+      return { title: '', head: ['', ''], rows: [['', '']], text: '' }
+    case 'timeline':
+      return { title: '', items: [emptyStation(), emptyStation()] }
+    case 'program':
+      return { title: '', items: [emptyProgram()], text: '' }
+    case 'callout':
+      return { title: '', text: '', style: 'info' }
+    case 'accordion':
+      return { title: '', items: [{ title: '', text: '' }] }
+    case 'images':
+      return { title: '', items: [emptyPicture(), emptyPicture()], columns: 3 }
+    case 'downloads':
+      return { title: '', documents: [] }
+    case 'unit_honors':
+      return { title: '', unit: null }
+    case 'competition':
+      return { title: '', competition: null }
+    case 'albums':
+      return { title: '', count: 4 }
+    case 'posts':
+      return { title: '', count: 3, channel: 'all' }
+    case 'app':
+      return { title: '', text: '', qr: true, store: true }
+    case 'live_facts':
+      return {
+        title: '',
+        items: [
+          { fact: 'members', label: '' },
+          { fact: 'years', label: '' },
+        ],
+      }
     case 'cover':
       return { image: null }
   }
@@ -251,6 +477,10 @@ function emptyTile(): HomeTile {
 
 const emptyPartner = (): HomeItem => ({ name: '', image: null, url: '' })
 const emptyFact = (): HomeItem => ({ value: '', label: '' })
+const emptyHours = (): HomeItem => ({ day: '', time: '', note: '' })
+const emptyStation = (): HomeItem => ({ when: '', title: '', text: '' })
+const emptyProgram = (): HomeItem => ({ day: '', time: '', text: '' })
+const emptyPicture = (): HomeItem => ({ image: null, caption: '' })
 
 /** Kurzer Inhalt hinter dem Namen in der Liste, damit sich gleiche Arten unterscheiden */
 function summary(s: HomeSection): string {
@@ -262,6 +492,8 @@ function summary(s: HomeSection): string {
     d.buttons?.[0]?.label ||
     d.items?.[0]?.question ||
     d.items?.[0]?.name ||
+    d.items?.[0]?.title ||
+    d.items?.[0]?.day ||
     d.label ||
     ''
   )
@@ -350,6 +582,11 @@ export function HomeBuilder({
         'event_list',
         'document',
         'countdown',
+        'hours',
+        'downloads',
+        'join',
+        'app',
+        'unit_honors',
       ].includes(kind)
         ? 'side'
         : 'main',
@@ -1282,9 +1519,629 @@ function SectionContent({
         </>
       )
     }
+    case 'join':
+      return (
+        <>
+          {titleField()}
+          <TextEditor
+            label={t('Text')}
+            value={d.text ?? ''}
+            rows={4}
+            onChange={(text) => setData({ text })}
+          />
+          <Field
+            label={t('Beschriftung des Knopfs (optional)')}
+            value={d.label ?? ''}
+            maxLength={60}
+            placeholder={t('Jetzt Mitglied werden')}
+            hint={t(
+              'Der Knopf führt zur Seite „Mitglied werden“. Der Abschnitt erscheint nur, wenn der Online-Antrag eingeschaltet ist.',
+            )}
+            onChange={(e) => setData({ label: e.target.value })}
+          />
+        </>
+      )
+    case 'donation':
+      return (
+        <>
+          {titleField()}
+          <TextEditor
+            label={t('Text')}
+            value={d.text ?? ''}
+            rows={4}
+            onChange={(text) => setData({ text })}
+          />
+          <Field
+            label={t('Kontoinhaber')}
+            value={d.holder ?? ''}
+            maxLength={120}
+            onChange={(e) => setData({ holder: e.target.value })}
+          />
+          <Field
+            label={t('IBAN')}
+            value={d.iban ?? ''}
+            maxLength={42}
+            onChange={(e) => setData({ iban: e.target.value })}
+          />
+          <Field
+            label={t('BIC (optional)')}
+            value={d.bic ?? ''}
+            maxLength={11}
+            onChange={(e) => setData({ bic: e.target.value })}
+          />
+          <Field
+            label={t('Verwendungszweck')}
+            value={d.purpose ?? ''}
+            maxLength={120}
+            onChange={(e) => setData({ purpose: e.target.value })}
+          />
+          <Field
+            label={t('Spendenziel in Euro (optional)')}
+            type="number"
+            min={0}
+            step={1}
+            value={d.goal ?? ''}
+            hint={t('Mit Ziel zeigt die Webseite einen Fortschrittsbalken.')}
+            onChange={(e) => setData({ goal: e.target.value ? Number(e.target.value) : null })}
+          />
+          {d.goal ? (
+            <Field
+              label={t('Bisher gesammelt in Euro')}
+              type="number"
+              min={0}
+              step={1}
+              value={d.raised ?? ''}
+              onChange={(e) => setData({ raised: e.target.value ? Number(e.target.value) : null })}
+            />
+          ) : null}
+          <Field
+            label={t('Link zu einer Spendenseite (optional)')}
+            type="url"
+            placeholder="https://"
+            value={d.url ?? ''}
+            maxLength={500}
+            onChange={(e) => setData({ url: e.target.value })}
+          />
+          {d.url ? (
+            <Field
+              label={t('Beschriftung des Knopfs (optional)')}
+              value={d.label ?? ''}
+              maxLength={60}
+              placeholder={t('Jetzt spenden')}
+              onChange={(e) => setData({ label: e.target.value })}
+            />
+          ) : null}
+        </>
+      )
+    case 'hours':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={14}
+            legend={(n) => t('Zeile {n}', { n })}
+            addLabel={t('Zeile hinzufügen')}
+            removeLabel={t('Zeile entfernen')}
+            empty={emptyHours}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Tag')}
+                  value={item.day ?? ''}
+                  maxLength={60}
+                  hint={t('z. B. Dienstag oder Mo–Fr')}
+                  onChange={(e) => set({ day: e.target.value })}
+                />
+                <Field
+                  label={t('Uhrzeit')}
+                  value={item.time ?? ''}
+                  maxLength={60}
+                  hint={t('z. B. 19:00–22:00 Uhr')}
+                  onChange={(e) => set({ time: e.target.value })}
+                />
+                <Field
+                  label={t('Hinweis (optional)')}
+                  value={item.note ?? ''}
+                  maxLength={120}
+                  onChange={(e) => set({ note: e.target.value })}
+                />
+              </>
+            )}
+          />
+          <Field
+            label={t('Text darunter (optional)')}
+            value={d.text ?? ''}
+            maxLength={500}
+            onChange={(e) => setData({ text: e.target.value })}
+          />
+        </>
+      )
+    case 'columns': {
+      const items = d.items?.length === 2 ? d.items : [{}, {}]
+      const set = (i: number, patch: Partial<HomeItem>) =>
+        setData({ items: items.map((x, j) => (j === i ? { ...x, ...patch } : x)) })
+      return (
+        <>
+          {titleField()}
+          {[0, 1].map((i) => (
+            <fieldset key={i} className="home-item">
+              <legend>{i === 0 ? t('Linke Spalte') : t('Rechte Spalte')}</legend>
+              <Field
+                label={t('Überschrift (optional)')}
+                value={items[i].title ?? ''}
+                maxLength={150}
+                onChange={(e) => set(i, { title: e.target.value })}
+              />
+              <TextEditor
+                label={t('Text')}
+                value={items[i].text ?? ''}
+                rows={5}
+                onChange={(text) => set(i, { text })}
+              />
+            </fieldset>
+          ))}
+        </>
+      )
+    }
+    case 'table':
+      return <TableField value={d} setData={setData} titleField={titleField()} />
+    case 'timeline':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={12}
+            legend={(n) => t('Station {n}', { n })}
+            addLabel={t('Station hinzufügen')}
+            removeLabel={t('Station entfernen')}
+            empty={emptyStation}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Zeitangabe')}
+                  value={item.when ?? ''}
+                  maxLength={60}
+                  hint={t('z. B. 1920, Frühjahr 2026 oder 14:00 Uhr')}
+                  onChange={(e) => set({ when: e.target.value })}
+                />
+                <Field
+                  label={t('Titel')}
+                  value={item.title ?? ''}
+                  maxLength={150}
+                  onChange={(e) => set({ title: e.target.value })}
+                />
+                <Field
+                  label={t('Text (optional)')}
+                  value={item.text ?? ''}
+                  maxLength={500}
+                  onChange={(e) => set({ text: e.target.value })}
+                />
+              </>
+            )}
+          />
+        </>
+      )
+    case 'program':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={40}
+            legend={(n) => t('Programmpunkt {n}', { n })}
+            addLabel={t('Programmpunkt hinzufügen')}
+            removeLabel={t('Programmpunkt entfernen')}
+            empty={() => ({ ...emptyProgram(), day: d.items?.at(-1)?.day ?? '' })}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Tag')}
+                  value={item.day ?? ''}
+                  maxLength={60}
+                  hint={t('Gleiche Tage hintereinander erscheinen unter einer Überschrift.')}
+                  onChange={(e) => set({ day: e.target.value })}
+                />
+                <Field
+                  label={t('Uhrzeit (optional)')}
+                  value={item.time ?? ''}
+                  maxLength={20}
+                  onChange={(e) => set({ time: e.target.value })}
+                />
+                <Field
+                  label={t('Programmpunkt')}
+                  value={item.text ?? ''}
+                  maxLength={500}
+                  onChange={(e) => set({ text: e.target.value })}
+                />
+              </>
+            )}
+          />
+          <Field
+            label={t('Text darunter (optional)')}
+            value={d.text ?? ''}
+            maxLength={500}
+            onChange={(e) => setData({ text: e.target.value })}
+          />
+        </>
+      )
+    case 'callout':
+      return (
+        <>
+          <Segments
+            label={t('Art')}
+            value={d.style === 'warning' || d.style === 'success' ? d.style : 'info'}
+            options={[
+              ['info', t('Info')],
+              ['warning', t('Achtung')],
+              ['success', t('Erfolg')],
+            ]}
+            onChange={(style) => setData({ style })}
+          />
+          {titleField()}
+          <TextEditor
+            label={t('Text')}
+            value={d.text ?? ''}
+            rows={4}
+            onChange={(text) => setData({ text })}
+          />
+        </>
+      )
+    case 'accordion':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={12}
+            legend={(n) => t('Abschnitt {n}', { n })}
+            addLabel={t('Abschnitt hinzufügen')}
+            removeLabel={t('Abschnitt entfernen')}
+            empty={() => ({ title: '', text: '' })}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Überschrift')}
+                  value={item.title ?? ''}
+                  maxLength={150}
+                  onChange={(e) => set({ title: e.target.value })}
+                />
+                <TextEditor
+                  label={t('Text')}
+                  value={item.text ?? ''}
+                  rows={5}
+                  onChange={(text) => set({ text })}
+                />
+              </>
+            )}
+          />
+        </>
+      )
+    case 'images':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={8}
+            legend={(n) => t('Bild {n}', { n })}
+            addLabel={t('Bild hinzufügen')}
+            removeLabel={t('Bild entfernen')}
+            empty={emptyPicture}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                {imageField(t('Bild'), item.image, (image) => set({ image }))}
+                <Field
+                  label={t('Bildunterschrift (optional)')}
+                  value={item.caption ?? ''}
+                  maxLength={250}
+                  onChange={(e) => set({ caption: e.target.value })}
+                />
+              </>
+            )}
+          />
+          <Segments
+            label={t('Spalten')}
+            value={d.columns === 2 || d.columns === 4 ? d.columns : 3}
+            options={[
+              [2, '2'],
+              [3, '3'],
+              [4, '4'],
+            ]}
+            onChange={(columns) => setData({ columns })}
+          />
+        </>
+      )
+    case 'downloads': {
+      const chosen = d.documents ?? []
+      const docs = choices?.documents ?? []
+      return (
+        <>
+          {titleField()}
+          <p className="muted small">
+            {t('Bis zu zehn veröffentlichte Dokumente aus Webseite › Dokumente.')}
+          </p>
+          {docs.length === 0 && (
+            <p className="muted">{t('Noch keine Dokumente veröffentlicht.')}</p>
+          )}
+          {docs.map((doc) => (
+            <Checkbox
+              key={doc.id}
+              label={doc.title}
+              checked={chosen.includes(doc.id)}
+              disabled={!chosen.includes(doc.id) && chosen.length >= 10}
+              onChange={(on) =>
+                setData({
+                  documents: on ? [...chosen, doc.id] : chosen.filter((x) => x !== doc.id),
+                })
+              }
+            />
+          ))}
+        </>
+      )
+    }
+    case 'unit_honors':
+      return (
+        <>
+          <SelectField
+            label={t('Untereinheit')}
+            value={d.unit ?? ''}
+            hint={t('Nur Untereinheiten, die auf der Webseite stehen.')}
+            onChange={(e) => setData({ unit: e.target.value ? Number(e.target.value) : null })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(choices?.units ?? []).map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </SelectField>
+          {titleField()}
+        </>
+      )
+    case 'competition':
+      return (
+        <>
+          <SelectField
+            label={t('Wettbewerb')}
+            value={d.competition ?? ''}
+            hint={t('Erscheint, sobald der Wettbewerb auf der Webseite veröffentlicht ist.')}
+            onChange={(e) =>
+              setData({ competition: e.target.value ? Number(e.target.value) : null })
+            }
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(choices?.competitions ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title} ({formatDate(c.date)})
+              </option>
+            ))}
+          </SelectField>
+          {titleField()}
+        </>
+      )
+    case 'albums':
+      return (
+        <>
+          {titleField()}
+          <SelectField
+            label={t('Anzahl Alben')}
+            value={d.count ?? 4}
+            onChange={(e) => setData({ count: Number(e.target.value) })}
+          >
+            {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </SelectField>
+        </>
+      )
+    case 'posts':
+      return (
+        <>
+          {titleField()}
+          <Segments
+            label={t('Kanal')}
+            value={d.channel === 'instagram' || d.channel === 'facebook' ? d.channel : 'all'}
+            options={[
+              ['all', t('Alle')],
+              ['instagram', 'Instagram'],
+              ['facebook', 'Facebook'],
+            ]}
+            onChange={(channel) => setData({ channel })}
+          />
+          <SelectField
+            label={t('Anzahl Beiträge')}
+            value={d.count ?? 3}
+            onChange={(e) => setData({ count: Number(e.target.value) })}
+          >
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </SelectField>
+        </>
+      )
+    case 'app':
+      return (
+        <>
+          {titleField()}
+          <TextEditor
+            label={t('Text')}
+            value={d.text ?? ''}
+            rows={4}
+            onChange={(text) => setData({ text })}
+          />
+          <Checkbox
+            label={t('QR-Code zur Anmeldung zeigen')}
+            checked={d.qr !== false}
+            onChange={(qr) => setData({ qr })}
+          />
+          <Checkbox
+            label={t('Link zur App bei Google Play zeigen')}
+            checked={d.store !== false}
+            onChange={(store) => setData({ store })}
+          />
+        </>
+      )
+    case 'live_facts': {
+      const labels: [string, string][] = [
+        ['members', t('Mitglieder')],
+        ['years', t('Jahre Vereinsgeschichte')],
+        ['units', t('Untereinheiten')],
+      ]
+      const items = d.items ?? []
+      return (
+        <>
+          {titleField()}
+          <p className="muted small">
+            {t('Die Zahlen kommen immer aktuell aus HUBIplan, nur als Summe.')}
+          </p>
+          {labels.map(([fact, name]) => {
+            const item = items.find((i) => i.fact === fact)
+            return (
+              <div key={fact}>
+                <Checkbox
+                  label={name}
+                  checked={!!item}
+                  onChange={(on) =>
+                    setData({
+                      items: on
+                        ? [...items, { fact, label: '' }]
+                        : items.filter((i) => i.fact !== fact),
+                    })
+                  }
+                />
+                {item && (
+                  <Field
+                    label={t('Text (optional)')}
+                    value={item.label ?? ''}
+                    maxLength={60}
+                    placeholder={name}
+                    onChange={(e) =>
+                      setData({
+                        items: items.map((i) =>
+                          i.fact === fact ? { ...i, label: e.target.value } : i,
+                        ),
+                      })
+                    }
+                  />
+                )}
+              </div>
+            )
+          })}
+        </>
+      )
+    }
     default:
       return null
   }
+}
+
+/** Tabelle: Spaltenköpfe und Zeilen mit fester Spaltenzahl (1–6) */
+function TableField({
+  value,
+  setData,
+  titleField,
+}: {
+  value: HomeSectionData
+  setData: (patch: Partial<HomeSectionData>) => void
+  titleField: ReactNode
+}) {
+  const head = value.head?.length ? value.head : ['']
+  const rows = value.rows ?? []
+  const width = head.length
+  const fit = (r: string[]) => Array.from({ length: width }, (_, c) => r[c] ?? '')
+  const setWidth = (n: number) =>
+    setData({
+      head: Array.from({ length: n }, (_, c) => head[c] ?? ''),
+      rows: rows.map((r) => Array.from({ length: n }, (_, c) => r[c] ?? '')),
+    })
+  return (
+    <>
+      {titleField}
+      <SelectField
+        label={t('Spalten')}
+        value={width}
+        onChange={(e) => setWidth(Number(e.target.value))}
+      >
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </SelectField>
+      <fieldset className="home-item">
+        <legend>{t('Kopfzeile')}</legend>
+        {head.map((h, c) => (
+          <Field
+            key={c}
+            label={t('Spalte {n}', { n: c + 1 })}
+            value={h}
+            maxLength={60}
+            onChange={(e) => setData({ head: head.map((x, j) => (j === c ? e.target.value : x)) })}
+          />
+        ))}
+      </fieldset>
+      {rows.map((r, i) => (
+        <fieldset key={i} className="home-item">
+          <legend>{t('Zeile {n}', { n: i + 1 })}</legend>
+          {fit(r).map((cell, c) => (
+            <Field
+              key={c}
+              label={head[c] || t('Spalte {n}', { n: c + 1 })}
+              value={cell}
+              maxLength={120}
+              onChange={(e) =>
+                setData({
+                  rows: rows.map((x, j) =>
+                    j === i ? fit(x).map((y, k) => (k === c ? e.target.value : y)) : x,
+                  ),
+                })
+              }
+            />
+          ))}
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setData({ rows: rows.filter((_, j) => j !== i) })}
+          >
+            {t('Zeile entfernen')}
+          </button>
+        </fieldset>
+      ))}
+      {rows.length < 40 && (
+        <div className="button-row">
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setData({ rows: [...rows, fit([])] })}
+          >
+            {t('Zeile hinzufügen')}
+          </button>
+        </div>
+      )}
+      <Field
+        label={t('Text darunter (optional)')}
+        value={value.text ?? ''}
+        maxLength={500}
+        onChange={(e) => setData({ text: e.target.value })}
+      />
+    </>
+  )
 }
 
 /** Liste gleichartiger Einträge (Fragen, Partner, Zahlen) mit Hinzufügen und Entfernen */
