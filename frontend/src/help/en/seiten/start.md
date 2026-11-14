@@ -3,7 +3,19 @@ key: page.start
 titel: Home page
 routen: [/]
 stichworte:
-  [tasks, quick actions, notices, anniversaries, birthdays, accept, customise, layout, drag]
+  [
+    quick search,
+    search,
+    tasks,
+    quick actions,
+    notices,
+    anniversaries,
+    birthdays,
+    accept,
+    customise,
+    layout,
+    drag,
+  ]
 ---
 
 The home page is your workplace in the selected unit. Without a layout of your own it has the same order for every role: **To do**, **Quick actions**, **Upcoming events**, **Anniversaries**, **Birthdays** and **Notices**. What you see depends on your rights; anything you may not do is simply left out. At the top right you switch units if you work in more than one.
@@ -11,6 +23,8 @@ The home page is your workplace in the selected unit. Without a layout of your o
 The navigation on the left starts with **Home**, **Tasks** and **Events**. Club activities follow, then organisation and finally administration. Spacing separates the visible groups; **Help** stays separate at the bottom.
 
 At the top, **Help on this page** opens help for the current page; on narrow screens only the “?” sign is shown. **Help** in the sidebar opens the overview of all guides. **My account** contains your email address, personal settings and **Sign out**.
+
+**Quick search** at the top (or Ctrl+K, on a Mac ⌘K) jumps straight to a page: type a few letters, such as “remind” for Finance › Reminders, choose with the arrow keys and open with Enter. If you may see the club's members, you also find members there by name or membership number and land in the member record. Only what you can reach in the menu is found. On a phone, quick search is at the top of the menu (“More”).
 
 Buttons have their own opaque background, including subtle actions, disabled buttons and file pickers. Selected views also use a distinct fill. Very light club colours are darkened for action buttons to keep them recognisable; the club logo and the remaining brand colour are preserved.
 

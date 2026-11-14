@@ -3,7 +3,19 @@ key: page.start
 titel: Startseite
 routen: [/]
 stichworte:
-  [Aufgaben, Schnellaktionen, Hinweise, Jubiläen, Geburtstage, Zusage, Anpassen, Anordnung, Ziehen]
+  [
+    Schnellsuche,
+    Suchen,
+    Aufgaben,
+    Schnellaktionen,
+    Hinweise,
+    Jubiläen,
+    Geburtstage,
+    Zusage,
+    Anpassen,
+    Anordnung,
+    Ziehen,
+  ]
 ---
 
 Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anordnung hat sie für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, **Nächste Termine**, **Jubiläen**, **Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
@@ -11,6 +23,8 @@ Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anor
 Die Navigation links beginnt mit **Startseite**, **Aufgaben** und **Termine**. Darunter folgen die Bereiche des Vereinslebens, die Organisation und zuletzt die Verwaltung. Abstände gliedern die sichtbaren Bereiche; **Hilfe** bleibt unten abgesetzt.
 
 Oben öffnet **Hilfe zu dieser Seite** die Hilfe zur aktuellen Seite; auf schmalen Bildschirmen steht dort nur das Zeichen „?“. **Hilfe** in der Seitenleiste führt zur Übersicht aller Anleitungen. Unter **Mein Konto** findest du deine E-Mail-Adresse, die persönlichen Einstellungen und **Abmelden**.
+
+**Schnellsuche** oben (oder Strg+K, am Mac ⌘K) springt direkt zu einer Seite: Tippe ein paar Buchstaben, etwa „mahn“ für Finanzen › Mahnungen, wähle mit den Pfeiltasten und öffne mit der Eingabetaste. Wer Mitglieder des Vereins sehen darf, findet dort auch Mitglieder nach Name oder Mitgliedsnummer und landet in der Mitgliedsakte. Gefunden wird nur, was du auch im Menü erreichst. Am Handy steht die Schnellsuche oben im Menü („Mehr“).
 
 Schaltflächen haben eine eigene, deckende Hintergrundfläche. Das gilt auch für dezente Aktionen, inaktive Schaltflächen und die Dateiauswahl. Gewählte Ansichten heben sich zusätzlich durch ihre Füllung ab. Bei sehr hellen Vereinsfarben wird die Farbe von Aktionsschaltflächen für die Erkennbarkeit abgedunkelt; das Vereinslogo und die übrige Markenfarbe bleiben erhalten.
 

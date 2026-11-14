@@ -9225,5 +9225,13 @@
   "Kräftig": "Bold",
   "Fraktur: UnifrakturMaguntia. Kräftig: Oswald, schmal und fett.": "Blackletter: UnifrakturMaguntia. Bold: Oswald, narrow and bold.",
   "Start": "Home",
-  "Schnellwahl": "Quick navigation"
+  "Schnellwahl": "Quick navigation",
+  "Schnellsuche": "Quick search",
+  "Strg K": "Ctrl K",
+  "Nr. {nr}": "No. {nr}",
+  "Seite oder Mitglied suchen": "Search page or member",
+  "Seite oder Mitglied suchen …": "Search page or member …",
+  "Seite suchen": "Search page",
+  "Seite suchen …": "Search page …",
+  "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes."
 }

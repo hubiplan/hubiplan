@@ -11,6 +11,8 @@ import { confirmLeave } from './leaveGuard.ts'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { GROUP_LABELS, modules } from '../modules.tsx'
+import { QuickSearch } from './QuickSearch.tsx'
+import type { QuickPage } from './QuickSearch.tsx'
 import { portalSections } from '../pages/portal/sections.ts'
 import { displayName } from '../api/orgs.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
@@ -297,6 +299,17 @@ export function Layout() {
   // Pfad der Seite aus der Menüstruktur (Seitenkopf S-05, W-02): Modul › Unterpunkt ›
   // angemeldeter Unterpunkt der Seite. Seitentitel, h1 und Pfadzeile nutzen ihn.
   const matchesPath = (path: string) => pathname === path || pathname.startsWith(`${path}/`)
+  // Schnellsuche (Design „Frisch“ D7): alle sichtbaren Menüpunkte samt Unterpunkten
+  const quickPages: QuickPage[] = visible.flatMap((m) => {
+    const label = m.labelFor?.(active, ws) ?? m.label
+    const to = m.linkFor?.(active, ws) ?? m.path
+    const children = (m.children?.(active, ws) ?? [])
+      .filter((c) => c.to !== to)
+      .map((c) => ({ to: c.to, label: c.label, parent: label }))
+    return [{ to, label }, ...children]
+  })
+  const quickMemberOrg =
+    active?.type === 'club' && visible.some((m) => m.id === 'mitglieder') ? active.id : null
   const currentModule = visible
     .filter((m) => modulePaths(m).some(matchesPath))
     .sort((a, b) => b.path.length - a.path.length)[0]
@@ -413,6 +426,7 @@ export function Layout() {
                     <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
                   <div className="topbar-user">
+                    {!narrow && <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />}
                     {!narrow && headerTools}
                     {!narrow && <HelpButton />}
                     <AccountMenu
@@ -433,7 +447,17 @@ export function Layout() {
                   <button type="button" className="sidebar-close" onClick={closeNav}>
                     <span aria-hidden="true">×</span> {t('Navigation schließen')}
                   </button>
-                  {narrow && <div className="sidebar-tools">{headerTools}</div>}
+                  {narrow && (
+                    <div className="sidebar-tools">
+                      {/* Am Handy steht die Schnellsuche im Menü: oben ist kein Platz neben dem Namen */}
+                      <QuickSearch
+                        pages={quickPages}
+                        memberOrg={quickMemberOrg}
+                        onNavigate={choseInNav}
+                      />
+                      {headerTools}
+                    </div>
+                  )}
                   <ul>
                     {visible.map((m, index) => (
                       <li
