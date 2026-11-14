@@ -426,7 +426,7 @@ export function Layout() {
                     <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
                   <div className="topbar-user">
-                    <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />
+                    {!narrow && <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />}
                     {!narrow && headerTools}
                     {!narrow && <HelpButton />}
                     <AccountMenu
@@ -447,7 +447,17 @@ export function Layout() {
                   <button type="button" className="sidebar-close" onClick={closeNav}>
                     <span aria-hidden="true">×</span> {t('Navigation schließen')}
                   </button>
-                  {narrow && <div className="sidebar-tools">{headerTools}</div>}
+                  {narrow && (
+                    <div className="sidebar-tools">
+                      {/* Am Handy steht die Schnellsuche im Menü: oben ist kein Platz neben dem Namen */}
+                      <QuickSearch
+                        pages={quickPages}
+                        memberOrg={quickMemberOrg}
+                        onNavigate={choseInNav}
+                      />
+                      {headerTools}
+                    </div>
+                  )}
                   <ul>
                     {visible.map((m, index) => (
                       <li

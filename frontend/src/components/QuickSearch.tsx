@@ -55,10 +55,13 @@ function isTyping(target: EventTarget | null): boolean {
 export function QuickSearch({
   pages,
   memberOrg,
+  onNavigate,
 }: {
   pages: QuickPage[]
   /** Einheit, deren Mitglieder die Person suchen darf; sonst null */
   memberOrg: number | null
+  /** Nach der Wahl eines Treffers, z. B. um das Handy-Menü zu schließen */
+  onNavigate?: () => void
 }) {
   const [open, setOpen] = useState(false)
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
@@ -101,7 +104,12 @@ export function QuickSearch({
         <kbd aria-hidden="true">{mac ? MAC_SHORTCUT : t('Strg K')}</kbd>
       </button>
       {open && (
-        <QuickSearchDialog pages={pages} memberOrg={memberOrg} onClose={() => setOpen(false)} />
+        <QuickSearchDialog
+          pages={pages}
+          memberOrg={memberOrg}
+          onClose={() => setOpen(false)}
+          onNavigate={onNavigate}
+        />
       )}
     </>
   )
@@ -111,10 +119,12 @@ function QuickSearchDialog({
   pages,
   memberOrg,
   onClose,
+  onNavigate,
 }: {
   pages: QuickPage[]
   memberOrg: number | null
   onClose: () => void
+  onNavigate?: () => void
 }) {
   const navigate = useNavigate()
   const [term, setTerm] = useState('')
@@ -174,6 +184,7 @@ function QuickSearchDialog({
 
   function go(hit: Hit) {
     onClose()
+    onNavigate?.()
     navigate(hit.to)
   }
 
