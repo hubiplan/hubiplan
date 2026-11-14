@@ -99,7 +99,9 @@ def test_countdown_termin_und_zeitpunkt(club, site, manager):
     ]
     resp = manager.put(url(club), {"home_sections": sections}, "application/json")
     assert resp.status_code == 200, resp.content
-    saved = {s["key"]: s for s in resp.json()["website"]["home_sections"] if s["key"].startswith("c:")}
+    saved = {
+        s["key"]: s for s in resp.json()["website"]["home_sections"] if s["key"].startswith("c:")
+    }
     # interne Termine fallen weg, wie beim hervorgehobenen Termin
     assert saved["c:i"]["data"]["event"] is None
     assert saved["c:d"]["data"]["at"] == local(soon)
