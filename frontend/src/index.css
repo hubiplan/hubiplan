@@ -1336,14 +1336,22 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   text-decoration: none;
 }
 
+.tile-link {
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
 .tile-link:hover,
 .tile-link:focus-visible {
   border-color: var(--color-focus);
+  background: var(--color-brand-softer);
 }
 
 .tile-link h3 {
   margin: 0 0 var(--space-1);
   font-size: 1rem;
+  color: var(--color-link);
 }
 
 .tile-alert {
@@ -6498,5 +6506,67 @@ html body select:not([multiple]):not([size]):disabled {
 @media (prefers-reduced-motion: reduce) {
   .button {
     transition: none;
+  }
+}
+
+/* --- Design „Frisch“ D3: untere Leiste auf Handy und Tablet --- */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 50rem) {
+  .app-shell {
+    --bottom-nav-height: 4rem;
+  }
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 22;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    padding: var(--space-1) var(--space-1) calc(var(--space-1) + env(safe-area-inset-bottom, 0px));
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-card-border);
+  }
+  .bottom-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    min-height: 3.25rem;
+    padding: var(--space-1);
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .bottom-nav-link.active {
+    color: var(--color-link);
+    background: var(--color-brand-soft);
+  }
+  .bottom-nav-link span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Platz unter dem Inhalt; die feste Hauptaktion (Seitenkopf P4) sitzt über der Leiste */
+  .content {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--space-5));
+  }
+  .page-header-primary,
+  .page-header-actions > .action-menu:has(> .page-header-primary) {
+    bottom: calc(var(--bottom-nav-height) + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  }
+  .content:has(.page-header-primary) {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--control-height) + 2.5rem);
   }
 }
