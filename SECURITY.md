@@ -38,8 +38,9 @@ z. B. per [Selbstupdate](docs/betrieb.md#selbstupdate).
 ## Umfang
 
 Gemeint ist der Code in diesem Repository: Backend, Oberfläche, Schnittstellen für Webseite,
-App und KI-Assistenten (MCP), Online-Mitgliedsantrag, Rechnungspostfach, Push-Gateway, Verbund,
-Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
+Apps (Android, iOS) und KI-Assistenten (MCP), Online-Mitgliedsantrag, Rechnungspostfach,
+Push-Gateway, Verbund, Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate
+sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
 
 - Zugriff auf Daten fremder Vereine oder Einheiten (Mandantentrennung, Row-Level Security),
 - Rechte, die eine Rolle nicht haben dürfte, oder Umgehung der Zwei-Faktor-Anmeldung, der
@@ -49,12 +50,16 @@ Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate sowie die 
 - Zugänge von Ansprechpartnern einer Organisation, die mehr sehen als ihre Organisation,
 - Änderungen während „Ansicht als Rolle“ oder mehr Rechte, als man selbst hat,
 - Daten in der öffentlichen Schnittstelle, die nicht freigegeben sind,
-- Schwächen im Verbund zwischen Instanzen oder bei Geräteschlüsseln der App,
+- Schwächen im Verbund zwischen Instanzen, bei Geräteschlüsseln der Apps oder beim Push
+  (Inhalte, die Google, Apple oder das Push-Gateway im Klartext sehen),
 - Schwächen der Anmeldung per OpenID Connect (z. B. Weiterleitungen, Token für fremde
   Konten oder Nextclouds),
 - Zugriff über einen Standzugang der Wettbewerbe auf mehr als den eigenen Wettbewerb,
 - Rückmeldelinks aus Mails, Anmeldelinks oder Links des Online-Mitgliedsantrags, die mehr
   zeigen oder ändern als den eigenen Termin oder Antrag,
+- anonyme Umfragen, deren Antworten sich einer Person zuordnen lassen, oder Abstimmungen und
+  Umfragen, an denen Unberechtigte oder dieselbe Person mehrfach teilnehmen,
+- Haushalte oder Firmen, über die jemand Daten anderer Mitglieder sieht oder ändert,
 - KI-Assistenten, die über die MCP-Schnittstelle Vereinsdaten ohne Anmeldung sehen, mehr als
   die verbundene Einheit erreichen oder ohne Freigabe veröffentlichen,
 - Mails an das Rechnungspostfach, die eine fremde Einheit erreichen oder Schadcode in die
@@ -65,6 +70,12 @@ Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate sowie die 
 - ein Selbstupdate mit einem Stand, der nicht signiert ist oder älter als der laufende,
 - verschlüsselt abgelegte Felder oder Dateien, die im Klartext (z. B. in Logs, Exporten oder
   Backups) oder mit dem Schlüssel eines anderen Vereins lesbar sind.
+
+Lücken in der Vereinswebseite oder den Apps bitte im jeweiligen Repository melden
+([hubiplan-website](https://github.com/hubiplan/hubiplan-website/security/advisories/new),
+[hubiplan-android](https://github.com/hubiplan/hubiplan-android/security/advisories/new),
+[hubiplan-ios](https://github.com/hubiplan/hubiplan-ios/security/advisories/new)); im Zweifel
+einfach hier.
 
 Nicht gemeint sind Lücken in Fremdsoftware (bitte dort melden), reine Last- oder
 Überlastungsangriffe, Social Engineering sowie Befunde ohne Auswirkung (z. B. fehlende
