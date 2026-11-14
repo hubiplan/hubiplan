@@ -839,6 +839,8 @@ export const PERM = {
   meetingsEdit: 'meetings.edit',
   helpersView: 'helpers.view',
   helpersEdit: 'helpers.edit',
+  surveysView: 'surveys.view',
+  surveysEdit: 'surveys.edit',
   obligationsView: 'obligations.view',
   obligationsEdit: 'obligations.edit',
   financeEdit: 'finance.edit',

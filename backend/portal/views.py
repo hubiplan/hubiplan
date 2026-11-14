@@ -451,6 +451,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "infrastructure_enabled": "infrastructure" in (club.enabled_modules or []),
         "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
+        "surveys_enabled": "surveys" in (club.enabled_modules or []),
         "bookings_enabled": "bookings" in (club.enabled_modules or []),
         # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
         "modules": [m for m in MODULE_IDS if module_on(ctx.department, m)],
@@ -843,6 +844,14 @@ def _is_musician(club, membership_id) -> bool:
     ).exists()
 
 
+def _open_surveys(club, membership_id) -> int:
+    if "surveys" not in (club.enabled_modules or []):
+        return 0
+    from surveys.services import has_open
+
+    return has_open(membership_id, club)
+
+
 def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
@@ -867,6 +876,9 @@ def portal_summary(access: PortalAccess) -> dict:
             "competitions_enabled": "competitions" in (club.enabled_modules or []),
             "bookings_enabled": _bookings_enabled(club),
             "helpers_enabled": "helpers" in (club.enabled_modules or []),
+            "surveys_enabled": "surveys" in (club.enabled_modules or []),
+            # Offene, noch nicht beantwortete Umfragen (Hinweis im Mitgliederbereich und in der App)
+            "surveys_open": _open_surveys(club, access.membership_id),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
             "todos_enabled": "todos" in (club.enabled_modules or []),
             "docs_enabled": "docs" in (club.enabled_modules or []),

@@ -3,6 +3,7 @@ import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
+import { PortalSurveys } from './PortalSurveys.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
 import { PortalMeetingLive } from './PortalMeetingLive.tsx'
 import { PortalCompany } from './PortalCompany.tsx'
@@ -181,6 +182,14 @@ function PortalRoutes() {
         element={
           <PortalSection title={t('Helferdienste')}>
             <PortalHelpers key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="umfragen"
+        element={
+          <PortalSection title={t('Umfragen')}>
+            <PortalSurveys key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />

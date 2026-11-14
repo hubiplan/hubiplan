@@ -75,6 +75,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Ausschreibungen | `calls` | aus | – |
 | Kommunikation | Rundschreiben | `circulars` | an | – |
 | | Dokumente | `docs` | an | – |
+| | Umfragen | `surveys` | an | – |
 | | Social Media | `social` | aus | Webseite |
 | | Webseite | `website` | aus | – |
 | Verwaltung | Kasse | `finance` | an | – |

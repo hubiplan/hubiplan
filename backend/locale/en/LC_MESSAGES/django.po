@@ -12534,3 +12534,250 @@ msgstr "This place already has a room with this name."
 
 msgid "Gebäude und Raum zusammen dürfen höchstens 200 Zeichen lang sein."
 msgstr "Building and room together may be at most 200 characters long."
+
+msgid "Umfragen"
+msgstr "Surveys"
+
+msgid "Umfragen und Ergebnisse mit Namen sehen"
+msgstr "View surveys and results with names"
+
+msgid "Umfragen anlegen, starten und beenden"
+msgstr "Create, start and close surveys"
+
+#, python-brace-format
+msgid "Umfragen {gen}"
+msgstr "Surveys of {gen}"
+
+msgid "Umfragen und Meinungsbilder: Termin finden, Essenswahl, wer fährt mit, auf Wunsch anonym"
+msgstr "Surveys and polls: find a date, meal choice, who is coming along, anonymous if desired"
+
+#, python-brace-format
+msgid "(+{n} vielleicht)"
+msgstr "(+{n} maybe)"
+
+#, python-brace-format
+msgid "{n} Teilnahmen"
+msgstr "{n} participants"
+
+#, python-brace-format
+msgid "Ende: {when}"
+msgstr "Closes: {when}"
+
+msgid "anonym"
+msgstr "anonymous"
+
+msgid "Meinungsbild, kein Beschluss."
+msgstr "Opinion poll, not a resolution."
+
+msgid "Zu wenige Antworten für ein anonymes Ergebnis."
+msgstr "Too few answers for an anonymous result."
+
+msgid "Umfrage"
+msgstr "Survey"
+
+msgid "Anzahl"
+msgstr "Number"
+
+msgid "Namen"
+msgstr "Names"
+
+msgid "ausgewählte Personen"
+msgstr "selected people"
+
+msgid "Eingeladene des Termins"
+msgstr "people invited to the event"
+
+msgid "wer zum Termin zugesagt hat"
+msgstr "everyone who accepted the event"
+
+msgid "offen für alle Befragten"
+msgstr "open to everyone asked"
+
+msgid "nur für die Verwaltung"
+msgstr "administrators only"
+
+msgid "nach der eigenen Antwort"
+msgstr "after answering"
+
+msgid "immer"
+msgstr "always"
+
+msgid "nach dem Ende"
+msgstr "after closing"
+
+msgid "Einfachauswahl"
+msgstr "Single choice"
+
+msgid "Mehrfachauswahl"
+msgstr "Multiple choice"
+
+msgid "Ja / Nein / Enthaltung"
+msgstr "Yes / No / Abstain"
+
+msgid "Terminfindung"
+msgstr "Date finder"
+
+msgid "Mengenauswahl"
+msgstr "Quantities"
+
+msgid "Freitext"
+msgstr "Free text"
+
+#, python-brace-format
+msgid "Erinnerung: Umfrage „{title}“"
+msgstr "Reminder: survey “{title}”"
+
+#, python-brace-format
+msgid "Umfrage: {title}"
+msgstr "Survey: {title}"
+
+msgid "du hast die folgende Umfrage noch nicht beantwortet:"
+msgstr "you have not answered the following survey yet:"
+
+#, python-brace-format
+msgid "{owner} bittet dich um deine Meinung:"
+msgstr "{owner} would like your opinion:"
+
+#, python-brace-format
+msgid "Antworten bis: {when}"
+msgstr "Answer by: {when}"
+
+msgid "Die Umfrage ist anonym. Niemand sieht, was du geantwortet hast."
+msgstr "The survey is anonymous. Nobody sees what you answered."
+
+#, python-brace-format
+msgid "Zur Umfrage: {url}"
+msgstr "Go to the survey: {url}"
+
+msgid "Ein Meinungsbild, kein Beschluss."
+msgstr "An opinion poll, not a resolution."
+
+#, python-brace-format
+msgid "Antworten bis {when}"
+msgstr "Answer by {when}"
+
+msgid "gelöschte Person"
+msgstr "deleted person"
+
+#, python-brace-format
+msgid "„{label}“ ist ausgebucht."
+msgstr "“{label}” is fully booked."
+
+msgid "Ungültige Antworten."
+msgstr "Invalid answers."
+
+#, python-brace-format
+msgid "Bitte beantworte die Frage „{text}“."
+msgstr "Please answer the question “{text}”."
+
+msgid "Bitte nur eine Antwort wählen."
+msgstr "Please choose only one answer."
+
+#, python-brace-format
+msgid "Bitte höchstens {n} Antworten wählen."
+msgstr "Please choose at most {n} answers."
+
+#, python-brace-format
+msgid "Zusammen höchstens {n} Stück."
+msgstr "At most {n} items in total."
+
+#, python-brace-format
+msgid "Der Text ist zu lang (höchstens {n} Zeichen)."
+msgstr "The text is too long (at most {n} characters)."
+
+msgid "Die Umfrage ist beendet."
+msgstr "The survey has closed."
+
+msgid "Diese Umfrage richtet sich nicht an dich."
+msgstr "This survey is not addressed to you."
+
+msgid "Du hast schon geantwortet. Anonyme Antworten lassen sich nicht ändern."
+msgstr "You have already answered. Anonymous answers cannot be changed."
+
+msgid "Bitte mindestens eine Frage beantworten."
+msgstr "Please answer at least one question."
+
+msgid "Anonyme Antworten lassen sich nicht ändern."
+msgstr "Anonymous answers cannot be changed."
+
+msgid "Die Umfrage wurde inzwischen geändert. Bitte neu laden."
+msgstr "The survey has been changed in the meantime. Please reload."
+
+msgid "Ungültiges Alter."
+msgstr "Invalid age."
+
+#, python-brace-format
+msgid "Höchstens {n} Fragen je Umfrage."
+msgstr "At most {n} questions per survey."
+
+msgid "Bitte jede Frage ausfüllen."
+msgstr "Please fill in every question."
+
+msgid "Diese Frageart hat keine Antwortmöglichkeiten."
+msgstr "This question type has no answer options."
+
+#, python-brace-format
+msgid "Höchstens {n} Antworten je Frage."
+msgstr "At most {n} answers per question."
+
+#, python-brace-format
+msgid "„{text}“ braucht mindestens {n} Antworten."
+msgstr "“{text}” needs at least {n} answers."
+
+msgid "Bitte für jeden Terminvorschlag den Beginn angeben."
+msgstr "Please enter the start for each date option."
+
+msgid "Ein Terminvorschlag endet vor seinem Beginn."
+msgstr "A date option ends before it starts."
+
+msgid "Bitte jede Antwort ausfüllen."
+msgstr "Please fill in every answer."
+
+msgid "Fragen und Zielgruppe lassen sich nach dem Start nicht mehr ändern."
+msgstr "Questions and audience can no longer be changed after starting."
+
+msgid "Nach der ersten Antwort lassen sich Namen nur noch strenger schützen."
+msgstr "After the first answer, names can only be protected more strictly."
+
+msgid "Bitte ein Ende angeben."
+msgstr "Please enter a closing time."
+
+msgid "Eine Umfrage läuft höchstens ein Jahr."
+msgstr "A survey runs for at most one year."
+
+msgid "Das Ende liegt in der Vergangenheit."
+msgstr "The closing time is in the past."
+
+msgid "Bitte einen Termin wählen."
+msgstr "Please choose an event."
+
+msgid "Die Antworten dieser Umfrage sind gelöscht."
+msgstr "The answers of this survey have been deleted."
+
+msgid "Eine laufende Umfrage bitte zuerst beenden."
+msgstr "Please close a running survey first."
+
+msgid "Die Umfrage läuft schon."
+msgstr "The survey is already running."
+
+msgid "Bitte mindestens eine Frage anlegen."
+msgstr "Please add at least one question."
+
+msgid "Bitte ein Ende in der Zukunft angeben."
+msgstr "Please enter a closing time in the future."
+
+msgid "Die Zielgruppe ist leer."
+msgstr "The audience is empty."
+
+msgid "Die Umfrage läuft nicht."
+msgstr "The survey is not running."
+
+#, python-brace-format
+msgid "{title} (Kopie)"
+msgstr "{title} (copy)"
+
+msgid "Bei anonymen Umfragen trägt die Verwaltung nichts ein."
+msgstr "Administrators cannot enter answers in anonymous surveys."
+
+msgid "Aus dieser Umfrage gibt es schon einen Termin."
+msgstr "An event has already been created from this survey."

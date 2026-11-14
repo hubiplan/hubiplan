@@ -191,6 +191,17 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "surveys",
+        gettext_noop("Umfragen"),
+        "communication",
+        gettext_noop(
+            "Umfragen und Meinungsbilder: Termin finden, Essenswahl, wer fährt mit, auf Wunsch "
+            "anonym"
+        ),
+        default=True,
+        org_types=("club",),
+    ),
+    Module(
         "docs",
         gettext_noop("Dokumente"),
         "communication",

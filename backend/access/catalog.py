@@ -343,6 +343,16 @@ AREAS: tuple[Area, ...] = (
         dept_label=gettext_noop("Helferdienste {gen}"),
     ),
     Area(
+        "surveys",
+        gettext_noop("Umfragen"),
+        gettext_noop("Umfragen und Ergebnisse mit Namen sehen"),
+        gettext_noop("Umfragen anlegen, starten und beenden"),
+        org_types=("club",),
+        dept_levels=_BOTH,
+        module="surveys",
+        dept_label=gettext_noop("Umfragen {gen}"),
+    ),
+    Area(
         "docs",
         gettext_noop("Dokumente"),
         gettext_noop("Dokumentenablage lesen"),
