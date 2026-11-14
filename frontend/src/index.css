@@ -6605,3 +6605,8 @@ html body select:not([multiple]):not([size]):disabled {
     padding-bottom: calc(var(--bottom-nav-height) + var(--control-height) + 2.5rem);
   }
 }
+
+/* Datum über der Begrüßung auf der Startseite (Design „Frisch“ D5) */
+.home-date {
+  margin: 0 0 var(--space-1);
+}

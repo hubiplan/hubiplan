@@ -25,7 +25,7 @@ import {
 } from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
-import { t } from '../i18n/index.ts'
+import { locale, t } from '../i18n/index.ts'
 
 /** Rechte, mit denen es etwas zu erledigen geben kann (Entscheidungen, überfällige Rechnungen) */
 const TASK_PERMS = [
@@ -108,6 +108,15 @@ export function HomePage() {
   if (!active && activePortal) {
     return (
       <section>
+        {/* Design „Frisch“ D5: Datum über der Begrüßung */}
+        <p className="home-date muted small">
+          {new Intl.DateTimeFormat(locale(), {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          }).format(new Date())}
+        </p>
         <h1>
           {t('Hallo')} {activePortal.first_name}
         </h1>
