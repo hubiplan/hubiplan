@@ -97,6 +97,8 @@ const attendance = {
   ],
 }
 
+let agendaVersion = 0
+
 function show(permissions: string[], path = '/versammlungen', current: object = meeting) {
   const api = fakeApi({
     'GET /_allauth/browser/v1/auth/session': () => ({
@@ -138,9 +140,25 @@ function show(permissions: string[], path = '/versammlungen', current: object = 
         ),
       },
     }),
-    'PUT /api/orgs/7/meetings/5/agenda/': () => ({
+    // Neue Punkte bekommen eine Nummer, die Fassung zählt hoch
+    'PUT /api/orgs/7/meetings/5/agenda/': (init) => {
+      const body = JSON.parse(String(init?.body))
+      agendaVersion = body.version + 1
+      return {
+        status: 200,
+        body: {
+          ...meeting,
+          version: agendaVersion,
+          agenda: body.items.map((item: { id?: number }, i: number) => ({
+            ...item,
+            id: item.id ?? 100 + i,
+          })),
+        },
+      }
+    },
+    'PATCH /api/orgs/7/meetings/5/': (init) => ({
       status: 200,
-      body: { ...meeting, version: 4 },
+      body: { ...current, ...JSON.parse(String(init?.body)), version: 4 },
     }),
   })
   render(
@@ -170,9 +188,13 @@ describe('Versammlungen', () => {
     const agenda = (await screen.findByRole('heading', { name: 'Tagesordnung' })).closest('form')!
     expect(within(agenda).getByDisplayValue('Begrüßung')).toBeInTheDocument()
     fireEvent.click(within(agenda).getByRole('button', { name: 'TOP 2 nach oben' }))
-    fireEvent.click(within(agenda).getByRole('button', { name: 'Tagesordnung speichern' }))
-    await waitFor(() =>
-      expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')).toBe(true),
+    // Autospeichern: kein Knopf, die Tagesordnung geht kurz nach der Änderung an den Server
+    expect(
+      within(agenda).queryByRole('button', { name: 'Tagesordnung speichern' }),
+    ).not.toBeInTheDocument()
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')).toBe(true),
+      { timeout: 3000 },
     )
     const call = api.find((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')!
     const body = JSON.parse(String(call.init?.body))
@@ -196,9 +218,13 @@ describe('Versammlungen', () => {
     })
     expect(within(agenda).getByLabelText('TOP 1.1')).toHaveValue('Kassenbericht')
     expect(within(agenda).getByLabelText('TOP 1.2')).toHaveValue('Wahl der Kassenprüfer')
-    fireEvent.click(within(agenda).getByRole('button', { name: 'Tagesordnung speichern' }))
-    await waitFor(() =>
-      expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')).toBe(true),
+    // Autospeichern: kein Knopf, die Tagesordnung geht kurz nach der Änderung an den Server
+    expect(
+      within(agenda).queryByRole('button', { name: 'Tagesordnung speichern' }),
+    ).not.toBeInTheDocument()
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')).toBe(true),
+      { timeout: 3000 },
     )
     const call = api.find((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')!
     const body = JSON.parse(String(call.init?.body))
@@ -208,6 +234,46 @@ describe('Versammlungen', () => {
       ['Wahl der Kassenprüfer', 1],
     ])
     expect(body.items[0]).not.toHaveProperty('key')
+  })
+
+  it('speichert die Angaben automatisch, ohne Speichern-Knopf', async () => {
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
+    const form = (await screen.findByRole('heading', { name: 'Angaben' })).closest('form')!
+    expect(within(form).queryByRole('button', { name: 'Speichern' })).not.toBeInTheDocument()
+    fireEvent.change(within(form).getByLabelText('Leitung'), {
+      target: { value: 'Erika Vorsitz' },
+    })
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PATCH /api/orgs/7/meetings/5/')).toBe(true),
+      { timeout: 3000 },
+    )
+    const call = api.find((c) => c.key === 'PATCH /api/orgs/7/meetings/5/')!
+    // Nur das geänderte Feld, mit der geladenen Fassung
+    expect(JSON.parse(String(call.init?.body))).toEqual({ chair: 'Erika Vorsitz', version: 3 })
+    expect(await within(form).findByText('✓ Gespeichert')).toBeInTheDocument()
+    // Die Eingabe bleibt stehen, das Formular wird nicht neu aufgebaut
+    expect(within(form).getByLabelText('Leitung')).toHaveValue('Erika Vorsitz')
+  })
+
+  it('neuer Tagesordnungspunkt wird erst mit Titel gespeichert und nur einmal angelegt', async () => {
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
+    const agenda = (await screen.findByRole('heading', { name: 'Tagesordnung' })).closest('form')!
+    fireEvent.click(within(agenda).getByRole('button', { name: 'Punkt hinzufügen' }))
+    expect(
+      within(agenda).getByText('Noch nicht gespeichert: Jeder Punkt braucht einen Titel.'),
+    ).toBeInTheDocument()
+    fireEvent.change(within(agenda).getByLabelText('TOP 3'), { target: { value: 'Verschiedenes' } })
+    const puts = () => api.filter((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')
+    await waitFor(() => expect(puts()).toHaveLength(1), { timeout: 3000 })
+    expect(await within(agenda).findByText('✓ Gespeichert')).toBeInTheDocument()
+    // Zweite Änderung: der neue Punkt geht mit seiner Nummer und der neuen Fassung mit
+    fireEvent.change(within(agenda).getByLabelText('TOP 3'), {
+      target: { value: 'Verschiedenes und Termine' },
+    })
+    await waitFor(() => expect(puts()).toHaveLength(2), { timeout: 3000 })
+    const body = JSON.parse(String(puts()[1].init?.body))
+    expect(body.version).toBe(4)
+    expect(body.items[2]).toMatchObject({ id: 102, title: 'Verschiedenes und Termine' })
   })
 
   it('auf einen Punkt gezogen wird zum Unterpunkt', async () => {
@@ -284,9 +350,12 @@ describe('Versammlungen', () => {
       target: { value: 'Entlastung des Vorstands.' },
     })
     fireEvent.click(within(form).getByLabelText('einstimmig'))
-    fireEvent.click(within(form).getByRole('button', { name: 'Protokoll speichern' }))
-    await waitFor(() =>
-      expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/minutes/')).toBe(true),
+    expect(
+      within(form).queryByRole('button', { name: 'Protokoll speichern' }),
+    ).not.toBeInTheDocument()
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/minutes/')).toBe(true),
+      { timeout: 3000 },
     )
     const call = api.find((c) => c.key === 'PUT /api/orgs/7/meetings/5/minutes/')!
     const body = JSON.parse(String(call.init?.body))

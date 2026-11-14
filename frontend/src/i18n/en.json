@@ -9233,5 +9233,11 @@
   "Seite oder Mitglied suchen …": "Search page or member …",
   "Seite suchen": "Search page",
   "Seite suchen …": "Search page …",
-  "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes."
+  "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes.",
+  "Bitte Beginn und Ende angeben.": "Please enter the start and end.",
+  "Noch nicht gespeichert: Jeder Punkt braucht einen Titel.": "Not saved yet: every item needs a title.",
+  "Tagesordnungspunkt entfernen?": "Remove agenda item?",
+  "„{title}“ wird mit seiner Erläuterung gelöscht. Unterpunkte bleiben als eigene Punkte stehen.": "“{title}” will be deleted together with its explanation. Sub-items stay as items of their own.",
+  "Noch nicht gespeichert: Ein Beschluss braucht einen Text, eine Wahl das Amt und die gewählte Person.": "Not saved yet: a resolution needs a text, an election the office and the person elected.",
+  "Das Protokoll ist noch nicht vollständig gespeichert.": "The minutes have not been saved completely yet."
 }

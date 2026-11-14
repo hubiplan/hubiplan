@@ -22,7 +22,11 @@ Titel/Datum/Bemerkung von Dokumenten, Name und Farbe von Terminkategorien,
 Umbenennen von Finanzkategorien, Entwurf der Datenschutzhinweise der Webseite
 (öffentlich erst mit „Veröffentlichen“), Rechnungsentwürfe (neue Posten
 bekommen nach dem ersten Speichern ihre ID) und der eigene Name unter „Mein
-Konto“. „Schließen“ schließt ein Formular erst, wenn alles gespeichert ist; einen eigenen „Fertig“-Knopf gibt es nicht.
+Konto“. Versammlungen (November 2026): Angaben, Tagesordnung und Protokoll. Tagesordnung
+und Protokoll gehen als Ganzes an den Server (mit `version`), sobald jeder Punkt
+einen Titel bzw. jeder Beschluss einen Text und jede Wahl Amt und Person hat;
+neue Punkte und Beschlüsse übernehmen danach ihre ID. Statuswechsel, Bestätigen
+und PDF speichern vorher alles Offene. „Schließen“ schließt ein Formular erst, wenn alles gespeichert ist; einen eigenen „Fertig“-Knopf gibt es nicht.
 
 Bewusst weiter mit Knopf, weil folgenreich, nicht rückgängig oder ein Versand:
 Neuanlagen (auch Rechnungen, SEPA-Mandate, Mitgliedschaftszeiträume, Vorlagen),
