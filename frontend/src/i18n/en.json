@@ -8903,5 +8903,6 @@
   "Dokument aus der Ablage": "Document from the document store",
   "Der Ordner „{folder}“ ist enger sichtbar ({visibility}). Am Termin sehen das Dokument alle, die den Termin sehen.": "The folder “{folder}” has narrower visibility ({visibility}). On the event, everyone who can see the event can see the document.",
   "aus der Ablage": "from the document store",
-  "Das Dokument bleibt in der Ablage.": "The document stays in the document store."
+  "Das Dokument bleibt in der Ablage.": "The document stays in the document store.",
+  "auf der Webseite zeigen": "show on the website"
 }

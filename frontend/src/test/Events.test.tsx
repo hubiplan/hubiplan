@@ -191,6 +191,63 @@ describe('Kalender', () => {
     expect(await within(dialog).findByText('Mit Neuwahlen.')).toBeInTheDocument()
   })
 
+  it('gibt einen Anhang eines öffentlichen Termins für die Webseite frei', async () => {
+    const detail = (onWebsite: boolean) => ({
+      ...occurrence(),
+      id: 1,
+      visibility: 'public',
+      visibility_label: 'öffentlich',
+      repeat: 'none',
+      repeat_label: 'einmalig',
+      repeat_interval: 1,
+      repeat_until: null,
+      cancel_note: '',
+      attachments: [
+        {
+          id: 5,
+          kind: 'file',
+          name: 'Ablauf.pdf',
+          size: 2048,
+          content_type: 'application/pdf',
+          available: true,
+          on_website: onWebsite,
+          url: `${base}events/1/attachments/5/`,
+        },
+      ],
+      exceptions: [],
+      rsvp: {
+        enabled: false,
+        deadline: null,
+        capacity: null,
+        guests_allowed: false,
+        max_guests: 10,
+      },
+    })
+    const calls = fakeApi({
+      [monthKey()]: () => listResponse([occurrence()]),
+      [`GET ${base}events/1/`]: () => ({ status: 200, body: detail(false) }),
+      [`PATCH ${base}events/1/attachments/5/`]: () => ({ status: 200, body: detail(true) }),
+    })
+    render(
+      <MemoryRouter initialEntries={[`/termine?termin=1&datum=${today()}`]}>
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    const dialog = await screen.findByRole('dialog')
+    const box = await within(dialog).findByRole('checkbox', { name: 'auf der Webseite zeigen' })
+    expect(box).not.toBeChecked()
+    await userEvent.setup().click(box)
+    const patch = calls.find((c) => c.key.startsWith('PATCH'))
+    expect(JSON.parse(String(patch?.init?.body))).toEqual({ on_website: true })
+    expect(
+      await within(dialog).findByRole('checkbox', { name: 'auf der Webseite zeigen' }),
+    ).toBeChecked()
+  })
+
   it('legt für einen Termin eine Veranstaltungsabrechnung an', async () => {
     const detail = {
       ...occurrence(),
