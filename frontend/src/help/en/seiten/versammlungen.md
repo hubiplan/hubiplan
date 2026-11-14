@@ -21,6 +21,16 @@ Agenda: Each agenda item has a title, a type (report, resolution, election or ot
 explanation. Use the arrows to change the order; the numbers follow from it. **Save agenda**
 saves all changes at once.
 
+Sub-items: **Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”.
+To put an existing item under another one, drag it onto that item or pick the item under
+**Belongs to**; “Own item (top level)” makes it an item of its own again. You can drag by the
+handle or any empty spot of the item (on a phone only by the handle): dropped between two items
+it changes the order; dropped onto an item it becomes a sub-item of that item. An item always
+takes its sub-items along. The arrow keys work on the handle too: ↑ and ↓ move, → makes the item a
+sub-item of the item above, ← makes it an item of its own again. There is one level of
+sub-items. The numbers appear the same way in the invitation, the minutes, the member area and
+online voting.
+
 Notice period: Below the heading you see the date by which the invitation has to go out. Once
 that day has passed, HUBIplan points it out. Set the notice period for each type under **Types and notice periods**, in line with your statutes.
 

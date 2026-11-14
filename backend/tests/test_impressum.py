@@ -117,6 +117,38 @@ class TestPflege:
         data = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/imprint/").json()
         assert data["preview"]["representatives"] == []
 
+    def test_vertretung_mit_titel_nach_schalter(self, api, orgs, board_a):
+        # Titel aus der Akte nur mit „Titel vor dem Namen nennen“ der Webseite (Ralf 14.11.)
+        from website.models import Website
+
+        from .factories import make_member
+
+        member = make_member(orgs["a"], "Vera", "Vorsitz")
+        with rls_bypass():
+            person = member.person
+            person.title = "Dr."
+            person.save()
+        vera = make_user("vera@example.org", first_name="Vera", last_name="Vorsitz")
+        assignment = give_role(vera, orgs["a"], permissions=[], name="1. Vorsitzende")
+        with rls_bypass():
+            assignment.person = person
+            assignment.save()
+        Role.objects.filter(organization=orgs["a"], name="1. Vorsitzende").update(represents=True)
+
+        def reps():
+            data = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/imprint/").json()
+            return [r["name"] for r in data["preview"]["representatives"]]
+
+        assert reps() == ["Vera Vorsitz"]
+        with rls_bypass():
+            site = Website.objects.create(organization=orgs["a"], public_key="schluessel-t")
+        assert reps() == ["Vera Vorsitz"]
+        site.show_titles = True
+        site.save()
+        assert reps() == ["Dr. Vera Vorsitz"]
+        data = public(f"/api/public/imprint/{ensure(orgs['a']).public_key}/").json()
+        assert [r["name"] for r in data["details"]["representatives"]] == ["Dr. Vera Vorsitz"]
+
     def test_vertretung_in_rollenreihenfolge(self, api, orgs, board_a):
         # Reihenfolge aus Einstellungen › Rollen, nicht alphabetisch (Ralf 13.11.)
         from letterhead.data import board

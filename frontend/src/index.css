@@ -6231,3 +6231,12 @@ label:has(> .file-input:focus-visible) {
   object-fit: cover;
   border-radius: var(--radius, 6px);
 }
+
+/* Mitgliederbereich › Versammlungen: Tagesordnung mit Unterpunkten (TOP 8.1) */
+.portal-agenda {
+  list-style: none;
+  padding-left: 0;
+}
+.portal-agenda-sub {
+  margin-left: 1.5rem;
+}

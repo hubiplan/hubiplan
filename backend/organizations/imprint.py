@@ -49,14 +49,26 @@ def owner_of(org: Organization) -> tuple[Organization, Imprint]:
     return platform, ensure(platform)
 
 
+def _show_titles(org: Organization) -> bool:
+    """Ob die Webseite der Einheit Titel vor dem Namen nennt (Webseite › Menü und
+    Bereiche › Personen). Ohne Webseite: nein."""
+    from website.models import Website
+
+    return Website.objects.filter(organization=org, show_titles=True).exists()
+
+
 def representatives(org: Organization) -> list[dict]:
     """Heutige Inhaber der Rollen mit „vertritt die Einheit“ (Name und Funktion).
 
     Reihenfolge wie unter Einstellungen › Rollen (per Ziehen festgelegt), nicht alphabetisch.
+    Mit „Titel vor dem Namen nennen“ der Webseite steht der Titel aus der Mitgliedsakte
+    davor („Dr. Vera Vorsitz“, Ralf 14.11.); das braucht eine mit der Akte verknüpfte Rolle.
     """
     from access.models import RoleAssignment
+    from members.models import with_title
 
     with rls_bypass():
+        titles = _show_titles(org)
         rows = (
             RoleAssignment.objects.active()
             .filter(organization=org, role__represents=True)
@@ -66,7 +78,8 @@ def representatives(org: Organization) -> list[dict]:
         result, seen = [], set()
         for row in rows:
             if row.person_id:
-                name = f"{row.person.first_name} {row.person.last_name}".strip()
+                title = row.person.title if titles else ""
+                name = with_title(title, row.person.first_name, row.person.last_name)
             elif row.user_id:
                 name = row.user.get_full_name() or ""
             else:

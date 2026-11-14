@@ -196,7 +196,7 @@ function PollCard({
   return (
     <article className="stack poll-row">
       <h3>
-        {poll.agenda_position}. {poll.question}
+        {poll.agenda_number || poll.agenda_position}. {poll.question}
       </h3>
       <p className="muted">
         {[

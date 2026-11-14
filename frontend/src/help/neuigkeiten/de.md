@@ -4,15 +4,10 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
-<<<<<<< HEAD
-
 - **Räume in Orten**: Unter Einstellungen › Orte bekommt ein Ort (Gebäude mit Anschrift) Räume wie Saal, Schießstand oder Versammlungsraum. Die Anschrift pflegt ihr nur einmal; in Terminen, Wettbewerben, Helferdiensten und Versammlungen steht „Ort, Raum“ zur Auswahl. Bestehende Orte wie „Bürgerhaus, Saal“ und „Bürgerhaus, Schießstand“ mit derselben Anschrift hat HUBIplan zu einem Ort mit Räumen zusammengefasst; frühere Termine bleiben, wie sie waren.
-  \=======
+- **Versammlungen: Unterpunkte in der Tagesordnung.** Punkte bekommen Unterpunkte (TOP 8.1, 8.2 unter „Wahlen“). Einen Punkt auf einen anderen ziehen macht ihn zu dessen Unterpunkt, zwischen zwei Punkte gezogen ändert sich die Reihenfolge; alternativ hilft die Auswahl **Gehört zu**. Die Nummern stehen so auch in Einladung, Protokoll, Mitgliederbereich und Online-Abstimmung.
 - Webseite: Neue Abschnittsart **Countdown** für Startseite und Textseiten. Sie zählt Tage, Stunden, Minuten und Sekunden bis zum Beginn eines öffentlichen Termins oder bis zu einem frei gewählten Zeitpunkt herunter. Danach verschwindet der Abschnitt oder zeigt einen eigenen Text. Auch ein KI-Assistent kann ihn im Entwurf anlegen.
 - Webseite: 17 weitere Abschnittsarten für Startseite und Textseiten: **Mitglied werden**, **Spendenaufruf** mit Fortschrittsbalken, **Öffnungs- und Trainingszeiten**, **Zwei Spalten**, **Tabelle**, **Zeitstrahl**, **Festprogramm**, **Hinweis-Kasten**, **Aufklappbare Abschnitte**, **Bilder**, **Download-Liste**, **Majestäten einer Untereinheit**, **Ergebnisse eines Wettbewerbs**, **Galerie-Übersicht**, **Neueste Beiträge**, **Mitgliederbereich und App** mit QR-Code und **Zahlen aus HUBIplan** (Mitgliederzahl und Jahre seit der Gründung, immer aktuell).
-
-> > > > > > > origin/main
-
 - **Versammlungen: Anmelden per App und Online-Abstimmung.** Die Leitung zeigt einen QR-Code, der alle 30 Sekunden wechselt; Mitglieder scannen ihn mit der App oder der Handykamera und tippen **Ich bin da**, so stimmt die Beschlussfähigkeit laufend. Bei Beschlüssen und Wahlen stimmen Anwesende am Handy ab, offen oder geheim und mit Vollmachten; das Ergebnis geht mit einem Klick ins Protokoll. Erlaubt die Satzung es, nehmen Mitglieder auch aus der Ferne teil (hybride Versammlung). Einschalten je Art unter Versammlungen › Arten und Fristen.
 - Webseite: Die **Suche** findet jetzt alles, was die Webseite öffentlich zeigt, auch Begrüßung, Kacheln und andere Abschnitte der Startseite, Abschnitte von Textseiten, die Chronik und die Seiten der Untereinheiten. Ein Wortteil genügt, Akzente sind egal.
 - Webseite: Eine volle Menüleiste lässt sich entlasten. Unter Webseite › Menü und Bereiche steht bei **Menüpunkte im Fuß** für jeden Hauptpunkt, ob er im Menü, nur im Fuß (neben Impressum und Datenschutz) oder in beiden steht, etwa „Kontakt“. Unter Gestaltung › Feinabstimmung › Kopf und Menü blendet **„Start“ im Menü** den Punkt „Start“ am Bildschirm aus, und **Suche** setzt die Lupe ins Menü, oben rechts in den Kopf oder als Suchfeld in den Fuß. Die Lupe im Menü steht jetzt auf einer Höhe mit den anderen Punkten.
