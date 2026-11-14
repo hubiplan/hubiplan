@@ -4,6 +4,8 @@
 # - beide Caddyfiles mit dem Caddy-Image aus deploy/web.Dockerfile (caddy validate), falls da
 # - die nginx-Vorlagen für HestiaCP (deploy/hestia/*.tpl, *.stpl) mit nginx -t,
 #   Hestia-Platzhalter durch Beispielwerte ersetzt, ohne Zertifikate
+# - kein Pfad, den Caddy an einen anderen Dienst gibt, verdeckt einen Bereich der Oberfläche
+#   (frontend/src/modules.tsx): Beim Neuladen käme sonst der fremde Dienst (z. B. 400)
 #
 #   scripts/pruefe-proxy.sh <Ordner mit deploy/> [docker-run-Optionen, z. B. --cpuset-cpus=…]
 set -euo pipefail
@@ -24,6 +26,22 @@ for datei in ${CADDY_IMAGE:+Caddyfile Caddyfile.proxy}; do
             "$CADDY_IMAGE" caddy validate --config "/etc/caddy/$datei" --adapter caddyfile; exit 1; }
 done
 [ -z "$CADDY_IMAGE" ] || echo "Proxy: Caddyfiles ok"
+
+if [ -f "$SRC/frontend/src/modules.tsx" ] && [ -d "$SRC/deploy/caddy" ]; then
+    # Bereiche der Oberfläche: erste Pfadstufe der Module (z. B. /webseite)
+    bereiche=$(grep -oE "^    path: '/[^/']+" "$SRC/frontend/src/modules.tsx" | sed "s/.*'//" | sort -u || true)
+    # Pfade, die Caddy weitergibt oder umleitet (handle_path, redir, benannte path-Matcher)
+    proxy=$(cat "$SRC"/deploy/caddy/*.caddy "$SRC"/deploy/Caddyfile* 2> /dev/null \
+        | grep -E '^[[:space:]]*(handle_path|redir|@[A-Za-z_]+ path) ' \
+        | grep -oE '[[:space:]]/[^/[:space:]*{]+' | sed 's/^[[:space:]]*//' | sort -u || true)
+    verdeckt=$(comm -12 <(printf '%s\n' "$bereiche") <(printf '%s\n' "$proxy"))
+    if [ -n "$verdeckt" ]; then
+        echo "Proxy: Caddy gibt Pfade der Oberfläche an einen anderen Dienst:" $verdeckt >&2
+        exit 1
+    fi
+    [ -n "$bereiche" ] || { echo "Proxy: keine Bereiche in frontend/src/modules.tsx gefunden" >&2; exit 1; }
+    echo "Proxy: keine Überschneidung mit Bereichen der Oberfläche"
+fi
 
 NG=$(mktemp -d)
 trap 'rm -rf "$NG"' EXIT

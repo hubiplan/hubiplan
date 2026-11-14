@@ -483,7 +483,7 @@ def link_data(link: PreviewLink) -> dict:
 
 
 def site_url(website: Website) -> str | None:
-    # Testserver: alle Webseiten laufen unter einer festen Adresse (z. B. …/webseite/)
+    # Testserver: alle Webseiten laufen unter einer festen Adresse (z. B. …/vereinsseite/)
     if settings.WEBSITE_PUBLIC_URL:
         return settings.WEBSITE_PUBLIC_URL.rstrip("/") + "/"
     primary = next(iter(website.domains.all()), None)
