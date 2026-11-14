@@ -24,7 +24,7 @@ const cache = new Map<string, Promise<Loaded>>()
 function loadPlaces(base: string): Promise<Loaded> {
   let hit = cache.get(base)
   if (!hit) {
-    hit = placeApi.list(base).then((d) => ({ places: d.places, canEdit: d.can_edit }))
+    hit = placeApi.list(base).then((d) => ({ places: pickable(d.places), canEdit: d.can_edit }))
     hit.catch(() => cache.delete(base))
     cache.set(base, hit)
   }
@@ -51,11 +51,29 @@ export function usePlaces(): Loaded & { base: string | null; add: (p: Place) => 
     }
   }, [base])
   const add = (p: Place) => {
-    const next = { ...data, places: [...data.places, p] }
+    const next = { ...data, places: [...data.places, ...pickable([p])] }
     setData(next)
     if (base) cache.set(base, Promise.resolve(next))
   }
   return { ...data, base, add }
+}
+
+/** Zur Auswahl: Räume als „Gebäude, Raum“ mit Anschrift usw. des Gebäudes. */
+export function pickable(places: Place[]): Place[] {
+  return places.map((p) => ({ ...p, ...p.pick }))
+}
+
+/** Eigenes Gebäude zu „Gebäude, Raum“, damit ein neu eingetippter Raum dort landet. */
+export function roomTarget(
+  places: Place[],
+  value: string,
+): { parent: number; name: string } | undefined {
+  const at = value.indexOf(', ')
+  if (at < 1) return undefined
+  const building = value.slice(0, at).trim().toLowerCase()
+  const name = value.slice(at + 2).trim()
+  const hit = places.find((p) => p.own && p.parent == null && p.name.toLowerCase() === building)
+  return hit && name ? { parent: hit.id, name } : undefined
 }
 
 export function findPlace(places: Place[], name: string): Place | undefined {

@@ -12510,3 +12510,18 @@ msgid "Unbekannte Zahl."
 msgstr "Unknown number."
 msgid "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
 msgstr "Only attachments of public events appear on the website."
+
+msgid "Gebäude"
+msgstr "Building"
+
+msgid "Räume gehören in einen eigenen Ort."
+msgstr "Rooms belong to one of your own places."
+
+msgid "Ein Ort mit Räumen kann nicht selbst Raum werden."
+msgstr "A place with rooms cannot become a room itself."
+
+msgid "Einen Raum mit diesem Namen gibt es hier schon."
+msgstr "This place already has a room with this name."
+
+msgid "Gebäude und Raum zusammen dürfen höchstens 200 Zeichen lang sein."
+msgstr "Building and room together may be at most 200 characters long."

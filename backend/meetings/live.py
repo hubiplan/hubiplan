@@ -386,6 +386,7 @@ def poll_data(poll: Poll, *, voter_ids: set[int], for_membership: int | None = N
         "id": poll.pk,
         "agenda_item": poll.agenda_item_id,
         "agenda_position": poll.agenda_item.position,
+        "agenda_number": poll.agenda_item.number,
         "agenda_title": poll.agenda_item.title,
         "kind": poll.kind,
         "question": poll.question,

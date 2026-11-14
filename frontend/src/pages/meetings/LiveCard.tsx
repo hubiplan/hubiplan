@@ -190,7 +190,7 @@ function PollRow({
     <div className="poll-row stack">
       <div>
         <strong>
-          {poll.agenda_position}. {poll.agenda_title}
+          {poll.agenda_number || poll.agenda_position}. {poll.agenda_title}
         </strong>
         {' · '}
         {poll.question}
@@ -351,7 +351,7 @@ function NewPoll({
           <option value="">{t('Bitte wählen')}</option>
           {items.map((a) => (
             <option key={a.id} value={a.id ?? ''}>
-              {a.position}. {a.title}
+              {a.number || a.position}. {a.title}
             </option>
           ))}
         </select>

@@ -1295,15 +1295,22 @@ def _directions(site, title, data) -> dict | None:
 
     if not data.get("place"):
         return None
-    place = Place.objects.filter(pk=data["place"], organization=site.area, is_active=True).first()
+    place = (
+        Place.objects.filter(pk=data["place"], organization=site.area, is_active=True)
+        .exclude(parent__is_active=False)
+        .select_related("parent")
+        .first()
+    )
     if place is None:
         return None
-    route = maps.links(place.name, place.address, place.latitude, place.longitude)
+    # Raum: Anschrift, Anfahrt und Kartenpunkt vom Gebäude
+    shown = place.effective()
+    route = maps.links(shown["name"], shown["address"], shown["latitude"], shown["longitude"])
     return {
-        "title": title or place.name,
-        "name": place.name,
-        "address": place.address,
-        "directions": place.directions,
+        "title": title or shown["name"],
+        "name": shown["name"],
+        "address": shown["address"],
+        "directions": shown["directions"],
         "text": data.get("text") or "",
         "route_url": route.get("osm"),
     }

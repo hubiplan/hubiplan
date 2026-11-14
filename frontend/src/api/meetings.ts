@@ -42,6 +42,10 @@ export interface Resolution {
 export interface AgendaItem {
   id?: number | null
   position?: number
+  /** 0 = Punkt, 1 = Unterpunkt des Punkts davor */
+  level?: number
+  /** Angezeigte Nummer, z. B. „8“ oder „8.1“ */
+  number?: string
   title: string
   description: string
   type: AgendaType
@@ -177,6 +181,7 @@ export interface BookRow {
   meeting_kind_name: string
   date: string
   agenda_title: string
+  agenda_number?: string
   has_todo: boolean
   todo: { id: number; title: string; status: string } | null
 }
@@ -200,7 +205,13 @@ export interface PortalMeetings {
     checkin_open?: boolean
     remote?: boolean
     motions: OwnMotion[]
-    agenda: { position: number; title: string; description: string }[]
+    agenda: {
+      position: number
+      level?: number
+      number?: string
+      title: string
+      description: string
+    }[]
   }[]
   minutes: { id: number; title: string; kind_name: string; unit: string; starts_at: string }[]
 }
@@ -217,6 +228,7 @@ export interface Poll {
   id: number
   agenda_item: number
   agenda_position: number
+  agenda_number?: string
   agenda_title: string
   kind: 'resolution' | 'election'
   question: string
