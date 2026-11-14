@@ -63,7 +63,7 @@ KINDS = {
 }
 KIND_HINTS = {
     "text": "Überschrift und Text",
-    "text_image": "Überschrift, Text und ein Bild daneben",
+    "text_image": "Überschrift, Text und ein Bild daneben, darüber oder darunter",
     "banner": "ein breites Bild, auf Wunsch mit einer Zeile darauf",
     "buttons": "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen",
     "tiles": "zwei bis sechs Kacheln mit Bild, Titel und Ziel",
@@ -90,7 +90,7 @@ KIND_HINTS = {
     "program": "Ablauf eines Fests mit Tagen und Uhrzeiten",
     "callout": "farbiger Kasten für Info, Achtung oder Erfolg",
     "accordion": "Überschriften mit Text zum Aufklappen",
-    "images": "zwei bis acht eigene Bilder mit Bildunterschrift",
+    "images": "ein bis acht eigene Bilder mit Bildunterschrift",
     "downloads": "mehrere Dateien aus Webseite › Dokumente als Liste",
     "unit_honors": "die aktuellen Majestäten einer Untereinheit",
     "competition": "Sieger und Stand eines bestimmten Wettbewerbs",
@@ -317,7 +317,7 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
             "title": title,
             "text": _text(data.get("text"), TEXT_MAX, gettext("Text")),
             "image": _ref(data.get("image"), refs["images"]),
-            "side": _choice(data.get("side"), ("left", "right"), "right"),
+            "side": _choice(data.get("side"), ("left", "right", "top", "bottom"), "right"),
             "size": _choice(data.get("size"), ("small", "half"), "half"),
         }
     if kind == "banner":

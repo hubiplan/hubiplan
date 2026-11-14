@@ -115,7 +115,7 @@ function kindLabel(kind: HomeKind): string {
 function kindHint(kind: HomeKind): string {
   return {
     text: t('Überschrift und Text'),
-    text_image: t('Überschrift, Text und ein Bild daneben'),
+    text_image: t('Überschrift, Text und ein Bild daneben, darüber oder darunter'),
     banner: t('ein breites Bild, auf Wunsch mit einer Zeile darauf'),
     buttons: t('ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen'),
     tiles: t('zwei bis sechs Kacheln mit Bild, Titel und Ziel'),
@@ -142,7 +142,7 @@ function kindHint(kind: HomeKind): string {
     program: t('Ablauf eines Fests mit Tagen und Uhrzeiten'),
     callout: t('farbiger Kasten für Info, Achtung oder Erfolg'),
     accordion: t('Überschriften mit Text zum Aufklappen'),
-    images: t('zwei bis acht eigene Bilder mit Bildunterschrift'),
+    images: t('ein bis acht eigene Bilder mit Bildunterschrift'),
     downloads: t('mehrere Dateien aus Webseite › Dokumente als Liste'),
     unit_honors: t('die aktuellen Majestäten einer Untereinheit'),
     competition: t('Sieger und Stand eines bestimmten Wettbewerbs'),
@@ -973,6 +973,8 @@ function SectionContent({
             options={[
               ['left', t('links')],
               ['right', t('rechts')],
+              ['top', t('über dem Text')],
+              ['bottom', t('unter dem Text')],
             ]}
             onChange={(side) => setData({ side })}
           />
@@ -981,7 +983,10 @@ function SectionContent({
             value={d.size ?? 'half'}
             options={[
               ['small', t('klein')],
-              ['half', t('halbe Breite')],
+              [
+                'half',
+                d.side === 'top' || d.side === 'bottom' ? t('ganze Breite') : t('halbe Breite'),
+              ],
             ]}
             onChange={(size) => setData({ size })}
           />
@@ -1851,16 +1856,22 @@ function SectionContent({
               </>
             )}
           />
-          <Segments
-            label={t('Spalten')}
-            value={d.columns === 2 || d.columns === 4 ? d.columns : 3}
-            options={[
-              [2, '2'],
-              [3, '3'],
-              [4, '4'],
-            ]}
-            onChange={(columns) => setData({ columns })}
-          />
+          {(d.items ?? []).length > 1 ? (
+            <Segments
+              label={t('Spalten')}
+              value={d.columns === 2 || d.columns === 4 ? d.columns : 3}
+              options={[
+                [2, '2'],
+                [3, '3'],
+                [4, '4'],
+              ]}
+              onChange={(columns) => setData({ columns })}
+            />
+          ) : (
+            <p className="muted small">
+              {t('Ein einzelnes Bild steht groß über die ganze Breite des Abschnitts.')}
+            </p>
+          )}
         </>
       )
     case 'downloads': {

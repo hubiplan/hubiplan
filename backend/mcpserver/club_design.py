@@ -31,7 +31,9 @@ MAX_SOCIAL = 2200
 KIND_FIELDS = {
     "text": "title, text (Markdown)",
     "text_image": (
-        "title, text (Markdown), image (Bildnummer), side (left|right), size (small|half)"
+        "title, text (Markdown), image (Bildnummer), side (left|right|top|bottom: Bild links, "
+        "rechts, über oder unter dem Text), "
+        "size (small|half; bei top/bottom: klein oder ganze Breite)"
     ),
     "banner": "image (Bildnummer), line, height (low|high)",
     "buttons": "title, buttons [{label, target}] (höchstens 3), align (left|center|right)",
@@ -65,7 +67,10 @@ KIND_FIELDS = {
     "program": "title, items [{day, time, text}] (höchstens 40, gleiche Tage hintereinander), text",
     "callout": "title, text (Markdown), style (info|warning|success)",
     "accordion": "title, items [{title, text (Markdown)}] (höchstens 12)",
-    "images": "title, items [{image (Bildnummer), caption}] (2–8), columns (2|3|4)",
+    "images": (
+        "title, items [{image (Bildnummer), caption}] (1–8; ein einzelnes Bild "
+        "steht groß über die ganze Breite), columns (2|3|4)"
+    ),
     "downloads": "title, documents [Dokumentnummern] (höchstens 10)",
     "unit_honors": "title, unit (Nummer aus auswahl.units)",
     "competition": "title, competition (Nummer aus auswahl.competitions)",

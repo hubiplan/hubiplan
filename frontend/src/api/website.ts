@@ -244,7 +244,7 @@ export interface HomeSectionData {
   title?: string
   text?: string
   image?: number | null
-  side?: 'left' | 'right'
+  side?: 'left' | 'right' | 'top' | 'bottom'
   /** Text mit Bild: small/half; Trenner: small/large */
   size?: 'small' | 'half' | 'large'
   line?: string
