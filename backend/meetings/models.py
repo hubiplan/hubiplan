@@ -161,7 +161,11 @@ class AgendaItem(models.Model):
 
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="agenda")
+    # Reihenfolge über die ganze Tagesordnung; Unterpunkte (Ebene 1) folgen ihrem Punkt
     position = models.PositiveSmallIntegerField()
+    level = models.PositiveSmallIntegerField(default=0, db_default=0)
+    # Angezeigte Nummer („8“ oder „8.1“), wird mit renumber() aus Reihenfolge und Ebene gesetzt
+    number = models.CharField(max_length=10, blank=True, default="", db_default="")
     title = EncryptedCharField(_("Titel"), max_length=300)
     description = EncryptedTextField(_("Erläuterung"), blank=True)
     type = models.CharField(max_length=10, choices=Type.choices, default=Type.OTHER)
@@ -172,6 +176,38 @@ class AgendaItem(models.Model):
 
     def __str__(self):
         return f"agenda item {self.pk}"
+
+
+def agenda_numbers(levels: list[int]) -> list[tuple[int, str]]:
+    """Ebene und Nummer je Punkt: Unterpunkte zählen unter dem Punkt davor (8.1, 8.2).
+
+    Ein Unterpunkt ganz am Anfang hat keinen Punkt darüber und wird zum Punkt.
+    """
+    result = []
+    top = sub = 0
+    for level in levels:
+        if level and top:
+            sub += 1
+            result.append((1, f"{top}.{sub}"))
+        else:
+            top += 1
+            sub = 0
+            result.append((0, str(top)))
+    return result
+
+
+def renumber(meeting) -> None:
+    """Position, Ebene und Nummer aller Punkte einer Versammlung neu setzen."""
+    items = list(meeting.agenda.order_by("position", "pk"))
+    changed = []
+    for position, (item, (level, number)) in enumerate(
+        zip(items, agenda_numbers([i.level for i in items]), strict=True), start=1
+    ):
+        if (item.position, item.level, item.number) != (position, level, number):
+            item.position, item.level, item.number = position, level, number
+            changed.append(item)
+    if changed:
+        AgendaItem.objects.bulk_update(changed, ["position", "level", "number"])
 
 
 class Resolution(models.Model):

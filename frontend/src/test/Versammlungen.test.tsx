@@ -183,6 +183,49 @@ describe('Versammlungen', () => {
     ])
   })
 
+  it('legt Unterpunkte an und hängt Punkte um', async () => {
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
+    const agenda = (await screen.findByRole('heading', { name: 'Tagesordnung' })).closest('form')!
+    fireEvent.click(within(agenda).getAllByRole('button', { name: 'Unterpunkt hinzufügen' })[1])
+    fireEvent.change(within(agenda).getByLabelText('TOP 2.1'), {
+      target: { value: 'Wahl der Kassenprüfer' },
+    })
+    // TOP 2 unter TOP 1 hängen: TOP 2 und sein Unterpunkt werden 1.1 und 1.2
+    fireEvent.change(within(agenda).getAllByLabelText('Gehört zu')[0], {
+      target: { value: 'id-11' },
+    })
+    expect(within(agenda).getByLabelText('TOP 1.1')).toHaveValue('Kassenbericht')
+    expect(within(agenda).getByLabelText('TOP 1.2')).toHaveValue('Wahl der Kassenprüfer')
+    fireEvent.click(within(agenda).getByRole('button', { name: 'Tagesordnung speichern' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')).toBe(true),
+    )
+    const call = api.find((c) => c.key === 'PUT /api/orgs/7/meetings/5/agenda/')!
+    const body = JSON.parse(String(call.init?.body))
+    expect(body.items.map((i: { title: string; level: number }) => [i.title, i.level])).toEqual([
+      ['Begrüßung', 0],
+      ['Kassenbericht', 1],
+      ['Wahl der Kassenprüfer', 1],
+    ])
+    expect(body.items[0]).not.toHaveProperty('key')
+  })
+
+  it('auf einen Punkt gezogen wird zum Unterpunkt', async () => {
+    show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
+    const agenda = (await screen.findByRole('heading', { name: 'Tagesordnung' })).closest('form')!
+    const rows = agenda.querySelectorAll<HTMLElement>('.agenda-row')
+    rows.forEach((el, i) => {
+      el.getBoundingClientRect = () =>
+        ({ top: i * 100, bottom: i * 100 + 100, height: 100, left: 0, right: 500 }) as DOMRect
+    })
+    const handle = within(agenda).getByRole('button', { name: 'TOP 2 verschieben' })
+    fireEvent.pointerDown(handle, { button: 0, clientX: 10, clientY: 150, pointerId: 1 })
+    fireEvent.pointerMove(handle, { clientX: 10, clientY: 50, pointerId: 1 })
+    expect(rows[0]).toHaveClass('agenda-drop-onto')
+    fireEvent.pointerUp(handle, { clientX: 10, clientY: 50, pointerId: 1 })
+    expect(within(agenda).getByLabelText('TOP 1.1')).toHaveValue('Kassenbericht')
+  })
+
   it('bereitet die Einladung als Rundschreiben vor', async () => {
     const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
     fireEvent.click(await screen.findByRole('button', { name: 'Einladung vorbereiten' }))

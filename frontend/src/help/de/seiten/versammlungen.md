@@ -22,6 +22,16 @@ Tagesordnung: Jeder Tagesordnungspunkt (TOP) hat einen Titel, eine Art (Bericht,
 Wahl oder Sonstiges) und eine Erläuterung. Mit den Pfeilen änderst du die Reihenfolge, die
 Nummern ergeben sich daraus. **Tagesordnung speichern** übernimmt alle Änderungen auf einmal.
 
+Unterpunkte: Mit **Unterpunkt hinzufügen** bekommt ein Punkt Unterpunkte, etwa TOP 8.1 und 8.2
+unter „Wahlen“. Einen vorhandenen Punkt hängst du unter einen anderen, indem du ihn auf diesen
+Punkt ziehst oder unter **Gehört zu** den Punkt wählst; mit „Eigener Punkt (oberste Ebene)“ wird
+er wieder ein eigener Punkt. Ziehen geht am Griff oder an jeder freien Stelle des Punkts (auf dem
+Handy nur am Griff): Zwischen zwei Punkten abgelegt, ändert sich die Reihenfolge; auf einem Punkt
+abgelegt, wird er dessen Unterpunkt. Ein Punkt nimmt seine Unterpunkte immer mit. Am Griff gehen
+auch die Pfeiltasten: ↑ und ↓ verschieben, → macht den Punkt zum Unterpunkt des Punkts darüber,
+← wieder zum eigenen Punkt. Es gibt eine Ebene Unterpunkte. Die Nummern stehen so auch in der
+Einladung, im Protokoll, im Mitgliederbereich und bei der Online-Abstimmung.
+
 Einladungsfrist: Unter der Überschrift steht, bis wann die Einladung hinausgehen muss. Ist der
 Tag vorbei, weist HUBIplan darauf hin. Die Frist stellst du je Art unter **Arten und Fristen**
 ein, passend zur Satzung.

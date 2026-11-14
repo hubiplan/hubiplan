@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from events.models import Event
 
-from .models import AgendaItem, Meeting, MeetingKind
+from .models import AgendaItem, Meeting, MeetingKind, agenda_numbers
 
 
 def _default_kinds(department_id):
@@ -113,19 +113,24 @@ def create(scope, user, *, kind, title, starts_at, ends_at, location, address, a
             .first()
         )
     if previous is not None:
-        items = [(a.title, a.type, a.description) for a in previous.agenda.all()]
+        items = [(a.title, a.type, a.description, a.level) for a in previous.agenda.all()]
     else:
-        items = [(name, type_, "") for name, type_ in default_agenda(kind)]
+        items = [(name, type_, "", 0) for name, type_ in default_agenda(kind)]
+    numbers = agenda_numbers([entry[3] for entry in items])
     AgendaItem.objects.bulk_create(
         AgendaItem(
             organization=scope.org,
             meeting=meeting,
             position=index,
+            level=level,
+            number=number,
             title=name,
             type=type_,
             description=description,
         )
-        for index, (name, type_, description) in enumerate(items, start=1)
+        for index, ((name, type_, description, _level), (level, number)) in enumerate(
+            zip(items, numbers, strict=True), start=1
+        )
     )
     return meeting
 
@@ -174,8 +179,14 @@ def invitation_text(meeting) -> tuple[str, str]:
     if place:
         lines.append(_("**Wo:** {place}").format(place=place))
     lines += ["", _("**Tagesordnung**"), ""]
-    for index, item in enumerate(meeting.agenda.all(), start=1):
-        entry = f"{index}. {item.title}"
+    agenda = list(meeting.agenda.all())
+    # Mit Unterpunkten (8.1) passt keine einfache nummerierte Liste mehr: dann „TOP 8.1: …“
+    nested = any(item.level for item in agenda)
+    for index, item in enumerate(agenda, start=1):
+        if nested:
+            entry = _("TOP {n}: {title}").format(n=item.number, title=item.title)
+        else:
+            entry = f"{index}. {item.title}"
         if item.description:
             entry += " – " + " ".join(item.description.split())
         lines.append(entry)
