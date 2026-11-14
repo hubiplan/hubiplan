@@ -1,4 +1,5 @@
-# Unterpunkte in der Tagesordnung: Ebene und angezeigte Nummer je Punkt
+# Unterpunkte in der Tagesordnung: Ebene und angezeigte Nummer je Punkt.
+# db_default, damit die Fassung davor beim Rückweg weiter Punkte anlegen kann.
 
 from django.db import migrations, models
 
@@ -21,12 +22,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="agendaitem",
             name="level",
-            field=models.PositiveSmallIntegerField(default=0),
+            field=models.PositiveSmallIntegerField(db_default=0, default=0),
         ),
         migrations.AddField(
             model_name="agendaitem",
             name="number",
-            field=models.CharField(blank=True, max_length=10),
+            field=models.CharField(blank=True, db_default="", default="", max_length=10),
         ),
         migrations.RunPython(forwards, migrations.RunPython.noop),
     ]

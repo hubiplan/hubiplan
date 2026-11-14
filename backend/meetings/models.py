@@ -163,9 +163,9 @@ class AgendaItem(models.Model):
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="agenda")
     # Reihenfolge über die ganze Tagesordnung; Unterpunkte (Ebene 1) folgen ihrem Punkt
     position = models.PositiveSmallIntegerField()
-    level = models.PositiveSmallIntegerField(default=0)
+    level = models.PositiveSmallIntegerField(default=0, db_default=0)
     # Angezeigte Nummer („8“ oder „8.1“), wird mit renumber() aus Reihenfolge und Ebene gesetzt
-    number = models.CharField(max_length=10, blank=True)
+    number = models.CharField(max_length=10, blank=True, default="", db_default="")
     title = EncryptedCharField(_("Titel"), max_length=300)
     description = EncryptedTextField(_("Erläuterung"), blank=True)
     type = models.CharField(max_length=10, choices=Type.choices, default=Type.OTHER)
