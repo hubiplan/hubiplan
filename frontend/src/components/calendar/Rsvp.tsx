@@ -219,7 +219,16 @@ export function MyResponsePanel({
 }
 
 /** Vorstand: Teilnehmerliste mit Eintragen von Hand und Export. */
-export function ResponsesPanel({ base, event }: { base: CalendarBase; event: EventDetail }) {
+export function ResponsesPanel({
+  base,
+  event,
+  note,
+}: {
+  base: CalendarBase
+  event: EventDetail
+  /** Hinweis im Kopf, z. B. „Zu- und Absagen eingeschaltet“ */
+  note?: string
+}) {
   const tm = useTerms()
   const { data, error, reload } = useLoad(
     () => eventApi.responses(base, event.id),
@@ -270,12 +279,15 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
   if (!data) return <Loading />
   const s = data.summary
   return (
-    <div className="stack-sm responses">
+    <section className="card event-card stack-sm responses">
       <div className="responses-head">
-        <strong>
-          {t('Rückmeldungen')}
-          {data.scope === 'department' ? t(' deiner Zugmitglieder') : ''}
-        </strong>
+        <div>
+          <h3 className="event-card-title">
+            {t('Rückmeldungen')}
+            {data.scope === 'department' ? t(' deiner Zugmitglieder') : ''}
+          </h3>
+          {note && <span className="muted small">{note}</span>}
+        </div>
         <span className="button-row">
           <a
             className="button button-ghost"
@@ -294,17 +306,41 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
           </a>
         </span>
       </div>
-      <p className="small">
-        {s.yes} {t('Zusagen')}
-        {s.guests > 0 &&
-          t(' + {guests} Begleitpersonen = {persons} Personen', {
-            guests: s.guests,
-            persons: s.persons,
-          })}
-        {data.capacity ? t(' (höchstens {capacity})', { capacity: data.capacity }) : ''}{' '}
-        {s.maybe ? t('· {n} vielleicht ', { n: s.maybe }) : ''}
-        {t('· {no} Absagen · {open} noch offen', { no: s.no, open: s.open })}
-      </p>
+      {/* Zahlen groß nebeneinander (Ralf 15.11.2026: Terminansicht übersichtlicher) */}
+      <dl className="responses-numbers">
+        <div>
+          <dt>{t('Zusagen')}</dt>
+          <dd>{s.yes}</dd>
+        </div>
+        {!!s.maybe && (
+          <div>
+            <dt>{t('Vielleicht')}</dt>
+            <dd>{s.maybe}</dd>
+          </div>
+        )}
+        <div>
+          <dt>{t('Absagen')}</dt>
+          <dd>{s.no}</dd>
+        </div>
+        <div>
+          <dt>{t('noch offen')}</dt>
+          <dd>{s.open}</dd>
+        </div>
+      </dl>
+      {(s.guests > 0 || !!data.capacity) && (
+        <p className="small">
+          {s.guests > 0 &&
+            t('{yes} Zusagen + {guests} Begleitpersonen = {persons} Personen', {
+              yes: s.yes,
+              guests: s.guests,
+              persons: s.persons,
+            })}
+          {data.capacity
+            ? (s.guests > 0 ? ' ' : '') +
+              t('Höchstens {capacity} Personen.', { capacity: data.capacity })
+            : ''}
+        </p>
+      )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {data.items.length > 0 && (
         <div className="table-wrap">
@@ -405,7 +441,7 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
           )}
         </details>
       )}
-    </div>
+    </section>
   )
 }
 

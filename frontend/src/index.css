@@ -3005,6 +3005,90 @@ button.tab.active {
 .event-description {
   white-space: pre-line;
 }
+/* Terminansicht (Ralf 15.11.2026): Aktionsleiste, Karten für Rückmeldungen und
+   „Zu diesem Termin“ mit je einer Zeile pro Bereich, Löschen allein unten rechts */
+.event-actions {
+  margin-block: 0.25rem;
+}
+.modal .event-card {
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+.event-card > .responses-head,
+.event-card > .event-card-title {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.event-card-title {
+  font-size: 1rem;
+  margin: 0;
+}
+.event-card.responses > :not(.responses-head) {
+  margin-inline: 1rem;
+}
+.event-card.responses > :last-child {
+  margin-block-end: 0.75rem;
+}
+.responses-numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: 0.5rem 1rem;
+  margin-block: 0.75rem 0;
+}
+.responses-numbers > div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.responses-numbers dt {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.responses-numbers dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.event-related:not(:has(.event-row)) {
+  display: none;
+}
+.event-row {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr) auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.event-row:last-child {
+  border-bottom: 0;
+}
+.event-row-body .plain-list {
+  margin: 0;
+}
+.event-row-actions {
+  justify-content: flex-end;
+}
+.event-row-actions .button {
+  padding-block: 0.3rem;
+  padding-inline: 0.7rem;
+}
+.event-row-extra {
+  grid-column: 1 / -1;
+}
+.event-danger-row {
+  justify-content: flex-end;
+}
+@media (max-width: 36rem) {
+  .event-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+  .event-row-actions {
+    justify-content: flex-start;
+  }
+}
 .event-form textarea {
   width: 100%;
   font: inherit;
