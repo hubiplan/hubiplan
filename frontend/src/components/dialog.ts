@@ -31,9 +31,6 @@ function open(spec: DialogSpec): Promise<boolean | string | null> {
       (el) => el !== host && !el.hasAttribute('inert'),
     )
     document.body.appendChild(host)
-    // Fokus vor dem Sperren lösen: Sonst zieht die Fokuskorrektur des Browsers (bzw. von
-    // jsdom ab 31) den Fokus später asynchron aus dem bereits fokussierten Dialogfeld.
-    previous?.blur()
     for (const el of others) el.setAttribute('inert', '')
     const root = createRoot(host)
     const done = (result: boolean | string | null) => {
