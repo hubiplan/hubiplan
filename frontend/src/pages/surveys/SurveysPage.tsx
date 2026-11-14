@@ -29,6 +29,7 @@ import { t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { SurveyAnswerForm, SurveyResults, dateLabel, endText } from './SurveyParts.tsx'
 import './surveys.css'
+import { Why } from '../../learning/Aids.tsx'
 
 export function statusLabel(status: SurveyStatus) {
   if (status === 'open') return t('läuft')
@@ -134,6 +135,9 @@ function Surveys({ base, orgId, canEdit }: { base: string; orgId: number; canEdi
           'Umfragen sind Meinungsbilder, keine Beschlüsse: Termin finden, Essenswahl, wer fährt mit. Förmliche Abstimmungen gehören in die Versammlungen.',
         )}
       </p>
+      <div className="aid-row">
+        <Why k="survey_not_resolution" />
+      </div>
       {creating && (
         <SurveyEditor
           base={base}
@@ -638,6 +642,9 @@ function SurveyEditor({
         {count !== null && <span>{t('{n} Personen', { n: count })}</span>}
       </div>
       <h3>{t('Namen und Ergebnis')}</h3>
+      <div className="aid-row">
+        <Why k="survey_anonymous" />
+      </div>
       <div className="survey-fields">
         <label className="field">
           <span>{t('Namen')}</span>

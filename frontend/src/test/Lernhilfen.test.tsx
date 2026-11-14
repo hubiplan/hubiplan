@@ -480,6 +480,9 @@ describe('Glossar', () => {
       'helpers',
       'material',
       'bookings',
+      'surveys',
+      'obligations',
+      'qualifications',
     ])
     await waitFor(() => expect(document.getElementById(termAnchor('mandate'))).not.toBeNull())
     for (const k of Object.keys(TERMS))
