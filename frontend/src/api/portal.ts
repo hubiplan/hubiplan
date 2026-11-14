@@ -357,7 +357,7 @@ export async function requestLoginLink(email: string): Promise<string> {
   const { status, body } = await request<{ detail?: string }>('POST', '/api/public/login-link/', {
     email,
   })
-  if (status === 429) throw new Error('Zu viele Versuche. Bitte später erneut.')
+  if (status === 429) throw new Error(body.detail ?? t('Zu viele Versuche. Bitte später erneut.'))
   if (status >= 400) throw new Error('Bitte eine gültige E-Mail-Adresse angeben.')
   return body.detail ?? 'Wenn ein Zugang besteht, ist ein Anmeldelink unterwegs.'
 }

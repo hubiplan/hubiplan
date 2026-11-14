@@ -31,7 +31,7 @@ from rest_framework.views import APIView
 from access.modules import module_on
 from audit.log import record
 from core import safehttp
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
@@ -116,8 +116,9 @@ class PublicImageUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request, token: str):
-        if too_many(f"web-upload:get:{client_ip(request)}", *RATE_GET):
-            return Response({"detail": gettext("Zu viele Aufrufe. Bitte später erneut.")}, 429)
+        key = f"web-upload:get:{client_ip(request)}"
+        if too_many(key, *RATE_GET):
+            raise TooMany(key, "aufrufe")
         link = _open_link(token)
         org = link.organization
         theme = effective_theme(org.ancestors())
@@ -133,8 +134,9 @@ class PublicImageUploadView(APIView):
         )
 
     def post(self, request, token: str):
-        if too_many(f"web-upload:post:{client_ip(request)}", *RATE_POST):
-            return Response({"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, 429)
+        key = f"web-upload:post:{client_ip(request)}"
+        if too_many(key, *RATE_POST):
+            raise TooMany(key)
         link = _open_link(token)
         upload = request.FILES.get("file")
         if upload is None:

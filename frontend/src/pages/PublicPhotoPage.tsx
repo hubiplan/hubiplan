@@ -34,7 +34,11 @@ export function PublicPhotoPage() {
           applyTheme(body.theme)
           setState('ready')
         } else if (status === 429) {
-          setError(t('Zu viele Aufrufe. Bitte später erneut versuchen.'))
+          const detail = (body as { detail?: unknown }).detail
+          setError(
+            (typeof detail === 'string' && detail) ||
+              t('Zu viele Aufrufe. Bitte später erneut versuchen.'),
+          )
           setState('invalid')
         } else if (status === 404 || status === 410) {
           setState('invalid')
@@ -59,7 +63,11 @@ export function PublicPhotoPage() {
       const { status, body } = await photoApi.publicUpload(token, blob)
       if (status === 201) setState(body.status === 'pending' ? 'pending' : 'done')
       else if (status === 404) setState('invalid')
-      else if (status === 429) setError(t('Zu viele Versuche. Bitte später erneut versuchen.'))
+      else if (status === 429)
+        setError(
+          (typeof body.detail === 'string' && body.detail) ||
+            t('Zu viele Versuche. Bitte später erneut versuchen.'),
+        )
       else setError(Object.values(body).flat().join(' ') || t('Das hat nicht geklappt.'))
     } catch {
       setError(t('Der Server ist nicht erreichbar.'))

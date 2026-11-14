@@ -1738,9 +1738,6 @@ msgstr "The file still has errors. Please fix them first."
 msgid "Ungültiger Schlüssel."
 msgstr "Invalid key."
 
-msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut."
-msgstr "Too many attempts. Please try again in a quarter of an hour."
-
 msgid "Dein Konto hat keine Verwaltungsrechte."
 msgstr "Your account has no administration rights."
 
@@ -11994,6 +11991,33 @@ msgstr "“bilder” is a list of image numbers."
 
 msgid "„reihenfolge“ muss eine Liste sein."
 msgstr "“reihenfolge” must be a list."
+
+#: core/ratelimit (Wartezeit bei zu vielen Versuchen)
+#, python-brace-format
+msgid "Zu viele Versuche. Bitte in etwa einer Minute erneut versuchen."
+msgid_plural "Zu viele Versuche. Bitte in etwa {n} Minuten erneut versuchen."
+msgstr[0] "Too many attempts. Please try again in about a minute."
+msgstr[1] "Too many attempts. Please try again in about {n} minutes."
+
+#, python-brace-format
+msgid "Zu viele Aufrufe. Bitte in etwa einer Minute erneut versuchen."
+msgid_plural "Zu viele Aufrufe. Bitte in etwa {n} Minuten erneut versuchen."
+msgstr[0] "Too many requests. Please try again in about a minute."
+msgstr[1] "Too many requests. Please try again in about {n} minutes."
+
+#, python-brace-format
+msgid "Zu viele Anfragen. Bitte in etwa einer Minute erneut versuchen."
+msgid_plural "Zu viele Anfragen. Bitte in etwa {n} Minuten erneut versuchen."
+msgstr[0] "Too many requests. Please try again in about a minute."
+msgstr[1] "Too many requests. Please try again in about {n} minutes."
+
+#, python-brace-format
+msgid ""
+"Das Passwort stimmt nicht. Gemeint ist dein Passwort für {instanz}, nicht das "
+"Passwort deines E-Mail-Postfachs."
+msgstr ""
+"The password is incorrect. Please use your password for {instanz}, not the "
+"password of your email mailbox."
 
 msgid "„bild“ muss eine Bildnummer oder null sein."
 msgstr "“bild” must be an image number or null."

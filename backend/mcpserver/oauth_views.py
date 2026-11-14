@@ -10,18 +10,16 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.http import Http404, JsonResponse
-from django.utils.translation import gettext
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from changes import tracking
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass
 
 from . import oauth
@@ -138,8 +136,9 @@ class AuthorizeView(APIView):
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        if too_many(f"mcp:authorize:{request.user.pk}", 30, 600):
-            raise ValidationError({"detail": gettext("Zu viele Versuche. Bitte später erneut.")})
+        key = f"mcp:authorize:{request.user.pk}"
+        if too_many(key, 30, 600):
+            raise TooMany(key)
         data = request.data if isinstance(request.data, dict) else {}
         params = data.get("params") if isinstance(data.get("params"), dict) else {}
         if data.get("deny"):

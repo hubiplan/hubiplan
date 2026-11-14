@@ -41,7 +41,7 @@ from access.modules import MODULE_IDS, module_on
 from accounts.models import User
 from audit.log import diff, record, snapshot
 from core.api_base import has_needed
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import scope_of, set_rls, tenant_context
 from members import services as member_services
 from members.models import (
@@ -1067,8 +1067,10 @@ class PortalCancellationView(APIView):
 RATE = (10, 15 * 60)  # 10 Versuche je 15 Minuten und IP
 
 
-def _rate_limited(request, kind: str) -> bool:
-    return too_many(f"login-link:{kind}:{client_ip(request)}", RATE[0], RATE[1])
+def _limit(request, kind: str) -> None:
+    key = f"login-link:{kind}:{client_ip(request)}"
+    if too_many(key, RATE[0], RATE[1]):
+        raise TooMany(key)
 
 
 class RequestLinkSerializer(serializers.Serializer):
@@ -1082,10 +1084,7 @@ class LoginLinkRequestView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        if _rate_limited(request, "request"):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(request, "request")
         data = RequestLinkSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         email = data.validated_data["email"]
@@ -1117,10 +1116,7 @@ class LoginLinkUseView(APIView):
         # Ohne Anmeldeklassen prüft DRF kein CSRF. Hier ausdrücklich, damit keine fremde
         # Seite einen Browser mit einem eigenen Link in ein anderes Konto einloggt.
         SessionAuthentication().enforce_csrf(request)
-        if _rate_limited(request, "use"):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(request, "use")
         link = (
             LoginLink.objects.select_related("user")
             .select_for_update(of=("self",))

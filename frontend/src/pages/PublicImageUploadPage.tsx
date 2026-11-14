@@ -68,7 +68,11 @@ export function PublicImageUploadPage() {
           left = 0
           break
         } else if (status === 429) {
-          mark({ state: 'error', message: t('Zu viele Versuche. Bitte später erneut versuchen.') })
+          const detail = typeof body.detail === 'string' ? body.detail : ''
+          mark({
+            state: 'error',
+            message: detail || t('Zu viele Versuche. Bitte später erneut versuchen.'),
+          })
           break
         } else {
           const text = Object.values(body).flat().join(' ')

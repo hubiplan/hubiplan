@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from access.catalog import PHOTOS_MANAGE, PHOTOS_VIEW
 from audit.log import record
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from devices.push import notify_membership
 from organizations.addresses import base_url
@@ -331,8 +331,10 @@ RATE_GET = (30, 600)  # 30 Aufrufe je 10 Minuten und IP
 RATE_POST = (5, 600)  # 5 Uploads je 10 Minuten und IP
 
 
-def _rate_limited(request, kind: str, limit: tuple[int, int]) -> bool:
-    return too_many(f"photo-link:{kind}:{client_ip(request)}", limit[0], limit[1])
+def _limit(request, kind: str, limit: tuple[int, int], what: str) -> None:
+    key = f"photo-link:{kind}:{client_ip(request)}"
+    if too_many(key, limit[0], limit[1]):
+        raise TooMany(key, what)
 
 
 def _valid_link(token: str) -> PhotoUploadLink:
@@ -356,10 +358,7 @@ class PublicPhotoUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request, token: str):
-        if _rate_limited(request, "get", RATE_GET):
-            return Response(
-                {"detail": gettext("Zu viele Aufrufe. Bitte später erneut.")}, status=429
-            )
+        _limit(request, "get", RATE_GET, "aufrufe")
         link = _valid_link(token)
         org = link.organization
         theme = effective_theme(org.ancestors())
@@ -376,10 +375,7 @@ class PublicPhotoUploadView(APIView):
         )
 
     def post(self, request, token: str):
-        if _rate_limited(request, "post", RATE_POST):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(request, "post", RATE_POST, "versuche")
         link = _valid_link(token)
         if str(request.data.get("consent", "")).lower() not in ("1", "true", "on"):
             raise serializers.ValidationError(
@@ -473,10 +469,9 @@ class PortalPhotoView(_PortalPhotoMixin, APIView):
         return Response(self.state())
 
     def post(self, request, access_id: int):
-        if too_many(f"portal-photo:{request.user.pk}", RATE_PORTAL[0], RATE_PORTAL[1]):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        key = f"portal-photo:{request.user.pk}"
+        if too_many(key, RATE_PORTAL[0], RATE_PORTAL[1]):
+            raise TooMany(key)
         if str(request.data.get("consent", "")).lower() not in ("1", "true", "on"):
             raise serializers.ValidationError(
                 {"consent": gettext("Bitte stimme der Verwendung des Fotos zu.")}
