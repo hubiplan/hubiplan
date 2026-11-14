@@ -84,8 +84,8 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.);
     # Ausnahmen: Kopfhöhe und Titelbild mit vier Stufen (Ralf 13.11., Webseite #68)
     for key, options in catalog["options"].items():
-        # und Überschriften und Karten mit vier Stufen (Webseite #89)
-        most = 4 if key in ("header_height", "hero", "headings", "cards") else 3
+        # und Überschriften und Karten mit vier Stufen (Webseite #89), Seitentitel (Webseite #96)
+        most = 4 if key in ("header_height", "hero", "headings", "cards", "title_size") else 3
         # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)
         if key in ("font", "heading_font"):
             assert 6 <= len(options) <= 8
@@ -114,7 +114,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 50
+    assert len(style.OPTIONS) == 51
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
@@ -230,3 +230,17 @@ def test_feinschliff_nach_styleguide(club, site, client_web):
     assert style.defaults("classic")["heading_size"] == "normal"
     assert style.defaults("classic")["section_bg"] == "tinted"
     assert put(client_web, club, {"style": {"section_bg": "beige"}}).status_code == 400
+
+
+def test_seitentitel_eigene_groesse(club, site, client_web):
+    """Webseite #96: Seitentitel eigens einstellbar, auch kleiner als die Grundstellung."""
+    assert style.OPTIONS["title_size"] == ("small", "medium", "normal", "large")
+    for stufe in style.OPTIONS["title_size"]:
+        resp = put(client_web, club, {"style": {"title_size": stufe, "heading_size": "large"}})
+        assert resp.status_code == 200, resp.content
+        site.refresh_from_db()
+        assert site.style == {"title_size": stufe, "heading_size": "large"}
+    assert style.defaults("classic")["title_size"] == "normal"
+    assert put(client_web, club, {"style": {"title_size": "tiny"}}).status_code == 400
+    cat = client_web.get(f"/api/orgs/{club.pk}/website/").json()["style_catalog"]
+    assert cat["options"]["title_size"] == ["small", "medium", "normal", "large"]

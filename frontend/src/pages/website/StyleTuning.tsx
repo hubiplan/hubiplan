@@ -76,6 +76,19 @@ function GROUPS(): Group[] {
           options: { normal: t('normal'), large: t('größer') },
         },
         {
+          key: 'title_size',
+          label: t('Größe des Seitentitels'),
+          options: {
+            small: t('klein'),
+            medium: t('mittel'),
+            normal: t('normal'),
+            large: t('größer'),
+          },
+          hint: t(
+            'Nur die Überschrift oben auf der Seite; geht vor „Größe der Überschriften“. Klein oder mittel, wenn der Titel größer wirkt als der Name im Kopf.',
+          ),
+        },
+        {
           key: 'leading',
           label: t('Zeilenabstand'),
           options: { tight: t('eng'), normal: t('normal'), airy: t('luftig') },
@@ -388,7 +401,7 @@ export type PreviewFocus = {
 
 export function previewFocus(key: string, eventsOn: boolean): PreviewFocus {
   if (key === 'nav_mobile') return { target: 'kopf', device: 'phone' }
-  if (key === 'page_title') return { target: 'unterseite' }
+  if (key === 'page_title' || key === 'title_size') return { target: 'unterseite' }
   if (key === 'date' || key === 'date_text') return eventsOn ? { target: 'termine' } : {}
   if (key === 'footer' || key === 'footer_align') return { target: 'fuss' }
   if (key === 'search') return { target: 'kopf' }
