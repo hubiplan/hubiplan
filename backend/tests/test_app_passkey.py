@@ -11,6 +11,7 @@ import hashlib
 import pytest
 from django.test import Client
 
+from devices import passkey as app_passkey
 from devices.models import Device
 
 from .test_app_devices import APP, app, member  # noqa: F401  (Fixtures)
@@ -26,6 +27,15 @@ ANDROID_ORIGIN = (
     + base64.urlsafe_b64encode(bytes.fromhex(FINGERPRINT.replace(":", ""))).rstrip(b"=").decode()
 )
 IOS_APP = "ABCDE12345.de.hubiplan.app"
+# Offizielle Werte, bevor die Tests sie ausblenden
+OFFICIAL = app_passkey.OFFICIAL_ANDROID_FINGERPRINTS
+
+
+@pytest.fixture(autouse=True)
+def ohne_offizielle(monkeypatch):
+    """Die Tests setzen ihre eigenen, erfundenen Apps (die offiziellen prüft ein eigener Test)."""
+    monkeypatch.setattr(app_passkey, "OFFICIAL_ANDROID_FINGERPRINTS", ())
+    monkeypatch.setattr(app_passkey, "OFFICIAL_IOS_APP_IDS", ())
 
 
 @pytest.fixture
@@ -78,6 +88,10 @@ class TestWellKnown:
         assert resp.status_code == 200
         assert resp["Content-Type"] == "application/json"
         assert resp.json() == {"webcredentials": {"apps": [IOS_APP]}}
+
+    def test_offizielle_android_app_ist_eingetragen(self):
+        assert OFFICIAL
+        assert all(app_passkey._normalize_fingerprint(f) for f in OFFICIAL)
 
     def test_ungueltige_werte_fallen_weg(self, settings):
         settings.APP_ANDROID_FINGERPRINTS = ["zu-kurz"]

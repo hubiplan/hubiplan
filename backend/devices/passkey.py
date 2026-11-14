@@ -54,7 +54,10 @@ logger = logging.getLogger(__name__)
 # Die offiziellen Apps (Google Play, iOS App Store). Werte sind öffentlich (Zertifikat bzw.
 # App-Kennung), keine Geheimnisse. Eigene Builds ergänzen sie in der .env
 # (HUBIPLAN_APP_ANDROID_FINGERPRINTS, HUBIPLAN_APP_IOS_APP_IDS, docs/betrieb.md).
-OFFICIAL_ANDROID_FINGERPRINTS: tuple[str, ...] = ()
+OFFICIAL_ANDROID_FINGERPRINTS: tuple[str, ...] = (
+    # Google Play, App-Signaturschlüssel
+    "93:60:51:21:C6:33:6A:CB:63:47:58:72:5D:0C:4B:7A:FC:79:9D:C2:47:C1:06:9F:D1:AE:64:1A:14:1E:D2:21",
+)
 OFFICIAL_IOS_APP_IDS: tuple[str, ...] = ()
 
 CHALLENGE_SECONDS = 5 * 60
