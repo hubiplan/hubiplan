@@ -20,6 +20,7 @@ import { hasBirthdays, hasJubilees } from './homeLayout.ts'
 import { todayIso } from '../../api/members.ts'
 import { useLoad } from '../forms.ts'
 import { t } from '../../i18n/index.ts'
+import { TileIcon } from '../icons.tsx'
 
 /**
  * Schnellaktionen (S-04): ohne eigene Auswahl der Vorschlag der Rollen (höchstens vier). Unter
@@ -61,7 +62,10 @@ export function QuickActions({
   return (
     <div className="card tile home-actions">
       <div className="card-head">
-        <h2>{label ?? t('Schnellaktionen')}</h2>
+        <h2 className="tile-head">
+          <TileIcon name="bolt" />
+          {label ?? t('Schnellaktionen')}
+        </h2>
         <button
           type="button"
           className="link-button push-right"
@@ -222,7 +226,8 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
   if (notices.length === 0) return null
   return (
     <div className="card tile home-notices">
-      <h2>
+      <h2 className="tile-head">
+        <TileIcon name="bell" />
         {t('Hinweise')} <span className="badge">{notices.length}</span>
       </h2>
       <ul className="plain-list home-notice-list">
@@ -279,7 +284,10 @@ export function JubileesCard({ org }: { org: OrgSummary }) {
   if (byYear.length === 0) return null
   return (
     <div className="card tile home-notices">
-      <h2>{t('Jubiläen')}</h2>
+      <h2 className="tile-head">
+        <TileIcon name="star" />
+        {t('Jubiläen')}
+      </h2>
       {byYear.map((g) => (
         <section key={g.year} className="home-jubilee-year">
           <h3>{t('Jubiläen {year}', { year: g.year })}</h3>
@@ -308,7 +316,10 @@ export function BirthdaysCard({ org }: { org: OrgSummary }) {
   if (rows.length === 0) return null
   return (
     <div className="card tile home-notices">
-      <h2>{t('Geburtstage')}</h2>
+      <h2 className="tile-head">
+        <TileIcon name="cake" />
+        {t('Geburtstage')}
+      </h2>
       <p className="muted small">{t('In den nächsten {n} Tagen', { n: BIRTHDAY_DAYS })}</p>
       <BirthdayList rows={rows} today={today} />
     </div>

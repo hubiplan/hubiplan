@@ -8,6 +8,7 @@ import { errorMessage } from './forms.ts'
 import { TaskTileRow } from './TaskTileRow.tsx'
 import { formatDate } from './forms.ts'
 import '../pages/todos.css'
+import { TileIcon } from './icons.tsx'
 
 export function DepartmentTodosTile({ department }: { department: number }) {
   const { data, error, reload } = useLoad(
@@ -24,6 +25,7 @@ export function DepartmentTodosTile({ department }: { department: number }) {
     <div className="card tile task-overview">
       <div className="task-overview-head">
         <h2>
+          <TileIcon name="check" />
           {t('Offene Aufgaben')} <span className="badge">{open.length}</span>
         </h2>
       </div>

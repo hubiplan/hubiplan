@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { errorMessage } from './forms.ts'
 import { TaskTileRow } from './TaskTileRow.tsx'
 import '../pages/todos.css'
+import { TileIcon } from './icons.tsx'
 
 export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const { data, error, reload } = useLoad(() => orgApi.openTasks(org.id), [org.id])
@@ -19,6 +20,7 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
     <div className="card tile task-overview tile-wide">
       <div className="task-overview-head">
         <h2>
+          <TileIcon name="check" />
           {t('Zu erledigen')}
           {items.length > 0 && <span className="badge">{items.length}</span>}
         </h2>

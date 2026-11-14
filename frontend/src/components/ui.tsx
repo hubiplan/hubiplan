@@ -5,6 +5,8 @@ import { NavLink } from 'react-router-dom'
 import { useSubNav } from './subnav.ts'
 import type { AutoSave, SaveState } from './forms.ts'
 import { t } from '../i18n/index.ts'
+import { TileIcon } from './icons.tsx'
+import type { TileIconName } from './icons.tsx'
 
 /**
  * Beschriftung, Hinweis und Fehler eines Feldes. Hinweis und Fehler hängen per
@@ -297,7 +299,10 @@ export function EmptyState({
   title,
   children,
   action,
+  icon = 'inbox',
 }: {
+  /** Symbol im Kreis, nur Schmuck */
+  icon?: TileIconName
   /** z. B. „Noch keine Auftritte.“ */
   title: string
   /** Erklärung, was hier entsteht */
@@ -307,6 +312,7 @@ export function EmptyState({
 }) {
   return (
     <div className="card empty-state stack-sm">
+      <TileIcon name={icon} round />
       <p className="empty-state-title">{title}</p>
       {children && <p className="muted small">{children}</p>}
       {action && <div className="button-row">{action}</div>}

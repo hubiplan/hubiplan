@@ -86,4 +86,11 @@ describe('W-11: einheitliche Lade- und Leerzustände', () => {
     expect(screen.getByText('Lege einen Auftritt zu einem Termin an.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Neuer Auftritt' })).toBeInTheDocument()
   })
+
+  it('Symbol im Leerzustand ist nur Schmuck (Design „Frisch“ D6)', () => {
+    const { container } = render(<EmptyState title="Noch keine Auftritte." />)
+    const symbol = container.querySelector('.empty-state .tile-icon')
+    expect(symbol).toHaveAttribute('aria-hidden', 'true')
+    expect(symbol?.querySelector('svg')).not.toBeNull()
+  })
 })

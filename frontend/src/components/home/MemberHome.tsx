@@ -14,6 +14,7 @@ import { RsvpBadge } from '../calendar/Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from '../calendar/time.ts'
 import { euro } from '../../api/finance.ts'
 import { t, tc } from '../../i18n/index.ts'
+import { TileIcon } from '../icons.tsx'
 
 export function MemberHomeTop({ entry }: { entry: PortalEntry }) {
   // S-04: der nächste Termin mit Zu-/Absage ganz oben, auch am Handy (W-19); der Ausweis
@@ -59,7 +60,10 @@ function NextEventCard({ access }: { access: number }) {
   const later = (data?.items ?? []).filter((o) => o !== next).slice(0, 3)
   return (
     <div className="card tile tile-wide">
-      <h2>{t('Nächste Termine')}</h2>
+      <h2 className="tile-head">
+        <TileIcon name="calendar" />
+        {t('Nächste Termine')}
+      </h2>
       {error && <p className="muted small">{t('Termine konnten nicht geladen werden.')}</p>}
       {data && !next && <p className="muted">{t('In den nächsten Wochen keine Termine.')}</p>}
       {next && (
