@@ -3,7 +3,8 @@ key: page.settings_places
 titel: Einstellungen › Orte
 rechte: [settings.view, events.manage, competitions.manage, helpers.edit, meetings.edit]
 routen: [/einstellungen/orte]
-stichworte: [Ort, Orte, Raum, Räume, Gebäude, Saal, Anschrift, Anfahrt, Schützenhaus, Festplatz, Kartenpunkt]
+stichworte:
+  [Ort, Orte, Raum, Räume, Gebäude, Saal, Anschrift, Anfahrt, Schützenhaus, Festplatz, Kartenpunkt]
 ---
 
 Hier speicherst du Orte, die immer wieder vorkommen, etwa Schützenhaus, Festplatz oder Schießstand. In Terminen, Wettbewerben, Helferdiensten und Versammlungen wählst du sie dann im Feld **Ort** aus, statt sie jedes Mal einzutippen.

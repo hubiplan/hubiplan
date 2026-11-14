@@ -3,7 +3,20 @@ key: page.settings_places
 titel: Settings › Places
 rechte: [settings.view, events.manage, competitions.manage, helpers.edit, meetings.edit]
 routen: [/einstellungen/orte]
-stichworte: [place, places, room, rooms, building, hall, address, directions, clubhouse, fairground, map point]
+stichworte:
+  [
+    place,
+    places,
+    room,
+    rooms,
+    building,
+    hall,
+    address,
+    directions,
+    clubhouse,
+    fairground,
+    map point,
+  ]
 ---
 
 Here you save places that come up again and again, such as the clubhouse, fairground or shooting range. In events, competitions, volunteer duties and meetings you then choose them in the **Place** field instead of typing them every time.
