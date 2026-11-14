@@ -168,5 +168,8 @@ def test_auswahl_fuer_abschnitte(orgs, editor, api, site):
         "places",
         "categories",
         "documents",
+        "units",
+        "competitions",
+        "live_facts",
     }
     assert isinstance(options["blocks"], dict) and "menu_items" in options
