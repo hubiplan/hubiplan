@@ -768,6 +768,8 @@ describe('Webseite', () => {
       `${b}vorschau/design/?neu=3&ziel=unterseite`,
     )
     expect(previewUrl(b, 4, previewFocus('date_text', false))).toBe(`${b}vorschau/design/?neu=4`)
+    // Webseite #96: Größe des Seitentitels zeigt ebenfalls eine Unterseite
+    expect(previewFocus('title_size', true)).toEqual({ target: 'unterseite' })
     expect(previewFocus('nav_mobile', true)).toEqual({ target: 'kopf', device: 'phone' })
     expect(previewUrl(b, 5, previewFocus('font', true))).toBe(`${b}vorschau/design/?neu=5`)
   })

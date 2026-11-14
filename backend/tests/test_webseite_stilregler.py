@@ -230,3 +230,17 @@ def test_feinschliff_nach_styleguide(club, site, client_web):
     assert style.defaults("classic")["heading_size"] == "normal"
     assert style.defaults("classic")["section_bg"] == "tinted"
     assert put(client_web, club, {"style": {"section_bg": "beige"}}).status_code == 400
+
+
+def test_seitentitel_eigene_groesse(club, site, client_web):
+    """Webseite #96: Seitentitel eigens einstellbar, auch kleiner als die Grundstellung."""
+    assert style.OPTIONS["title_size"] == ("small", "medium", "normal", "large")
+    for stufe in style.OPTIONS["title_size"]:
+        resp = put(client_web, club, {"style": {"title_size": stufe, "heading_size": "large"}})
+        assert resp.status_code == 200, resp.content
+        site.refresh_from_db()
+        assert site.style == {"title_size": stufe, "heading_size": "large"}
+    assert style.defaults("classic")["title_size"] == "normal"
+    assert put(client_web, club, {"style": {"title_size": "tiny"}}).status_code == 400
+    cat = client_web.get(f"/api/orgs/{club.pk}/website/").json()["style_catalog"]
+    assert cat["options"]["title_size"] == ["small", "medium", "normal", "large"]
