@@ -5111,7 +5111,7 @@
   "Termin nicht verfügbar": "Event unavailable",
   "Ohne Terminverknüpfung": "No linked event",
   "Die Verknüpfung ändert weder Frist noch Freigaben. Bei einer Terminserie gilt sie für die ganze Terminserie.": "Linking an event does not change due dates or sharing. For a recurring event, the link refers to the entire event series.",
-  "Aufgaben zu diesem Termin": "Tasks for this event",
+  "Aufgaben zu diesem Termin anzeigen": "Show tasks for this event",
   "Aufgabe zu diesem Termin anlegen": "Create a task for this event",
   "Im Mitgliederbereich teilen": "Share in the member portal",
   "Nur ausdrücklich freigegebene Aufgaben erscheinen für Mitglieder. Die Verantwortung bleibt beim bisherigen Konto.": "Only explicitly shared tasks appear for members. The current account remains responsible for the task.",

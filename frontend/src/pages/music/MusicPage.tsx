@@ -489,13 +489,23 @@ function MusicWorkspace() {
                 )}
                 {!!r.notes && <p>{r.notes}</p>}
                 <div className="music-record-links">
-                  <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
-                  <Link to={`/musik?programm=${r.id}`}>{t('Musikalisches Programm')}</Link>
-                  <Link to={`/musik?besetzung=${r.id}`}>{t('Besetzung planen')}</Link>
+                  <Link className="button button-ghost" to={`/aufgaben?termin=${r.event}`}>
+                    {t('Aufgaben zum Auftritt')}
+                  </Link>
+                  <Link className="button button-ghost" to={`/musik?programm=${r.id}`}>
+                    {t('Musikalisches Programm')}
+                  </Link>
+                  <Link className="button button-ghost" to={`/musik?besetzung=${r.id}`}>
+                    {t('Besetzung planen')}
+                  </Link>
                   {org.modules.includes('finance') && org.permissions.includes('finance.view') && (
-                    <Link to={`/musik?abrechnung=${r.id}`}>{t('Auftrittsabrechnung')}</Link>
+                    <Link className="button button-ghost" to={`/musik?abrechnung=${r.id}`}>
+                      {t('Auftrittsabrechnung')}
+                    </Link>
                   )}
-                  <Link to={`/termine?termin=${r.event}`}>{t('Zum Termin')}</Link>
+                  <Link className="button button-ghost" to={`/termine?termin=${r.event}`}>
+                    {t('Zum Termin')}
+                  </Link>
                 </div>
               </>
             )}

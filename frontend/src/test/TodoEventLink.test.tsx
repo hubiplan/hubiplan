@@ -14,14 +14,20 @@ describe('Aufgaben am Termin', () => {
         <EventTaskLink base="/api/depts/9/events/" eventId={42} />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('link', { name: 'Aufgaben zu diesem Termin' })).toHaveAttribute(
-      'href',
-      '/aufgaben?termin=42&abteilung=9',
-    )
+    expect(
+      screen.getByRole('link', { name: 'Aufgaben zu diesem Termin anzeigen' }),
+    ).toHaveAttribute('href', '/aufgaben?termin=42&abteilung=9')
     expect(screen.getByRole('link', { name: 'Aufgabe zu diesem Termin anlegen' })).toHaveAttribute(
       'href',
       '/aufgaben?termin=42&abteilung=9&neu=1',
     )
+    // Anlegen ist ein Knopf, Anzeigen ein Verweis: beides sieht verschieden aus
+    expect(screen.getByRole('link', { name: 'Aufgabe zu diesem Termin anlegen' })).toHaveClass(
+      'button',
+    )
+    expect(
+      screen.getByRole('link', { name: 'Aufgaben zu diesem Termin anzeigen' }),
+    ).not.toHaveClass('button')
   })
   it('bietet im Mitgliederkalender keinen Link in die Verwaltung an', () => {
     render(

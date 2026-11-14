@@ -81,10 +81,14 @@ export function EventTaskLink({ base, eventId }: { base: string; eventId: number
   if (!permissions.includes('todos.view')) return null
   const query = new URLSearchParams({ termin: String(eventId) })
   query.set(match[1] === 'depts' ? 'abteilung' : 'einheit', match[2])
+  // Anlegen als Knopf, Anzeigen als Verweis (Ralf 14.11.2026: zwei Verweise nebeneinander
+  // lasen sich wie ein Satz)
   return (
     <p className="button-row">
-      <Link to={`/aufgaben?${query}`}>{t('Aufgaben zu diesem Termin')}</Link>
-      <Link to={`/aufgaben?${query}&neu=1`}>{t('Aufgabe zu diesem Termin anlegen')}</Link>
+      <Link className="button" to={`/aufgaben?${query}&neu=1`}>
+        <span aria-hidden="true">+</span> {t('Aufgabe zu diesem Termin anlegen')}
+      </Link>
+      <Link to={`/aufgaben?${query}`}>{t('Aufgaben zu diesem Termin anzeigen')}</Link>
     </p>
   )
 }
