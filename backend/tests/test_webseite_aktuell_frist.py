@@ -94,7 +94,7 @@ def test_aktuelle_ergebnisse_nur_bis_frist(club, site, manager):
         entry = {"key": "results", "on": True, "days": days}
         resp = put(manager, club, [entry])
         assert resp.status_code == 200, resp.content
-        results = next(s for s in resp.json()["home_sections"] if s["key"] == "results")
+        results = next(s for s in resp.json()["website"]["home_sections"] if s["key"] == "results")
         assert results["days"] == days
         return [c["title"] for c in public("results/?start=1").json()["competitions"]]
 
@@ -163,7 +163,7 @@ def test_frist_bei_eigenen_abschnitten(club, site, manager):
     ]
     resp = put(manager, club, sections)
     assert resp.status_code == 200, resp.content
-    saved = {s["key"]: s for s in resp.json()["home_sections"] if "kind" in s}
+    saved = {s["key"]: s for s in resp.json()["website"]["home_sections"] if "kind" in s}
     assert saved["c:a"]["data"]["days"] == 30
 
     out = {s["key"]: s for s in public().json()["home_layout"] if s["key"].startswith("c:")}
