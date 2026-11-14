@@ -1,14 +1,16 @@
 """Push-Gateway: nimmt verschlüsselte Web-Pushes von HUBIplan-Instanzen an und reicht sie an
-Firebase Cloud Messaging (FCM) weiter.
+Firebase Cloud Messaging (FCM) oder an Apple (APNs) weiter.
 
-Nur die Play-Fassung der App braucht es: FCM nimmt Nachrichten nur mit dem Schlüssel des
-App-Herausgebers an, und den sollen die einzelnen Instanzen nicht kennen. Das Gateway sieht
+Nur die Play-Fassung der Android-App und die iOS-App brauchen es: FCM und APNs nehmen
+Nachrichten nur mit dem Schlüssel des App-Herausgebers an, und den sollen die einzelnen
+Instanzen nicht kennen. Das Gateway sieht
 keinen Inhalt (der Web-Push ist für das Gerät verschlüsselt, RFC 8291) und speichert nichts;
 das Protokoll enthält nur Statuscodes.
 
 Schnittstelle (RFC 8030): ``POST /fcm/<FCM-Token>/<Kennung>`` mit ``Content-Encoding:
 aes128gcm``, ``Urgency``, ``TTL`` und gültigem VAPID-Kopf (RFC 8292). Antwort 201, bei
-unbekanntem Gerät 410 (dann entfernt die Instanz den Endpunkt).
+unbekanntem Gerät 410 (dann entfernt die Instanz den Endpunkt). Für Apple gilt dasselbe unter
+``POST /apns/<Geräte-Token>/<Kennung>``; dort ist die Kennung Pflicht.
 
 Die Kennung sind die ersten 16 Zeichen (hex) von SHA-256 über den öffentlichen
 VAPID-Schlüssel der Instanz, mit der sich das Gerät verbunden hat (Härtung H5). Nur
@@ -22,6 +24,10 @@ Start: ``gunicorn pushgateway.app:application``. Einstellungen über Umgebungsva
   VAPID-Prüfung (``aud``)
 - ``PUSH_GATEWAY_FCM_CREDENTIALS``: Datei mit dem Dienstkonto-Schlüssel (JSON) des
   Firebase-Projekts
+- ``PUSH_GATEWAY_APNS_KEY``: Datei mit dem APNs-Schlüssel (``.p8``) des Apple-Entwicklerkontos,
+  dazu ``PUSH_GATEWAY_APNS_KEY_ID`` (Schlüssel-ID), ``PUSH_GATEWAY_APNS_TEAM`` (Team-ID) und
+  ``PUSH_GATEWAY_APNS_TOPIC`` (Paketname der App, Standard ``de.hubiplan.app``).
+  ``PUSH_GATEWAY_APNS_SANDBOX=1`` schickt an Apples Testumgebung (Entwicklungsfassungen).
 - ``PUSH_GATEWAY_RATE``: Nachrichten je Minute und Absender (VAPID-Schlüssel), Standard 600
 - ``PUSH_GATEWAY_RATE_TOKEN``: je Minute und Gerät, Standard 30
 - ``PUSH_GATEWAY_RATE_IP``: je Minute und IP, Standard 1200
@@ -57,7 +63,10 @@ from dataclasses import dataclass
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding
-from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    decode_dss_signature,
+    encode_dss_signature,
+)
 
 logger = logging.getLogger("pushgateway")
 
@@ -68,6 +77,14 @@ MAX_TTL = 4 * 24 * 60 * 60
 MAX_JWT_LIFETIME = 24 * 60 * 60
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_:\-]{20,400}$")
 KID_RE = re.compile(r"^[0-9a-f]{16}$")
+# Apple-Geräte-Token: hexadezimal, heute 64 Zeichen, laut Apple von wechselnder Länge
+APNS_TOKEN_RE = re.compile(r"^[0-9a-f]{64,200}$")
+APNS_ID_RE = re.compile(r"^[A-Z0-9]{10}$")
+APNS_TOPIC_RE = re.compile(r"^[A-Za-z0-9.\-]{3,150}$")
+APNS_HOST = "https://api.push.apple.com"
+APNS_HOST_SANDBOX = "https://api.sandbox.push.apple.com"
+# Apple verlangt ein neues Anmelde-Token frühestens nach 20 und spätestens nach 60 Minuten
+APNS_TOKEN_LIFETIME = 45 * 60
 FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging"
 TIMEOUT = 10
 
@@ -264,6 +281,118 @@ def http_post(url: str, headers: dict, body: bytes) -> tuple[int, dict]:
         return status, {}
 
 
+# --- APNs (HTTP/2, Anmeldung mit Token) ---
+
+
+class Apns:
+    """Zugriff auf Apples Push-Dienst mit dem Schlüssel des Entwicklerkontos (``.p8``).
+
+    Die Nachricht trägt einen sichtbaren Platzhalter (``loc-key``, Text aus der App) und den
+    verschlüsselten Web-Push base64-kodiert im Feld ``b``. ``mutable-content`` lässt die
+    Erweiterung der App den Inhalt entschlüsseln und Titel und Text setzen; Apple sieht ihn nicht.
+    """
+
+    def __init__(self, key_pem: str, key_id: str, team: str, topic: str, *, sandbox: bool = False):
+        key = serialization.load_pem_private_key(key_pem.encode(), password=None)
+        if not isinstance(key, ec.EllipticCurvePrivateKey) or key.curve.name != "secp256r1":
+            raise RuntimeError("PUSH_GATEWAY_APNS_KEY: kein P-256-Schlüssel.")
+        if not APNS_ID_RE.match(key_id) or not APNS_ID_RE.match(team):
+            raise RuntimeError("APNs: Schlüssel-ID und Team-ID haben je 10 Zeichen.")
+        if not APNS_TOPIC_RE.match(topic):
+            raise RuntimeError("PUSH_GATEWAY_APNS_TOPIC: ungültiger Paketname.")
+        self.key = key
+        self.key_id = key_id
+        self.team = team
+        self.topic = topic
+        self.host = APNS_HOST_SANDBOX if sandbox else APNS_HOST
+        self._token = ""
+        self._until = 0.0
+        self.lock = threading.Lock()
+
+    @classmethod
+    def from_file(cls, path: str, key_id: str, team: str, topic: str, *, sandbox: bool) -> Apns:
+        with open(path) as fh:
+            return cls(fh.read(), key_id, team, topic, sandbox=sandbox)
+
+    def provider_token(self, now: float | None = None) -> str:
+        now = time.time() if now is None else now
+        with self.lock:
+            if self._token and now < self._until:
+                return self._token
+            head = _b64(json.dumps({"alg": "ES256", "kid": self.key_id}).encode())
+            body = _b64(json.dumps({"iss": self.team, "iat": int(now)}).encode())
+            r, s = decode_dss_signature(
+                self.key.sign(f"{head}.{body}".encode(), ec.ECDSA(hashes.SHA256()))
+            )
+            sig = r.to_bytes(32, "big") + s.to_bytes(32, "big")
+            self._token = f"{head}.{body}.{_b64(sig)}"
+            self._until = now + APNS_TOKEN_LIFETIME
+            return self._token
+
+    def forget_token(self) -> None:
+        with self.lock:
+            self._token = ""
+
+    def send(self, token: str, body: bytes, *, urgent: bool, ttl: int) -> FcmResult:
+        payload = {
+            "aps": {
+                "alert": {"title": "HUBIplan", "loc-key": "PUSH_PLATZHALTER"},
+                "mutable-content": 1,
+                "sound": "default",
+            },
+            "b": base64.b64encode(body).decode(),
+        }
+        headers = {
+            "authorization": f"bearer {self.provider_token()}",
+            "apns-topic": self.topic,
+            "apns-push-type": "alert",
+            "apns-priority": "10" if urgent else "5",
+            # 0: nur ein Zustellversuch, nichts aufbewahren
+            "apns-expiration": str(int(time.time()) + ttl) if ttl else "0",
+            "content-type": "application/json",
+        }
+        data = json.dumps(payload, separators=(",", ":")).encode()
+        status, answer = http2_post(f"{self.host}/3/device/{token}", headers, data)
+        if status == 200:
+            return FcmResult(201)
+        reason = str(answer.get("reason") or "")
+        if status == 410 or reason in ("Unregistered", "DeviceTokenNotForTopic"):
+            return FcmResult(410, gone=True)
+        if reason in ("BadDeviceToken", "MissingDeviceToken"):
+            return FcmResult(404, gone=True)
+        if status == 403:
+            # Anmelde-Token abgelaufen oder abgelehnt: beim nächsten Mal neu ausstellen
+            self.forget_token()
+            return FcmResult(502)
+        if status in (429, 503):
+            return FcmResult(429)
+        return FcmResult(502)
+
+
+_http2_client = None
+_http2_lock = threading.Lock()
+
+
+def http2_post(url: str, headers: dict, body: bytes) -> tuple[int, dict]:
+    """HTTP/2-Aufruf zu Apple (in Tests ersetzt). Die Verbindung bleibt offen, wie Apple es will."""
+    global _http2_client
+    import httpx  # nur das Gateway mit Apple-Push braucht die Bibliothek
+
+    with _http2_lock:
+        if _http2_client is None:
+            _http2_client = httpx.Client(http2=True, timeout=TIMEOUT, follow_redirects=False)
+        client = _http2_client
+    try:
+        resp = client.post(url, headers=headers, content=body)
+    except httpx.HTTPError:
+        return 503, {}
+    try:
+        data = resp.json() if resp.content else {}
+    except ValueError:
+        data = {}
+    return resp.status_code, data if isinstance(data, dict) else {}
+
+
 # --- WSGI-Anwendung ---
 
 
@@ -279,10 +408,12 @@ class Gateway:
         allow_unbound: bool = True,
         trust_proxy: bool = False,
         allowed_keys: frozenset[str] = frozenset(),
+        apns: Apns | None = None,
     ):
         parts = urllib.parse.urlsplit(public_url)
         self.audience = f"{parts.scheme}://{parts.netloc}"
         self.fcm = fcm
+        self.apns = apns
         self.limit = RateLimit(rate)
         self.limit_token = RateLimit(rate_token)
         self.limit_ip = RateLimit(rate_ip)
@@ -294,15 +425,22 @@ class Gateway:
         self, method: str, path: str, headers: dict, body: bytes, ip: str = ""
     ) -> tuple[int, dict]:
         if path == "/health":
-            return 200, {"status": "ok", "fcm": self.fcm is not None}
-        if not path.startswith("/fcm/"):
+            return 200, {
+                "status": "ok",
+                "fcm": self.fcm is not None,
+                "apns": self.apns is not None,
+            }
+        way = "fcm" if path.startswith("/fcm/") else "apns" if path.startswith("/apns/") else ""
+        if not way:
             return 404, {}
         if method != "POST":
             return 405, {}
-        token, _, kid = path[len("/fcm/") :].partition("/")
-        if not TOKEN_RE.match(token) or (kid and not KID_RE.match(kid)):
+        token, _, kid = path[len(way) + 2 :].partition("/")
+        token_re = TOKEN_RE if way == "fcm" else APNS_TOKEN_RE
+        if not token_re.match(token) or (kid and not KID_RE.match(kid)):
             return 404, {}
-        if not kid and not self.allow_unbound:
+        # Apple-Endpunkte gibt es nur mit Kennung (keine alten Apps ohne)
+        if not kid and (way == "apns" or not self.allow_unbound):
             return 404, {}
         if ip and not self.limit_ip.allow(f"ip:{ip}"):
             return 429, {}
@@ -322,7 +460,8 @@ class Gateway:
             return 403, {"reason": "Absender nicht freigegeben"}
         if not self.limit.allow(sender) or not self.limit_token.allow(f"t:{token}"):
             return 429, {}
-        if self.fcm is None:
+        service = self.fcm if way == "fcm" else self.apns
+        if service is None:
             return 503, {}
         try:
             ttl = max(0, min(int(headers.get("ttl", "0")), MAX_TTL))
@@ -330,7 +469,7 @@ class Gateway:
             return 400, {}
         urgent = headers.get("urgency", "normal").lower() == "high"
         try:
-            result = self.fcm.send(token, body, urgent=urgent, ttl=ttl)
+            result = service.send(token, body, urgent=urgent, ttl=ttl)
         except RuntimeError as exc:
             logger.warning("%s", exc)
             return 503, {}
@@ -355,7 +494,7 @@ class Gateway:
         if self.trust_proxy and headers.get("x-forwarded-for"):
             ip = headers["x-forwarded-for"].split(",")[-1].strip()
         status, data = self.handle(method, path, headers, body, ip)
-        if path.startswith("/fcm/"):
+        if path.startswith(("/fcm/", "/apns/")):
             logger.info("%s %s", method, status)
         payload = json.dumps(data).encode()
         reason = {200: "OK", 201: "Created"}.get(status, "")
@@ -376,6 +515,15 @@ def create() -> Gateway:
     if fcm is None:
         logger.warning("Kein FCM-Dienstkonto: Nachrichten werden abgelehnt (503).")
     env = os.environ.get
+    apns = None
+    if env("PUSH_GATEWAY_APNS_KEY", ""):
+        apns = Apns.from_file(
+            env("PUSH_GATEWAY_APNS_KEY", ""),
+            env("PUSH_GATEWAY_APNS_KEY_ID", ""),
+            env("PUSH_GATEWAY_APNS_TEAM", ""),
+            env("PUSH_GATEWAY_APNS_TOPIC", "de.hubiplan.app"),
+            sandbox=env("PUSH_GATEWAY_APNS_SANDBOX", "0") == "1",
+        )
     return Gateway(
         public_url,
         fcm,
@@ -385,6 +533,7 @@ def create() -> Gateway:
         allow_unbound=env("PUSH_GATEWAY_ALLOW_UNBOUND", "1") != "0",
         trust_proxy=env("PUSH_GATEWAY_TRUST_PROXY", "0") == "1",
         allowed_keys=allowed_keys(env("PUSH_GATEWAY_ALLOWED_KEYS", "")),
+        apns=apns,
     )
 
 

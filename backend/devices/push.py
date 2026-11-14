@@ -54,7 +54,7 @@ def send_to_user(user_id: int, data: dict, *, urgent: bool = True) -> int:
         try:
             limit = (
                 webpush.MAX_PAYLOAD_FCM
-                if device.push_kind == Device.Push.FCM
+                if device.push_kind in (Device.Push.FCM, Device.Push.APNS)
                 else webpush.MAX_PAYLOAD
             )
             result = webpush.send(

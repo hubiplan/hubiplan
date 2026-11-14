@@ -45,6 +45,7 @@ class Device(models.Model):
         NONE = "none", gettext_lazy("kein Push (Abruf)")
         UNIFIEDPUSH = "unifiedpush", gettext_lazy("UnifiedPush")
         FCM = "fcm", gettext_lazy("Google (FCM)")
+        APNS = "apns", gettext_lazy("Apple (APNs)")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="devices"

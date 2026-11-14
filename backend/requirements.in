@@ -31,3 +31,5 @@ svglib==2.4.0
 # Direkt genutzt (billing/delivery.py, Geräteschlüssel und Verbund), nicht nur über andere Pakete
 requests==2.34.2
 cryptography==50.0.2
+# Push-Gateway: Apple (APNs) spricht nur HTTP/2; nur das Gateway lädt diese Bibliothek
+httpx[http2]==0.28.1
