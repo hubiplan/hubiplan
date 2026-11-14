@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from finance import quittung_views
 
-from . import admin_api, passkey, send, views
+from . import admin_api, browser_unlock, passkey, send, views
 
 urlpatterns = [
     path("instance/", views.InstanceView.as_view(), name="app-instance"),
@@ -24,6 +24,11 @@ urlpatterns = [
     # Verwaltung (Schritt A8)
     path("admin/", admin_api.AdminOverviewView.as_view(), name="app-admin"),
     path("admin/unlock/", admin_api.AdminUnlockView.as_view(), name="app-admin-unlock"),
+    path(
+        "admin/unlock/browser/confirm/",
+        browser_unlock.BrowserUnlockConfirmView.as_view(),
+        name="app-admin-unlock-browser",
+    ),
     path(
         "admin/signature/",
         admin_api.for_app(quittung_views.MySignatureView).as_view(),

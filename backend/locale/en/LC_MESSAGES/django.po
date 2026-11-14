@@ -12790,3 +12790,6 @@ msgstr "The passkey was not recognised. Please try again."
 
 msgid "Die Anmeldung ist abgelaufen. Bitte noch einmal versuchen."
 msgstr "The sign-in has expired. Please try again."
+
+msgid "Die Freischaltung ist abgelaufen. Bitte in der App noch einmal beginnen."
+msgstr "The unlock has expired. Please start again in the app."

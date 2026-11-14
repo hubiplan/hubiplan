@@ -9236,5 +9236,10 @@
   "Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.": "Applies to all pages of HUBIplan and on every device you are signed in on.",
   "Verbinden": "Connect",
   "Der Code zum Verbinden ließ sich nicht erzeugen.": "The connection code could not be created.",
-  "Verbinde die HUBIplan-App nur, wenn du sie gerade selbst auf deinem Telefon geöffnet hast.": "Only connect the HUBIplan app if you have just opened it yourself on your phone."
+  "Verbinde die HUBIplan-App nur, wenn du sie gerade selbst auf deinem Telefon geöffnet hast.": "Only connect the HUBIplan app if you have just opened it yourself on your phone.",
+  "Verwaltung in der App freischalten": "Unlock administration in the app",
+  "Die Freischaltung ist abgelaufen. Bitte in der App noch einmal beginnen.": "The unlock has expired. Please start again in the app.",
+  "Gerät:": "Device:",
+  "Schalte die Verwaltung nur frei, wenn du das gerade selbst in der HUBIplan-App auf diesem Gerät angestoßen hast. Die Freischaltung gilt 30 Tage.": "Only unlock administration if you have just started this yourself in the HUBIplan app on this device. The unlock is valid for 30 days.",
+  "Freischalten": "Unlock"
 }

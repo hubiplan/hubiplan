@@ -29,6 +29,7 @@ import { JoinStatusPage } from './pages/join/JoinStatusPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { McpConnectPage } from './pages/McpConnectPage.tsx'
 import { AppLoginPage } from './pages/AppLoginPage.tsx'
+import { AppUnlockPage } from './pages/AppUnlockPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
@@ -257,6 +258,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <AppLoginPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/app/freischalten"
+            element={
+              <RequireAuth>
+                <AppUnlockPage />
               </RequireAuth>
             }
           />

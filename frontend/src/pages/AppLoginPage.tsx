@@ -14,6 +14,11 @@ import { usePageTitle } from '../components/pageTitle.ts'
 import { Alert } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 
+/** Adresse dieser Seite (in Tests ersetzbar). */
+export const here = {
+  origin: () => window.location.origin,
+}
+
 export function AppLoginPage() {
   usePageTitle(t('App verbinden'))
   const { user } = useAuth()
@@ -25,7 +30,9 @@ export function AppLoginPage() {
     setError(null)
     try {
       const pairing = await devicesApi.pairingCode()
-      const link = appPairLink(pairing.url)
+      // Mit der Adresse, die die App geöffnet hat (bei mehreren Adressen je Instanz zählt sie)
+      const code = new URL(pairing.url).hash
+      const link = appPairLink(`${here.origin()}/app/verbinden${code}`)
       if (!link) throw new Error(t('Der Code zum Verbinden ließ sich nicht erzeugen.'))
       leaveTo.go(link)
     } catch (e) {

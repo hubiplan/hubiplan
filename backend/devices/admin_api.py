@@ -45,6 +45,7 @@ from access.catalog import (
     RESULTS_EDIT,
 )
 from access.permissions import organizations_for
+from accounts.mfa_policy import has_mfa
 from accounts.passkeys import usable_here
 from audit.log import current_via
 from changes import tracking
@@ -52,6 +53,7 @@ from core.api_base import OrgScopedMixin
 from core.ratelimit import TooMany, too_many
 from members.open_tasks import event_tasks, member_tasks
 
+from . import browser_unlock
 from .auth import AdminTokenAuthentication, DeviceTokenAuthentication
 from .models import ADMIN_DAYS, Device, hash_token
 
@@ -189,6 +191,11 @@ class UnlockSerializer(serializers.Serializer):
         max_length=100, required=False, allow_blank=True, default=""
     )
     passkey_credential = serializers.JSONField(required=False, default=None)
+    # iOS: über den Browser freischalten (devices/browser_unlock.py)
+    browser = serializers.BooleanField(required=False, default=False)
+    browser_ticket = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=""
+    )
     # Härtung H7: öffentlicher Teil des Vorstands-Schlüsselpaars (nur nach Entsperren nutzbar)
     admin_key = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
 
@@ -219,8 +226,11 @@ class AdminUnlockView(APIView):
         data.is_valid(raise_exception=True)
         v = data.validated_data
         with_passkey = bool(v["passkey_challenge_id"])
+        via_browser = v["browser"] or bool(v["browser_ticket"])
         totp = Authenticator.objects.filter(user=user, type=Authenticator.Type.TOTP).first()
-        if totp is None and not with_passkey:
+        if (totp is None and not with_passkey and not via_browser) or (
+            via_browser and not has_mfa(user)
+        ):
             raise ValidationError(
                 {
                     "detail": gettext(
@@ -239,7 +249,32 @@ class AdminUnlockView(APIView):
                     )
                 }
             )
-        if with_passkey:
+        if v["browser"]:
+            # Schritt 1: Ticket für den Browser; freigeschaltet wird erst mit dem bestätigten
+            ticket = browser_unlock.start(device, user, v["admin_key"])
+            return Response(
+                {
+                    "ticket": ticket,
+                    "path": "/app/freischalten",
+                    "expires_in": browser_unlock.TICKET_SECONDS,
+                },
+                status=202,
+            )
+        if v["browser_ticket"]:
+            if not browser_unlock.redeem(v["browser_ticket"], device, v["admin_key"]):
+                if too_many(f"app-admin-unlock-fail:{device.pk}", 3, 60 * 60):
+                    from . import notify
+
+                    notify.admin_unlock_failed(user, device)
+                raise ValidationError(
+                    {
+                        "detail": gettext(
+                            "Die Freischaltung ist abgelaufen. Bitte in der App noch einmal "
+                            "beginnen."
+                        )
+                    }
+                )
+        elif with_passkey:
             # Ein Passkey zählt als volle Zwei-Faktor-Anmeldung (Gerät + Entsperren)
             from . import passkey
 

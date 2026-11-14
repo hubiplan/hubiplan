@@ -251,3 +251,103 @@ class TestVerwaltungFreischalten:
         )
         assert resp.status_code == 400
         assert "Zwei-Faktor" in resp.json()["detail"]
+
+
+class TestVerwaltungUeberBrowser:
+    """iOS: Verwaltung über den eingebetteten Browser freischalten (devices/browser_unlock.py)."""
+
+    def _start(self, member, cal):
+        from cryptography.hazmat.primitives.asymmetric import ec
+
+        from .factories import give_role
+        from .test_app_devices import _public
+
+        user, _ = member
+        give_role(user, cal["a"])
+        key = with_passkey(user)
+        key.origin = ANDROID_ORIGIN
+        start = begin()
+        token = login(start, key.sign(start["options"])).json()["token"]
+        device = Client(HTTP_AUTHORIZATION=f"Bearer {token}")
+        pub = _public(ec.generate_private_key(ec.SECP256R1()))
+        device.put(f"{APP}devices/current/key/", {"device_key": pub}, content_type=JSON)
+        admin_key = _public(ec.generate_private_key(ec.SECP256R1()))
+        resp = device.post(
+            f"{APP}admin/unlock/", {"browser": True, "admin_key": admin_key}, content_type=JSON
+        )
+        assert resp.status_code == 202, resp.json()
+        assert resp.json()["path"] == "/app/freischalten"
+        return user, device, admin_key, resp.json()["ticket"]
+
+    def test_ablauf(self, apps, cal, member, api):
+        user, device, admin_key, ticket = self._start(member, cal)
+        browser = api(user)
+        confirm = f"{APP}admin/unlock/browser/confirm/"
+        # Erst nur ansehen: welches Gerät
+        resp = browser.post(confirm, {"ticket": ticket}, content_type=JSON)
+        assert resp.json() == {"device": "Pixel 8", "confirmed": False}
+        # Vor der Bestätigung gibt es nichts
+        early = device.post(
+            f"{APP}admin/unlock/",
+            {"browser_ticket": ticket, "admin_key": admin_key},
+            content_type=JSON,
+        )
+        assert early.status_code == 400
+        resp = browser.post(confirm, {"ticket": ticket, "confirm": True}, content_type=JSON)
+        assert resp.status_code == 200, resp.json()
+        assert resp.json()["redirect"] == f"hubiplan://freischalten?ticket={ticket}"
+        done = device.post(
+            f"{APP}admin/unlock/",
+            {"browser_ticket": ticket, "admin_key": admin_key},
+            content_type=JSON,
+        )
+        assert done.status_code == 201, done.json()
+        assert Device.objects.get(user=user).admin_key == admin_key
+        # Einmal nutzbar
+        again = device.post(
+            f"{APP}admin/unlock/",
+            {"browser_ticket": ticket, "admin_key": admin_key},
+            content_type=JSON,
+        )
+        assert again.status_code == 400
+
+    def test_anderes_schluesselpaar_gilt_nicht(self, apps, cal, member, api):
+        user, device, admin_key, ticket = self._start(member, cal)
+        api(user).post(
+            f"{APP}admin/unlock/browser/confirm/",
+            {"ticket": ticket, "confirm": True},
+            content_type=JSON,
+        )
+        from cryptography.hazmat.primitives.asymmetric import ec
+
+        from .test_app_devices import _public
+
+        other = _public(ec.generate_private_key(ec.SECP256R1()))
+        resp = device.post(
+            f"{APP}admin/unlock/", {"browser_ticket": ticket, "admin_key": other}, content_type=JSON
+        )
+        assert resp.status_code == 400
+
+    def test_nur_im_browser_des_eigenen_kontos(self, apps, cal, member, api):
+        from .factories import make_user
+
+        user, device, _, ticket = self._start(member, cal)
+        confirm = f"{APP}admin/unlock/browser/confirm/"
+        # Mit dem Geräteschlüssel nicht
+        resp = device.post(confirm, {"ticket": ticket, "confirm": True}, content_type=JSON)
+        assert resp.status_code in (401, 403)
+        # Ein anderes Konto sieht das Ticket nicht
+        other = make_user("andere@example.org")
+        resp = api(other).post(confirm, {"ticket": ticket, "confirm": True}, content_type=JSON)
+        assert resp.status_code == 404
+
+    def test_verlangt_frische_bestaetigung(self, apps, cal, member, api, settings):
+        settings.MFA_STEP_UP = True
+        user, _, _, ticket = self._start(member, cal)
+        resp = api(user).post(
+            f"{APP}admin/unlock/browser/confirm/",
+            {"ticket": ticket, "confirm": True},
+            content_type=JSON,
+        )
+        assert resp.status_code == 403
+        assert resp.json()["passkey"] is True

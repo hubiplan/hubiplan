@@ -43,7 +43,16 @@ die App verbindet sich damit wie beim QR-Code.
 Die Verwaltung (`POST /api/app/v1/admin/unlock/`) lässt sich statt mit `password` und `code`
 auch mit `passkey_challenge_id` und `passkey_credential` freischalten (Aufgabe ebenfalls aus
 `passkey/begin/`, der Passkey muss zum Konto des Geräts gehören). Eine eingerichtete
-Authenticator-App ist dafür nicht nötig. `GET /api/app/v1/admin/` nennt in `passkey`, ob für
+Authenticator-App ist dafür nicht nötig.
+
+Die iOS-App schaltet über den eingebetteten Browser frei (`devices/browser_unlock.py`):
+`POST admin/unlock/` mit `{"browser": true, "admin_key"}` liefert 202 mit `ticket` (10 Minuten,
+an Gerät, Konto und `admin_key` gebunden) und `path` (`/app/freischalten`). Die App öffnet
+`https://<Instanz>/app/freischalten#t=<ticket>`; nach dem Anmelden bestätigt die Seite mit
+`POST /api/app/v1/admin/unlock/browser/confirm/` (`{"ticket", "confirm": true}`, nur mit
+Browser-Sitzung, verlangt eingerichtete 2FA und frische Bestätigung, Passkey zählt) und ruft
+`hubiplan://freischalten?ticket=<ticket>` auf. Die App löst mit `POST admin/unlock/`
+`{"browser_ticket", "admin_key"}` (derselbe Schlüssel) ein; das Ticket gilt einmal. `GET /api/app/v1/admin/` nennt in `passkey`, ob für
 diese Adresse ein Passkey eingerichtet ist (`two_factor`: Authenticator-App).
 
 ## Was der Geräteschlüssel darf
