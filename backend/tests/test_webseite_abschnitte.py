@@ -264,3 +264,20 @@ def test_abschnitt_aus_bleibt_weg(club, site, client_web):
     assert "c:z1" not in {s["key"] for s in public()["home_layout"]}
     site.refresh_from_db()
     assert all(not k.startswith("c:") for k in site.home())
+
+
+def test_text_mit_bild_oben_und_unten(club, site, client_web):
+    resp = put_home(
+        client_web,
+        club,
+        [
+            custom("ti1", "text_image", {"title": "Oben", "side": "top", "size": "small"}),
+            custom("ti2", "text_image", {"title": "Unten", "side": "bottom"}),
+        ],
+    )
+    assert resp.status_code == 200, resp.content
+    by_key = {s["key"]: s for s in resp.json()["website"]["home_sections"]}
+    assert by_key["c:ti1"]["data"]["side"] == "top"
+    assert by_key["c:ti1"]["data"]["size"] == "small"
+    assert by_key["c:ti2"]["data"]["side"] == "bottom"
+    assert by_key["c:ti2"]["data"]["size"] == "half"

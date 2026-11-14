@@ -77,7 +77,8 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.);
     # Ausnahmen: Kopfhöhe und Titelbild mit vier Stufen (Ralf 13.11., Webseite #68)
     for key, options in catalog["options"].items():
-        most = 4 if key in ("header_height", "hero") else 3
+        # und Überschriften und Karten mit vier Stufen (Webseite #89)
+        most = 4 if key in ("header_height", "hero", "headings", "cards") else 3
         assert options == "switch" or 2 <= len(options) <= most
 
 
@@ -102,7 +103,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 48
+    assert len(style.OPTIONS) == 50
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
@@ -199,3 +200,22 @@ def test_katalog_mit_vorgaben_und_voreinstellungen(club, site, client_web):
     cat = resp.json()["style_catalog"]
     assert cat["defaults"]["classic"]["header_bg"] == "white"
     assert cat["presets"]["readable"]["size"] == "large"
+
+
+def test_feinschliff_nach_styleguide(club, site, client_web):
+    """Webseite #89: kurze Zierlinie, weiße Karten mit Streifen, Etikett-Knöpfe, größere
+    Überschriften und die Farbe heller Abschnitte als Regler für alle Einheiten."""
+    values = {
+        "headings": "short",
+        "cards": "accent",
+        "buttons": "label",
+        "heading_size": "large",
+        "section_bg": "warm",
+    }
+    resp = put(client_web, club, {"style": values})
+    assert resp.status_code == 200, resp.content
+    site.refresh_from_db()
+    assert site.style == values
+    assert style.defaults("classic")["heading_size"] == "normal"
+    assert style.defaults("classic")["section_bg"] == "tinted"
+    assert put(client_web, club, {"style": {"section_bg": "beige"}}).status_code == 400

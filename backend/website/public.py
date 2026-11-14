@@ -1122,7 +1122,14 @@ class SiteView:
             ).exists()
         return result
 
-    def posts(self, kind: str | None, department_id: int | None, limit: int) -> list[dict]:
+    def posts(
+        self, kind: str | None, department_id: int | None, limit: int, days: int | None = None
+    ) -> list[dict]:
+        """Neueste sichtbare Beiträge; mit ``days`` nur die der letzten so vielen Tage."""
+        import datetime
+
+        from django.utils import timezone
+
         from .social_models import SocialPost
 
         feeds = [
@@ -1134,8 +1141,11 @@ class SiteView:
             SocialPost.objects.filter(feed__in=feeds, state=SocialPost.State.VISIBLE)
             .select_related("feed")
             .prefetch_related("images")
-            .order_by("-published_at", "-pk")[:limit]
+            .order_by("-published_at", "-pk")
         )
+        if days is not None:
+            qs = qs.filter(published_at__gte=timezone.now() - datetime.timedelta(days=days))
+        qs = qs[:limit]
         return [self.post_entry(p) for p in qs]
 
     def post_entry(self, post) -> dict:
