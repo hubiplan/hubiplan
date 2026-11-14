@@ -17,25 +17,29 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "font": ("system", "modern", "festive"),
     "size": ("normal", "large", "xlarge"),
     "leading": ("tight", "normal", "airy"),
-    "headings": ("plain", "line", "color"),
+    "headings": ("plain", "line", "color", "short"),
     "heading_align": ("left", "center"),
+    # Webseite #89: Seiten- und Abschnittstitel etwas größer
+    "heading_size": ("normal", "large"),
     "script_greeting": bool,
     # Seite
     "width": ("narrow", "normal", "wide"),
     "background": ("light", "tinted", "grey"),
     "spacing": ("compact", "normal", "generous"),
     "corners": ("square", "slight", "round"),
+    # Webseite #89: Farbe der hellen Abschnittsflächen (Abschnitt mit Hintergrund „hell“)
+    "section_bg": ("tinted", "warm", "grey"),
     # Dunkle Darstellung nach Einstellung des Geräts (Ralf 13.11.2026, Dunkelmodus D2)
     "dark": ("off", "auto"),
     "contrast": bool,
     "to_top": bool,
     # Karten, Bilder, Knöpfe
-    "cards": ("border", "shadow", "flat"),
+    "cards": ("border", "shadow", "flat", "accent"),
     "images": ("cards", "square"),
     # Seitenverhältnis der Bilder in Kacheln: 3:2, 4:3, quadratisch
     "tile_ratio": ("wide", "classic", "square"),
     "image_frame": bool,
-    "buttons": ("filled", "outline"),
+    "buttons": ("filled", "outline", "label"),
     "date": ("tile", "strip"),
     # Kopf und Menü
     "header_bg": ("white", "color", "image"),
@@ -107,10 +111,12 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "leading": "normal",
     "headings": "plain",
     "heading_align": "left",
+    "heading_size": "normal",
     "script_greeting": False,
     "width": "normal",
     "background": "light",
     "spacing": "normal",
+    "section_bg": "tinted",
     "dark": "off",
     "contrast": False,
     "to_top": False,

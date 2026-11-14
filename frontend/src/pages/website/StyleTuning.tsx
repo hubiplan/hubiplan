@@ -38,12 +38,22 @@ function GROUPS(): Group[] {
         {
           key: 'headings',
           label: t('Überschriften'),
-          options: { plain: t('schlicht'), line: t('mit Linie'), color: t('in Farbe') },
+          options: {
+            plain: t('schlicht'),
+            line: t('mit Linie'),
+            short: t('kurze Linie'),
+            color: t('in Farbe'),
+          },
         },
         {
           key: 'heading_align',
           label: t('Ausrichtung der Überschriften'),
           options: { left: t('links'), center: t('mittig') },
+        },
+        {
+          key: 'heading_size',
+          label: t('Größe der Überschriften'),
+          options: { normal: t('normal'), large: t('größer') },
         },
         {
           key: 'leading',
@@ -114,6 +124,12 @@ function GROUPS(): Group[] {
           label: t('Ecken'),
           options: { square: t('eckig'), slight: t('leicht'), round: t('rund') },
         },
+        {
+          key: 'section_bg',
+          label: t('Helle Abschnitte'),
+          options: { tinted: t('getönt'), warm: t('warm'), grey: t('grau') },
+          hint: t('Farbe der Abschnitte mit hellem Hintergrund auf der Startseite.'),
+        },
       ],
     },
     {
@@ -123,7 +139,15 @@ function GROUPS(): Group[] {
         {
           key: 'cards',
           label: t('Karten'),
-          options: { border: t('Rahmen'), shadow: t('Schatten'), flat: t('flach') },
+          options: {
+            border: t('Rahmen'),
+            shadow: t('Schatten'),
+            flat: t('flach'),
+            accent: t('weiß mit Streifen'),
+          },
+          hint: t(
+            'Weiß mit Streifen: weiße Karten mit feiner Kante, Termine mit Farbstreifen links, Kacheln der Untereinheiten oben.',
+          ),
         },
         {
           key: 'images',
@@ -139,7 +163,7 @@ function GROUPS(): Group[] {
         {
           key: 'buttons',
           label: t('Knöpfe'),
-          options: { filled: t('gefüllt'), outline: t('umrandet') },
+          options: { filled: t('gefüllt'), outline: t('umrandet'), label: t('Etikett') },
         },
       ],
     },
