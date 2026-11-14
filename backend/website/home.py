@@ -39,6 +39,8 @@ KINDS = {
     "chronicle": "Auszug aus der Chronik",
     "facts": "Zahlen auf einen Blick",
     "divider": "Trenner",
+    # Ralf 14.11.2026: laufender Zähler bis zu einem Termin oder Zeitpunkt
+    "countdown": "Countdown",
 }
 KIND_HINTS = {
     "text": "Überschrift und Text",
@@ -59,6 +61,7 @@ KIND_HINTS = {
     "chronicle": "die neuesten Einträge der Zeitleiste",
     "facts": "zwei bis sechs Zahlen mit kurzem Text",
     "divider": "Linie oder Abstand zwischen Abschnitten",
+    "countdown": "Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt",
 }
 # Nur auf Textseiten (G6): Titelbild, ein schmales Bild über der Überschrift, höchstens eins
 PAGE_KINDS = {"cover": "Titelbild"}
@@ -91,6 +94,7 @@ SIDE_DEFAULT = {
     "directions",
     "event_list",
     "document",
+    "countdown",
 }
 
 TITLE_MAX = 150
@@ -196,6 +200,22 @@ def _target(value, refs: dict) -> dict | None:
             raise Invalid(gettext("Bitte eine Adresse mit https:// angeben."))
         return {"url": url}
     return None
+
+
+LOCAL_TIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$")
+
+
+def _local_time(value) -> str:
+    """Zeitpunkt als Ortszeit „JJJJ-MM-TTTHH:MM“ (wie ein datetime-local-Feld), leer erlaubt."""
+    if value in (None, ""):
+        return ""
+    if isinstance(value, str) and LOCAL_TIME.match(value[:16]):
+        try:
+            datetime.datetime.strptime(value[:16], "%Y-%m-%dT%H:%M")
+            return value[:16]
+        except ValueError:
+            pass
+    raise Invalid(gettext("Zeitpunkt bitte als Datum mit Uhrzeit angeben."))
 
 
 def _items(data: dict, limit: int, message: str) -> list[dict]:
@@ -355,6 +375,17 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
         return {
             "style": _choice(data.get("style"), ("line", "space"), "line"),
             "size": _choice(data.get("size"), ("small", "large"), "small"),
+        }
+    if kind == "countdown":
+        mode = _choice(data.get("mode"), ("event", "date"), "event")
+        return {
+            "title": title,
+            "mode": mode,
+            "event": _ref(data.get("event"), refs["events"]) if mode == "event" else None,
+            "at": _local_time(data.get("at")) if mode == "date" else "",
+            "text": _text(data.get("text"), SHORT_MAX, gettext("Text")),
+            "after": _choice(data.get("after"), ("hide", "text"), "hide"),
+            "after_text": _text(data.get("after_text"), SHORT_MAX, gettext("Text nach Ablauf")),
         }
     if kind == "contacts":
         items = data.get("roles") if isinstance(data.get("roles"), list) else []
@@ -755,7 +786,43 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
         return {"title": title, "items": items} if items else None
     if kind == "divider":
         return {"style": data.get("style", "line"), "size": data.get("size", "small")}
+    if kind == "countdown":
+        return _countdown(site, title, data)
     return None
+
+
+def _countdown(site, title, data) -> dict | None:
+    """Ziel als Zeitpunkt mit Zeitzone; die Webseite zählt im Browser weiter herunter.
+    Nach Ablauf (auch wenn der Termin begonnen hat oder nicht mehr öffentlich ist)
+    verschwindet der Abschnitt, außer es ist ein Text dafür gewählt."""
+    after_text = (data.get("after_text") or "") if data.get("after") == "text" else ""
+    name = ""
+    target = None
+    if data.get("mode") == "date":
+        if not data.get("at"):
+            return None
+        try:
+            target = timezone.make_aware(datetime.datetime.strptime(data["at"], "%Y-%m-%dT%H:%M"))
+        except ValueError:
+            return None
+    else:
+        if not data.get("event"):
+            return None
+        occurrence = next_occurrence(site, data["event"])
+        if occurrence is not None and not occurrence.is_cancelled:
+            target = occurrence.starts_at
+            name = occurrence.event.title
+    if target is None or target <= timezone.now():
+        if not after_text:
+            return None
+        return {"title": title, "target": "", "name": "", "text": "", "after_text": after_text}
+    return {
+        "title": title,
+        "target": target.isoformat(),
+        "name": name,
+        "text": data.get("text") or "",
+        "after_text": after_text,
+    }
 
 
 def _directions(site, title, data) -> dict | None:

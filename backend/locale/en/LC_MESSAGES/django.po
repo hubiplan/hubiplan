@@ -12442,3 +12442,9 @@ msgstr "You cannot link this document here."
 
 msgid "Das Dokument hängt schon an diesem Termin."
 msgstr "This document is already attached to this event."
+
+msgid "Text nach Ablauf"
+msgstr "Text afterwards"
+
+msgid "Zeitpunkt bitte als Datum mit Uhrzeit angeben."
+msgstr "Please enter the time as a date with a time of day."

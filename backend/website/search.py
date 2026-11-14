@@ -83,6 +83,7 @@ SECTION_FIELDS = {
     "quote": ("text",),
     "directions": ("title", "text"),
     "video": ("title", "text"),
+    "countdown": ("title", "text", "after_text"),
 }
 SECTION_LISTS = {
     "buttons": ("buttons", ("label",)),

@@ -198,6 +198,8 @@ export type HomeKind =
   | 'chronicle'
   | 'facts'
   | 'divider'
+  /** laufender Zähler bis zu einem Termin oder Zeitpunkt (Ralf 14.11.2026) */
+  | 'countdown'
   /** nur auf Textseiten (G6): schmales Bild über der Überschrift */
   | 'cover'
 
@@ -243,6 +245,12 @@ export interface HomeSectionData {
   url?: string
   label?: string
   style?: 'line' | 'space'
+  /** Countdown: Ziel ist ein Termin oder ein frei gewählter Zeitpunkt (Ortszeit) */
+  mode?: 'event' | 'date'
+  at?: string
+  /** Countdown nach Ablauf: ausblenden oder Text zeigen */
+  after?: 'hide' | 'text'
+  after_text?: string
 }
 
 /** Eintrag einer Liste: Frage/Antwort, Partner (Name, Logo, Link) oder Zahl mit Text */

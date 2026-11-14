@@ -8903,5 +8903,16 @@
   "Dokument aus der Ablage": "Document from the document store",
   "Der Ordner „{folder}“ ist enger sichtbar ({visibility}). Am Termin sehen das Dokument alle, die den Termin sehen.": "The folder “{folder}” has narrower visibility ({visibility}). On the event, everyone who can see the event can see the document.",
   "aus der Ablage": "from the document store",
-  "Das Dokument bleibt in der Ablage.": "The document stays in the document store."
+  "Das Dokument bleibt in der Ablage.": "The document stays in the document store.",
+  "Countdown": "Countdown",
+  "Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt": "days, hours, minutes and seconds until an event or a point in time",
+  "Zählt herunter bis": "Counts down to",
+  "Datum und Uhrzeit": "Date and time",
+  "Nur öffentliche Termine. Gezählt wird bis zum Beginn.": "Public events only. Counts down to the start.",
+  "Text unter dem Zähler (optional)": "Text below the counter (optional)",
+  "Nach Ablauf": "Afterwards",
+  "ausblenden": "hide",
+  "Text zeigen": "show text",
+  "Text nach Ablauf": "Text afterwards",
+  "z. B. „Das Schützenfest hat begonnen!“": "e.g. “The festival has started!”"
 }

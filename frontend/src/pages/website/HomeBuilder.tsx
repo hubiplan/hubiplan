@@ -49,6 +49,7 @@ const KINDS: HomeKind[] = [
   'chronicle',
   'facts',
   'divider',
+  'countdown',
   'cover',
 ]
 
@@ -72,6 +73,7 @@ function kindLabel(kind: HomeKind): string {
     chronicle: t('Auszug aus der Chronik'),
     facts: t('Zahlen auf einen Blick'),
     divider: t('Trenner'),
+    countdown: t('Countdown'),
     cover: t('Titelbild'),
   }[kind]
 }
@@ -96,6 +98,7 @@ function kindHint(kind: HomeKind): string {
     chronicle: t('die neuesten Einträge der Zeitleiste'),
     facts: t('zwei bis sechs Zahlen mit kurzem Text'),
     divider: t('Linie oder Abstand zwischen Abschnitten'),
+    countdown: t('Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt'),
     cover: t('ein schmales Bild über der Überschrift der Seite'),
   }[kind]
 }
@@ -161,6 +164,13 @@ function Sketch({ kind }: { kind: HomeKind }) {
       box(56, 26, 16, 3, 0.35),
     ],
     divider: [box(8, 21, 64, 2, 0.6)],
+    countdown: [
+      box(8, 12, 14, 14, 0.6),
+      box(25, 12, 14, 14, 0.6),
+      box(42, 12, 14, 14, 0.6),
+      box(59, 12, 14, 14, 0.6),
+      box(8, 30, 65, 3, 0.35),
+    ],
     cover: [box(2, 4, 76, 14), box(8, 24, 36, 5, 0.6), ...lines(8, 33, 64, 2)],
   }
   return (
@@ -220,6 +230,16 @@ function defaults(kind: HomeKind): HomeSectionData {
       return { title: '', items: [emptyFact(), emptyFact()] }
     case 'divider':
       return { style: 'line', size: 'small' }
+    case 'countdown':
+      return {
+        title: '',
+        mode: 'event',
+        event: null,
+        at: '',
+        text: '',
+        after: 'hide',
+        after_text: '',
+      }
     case 'cover':
       return { image: null }
   }
@@ -322,7 +342,15 @@ export function HomeBuilder({
       on: true,
       bg: 'none',
       width: 'content',
-      column: ['event', 'contacts', 'quote', 'directions', 'event_list', 'document'].includes(kind)
+      column: [
+        'event',
+        'contacts',
+        'quote',
+        'directions',
+        'event_list',
+        'document',
+        'countdown',
+      ].includes(kind)
         ? 'side'
         : 'main',
       data: defaults(kind),
@@ -1190,6 +1218,70 @@ function SectionContent({
           />
         </>
       )
+    case 'countdown': {
+      const mode = d.mode === 'date' ? 'date' : 'event'
+      const after = d.after === 'text' ? 'text' : 'hide'
+      return (
+        <>
+          {titleField()}
+          <Segments
+            label={t('Zählt herunter bis')}
+            value={mode}
+            options={[
+              ['event', t('Termin')],
+              ['date', t('Datum und Uhrzeit')],
+            ]}
+            onChange={(next) => setData({ mode: next })}
+          />
+          {mode === 'event' ? (
+            <SelectField
+              label={t('Termin')}
+              value={d.event ?? ''}
+              hint={t('Nur öffentliche Termine. Gezählt wird bis zum Beginn.')}
+              onChange={(e) => setData({ event: e.target.value ? Number(e.target.value) : null })}
+            >
+              <option value="">{t('Bitte wählen')}</option>
+              {(choices?.events ?? []).map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.title} ({formatDateTime(e.starts_at)})
+                </option>
+              ))}
+            </SelectField>
+          ) : (
+            <Field
+              label={t('Datum und Uhrzeit')}
+              type="datetime-local"
+              value={d.at ?? ''}
+              onChange={(e) => setData({ at: e.target.value })}
+            />
+          )}
+          <Field
+            label={t('Text unter dem Zähler (optional)')}
+            value={d.text ?? ''}
+            maxLength={500}
+            onChange={(e) => setData({ text: e.target.value })}
+          />
+          <Segments
+            label={t('Nach Ablauf')}
+            value={after}
+            options={[
+              ['hide', t('ausblenden')],
+              ['text', t('Text zeigen')],
+            ]}
+            onChange={(next) => setData({ after: next })}
+          />
+          {after === 'text' && (
+            <Field
+              label={t('Text nach Ablauf')}
+              value={d.after_text ?? ''}
+              maxLength={500}
+              hint={t('z. B. „Das Schützenfest hat begonnen!“')}
+              onChange={(e) => setData({ after_text: e.target.value })}
+            />
+          )}
+        </>
+      )
+    }
     default:
       return null
   }

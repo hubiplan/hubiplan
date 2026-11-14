@@ -49,6 +49,10 @@ KIND_FIELDS = {
     "chronicle": "title, count (2–6)",
     "facts": "title, items [{value, label}] (2–6)",
     "divider": "style (line|space), size (small|large)",
+    "countdown": (
+        "title, mode (event|date), event (Terminnummer aus auswahl.events, bei mode event), "
+        "at (Ortszeit JJJJ-MM-TTTHH:MM, bei mode date), text, after (hide|text), after_text"
+    ),
 }
 TARGET_HINT = (
     'target: {"page": "<Menüschlüssel>"}, {"event": <Terminnummer>} oder {"url": "https://…"}'
