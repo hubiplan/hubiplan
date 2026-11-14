@@ -83,6 +83,14 @@ SECTION_FIELDS = {
     "quote": ("text",),
     "directions": ("title", "text"),
     "video": ("title", "text"),
+    "countdown": ("title", "text", "after_text"),
+    "join": ("title", "text", "label"),
+    "donation": ("title", "text", "purpose"),
+    "callout": ("title", "text"),
+    "hours": ("title", "text"),
+    "program": ("title", "text"),
+    "table": ("title", "text"),
+    "app": ("title", "text"),
 }
 SECTION_LISTS = {
     "buttons": ("buttons", ("label",)),
@@ -90,6 +98,12 @@ SECTION_LISTS = {
     "faq": ("items", ("question", "answer")),
     "partners": ("items", ("name",)),
     "facts": ("items", ("value", "label")),
+    "hours": ("items", ("day", "time", "note")),
+    "columns": ("items", ("title", "text")),
+    "accordion": ("items", ("title", "text")),
+    "timeline": ("items", ("when", "title", "text")),
+    "images": ("items", ("caption",)),
+    "downloads": ("items", ("label",)),
 }
 
 
@@ -103,6 +117,14 @@ def section_text(section: dict) -> str:
         for item in section.get(key) or []:
             if isinstance(item, dict):
                 parts.extend(item.get(f) for f in fields)
+    if kind == "table":
+        parts.extend(section.get("head") or [])
+        for row in section.get("rows") or []:
+            parts.extend(row if isinstance(row, list) else [])
+    if kind == "program":
+        for day in section.get("days") or []:
+            parts.append(day.get("day"))
+            parts.extend(i.get("text") for i in day.get("items") or [])
     return plain(" ".join(str(p) for p in parts if isinstance(p, str | int) and p))
 
 
