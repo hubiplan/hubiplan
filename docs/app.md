@@ -167,6 +167,32 @@ FCM bekommt ihn base64-kodiert im Feld `b`) und speichert nichts.
   (1024 Bytes oder die größte erlaubte Nutzlast). Der Push-Dienst kann an der Größe nicht mehr
   ablesen, was für eine Nachricht es ist.
 
+## Apple-Push über das Push-Gateway (iOS-App, Stufe I3)
+
+Die iOS-App bekommt Push nur über Apple (APNs). Wie bei Google nimmt Apple Nachrichten nur mit
+dem Schlüssel des App-Herausgebers an; deshalb reicht dasselbe Push-Gateway sie weiter. Apple
+sieht keinen Inhalt: Der Web-Push bleibt verschlüsselt (base64 im Feld `b`), sichtbar ist nur ein
+Platzhalter (`loc-key` `PUSH_PLATZHALTER`, Text aus der App). Mit `mutable-content` entschlüsselt
+die Erweiterung der App die Nachricht auf dem Gerät und setzt Titel und Text.
+
+- Instanz: zusätzlich zu `PUSH_GATEWAY_URL` die Einstellung `PUSH_GATEWAY_APNS=1` (Standard aus;
+  nur einschalten, wenn das Gateway einen Apple-Schlüssel hat). `instance/` nennt dann
+  `{"kind":"apns","gateway":…,"vapid_public_key":…}`. Die App meldet `kind=apns` mit dem Endpunkt
+  `<Gateway>/apns/<Geräte-Token>/<Kennung>`; die Kennung (wie bei Härtung H5) ist hier Pflicht,
+  und die Instanz nimmt nur ihre eigene an.
+- Nutzlast wie bei Google höchstens 2600 Bytes (Apple erlaubt 4 KB), sonst nur `sync`.
+- Gateway: `PUSH_GATEWAY_APNS_KEY` (Datei mit dem `.p8`-Schlüssel des Apple-Entwicklerkontos, nur
+  auf dem Server, nie im Repo), `PUSH_GATEWAY_APNS_KEY_ID`, `PUSH_GATEWAY_APNS_TEAM`,
+  `PUSH_GATEWAY_APNS_TOPIC` (Paketname, Standard `de.hubiplan.app`) und für Entwicklungsfassungen
+  `PUSH_GATEWAY_APNS_SANDBOX=1`. Ohne Schlüssel antwortet `/apns/…` mit 503; `GET /health` nennt
+  `"apns": true|false`.
+- Anmeldung bei Apple mit einem kurzlebigen Token (ES256), das das Gateway alle 45 Minuten neu
+  ausstellt. `Urgency: high` wird zu `apns-priority` 10, sonst 5; `TTL` zu `apns-expiration`.
+  Antwort 201; abgemeldetes Gerät 410, ungültiges Geräte-Token 404 (die Instanz entfernt den
+  Endpunkt dann).
+- Apple spricht nur HTTP/2. Dafür bringt das Backend-Abbild `httpx` mit `h2` mit; geladen wird es
+  nur im Gateway beim ersten Apple-Versand.
+
 ## Rundschreiben per App
 
 - Schalter „Per App, wo möglich“ (`via_app`, Standard an): Mitglieder, deren Zugang ein Gerät mit

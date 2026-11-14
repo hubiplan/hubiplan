@@ -626,6 +626,8 @@ PUSH_VAPID_KEY_FILE = os.environ.get("PUSH_VAPID_KEY_FILE", "")
 PUSH_VAPID_SUBJECT = os.environ.get("PUSH_VAPID_SUBJECT", "")
 # Push-Gateway der Play-Variante (Schritt A6); leer: nur UnifiedPush und Abruf
 PUSH_GATEWAY_URL = os.environ.get("PUSH_GATEWAY_URL", "")
+# Das Gateway reicht auch an Apple weiter (iOS-App); nur dann nennt die Instanz den Weg „apns“
+PUSH_GATEWAY_APNS = os.environ.get("PUSH_GATEWAY_APNS", "0") == "1"
 # Nur für Tests: Push auch an interne Adressen
 PUSH_ALLOW_INTERNAL = env_bool("PUSH_ALLOW_INTERNAL", False)
 # Nur für Testaufbauten: Partner auch über http und interne Adressen erreichen

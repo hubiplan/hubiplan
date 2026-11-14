@@ -7,7 +7,9 @@ Geräteschlüssel. Hier liegen nur Anmeldung, Geräte und die Übersicht.
 
 from __future__ import annotations
 
+import base64
 import datetime
+import hashlib
 import logging
 import secrets
 
@@ -120,6 +122,13 @@ def _paired(user, device: Device, token: str) -> Response:
     )
 
 
+def pushkey_id() -> str:
+    """Kennung des VAPID-Schlüssels dieser Instanz, wie sie das Push-Gateway im Pfad erwartet."""
+    key = webpush.vapid_public_key()
+    raw = base64.urlsafe_b64decode(key + "=" * (-len(key) % 4))
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
 def push_ways() -> list[dict]:
     ways = [{"kind": Device.Push.UNIFIEDPUSH, "vapid_public_key": webpush.vapid_public_key()}]
     gateway = getattr(settings, "PUSH_GATEWAY_URL", "")
@@ -132,6 +141,15 @@ def push_ways() -> list[dict]:
                 "vapid_public_key": webpush.vapid_public_key(),
             }
         )
+        if getattr(settings, "PUSH_GATEWAY_APNS", False):
+            # iOS-App: Endpunkt /apns/<Geräte-Token>/<Kennung>, immer mit Kennung
+            ways.append(
+                {
+                    "kind": Device.Push.APNS,
+                    "gateway": gateway,
+                    "vapid_public_key": webpush.vapid_public_key(),
+                }
+            )
     return ways
 
 
@@ -378,7 +396,9 @@ class AppLanguageView(MyLanguageView):
 
 
 class PushSerializer(serializers.Serializer):
-    kind = serializers.ChoiceField(choices=[Device.Push.UNIFIEDPUSH, Device.Push.FCM])
+    kind = serializers.ChoiceField(
+        choices=[Device.Push.UNIFIEDPUSH, Device.Push.FCM, Device.Push.APNS]
+    )
     endpoint = serializers.CharField(max_length=1000)
     p256dh = serializers.CharField(max_length=200)
     auth = serializers.CharField(max_length=100)
@@ -399,6 +419,23 @@ class PushSerializer(serializers.Serializer):
                     {
                         "endpoint": gettext(
                             "Diese Instanz nimmt keinen Google-Push über dieses Gateway an."
+                        )
+                    }
+                )
+        if attrs["kind"] == Device.Push.APNS:
+            # Apple-Push nur über das eingestellte Gateway und nur an diese Instanz gebunden
+            gateway = getattr(settings, "PUSH_GATEWAY_URL", "").rstrip("/")
+            bound = f"/{pushkey_id()}"
+            if (
+                not gateway
+                or not getattr(settings, "PUSH_GATEWAY_APNS", False)
+                or not attrs["endpoint"].startswith(gateway + "/apns/")
+                or not attrs["endpoint"].endswith(bound)
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "endpoint": gettext(
+                            "Diese Instanz nimmt keinen Apple-Push über dieses Gateway an."
                         )
                     }
                 )

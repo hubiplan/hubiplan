@@ -1828,6 +1828,9 @@ msgstr "UnifiedPush"
 msgid "Google (FCM)"
 msgstr "Google (FCM)"
 
+msgid "Apple (APNs)"
+msgstr "Apple (APNs)"
+
 #, python-brace-format
 msgid ""
 "Hallo {name},\n"
@@ -1919,6 +1922,9 @@ msgstr "Devices are signed in within the app."
 
 msgid "Diese Instanz nimmt keinen Google-Push über dieses Gateway an."
 msgstr "This instance does not accept Google push via this gateway."
+
+msgid "Diese Instanz nimmt keinen Apple-Push über dieses Gateway an."
+msgstr "This instance does not accept Apple push via this gateway."
 
 msgid "Für dieses Gerät ist schon ein anderer Schlüssel gemeldet."
 msgstr "A different key has already been registered for this device."
