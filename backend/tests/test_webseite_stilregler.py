@@ -86,6 +86,10 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     for key, options in catalog["options"].items():
         # und Überschriften und Karten mit vier Stufen (Webseite #89)
         most = 4 if key in ("header_height", "hero", "headings", "cards") else 3
+        # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)
+        if key in ("font", "heading_font"):
+            assert 6 <= len(options) <= 8
+            continue
         assert options == "switch" or 2 <= len(options) <= most
 
 
