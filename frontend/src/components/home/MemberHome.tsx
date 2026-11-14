@@ -9,6 +9,7 @@ import { portalBillingApi } from '../../api/billing.ts'
 import type { PortalEntry } from '../../api/portal.ts'
 import { errorMessage, useLoad } from '../forms.ts'
 import { Alert } from '../ui.tsx'
+import { DateBox } from '../calendar/DateBox.tsx'
 import { RsvpBadge } from '../calendar/Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from '../calendar/time.ts'
 import { euro } from '../../api/finance.ts'
@@ -112,19 +113,22 @@ function NextEventCard({ access }: { access: number }) {
             <ul className="plain-list upcoming-list">
               {later.map((o) => (
                 <li key={o.key} className={o.is_cancelled ? 'event-cancelled' : undefined}>
-                  <span className="muted small">
-                    {formatDay(berlin(o.starts_at).date)}
-                    {!o.all_day && t(', {time} Uhr', { time: berlin(o.starts_at).time })}
-                  </span>
-                  <div>
-                    <span className="event-title">{o.title}</span>
-                    {o.is_cancelled && (
-                      <span className="badge badge-cancelled">
-                        {' '}
-                        {tc('event-status', 'abgesagt')}
-                      </span>
-                    )}{' '}
-                    <RsvpBadge o={o} />
+                  <DateBox date={berlin(o.starts_at).date} />
+                  <div className="upcoming-text">
+                    <span className="muted small">
+                      {formatDay(berlin(o.starts_at).date)}
+                      {!o.all_day && t(', {time} Uhr', { time: berlin(o.starts_at).time })}
+                    </span>
+                    <div>
+                      <span className="event-title">{o.title}</span>
+                      {o.is_cancelled && (
+                        <span className="badge badge-cancelled">
+                          {' '}
+                          {tc('event-status', 'abgesagt')}
+                        </span>
+                      )}{' '}
+                      <RsvpBadge o={o} />
+                    </div>
                   </div>
                 </li>
               ))}

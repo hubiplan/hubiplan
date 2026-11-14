@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { eventApi } from '../../api/events.ts'
 import type { CalendarBase } from '../../api/events.ts'
 import { useLoad } from '../forms.ts'
+import { DateBox } from './DateBox.tsx'
 import { RsvpBadge } from './Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from './time.ts'
 import { t, tc } from '../../i18n/index.ts'
@@ -38,16 +39,22 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
             const s = berlin(o.starts_at)
             return (
               <li key={o.key} className={o.is_cancelled ? 'event-cancelled' : undefined}>
-                <span className="muted small">
-                  {formatDay(s.date)}
-                  {!o.all_day && t(', {time} Uhr', { time: s.time })}
-                </span>
-                <div>
-                  <span className="event-title">{o.title}</span>
-                  {o.is_cancelled && (
-                    <span className="badge badge-cancelled"> {tc('event-status', 'abgesagt')}</span>
-                  )}{' '}
-                  <RsvpBadge o={o} />
+                <DateBox date={s.date} />
+                <div className="upcoming-text">
+                  <span className="muted small">
+                    {formatDay(s.date)}
+                    {!o.all_day && t(', {time} Uhr', { time: s.time })}
+                  </span>
+                  <div>
+                    <span className="event-title">{o.title}</span>
+                    {o.is_cancelled && (
+                      <span className="badge badge-cancelled">
+                        {' '}
+                        {tc('event-status', 'abgesagt')}
+                      </span>
+                    )}{' '}
+                    <RsvpBadge o={o} />
+                  </div>
                 </div>
               </li>
             )

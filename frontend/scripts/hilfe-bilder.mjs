@@ -188,10 +188,17 @@ for (const language of ['de', 'en']) {
               }),
           )
           if (!fits) throw new Error('Kalenderliste läuft bei 320 CSS-Pixeln über')
+          // Bild der ganzen Seite: die feste Schnellwahl unten läge sonst mitten im Bild und
+          // schöbe die feste Hauptaktion über den Termin
+          const ohneLeiste = await page.addStyleTag({
+            content:
+              '.bottom-nav { display: none !important; } .app-shell { --bottom-nav-height: 0rem !important; }',
+          })
           await page.screenshot({
             path: join(out, language, 'kalender-kontext-mobil.png'),
             fullPage: true,
           })
+          await ohneLeiste.evaluate((el) => el.remove())
           await page.setViewportSize({ width: 1280, height: 860 })
           await page
             .getByRole('button', { name: language === 'en' ? 'Month' : 'Monat', exact: true })
