@@ -21,7 +21,7 @@ Gilt der Termin nur für eine Untereinheit, die keine eigene Verwaltung für ihr
 Dann sind nur ihre Mitglieder eingeladen, und du pflegst den Termin weiter im Kalender der Einheit.
 Untereinheiten mit eigener Verwaltung legen ihre Termine selbst an.
 
-**Dateien anhängen:** Öffne den gespeicherten Termin. Unter **Anhänge** lädst du mit **Anhang hinzufügen** eine Datei hoch (PDF, JPEG oder PNG, bis 15 MB) oder knüpfst mit **Dokument aus der Ablage verknüpfen** ein vorhandenes Dokument an; der Termin zeigt dann immer dessen neueste Fassung.
+Dateien anhängen: Öffne den gespeicherten Termin. Unter **Anhänge** lädst du im Feld **Anhang hinzufügen (PDF, JPEG oder PNG, höchstens 15 MB)** eine Datei hoch oder knüpfst mit **Dokument aus der Ablage verknüpfen** ein vorhandenes Dokument an; der Termin zeigt dann immer dessen neueste Fassung.
 Bei einer Serie gelten die Anhänge für alle Wiederholungen.
 
 Eingeladene bekommen eine E-Mail und sagen dort oder im Mitgliederbereich zu oder ab.
