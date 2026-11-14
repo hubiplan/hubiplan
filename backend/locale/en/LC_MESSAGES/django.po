@@ -12443,6 +12443,71 @@ msgstr "You cannot link this document here."
 msgid "Das Dokument hängt schon an diesem Termin."
 msgstr "This document is already attached to this event."
 
+msgid "Text nach Ablauf"
+msgstr "Text afterwards"
+
+msgid "Zeitpunkt bitte als Datum mit Uhrzeit angeben."
+msgstr "Please enter the time as a date with a time of day."
+
+msgid "Höchstens 14 Zeilen."
+msgstr "At most 14 rows."
+
+msgid "Tag"
+msgstr "Day"
+
+msgid "Uhrzeit"
+msgstr "Time"
+
+msgid "Höchstens zwei Spalten."
+msgstr "At most two columns."
+
+msgid "Eine Tabelle hat eine bis sechs Spalten."
+msgstr "A table has one to six columns."
+
+msgid "Höchstens 40 Zeilen."
+msgstr "At most 40 rows."
+
+msgid "Zelle"
+msgstr "Cell"
+
+msgid "Höchstens zwölf Stationen."
+msgstr "At most twelve milestones."
+
+msgid "Zeitangabe"
+msgstr "Time"
+
+msgid "Höchstens 40 Programmpunkte."
+msgstr "At most 40 programme items."
+
+msgid "Programmpunkt"
+msgstr "Programme item"
+
+msgid "Höchstens zwölf Abschnitte."
+msgstr "At most twelve sections."
+
+msgid "Höchstens acht Bilder."
+msgstr "At most eight images."
+
+msgid "Bildunterschrift"
+msgstr "Caption"
+
+msgid "Höchstens zehn Dokumente."
+msgstr "At most ten documents."
+
+msgid "Bitte eine gültige IBAN angeben."
+msgstr "Please enter a valid IBAN."
+
+msgid "Beträge bitte in ganzen Euro angeben."
+msgstr "Please enter amounts in whole euros."
+
+msgid "Jahre Vereinsgeschichte"
+msgstr "years of club history"
+
+msgid "Jede Zahl nur einmal."
+msgstr "Each number only once."
+
+msgid "Unbekannte Zahl."
+msgstr "Unknown number."
 msgid "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
 msgstr "Only attachments of public events appear on the website."
 

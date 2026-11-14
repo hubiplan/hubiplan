@@ -596,6 +596,13 @@ def home_choices(website: Website) -> dict:
             {"id": d.pk, "title": d.title}
             for d in WebsiteDocument.objects.filter(website=website, published=True)
         ],
+        # Majestäten einer Untereinheit, Ergebnisse eines Wettbewerbs (14.11.2026)
+        "units": [{"id": u.pk, "name": u.name} for u in site.units],
+        "competitions": [
+            {"id": c.pk, "title": c.title, "date": c.date}
+            for c in home.competition_choices(site).order_by("-date", "-pk")[:100]
+        ],
+        "live_facts": dict(home.LIVE_FACTS),
     }
 
 
