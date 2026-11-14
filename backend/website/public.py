@@ -13,7 +13,7 @@ import hmac
 from functools import cached_property
 
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count, Q, QuerySet
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -150,6 +150,42 @@ class _Consents:
     def get(self, membership_id: int, default=None):
         active = self.people.active(membership_id)
         return default if active is None else active
+
+
+DRAFT_TEXT_FIELDS = (
+    "title",
+    "body",
+    "image",
+    "gallery",
+    "gallery_interval",
+    "gallery_random",
+    "show_captions",
+    "timeline",
+    "timeline_newest_first",
+    "sections",
+)
+
+
+def show_draft(text: WebsiteText) -> WebsiteText:
+    """Entwurf eines Textes nur im Speicher über die veröffentlichte Fassung legen
+    (Vorschau, wie ``Website.apply_draft``); nie danach speichern."""
+    for field in DRAFT_TEXT_FIELDS:
+        setattr(text, f"published_{field}", getattr(text, field))
+    text.published_at = text.published_at or text.updated_at
+    return text
+
+
+class DraftTexts(QuerySet):
+    """Texte der Vorschau: jeder geladene Text zeigt seinen Entwurf, auch ein noch nie
+    veröffentlichter. Sortiert und gefiltert wird weiter in der Datenbank."""
+
+    def _fetch_all(self):
+        fresh = self._result_cache is None
+        super()._fetch_all()
+        if fresh:
+            for text in self._result_cache:
+                if isinstance(text, WebsiteText):
+                    show_draft(text)
 
 
 class SiteView:
@@ -1012,8 +1048,8 @@ class SiteView:
         """Veröffentlichte Texte aller Untereinheiten mit einer Abfrage (GA-P01)."""
         result: dict[int, WebsiteText] = {}
         for text in (
-            WebsiteText.objects.filter(website=self.site, kind=WebsiteText.Kind.UNIT)
-            .exclude(published_at=None)
+            self.published_texts()
+            .filter(kind=WebsiteText.Kind.UNIT)
             .exclude(department=None)
             .select_related("published_image")
             .order_by("pk")
@@ -1184,6 +1220,9 @@ class SiteView:
         return image
 
     def published_texts(self):
+        if getattr(self.site, "draft_shown", False):
+            # Vorschau (Website.apply_draft): Entwürfe der Texte samt Abschnitten
+            return DraftTexts(WebsiteText).filter(website=self.site)
         return WebsiteText.objects.filter(website=self.site).exclude(published_at=None)
 
     def public_image(self, key: str) -> WebsiteImage | None:
