@@ -5,7 +5,8 @@ darf, sieht auch das Dokument, selbst wenn dessen Ordner enger sichtbar ist: Die
 Verknüpfung ist eine bewusste Freigabe durch jemanden, der den Termin bearbeiten
 und das Dokument in der Ablage lesen darf. Liegt das Dokument im Papierkorb oder
 ist es gelöscht, ist der Anhang nicht verfügbar; wiederhergestellt gilt er wieder.
-Auf die öffentliche Webseite kommen Anhänge nie.
+Auf die öffentliche Webseite kommen nur Anhänge öffentlicher Termine, die dafür einzeln
+freigegeben sind (``on_website``).
 """
 
 from __future__ import annotations
@@ -75,6 +76,7 @@ def data(att: EventAttachment, url: str) -> dict:
         "content_type": found[2] if found else "",
         "document": att.document_id if att.kind == EventAttachment.Kind.DOCUMENT else None,
         "available": found is not None,
+        "on_website": att.on_website,
         "url": url,
     }
 
@@ -117,3 +119,10 @@ def narrower(folder: Folder, event_visibility: str) -> bool:
         return event_visibility != "board"
     # Mitglieder- oder Vereinsordner: enger nur bei öffentlichen Terminen
     return event_visibility == "public"
+
+
+def for_website(event) -> list[EventAttachment]:
+    """Für die Webseite freigegebene, verfügbare Anhänge eines öffentlichen Termins."""
+    if event.visibility != "public":
+        return []
+    return [a for a in event.attachments.all() if a.on_website and available(a)]
