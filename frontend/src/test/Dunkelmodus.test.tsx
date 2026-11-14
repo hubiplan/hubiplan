@@ -43,30 +43,36 @@ afterEach(() => {
   applyTheme(null)
 })
 
-describe('X-02 Umfang D1', () => {
-  it.each(['/', '/anmelden', '/termine', '/termine/5', '/mein-konto/app', '/mein-bereich'])(
-    '%s darf dunkel sein',
-    (path) => expect(darkAllowed(path)).toBe(true),
-  )
-
-  it.each(['/finanzen', '/mitglieder', '/einstellungen/organisation', '/terminplan'])(
-    '%s bleibt hell',
-    (path) => expect(darkAllowed(path)).toBe(false),
-  )
+describe('X-02 Umfang D2: alle Seiten', () => {
+  it.each([
+    '/',
+    '/anmelden',
+    '/termine',
+    '/termine/5',
+    '/mein-konto/app',
+    '/mein-bereich',
+    '/finanzen',
+    '/mitglieder',
+    '/einstellungen/organisation',
+    '/terminplan',
+  ])('%s darf dunkel sein', (path) => expect(darkAllowed(path)).toBe(true))
 
   it('folgt dem Gerät, außer das Konto wählt hell oder dunkel', () => {
     expect(resolveScheme('auto', '/termine', true)).toBe('dark')
     expect(resolveScheme('auto', '/termine', false)).toBe('light')
     expect(resolveScheme('light', '/termine', true)).toBe('light')
     expect(resolveScheme('dark', '/termine', false)).toBe('dark')
-    expect(resolveScheme('dark', '/finanzen', true)).toBe('light')
+    expect(resolveScheme('dark', '/finanzen', false)).toBe('dark')
+    expect(resolveScheme('light', '/finanzen', true)).toBe('light')
   })
 
-  it('setzt data-theme nur auf den Seiten für Mitglieder', () => {
+  it('setzt data-theme auch in der Verwaltung und nimmt es mit „Hell“ wieder weg', () => {
     setColorSchemeChoice('dark')
     setColorSchemePath('/termine')
     expect(document.documentElement.dataset.theme).toBe('dark')
     setColorSchemePath('/finanzen')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    setColorSchemeChoice('light')
     expect(document.documentElement.dataset.theme).toBeUndefined()
   })
 })
@@ -118,6 +124,8 @@ describe('X-02 Farben gegen dunklen Grund', () => {
     setColorSchemePath('/mein-bereich')
     expect(root.style.getPropertyValue('--color-link')).toBe(linkColorDark('#14365d'))
     setColorSchemePath('/finanzen')
+    expect(root.style.getPropertyValue('--color-link')).toBe(linkColorDark('#14365d'))
+    setColorSchemeChoice('light')
     expect(root.style.getPropertyValue('--color-link')).toBe(themeVars(theme)['--color-link'])
   })
 })
@@ -144,7 +152,7 @@ describe('X-02 feste Farbwerte', () => {
   it('keine neuen festen Farbwerte in CSS außerhalb von theme.css', () => {
     // Heutiger Bestand; neue Farben gehören als Token nach theme.css (hell und dunkel).
     // Sinkt die Zahl, hier mitsenken.
-    const BESTAND = 104
+    const BESTAND = 103
     let n = 0
     for (const [path, css] of Object.entries(CSS)) {
       if (path === '../theme/theme.css') continue

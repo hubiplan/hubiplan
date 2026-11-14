@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- **Dunkelmodus überall**: Die dunkle Darstellung gilt jetzt für alle Seiten, auch für die Verwaltung. Du wählst sie unter Mein Konto › Profil › **Darstellung**; mit „Wie Gerät“ folgt HUBIplan deinem Telefon oder Rechner.
 - **Schnellsuche**: Oben im Kopf (oder mit Strg+K) springst du mit ein paar Buchstaben zu jeder Seite; wer Mitglieder sehen darf, findet dort auch Mitglieder.
 - **Frischeres Aussehen**: HUBIplan hat eine neue, gut lesbare Schrift, klarere Knöpfe und Auswahllisten und farbige Abzeichen für Zustände wie „bezahlt“ oder „offen“. Die Seitenleiste zeigt die Vereinsfarbe und bleibt beim Scrollen stehen. Auf dem Handy liegen Start, Termine und der wichtigste Bereich in einer Leiste am unteren Rand; „Mehr“ öffnet das ganze Menü. Termine auf der Startseite tragen ein Datumskästchen. Suchfelder zeigen eine Lupe, ein gesetzter Filter ist getönt, und Karten der Startseite sowie leere Listen tragen ein Symbol.
 - Webseite: Neue Schriften unter Gestaltung › Feinabstimmung › Schrift: **Klar** (Source Sans 3), **Elegant** (Source Sans 3, Überschriften in Crimson Pro) und **Gut lesbar** (Atkinson Hyperlegible), für Überschriften außerdem **Fraktur** und **Kräftig** (Oswald). Die Voreinstellung „Gut lesbar“ nutzt jetzt Atkinson Hyperlegible. Die Schriften liegen wie alle anderen auf der Webseite selbst.

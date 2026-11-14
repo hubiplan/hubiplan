@@ -1,9 +1,8 @@
-// Dunkelmodus der Web-App, Stufe D1 (konzepte/dunkelmodus-web.md, UX-Audit 08.11. X-02).
+// Dunkelmodus der Web-App (UX-Audit 08.11. X-02; Stufe D2 mit Design „Frisch“ D8).
 //
-// Dunkel wird es nur auf den Seiten, die Mitglieder vom Telefon aus öffnen: Anmeldung,
-// Startseite, Termine, Mein Konto und Mitgliederbereich. Die Verwaltung bleibt hell. Die Wahl
-// „Wie Gerät / Hell / Dunkel“ steht im Konto (gilt auf allen Geräten); der Browser merkt sie
-// sich zusätzlich, damit die Anmeldeseite schon vor dem Laden des Kontos passt.
+// Dunkel gibt es auf allen Seiten, auch in der Verwaltung. Die Wahl „Wie Gerät / Hell / Dunkel“
+// steht im Konto (gilt auf allen Geräten); der Browser merkt sie sich zusätzlich, damit die
+// Anmeldeseite schon vor dem Laden des Kontos passt.
 import { setThemeScheme } from './theme.ts'
 import type { Scheme } from './theme.ts'
 
@@ -12,18 +11,11 @@ export type ColorSchemeChoice = 'auto' | 'light' | 'dark'
 const KEY = 'hubiplan.darstellung'
 const CHOICES: readonly ColorSchemeChoice[] = ['auto', 'light', 'dark']
 
-/** Pfade mit Dunkelmodus (D1). Alles andere bleibt hell. */
-const DARK_PATHS = [
-  /^\/$/,
-  /^\/anmelden(\/|$)/,
-  /^\/passwort-(vergessen|zuruecksetzen)(\/|$)/,
-  /^\/termine(\/|$)/,
-  /^\/mein-konto(\/|$)/,
-  /^\/mein-bereich(\/|$)/,
-]
+/** Seiten, die immer hell bleiben (eigene, feste Farbwelt). Zurzeit keine. */
+const LIGHT_PATHS: RegExp[] = []
 
 export function darkAllowed(pathname: string): boolean {
-  return DARK_PATHS.some((re) => re.test(pathname))
+  return !LIGHT_PATHS.some((re) => re.test(pathname))
 }
 
 let choice: ColorSchemeChoice = readStored()
@@ -84,7 +76,7 @@ export function setColorSchemeChoice(next: ColorSchemeChoice) {
   for (const l of listeners) l()
 }
 
-/** Seite gewechselt: Dunkel nur auf den Seiten für Mitglieder. */
+/** Seite gewechselt: Seiten mit fester heller Farbwelt bleiben hell. */
 export function setColorSchemePath(next: string) {
   if (next === pathname) return
   pathname = next

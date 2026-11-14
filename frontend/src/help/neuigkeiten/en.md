@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Dark mode everywhere**: The dark appearance now applies to all pages, including administration. Choose it under My account › Profile › **Appearance**; with “Same as device”, HUBIplan follows your phone or computer.
 - **Quick search**: At the top (or with Ctrl+K) a few letters take you to any page; if you may see members, you find members there too.
 - **Fresher look**: HUBIplan has a new, highly legible typeface, clearer buttons and drop-downs and coloured badges for states such as “paid” or “open”. The sidebar shows the club colour and stays in place while scrolling. On phones, Home, Events and the most important area sit in a bar at the bottom edge; “More” opens the full menu. Events on the home page carry a date box. Search fields show a magnifying glass, an active filter is tinted, and home page cards and empty lists carry an icon.
 - Website: New fonts under Design › Fine-tuning › Font: **Clear** (Source Sans 3), **Elegant** (Source Sans 3, headings in Crimson Pro) and **Easy to read** (Atkinson Hyperlegible), plus **Blackletter** and **Bold** (Oswald) for headings. The “Easy to read” preset now uses Atkinson Hyperlegible. Like all other fonts they are stored on the website itself.

@@ -2,6 +2,9 @@
 # Bildschirmfotos der Hilfe neu erzeugen (docs/hilfe.md).
 #
 #   scripts/hilfe-bilder.sh [Bildname …]
+#   HILFE_DUNKEL=/pfad/zum/pruefordner scripts/hilfe-bilder.sh [Bildname …]
+#       dieselben Stellen im Dunkelmodus (nur Deutsch) in einen eigenen Ordner, dazu meldet
+#       axe zu geringe Kontraste; die Bilder der Hilfe bleiben unberührt
 #
 # Startet in Wegwerf-Containern PostgreSQL, Redis, das Backend mit den erfundenen
 # Demodaten (seed_testdata) und die Oberfläche aus dem Arbeitsstand, fotografiert jede
@@ -218,10 +221,19 @@ until docker run --rm --network "$ID" node:24-alpine wget -q -O /dev/null http:/
 done
 echo "Oberfläche bereit"
 
-mkdir -p "$ROOT/frontend/public/hilfe-bilder"
+OUT_DIR="$ROOT/frontend/public/hilfe-bilder"
+# Prüflauf im Dunkelmodus: Bilder in ein eigenes Verzeichnis, dazu die Kontrastprüfung von axe
+if [ -n "${HILFE_DUNKEL:-}" ]; then
+    OUT_DIR="$HILFE_DUNKEL"
+fi
+mkdir -p "$OUT_DIR"
 docker run --rm --name "$ID-pw" --network "$ID" "$CPUS" --ipc=host \
-    -v "$WORK/frontend:/app" -v "$ROOT/frontend/public/hilfe-bilder:/out" -v hubiplan-npm-cache:/root/.npm \
-    -e BASE_URL=http://web:5173 -e DEMO_PASSWORD="$PASSWORD" -e OUT=/out -w /app/scripts \
+    -v "$WORK/frontend:/app" -v "$OUT_DIR:/out" -v hubiplan-npm-cache:/root/.npm \
+    -e BASE_URL=http://web:5173 -e DEMO_PASSWORD="$PASSWORD" -e OUT=/out -e DUNKEL="${HILFE_DUNKEL:+1}" -w /app/scripts \
     --user "$(id -u):$(id -g)" -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
     "$PW_IMAGE" sh -c "npm i --no-save --no-audit --no-fund --loglevel=error --prefix /app/scripts playwright@$PLAYWRIGHT_VERSION > /dev/null && node hilfe-bilder.mjs $*"
-echo "Fertig: frontend/public/hilfe-bilder/ (Bilder ansehen, dann einchecken)"
+if [ -n "${HILFE_DUNKEL:-}" ]; then
+    echo "Fertig: $OUT_DIR (Prüfbilder im Dunkelmodus, nicht einchecken)"
+else
+    echo "Fertig: frontend/public/hilfe-bilder/ (Bilder ansehen, dann einchecken)"
+fi
