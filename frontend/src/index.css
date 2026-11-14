@@ -1394,10 +1394,16 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 }
 
 .table th {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--color-text-muted);
+}
+/* Design „Frisch“ D4: Kopfzeile auf zweiter Fläche, Zeile beim Darüberfahren leicht getönt */
+.table > thead > tr > th {
+  background: var(--color-surface-2);
+}
+.table > tbody > tr:hover > td {
+  background: var(--color-brand-softer);
 }
 
 .table .num {
@@ -1957,7 +1963,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 }
 
 .th-sort {
-  background: var(--color-button-bg);
+  background: transparent;
   border: 0;
   border-radius: var(--radius);
   padding: 0.2rem 0.4rem;
@@ -2478,19 +2484,24 @@ button.tab.active {
   padding: 0.05rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.8rem;
+  font-weight: 600;
   border: 1px solid var(--color-border);
   white-space: nowrap;
 }
 .status-paid {
   color: var(--color-success);
-  border-color: currentColor;
+  background: var(--color-success-bg);
+  border-color: transparent;
 }
 .status-open {
-  color: var(--color-text);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-color: transparent;
 }
 .status-overdue {
   color: var(--color-error);
-  border-color: currentColor;
+  background: var(--color-error-bg);
+  border-color: transparent;
 }
 .status-draft,
 .status-cancelled {
@@ -3193,6 +3204,11 @@ form.card > .save-status:first-child {
 }
 
 .th-sort-active {
+  color: var(--color-text);
+}
+
+.th-sort:hover {
+  background: var(--color-brand-soft);
   color: var(--color-text);
 }
 
