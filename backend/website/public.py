@@ -1078,10 +1078,14 @@ class SiteView:
     def image(self, image: WebsiteImage | None) -> dict | None:
         if image is None:
             return None
+        # Immer mit Fassung (auch „-v0“): Die Webseite darf solche Adressen einen Tag im
+        # Browser behalten, weil ein neuer Ausschnitt eine neue Adresse bekommt (Ladezeiten
+        # der Vereinswebseite 14.11.)
+        versioned = f"{image.key}-v{image.version}"
         return {
             "key": image.key,
-            "url": self.url(f"images/{image.public_key}/"),
-            "small_url": self.url(f"images/{image.public_key}/?size=small"),
+            "url": self.url(f"images/{versioned}/"),
+            "small_url": self.url(f"images/{versioned}/?size=small"),
             "width": image.width,
             "height": image.height,
             "caption": image.caption,

@@ -79,4 +79,10 @@ def render(name: str, content: bytes, size: int, *, maskable: bool = False) -> b
             canvas = flat.convert("RGB")
     buf = io.BytesIO()
     canvas.save(buf, "PNG", optimize=True)
-    return buf.getvalue()
+    full = buf.getvalue()
+    # Mit Farbpalette meist ein Viertel so groß, sichtbar gleich (Ladezeiten der
+    # Vereinswebseite 14.11.); nur nehmen, wenn es wirklich kleiner ist
+    method = Image.Quantize.FASTOCTREE if canvas.mode == "RGBA" else Image.Quantize.MEDIANCUT
+    small = io.BytesIO()
+    canvas.quantize(colors=256, method=method).save(small, "PNG", optimize=True)
+    return small.getvalue() if small.tell() < len(full) else full

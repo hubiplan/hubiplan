@@ -71,7 +71,7 @@ def test_kopfbild_setzen_und_entfernen(orgs, admin, site):
     assert resp.status_code == 200, resp.content
     assert resp.json()["website"]["header_image"] == first["id"]
     header = info()["header_image"]
-    assert header["url"].endswith(f"images/{key}/")
+    assert header["url"].endswith(f"images/{key}-v0/")
     # Ohne eigenen Alternativtext steht der Vereinsname dort
     assert header["alt"] == org.name
     assert Client().get(f"/api/public/site/v1/kopf-a/images/{key}/").status_code == 200
@@ -115,7 +115,7 @@ def test_kopfbild_fuer_schmale_bildschirme(orgs, admin, site):
     admin.put(url(org), {"header_image": wide["id"]}, "application/json")
     data = info()
     assert data["header_image"]["url"] != data["header_image_narrow"]["url"]
-    assert data["header_image_narrow"]["url"].endswith(f"images/{key}/")
+    assert data["header_image_narrow"]["url"].endswith(f"images/{key}-v0/")
     assert data["header_image_narrow"]["alt"] == "Banner kompakt"
     assert Client().get(f"/api/public/site/v1/kopf-a/images/{key}/").status_code == 200
     usage = admin.get(url(org, f"images/{narrow['id']}/")).json()["usage"]
