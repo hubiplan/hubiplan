@@ -18,6 +18,7 @@ import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextArea } from '../settings/TextArea.tsx'
 import './obligations.css'
+import { Why } from '../../learning/Aids.tsx'
 
 const INTERVALS = [1, 3, 6, 12, 24, 36, 48, 60]
 
@@ -490,6 +491,9 @@ export function ObligationsPage() {
       {canEdit && data.suggestions.length > 0 && (
         <section className="card card-wide">
           <h2>{t('Vorschläge')}</h2>
+          <div className="aid-row">
+            <Why k="obligations_calendar" />
+          </div>
           <p className="muted small">
             {t(
               'Übliche Pflichten eingetragener, gemeinnütziger Vereine in Deutschland. Frist, Wiederholung und Zuständigkeit passt du beim Übernehmen an. Die Hinweise ersetzen keine Rechts- oder Steuerberatung.',

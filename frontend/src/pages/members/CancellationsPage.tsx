@@ -9,6 +9,7 @@ import { errorMessage, formatDate, formatDateTime, useLoad } from '../../compone
 import { Alert, Field, LoadError } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { HowTo } from '../../learning/Aids.tsx'
 
 export function CancellationsPage() {
   const org = useActiveOrg()
@@ -23,6 +24,7 @@ export function CancellationsPage() {
 
   return (
     <>
+      <HowTo k="how_cancellation" />
       <div className="card card-wide filters">
         <select aria-label={t('Status')} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="pending">{t('offen')}</option>

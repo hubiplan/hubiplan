@@ -101,3 +101,9 @@ Trefferpunkt zu Ring, Zehntel und Teiler; Quellen BGB,
 DSGVO, KUG und DSB-Sportordnung). Die Prüfliste der Webseite
 behält ihre eigene Form, weil dort offene Pflichtpunkte das Veröffentlichen sperren; sie
 trägt aber das „?“ an Impressum und „Verantwortlich“.
+
+Dazu kommen Online-Mitgliedsantrag (Beitragsordnung, freiwillige Einwilligungen, Minderjährige),
+Kündigung durch das Mitglied (Frist nach § 39 BGB, Ablauf beim Bestätigen), Versammlungen online
+(Teilnahme aus der Ferne, geheime Abstimmung), Umfragen (kein Beschluss, anonym), Haushaltsplan,
+Umsatzsteuer-Voranmeldung und Vorsteuerpauschale, Sponsoring und Vertragsverlängerung,
+Fristenkalender und Qualifikationen (Einsichtsvermerk beim Führungszeugnis).

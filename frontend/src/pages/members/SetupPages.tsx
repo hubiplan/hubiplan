@@ -12,6 +12,7 @@ import { Alert, Checkbox, SaveStatus, SelectField, Loading } from '../../compone
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t, tn } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Form = ReturnType<typeof useForm<MemberSettings>>
 
@@ -196,6 +197,9 @@ export function MemberPortalSettings() {
             onChange={(val) => set('contact_changes_need_approval', val)}
           />
           <h3>{t('Kündigung durch das Mitglied')}</h3>
+          <div className="aid-row">
+            <Why k="cancellation_notice" />
+          </div>
           <Checkbox
             label={t(
               'Mitglieder können ihre Mitgliedschaft im Mitgliederbereich kündigen; {e_nom} bestätigt den Austritt',
