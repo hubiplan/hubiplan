@@ -123,6 +123,8 @@ freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.
   Einladung und Erinnerung zu einem Termin: `{"v":1,"t":"event","access":…,"id":<Termin>,"kind":"invite"|"remind","title":…,"text":…,"from":…,"rsvp":true,"maybe":true}`
   (ältere App-Versionen gleichen bei unbekanntem `t` nur ab).
   Hinweise an das Mitglied (Foto freigegeben, Änderung übernommen): `{"t":"info","access":…,"title":…,"text":…}`.
+  Neue Umfrage und Erinnerung: `{"v":1,"t":"survey","access":…,"id":<Umfrage>,"kind":"start"|"remind","title":…,"text":…,"from":…}`
+  (Umfrage unter `GET /api/portal/<Zugang>/surveys/<id>/` öffnen).
 
 ## Google-Push über das Push-Gateway (Schritt A6)
 
@@ -362,6 +364,12 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
 - Fristenkalender (Modul `obligations`, Recht `obligations.view`), nur lesen: `obligations/`
   mit `items` (je Pflicht `title`, `due_date`, `status` `overdue|soon|planned|election|done|
   inactive`, `role_name`, `history`). Anlegen und Erledigen gehen im Browser.
+- Umfragen (Modul `surveys`, siehe [umfragen.md](umfragen.md)) im Mitgliederbereich, auch mit
+  dem Geräteschlüssel: `GET /api/portal/<Zugang>/surveys/` (`surveys`, offene zuerst),
+  `GET …/surveys/<id>/`, `POST …/surveys/<id>/answer/` mit `answers` (Antwort je Frage),
+  `DELETE …/surveys/<id>/answer/` (zurückziehen, nicht bei anonymen Umfragen) und
+  `POST …/surveys/<id>/follow/` (Zusage zum Termin aus der Terminfindung übernehmen).
+  `surveys_enabled` und `surveys_open` (Zahl unbeantworteter Umfragen) stehen in `portal`.
 - Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.

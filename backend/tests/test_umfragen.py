@@ -1,4 +1,4 @@
-"""Umfragen und Meinungsbilder (Projektordner konzepte/umfragen-meinungsbilder.md)."""
+"""Umfragen und Meinungsbilder (konzepte/umfragen-meinungsbilder.md)."""
 
 import datetime
 
@@ -331,6 +331,8 @@ def test_zielgruppe_vorstand_untereinheit_und_modul(orgs, api):
     user = make_user("vorstand-umfrage@example.org")
     give_role(user, org, permissions=["surveys.edit"], name="Geschäftsführer")
     client = api(user)
+    org.enabled_modules = sorted({*org.enabled_modules} - {"surveys"})
+    org.save()
     assert client.get(f"/api/orgs/{org.pk}/surveys/").status_code == 404
     org.enabled_modules = sorted({*org.enabled_modules, "members", "surveys", "portal"})
     org.department_access_enabled = True

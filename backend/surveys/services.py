@@ -1,6 +1,6 @@
 """Umfragen: Zielgruppe, Antworten prüfen und speichern, Ergebnis zählen.
 
-Konzept: Projektordner konzepte/umfragen-meinungsbilder.md. Die Ansichten (Verwaltung,
+Konzept: konzepte/umfragen-meinungsbilder.md. Die Ansichten (Verwaltung,
 Mitgliederbereich, Mail-Link) rufen nur diese Funktionen; RLS setzen sie vorher.
 """
 

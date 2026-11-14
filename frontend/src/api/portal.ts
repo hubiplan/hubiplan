@@ -26,6 +26,7 @@ export interface DeptSummary {
   infrastructure_enabled?: boolean
   meetings_enabled?: boolean
   helpers_enabled?: boolean
+  surveys_enabled?: boolean
   bookings_enabled?: boolean
   imprint_key?: string
 }
@@ -48,6 +49,9 @@ export interface PortalEntry {
   bookings_enabled?: boolean
   helpers_enabled?: boolean
   meetings_enabled?: boolean
+  /** Umfragen (Modul) und wie viele davon noch auf eine Antwort warten */
+  surveys_enabled?: boolean
+  surveys_open?: number
   /** Module Aufgaben, Dokumente, Rundschreiben, Ausweise (fehlt bei älteren Servern: an) */
   todos_enabled?: boolean
   docs_enabled?: boolean

@@ -654,7 +654,17 @@ class MembersView(Base):
             return Response([])
         qs = filter_names(club_base(self.scope.org, self.department()), term)
         rows = ordered(qs.select_related("person"), limit=10)
-        return Response([{"id": m.pk, "name": services.person_name(m)} for m in rows])
+        return Response(
+            [
+                {
+                    "id": m.pk,
+                    "first_name": m.person.first_name,
+                    "last_name": m.person.last_name,
+                    "name": services.person_name(m),
+                }
+                for m in rows
+            ]
+        )
 
 
 class CountView(Base):

@@ -74,6 +74,20 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    ...(entry.surveys_enabled
+      ? [
+          {
+            to: '/mein-bereich/umfragen',
+            label: t('Umfragen'),
+            tile: {
+              title: t('Umfragen'),
+              text: entry.surveys_open
+                ? t('{n} offen, jetzt antworten', { n: entry.surveys_open })
+                : t('Termine finden, Essen wählen, Meinungen sagen'),
+            },
+          },
+        ]
+      : []),
     ...(entry.meetings_enabled
       ? [
           {

@@ -159,6 +159,19 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.helpers_enabled && ws.dept.permissions.includes(PERM.helpersView)),
   },
   {
+    id: 'umfragen',
+    group: 'planen',
+    label: t('Umfragen'),
+    path: '/umfragen',
+    icon: icon('M5 4h14v16H5zM8.5 8.5h7M8.5 12h7M8.5 15.5h4'),
+    visible: (org, ws) =>
+      org
+        ? org.type === 'club' &&
+          org.modules.includes('surveys') &&
+          org.permissions.includes(PERM.surveysView)
+        : !!(ws.dept?.surveys_enabled && ws.dept.permissions.includes(PERM.surveysView)),
+  },
+  {
     id: 'aufgaben',
     group: 'planen',
     label: t('Aufgaben'),

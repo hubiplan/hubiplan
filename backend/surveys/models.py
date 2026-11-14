@@ -1,4 +1,4 @@
-"""Umfragen und Meinungsbilder (Projektordner konzepte/umfragen-meinungsbilder.md).
+"""Umfragen und Meinungsbilder (konzepte/umfragen-meinungsbilder.md).
 
 Eine Umfrage gehört zu einem Verein oder einer Untereinheit (Spalte ``department``), auf Wunsch
 zu einem Termin. Sie hat Fragen, jede Frage Antwortmöglichkeiten. Wer geantwortet hat, steht in
