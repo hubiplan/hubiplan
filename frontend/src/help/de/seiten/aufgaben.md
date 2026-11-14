@@ -24,7 +24,7 @@ Bei Serien überträgt „Verantwortung übertragen“ die Verantwortung für de
 
 ## Aufgaben am Termin
 
-Verknüpfe eine Aufgabe mit einem Termin im eigenen Kalender. Im Termin führen „Aufgaben zu diesem Termin“ und „Aufgabe zu diesem Termin anlegen“ in die gefilterte Aufgabenansicht. Bestehende Aufgaben verknüpft oder löst das verantwortliche Konto unter „Terminverknüpfung“. Aufgaben- und Kalenderrechte werden unabhängig geprüft: Eine Verknüpfung teilt weder die Aufgabe noch einen internen Termin. Ohne Kalenderrecht erscheint nur „Termin nicht verfügbar“. Löschen des Termins erhält die Aufgabe und entfernt die Verknüpfung. Fristen ändern sich nicht automatisch mit einem Termin. Bei Serienterminen gilt der Bezug für die ganze Terminserie, nicht für ein einzelnes Datum.
+Verknüpfe eine Aufgabe mit einem Termin im eigenen Kalender. Im Termin legt der Knopf „+ Aufgabe zu diesem Termin anlegen“ eine neue Aufgabe an; der Verweis „Aufgaben zu diesem Termin anzeigen“ öffnet die gefilterte Aufgabenansicht. Bestehende Aufgaben verknüpft oder löst das verantwortliche Konto unter „Terminverknüpfung“. Aufgaben- und Kalenderrechte werden unabhängig geprüft: Eine Verknüpfung teilt weder die Aufgabe noch einen internen Termin. Ohne Kalenderrecht erscheint nur „Termin nicht verfügbar“. Löschen des Termins erhält die Aufgabe und entfernt die Verknüpfung. Fristen ändern sich nicht automatisch mit einem Termin. Bei Serienterminen gilt der Bezug für die ganze Terminserie, nicht für ein einzelnes Datum.
 
 ## Mitgliederaufgaben
 

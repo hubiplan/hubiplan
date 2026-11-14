@@ -565,16 +565,16 @@ function Handover({
           </label>
           {update && (
             <>
-              <label>
-                {t('Zustand')}
+              <label className="field">
+                <span>{t('Zustand')}</span>
                 <select value={condition} onChange={(e) => setCondition(e.target.value)}>
                   <option value="ready">{t('Einsatzbereit')}</option>
                   <option value="limited">{t('Eingeschränkt nutzbar')}</option>
                   <option value="defective">{t('Defekt')}</option>
                 </select>
               </label>
-              <label>
-                {t('Hinweis zum Zustand')}
+              <label className="field">
+                <span>{t('Hinweis zum Zustand')}</span>
                 <input value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} />
               </label>
             </>
@@ -724,8 +724,8 @@ function BookingForm({
     >
       <h2>{booking ? t('Buchung bearbeiten') : t('Buchen')}</h2>
       <fieldset disabled={busy}>
-        <label>
-          {t('Objekt')}
+        <label className="field">
+          <span>{t('Objekt')}</span>
           <select
             value={values.item}
             disabled={!!booking}
@@ -775,8 +775,8 @@ function BookingForm({
             )}
           </details>
         )}
-        <label>
-          {t('Zweck')}
+        <label className="field">
+          <span>{t('Zweck')}</span>
           <input
             required={!link}
             maxLength={200}
@@ -802,8 +802,8 @@ function BookingForm({
               {t('ganztägig')}
             </label>
             <div className="booking-times">
-              <label>
-                {t('Beginn')}
+              <label className="field">
+                <span>{t('Beginn')}</span>
                 <input
                   required
                   type={values.all_day ? 'date' : 'datetime-local'}
@@ -811,8 +811,8 @@ function BookingForm({
                   onChange={(e) => setValues({ ...values, starts_at: e.target.value })}
                 />
               </label>
-              <label>
-                {values.all_day ? t('Letzter Tag') : t('Ende')}
+              <label className="field">
+                <span>{values.all_day ? t('Letzter Tag') : t('Ende')}</span>
                 <input
                   required={!values.all_day}
                   type={values.all_day ? 'date' : 'datetime-local'}
@@ -820,8 +820,8 @@ function BookingForm({
                   onChange={(e) => setValues({ ...values, ends_at: e.target.value })}
                 />
               </label>
-              <label>
-                {t('Wiederholung')}
+              <label className="field">
+                <span>{t('Wiederholung')}</span>
                 <select
                   value={values.repeat}
                   onChange={(e) =>
@@ -835,8 +835,8 @@ function BookingForm({
                 </select>
               </label>
               {values.repeat !== 'none' && (
-                <label>
-                  {t('wiederholen bis')}
+                <label className="field">
+                  <span>{t('wiederholen bis')}</span>
                   <input
                     type="date"
                     value={values.repeat_until}
@@ -847,8 +847,8 @@ function BookingForm({
             </div>
           </>
         )}
-        <label>
-          {t('Sichtbarkeit')}
+        <label className="field">
+          <span>{t('Sichtbarkeit')}</span>
           <select
             value={values.visibility}
             onChange={(e) =>
@@ -860,8 +860,8 @@ function BookingForm({
             <option value="board">{t('Nur die Verwaltung sieht den Zweck')}</option>
           </select>
         </label>
-        <label>
-          {t('Notiz')}
+        <label className="field">
+          <span>{t('Notiz')}</span>
           <textarea
             maxLength={2000}
             value={values.note}
@@ -873,8 +873,8 @@ function BookingForm({
             <legend>{t('Externe Buchung (optional)')}</legend>
             <div className="booking-times">
               {(['name', 'email', 'phone'] as const).map((key, index) => (
-                <label key={key}>
-                  {[t('Name'), t('E-Mail'), t('Telefon')][index]}
+                <label className="field" key={key}>
+                  <span>{[t('Name'), t('E-Mail'), t('Telefon')][index]}</span>
                   <input
                     type={key === 'email' ? 'email' : 'text'}
                     maxLength={200}
@@ -1000,8 +1000,8 @@ export function BookingRulesCard({
                   {t('Mitglieder dürfen im Mitgliederbereich anfragen')}
                 </label>
                 <div className="booking-times">
-                  <label>
-                    {t('Rüstzeit vorher (Minuten)')}
+                  <label className="field">
+                    <span>{t('Rüstzeit vorher (Minuten)')}</span>
                     <input
                       type="number"
                       min={0}
@@ -1013,8 +1013,8 @@ export function BookingRulesCard({
                       }
                     />
                   </label>
-                  <label>
-                    {t('Rüstzeit nachher (Minuten)')}
+                  <label className="field">
+                    <span>{t('Rüstzeit nachher (Minuten)')}</span>
                     <input
                       type="number"
                       min={0}
@@ -1024,8 +1024,8 @@ export function BookingRulesCard({
                       onChange={(e) => setRules({ ...rules, buffer_after: Number(e.target.value) })}
                     />
                   </label>
-                  <label>
-                    {t('Buchbar bis (Tage im Voraus)')}
+                  <label className="field">
+                    <span>{t('Buchbar bis (Tage im Voraus)')}</span>
                     <input
                       type="number"
                       min={1}
@@ -1034,8 +1034,8 @@ export function BookingRulesCard({
                       onChange={(e) => setRules({ ...rules, horizon_days: Number(e.target.value) })}
                     />
                   </label>
-                  <label>
-                    {t('Auf der Webseite')}
+                  <label className="field">
+                    <span>{t('Auf der Webseite')}</span>
                     <select
                       value={rules.website}
                       onChange={(e) =>
