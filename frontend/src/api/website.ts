@@ -202,6 +202,25 @@ export type HomeKind =
   | 'chronicle'
   | 'facts'
   | 'divider'
+  /** laufender Zähler bis zu einem Termin oder Zeitpunkt (Ralf 14.11.2026) */
+  | 'countdown'
+  | 'join'
+  | 'donation'
+  | 'hours'
+  | 'columns'
+  | 'table'
+  | 'timeline'
+  | 'program'
+  | 'callout'
+  | 'accordion'
+  | 'images'
+  | 'downloads'
+  | 'unit_honors'
+  | 'competition'
+  | 'albums'
+  | 'posts'
+  | 'app'
+  | 'live_facts'
   /** nur auf Textseiten (G6): schmales Bild über der Überschrift */
   | 'cover'
 
@@ -233,7 +252,8 @@ export interface HomeSectionData {
   buttons?: HomeButton[]
   align?: 'left' | 'center' | 'right'
   tiles?: HomeTile[]
-  columns?: 2 | 3
+  /** Kacheln 2|3, Bilder 2|3|4 */
+  columns?: 2 | 3 | 4
   event?: number | null
   album?: number | null
   count?: number
@@ -246,11 +266,50 @@ export interface HomeSectionData {
   document?: number | null
   url?: string
   label?: string
-  style?: 'line' | 'space'
+  /** Trenner: line/space; Hinweis-Kasten: info/warning/success */
+  style?: 'line' | 'space' | 'info' | 'warning' | 'success'
+  /** Spendenaufruf */
+  holder?: string
+  iban?: string
+  bic?: string
+  purpose?: string
+  goal?: number | null
+  raised?: number | null
+  /** Tabelle: Spaltenköpfe und Zeilen */
+  head?: string[]
+  rows?: string[][]
+  /** Download-Liste: Dokumentnummern */
+  documents?: number[]
+  /** Majestäten einer Untereinheit */
+  unit?: number | null
+  /** Ergebnisse eines Wettbewerbs */
+  competition?: number | null
+  /** Neueste Beiträge */
+  channel?: 'all' | 'instagram' | 'facebook'
+  /** Mitgliederbereich und App */
+  qr?: boolean
+  store?: boolean
+  /** Countdown: Ziel ist ein Termin oder ein frei gewählter Zeitpunkt (Ortszeit) */
+  mode?: 'event' | 'date'
+  at?: string
+  /** Countdown nach Ablauf: ausblenden oder Text zeigen */
+  after?: 'hide' | 'text'
+  after_text?: string
 }
 
 /** Eintrag einer Liste: Frage/Antwort, Partner (Name, Logo, Link) oder Zahl mit Text */
 export interface HomeItem {
+  /** Zeiten, Festprogramm: Tag; Zeitstrahl: Zeitangabe */
+  day?: string
+  time?: string
+  note?: string
+  when?: string
+  /** Zwei Spalten, Aufklappbar, Zeitstrahl */
+  title?: string
+  text?: string
+  caption?: string
+  /** Zahlen aus HUBIplan: members, years, units */
+  fact?: string
   question?: string
   answer?: string
   name?: string
@@ -281,6 +340,10 @@ export interface HomeChoices {
   places?: { id: number; name: string }[]
   categories?: { id: number; name: string }[]
   documents?: { id: number; title: string }[]
+  /** Majestäten einer Untereinheit, Ergebnisse eines Wettbewerbs, Zahlen aus HUBIplan */
+  units?: { id: number; name: string }[]
+  competitions?: { id: number; title: string; date: string }[]
+  live_facts?: Record<string, string>
 }
 
 export interface WebsiteDomain {
