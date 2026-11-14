@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { contrastRatio } from '../theme/contrast.ts'
 import {
+  colorSchemeChoice,
   darkAllowed,
   resolveScheme,
   setColorSchemeChoice,
@@ -38,35 +39,60 @@ const FARBEN = ['#14365d', '#1f4e2c', '#0e7c66', '#8b0000', '#c9a227', '#ffd700'
 const ALLE = [...FARBEN, '#000000', '#ffffff', '#0000ff', '#6a1b9a']
 
 afterEach(() => {
-  setColorSchemeChoice('auto')
+  setColorSchemeChoice('light')
   setColorSchemePath('/')
   applyTheme(null)
 })
 
-describe('X-02 Umfang D1', () => {
-  it.each(['/', '/anmelden', '/termine', '/termine/5', '/mein-konto/app', '/mein-bereich'])(
-    '%s darf dunkel sein',
-    (path) => expect(darkAllowed(path)).toBe(true),
-  )
+describe('Native Aufklapplisten folgen der gewählten Darstellung', () => {
+  it('nennt hell und dunkel ausdrücklich, damit Vorschläge nicht dem Gerät folgen', () => {
+    const css = CSS['../theme/theme.css']
+    expect(css).toMatch(/:root:not\(\[data-theme='dark'\]\) \{\s*color-scheme: light;/)
+    expect(DARK).toMatch(/color-scheme: dark;/)
+  })
+})
 
-  it.each(['/finanzen', '/mitglieder', '/einstellungen/organisation', '/terminplan'])(
-    '%s bleibt hell',
-    (path) => expect(darkAllowed(path)).toBe(false),
-  )
+describe('X-02 Umfang D2: alle Seiten', () => {
+  it.each([
+    '/',
+    '/anmelden',
+    '/termine',
+    '/termine/5',
+    '/mein-konto/app',
+    '/mein-bereich',
+    '/finanzen',
+    '/mitglieder',
+    '/einstellungen/organisation',
+    '/terminplan',
+  ])('%s darf dunkel sein', (path) => expect(darkAllowed(path)).toBe(true))
 
-  it('folgt dem Gerät, außer das Konto wählt hell oder dunkel', () => {
+  it('ohne eigene Wahl bleibt es hell, auch wenn das Gerät dunkel ist (Ralf 14.11.)', () => {
+    localStorage.removeItem('hubiplan.darstellung')
+    expect(colorSchemeChoice()).toBe('light')
+    expect(resolveScheme(colorSchemeChoice(), '/termine', true)).toBe('light')
+    // „Hell“ ist die Vorgabe und braucht keinen Eintrag; „Wie Gerät“ merkt sich der Browser
+    setColorSchemeChoice('auto')
+    expect(localStorage.getItem('hubiplan.darstellung')).toBe('auto')
+    setColorSchemeChoice('light')
+    expect(localStorage.getItem('hubiplan.darstellung')).toBeNull()
+  })
+
+  it('folgt dem Gerät nur mit „Wie Gerät“', () => {
     expect(resolveScheme('auto', '/termine', true)).toBe('dark')
     expect(resolveScheme('auto', '/termine', false)).toBe('light')
     expect(resolveScheme('light', '/termine', true)).toBe('light')
     expect(resolveScheme('dark', '/termine', false)).toBe('dark')
-    expect(resolveScheme('dark', '/finanzen', true)).toBe('light')
+    expect(resolveScheme('dark', '/finanzen', false)).toBe('dark')
+    expect(resolveScheme('light', '/finanzen', true)).toBe('light')
   })
 
-  it('setzt data-theme nur auf den Seiten für Mitglieder', () => {
+  it('setzt data-theme auch in der Verwaltung und nimmt es mit „Hell“ wieder weg', () => {
     setColorSchemeChoice('dark')
     setColorSchemePath('/termine')
     expect(document.documentElement.dataset.theme).toBe('dark')
     setColorSchemePath('/finanzen')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    setColorSchemeChoice('light')
     expect(document.documentElement.dataset.theme).toBeUndefined()
   })
 })
@@ -118,6 +144,8 @@ describe('X-02 Farben gegen dunklen Grund', () => {
     setColorSchemePath('/mein-bereich')
     expect(root.style.getPropertyValue('--color-link')).toBe(linkColorDark('#14365d'))
     setColorSchemePath('/finanzen')
+    expect(root.style.getPropertyValue('--color-link')).toBe(linkColorDark('#14365d'))
+    setColorSchemeChoice('light')
     expect(root.style.getPropertyValue('--color-link')).toBe(themeVars(theme)['--color-link'])
   })
 })
@@ -144,7 +172,7 @@ describe('X-02 feste Farbwerte', () => {
   it('keine neuen festen Farbwerte in CSS außerhalb von theme.css', () => {
     // Heutiger Bestand; neue Farben gehören als Token nach theme.css (hell und dunkel).
     // Sinkt die Zahl, hier mitsenken.
-    const BESTAND = 104
+    const BESTAND = 103
     let n = 0
     for (const [path, css] of Object.entries(CSS)) {
       if (path === '../theme/theme.css') continue

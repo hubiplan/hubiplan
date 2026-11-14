@@ -35,8 +35,24 @@ async function linkInTextBlock(page) {
     )
   })
 }
+/** axe-Regel color-contrast (Prüflauf im Dunkelmodus); Ergebnis: Text, Farben und Verhältnis. */
+async function lowContrast(page) {
+  if (!(await page.evaluate(() => 'axe' in window))) await page.evaluate(AXE)
+  return page.evaluate(async () => {
+    const result = await window.axe.run(document, { runOnly: ['color-contrast'] })
+    return result.violations.flatMap((v) =>
+      v.nodes.map((n) => {
+        const d = n.any[0]?.data ?? {}
+        const text = document.querySelector(n.target[0])?.textContent?.trim().slice(0, 40)
+        return `${n.target[0]} „${text ?? ''}“ ${d.fgColor} auf ${d.bgColor} = ${d.contrastRatio}`
+      }),
+    )
+  })
+}
+// Prüflauf im Dunkelmodus (HILFE_DUNKEL in scripts/hilfe-bilder.sh): nur Deutsch, mit Kontrastprüfung
+const dark = !!process.env.DUNKEL
 let failed = 0
-for (const language of ['de', 'en']) {
+for (const language of dark ? ['de'] : ['de', 'en']) {
   // Eigener Browser je Sprache: Datumsfelder zeigen das Format der Sprache nur im vollen
   // Chromium (neuer Headless-Modus) mit --lang und LANGUAGE, nicht in der Headless-Shell
   const locale = language === 'en' ? 'en-GB' : 'de-DE'
@@ -51,7 +67,7 @@ for (const language of ['de', 'en']) {
     const context = await browser.newContext({
       viewport: { width: 1280, height: 860 },
       deviceScaleFactor: 1,
-      colorScheme: 'light',
+      colorScheme: dark ? 'dark' : 'light',
       reducedMotion: 'reduce',
       locale,
     })
@@ -72,6 +88,19 @@ for (const language of ['de', 'en']) {
       return r.status
     }, language)
     if (status !== 200) throw new Error(`Sprache ${language} nicht wählbar (HTTP ${status})`)
+    if (dark) {
+      // Vorgabe der Konten ist „Hell“: für den Prüflauf am Wegwerf-Konto „Dunkel“ wählen
+      const ok = await page.evaluate(async () => {
+        const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? ''
+        const r = await fetch('/api/me/appearance/', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+          body: JSON.stringify({ color_scheme: 'dark' }),
+        })
+        return r.ok
+      })
+      if (!ok) throw new Error('Darstellung „Dunkel“ nicht wählbar')
+    }
     for (const b of list) {
       const file = join(out, language, `${b.name}.png`)
       try {
@@ -307,6 +336,12 @@ for (const language of ['de', 'en']) {
         if (links.length) {
           failed++
           console.error(`FEHLER ${language}/${b.name}: link-in-text-block ${links.join(', ')}`)
+        }
+        if (dark) {
+          for (const line of await lowContrast(page)) {
+            failed++
+            console.error(`KONTRAST ${b.name}: ${line}`)
+          }
         }
       } catch (err) {
         failed++

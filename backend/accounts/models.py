@@ -61,14 +61,14 @@ class User(AbstractUser):
     language = models.CharField(
         "Sprache", max_length=5, choices=settings.LANGUAGES, default="de", db_default="de"
     )
-    # Darstellung der Web-App (konzepte/dunkelmodus-web.md, X-02): wie das Gerät, hell oder
-    # dunkel. Im Konto gespeichert, damit sie auf allen Geräten gilt. Reine Anzeigepräferenz.
+    # Darstellung der Web-App (X-02): hell, dunkel oder wie das Gerät. Vorgabe ist hell; dunkel
+    # gibt es nur auf eigenen Wunsch. Im Konto gespeichert, damit sie auf allen Geräten gilt.
     color_scheme = models.CharField(
         "Darstellung",
         max_length=5,
         choices=[("auto", "Wie Gerät"), ("light", "Hell"), ("dark", "Dunkel")],
-        default="auto",
-        db_default="auto",
+        default="light",
+        db_default="light",
     )
     # Startseite (S-04): ausgeblendete Schnellaktionen, Schlüssel wie im Frontend; "*" blendet
     # den ganzen Block aus. Reine Anzeigepräferenz, null = alle zeigen.

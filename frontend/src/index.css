@@ -2278,7 +2278,7 @@ button.tab.active {
 }
 
 .preview-duplicate td:last-child {
-  color: #8a5a00;
+  color: var(--color-warning);
 }
 
 /* --- Mitgliederfotos --- */
