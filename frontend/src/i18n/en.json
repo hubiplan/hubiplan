@@ -9074,5 +9074,12 @@
   "QR-Code zur Anmeldung zeigen": "Show QR code for signing in",
   "Link zur App bei Google Play zeigen": "Show link to the app on Google Play",
   "Jahre Vereinsgeschichte": "years of club history",
-  "Die Zahlen kommen immer aktuell aus HUBIplan, nur als Summe.": "The figures always come up to date from HUBIplan, only as totals."
+  "Die Zahlen kommen immer aktuell aus HUBIplan, nur als Summe.": "The figures always come up to date from HUBIplan, only as totals.",
+  "Wie lange zeigen": "How long to show",
+  "Immer": "Always",
+  "{x} Tage danach": "{x} days after",
+  "Ein Wettbewerb verschwindet so viele Tage nach dem Wettbewerbstag. Laufende und vorläufige Wettbewerbe bleiben stehen. Ist nichts mehr aktuell, verschwindet der Abschnitt.": "A competition disappears this many days after the day of the competition. Running and provisional competitions stay. If nothing is current any more, the section disappears.",
+  "Der Abschnitt verschwindet so viele Tage nach dem Wettbewerbstag. Solange der Wettbewerb läuft oder vorläufig ist, bleibt er stehen.": "The section disappears this many days after the day of the competition. While the competition is running or provisional, it stays.",
+  "Nur Alben, deren Datum höchstens so viele Tage zurückliegt; Alben ohne Datum fallen dann weg. Ist keins mehr aktuell, verschwindet der Abschnitt.": "Only albums dated at most this many days ago; albums without a date are left out. If none is current any more, the section disappears.",
+  "Nur Beiträge, die höchstens so viele Tage alt sind. Ist keiner mehr aktuell, verschwindet der Abschnitt.": "Only posts at most this many days old. If none is current any more, the section disappears."
 }

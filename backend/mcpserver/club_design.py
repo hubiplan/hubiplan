@@ -73,9 +73,9 @@ KIND_FIELDS = {
     ),
     "downloads": "title, documents [Dokumentnummern] (höchstens 10)",
     "unit_honors": "title, unit (Nummer aus auswahl.units)",
-    "competition": "title, competition (Nummer aus auswahl.competitions)",
-    "albums": "title, count (2–8)",
-    "posts": "title, count (1–6), channel (all|instagram|facebook)",
+    "competition": "title, competition (Nummer aus auswahl.competitions), days (Frist)",
+    "albums": "title, count (2–8), days (Frist)",
+    "posts": "title, count (1–6), channel (all|instagram|facebook), days (Frist)",
     "app": "title, text (Markdown), qr (true|false), store (true|false)",
     "live_facts": "title, items [{fact (members|years|units), label (optional)}]",
 }
@@ -404,7 +404,9 @@ def _new_key(taken: set[str]) -> str:
             return key
 
 
-LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column"}
+LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column", "tage": "days"}
+# Frist „wie lange aktuell“: Tage nach Wettbewerb, Album oder Beitrag; null = immer
+DAYS_HINT = "3, 7, 14, 30, 60, 90, 180, 365 oder null (immer); danach verschwindet es"
 
 
 def _rebuild(sections: list[dict], args: dict) -> tuple[list[dict], list[str]]:
@@ -549,7 +551,9 @@ def _home_options(args: dict, ctx: ClubContext) -> str:
             "hintergrund": "none, light, p0–p9 (Palette), g0, g1 (Verlauf)",
             "breite": "content, text, full",
             "spalte": "main, side (nur Design „Zeitung“)",
+            "tage": "nur fester Bereich „results“: " + DAYS_HINT,
         },
+        "frist": "days bei competition, albums, posts: " + DAYS_HINT,
         "auswahl": choices,
     }
     return (

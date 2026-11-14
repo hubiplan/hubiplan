@@ -257,6 +257,8 @@ export interface HomeSectionData {
   event?: number | null
   album?: number | null
   count?: number
+  /** Wie lange aktuell: Tage nach Wettbewerb, Album oder Beitrag; fehlt/null = immer */
+  days?: number | null
   name?: string
   roles?: number[]
   /** Häufige Fragen, Partner, Zahlen: Einträge je nach Art */
@@ -327,6 +329,8 @@ export interface HomeSection {
   width?: 'content' | 'text' | 'full'
   /** Spalte im Design „Zeitung“ */
   column?: 'main' | 'side'
+  /** Nur „Aktuelle Ergebnisse“: Tage nach dem Wettbewerb; null = immer */
+  days?: number | null
   /** Nur eigene Abschnitte (Schlüssel c:…) */
   kind?: HomeKind
   data?: HomeSectionData
