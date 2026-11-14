@@ -81,7 +81,12 @@ Bilder werden nie von Hand gemacht:
 ```bash
 scripts/hilfe-bilder.sh              # alle Bilder
 scripts/hilfe-bilder.sh konto-sprache # nur einzelne
+HILFE_DUNKEL=/tmp/dunkel scripts/hilfe-bilder.sh # Prüflauf im Dunkelmodus
 ```
+
+Mit `HILFE_DUNKEL=<Ordner>` entstehen dieselben Stellen im Dunkelmodus (nur Deutsch) in dem genannten
+Ordner außerhalb der Hilfe; axe meldet dabei zu geringe Kontraste als `KONTRAST <Bild>: …`. Diese
+Bilder dienen nur der Prüfung und werden nicht eingecheckt.
 
 Das Skript läuft nur lokal (Linux/WSL mit Docker), belegt einen Testplatz, startet in Wegwerf-Containern
 Datenbank, Backend mit den erfundenen Demodaten (`seed_testdata`, Englisch freigeschaltet) und die

@@ -125,8 +125,8 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
   /* linkColorDark(Hubi-Grün): 4,5 : 1 auf Grund, Karte und getönter Fläche */
-  --color-link: #56a394;
-  --color-focus: #56a394;
+  --color-link: #13ab8d;
+  --color-focus: #13ab8d;
   --color-bg: #111614;
   --color-surface: #1a201d;
   --color-text: #dfe5e2;

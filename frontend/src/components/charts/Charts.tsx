@@ -27,7 +27,7 @@ function useWidth(fallback = 640) {
 /** Vergleichszeitraum zusätzlich schraffiert bzw. gestrichelt, nicht nur grau (C04) */
 function fillFor(color: string): string {
   return color === PREVIOUS
-    ? `repeating-linear-gradient(135deg, ${color} 0 4px, #fff 4px 6px)`
+    ? `repeating-linear-gradient(135deg, ${color} 0 4px, var(--color-surface) 4px 6px)`
     : color
 }
 
@@ -288,7 +288,7 @@ export function TimeChart({
               patternUnits="userSpaceOnUse"
               patternTransform="rotate(45)"
             >
-              <rect width="6" height="6" fill="#fff" />
+              <rect width="6" height="6" fill="var(--color-surface)" />
               <rect width="4" height="6" fill={PREVIOUS} />
             </pattern>
           </defs>

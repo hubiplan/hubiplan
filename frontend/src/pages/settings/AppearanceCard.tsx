@@ -40,12 +40,12 @@ export function AppearanceCard() {
         disabled={busy}
         onChange={(e) => void choose(e.target.value as ColorSchemeChoice)}
         hint={t(
-          'Dunkel zeigt HUBIplan die Anmeldung, die Startseite, Termine, Mein Konto und Mein Bereich. Die Verwaltung bleibt hell. Gilt auf allen Geräten, an denen du angemeldet bist.',
+          'Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.',
         )}
       >
-        <option value="auto">{t('Wie Gerät')}</option>
         <option value="light">{t('Hell')}</option>
         <option value="dark">{t('Dunkel')}</option>
+        <option value="auto">{t('Wie Gerät')}</option>
       </SelectField>
       {error && <Alert kind="error">{error}</Alert>}
     </div>

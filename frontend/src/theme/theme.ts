@@ -59,6 +59,46 @@ export function lighten(hex: string, amount: number): string {
   return `#${[16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join('')}`
 }
 
+/**
+ * Farbe aufhellen und dabei den Farbton behalten (0 = unverändert, 1 = fast weiß). Anders als
+ * `lighten` mischt das kein Weiß bei: Ein dunkles Vereinsgrün wird ein helles Grün und kein Grau.
+ */
+export function brighten(hex: string, amount: number): string {
+  const n = parseInt(hex.slice(1), 16)
+  const [r, g, b] = [16, 8, 0].map((s) => ((n >> s) & 255) / 255)
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2
+  const d = max - min
+  const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1))
+  let h = 0
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6
+    else if (max === g) h = (b - r) / d + 2
+    else h = (r - g) / d + 4
+  }
+  const light = l + (0.96 - l) * amount
+  const c = (1 - Math.abs(2 * light - 1)) * sat
+  const x = c * (1 - Math.abs((h % 2) - 1))
+  const m = light - c / 2
+  const sector = ((Math.floor(h) % 6) + 6) % 6
+  const rgb = [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+  ][sector]
+  return `#${rgb
+    .map((v) =>
+      Math.round(Math.min(1, Math.max(0, v + m)) * 255)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
+}
+
 /** Fließtext (--color-text in theme.css). */
 export const TEXT_COLOR = '#121614'
 
@@ -189,7 +229,8 @@ export function linkColorDark(primary: string): string {
     ) >= 4.5
   if (ok(primary)) return primary
   for (let step = 1; step <= 100; step++) {
-    for (const c of [lighten(primary, step / 100), darken(primary, step / 100)]) {
+    // Aufhellen ohne Weiß beizumischen: Links bleiben auch bei dunklen Vereinsfarben farbig
+    for (const c of [brighten(primary, step / 100), darken(primary, step / 100)]) {
       if (ok(c)) return c
     }
   }

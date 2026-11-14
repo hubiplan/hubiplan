@@ -6,7 +6,6 @@
   "Wie Gerät": "Same as device",
   "Hell": "Light",
   "Dunkel": "Dark",
-  "Dunkel zeigt HUBIplan die Anmeldung, die Startseite, Termine, Mein Konto und Mein Bereich. Die Verwaltung bleibt hell. Gilt auf allen Geräten, an denen du angemeldet bist.": "In dark mode, HUBIplan shows sign-in, the start page, events, My account and My area in dark colours. Administration stays light. Applies on all devices where you are signed in.",
   "Bitte Adresse und Einheit angeben.": "Please enter an address and a unit.",
   "Adresse „{x}“ entfernen?": "Remove address “{x}”?",
   "Adressen je Einheit": "Addresses per unit",
@@ -9233,5 +9232,6 @@
   "Seite oder Mitglied suchen …": "Search page or member …",
   "Seite suchen": "Search page",
   "Seite suchen …": "Search page …",
-  "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes."
+  "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes.",
+  "Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.": "Applies to all pages of HUBIplan and on every device you are signed in on."
 }
