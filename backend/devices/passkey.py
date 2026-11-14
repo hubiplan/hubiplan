@@ -57,6 +57,8 @@ logger = logging.getLogger(__name__)
 OFFICIAL_ANDROID_FINGERPRINTS: tuple[str, ...] = (
     # Google Play, App-Signaturschlüssel
     "93:60:51:21:C6:33:6A:CB:63:47:58:72:5D:0C:4B:7A:FC:79:9D:C2:47:C1:06:9F:D1:AE:64:1A:14:1E:D2:21",
+    # Uploadschlüssel des Herausgebers (selbst signierte APKs, Variante foss)
+    "EE:82:1A:56:59:E4:5D:D8:96:50:0E:D5:63:04:0F:1A:6A:1D:2A:C7:9E:09:A6:04:97:B4:8B:A9:1D:D2:45:00",
 )
 OFFICIAL_IOS_APP_IDS: tuple[str, ...] = ()
 
