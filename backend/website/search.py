@@ -24,12 +24,15 @@ MAX_QUERY = 100
 MAX_RESULTS = 50
 SNIPPET = 160
 
-_MARKUP = re.compile(r"!\[[^\]]*\]\([^)]*\)|\[([^\]]*)\]\([^)]*\)|[#*_>`|~]+")
+_MARKUP = re.compile(r"!\[[^\]]*\]\([^)]*\)|\[([^\]]*)\]\([^)]*\)|[#>|]+")
+# Hervorhebungen fallen ersatzlos weg, damit „**Wort**.“ nicht zu „Wort .“ wird.
+_EMPHASIS = re.compile(r"[*_`~]+")
 
 
 def plain(text: str) -> str:
     """Markdown grob zu Text: Bilder weg, Links als Linktext, Zeichen weg."""
     text = _MARKUP.sub(lambda m: m.group(1) or " ", text or "")
+    text = _EMPHASIS.sub("", text)
     return " ".join(text.split())
 
 
