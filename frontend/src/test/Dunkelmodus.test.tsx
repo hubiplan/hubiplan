@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { contrastRatio } from '../theme/contrast.ts'
 import {
+  colorSchemeChoice,
   darkAllowed,
   resolveScheme,
   setColorSchemeChoice,
@@ -38,7 +39,7 @@ const FARBEN = ['#14365d', '#1f4e2c', '#0e7c66', '#8b0000', '#c9a227', '#ffd700'
 const ALLE = [...FARBEN, '#000000', '#ffffff', '#0000ff', '#6a1b9a']
 
 afterEach(() => {
-  setColorSchemeChoice('auto')
+  setColorSchemeChoice('light')
   setColorSchemePath('/')
   applyTheme(null)
 })
@@ -57,7 +58,18 @@ describe('X-02 Umfang D2: alle Seiten', () => {
     '/terminplan',
   ])('%s darf dunkel sein', (path) => expect(darkAllowed(path)).toBe(true))
 
-  it('folgt dem Gerät, außer das Konto wählt hell oder dunkel', () => {
+  it('ohne eigene Wahl bleibt es hell, auch wenn das Gerät dunkel ist (Ralf 14.11.)', () => {
+    localStorage.removeItem('hubiplan.darstellung')
+    expect(colorSchemeChoice()).toBe('light')
+    expect(resolveScheme(colorSchemeChoice(), '/termine', true)).toBe('light')
+    // „Hell“ ist die Vorgabe und braucht keinen Eintrag; „Wie Gerät“ merkt sich der Browser
+    setColorSchemeChoice('auto')
+    expect(localStorage.getItem('hubiplan.darstellung')).toBe('auto')
+    setColorSchemeChoice('light')
+    expect(localStorage.getItem('hubiplan.darstellung')).toBeNull()
+  })
+
+  it('folgt dem Gerät nur mit „Wie Gerät“', () => {
     expect(resolveScheme('auto', '/termine', true)).toBe('dark')
     expect(resolveScheme('auto', '/termine', false)).toBe('light')
     expect(resolveScheme('light', '/termine', true)).toBe('light')

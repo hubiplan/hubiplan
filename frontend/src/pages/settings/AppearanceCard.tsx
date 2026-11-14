@@ -43,9 +43,9 @@ export function AppearanceCard() {
           'Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.',
         )}
       >
-        <option value="auto">{t('Wie Gerät')}</option>
         <option value="light">{t('Hell')}</option>
         <option value="dark">{t('Dunkel')}</option>
+        <option value="auto">{t('Wie Gerät')}</option>
       </SelectField>
       {error && <Alert kind="error">{error}</Alert>}
     </div>

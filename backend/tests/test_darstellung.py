@@ -20,9 +20,15 @@ def login(email: str) -> tuple[Client, dict[str, str]]:
     return c, csrf_headers(c)
 
 
-def test_neue_konten_folgen_dem_geraet():
+def test_neue_konten_sind_hell():
     c, _ = login("karla@example.org")
-    assert c.get(URL).json() == {"color_scheme": "auto"}
+    assert c.get(URL).json() == {"color_scheme": "light"}
+
+
+def test_wie_geraet_bleibt_waehlbar():
+    c, h = login("karla@example.org")
+    resp = c.patch(URL, {"color_scheme": "auto"}, content_type=JSON, headers=h)
+    assert resp.json() == {"color_scheme": "auto"}
 
 
 def test_waehlen_gilt_nur_fuer_das_eigene_konto():
@@ -32,13 +38,13 @@ def test_waehlen_gilt_nur_fuer_das_eigene_konto():
     assert resp.status_code == 200
     assert resp.json() == {"color_scheme": "dark"}
     assert User.objects.get(email="karla@example.org").color_scheme == "dark"
-    assert User.objects.get(email="otto@example.org").color_scheme == "auto"
+    assert User.objects.get(email="otto@example.org").color_scheme == "light"
 
 
 def test_unbekannte_wahl_abgelehnt():
     c, h = login("karla@example.org")
     assert c.patch(URL, {"color_scheme": "lila"}, content_type=JSON, headers=h).status_code == 400
-    assert User.objects.get(email="karla@example.org").color_scheme == "auto"
+    assert User.objects.get(email="karla@example.org").color_scheme == "light"
 
 
 def test_ohne_csrf_und_ohne_anmeldung_abgelehnt():

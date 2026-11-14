@@ -88,6 +88,19 @@ for (const language of dark ? ['de'] : ['de', 'en']) {
       return r.status
     }, language)
     if (status !== 200) throw new Error(`Sprache ${language} nicht wählbar (HTTP ${status})`)
+    if (dark) {
+      // Vorgabe der Konten ist „Hell“: für den Prüflauf am Wegwerf-Konto „Dunkel“ wählen
+      const ok = await page.evaluate(async () => {
+        const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? ''
+        const r = await fetch('/api/me/appearance/', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+          body: JSON.stringify({ color_scheme: 'dark' }),
+        })
+        return r.ok
+      })
+      if (!ok) throw new Error('Darstellung „Dunkel“ nicht wählbar')
+    }
     for (const b of list) {
       const file = join(out, language, `${b.name}.png`)
       try {
