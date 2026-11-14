@@ -270,10 +270,20 @@ describe('Versammlungen', () => {
     fireEvent.change(within(agenda).getByLabelText('TOP 3'), {
       target: { value: 'Verschiedenes und Termine' },
     })
-    await waitFor(() => expect(puts()).toHaveLength(2), { timeout: 3000 })
-    const body = JSON.parse(String(puts()[1].init?.body))
-    expect(body.version).toBe(4)
-    expect(body.items[2]).toMatchObject({ id: 102, title: 'Verschiedenes und Termine' })
+    // Nach dem ersten Speichern geht der neue Punkt nur noch mit seiner Nummer mit
+    await waitFor(
+      () =>
+        expect(
+          puts().some(
+            (c) => JSON.parse(String(c.init?.body)).items[2]?.title === 'Verschiedenes und Termine',
+          ),
+        ).toBe(true),
+      { timeout: 3000 },
+    )
+    const bodies = puts().map((c) => JSON.parse(String(c.init?.body)))
+    expect(bodies[0].items[2]).not.toHaveProperty('id', 102)
+    for (const body of bodies.slice(1)) expect(body.items[2]).toMatchObject({ id: 102 })
+    expect(bodies.at(-1).version).toBe(3 + bodies.length - 1)
   })
 
   it('auf einen Punkt gezogen wird zum Unterpunkt', async () => {
