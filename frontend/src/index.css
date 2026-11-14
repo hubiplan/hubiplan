@@ -5864,6 +5864,103 @@ label:has(> .file-input:focus-visible) {
 .style-extra {
   grid-column: 1 / -1;
 }
+/* Feinabstimmung neu (Ralf 14.11.2026): Voreinstellungen, Suche, Chips, Design-Stufe, ↺ */
+.style-presets {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.style-tools {
+  margin: var(--space-3) 0;
+}
+.style-search input {
+  width: 100%;
+  max-width: 24rem;
+}
+.style-chips {
+  list-style: none;
+  margin: var(--space-3) 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.style-chip-item {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.style-chip,
+.style-chip-x {
+  font: inherit;
+  font-size: 0.85rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+}
+.style-chip-x {
+  border-left: 1px solid var(--color-border);
+  font-size: 1rem;
+  line-height: 1;
+}
+.style-chip:hover,
+.style-chip-x:hover {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+.style-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.style-reset {
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.style-segments button {
+  position: relative;
+}
+.style-segments button.has-icon {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+}
+.style-icon {
+  display: block;
+  opacity: 0.85;
+}
+/* Stufe, die das Design ohne eigene Wahl zeigt */
+.style-default-dot {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.3rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.style-group-tools {
+  margin: 0 0 var(--space-2);
+}
+.style-locked {
+  margin: var(--space-2) 0 0;
+}
 @media (max-width: 40rem) {
   .style-row {
     grid-template-columns: 1fr;

@@ -58,9 +58,26 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "hero_name": bool,
     # Karussell: nicht von selbst, langsam (doppelte Zeit je Bild) oder wie eingestellt
     "carousel": ("off", "slow", "normal"),
+    # Ralf 14.11.2026: Titelbild abdunkeln oder halb durchsichtig in Vereinsfarbe färben,
+    # Bildausschnitt und Lage des Namens auf dem Bild
+    "hero_shade": ("none", "light", "strong"),
+    "hero_tint": ("dark", "primary", "accent"),
+    "hero_focus": ("top", "center", "bottom"),
+    "hero_text": ("top", "center", "band"),
+    # Abschnitte der Startseite trennen
+    "sections": ("none", "line", "alternate"),
     # Fuß
     "footer": ("dark", "light", "color"),
     "footer_align": ("left", "center", "right"),
+    # Ralf 14.11.2026: Überschrift der Unterseiten, Schrift der Überschriften, Menüschrift,
+    # sanftes Einblenden, gestreifte Tabellen, Datum neben dem Datumsfeld
+    "page_title": ("plain", "band", "image"),
+    "heading_font": ("text", "modern", "festive"),
+    "nav_case": ("normal", "upper"),
+    "nav_size": ("normal", "large"),
+    "motion": ("off", "subtle"),
+    "stripes": bool,
+    "date_text": ("weekday", "short", "long"),
 }
 
 # Was ein Design selbst festlegt (ausgegraut in der Oberfläche, die Webseite übergeht es):
@@ -80,14 +97,177 @@ LOCKS: dict[str, dict[str, tuple[str, ...] | None]] = {
 }
 
 
+# Was jedes Design ohne verstellten Regler zeigt (Ralf 14.11.2026): HUBIplan markiert die
+# Stufe als „Design“. Fehlt ein Regler, liegt das Design zwischen den Stufen (z. B. Ecken mit
+# 10 px) oder hat eine eigene Form; dann bleibt die Markierung weg. Abgelesen aus seite.css
+# und design-<name>.css in hubiplan-website; Designpakete haben keine Vorgaben.
+_BASE_DEFAULTS: dict[str, str | bool] = {
+    "font": "system",
+    "size": "normal",
+    "leading": "normal",
+    "headings": "plain",
+    "heading_align": "left",
+    "script_greeting": False,
+    "width": "normal",
+    "background": "light",
+    "spacing": "normal",
+    "dark": "off",
+    "contrast": False,
+    "to_top": False,
+    "cards": "border",
+    "images": "cards",
+    "tile_ratio": "wide",
+    "image_frame": False,
+    "buttons": "filled",
+    "date": "tile",
+    "header_bg": "color",
+    "logo": True,
+    "logo_pos": "left",
+    "name": True,
+    "header_height": "normal",
+    "line": "none",
+    "nav": "text",
+    "nav_active": "underline",
+    "sticky": False,
+    "nav_mobile": "toggle",
+    "nav_start": True,
+    "search": "nav",
+    "hero": "normal",
+    "hero_name": False,
+    "carousel": "normal",
+    "hero_shade": "none",
+    "hero_tint": "dark",
+    "hero_focus": "center",
+    "hero_text": "top",
+    "sections": "none",
+    "footer": "dark",
+    "page_title": "plain",
+    "heading_font": "text",
+    "nav_case": "normal",
+    "nav_size": "normal",
+    "motion": "off",
+    "stripes": False,
+    "date_text": "weekday",
+}
+_DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
+    "classic": {
+        "header_bg": "white",
+        "line": None,
+        "nav": "buttons",
+        "nav_active": "filled",
+        "headings": "color",
+        "cards": "shadow",
+        "footer": "color",
+    },
+    "festive": {
+        "heading_font": "festive",
+        "logo_pos": "center",
+        "header_height": "high",
+        "heading_align": "center",
+        "headings": None,
+        "corners": "slight",
+        "footer_align": "center",
+        "line": None,
+    },
+    "newspaper": {
+        "header_bg": "white",
+        "heading_font": "festive",
+        "headings": "line",
+        "nav": "bar",
+        "nav_active": "filled",
+        "line": None,
+    },
+    "sidebar": {"logo_pos": "center", "nav": None, "header_height": None},
+    "stage": {
+        "sticky": True,
+        "hero_name": True,
+        "hero_text": "band",
+        "hero": None,
+        "sections": "alternate",
+        "line": None,
+    },
+}
+
+
+def defaults(design: str) -> dict[str, str | bool]:
+    """Stufe, die ein Standarddesign ohne verstellten Regler zeigt (ohne Zwischenstufen)."""
+    if design not in _DESIGN_DEFAULTS:
+        return {}
+    merged = {**_BASE_DEFAULTS, **_DESIGN_DEFAULTS[design]}
+    return {k: v for k, v in merged.items() if v is not None and k in OPTIONS}
+
+
+# Voreinstellungen mit einem Klick (Ralf 14.11.2026): setzen mehrere Regler auf einmal, alles
+# bleibt danach einzeln änderbar. Namen stehen in der Oberfläche (StyleTuning.tsx).
+PRESETS: dict[str, dict[str, str | bool]] = {
+    "calm": {
+        "font": "system",
+        "headings": "plain",
+        "spacing": "generous",
+        "corners": "slight",
+        "cards": "border",
+        "line": "none",
+        "nav": "text",
+        "hero_shade": "none",
+        "sections": "line",
+        "page_title": "plain",
+        "motion": "off",
+    },
+    "festive": {
+        "font": "festive",
+        "heading_font": "festive",
+        "headings": "color",
+        "heading_align": "center",
+        "script_greeting": True,
+        "line": "strong",
+        "nav_case": "upper",
+        "hero_shade": "light",
+        "hero_tint": "primary",
+        "hero_text": "center",
+        "page_title": "image",
+        "sections": "alternate",
+    },
+    "modern": {
+        "font": "modern",
+        "heading_font": "modern",
+        "corners": "round",
+        "cards": "shadow",
+        "buttons": "filled",
+        "nav": "buttons",
+        "nav_active": "filled",
+        "hero_shade": "light",
+        "hero_tint": "dark",
+        "hero_text": "band",
+        "page_title": "band",
+        "motion": "subtle",
+    },
+    "readable": {
+        "size": "large",
+        "leading": "airy",
+        "contrast": True,
+        "cards": "border",
+        "buttons": "filled",
+        "nav_size": "large",
+        "stripes": True,
+        "date_text": "long",
+        "motion": "off",
+        "to_top": True,
+    },
+}
+
+
 def catalog() -> dict:
-    """Für die Oberfläche: Stufen je Regler und Sperren je Design."""
+    """Für die Oberfläche: Stufen je Regler, Sperren und Vorgaben je Design, Voreinstellungen."""
+    from .designs import DESIGNS
+
     return {
         "options": {k: "switch" if v is bool else list(v) for k, v in OPTIONS.items()},
         "locks": {
             design: {k: None if v is None else list(v) for k, v in locks.items()}
             for design, locks in LOCKS.items()
         },
+        "defaults": {design: defaults(design) for design in DESIGNS},
+        "presets": PRESETS,
     }
 
 

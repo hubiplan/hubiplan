@@ -111,7 +111,7 @@ function AlbumOverview({
         <Alert kind="info">
           {t('Der Bereich „Galerie“ ist auf der Webseite noch ausgeschaltet.')}{' '}
           {canManage ? (
-            <Link to="/webseite/aufbau">{t('Unter „Menü und Bereiche“ einschalten')}</Link>
+            <Link to="/webseite/aufbau">{t('Unter „Menü und Bausteine“ einschalten')}</Link>
           ) : (
             t('Einschalten kann, wer die Webseite verwaltet.')
           )}

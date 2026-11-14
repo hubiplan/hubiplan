@@ -80,6 +80,10 @@ export interface LayoutArea {
 export interface StyleCatalog {
   options: Record<string, string[] | 'switch'>
   locks: Record<string, Record<string, string[] | null>>
+  /** Stufe, die jedes Standarddesign ohne eigene Wahl zeigt (fehlt bei älteren Ständen) */
+  defaults?: Record<string, Record<string, string | boolean>>
+  /** Voreinstellungen: mehrere Regler auf einmal (fehlt bei älteren Ständen) */
+  presets?: Record<string, Record<string, string | boolean>>
 }
 /** Farben je Rolle eines Designs */
 export type RoleColors = Record<

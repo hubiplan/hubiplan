@@ -1,6 +1,6 @@
 ---
 key: page.website_structure
-titel: Webseite › Menü und Bereiche
+titel: Webseite › Menü und Bausteine
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
@@ -36,7 +36,7 @@ Menüpunkte im Fuß: Wird die Menüleiste zu voll, stellt ihr unter „Menüpunk
 
 Entwurf: Reihenfolge, Namen, Links, Knopf und Platz im Fuß des Menüs kommen in den Entwurf, wie Design und Startseite. In der Vorschau unter Webseite › Gestaltung seht ihr das neue Menü, öffentlich wird es mit **Veröffentlichen**. Die Häkchen, die einen Bereich ein- oder ausschalten, gelten dagegen sofort.
 
-Startseite: Die Abschnitte der Startseite stellt ihr unter Webseite › Gestaltung zusammen, mit Vorschau daneben.
+Startseite: Die Abschnitte der Startseite stellt ihr unter Webseite › Startseite zusammen, mit Vorschau daneben.
 
 Repertoire und Presse: „Repertoire“ zeigt die Stücke aus dem Notenarchiv mit dem Haken „Im Repertoire auf der Webseite“. „Presse“ zeigt den Pressespiegel aus Webseite › Dokumente.
 

@@ -15,4 +15,4 @@ Fotos: „Fotos hochladen“ nimmt viele Fotos auf einmal; ihr könnt sie auch a
 
 Sortierung: Bilder sortiert die Galerie standardmäßig nach Aufnahmedatum, Alben nach Datum (neueste zuerst). Wer „eigene Reihenfolge“ wählt, kann per Ziehen sortieren. Das Titelbild ist das gewählte, sonst das erste Bild.
 
-Sichtbarkeit: Ein Album erscheint auf der Webseite erst mit „Auf der Webseite zeigen“; ein Unteralbum nur, wenn auch sein Oberalbum gezeigt wird. Außerdem muss unter „Menü und Bereiche“ der Bereich „Galerie“ eingeschaltet sein. Fotos mit erkennbaren Personen nur mit deren Einwilligung zeigen.
+Sichtbarkeit: Ein Album erscheint auf der Webseite erst mit „Auf der Webseite zeigen“; ein Unteralbum nur, wenn auch sein Oberalbum gezeigt wird. Außerdem muss unter „Menü und Bausteine“ der Bereich „Galerie“ eingeschaltet sein. Fotos mit erkennbaren Personen nur mit deren Einwilligung zeigen.

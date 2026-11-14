@@ -89,7 +89,7 @@ Beim Auftritt ergänzen **Programmliste als PDF** und **Stimmenliste als PDF** d
 
 Unter **Musik** → **Notenbestand** zuerst Stücke mit Komponist und dann Ausgaben/Arrangements mit Arrangeur, Verlag, Dauer in Sekunden, Schwierigkeit, Besetzung und Lizenzhinweisen erfassen. Nicht mehr verwendete Arrangements archivieren. Unter **Stimmenbestand** je Instrument und Register/Stimme die benötigten Spieler, Exemplare, Lagerorte und das Konzert- oder Marschbuchformat angeben. Partituren gesondert als Partitur erfassen. Mehrere Lagerorte/Bestände werden für dieselbe Stimme addiert; die höchste Spieleranforderung gilt.
 
-Mit **Im Repertoire auf der Webseite** erscheint ein Stück mit Titel und Komponist im Bereich „Repertoire“ der Vereinswebseite. Den Bereich schaltet ihr unter **Webseite** → **Menü und Bereiche** ein.
+Mit **Im Repertoire auf der Webseite** erscheint ein Stück mit Titel und Komponist im Bereich „Repertoire“ der Vereinswebseite. Den Bereich schaltet ihr unter **Webseite** → **Menü und Bausteine** ein.
 
 Digitale Dateien in der bestehenden **Dokumente** hochladen und unter **Notenunterlagen** dem Arrangement und optional einer Stimme zuordnen. Zum Verknüpfen und Öffnen ist zusätzlich Dokumentenleserecht erforderlich. Freigaben und Löschungen wirken sofort auf die Verknüpfung. Musikrechte erweitern keine Dokumentenfreigabe. Lizenz- und Nutzungshinweise erfassen; eine Bestandszahl oder Datei gewährt keine Kopier- oder Aufführungsrechte.
 

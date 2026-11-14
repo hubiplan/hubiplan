@@ -1,6 +1,6 @@
 ---
 key: guide.website_structure
-titel: Menü und Bereiche der Webseite ändern
+titel: Menü und Bausteine der Webseite ändern
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
@@ -19,4 +19,4 @@ stichworte: [Webseite, Menü, Bereich, Reihenfolge]
 
 Mitgliederlisten zeigen nur Mitglieder, die in ihrer Mitgliederakte eingewilligt haben.
 
-![Ausgangspunkt: Menü und Bereiche der Webseite ändern](bild:webseite-aufbau-aendern)
+![Ausgangspunkt: Menü und Bausteine der Webseite ändern](bild:webseite-aufbau-aendern)

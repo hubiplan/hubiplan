@@ -1,6 +1,6 @@
 ---
 key: page.website_structure
-titel: Website › Menu and sections
+titel: Website › Menu and building blocks
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
@@ -37,7 +37,7 @@ Menu items in the footer: if the menu bar gets too full, “Menu items in the fo
 
 Draft: order, names, links, button and footer place of the menu go into the draft, like design and home page. The preview under Website › Design shows the new menu; it becomes public with **Publish**. The check boxes that switch a section on or off, however, apply immediately.
 
-Home page: You put together the home page sections under Website › Design, with the preview next to them.
+Home page: You put together the home page sections under Website › Home, with the preview next to them.
 
 Repertoire and press: “Repertoire” shows the pieces from the sheet music library that are ticked “In the repertoire on the website”. “Press” shows the press clippings from Website › Documents.
 

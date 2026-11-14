@@ -43,6 +43,7 @@ import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
 import { StyleTuning } from './StyleTuning.tsx'
+import type { PreviewFocus } from './StyleTuning.tsx'
 import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { AreaLayouts } from './AreaLayouts.tsx'
@@ -320,6 +321,8 @@ function WebsiteAdmin({
     },
   )
   const [message, setMessage] = useState<string | null>(null)
+  // Punkt 5 (Ralf 14.11.): Stelle, die die Vorschau nach der letzten Änderung zeigt
+  const [focus, setFocus] = useState<PreviewFocus>({})
 
   async function remove() {
     const ok = await confirmDialog({
@@ -382,6 +385,33 @@ function WebsiteAdmin({
             <code>{website.public_key}</code>
           </p>
         </>,
+      )}
+      {/* S4 (Ralf 14.11.): Grundeinstellungen stehen bei „Zustand“ */}
+      <SiteLanguage
+        value={v.language ?? 'de'}
+        error={errors.language}
+        render={(field) => settings(t('Sprache der Webseite'), field)}
+        onChange={(lang) => set('language', lang)}
+      />
+      {settings(
+        t('Suchmaschinen'),
+        <>
+          <Checkbox
+            label={t('Suchmaschinen dürfen die Webseite aufnehmen')}
+            checked={v.allow_indexing}
+            onChange={(on) => set('allow_indexing', on)}
+          />
+          <Why k="web_indexing" />
+        </>,
+      )}
+      {settings(
+        t('Bilder für KI-Assistenten'),
+        <ImageHosts
+          value={v.image_hosts ?? []}
+          error={errors.image_hosts}
+          disabled={!data.can_manage}
+          onChange={(next) => set('image_hosts', next)}
+        />,
       )}
       {settings(
         t('Hinweisleiste'),
@@ -457,111 +487,151 @@ function WebsiteAdmin({
     <DraftBar website={website} auto={auto} canManage={data.can_manage} onReset={onReset} />
   )
 
-  const design = (
+  /** Gestaltung (S1, Ralf 14.11.): Entwurfsleiste oben, Einstellungen links, Vorschau rechts */
+  const shell = (children: React.ReactNode, preview = true) => (
     <div className="design-split">
       <div className="design-split-grid">
         <div className="design-split-settings">
           {draftBar}
-          {data.designs ? (
-            settings(
-              t('Design'),
-              <DesignChooser
-                data={data}
-                design={v.design ?? 'classic'}
-                colorRoles={v.color_roles ?? {}}
-                onDesign={(key) => set('design', key)}
-                onColorRoles={(next) => set('color_roles', next)}
-                onPackagesChanged={reload}
-              />,
-            )
-          ) : (
-            <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
-          )}
-          {data.style_catalog
-            ? settings(
-                t('Feinabstimmung'),
-                <StyleTuning
-                  catalog={data.style_catalog}
-                  design={v.design ?? 'classic'}
-                  designLabel={
-                    data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ??
-                    v.design ??
-                    ''
-                  }
-                  value={v.style ?? {}}
-                  onChange={(next) => set('style', next)}
-                  headerImage={headerImage}
-                />,
-              )
-            : settings(t('Kopfbild'), headerImage)}
-          {data.home_labels &&
-            v.home_sections &&
-            settings(
-              t('Startseite'),
-              <HomeBuilder
-                data={data}
-                website={website}
-                value={v.home_sections}
-                blocks={v.blocks}
-                design={v.design ?? 'classic'}
-                onChange={(next) => set('home_sections', next)}
-              />,
-            )}
-          {data.layout_catalog &&
-            settings(
-              t('Darstellung der Bereiche'),
-              <AreaLayouts
-                catalog={data.layout_catalog}
-                labels={data.block_labels}
-                blocks={v.blocks}
-                value={v.layouts ?? {}}
-                onChange={(next) => set('layouts', next)}
-              />,
-            )}
-          <SiteLanguage
-            value={v.language ?? 'de'}
-            error={errors.language}
-            render={(field) => settings(t('Sprache der Webseite'), field)}
-            onChange={(lang) => set('language', lang)}
-          />
-          {data.can_manage &&
-            settings(
-              t('Gestaltung als Datei'),
-              <DesignFile
-                values={{
-                  design: v.design ?? 'classic',
-                  color_roles: v.color_roles ?? {},
-                  style: v.style ?? {},
-                  layouts: v.layouts ?? {},
-                }}
-                designs={Object.fromEntries((data.designs ?? []).map((d) => [d.key, d.label]))}
-                onLoad={(loaded) => {
-                  if (loaded.design !== undefined) set('design', loaded.design)
-                  if (loaded.color_roles !== undefined) set('color_roles', loaded.color_roles)
-                  if (loaded.style !== undefined) set('style', loaded.style)
-                  if (loaded.layouts !== undefined) set('layouts', loaded.layouts)
-                }}
-              />,
-            )}
-          {(website.design_versions?.length ?? 0) > 0 &&
-            settings(
-              t('Frühere Fassungen'),
-              <DesignVersions
-                website={website}
-                auto={auto}
-                canManage={data.can_manage}
-                onReset={onReset}
-              />,
-            )}
+          {children}
         </div>
-        {website.draft !== undefined && (
+        {preview && website.draft !== undefined && (
           <aside className="design-split-preview" aria-label={t('Vorschau')}>
-            <PreviewFrame website={website} />
+            <PreviewFrame website={website} focus={focus} />
           </aside>
         )}
       </div>
     </div>
   )
+
+  const designLabel =
+    data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ?? v.design ?? ''
+
+  const design = shell(
+    data.designs ? (
+      settings(
+        t('Design und Farben'),
+        <DesignChooser
+          data={data}
+          design={v.design ?? 'classic'}
+          colorRoles={v.color_roles ?? {}}
+          onDesign={(key) => {
+            setFocus({})
+            set('design', key)
+          }}
+          onColorRoles={(next) => {
+            setFocus({})
+            set('color_roles', next)
+          }}
+          onPackagesChanged={reload}
+        />,
+      )
+    ) : (
+      <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
+    ),
+  )
+
+  const tuning = shell(
+    data.style_catalog
+      ? settings(
+          t('Feinabstimmung'),
+          <StyleTuning
+            catalog={data.style_catalog}
+            design={v.design ?? 'classic'}
+            designLabel={designLabel}
+            value={v.style ?? {}}
+            onChange={(next) => set('style', next)}
+            headerImage={headerImage}
+            homeSections={v.home_sections}
+            blocks={v.blocks}
+            onFocus={setFocus}
+          />,
+        )
+      : settings(t('Kopfbild'), headerImage),
+  )
+
+  const areas = shell(
+    data.layout_catalog ? (
+      settings(
+        t('Darstellung der Bereiche'),
+        <AreaLayouts
+          catalog={data.layout_catalog}
+          labels={data.block_labels}
+          blocks={v.blocks}
+          value={v.layouts ?? {}}
+          onChange={(next) => {
+            setFocus({ target: 'inhalt' })
+            set('layouts', next)
+          }}
+        />,
+      )
+    ) : (
+      <Alert kind="info">{t('Auf diesem Server gibt es keine Darstellungen zur Auswahl.')}</Alert>
+    ),
+  )
+
+  // S3: Frühere Fassungen und Gestaltung als Datei betreffen alles Gestaltete
+  const versions = shell(
+    <>
+      {settings(
+        t('Frühere Fassungen'),
+        (website.design_versions?.length ?? 0) > 0 ? (
+          <DesignVersions
+            website={website}
+            auto={auto}
+            canManage={data.can_manage}
+            onReset={onReset}
+          />
+        ) : (
+          <p className="muted">
+            {t('Noch keine früheren Fassungen. Jedes „Veröffentlichen“ legt eine an.')}
+          </p>
+        ),
+      )}
+      {data.can_manage &&
+        settings(
+          t('Gestaltung als Datei'),
+          <DesignFile
+            values={{
+              design: v.design ?? 'classic',
+              color_roles: v.color_roles ?? {},
+              style: v.style ?? {},
+              layouts: v.layouts ?? {},
+            }}
+            designs={Object.fromEntries((data.designs ?? []).map((d) => [d.key, d.label]))}
+            onLoad={(loaded) => {
+              if (loaded.design !== undefined) set('design', loaded.design)
+              if (loaded.color_roles !== undefined) set('color_roles', loaded.color_roles)
+              if (loaded.style !== undefined) set('style', loaded.style)
+              if (loaded.layouts !== undefined) set('layouts', loaded.layouts)
+            }}
+          />,
+        )}
+    </>,
+    false,
+  )
+
+  // S2: eine Startseite für alle. Verwalter stellen zusammen, wer nur Inhalte pflegt,
+  // ändert den Inhalt der vorhandenen Abschnitte.
+  const homeManage =
+    data.can_manage && data.home_labels && v.home_sections
+      ? shell(
+          settings(
+            t('Startseite'),
+            <HomeBuilder
+              data={data}
+              website={website}
+              value={v.home_sections}
+              blocks={v.blocks}
+              design={v.design ?? 'classic'}
+              onChange={(next) => {
+                setFocus({ target: 'inhalt' })
+                set('home_sections', next)
+              }}
+            />,
+          ),
+        )
+      : null
 
   // F7: Inhalte der Startseiten-Abschnitte für alle mit „Inhalte bearbeiten“
   const homeContent = (
@@ -837,26 +907,6 @@ function WebsiteAdmin({
   const domain = (
     <>
       <DomainsCard data={data} website={website} onChange={reload} />
-      {settings(
-        t('Suchmaschinen'),
-        <>
-          <Checkbox
-            label={t('Suchmaschinen dürfen die Webseite aufnehmen')}
-            checked={v.allow_indexing}
-            onChange={(on) => set('allow_indexing', on)}
-          />
-          <Why k="web_indexing" />
-        </>,
-      )}
-      {settings(
-        t('Bilder für KI-Assistenten'),
-        <ImageHosts
-          value={v.image_hosts ?? []}
-          error={errors.image_hosts}
-          disabled={!data.can_manage}
-          onChange={(next) => set('image_hosts', next)}
-        />,
-      )}
     </>
   )
 
@@ -938,7 +988,9 @@ function WebsiteAdmin({
         <Route
           path="startseite"
           element={
-            data.can_edit_home_content ? (
+            homeManage ? (
+              homeManage
+            ) : data.can_edit_home_content ? (
               homeContent
             ) : (
               <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
@@ -946,6 +998,9 @@ function WebsiteAdmin({
           }
         />
         <Route path="gestaltung" element={design} />
+        <Route path="feinabstimmung" element={tuning} />
+        <Route path="bereiche" element={areas} />
+        <Route path="fassungen" element={versions} />
         <Route path="aufbau" element={structure} />
         <Route path="domain" element={domain} />
         <Route path="kontakt" element={contact} />
