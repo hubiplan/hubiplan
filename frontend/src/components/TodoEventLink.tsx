@@ -33,8 +33,8 @@ export function TodoEventLink({
             : t('Ohne Terminverknüpfung')}
       </p>
       {todo.can_delete && (
-        <label>
-          {t('Termin')}
+        <label className="field">
+          <span>{t('Termin')}</span>
           <select
             disabled={busy}
             value={todo.event?.id ?? ''}

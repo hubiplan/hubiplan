@@ -979,8 +979,8 @@ function CategoryTemplates({ onApplied }: { onApplied: () => Promise<unknown> })
           'Übliche Kategorien mit steuerlichem Bereich, damit ihr nicht bei null anfangt. Es werden nur fehlende Kategorien angelegt; bestehende bleiben, wie sie sind. Bereiche und DATEV-Konten bitte mit der Steuerberatung abstimmen. Sponsoring: Wird der Sponsor nur genannt, gehört das Geld zur Vermögensverwaltung; aktive Werbung wie Bande oder Anzeige ist wirtschaftlicher Geschäftsbetrieb.',
         )}
       </p>
-      <label>
-        {t('Vorlage')}{' '}
+      <label className="field">
+        <span>{t('Vorlage')}</span>
         <select value={chosen?.key ?? ''} onChange={(e) => setKey(e.target.value)}>
           {list.map((x) => (
             <option key={x.key} value={x.key}>

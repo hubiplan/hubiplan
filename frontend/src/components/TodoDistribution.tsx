@@ -39,8 +39,8 @@ export function TodoLocalNote({
   )
   return (
     <div className="card">
-      <label>
-        {t('Lokale Notiz')}
+      <label className="field">
+        <span>{t('Lokale Notiz')}</span>
         <textarea
           value={form.values.local_note}
           disabled={!todo.can_edit}

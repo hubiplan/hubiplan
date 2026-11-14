@@ -137,8 +137,8 @@ export function PortalBookings({ accessId }: { accessId: number }) {
           {t('Die Verwaltung bestätigt deine Anfrage oder lehnt sie ab; du bekommst eine E-Mail.')}
         </p>
         <fieldset disabled={busy}>
-          <label>
-            {t('Objekt')}
+          <label className="field">
+            <span>{t('Objekt')}</span>
             <select
               value={item}
               onChange={(e) => setForm({ ...form, item: Number(e.target.value) })}
@@ -150,8 +150,8 @@ export function PortalBookings({ accessId }: { accessId: number }) {
               ))}
             </select>
           </label>
-          <label>
-            {t('Zweck')}
+          <label className="field">
+            <span>{t('Zweck')}</span>
             <input
               required
               maxLength={200}
@@ -169,8 +169,8 @@ export function PortalBookings({ accessId }: { accessId: number }) {
             />{' '}
             {t('ganztägig')}
           </label>
-          <label>
-            {t('Beginn')}
+          <label className="field">
+            <span>{t('Beginn')}</span>
             <input
               required
               type={form.all_day ? 'date' : 'datetime-local'}
@@ -178,8 +178,8 @@ export function PortalBookings({ accessId }: { accessId: number }) {
               onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
             />
           </label>
-          <label>
-            {t('Ende')}
+          <label className="field">
+            <span>{t('Ende')}</span>
             <input
               required={!form.all_day}
               type={form.all_day ? 'date' : 'datetime-local'}
@@ -187,8 +187,8 @@ export function PortalBookings({ accessId }: { accessId: number }) {
               onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
             />
           </label>
-          <label>
-            {t('Notiz')}
+          <label className="field">
+            <span>{t('Notiz')}</span>
             <textarea
               maxLength={2000}
               value={form.note}

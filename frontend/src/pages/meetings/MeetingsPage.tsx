@@ -344,8 +344,8 @@ function NewMeeting({
       }}
     >
       <h2>{t('Neue Versammlung')}</h2>
-      <label>
-        {t('Art')}
+      <label className="field">
+        <span>{t('Art')}</span>
         <select value={kind} onChange={(e) => setKind(Number(e.target.value))} required>
           {kinds.map((k) => (
             <option key={k.id} value={k.id}>
@@ -359,8 +359,8 @@ function NewMeeting({
           {t('Einladungsfrist: {n} Tage vor der Versammlung.', { n: chosen.invite_days })}
         </p>
       )}
-      <label>
-        {t('Titel')}
+      <label className="field">
+        <span>{t('Titel')}</span>
         <input
           value={title}
           maxLength={200}
@@ -368,8 +368,8 @@ function NewMeeting({
           onChange={(e) => setTitle(e.target.value)}
         />
       </label>
-      <label>
-        {t('Beginn')}
+      <label className="field">
+        <span>{t('Beginn')}</span>
         <input
           type="datetime-local"
           required
@@ -380,8 +380,8 @@ function NewMeeting({
           }}
         />
       </label>
-      <label>
-        {t('Ende')}
+      <label className="field">
+        <span>{t('Ende')}</span>
         <input
           type="datetime-local"
           required
@@ -648,8 +648,8 @@ function DetailsForm({
     >
       <h2>{t('Angaben')}</h2>
       <fieldset disabled={!editable} className="stack">
-        <label>
-          {t('Art')}
+        <label className="field">
+          <span>{t('Art')}</span>
           <select value={form.kind} onChange={set('kind')}>
             {kinds
               .filter((k) => k.active || k.id === meeting.kind)
@@ -660,16 +660,16 @@ function DetailsForm({
               ))}
           </select>
         </label>
-        <label>
-          {t('Titel')}
+        <label className="field">
+          <span>{t('Titel')}</span>
           <input value={form.title} maxLength={200} required onChange={set('title')} />
         </label>
-        <label>
-          {t('Beginn')}
+        <label className="field">
+          <span>{t('Beginn')}</span>
           <input type="datetime-local" required value={form.start} onChange={set('start')} />
         </label>
-        <label>
-          {t('Ende')}
+        <label className="field">
+          <span>{t('Ende')}</span>
           <input
             type="datetime-local"
             required
@@ -687,20 +687,20 @@ function DetailsForm({
             setForm((f) => ({ ...f, location: place.name, address: place.address || f.address }))
           }
         />
-        <label>
-          {t('Anschrift')}
+        <label className="field">
+          <span>{t('Anschrift')}</span>
           <input value={form.address} maxLength={300} onChange={set('address')} />
         </label>
-        <label>
-          {t('Leitung')}
+        <label className="field">
+          <span>{t('Leitung')}</span>
           <input value={form.chair} maxLength={200} onChange={set('chair')} />
         </label>
-        <label>
-          {t('Protokollführung')}
+        <label className="field">
+          <span>{t('Protokollführung')}</span>
           <input value={form.minute_taker} maxLength={200} onChange={set('minute_taker')} />
         </label>
-        <label>
-          {t('Notiz (nur für die Verwaltung)')}
+        <label className="field">
+          <span>{t('Notiz (nur für die Verwaltung)')}</span>
           <textarea value={form.note} maxLength={5000} rows={3} onChange={set('note')} />
         </label>
       </fieldset>
@@ -783,8 +783,8 @@ function AgendaEditor({
         {items.map((item, index) => (
           <li key={item.id ?? `neu-${index}`} className="agenda-row">
             <div className="agenda-fields">
-              <label>
-                {t('TOP {n}', { n: index + 1 })}
+              <label className="field">
+                <span>{t('TOP {n}', { n: index + 1 })}</span>
                 <input
                   value={item.title}
                   maxLength={300}
@@ -792,8 +792,8 @@ function AgendaEditor({
                   onChange={(e) => change(index, { title: e.target.value })}
                 />
               </label>
-              <label>
-                {t('Art des Punkts')}
+              <label className="field">
+                <span>{t('Art des Punkts')}</span>
                 <select
                   value={item.type}
                   onChange={(e) => change(index, { type: e.target.value as AgendaType })}
@@ -805,8 +805,8 @@ function AgendaEditor({
                   ))}
                 </select>
               </label>
-              <label>
-                {t('Erläuterung')}
+              <label className="field">
+                <span>{t('Erläuterung')}</span>
                 <textarea
                   value={item.description}
                   maxLength={5000}
@@ -1025,8 +1025,8 @@ function KindForm({
       }}
     >
       <h3>{kind ? t('Art bearbeiten') : t('Neue Art')}</h3>
-      <label>
-        {t('Name')}
+      <label className="field">
+        <span>{t('Name')}</span>
         <input
           value={form.name}
           maxLength={100}
@@ -1034,8 +1034,8 @@ function KindForm({
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
       </label>
-      <label>
-        {t('Grundtyp')}
+      <label className="field">
+        <span>{t('Grundtyp')}</span>
         <select
           value={form.base}
           onChange={(e) => setForm({ ...form, base: e.target.value as MeetingBase })}
@@ -1047,8 +1047,8 @@ function KindForm({
           ))}
         </select>
       </label>
-      <label>
-        {t('Einladungsfrist in Tagen')}
+      <label className="field">
+        <span>{t('Einladungsfrist in Tagen')}</span>
         <input
           type="number"
           min={0}
@@ -1058,8 +1058,8 @@ function KindForm({
           onChange={(e) => setForm({ ...form, invite_days: e.target.value })}
         />
       </label>
-      <label>
-        {t('Einladung')}
+      <label className="field">
+        <span>{t('Einladung')}</span>
         <select
           value={form.invite_form}
           onChange={(e) =>
@@ -1070,8 +1070,8 @@ function KindForm({
           <option value="letter">{t('Brief an alle')}</option>
         </select>
       </label>
-      <label>
-        {t('Beschlussfähig ab (Prozent der Stimmberechtigten, leer: immer)')}
+      <label className="field">
+        <span>{t('Beschlussfähig ab (Prozent der Stimmberechtigten, leer: immer)')}</span>
         <input
           type="number"
           min={1}
@@ -1080,8 +1080,8 @@ function KindForm({
           onChange={(e) => setForm({ ...form, quorum_percent: e.target.value })}
         />
       </label>
-      <label>
-        {t('Protokoll sehen')}
+      <label className="field">
+        <span>{t('Protokoll sehen')}</span>
         <select
           value={form.minutes_for}
           onChange={(e) =>
@@ -1123,8 +1123,8 @@ function KindForm({
           )}
         </p>
       )}
-      <label>
-        {t('Anträge von Mitgliedern bis Tage vorher (leer: keine Anträge)')}
+      <label className="field">
+        <span>{t('Anträge von Mitgliedern bis Tage vorher (leer: keine Anträge)')}</span>
         <input
           type="number"
           min={0}
@@ -1698,8 +1698,8 @@ function MinutesEditor({
         {items.map((item, index) => (
           <li key={item.id} className="agenda-row">
             <h3>{agenda[index].title}</h3>
-            <label>
-              {t('Protokoll zu TOP {n}', { n: index + 1 })}
+            <label className="field">
+              <span>{t('Protokoll zu TOP {n}', { n: index + 1 })}</span>
               <textarea
                 value={item.minutes}
                 rows={4}
@@ -1712,8 +1712,8 @@ function MinutesEditor({
                 <legend>{r.kind === 'election' ? t('Wahl') : t('Beschluss')}</legend>
                 {r.kind === 'election' ? (
                   <div className="agenda-fields">
-                    <label>
-                      {t('Amt')}
+                    <label className="field">
+                      <span>{t('Amt')}</span>
                       <input
                         value={r.office}
                         maxLength={200}
@@ -1721,8 +1721,8 @@ function MinutesEditor({
                         onChange={(e) => changeResolution(index, j, { office: e.target.value })}
                       />
                     </label>
-                    <label>
-                      {t('Gewählt')}
+                    <label className="field">
+                      <span>{t('Gewählt')}</span>
                       <input
                         value={r.elected_name}
                         maxLength={200}
@@ -1737,8 +1737,8 @@ function MinutesEditor({
                     </label>
                   </div>
                 ) : (
-                  <label>
-                    {t('Beschlusstext')}
+                  <label className="field">
+                    <span>{t('Beschlusstext')}</span>
                     <textarea
                       value={r.text}
                       rows={2}
@@ -1763,8 +1763,8 @@ function MinutesEditor({
                 </label>
                 {!r.unanimous && (
                   <div className="vote-fields">
-                    <label>
-                      {t('Ja')}
+                    <label className="field">
+                      <span>{t('Ja')}</span>
                       <input
                         type="number"
                         min={0}
@@ -1774,8 +1774,8 @@ function MinutesEditor({
                         }
                       />
                     </label>
-                    <label>
-                      {t('Nein')}
+                    <label className="field">
+                      <span>{t('Nein')}</span>
                       <input
                         type="number"
                         min={0}
@@ -1785,8 +1785,8 @@ function MinutesEditor({
                         }
                       />
                     </label>
-                    <label>
-                      {t('Enthaltung')}
+                    <label className="field">
+                      <span>{t('Enthaltung')}</span>
                       <input
                         type="number"
                         min={0}
@@ -1796,8 +1796,8 @@ function MinutesEditor({
                         }
                       />
                     </label>
-                    <label>
-                      {t('Ergebnis')}
+                    <label className="field">
+                      <span>{t('Ergebnis')}</span>
                       <select
                         value={r.result}
                         onChange={(e) =>
