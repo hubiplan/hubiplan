@@ -33,7 +33,7 @@ Die Selbstauskunft nennt `version` (laufende HUBIplan-Version, nur zur Anzeige),
 | `app-verwaltung` | App | 2026.11.0 | Verwaltung in der App (`admin/`) |
 | `app-senden` | App | 2026.11.0 | Senden aus der App (`send/`) |
 | `app-sprache` | App | 2026.11.0 | Sprache je Konto (`me/language/`) |
-| `app-passkey` | App | 2026.11.0 | Anmelden und Verwaltung freischalten mit Passkey (`passkey/begin/`, `passkey/`; nutzbar laut `passkey` in `instance/`) |
+| `app-passkey` | App | 2026.11.0 | Anmelden und Verwaltung freischalten mit Passkey (`passkey/begin/`, `passkey/`; Wege laut `passkey` in `instance/`, iOS über `/app/anmelden`) |
 | `designpakete` | Webseite | 2026.11.0 | Designpakete (`<key>/design/<paket>/`) |
 | `chronik-zeitleiste` | Webseite | 2026.11.0 | Chronik als Zeitleiste (`timeline`, `timeline_newest_first`) |
 | `bildunterschriften` | Webseite | 2026.11.0 | Bildunterschriften je Text (`show_captions`) |

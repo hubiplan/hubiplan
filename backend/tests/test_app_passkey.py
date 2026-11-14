@@ -1,7 +1,8 @@
 """Anmeldung der App mit Passkey (devices/passkey.py, docs/app.md). Erfundene Daten.
 
 Der Software-Passkey aus ``test_passkeys`` spielt das Telefon: Die Android-App unterschreibt
-mit der Herkunft ``android:apk-key-hash:…``, die iOS-App mit ``https://<Adresse>``.
+mit der Herkunft ``android:apk-key-hash:…``. Eine Antwort mit ``https://<Adresse>`` (Browser)
+gilt ebenso.
 """
 # ruff: noqa: F811  (Fixtures als Parameter)
 
@@ -26,7 +27,6 @@ ANDROID_ORIGIN = (
     "android:apk-key-hash:"
     + base64.urlsafe_b64encode(bytes.fromhex(FINGERPRINT.replace(":", ""))).rstrip(b"=").decode()
 )
-IOS_APP = "ABCDE12345.de.hubiplan.app"
 # Offizielle Werte, bevor die Tests sie ausblenden
 OFFICIAL = app_passkey.OFFICIAL_ANDROID_FINGERPRINTS
 
@@ -35,13 +35,11 @@ OFFICIAL = app_passkey.OFFICIAL_ANDROID_FINGERPRINTS
 def ohne_offizielle(monkeypatch):
     """Die Tests setzen ihre eigenen, erfundenen Apps (die offiziellen prüft ein eigener Test)."""
     monkeypatch.setattr(app_passkey, "OFFICIAL_ANDROID_FINGERPRINTS", ())
-    monkeypatch.setattr(app_passkey, "OFFICIAL_IOS_APP_IDS", ())
 
 
 @pytest.fixture
 def apps(settings):
     settings.APP_ANDROID_FINGERPRINTS = [FINGERPRINT.lower()]
-    settings.APP_IOS_APP_IDS = [IOS_APP]
     return settings
 
 
@@ -68,8 +66,7 @@ def login(start: dict, credential: dict, name: str = "Pixel 8"):
 class TestWellKnown:
     def test_ohne_apps_nichts(self):
         assert Client().get("/.well-known/assetlinks.json").status_code == 404
-        assert Client().get("/.well-known/apple-app-site-association").status_code == 404
-        assert Client().get(f"{APP}instance/").json()["passkey"] == []
+        assert Client().get(f"{APP}instance/").json()["passkey"] == ["browser"]
 
     def test_assetlinks_fuer_android(self, apps):
         resp = Client().get("/.well-known/assetlinks.json")
@@ -83,25 +80,17 @@ class TestWellKnown:
             "sha256_cert_fingerprints": [FINGERPRINT],
         }
 
-    def test_apple_app_site_association(self, apps):
-        resp = Client().get("/.well-known/apple-app-site-association")
-        assert resp.status_code == 200
-        assert resp["Content-Type"] == "application/json"
-        assert resp.json() == {"webcredentials": {"apps": [IOS_APP]}}
-
     def test_offizielle_android_app_ist_eingetragen(self):
         assert OFFICIAL
         assert all(app_passkey._normalize_fingerprint(f) for f in OFFICIAL)
 
     def test_ungueltige_werte_fallen_weg(self, settings):
         settings.APP_ANDROID_FINGERPRINTS = ["zu-kurz"]
-        settings.APP_IOS_APP_IDS = ["de.hubiplan.app"]
         assert Client().get("/.well-known/assetlinks.json").status_code == 404
-        assert Client().get("/.well-known/apple-app-site-association").status_code == 404
 
     def test_instanz_nennt_plattformen(self, apps):
         data = Client().get(f"{APP}instance/").json()
-        assert data["passkey"] == ["android", "ios"]
+        assert data["passkey"] == ["android", "browser"]
         assert "app-passkey" in data["features"]
 
     def test_passkeys_aus(self, apps):
@@ -133,11 +122,11 @@ class TestAnmelden:
 
         assert passkeys(user).get().last_used_at is not None
 
-    def test_ios_app(self, apps, member):
+    def test_herkunft_der_adresse(self, apps, member):
         user, _ = member
         key = with_passkey(user)  # Herkunft https://testserver
         start = begin()
-        resp = login(start, key.sign(start["options"]), name="iPhone")
+        resp = login(start, key.sign(start["options"]), name="Tablet")
         assert resp.status_code == 201, resp.json()
 
     def test_aufgabe_nur_einmal(self, apps, member):

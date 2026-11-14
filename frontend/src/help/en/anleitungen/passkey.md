@@ -42,12 +42,14 @@ new device with the same account.
 
 ## In the app
 
-In the HUBIplan app (Android 9 or later, iPhone with iOS 16 or later), tap **Sign in with
-passkey** when connecting, enter your club’s address and confirm with your fingerprint, face or
-PIN. The same passkey as in the browser works if it is stored with Google, Apple or in your
-password manager. You can also open **Administration** in the app with **Unlock with passkey**
-instead of your password and code.
+In the HUBIplan app, tap **Sign in with passkey** when connecting and enter your club’s
+address. The same passkey as in the browser works if it is stored with Google, Apple or in your
+password manager.
 
-If the app does not offer a passkey, your instance has not yet enabled the app for this. In
-that case, connect the app as before with the QR code under **My account** › App & other
-instances.
+- **Android:** The phone asks for your fingerprint, face or PIN straight away. You can also open
+  **Administration** with **Unlock with passkey** instead of your password and code.
+- **iPhone:** The app opens your club’s sign-in page. Sign in there with **Sign in with
+  passkey** and tap **Connect**.
+
+If it does not work, connect the app as before with the QR code under **My account** › App &
+other instances.

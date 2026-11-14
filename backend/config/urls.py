@@ -23,13 +23,8 @@ urlpatterns = [
     # /_allauth/openapi.html)
     path("_allauth/", include("allauth.headless.urls")),
     path("api/", include("core.urls")),
-    # Passkeys in den Apps: welche Apps diese Adresse nutzen dürfen (devices/passkey.py)
+    # Passkeys in der Android-App: welche Apps diese Adresse nutzen dürfen (devices/passkey.py)
     path(".well-known/assetlinks.json", app_passkey.assetlinks, name="assetlinks"),
-    path(
-        ".well-known/apple-app-site-association",
-        app_passkey.apple_app_site_association,
-        name="apple-app-site-association",
-    ),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Anmeldung der KI-Assistenten: Beschreibungen unter /.well-known/ (docs/mcp.md)
     path("", include("mcpserver.urls_root")),

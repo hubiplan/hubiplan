@@ -19,22 +19,26 @@ Wege zum Schlüssel:
 
 Antwort jeweils `201` mit `token`, `device`, `user`.
 
-### Passkeys: Freigabe der Apps
+### Passkeys: Android und iOS
 
-Android und iOS bieten einer App einen Passkey nur an, wenn die Adresse die App bestätigt:
+**Android** bietet der App einen Passkey nur an, wenn die Adresse die App unter
+`GET /.well-known/assetlinks.json` bestätigt (Beziehung `delegate_permission/common.get_login_creds`,
+Paket `de.hubiplan.app`, SHA-256-Fingerabdrücke der Signaturzertifikate). Die App unterschreibt
+mit der Herkunft `android:apk-key-hash:<base64url des Fingerabdrucks>`; HUBIplan lässt genau
+diese Herkünfte zu. Ohne bestätigte App antwortet der Pfad mit 404. Die offiziellen Werte stehen
+in `backend/devices/passkey.py`; eigene Builds ergänzen `HUBIPLAN_APP_ANDROID_FINGERPRINTS`
+(siehe [betrieb.md](betrieb.md)).
 
-- `GET /.well-known/assetlinks.json` (Android, Beziehung `delegate_permission/common.get_login_creds`,
-  Paket `de.hubiplan.app` und SHA-256-Fingerabdrücke der Signaturzertifikate). Die Android-App
-  unterschreibt mit der Herkunft `android:apk-key-hash:<base64url des Fingerabdrucks>`; HUBIplan
-  lässt genau diese Herkünfte zu.
-- `GET /.well-known/apple-app-site-association` (iOS, `webcredentials.apps` mit
-  `<Team-ID>.de.hubiplan.app`). Die iOS-App unterschreibt mit `https://<Adresse>`.
+**iOS** gibt Passkeys nur für Adressen heraus, die beim Bauen der App fest eingetragen sind
+(Associated Domains). Selbst betriebene Instanzen mit eigener Adresse gehen so nicht. Die
+iOS-App öffnet deshalb `https://<Instanz>/app/anmelden` in einem eingebetteten Browserfenster
+(`ASWebAuthenticationSession`, Rückruf-Schema `hubiplan`). Dort meldet sich die Person wie auf
+der Webseite an, auf Wunsch mit Passkey, und tippt auf „Verbinden“. Die Seite erzeugt einen
+Einmalcode (`POST /api/app/v1/pairing/`) und ruft `hubiplan://verbinden?server=…&code=…` auf;
+die App verbindet sich damit wie beim QR-Code.
 
-Ohne bestätigte App antworten beide Pfade mit 404. Die offiziellen Werte stehen in
-`backend/devices/passkey.py`; eigene Builds ergänzen sie in der `.env`
-(`HUBIPLAN_APP_ANDROID_FINGERPRINTS`, `HUBIPLAN_APP_IOS_APP_IDS`, siehe [betrieb.md](betrieb.md)).
-`GET /api/app/v1/instance/` nennt in `passkey` die Plattformen (`android`, `ios`), deren App
-Passkeys nutzen darf; die App zeigt den Knopf nur dann.
+`GET /api/app/v1/instance/` nennt in `passkey` die Wege: `android` (App bestätigt) und
+`browser` (Anmeldung im eingebetteten Browser, solange Passkeys eingeschaltet sind).
 
 Die Verwaltung (`POST /api/app/v1/admin/unlock/`) lässt sich statt mit `password` und `code`
 auch mit `passkey_challenge_id` und `passkey_credential` freischalten (Aufgabe ebenfalls aus

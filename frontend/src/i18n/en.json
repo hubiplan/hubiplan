@@ -9233,5 +9233,8 @@
   "Seite suchen": "Search page",
   "Seite suchen …": "Search page …",
   "Pfeiltasten wählen, Eingabe öffnet, Esc schließt.": "Arrow keys select, Enter opens, Esc closes.",
-  "Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.": "Applies to all pages of HUBIplan and on every device you are signed in on."
+  "Gilt für alle Seiten von HUBIplan und auf allen Geräten, an denen du angemeldet bist.": "Applies to all pages of HUBIplan and on every device you are signed in on.",
+  "Verbinden": "Connect",
+  "Der Code zum Verbinden ließ sich nicht erzeugen.": "The connection code could not be created.",
+  "Verbinde die HUBIplan-App nur, wenn du sie gerade selbst auf deinem Telefon geöffnet hast.": "Only connect the HUBIplan app if you have just opened it yourself on your phone."
 }

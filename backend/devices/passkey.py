@@ -6,10 +6,14 @@ Die App fragt ``POST /api/app/v1/passkey/begin/`` nach einer Aufgabe (WebAuthn
 Geräteschlüssel; eine Sitzung entsteht dabei nicht.
 
 Ein Passkey gilt für genau eine Adresse (Relying Party ID, siehe ``accounts/passkeys.py``).
-Damit Android und iOS ihn einer App überhaupt anbieten, bestätigt die Instanz unter
-``/.well-known/assetlinks.json`` (Android) und ``/.well-known/apple-app-site-association``
-(iOS), welche Apps das dürfen. Android-Apps unterschreiben mit der Herkunft
-``android:apk-key-hash:<SHA-256 des Signaturzertifikats>``; iOS-Apps mit ``https://<Adresse>``.
+Damit Android ihn einer App überhaupt anbietet, bestätigt die Instanz unter
+``/.well-known/assetlinks.json``, welche Apps das dürfen. Android-Apps unterschreiben mit der
+Herkunft ``android:apk-key-hash:<SHA-256 des Signaturzertifikats>``.
+
+iOS gibt Passkeys nur für Adressen heraus, die beim Bauen fest in der App stehen; für selbst
+betriebene Instanzen geht das nicht. Die iOS-App meldet sich deshalb im eingebetteten Browser
+an (``/app/anmelden``, dort gilt der Passkey wie auf der Webseite) und verbindet sich über den
+Einmalcode wie beim QR-Code.
 """
 
 from __future__ import annotations
@@ -51,20 +55,18 @@ from .views import DeviceSerializer, _create_device, _limit, _paired
 
 logger = logging.getLogger(__name__)
 
-# Die offiziellen Apps (Google Play, iOS App Store). Werte sind öffentlich (Zertifikat bzw.
-# App-Kennung), keine Geheimnisse. Eigene Builds ergänzen sie in der .env
-# (HUBIPLAN_APP_ANDROID_FINGERPRINTS, HUBIPLAN_APP_IOS_APP_IDS, docs/betrieb.md).
+# Die offizielle Android-App. Die Fingerabdrücke der Signaturzertifikate sind öffentlich, keine
+# Geheimnisse. Eigene Builds ergänzen sie in der .env (HUBIPLAN_APP_ANDROID_FINGERPRINTS,
+# docs/betrieb.md).
 OFFICIAL_ANDROID_FINGERPRINTS: tuple[str, ...] = (
     # Google Play, App-Signaturschlüssel
     "93:60:51:21:C6:33:6A:CB:63:47:58:72:5D:0C:4B:7A:FC:79:9D:C2:47:C1:06:9F:D1:AE:64:1A:14:1E:D2:21",
     # Uploadschlüssel des Herausgebers (selbst signierte APKs, Variante foss)
     "EE:82:1A:56:59:E4:5D:D8:96:50:0E:D5:63:04:0F:1A:6A:1D:2A:C7:9E:09:A6:04:97:B4:8B:A9:1D:D2:45:00",
 )
-OFFICIAL_IOS_APP_IDS: tuple[str, ...] = ()
 
 CHALLENGE_SECONDS = 5 * 60
 _HEX = re.compile(r"^[0-9A-F]{64}$")
-_APP_ID = re.compile(r"^[A-Z0-9]{10}\.[A-Za-z0-9.-]+$")
 
 
 def _normalize_fingerprint(value: str) -> str:
@@ -83,18 +85,6 @@ def android_fingerprints() -> list[str]:
             logger.warning("Ungültiger Android-Fingerabdruck in HUBIPLAN_APP_ANDROID_FINGERPRINTS")
         elif normal not in result:
             result.append(normal)
-    return result
-
-
-def ios_app_ids() -> list[str]:
-    result: list[str] = []
-    for value in (*OFFICIAL_IOS_APP_IDS, *settings.APP_IOS_APP_IDS):
-        if not _APP_ID.match(value):
-            logger.warning(
-                "Ungültige iOS-App-Kennung (Team-ID.Bundle-ID) in HUBIPLAN_APP_IOS_APP_IDS"
-            )
-        elif value not in result:
-            result.append(value)
     return result
 
 
@@ -131,15 +121,6 @@ def assetlinks(request):
         ],
         safe=False,
     )
-
-
-@require_GET
-def apple_app_site_association(request):
-    """iOS: Diese Apps dürfen Passkeys dieser Adresse nutzen (ohne Umleitung, als JSON)."""
-    apps = ios_app_ids()
-    if not passkeys.enabled() or not apps:
-        raise Http404
-    return JsonResponse({"webcredentials": {"apps": apps}})
 
 
 # --- Anmeldung ---
