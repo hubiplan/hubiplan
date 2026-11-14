@@ -219,6 +219,8 @@ class TestVerwaltungFreischalten:
         user, _ = member
         give_role(user, cal["a"])
         key, token = self._device(user)
+        overview = app(token).get(f"{APP}admin/").json()
+        assert overview["passkey"] is True and overview["two_factor"] is False
         resp = self._unlock(token, key)
         assert resp.status_code == 201, resp.json()
         assert app(resp.json()["token"]).get(f"{APP}admin/").status_code == 200

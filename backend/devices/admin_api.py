@@ -45,6 +45,7 @@ from access.catalog import (
     RESULTS_EDIT,
 )
 from access.permissions import organizations_for
+from accounts.passkeys import usable_here
 from audit.log import current_via
 from changes import tracking
 from core.api_base import OrgScopedMixin
@@ -170,6 +171,9 @@ class AdminOverviewView(APIView):
                 # B4: neu, ältere Apps lesen das Feld nicht
                 "departments": admin_departments(request.user),
                 "two_factor": has_totp(request.user),
+                # Freischalten mit Passkey möglich (Passkey für diese Adresse); neu, ältere
+                # Apps lesen das Feld nicht
+                "passkey": usable_here(request.user, request._request),
                 **admin_state(device),
             }
         )
