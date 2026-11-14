@@ -12781,7 +12781,3 @@ msgstr "Administrators cannot enter answers in anonymous surveys."
 
 msgid "Aus dieser Umfrage gibt es schon einen Termin."
 msgstr "An event has already been created from this survey."
-
-#, python-brace-format
-msgid "Für den Verteiler „{name}“ ist keine Adresse frei."
-msgstr "No address is available for the distribution list “{name}”."
