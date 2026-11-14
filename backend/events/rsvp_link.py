@@ -13,7 +13,6 @@ import logging
 
 from django.core import signing
 from django.db import transaction
-from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -31,7 +30,7 @@ from members.models import Membership
 from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
 
-from . import maps, notify, rsvp
+from . import attachments, maps, notify, rsvp
 from .models import MAX_GUESTS, Event, EventAttachment, EventResponse
 
 logger = logging.getLogger(__name__)
@@ -75,31 +74,35 @@ def offers_link(event: Event) -> bool:
 
 def mail_attachments(event: Event) -> tuple[list[dict], list[str]]:
     """Anhänge des Termins für den Postausgang und die Namen der nicht mitgeschickten."""
-    from core import virenscan
 
     chosen: list[dict] = []
     skipped: list[str] = []
     total = 0
     for att in event.attachments.all():
-        too_big = att.size > MAIL_FILE_SIZE or total + att.size > MAIL_TOTAL_SIZE
+        found = attachments.file_of(att)
+        if found is None:  # verknüpftes Dokument nicht mehr in der Ablage
+            continue
+        file, name, content_type, size = found
+        too_big = size > MAIL_FILE_SIZE or total + size > MAIL_TOTAL_SIZE
         if len(chosen) >= MAIL_FILES or too_big:
-            skipped.append(att.name)
+            skipped.append(name)
             continue
         try:
-            virenscan.release_ok(
-                att.file, att.name, "Anhang eines Termins", key=f"termin-anhang:{att.pk}"
-            )
+            with rls_bypass():
+                virenscan.release_ok(
+                    file, name, "Anhang eines Termins", key=f"termin-anhang:{att.pk}"
+                )
         except Exception:  # Fund, Scanner fehlt: Datei nicht mitschicken
             logger.warning("Terminanhang %s nicht mitgeschickt", att.pk, exc_info=True)
-            skipped.append(att.name)
+            skipped.append(name)
             continue
-        total += att.size
+        total += size
         chosen.append(
             {
-                "name": att.name,
-                "path": att.file.name,
-                "size": att.size,
-                "content_type": att.content_type or "application/octet-stream",
+                "name": name,
+                "path": file.name,
+                "size": size,
+                "content_type": content_type or "application/octet-stream",
             }
         )
     return chosen, skipped
@@ -159,14 +162,14 @@ class _LinkBase(APIView):
             mine = event.responses.filter(membership=membership).first()
             allowed, reason = rsvp.member_can_respond(event)
             s = rsvp.summary(event)
-            attachments = [
+            files = [
                 {
                     "id": a.pk,
-                    "name": a.name,
-                    "size": a.size,
+                    "name": attachments.display_name(a),
+                    "size": attachments.file_of(a)[3],
                     "url": f"/api/public/rsvp/{value}/attachments/{a.pk}/",
                 }
-                for a in event.attachments.all()
+                for a in attachments.shown(event, can_edit=False)
             ]
             imprint_key = ensure_imprint(event.organization).public_key
         owner = event.department.name if event.department_id else event.organization.name
@@ -189,7 +192,7 @@ class _LinkBase(APIView):
                 "is_cancelled": event.is_cancelled,
                 "cancel_note": event.cancel_note if event.is_cancelled else "",
             },
-            "attachments": attachments,
+            "attachments": files,
             "rsvp": {
                 "deadline": event.rsvp_deadline,
                 "capacity": event.rsvp_capacity,
@@ -259,19 +262,7 @@ class PublicRsvpAttachmentView(_LinkBase):
         with rls_bypass():
             att = get_object_or_404(EventAttachment, event=event, pk=att_id)
             # Noch nicht geprüft oder Fund: gesperrt (Gesamtaudit 10.11., Fachfrage 2)
-            virenscan.ensure_released(att.file)
-            try:
-                handle = att.file.open("rb")
-            except FileNotFoundError as exc:
-                raise Http404 from exc
-        response = FileResponse(
-            handle,
-            content_type=att.content_type,
-            as_attachment=request.query_params.get("download") == "1",
-            filename=att.name,
-        )
-        response["Cache-Control"] = "private, no-store"
-        response["X-Content-Type-Options"] = "nosniff"
+            response = attachments.response(request, att, "private, no-store")
         response["X-Robots-Tag"] = "noindex, nofollow"
         response["Referrer-Policy"] = "no-referrer"
         return response

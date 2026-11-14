@@ -1310,7 +1310,11 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                     getattr(obj, field_name).save(
                         path.rsplit("/", 1)[-1].split("-", 1)[-1], ContentFile(content), save=False
                     )
-            if name == "todos.todoattachment" and obj.kind == "document":
+            if (
+                name in {"todos.todoattachment", "events.eventattachment"}
+                and obj.kind == "document"
+            ):
+                # Verweis auf die Ablage: ohne mitgekommenes Dokument entfällt er
                 obj.file = ""
                 if not obj.document_id:
                     continue

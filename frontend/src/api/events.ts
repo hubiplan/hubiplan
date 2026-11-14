@@ -134,10 +134,24 @@ export interface EventUnit {
 
 export interface Attachment {
   id: number
+  /** Datei: hier hochgeladen; Dokument: verknüpft aus der Ablage (neueste Fassung) */
+  kind?: 'file' | 'document'
   name: string
+  file_name?: string
   size: number
   content_type: string
+  /** Verknüpftes Dokument liegt im Papierkorb oder ist gelöscht */
+  available?: boolean
   url: string
+}
+
+export interface LinkableDocument {
+  id: number
+  title: string
+  folder: string
+  folder_visibility: string
+  /** Ordner enger sichtbar als der Termin: Verknüpfen gibt das Dokument frei */
+  narrower: boolean
 }
 
 export interface SeriesException {
@@ -373,6 +387,10 @@ export const eventApi = {
     return api.post<EventDetail>(`${base}events/${id}/attachments/`, form)
   },
   removeAttachment: (url: string) => api.del(url),
+  linkableDocuments: (base: CalendarBase, id: number) =>
+    api.get<{ documents: LinkableDocument[] }>(`${base}events/${id}/attachments/`),
+  linkDocument: (base: CalendarBase, id: number, document: number) =>
+    api.post<EventDetail>(`${base}events/${id}/attachments/`, { document }),
   categories: (base: CalendarBase) => api.get<EventCategory[]>(`${base}events/categories/`),
   createCategory: (base: CalendarBase, data: { name: string; color: string }) =>
     api.post<EventCategory>(`${base}events/categories/`, data),

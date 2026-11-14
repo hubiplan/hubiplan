@@ -603,27 +603,35 @@ def copy_event_attachments(event, circular: Circular) -> list[str]:
     skipped: list[str] = []
     total = 0
     count = 0
+    from events import attachments as event_attachments
+
     for src in event.attachments.all():
-        is_pdf = src.content_type == "application/pdf"
+        found = event_attachments.file_of(src)
+        if found is None:  # verknüpftes Dokument nicht mehr in der Ablage
+            continue
+        file, name, content_type, size = found
+        is_pdf = content_type == "application/pdf"
         fits = (
             count < MAX_ATTACHMENTS
-            and src.size <= MAX_ATTACHMENT_BYTES
-            and total + src.size <= 2 * MAX_ATTACHMENT_BYTES
+            and size <= MAX_ATTACHMENT_BYTES
+            and total + size <= 2 * MAX_ATTACHMENT_BYTES
         )
         if not (is_pdf and fits):
-            skipped.append(src.name)
+            skipped.append(name)
             continue
-        with src.file.open("rb") as handle:
+        with rls_bypass(), file.open("rb") as handle:
             content = handle.read()
-        att = CircularAttachment(circular=circular, name=src.name[:200], size=len(content))
-        att.file.save(_safe_name(src.name), ContentFile(content), save=False)
+        att = CircularAttachment(circular=circular, name=name[:200], size=len(content))
+        att.file.save(_safe_name(name), ContentFile(content), save=False)
         att.save()
         from core import virenscan
 
-        if virenscan.scan_state(src.file):
+        with rls_bypass():
+            held = virenscan.scan_state(file)
+        if held:
             # Original noch gesperrt: die Kopie auch (Gesamtaudit 10.11., Fachfrage 2)
-            virenscan.hold(att.file.name, circular.organization_id, src.name)
-        total += src.size
+            virenscan.hold(att.file.name, circular.organization_id, name)
+        total += size
         count += 1
     return skipped
 

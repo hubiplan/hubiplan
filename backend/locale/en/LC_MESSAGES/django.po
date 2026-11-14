@@ -12430,3 +12430,15 @@ msgstr "Number of the text page."
 
 msgid "Schlüssel → {hintergrund, breite}, Werte aus startseite_bausteine. Auch für „body“, z. B. breite full für Text über die volle Breite."
 msgstr "Key → {hintergrund, breite}, values from startseite_bausteine. Also for “body”, e.g. breite full for text across the full width."
+
+msgid "Dokument nicht mehr in der Ablage"
+msgstr "Document no longer in the document store"
+
+msgid "Dokument aus der Ablage"
+msgstr "Document from the document store"
+
+msgid "Dieses Dokument kannst du hier nicht verknüpfen."
+msgstr "You cannot link this document here."
+
+msgid "Das Dokument hängt schon an diesem Termin."
+msgstr "This document is already attached to this event."
