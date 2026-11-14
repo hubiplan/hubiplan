@@ -68,6 +68,7 @@ def book_data(r: Resolution) -> dict:
         "meeting_kind_name": r.meeting.kind.name,
         "date": timezone.localtime(r.meeting.event.starts_at).date(),
         "agenda_title": r.agenda_item.title,
+        "agenda_number": r.agenda_item.number,
         "has_todo": todo is not None or (r.todo_id is not None and r.todo is None),
         "todo": {"id": todo.pk, "title": todo.title, "status": todo.status} if todo else None,
     }

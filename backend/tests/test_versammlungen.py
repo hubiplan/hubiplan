@@ -115,6 +115,66 @@ def test_tagesordnung_aus_letzter_versammlung(setup):
     assert stale.status_code == 409
 
 
+def test_tagesordnung_mit_unterpunkten(setup):
+    from circulars.models import Circular
+
+    s = setup
+    first = new_meeting(s)
+    url = f"{s['url']}{first['id']}/"
+    items = [
+        # Unterpunkt ganz oben hat keinen Punkt darüber und wird zum Punkt
+        {"title": "Begrüßung", "type": "other", "level": 1},
+        {"title": "Wahlen", "type": "election"},
+        {"title": "Wahl des Vorsitzenden", "type": "election", "level": 1},
+        {"title": "Wahl der Kassenprüfer", "type": "election", "level": 1},
+        {"title": "Verschiedenes", "type": "other"},
+    ]
+    saved = ok(
+        s["chef"].put(
+            url + "agenda/", {"version": first["version"], "items": items}, content_type=JSON
+        )
+    )
+    assert [(a["number"], a["level"]) for a in saved["agenda"]] == [
+        ("1", 0),
+        ("2", 0),
+        ("2.1", 1),
+        ("2.2", 1),
+        ("3", 0),
+    ]
+    assert [a["position"] for a in saved["agenda"]] == [1, 2, 3, 4, 5]
+    # Mehr als eine Ebene gibt es nicht
+    too_deep = {"version": saved["version"], "items": [{"title": "X", "level": 2}]}
+    assert s["chef"].put(url + "agenda/", too_deep, content_type=JSON).status_code == 400
+    # Die nächste Versammlung übernimmt die Gliederung
+    second = new_meeting(s)
+    assert [a["number"] for a in second["agenda"]] == ["1", "2", "2.1", "2.2", "3"]
+    # Einladung nennt die Nummern „TOP 2.1“
+    from access.models import Role
+
+    Role.objects.filter(organization=s["org"], name="Vorsitz").update(
+        permissions=["meetings.edit", "circulars.edit"]
+    )
+    data = ok(s["chef"].post(url + "invitation/"))
+    body = Circular.objects.get(pk=data["circular"]).body
+    assert "TOP 2: Wahlen" in body and "TOP 2.1: Wahl des Vorsitzenden" in body
+    assert "TOP 3: Verschiedenes" in body
+    # Protokoll-PDF mit Unterpunkten
+    ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
+    resp = s["reader"].get(url + "minutes/pdf/")
+    assert resp.status_code == 200 and resp.content.startswith(b"%PDF")
+
+
+def test_nummern_alter_tagesordnungen(setup):
+    """Angenommener Antrag kommt als neuer Punkt ans Ende und bekommt seine Nummer."""
+    from meetings.models import renumber
+
+    s = setup
+    meeting = Meeting.objects.get(pk=new_meeting(s, "Vorstandssitzung")["id"])
+    AgendaItem.objects.filter(meeting=meeting).update(number="")
+    renumber(meeting)
+    assert list(meeting.agenda.values_list("number", flat=True)) == ["1", "2", "3"]
+
+
 def test_inhalte_verschluesselt(setup):
     s = setup
     meeting = new_meeting(s)
@@ -715,6 +775,7 @@ def test_versammlungen_im_mitgliederbereich(setup, api):
     assert [m["id"] for m in data["upcoming"]] == [coming["id"]]
     assert data["upcoming"][0]["location"] == "Schützenhaus"
     assert data["upcoming"][0]["agenda"][0]["title"]
+    assert data["upcoming"][0]["agenda"][0]["number"] == "1"
     # Vorstandsprotokolle bleiben dem Vorstand vorbehalten
     assert [m["id"] for m in data["minutes"]] == [done["id"]]
     resp = portal.get(f"{url}{done['id']}/minutes/")

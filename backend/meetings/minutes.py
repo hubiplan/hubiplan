@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
@@ -139,11 +140,18 @@ def _render(meeting: Meeting, *, draft: bool) -> bytes:
     resolutions: dict[int, list[Resolution]] = {}
     for r in meeting.resolutions.all():
         resolutions.setdefault(r.agenda_item_id, []).append(r)
+    # Unterpunkte (TOP 8.1) etwas kleiner und eingerückt unter ihrem Punkt
+    sub_heading = ParagraphStyle("h3", parent=st["h2"], fontSize=10, leading=13, leftIndent=6 * mm)
+    sub_normal = ParagraphStyle("ns", parent=st["normal"], leftIndent=6 * mm)
     for item in meeting.agenda.all():
-        heading = _("TOP {n}: {title}").format(n=item.position, title=item.title)
-        story.append(Paragraph(f"<b>{escape(heading)}</b>", st["h2"]))
+        heading = _("TOP {n}: {title}").format(n=item.number or item.position, title=item.title)
+        if item.level:
+            head_style, body_style = sub_heading, sub_normal
+        else:
+            head_style, body_style = st["h2"], st["normal"]
+        story.append(Paragraph(f"<b>{escape(heading)}</b>", head_style))
         if item.minutes:
-            story.append(Paragraph(_text(item.minutes), st["normal"]))
+            story.append(Paragraph(_text(item.minutes), body_style))
         for r in resolutions.get(item.pk, []):
             if r.kind == Resolution.Kind.ELECTION:
                 label = _("Wahl {office}: {name}").format(office=r.office, name=r.elected_name)
@@ -156,7 +164,7 @@ def _render(meeting: Meeting, *, draft: bool) -> bytes:
             story.append(
                 Paragraph(
                     f"<b>{escape(label)}</b>{body} <i>({escape(outcome)})</i>",
-                    st["normal"],
+                    body_style,
                 )
             )
     story.append(Spacer(1, 8 * mm))
