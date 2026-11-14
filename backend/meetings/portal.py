@@ -130,6 +130,8 @@ class ListView(Base):
                         "agenda": [
                             {
                                 "position": item.position,
+                                "level": item.level,
+                                "number": item.number,
                                 "title": item.title,
                                 "description": item.description,
                             }

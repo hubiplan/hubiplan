@@ -190,7 +190,10 @@ export function ResolutionBook({
                     <div style={{ whiteSpace: 'pre-wrap' }}>{r.text}</div>
                   )}
                   <div className="muted small">
-                    {r.meeting_title} · {r.agenda_title}
+                    {r.meeting_title} ·{' '}
+                    {r.agenda_number
+                      ? t('TOP {n}: {title}', { n: r.agenda_number, title: r.agenda_title })
+                      : r.agenda_title}
                   </div>
                 </td>
                 <td>

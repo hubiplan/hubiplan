@@ -13,7 +13,7 @@ from members.models import MemberType
 
 from . import access, services
 from . import minutes as minutes_service
-from .models import AgendaItem, Attendance, Meeting, MeetingKind, Motion, Resolution
+from .models import AgendaItem, Attendance, Meeting, MeetingKind, Motion, Resolution, renumber
 
 MAX_AGENDA = 60
 
@@ -89,6 +89,8 @@ def agenda_data(item, resolutions=None):
     data = {
         "id": item.pk,
         "position": item.position,
+        "level": item.level,
+        "number": item.number,
         "title": item.title,
         "description": item.description,
         "type": item.type,
@@ -395,6 +397,8 @@ class AgendaItemInput(serializers.Serializer):
     title = serializers.CharField(max_length=300)
     description = serializers.CharField(max_length=5000, allow_blank=True, required=False)
     type = serializers.ChoiceField(choices=AgendaItem.Type.choices, required=False)
+    # 0 = Punkt, 1 = Unterpunkt des Punkts davor
+    level = serializers.IntegerField(min_value=0, max_value=1, required=False, default=0)
 
 
 class AgendaInput(serializers.Serializer):
@@ -403,7 +407,7 @@ class AgendaInput(serializers.Serializer):
 
 
 class AgendaView(Base):
-    """Tagesordnung als Ganzes speichern (Reihenfolge = Nummerierung)."""
+    """Tagesordnung als Ganzes speichern (Reihenfolge und Ebene ergeben die Nummern)."""
 
     @transaction.atomic
     def put(self, request, pk, **kwargs):
@@ -428,12 +432,14 @@ class AgendaView(Base):
             if not title:
                 raise ValidationError({"items": _("Jeder Punkt braucht einen Titel.")})
             item.position = position
+            item.level = entry["level"]
             item.title = title
             item.description = entry.get("description", item.description or "")
             item.type = entry.get("type", item.type or AgendaItem.Type.OTHER)
             item.save()
             keep.add(item.pk)
         meeting.agenda.exclude(pk__in=keep).delete()
+        renumber(meeting)
         meeting.version += 1
         meeting.save(update_fields=["version", "updated_at"])
         return Response(meeting_data(meeting, self.scope, full=True))
@@ -982,6 +988,7 @@ class MotionDecisionView(Base):
                 description=item.text,
                 type=AgendaItem.Type.RESOLUTION,
             )
+            renumber(meeting)
             item.status = Motion.Status.ACCEPTED
             item.agenda_item = agenda
             meeting.version += 1

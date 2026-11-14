@@ -8903,5 +8903,14 @@
   "Dokument aus der Ablage": "Document from the document store",
   "Der Ordner „{folder}“ ist enger sichtbar ({visibility}). Am Termin sehen das Dokument alle, die den Termin sehen.": "The folder “{folder}” has narrower visibility ({visibility}). On the event, everyone who can see the event can see the document.",
   "aus der Ablage": "from the document store",
-  "Das Dokument bleibt in der Ablage.": "The document stays in the document store."
+  "Das Dokument bleibt in der Ablage.": "The document stays in the document store.",
+  "Neuer Punkt": "New item",
+  "{x} ist jetzt TOP {n}.": "{x} is now item {n}.",
+  "Punkte am Griff oder an einer freien Stelle ziehen: zwischen zwei Punkten ablegen, um die Reihenfolge zu ändern, oder auf einem Punkt ablegen, um ihn zu dessen Unterpunkt zu machen. Unterpunkte ziehen mit ihrem Punkt mit. Am Griff gehen auch die Pfeiltasten (→ Unterpunkt, ← eigener Punkt).": "Drag items by the handle or any empty spot: drop between two items to change the order, or drop onto an item to make it a sub-item of that item. Sub-items move with their item. On the handle the arrow keys work too (→ sub-item, ← own item).",
+  "Eigener Punkt (oberste Ebene)": "Own item (top level)",
+  "Unterpunkt von TOP {n}": "Sub-item of item {n}",
+  "TOP {n} verschieben": "Move item {n}",
+  "Ziehen zum Verschieben (Pfeiltasten: ↑ ↓ verschieben, → Unterpunkt, ← eigener Punkt)": "Drag to move (arrow keys: ↑ ↓ move, → sub-item, ← own item)",
+  "Unterpunkt hinzufügen": "Add sub-item",
+  "TOP {n}: {title}": "Item {n}: {title}"
 }

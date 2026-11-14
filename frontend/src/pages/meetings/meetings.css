@@ -132,3 +132,43 @@
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
 }
+/* Unterpunkte der Tagesordnung (TOP 8.1) eingerückt unter ihrem Punkt */
+.agenda-edit,
+.agenda-list {
+  list-style: none;
+  padding-left: 0;
+}
+.agenda-sub {
+  margin-left: 2rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--color-border);
+}
+.agenda-fields > .agenda-wide {
+  grid-column: 1 / -1;
+}
+.agenda-drop-onto {
+  outline: 2px dashed var(--color-focus);
+  outline-offset: 4px;
+}
+.agenda-drop-before {
+  box-shadow: 0 -4px 0 var(--color-focus);
+}
+.agenda-drop-after {
+  box-shadow: 0 4px 0 var(--color-focus);
+}
+@media (hover: hover) {
+  .agenda-edit > .agenda-row {
+    cursor: grab;
+  }
+  .agenda-edit > .agenda-row :is(input, select, textarea, button) {
+    cursor: revert;
+  }
+}
+.agenda-edit .drag-handle {
+  touch-action: none;
+}
+@media (max-width: 40rem) {
+  .agenda-sub {
+    margin-left: 1rem;
+  }
+}
