@@ -1232,6 +1232,9 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
         if name == "website.galleryalbum":
             # Oberalben zuerst, damit Unteralben ihr Oberalbum finden
             rows = sorted(rows, key=lambda r: isinstance(r, dict) and r.get("parent") is not None)
+        if name == "places.place":
+            # Gebäude vor ihren Räumen (Verweis auf die eigene Tabelle)
+            rows = sorted(rows, key=lambda r: isinstance(r, dict) and r.get("parent") is not None)
         if name == "meetings.attendance":
             # Vertretene nach ihren Vertretern (Verweis auf die eigene Tabelle)
             rows = sorted(

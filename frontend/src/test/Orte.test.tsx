@@ -7,28 +7,69 @@ import { forgetPlaces } from '../components/places.ts'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
-const schuetzenhaus = {
+interface Row {
+  id: number
+  parent: number | null
+  name: string
+  address: string
+  directions: string
+  own: boolean
+  owner: string | null
+  can_edit: boolean
+}
+
+// Wie die Schnittstelle: Räume mit „Gebäude, Raum“ und Anschrift des Gebäudes
+function place(row: Row, building?: Row) {
+  const full = building ? `${building.name}, ${row.name}` : row.name
+  return {
+    latitude: null,
+    longitude: null,
+    is_active: true,
+    ...row,
+    full_name: full,
+    pick: {
+      name: full,
+      address: building ? building.address : row.address,
+      directions: [building?.directions, row.directions].filter(Boolean).join('\n'),
+      latitude: null,
+      longitude: null,
+    },
+  }
+}
+
+const schuetzenhaus = place({
   id: 1,
+  parent: null,
   name: 'Schützenhaus',
   address: 'Musterweg 1, 12345 Musterstadt',
   directions: 'Parkplatz hinter der Halle',
-  latitude: null,
-  longitude: null,
-  is_active: true,
   own: true,
   owner: null,
   can_edit: true,
-}
-const festplatz = {
-  ...schuetzenhaus,
+})
+const saal = place(
+  {
+    id: 3,
+    parent: 1,
+    name: 'Saal',
+    address: '',
+    directions: 'Eingang über den Hof',
+    own: true,
+    owner: null,
+    can_edit: true,
+  },
+  schuetzenhaus,
+)
+const festplatz = place({
   id: 2,
+  parent: null,
   name: 'Bundesfestplatz',
   address: 'Am Rhein 5',
   directions: '',
   own: false,
   owner: 'Testbund',
   can_edit: false,
-}
+})
 
 const plan = {
   id: 5,
@@ -62,11 +103,11 @@ function show(path: string, permissions: string[], routes = {}) {
     }),
     'GET /api/orgs/7/places/': () => ({
       status: 200,
-      body: { places: [schuetzenhaus, festplatz], can_edit: true, can_manage: true },
+      body: { places: [schuetzenhaus, saal, festplatz], can_edit: true, can_manage: true },
     }),
     'GET /api/orgs/7/places/?alle=1': () => ({
       status: 200,
-      body: { places: [schuetzenhaus, festplatz], can_edit: true, can_manage: true },
+      body: { places: [schuetzenhaus, saal, festplatz], can_edit: true, can_manage: true },
     }),
     'GET /api/orgs/7/places/suggestions/': () => ({
       status: 200,
@@ -74,7 +115,8 @@ function show(path: string, permissions: string[], routes = {}) {
     }),
     'POST /api/orgs/7/places/': (init?: RequestInit) => {
       const data = JSON.parse(String(init?.body ?? '{}'))
-      return { status: 201, body: { ...schuetzenhaus, id: 9, directions: '', ...data } }
+      const row = { ...schuetzenhaus, id: 9, parent: null, directions: '', ...data }
+      return { status: 201, body: place(row, row.parent ? schuetzenhaus : undefined) }
     },
     'GET /api/orgs/7/helpers/': () => ({ status: 200, body: [plan] }),
     'GET /api/orgs/7/helpers/5/': () => ({ status: 200, body: plan }),
@@ -122,7 +164,7 @@ describe('Orte', () => {
     await waitFor(() => expect(field).toHaveAttribute('list'))
     const list = document.getElementById(field.getAttribute('list')!)!
     const options = Array.from(list.querySelectorAll('option')).map((o) => o.value)
-    expect(options).toEqual(['Schützenhaus', 'Bundesfestplatz'])
+    expect(options).toEqual(['Schützenhaus', 'Schützenhaus, Saal', 'Bundesfestplatz'])
     // Gespeicherter Ort: kein Knopf zum Speichern
     fireEvent.change(field, { target: { value: 'Schützenhaus' } })
     expect(screen.queryByRole('button', { name: 'Als Ort speichern' })).not.toBeInTheDocument()
@@ -131,6 +173,41 @@ describe('Orte', () => {
     expect(await screen.findByText('Ort „Festzelt“ gespeichert.')).toBeInTheDocument()
     const call = api.find((c) => c.key === 'POST /api/orgs/7/places/')!
     expect(JSON.parse(String(call.init?.body))).toEqual({ name: 'Festzelt', address: '' })
+  })
+
+  it('zeigt Räume unter ihrem Ort und speichert neue Räume', async () => {
+    const api = show('/einstellungen/orte', ['org.edit', 'events.manage'])
+    const rooms = await screen.findByRole('list', { name: 'Räume in Schützenhaus' })
+    expect(within(rooms).getByText('Saal')).toBeInTheDocument()
+    expect(within(rooms).getByText('Eingang über den Hof')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Raum hinzufügen' }))
+    fireEvent.change(within(rooms).getByLabelText('Raum'), { target: { value: 'Küche' } })
+    fireEvent.click(within(rooms).getByRole('button', { name: 'Raum speichern' }))
+    await waitFor(() => expect(api.some((c) => c.key === 'POST /api/orgs/7/places/')).toBe(true))
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/places/')!
+    expect(JSON.parse(String(call.init?.body))).toEqual({
+      parent: 1,
+      name: 'Küche',
+      directions: '',
+      is_active: true,
+    })
+    expect(await within(rooms).findByText('Küche')).toBeInTheDocument()
+  })
+
+  it('übernimmt beim Raum die Anschrift des Orts und speichert „Ort, Raum“ als Raum', async () => {
+    const api = show('/helferdienste?plan=5', ['helpers.view', 'helpers.edit'])
+    const field = await screen.findByLabelText('Ort')
+    await waitFor(() => expect(field).toHaveAttribute('list'))
+    const list = document.getElementById(field.getAttribute('list')!)!
+    const room = Array.from(list.querySelectorAll('option')).find(
+      (o) => o.value === 'Schützenhaus, Saal',
+    )!
+    expect(room.textContent).toBe('Musterweg 1, 12345 Musterstadt')
+    fireEvent.change(field, { target: { value: 'Schützenhaus, Küche' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Als Raum speichern' }))
+    expect(await screen.findByText('Raum „Schützenhaus, Küche“ gespeichert.')).toBeInTheDocument()
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/places/')!
+    expect(JSON.parse(String(call.init?.body))).toEqual({ parent: 1, name: 'Küche' })
   })
 
   it('nur mit Leserecht: kein Speichern', async () => {

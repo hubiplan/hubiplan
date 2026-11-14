@@ -578,8 +578,13 @@ def home_choices(website: Website) -> dict:
         "events": events,
         # Weitere Abschnittsarten: Orte (Anfahrt), Terminkategorien, Dokumente
         "places": [
-            {"id": p.pk, "name": p.name}
-            for p in Place.objects.filter(organization=site.area, is_active=True).order_by("name")
+            {"id": p.pk, "name": p.full_name}
+            for p in sorted(
+                Place.objects.filter(organization=site.area, is_active=True)
+                .exclude(parent__is_active=False)
+                .select_related("parent"),
+                key=lambda p: p.full_name.lower(),
+            )
         ],
         "categories": [
             {"id": c.pk, "name": c.name}
