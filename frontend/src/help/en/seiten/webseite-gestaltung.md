@@ -4,18 +4,7 @@ titel: Website › Design and colours
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
-stichworte:
-  [
-    design,
-    colours,
-    gradient,
-    logo,
-    draft,
-    preview,
-    publish,
-    design package,
-    icon,
-  ]
+stichworte: [design, colours, gradient, logo, draft, preview, publish, design package, icon]
 ---
 
 Under **Design and colours** you choose the look, colours and logo of the website. The colours usually come from the unit's appearance and can be adjusted here. Design has its own items in the sidebar: **Design and colours**, **Fine-tuning**, **Areas** and **Versions**; you put together the home page under Website › Home.
