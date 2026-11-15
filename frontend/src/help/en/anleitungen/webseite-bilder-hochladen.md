@@ -14,5 +14,6 @@ stichworte: [picture, photo, consent, alt text, image rights]
 4. Mind the format: JPEG, PNG or WebP up to 15 MB; save HEIC pictures as JPEG first.
 5. Crop the picture.
 6. Write a short alt text that says what the picture shows.
+7. Enter who took the photo under “Creator”. The website then shows “Photo: …” on the picture and in the legal notice.
 
 ![Starting point: Upload pictures for the website](bild:webseite-bilder-hochladen)

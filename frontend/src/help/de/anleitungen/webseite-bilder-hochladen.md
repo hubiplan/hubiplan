@@ -14,5 +14,6 @@ stichworte: [Bild, Foto, Einwilligung, Alternativtext, Bildrechte]
 4. Achte auf das Format: JPEG, PNG oder WebP bis 15 MB, HEIC-Bilder vorher als JPEG speichern.
 5. Schneide das Bild zu.
 6. Schreibe einen kurzen Alternativtext, der sagt, was auf dem Bild zu sehen ist.
+7. Trage unter „Urheber/in“ ein, wer das Foto gemacht hat. Die Webseite zeigt dann „Foto: …“ am Bild und im Impressum.
 
 ![Ausgangspunkt: Bilder für die Webseite hochladen](bild:webseite-bilder-hochladen)

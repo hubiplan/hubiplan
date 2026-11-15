@@ -4062,7 +4062,6 @@
   "(OAuth) eintragen:": "(OAuth):",
   ") bleiben bei jedem Design gleich. Die Farben selbst legst du unter": ") stay the same with every design. You set the colours themselves under",
   "{added} Starter aus den Zusagen übernommen.": "{added} starters taken over from the acceptances.",
-  "{caption} {alt_text} {x}": "{caption} {alt_text} {x}",
   "{created} neue Beiträge abgerufen.": "{created} new posts fetched.",
   "{hostname} entfernen": "Remove {hostname}",
   "{label} verschieben": "Move {label}",
@@ -9343,5 +9342,9 @@
   "Karten: Die nächsten Termine auf der Startseite und den Seiten der Untereinheiten stehen als Karten nebeneinander mit großem Datum; der nächste Termin in der Vereinsfarbe.": "Cards: the upcoming events on the home page and sub-unit pages appear as cards side by side with a large date; the next event in the club colour.",
   "mit Wappen und Name": "with crest and name",
   "Mit Wappen und Name: links das Wappen, daneben Vereinsname, Gründungsjahr und Ort, rechts die Links untereinander und Social Media.": "With crest and name: the crest on the left, next to it the club name, founding year and town, on the right the links stacked and social media.",
-  "Linie über dem Fuß": "Line above the footer"
+  "Linie über dem Fuß": "Line above the footer",
+  "Urheber/in": "Creator",
+  "Urheber/in (optional)": "Creator (optional)",
+  "Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.": "Who took the photos? The website credits them as “Photo: …”.",
+  "Wer das Foto gemacht oder bereitgestellt hat, z. B. „Max Mustermann“, bei freien Bildern mit Lizenz. Die Webseite zeigt „Foto: …“ am Bild und im Impressum.": "Who took or provided the photo, e.g. “Max Mustermann”, for free images with the licence. The website shows “Photo: …” on the image and in the legal notice."
 }

@@ -102,11 +102,9 @@ function matches(i: WebsiteImage, q: string, scope: Scope, state: State): boolea
   if (state === 'unused' && i.used !== false) return false
   if (state === 'no_alt' && !needsAlt(i)) return false
   if (q) {
-    const hay = t('{caption} {alt_text} {x}', {
-      caption: i.caption,
-      alt_text: i.alt_text,
-      x: i.department_name ?? '',
-    }).toLowerCase()
+    const hay = [i.caption, i.alt_text, i.credit ?? '', i.department_name ?? '']
+      .join(' ')
+      .toLowerCase()
     if (
       !q
         .toLowerCase()
@@ -408,6 +406,7 @@ function ImageEditForm({
   const form = useForm({
     caption: image.caption,
     alt_text: image.alt_text,
+    credit: image.credit ?? '',
     decorative: !!image.decorative,
     department: image.department ?? null,
   })
@@ -520,6 +519,16 @@ function ImageEditForm({
               : undefined
           }
           onChange={(e) => set('alt_text', e.target.value)}
+        />
+        <Field
+          label={t('Urheber/in')}
+          value={v.credit}
+          maxLength={200}
+          error={errors.credit}
+          hint={t(
+            'Wer das Foto gemacht oder bereitgestellt hat, z. B. „Max Mustermann“, bei freien Bildern mit Lizenz. Die Webseite zeigt „Foto: …“ am Bild und im Impressum.',
+          )}
+          onChange={(e) => set('credit', e.target.value)}
         />
         <Checkbox
           label={t('Nur Schmuck, das Bild zeigt nichts Wichtiges')}

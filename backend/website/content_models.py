@@ -239,6 +239,9 @@ class WebsiteRevision(models.Model):
         return f"Fassung vom {timezone.localtime(self.published_at):%d.%m.%Y %H:%M}"
 
 
+CREDIT_MAX = 200
+
+
 def image_path(instance, filename: str) -> str:
     return f"website/{instance.organization_id}/{instance.key}-{filename}"
 
@@ -258,6 +261,9 @@ class WebsiteImage(models.Model):
     height = models.PositiveIntegerField(default=0)
     caption = models.CharField("Bildunterschrift", max_length=300, blank=True)
     alt_text = models.CharField("Alternativtext", max_length=300, blank=True)
+    # Urheber/in (Ralf 15.11.): wer das Bild gemacht oder bereitgestellt hat; die Webseite
+    # nennt es als „Foto: …“ am Bild und im Impressum (Namensnennung, § 13 UrhG)
+    credit = models.CharField("Urheber/in", max_length=CREDIT_MAX, blank=True)
     # Bewusst ohne Beschreibung (reiner Schmuck): dann alt="" auf der Webseite,
     # sonst ersetzt die Bildunterschrift einen fehlenden Alternativtext
     decorative = models.BooleanField("nur Schmuck", default=False)

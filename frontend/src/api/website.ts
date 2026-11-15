@@ -637,6 +637,8 @@ export interface WebsiteImage {
   key: string
   caption: string
   alt_text: string
+  /** Urheber/in; die Webseite zeigt „Foto: …“ */
+  credit?: string
   /** bewusst ohne Beschreibung (reiner Schmuck) */
   decorative?: boolean
   width: number
@@ -680,6 +682,7 @@ export interface ImageUpload {
   crop?: CropArea | null
   caption?: string
   alt_text?: string
+  credit?: string
   decorative?: boolean
   department?: number | null
 }
@@ -693,6 +696,7 @@ function imageForm(data: ImageUpload): FormData {
   }
   if (data.caption) form.append('caption', data.caption)
   if (data.alt_text) form.append('alt_text', data.alt_text)
+  if (data.credit) form.append('credit', data.credit)
   if (data.decorative) form.append('decorative', 'true')
   if (data.department) form.append('department', String(data.department))
   return form
@@ -829,6 +833,7 @@ export const contentApi = {
     data: {
       caption?: string
       alt_text?: string
+      credit?: string
       decorative?: boolean
       department?: number | null
     },

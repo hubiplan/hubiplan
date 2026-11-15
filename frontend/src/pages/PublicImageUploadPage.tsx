@@ -4,7 +4,7 @@ import { imageUploadApi } from '../api/imageUpload.ts'
 import type { ImageUploadInfo } from '../api/imageUpload.ts'
 import { formatDateTime } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
-import { Alert, Loading } from '../components/ui.tsx'
+import { Alert, Field, Loading } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { applyTheme } from '../theme/theme.ts'
 import { t } from '../i18n/index.ts'
@@ -22,6 +22,7 @@ export function PublicImageUploadPage() {
   const [state, setState] = useState<'loading' | 'ready' | 'invalid' | 'unavailable'>('loading')
   const [rows, setRows] = useState<Row[]>([])
   const [busy, setBusy] = useState(false)
+  const [credit, setCredit] = useState('')
   usePublicImprint(info?.imprint_key, info?.organization)
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function PublicImageUploadPage() {
         setRows((r) => r.map((x, j) => (j === at ? { ...x, ...row } : x)))
       mark({ state: 'busy' })
       try {
-        const { status, body } = await imageUploadApi.upload(token, file)
+        const { status, body } = await imageUploadApi.upload(token, file, credit)
         if (status === 201) {
           left = typeof body.remaining === 'number' ? body.remaining : left - 1
           mark({ state: 'done' })
@@ -122,6 +123,16 @@ export function PublicImageUploadPage() {
                 n: info.remaining,
               })}
             </p>
+            {info.remaining > 0 && (
+              <Field
+                label={t('Urheber/in (optional)')}
+                hint={t('Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.')}
+                value={credit}
+                maxLength={200}
+                disabled={busy}
+                onChange={(e) => setCredit(e.target.value)}
+              />
+            )}
             {info.remaining > 0 && (
               <label className="button button-primary">
                 {t('Bilder auswählen')}
