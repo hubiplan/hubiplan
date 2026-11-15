@@ -184,6 +184,7 @@ ORG_FIELDS = (
     "department_label_en",
     "department_label_plural_en",
     "allow_multiple_departments",
+    "units_in_menu",
     "photo_approval_required",
     "member_portal_enabled",
     "contact_changes_need_approval",

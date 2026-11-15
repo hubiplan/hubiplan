@@ -5,7 +5,7 @@ routen: [/untereinheiten]
 stichworte: [platoon, department, sub-unit, manager]
 ---
 
-This lists the sub-units of your unit, which can be nested freely. Each sub-unit can have its own roles, its own cash book, events and a website. With “Assign head” a person from the sub-unit gets an account with all permissions for their area.
+This lists the sub-units of your unit, which can be nested freely. A club without sub-units hides this menu item under Settings › Names and terms. Each sub-unit can have its own roles, its own cash book, events and a website. With “Assign head” a person from the sub-unit gets an account with all permissions for their area.
 
 For each sub-unit you upload a coat of arms or logo and, if you like, a second one for dark mode. Without a dark one, the normal one is used in the dark.
 

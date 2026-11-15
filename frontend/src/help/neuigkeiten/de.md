@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- **Untereinheiten ausblenden**: Hat ein Verein keine Untereinheiten (Züge, Register, Sparten …), blendet er den Menüpunkt unter Einstellungen › Bezeichnungen dauerhaft aus. Bestehende Untereinheiten bleiben erhalten.
 - Webseite: **Titelbild zufällig.** Unter Gestaltung › Feinabstimmung › Bilderkarussell blättert gibt es die Stufe **„zufällig“**: Bei jedem Aufruf zeigt die Startseite ein anderes Bild aus dem Bilderkarussell, das fest stehen bleibt, ohne durchzuwechseln. Das hilft etwa beim Umzug von WordPress-Seiten mit wechselndem Kopfbild.
 - Plattform: Eine **leere Einheit**, die nie Mitglieder und keine Finanzdaten hatte, lässt sich nach dem Stilllegen sofort endgültig löschen; die Wartezeit von 30 Tagen gilt nur noch für Einheiten mit Daten.
 - **Hauptmenü neu gegliedert**: Die neue Gruppe **Vereinsleben** fasst Wettbewerbe, Meldungen und Musik zusammen; unter **Verein** bleiben Mitglieder, Untereinheiten und Chronik. **Umfragen** stehen jetzt unter Kommunikation, **Geschäftspartner** unter Verwaltung direkt nach Finanzen. In den Apps stehen die Verwaltungsbereiche in derselben Reihenfolge.

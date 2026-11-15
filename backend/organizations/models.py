@@ -393,6 +393,10 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     allow_multiple_departments = models.BooleanField(
         "Mitglied darf mehreren Abteilungen angehören", default=True
     )
+    # Vereine ohne Untereinheiten blenden den Menüpunkt aus (Ralf 15.11.2026)
+    units_in_menu = models.BooleanField(
+        "Menüpunkt für Untereinheiten zeigen", default=True, db_default=True
+    )
     photo_approval_required = models.BooleanField(
         "Fotos von Mitgliedern erst nach Freigabe anzeigen", default=False
     )
