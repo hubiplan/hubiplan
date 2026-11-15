@@ -84,8 +84,10 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.);
     # Ausnahmen: Kopfhöhe und Titelbild mit vier Stufen (Ralf 13.11., Webseite #68)
     for key, options in catalog["options"].items():
-        # und Überschriften und Karten mit vier Stufen (Webseite #89), Seitentitel (Webseite #96)
-        most = 4 if key in ("header_height", "hero", "headings", "cards", "title_size") else 3
+        # und Überschriften und Karten mit vier Stufen (Webseite #89), Seitentitel (Webseite #96),
+        # Bilderkarussell mit „zufällig“ (#477)
+        vier = ("header_height", "hero", "headings", "cards", "title_size", "carousel")
+        most = 4 if key in vier else 3
         # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)
         if key in ("font", "heading_font"):
             assert 6 <= len(options) <= 8
@@ -148,6 +150,8 @@ def test_neue_regler(club, site, client_web):
     site.refresh_from_db()
     assert site.style == values
     assert put(client_web, club, {"style": {"carousel": "fast"}}).status_code == 400
+    # #477: Titelbild zufällig aus dem Karussell
+    assert put(client_web, club, {"style": {"carousel": "random"}}).status_code == 200
     assert put(client_web, club, {"style": {"contrast": "on"}}).status_code == 400
     assert style.LOCKS["sidebar"]["nav_mobile"] is None
 

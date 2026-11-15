@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: **Random title image.** Under Design › Fine-tuning › Image carousel advances there is a new level **“random”**: on each visit the home page shows a different image from the image carousel, which stays fixed instead of cycling. This helps, for example, when moving from WordPress sites with a changing header image.
 - Platform: an **empty unit** that never had members or financial data can be deleted permanently right after deactivating it; the 30-day waiting period now only applies to units with data.
 - **Main menu reorganised**: the new group **Club life** brings together competitions, entries and music; **Club** keeps members, sub-units and the chronicle. **Surveys** are now under Communication, **Business partners** under Administration right after Finances. The apps list their admin areas in the same order.
 - **Letterhead following your style guide**: Under Settings › Letterhead you can now choose fonts for text and headings (including the website fonts, embedded in PDFs), the logo/crest size, whether the name appears next to the logo, the line colour from your palette, header and footer lines separately, the colour of title and subject, and the lines and stripes of invoice tables. This applies to the Word template and all PDF letters; without changes everything stays as before. An AI assistant can change the letterhead if you explicitly allow it when connecting.

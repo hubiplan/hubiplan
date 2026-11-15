@@ -1,6 +1,7 @@
 """Stilregler der Webseite (Webseite › Gestaltung › Feinabstimmung, Konzept webseite-baukasten G1).
 
-Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe, Titelbild, Seitentitel 4) oder ist ein Schalter.
+Jeder Regler hat 2 oder 3 feste Stufen (Kopfhöhe, Titelbild, Seitentitel, Bilderkarussell 4)
+oder ist ein Schalter.
 Gespeichert werden nur verstellte Regler (``Website.style``); fehlt ein Regler, gilt die
 Vorgabe des Designs. Die Webseite (hubiplan-website, ``seite/stil.py``) hat dieselbe Liste
 und für jede Stufe feste CSS-Regeln; niemand schreibt CSS. Die Namen der Regler und Stufen
@@ -63,8 +64,9 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Startseite
     "hero": ("low", "medium", "normal", "high"),
     "hero_name": bool,
-    # Karussell: nicht von selbst, langsam (doppelte Zeit je Bild) oder wie eingestellt
-    "carousel": ("off", "slow", "normal"),
+    # Karussell: nicht von selbst, langsam (doppelte Zeit je Bild) oder wie eingestellt;
+    # #477: „zufällig“ zeigt bei jedem Aufruf ein Bild des Karussells, das fest stehen bleibt
+    "carousel": ("off", "slow", "normal", "random"),
     # Ralf 14.11.2026: Titelbild abdunkeln oder halb durchsichtig in Vereinsfarbe färben,
     # Bildausschnitt und Lage des Namens auf dem Bild
     "hero_shade": ("none", "light", "strong"),

@@ -309,8 +309,15 @@ function GROUPS(): Group[] {
         {
           key: 'carousel',
           label: t('Bilderkarussell blättert'),
-          options: { off: t('nur von Hand'), slow: t('langsam'), normal: t('normal') },
-          hint: t('Langsam: doppelt so lange je Bild wie beim Karussell eingestellt.'),
+          options: {
+            off: t('nur von Hand'),
+            slow: t('langsam'),
+            normal: t('normal'),
+            random: t('zufällig'),
+          },
+          hint: t(
+            'Langsam: doppelt so lange je Bild wie beim Karussell eingestellt. Zufällig: bei jedem Aufruf steht ein anderes Bild des Karussells fest als Titelbild.',
+          ),
         },
         {
           key: 'sections',
