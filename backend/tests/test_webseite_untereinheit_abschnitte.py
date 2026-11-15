@@ -104,7 +104,7 @@ def test_eigene_abschnitte_und_feste_bloecke(orgs, editor, api, site, zug):
     # Ausgeschalteter Kontakt fehlt
     assert kinds == ["quote", "events", "body", "hours", "homepage", "honors", "news", "follow"]
     # Suche findet den Text eigener Abschnitte
-    hits = search.search(SiteView(site), "zugluft", [])
+    hits = search.search(SiteView(site), "zugluft", lambda: [])
     assert [h["kind"] for h in hits] == ["unit"]
 
 
