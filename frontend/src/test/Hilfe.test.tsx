@@ -298,9 +298,12 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
     expect(groupOf('seiten/versammlungen.md')).toBe('planen')
     expect(groupOf('seiten/helferdienste.md')).toBe('planen')
     expect(groupOf('seiten/aufgaben.md')).toBe('planen')
-    expect(groupOf('seiten/musik.md')).toBe('verein')
+    expect(groupOf('seiten/musik.md')).toBe('vereinsleben')
     expect(groupOf('seiten/chronik.md')).toBe('verein')
-    expect(groupOf('seiten/dokumente.md')).toBe('organisation')
+    expect(groupOf('seiten/dokumente.md')).toBe('kommunikation')
+    expect(groupOf('seiten/umfragen.md')).toBe('kommunikation')
+    expect(groupOf('seiten/geschaeftspartner.md')).toBe('verwaltung')
+    expect(groupOf('seiten/wettbewerbe.md')).toBe('vereinsleben')
     expect(groupOf('seiten/belegung.md')).toBe('verwaltung')
     expect(groupOf('seiten/finanzen-beitragslaeufe.md')).toBe('verwaltung')
     expect(groupOf('seiten/mein-bereich.md')).toBe('alltag')
@@ -314,7 +317,8 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
       'alltag',
       'planen',
       'verein',
-      'organisation',
+      'vereinsleben',
+      'kommunikation',
       'verwaltung',
       'konto',
       'plattform',

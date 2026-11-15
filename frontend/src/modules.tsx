@@ -24,7 +24,7 @@ export interface Workspace {
 
 export interface AppModule {
   id: string
-  group: 'alltag' | 'planen' | 'verein' | 'organisation' | 'verwaltung'
+  group: 'alltag' | 'planen' | 'verein' | 'vereinsleben' | 'kommunikation' | 'verwaltung'
   label: string
   /** Bezeichnung je Einheit, z. B. „Züge“ statt „Untereinheiten“ */
   labelFor?: (org: OrgSummary | null, ws?: Workspace) => string
@@ -90,7 +90,8 @@ export const GROUP_LABELS: Record<AppModule['group'], string> = {
   alltag: t('Alltag'),
   planen: t('Planen'),
   verein: t('Verein'),
-  organisation: t('Kommunikation'),
+  vereinsleben: t('Vereinsleben'),
+  kommunikation: t('Kommunikation'),
   verwaltung: t('Verwaltung'),
 }
 
@@ -159,19 +160,6 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.helpers_enabled && ws.dept.permissions.includes(PERM.helpersView)),
   },
   {
-    id: 'umfragen',
-    group: 'planen',
-    label: t('Umfragen'),
-    path: '/umfragen',
-    icon: icon('M5 4h14v16H5zM8.5 8.5h7M8.5 12h7M8.5 15.5h4'),
-    visible: (org, ws) =>
-      org
-        ? org.type === 'club' &&
-          org.modules.includes('surveys') &&
-          org.permissions.includes(PERM.surveysView)
-        : !!(ws.dept?.surveys_enabled && ws.dept.permissions.includes(PERM.surveysView)),
-  },
-  {
     id: 'aufgaben',
     group: 'planen',
     label: t('Aufgaben'),
@@ -217,26 +205,36 @@ export const modules: AppModule[] = [
     visible: (org) => !!org && hasUnitsPage(org, (perm) => org.permissions.includes(perm)),
   },
   {
-    id: 'musik',
+    id: 'abteilung',
     group: 'verein',
-    label: t('Musik'),
-    path: '/musik',
-    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
-    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
-    children: musicSections,
+    label: t('Abteilung'),
+    path: '/abteilung',
+    icon: icon(
+      'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
+    ),
+    visible: (_org, ws) => !!ws.dept,
+    children: (_org, ws) => {
+      const items = departmentSections(ws?.dept ?? null)
+      return items.length > 1 ? items : []
+    },
   },
   {
-    id: 'noten',
+    id: 'chronik',
     group: 'verein',
-    label: t('Noten'),
-    path: '/noten',
-    // Notenblatt, damit sich Noten von Musik unterscheiden (Menüprüfung 2, N-13)
-    icon: icon('M6 3h9l3 3v15H6zM15 3v3h3M11 17v-7l4-1M11 17a2 2 0 1 1-2-2'),
-    visible: (org) => scoresOwnEntry(org),
+    label: t('Chronik'),
+    path: '/chronik',
+    icon: icon('M4 5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3zM18 8h2v12M8 9h6M8 13h6'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation') &&
+      org.modules.includes('chronicle') &&
+      org.permissions.includes(PERM.chronicleView),
   },
+  // Vereinsleben: was der Verein tut (Wettbewerbe mit Meldungen, Musik), getrennt von
+  // „Verein“ mit Mitgliedern, Gliederung und Chronik (Menüprüfung 3)
   {
     id: 'wettbewerbe',
-    group: 'verein',
+    group: 'vereinsleben',
     label: t('Wettbewerbe'),
     path: '/wettbewerbe',
     icon: icon(
@@ -265,7 +263,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'meldungen',
-    group: 'verein',
+    group: 'vereinsleben',
     label: t('Meldungen'),
     path: '/meldungen',
     icon: icon('M5 4h10l4 4v12H5zM15 4v4h4M8.5 12.5l2 2 4-4.5M8.5 17.5h7'),
@@ -278,51 +276,48 @@ export const modules: AppModule[] = [
       ),
   },
   {
-    id: 'chronik',
-    group: 'verein',
-    label: t('Chronik'),
-    path: '/chronik',
-    icon: icon('M4 5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3zM18 8h2v12M8 9h6M8 13h6'),
-    visible: (org) =>
-      !!org &&
-      (org.type === 'club' || org.type === 'federation') &&
-      org.modules.includes('chronicle') &&
-      org.permissions.includes(PERM.chronicleView),
-  },
-  // Geschäftspartner (konzepte/geschaeftspartner.md): eigener Menüpunkt, ohne Modul (GP-2)
-  {
-    id: 'geschaeftspartner',
-    group: 'verein',
-    label: t('Geschäftspartner'),
-    path: '/geschaeftspartner',
-    icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
-    visible: (org) => partnersVisible(org),
+    id: 'musik',
+    group: 'vereinsleben',
+    label: t('Musik'),
+    path: '/musik',
+    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
+    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
+    children: musicSections,
   },
   {
-    id: 'abteilung',
-    group: 'verein',
-    label: t('Abteilung'),
-    path: '/abteilung',
-    icon: icon(
-      'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
-    ),
-    visible: (_org, ws) => !!ws.dept,
-    children: (_org, ws) => {
-      const items = departmentSections(ws?.dept ?? null)
-      return items.length > 1 ? items : []
-    },
+    id: 'noten',
+    group: 'vereinsleben',
+    label: t('Noten'),
+    path: '/noten',
+    // Notenblatt, damit sich Noten von Musik unterscheiden (Menüprüfung 2, N-13)
+    icon: icon('M6 3h9l3 3v15H6zM15 3v3h3M11 17v-7l4-1M11 17a2 2 0 1 1-2-2'),
+    visible: (org) => scoresOwnEntry(org),
   },
   {
     id: 'rundschreiben',
-    group: 'organisation',
+    group: 'kommunikation',
     label: t('Rundschreiben'),
     path: '/rundschreiben',
     icon: icon('M3 6h18v12H3zM3 6l9 7 9-7'),
     visible: (org, ws) => circularsVisible(org, ws.dept),
   },
+  // Umfragen und Meinungsbilder fragen die Mitglieder: Austausch, keine Planung (Menüprüfung 3)
+  {
+    id: 'umfragen',
+    group: 'kommunikation',
+    label: t('Umfragen'),
+    path: '/umfragen',
+    icon: icon('M5 4h14v16H5zM8.5 8.5h7M8.5 12h7M8.5 15.5h4'),
+    visible: (org, ws) =>
+      org
+        ? org.type === 'club' &&
+          org.modules.includes('surveys') &&
+          org.permissions.includes(PERM.surveysView)
+        : !!(ws.dept?.surveys_enabled && ws.dept.permissions.includes(PERM.surveysView)),
+  },
   {
     id: 'dokumente',
-    group: 'organisation',
+    group: 'kommunikation',
     label: t('Dokumente'),
     path: '/dokumente',
     icon: icon('M6 3h8.5L19 7.5V21H6zM14.5 3v4.5H19M9 12h7M9 15.5h7M9 19h4'),
@@ -337,7 +332,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'webseite',
-    group: 'organisation',
+    group: 'kommunikation',
     label: t('Webseite'),
     path: '/webseite',
     icon: icon('M3 5h18v14H3zM3 9h18M6 7h.01M8.5 7h.01M7 13h6M7 16h10'),
@@ -358,6 +353,16 @@ export const modules: AppModule[] = [
     icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4'),
     visible: (org) => financeSections(financeAccess(org)).length > 0,
     children: (org) => financeSections(financeAccess(org)),
+  },
+  // Geschäftspartner (konzepte/geschaeftspartner.md): eigener Menüpunkt, ohne Modul (GP-2).
+  // Außenkontakte von Kasse und Rechnungen: Verwaltung, direkt nach Finanzen (Menüprüfung 3)
+  {
+    id: 'geschaeftspartner',
+    group: 'verwaltung',
+    label: t('Geschäftspartner'),
+    path: '/geschaeftspartner',
+    icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
+    visible: (org) => partnersVisible(org),
   },
   {
     // Material, Räume und Anlagen und Belegung: ein Ablauf, ein Menüpunkt (Menüprüfung M-02)
