@@ -232,6 +232,25 @@ DRAFT_FIELDS = (
 )
 # Kopfbilder stehen am Bild (WebsiteImage.header/header_narrow), nicht an der Webseite
 HEADER_IMAGE_FIELDS = {"header_image": "header", "header_image_narrow": "header_narrow"}
+# #480: mehrere Kopfbilder; die Webseite zeigt bei jedem Aufruf eines davon
+MAX_HEADER_IMAGES = 10
+
+
+def header_ids(value) -> list[int]:
+    """Kopfbilder als sortierte Liste von Bildnummern: aus null, einer Nummer oder einer Liste."""
+    items = value if isinstance(value, list) else [value]
+    return sorted({v for v in items if isinstance(v, int) and not isinstance(v, bool)})
+
+
+def header_value(ids) -> int | list[int] | None:
+    """Kurzform für Entwurf und Schnittstelle: null, eine Nummer (wie bisher) oder eine Liste
+    ab zwei Bildern. So bleiben Entwürfe, Fassungen und ältere Oberflächen gültig."""
+    ids = header_ids(list(ids))
+    if not ids:
+        return None
+    return ids[0] if len(ids) == 1 else ids
+
+
 # Bilder per Adresse für KI-Assistenten (W3): höchstens so viele erlaubte Server
 MAX_IMAGE_HOSTS = 10
 DESIGN_VERSIONS = 5  # wie bei den Texten: die letzten 5 veröffentlichten Fassungen

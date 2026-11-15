@@ -25,10 +25,10 @@ export interface WebsiteSettings {
   design: string
   /** Eigene Farbzuordnung je Design: Rolle → Palettenplatz oder „light“/„dark“ */
   color_roles: ColorRoles
-  /** Kopfbild statt Wappen und Vereinsname (Bild der Bilderverwaltung) */
-  header_image?: number | null
+  /** Kopfbild statt Wappen und Vereinsname (Bild der Bilderverwaltung); mehrere seit #480 */
+  header_image?: HeaderImageValue
   /** Kopfbild für schmale Bildschirme unter 600 px (Webseite #73), optional */
-  header_image_narrow?: number | null
+  header_image_narrow?: HeaderImageValue
   /** Stilregler (Feinabstimmung): nur verstellte; fehlt = wie das Design */
   style?: StyleValues
   /** Darstellung der festen Bereiche (G5): nur abweichende Varianten; fehlt = Standard */
@@ -225,12 +225,11 @@ export type HomeKind =
   | 'cover'
 
 /** Ziel eines Knopfs oder einer Kachel: Menüpunkt, Termin oder Link nach außen */
+/** Kopfbild: null, eine Bildnummer oder ab zwei Bildern eine Liste (#480) */
+export type HeaderImageValue = number | number[] | null
+
 export type HomeTarget =
-  | { page: string }
-  | { unit: number }
-  | { event: number }
-  | { url: string }
-  | null
+  { page: string } | { unit: number } | { event: number } | { url: string } | null
 
 export interface HomeButton {
   label: string

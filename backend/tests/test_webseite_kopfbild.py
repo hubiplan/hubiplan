@@ -148,3 +148,40 @@ def test_kopfbild_schmal_im_entwurf(orgs, admin, site):
     resp = admin.post(url(org, "design/publish/"))
     assert resp.status_code == 200, resp.content
     assert info()["header_image_narrow"]["url"]
+
+
+def test_mehrere_kopfbilder(orgs, admin, site):
+    """#480: mehrere Kopfbilder und Fassungen für Handys; die Schnittstelle bleibt bei einem
+    Bild eine Nummer, ab zwei eine Liste; die Webseite bekommt alle in ``header_images``."""
+    org = orgs["a"]
+    a, b, c = (upload(admin, org, alt=f"Banner {n}") for n in (1, 2, 3))
+    resp = admin.put(url(org), {"header_image": [c["id"], a["id"], a["id"]]}, "application/json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["website"]["header_image"] == sorted([a["id"], c["id"]])
+    data = info()
+    assert [h["alt"] for h in data["header_images"]] == ["Banner 1", "Banner 3"]
+    assert data["header_image"]["alt"] == "Banner 1"  # ältere Webseiten: das erste
+    assert data["header_images_narrow"] == []
+    for img in (a, c):
+        key = WebsiteImage.objects.get(pk=img["id"]).public_key
+        assert Client().get(f"/api/public/site/v1/kopf-a/images/{key}/").status_code == 200
+    # Fassungen für Handys ebenso
+    resp = admin.put(url(org), {"header_image_narrow": [b["id"]]}, "application/json")
+    assert resp.json()["website"]["header_image_narrow"] == b["id"]
+    assert [h["alt"] for h in info()["header_images_narrow"]] == ["Banner 2"]
+    # Entwurf: Liste in der Vorschau, veröffentlicht bleibt es
+    resp = admin.put(url(org), {"draft": {"header_image": [b["id"], c["id"]]}}, "application/json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["website"]["draft"]["header_image"] == sorted([b["id"], c["id"]])
+    assert [h["alt"] for h in info()["header_images"]] == ["Banner 1", "Banner 3"]
+    # unbekannte Bilder, falsche Werte und zu viele
+    for wrong in ([a["id"], 999999], [True], ["x"], [None], list(range(1, 13))):
+        resp = admin.put(url(org), {"header_image": wrong}, "application/json")
+        assert resp.status_code == 400, wrong
+    # zurück auf eines und keines
+    resp = admin.put(url(org), {"header_image": a["id"]}, "application/json")
+    assert resp.json()["website"]["header_image"] == a["id"]
+    assert len(info()["header_images"]) == 1
+    resp = admin.put(url(org), {"header_image": None}, "application/json")
+    assert resp.json()["website"]["header_image"] is None
+    assert info()["header_images"] == []

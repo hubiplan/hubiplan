@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: **Several header images.** Under Design › Fine-tuning › Header you can choose up to ten header images (and header images for phones as well). The website then shows one of them on each visit, on every page, like many WordPress themes with a changing header image.
 - Website: **buttons and tiles can also lead to a sub-unit**, such as a platoon's page. Links to your own website open in the same window instead of a new one.
 - Website: **Random title image.** Under Design › Fine-tuning › Image carousel advances there is a new level **“random”**: on each visit the home page shows a different image from the image carousel, which stays fixed instead of cycling. This helps, for example, when moving from WordPress sites with a changing header image.
 - Platform: an **empty unit** that never had members or financial data can be deleted permanently right after deactivating it; the 30-day waiting period now only applies to units with data.

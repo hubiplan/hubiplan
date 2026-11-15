@@ -236,6 +236,9 @@ class SiteInfoView(_Public):
             "header_image": site.header_image(),
             # Kopfbild für schmale Bildschirme (Webseite #73), sonst null
             "header_image_narrow": site.header_image(narrow=True),
+            # #480: alle Kopfbilder; die Webseite wählt bei jedem Aufruf eines
+            "header_images": site.header_images(),
+            "header_images_narrow": site.header_images(narrow=True),
             # Wettbewerbsergebnisse (Schritt 5 der Wettbewerbe): Übersicht und Startseite
             "results_url": site.url("results/") if results.enabled(site) else None,
             "menu": site.menu(),
