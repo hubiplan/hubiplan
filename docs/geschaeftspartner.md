@@ -2,7 +2,7 @@
 
 Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste: Lieferanten,
 Dienstleister, Kunden, Sponsoren, Spender, Vermieter, Künstler, Presse, Versicherungen, Banken.
-Menüpunkt *Verein › Geschäftspartner* (`/geschaeftspartner`), ohne eigenes Modul, für Vereine,
+Menüpunkt *Verwaltung › Geschäftspartner* (`/geschaeftspartner`), ohne eigenes Modul, für Vereine,
 Dachverbände und Untereinheiten mit eigenem Datenbereich.
 
 ## Daten
