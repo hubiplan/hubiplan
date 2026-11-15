@@ -18,8 +18,9 @@ copies its items; for the first meeting of a type it suggests a typical agenda.
 shows duty rosters and bookings for the meeting.
 
 Agenda: Each agenda item has a title, a type (report, resolution, election or other) and an
-explanation. Use the arrows to change the order; the numbers follow from it. **Save agenda**
-saves all changes at once.
+explanation. Use the arrows to change the order; the numbers follow from it. The agenda saves
+itself shortly after each change, as soon as every item has a title. Removing a saved item asks first.
+The meeting details (location, chair, minute taker, note …) also save themselves; the top of the box shows whether everything is saved.
 
 Sub-items: **Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”.
 To put an existing item under another one, drag it onto that item or pick the item under
@@ -50,7 +51,7 @@ Organisations as members have one vote and attend **By representative**: choose 
 
 Check-in via app and online voting: **Open check-in via app** shows a QR code that changes every 30 seconds; **Show code full screen** displays it full screen for the projector. Members scan it with the HUBIplan app or their phone camera and tap **I'm here**; **I'm leaving** checks them out again (any proxies then lapse). If the type allows remote participation, switch it on with **Allow remote participation for this meeting**; members entitled to vote then tap **Take part online** in the member area. If **Online voting on the phone allowed** is switched on for the type, you create a vote for resolution and election items, open or secret, for elections with one or more candidates. **Start vote** opens it, **End vote** closes it and shows the result, **Transfer to the minutes** records it as a resolution or election. Members present and entitled to vote can vote, with one extra vote for each proxy. In a secret ballot no person is recorded on the ballot; in an open vote, **Who voted how** shows after the end who voted how. Remote participation and voting need a basis in the constitution (section 32 (2) German Civil Code).
 
-Minutes: After the meeting choose **Mark as held**. The agenda is then fixed and the minutes appear in its place. For each agenda item write down what was discussed. Use **Add resolution** to record a resolution with its text and result, and **Add election** to record an election with the office and the person elected. Enter the vote as yes, no and abstentions or tick **unanimous**. **Save minutes** stores all changes.
+Minutes: After the meeting choose **Mark as held**. The agenda is then fixed and the minutes appear in its place. For each agenda item write down what was discussed. Use **Add resolution** to record a resolution with its text and result, and **Add election** to record an election with the office and the person elected. Enter the vote as yes, no and abstentions or tick **unanimous**. The minutes save themselves shortly after each entry, as soon as every resolution has a text and every election the office and the person elected.
 
 Approval: Under **Approval of the minutes** the chair and the minute taker confirm the minutes with **Confirm as chair** and **Confirm as minute taker**. Both must first be entered in the meeting details. **Preview as PDF** shows the minutes as a draft beforehand. Any change to the minutes or the attendance cancels the confirmations. With the second confirmation the minutes are approved: the resolutions receive a consecutive number per year (such as 2027/03), and the PDF is stored with a checksum and can no longer be changed. If document storage is switched on, HUBIplan files the PDF in the folder “Minutes”, which only the board sees at first. **Minutes as PDF** downloads the approved minutes.
 

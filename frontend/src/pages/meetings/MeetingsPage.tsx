@@ -1,6 +1,6 @@
 // Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V7): Übersicht,
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { berlin } from '../../components/calendar/time.ts'
@@ -19,11 +19,11 @@ import type {
   MinutesItem,
   Resolution,
 } from '../../api/meetings.ts'
-import { saveBlob } from '../../api/client.ts'
+import { ApiError, saveBlob } from '../../api/client.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useDetailParam } from '../../components/detailParam.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
-import { useDraftGuard } from '../../components/leaveGuard.ts'
+import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { flushAllForms, useDraftGuard } from '../../components/leaveGuard.ts'
 import { locale, t } from '../../i18n/index.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
@@ -35,7 +35,7 @@ import { LiveCard } from './LiveCard.tsx'
 import { LIVE_STATES } from './live.ts'
 import { ResolutionBook } from './ResolutionBook.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
-import { Loading } from '../../components/ui.tsx'
+import { Loading, SaveStatus } from '../../components/ui.tsx'
 import './meetings.css'
 import { GripIcon } from '../../components/Sortable.tsx'
 import {
@@ -54,6 +54,17 @@ import type { AgendaRow, DropTarget } from './agendaTree.ts'
 import { PlaceField } from '../../components/PlaceField.tsx'
 
 const ZONE = 'Europe/Berlin'
+
+/**
+ * Autospeichern in der Versammlung: Angaben, Tagesordnung und Protokoll speichern einzeln,
+ * jede Antwort bringt eine neue Fassung (`version`). Die Formulare holen sich darum die
+ * jeweils neueste Versammlung hier ab und melden ihre Antwort zurück, ohne dass die
+ * anderen Formulare neu aufgebaut werden (Eingaben und Fokus bleiben erhalten).
+ */
+type Sync = {
+  current: () => Meeting
+  stored: (meeting: Meeting) => void
+}
 
 function statusLabel(status: MeetingStatus) {
   return {
@@ -434,10 +445,36 @@ function MeetingDetail({
   kinds: MeetingKind[]
   onClose: () => void
 }) {
-  const loaded = useLoad(() => meetingApi.get(base, id), [base, id])
+  const newest = useRef<Meeting | null>(null)
+  const loaded = useLoad(async () => {
+    const m = await meetingApi.get(base, id)
+    newest.current = m
+    return m
+  }, [base, id])
+  // Zählt hoch, wenn die Versammlung von anderer Stelle geändert wurde (Einladung, Anträge,
+  // Abstimmung, Status): dann bauen sich die Formulare aus dem neuen Stand neu auf
+  const [epoch, setEpoch] = useState(0)
   const [error, setError] = useState('')
   const [today] = useState(() => new Date().toLocaleDateString('sv-SE', { timeZone: ZONE }))
   const meeting = loaded.data
+  const setData = loaded.setData
+  const reload = loaded.reload
+  const sync: Sync = useMemo(
+    () => ({
+      current: () => newest.current!,
+      stored: (m) => {
+        newest.current = m
+        setData(m)
+      },
+    }),
+    [setData],
+  )
+  const refresh = async () => {
+    await reload()
+    // Noch nicht Gespeichertes mit der neuen Fassung nachholen, bevor neu aufgebaut wird
+    await flushAllForms()
+    setEpoch((e) => e + 1)
+  }
   if (loaded.error) return <p role="alert">{loaded.error}</p>
   if (!meeting) return <Loading />
   const editable = meeting.can_edit && meeting.status !== 'cancelled'
@@ -445,6 +482,8 @@ function MeetingDetail({
   const run = async (action: () => Promise<unknown>) => {
     setError('')
     try {
+      // Erst alles speichern: der Statuswechsel braucht die neueste Fassung
+      if (!(await flushAllForms())) return
       await action()
     } catch (err) {
       setError(errorMessage(err))
@@ -480,47 +519,47 @@ function MeetingDetail({
         </p>
       )}
       {error && <p role="alert">{error}</p>}
-      <InvitationCard base={base} meeting={meeting} onChanged={loaded.reload} />
+      <InvitationCard base={base} meeting={meeting} onChanged={refresh} />
       {(meeting.motions ?? []).length > 0 && (
-        <MotionsCard base={base} meeting={meeting} onChanged={loaded.reload} />
+        <MotionsCard base={base} meeting={meeting} onChanged={refresh} />
       )}
       <DetailsForm
-        key={`d${meeting.version}`}
+        key={`d${epoch}`}
         base={base}
         meeting={meeting}
         kinds={kinds}
         editable={editable}
-        onSaved={loaded.reload}
+        sync={sync}
       />
       {MINUTES_STATES.includes(meeting.status) ? (
         <MinutesEditor
-          key={`m${meeting.version}`}
+          key={`m${epoch}`}
           base={base}
           meeting={meeting}
           editable={meeting.can_edit && (meeting.status === 'held' || meeting.status === 'minutes')}
-          onSaved={loaded.reload}
+          sync={sync}
         />
       ) : (
         <AgendaEditor
-          key={`a${meeting.version}`}
+          key={`a${epoch}`}
           base={base}
           meeting={meeting}
           editable={editable && (meeting.status === 'draft' || meeting.status === 'invited')}
-          onSaved={loaded.reload}
+          sync={sync}
         />
       )}
       {(meeting.status === 'minutes' || meeting.status === 'done') && (
-        <ReleaseCard base={base} meeting={meeting} onChanged={loaded.reload} />
+        <ReleaseCard base={base} meeting={meeting} sync={sync} onChanged={refresh} />
       )}
       {meeting.can_edit && meeting.can_attendance && LIVE_STATES.includes(meeting.status) && (
-        <LiveCard base={base} meeting={meeting} onChanged={loaded.reload} />
+        <LiveCard base={base} meeting={meeting} onChanged={refresh} />
       )}
       {meeting.can_attendance && meeting.status !== 'cancelled' && (
         <AttendanceCard
           key={`t${meeting.status}${meeting.checkin_open ? 'o' : ''}`}
           base={base}
           meeting={meeting}
-          onChanged={loaded.reload}
+          onChanged={refresh}
         />
       )}
       {meeting.can_edit && (
@@ -536,8 +575,8 @@ function MeetingDetail({
                     confirmLabel: t('Absagen'),
                   })
                   if (!yes) return
-                  await meetingApi.update(base, meeting, { status: 'cancelled' })
-                  await loaded.reload()
+                  await meetingApi.update(base, sync.current(), { status: 'cancelled' })
+                  await refresh()
                 })
               }
             >
@@ -557,8 +596,8 @@ function MeetingDetail({
                     confirmLabel: t('Durchgeführt'),
                   })
                   if (!yes) return
-                  await meetingApi.update(base, meeting, { status: 'held' })
-                  await loaded.reload()
+                  await meetingApi.update(base, sync.current(), { status: 'held' })
+                  await refresh()
                 })
               }
             >
@@ -570,8 +609,8 @@ function MeetingDetail({
               className="button button-ghost"
               onClick={() =>
                 run(async () => {
-                  await meetingApi.update(base, meeting, { status: 'draft' })
-                  await loaded.reload()
+                  await meetingApi.update(base, sync.current(), { status: 'draft' })
+                  await refresh()
                 })
               }
             >
@@ -608,16 +647,16 @@ function DetailsForm({
   meeting,
   kinds,
   editable,
-  onSaved,
+  sync,
 }: {
   base: string
   meeting: Meeting
   kinds: MeetingKind[]
   editable: boolean
-  onSaved: () => Promise<void>
+  sync: Sync
 }) {
-  const initial = {
-    kind: meeting.kind,
+  const f = useForm({
+    kind: String(meeting.kind),
     title: meeting.title,
     start: local(meeting.starts_at),
     end: local(meeting.ends_at),
@@ -626,48 +665,40 @@ function DetailsForm({
     chair: meeting.chair ?? '',
     minute_taker: meeting.minute_taker ?? '',
     note: meeting.note ?? '',
-  }
-  const [form, setForm] = useState(initial)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const dirty = JSON.stringify(form) !== JSON.stringify(initial)
-  useDraftGuard(dirty, () => setForm(initial))
+  })
+  const form = f.values
+  const setForm = f.setValues
+  // Nur geänderte Felder gehen an den Server; Ungültiges (leerer Titel, Ende vor Beginn)
+  // meldet er zurück, die Eingabe bleibt stehen
+  const auto = useAutoSave(
+    f,
+    async (changes) => {
+      const data: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(changes)) {
+        if (key === 'kind') data.kind = Number(value)
+        else if (key === 'start' || key === 'end') {
+          const date = new Date(value)
+          if (Number.isNaN(date.getTime()))
+            throw new ApiError(400, { detail: t('Bitte Beginn und Ende angeben.') })
+          data[key === 'start' ? 'starts_at' : 'ends_at'] = date.toISOString()
+        } else data[key] = value
+      }
+      sync.stored(await meetingApi.update(base, sync.current(), data))
+    },
+    { enabled: editable },
+  )
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm({ ...form, [key]: e.target.value })
+    setForm((v) => ({ ...v, [key]: e.target.value }))
   return (
-    <form
-      className="card stack"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        setBusy(true)
-        setError('')
-        try {
-          await meetingApi.update(base, meeting, {
-            kind: Number(form.kind),
-            title: form.title,
-            starts_at: new Date(form.start).toISOString(),
-            ends_at: new Date(form.end).toISOString(),
-            location: form.location,
-            address: form.address,
-            chair: form.chair,
-            minute_taker: form.minute_taker,
-            note: form.note,
-          })
-          await onSaved()
-        } catch (err) {
-          setError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
+    <form className="card stack" onSubmit={(e) => e.preventDefault()}>
       <h2>{t('Angaben')}</h2>
+      {editable && <SaveStatus auto={auto} />}
       <fieldset disabled={!editable} className="stack">
         <label className="field">
           <span>{t('Art')}</span>
           <select value={form.kind} onChange={set('kind')}>
             {kinds
-              .filter((k) => k.active || k.id === meeting.kind)
+              .filter((k) => k.active || String(k.id) === form.kind || k.id === meeting.kind)
               .map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.name}
@@ -697,7 +728,7 @@ function DetailsForm({
           label={t('Ort')}
           value={form.location}
           address={form.address}
-          onChange={(value) => setForm({ ...form, location: value })}
+          onChange={(value) => setForm((v) => ({ ...v, location: value }))}
           onPick={(place) =>
             setForm((f) => ({ ...f, location: place.name, address: place.address || f.address }))
           }
@@ -719,14 +750,6 @@ function DetailsForm({
           <textarea value={form.note} maxLength={5000} rows={3} onChange={set('note')} />
         </label>
       </fieldset>
-      {error && <p role="alert">{error}</p>}
-      {editable && (
-        <div className="button-row">
-          <button className="button button-primary" disabled={busy || !dirty}>
-            {t('Speichern')}
-          </button>
-        </div>
-      )}
     </form>
   )
 }
@@ -748,17 +771,15 @@ function AgendaEditor({
   base,
   meeting,
   editable,
-  onSaved,
+  sync,
 }: {
   base: string
   meeting: Meeting
   editable: boolean
-  onSaved: () => Promise<void>
+  sync: Sync
 }) {
-  const initial = agendaRows(meeting.agenda ?? [])
-  const [items, setItems] = useState(initial)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  const [items, setItems] = useState(() => agendaRows(meeting.agenda ?? []))
+  const [, setErrors] = useState<Record<string, string>>({})
   const [announce, setAnnounce] = useState('')
   const [dragKey, setDragKey] = useState<string | null>(null)
   const newKey = useRef(0)
@@ -768,8 +789,32 @@ function AgendaEditor({
   const drag = useRef<{ key: string; target: DropTarget | null } | null>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
   const plain = (rows: AgendaRow[]) => rows.map(({ key: _key, ...rest }) => rest)
-  const dirty = JSON.stringify(plain(items)) !== JSON.stringify(plain(initial))
-  useDraftGuard(dirty, () => setItems(initial))
+  // Gespeichert wird die Tagesordnung als Ganzes, sobald jeder Punkt einen Titel hat
+  const complete = items.every((item) => item.title.trim() !== '')
+  const values = useMemo(() => ({ items }), [items])
+  const auto = useAutoSave(
+    { values, setErrors },
+    async (_changes, current) => {
+      const sent = current.items
+      const result = await meetingApi.saveAgenda(base, sync.current(), plain(sent))
+      sync.stored(result)
+      // Neue Punkte bekommen ihre Nummer vom Server, sonst entstünden sie beim nächsten
+      // Speichern noch einmal
+      const ids = new Map(sent.map((row, i) => [row.key, result.agenda?.[i]?.id]))
+      setItems((rows) => {
+        let changed = false
+        const next = rows.map((row) => {
+          const id = ids.get(row.key)
+          if (!id || row.id) return row
+          changed = true
+          return { ...row, id }
+        })
+        return changed ? next : rows
+      })
+    },
+    { enabled: editable && complete },
+  )
+  useDraftGuard(editable && !complete, () => setItems(agendaRows(sync.current().agenda ?? [])))
   const numbers = agendaNumbers(items.map((item) => item.level))
   const change = (index: number, patch: Partial<AgendaRow>) =>
     setItems(items.map((item, i) => (i === index ? { ...item, ...patch } : item)))
@@ -876,7 +921,7 @@ function AgendaEditor({
       <section className="card">
         <h2>{t('Tagesordnung')}</h2>
         <ol className="agenda-list">
-          {initial.map((item, index) => (
+          {items.map((item, index) => (
             <li key={item.key} className={item.level ? 'agenda-sub' : undefined}>
               <strong>
                 {t('TOP {n}', { n: numbers[index] })}: <span>{item.title}</span>
@@ -889,23 +934,17 @@ function AgendaEditor({
     )
   }
   return (
-    <form
-      className="card stack"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        setBusy(true)
-        setError('')
-        try {
-          await meetingApi.saveAgenda(base, meeting, plain(items))
-          await onSaved()
-        } catch (err) {
-          setError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
+    <form className="card stack" onSubmit={(e) => e.preventDefault()}>
       <h2>{t('Tagesordnung')}</h2>
+      {complete ? (
+        <SaveStatus auto={auto} />
+      ) : (
+        <div className="save-status save-status-pending">
+          <p role="status" aria-live="polite">
+            {t('Noch nicht gespeichert: Jeder Punkt braucht einen Titel.')}
+          </p>
+        </div>
+      )}
       <p className="muted small">
         {t(
           'Punkte am Griff oder an einer freien Stelle ziehen: zwischen zwei Punkten ablegen, um die Reihenfolge zu ändern, oder auf einem Punkt ablegen, um ihn zu dessen Unterpunkt zu machen. Unterpunkte ziehen mit ihrem Punkt mit. Am Griff gehen auch die Pfeiltasten (→ Unterpunkt, ← eigener Punkt).',
@@ -1046,7 +1085,25 @@ function AgendaEditor({
                 <button
                   type="button"
                   className="button button-ghost"
-                  onClick={() => setItems(removeRow(items, index))}
+                  onClick={async () => {
+                    // Gespeicherte Punkte verschwinden sofort: vorher fragen
+                    if (
+                      item.id &&
+                      !(await confirmDialog({
+                        title: t('Tagesordnungspunkt entfernen?'),
+                        message: t(
+                          '„{title}“ wird mit seiner Erläuterung gelöscht. Unterpunkte bleiben als eigene Punkte stehen.',
+                          { title: item.title },
+                        ),
+                        confirmLabel: t('Entfernen'),
+                      }))
+                    )
+                      return
+                    setItems((rows) => {
+                      const at = rows.findIndex((r) => r.key === item.key)
+                      return at < 0 ? rows : removeRow(rows, at)
+                    })
+                  }}
                 >
                   {t('Entfernen')}
                 </button>
@@ -1058,7 +1115,6 @@ function AgendaEditor({
       <p className="sr-only" aria-live="polite">
         {announce}
       </p>
-      {error && <p role="alert">{error}</p>}
       <div className="button-row">
         <button
           type="button"
@@ -1071,9 +1127,6 @@ function AgendaEditor({
           }
         >
           {t('Punkt hinzufügen')}
-        </button>
-        <button className="button button-primary" disabled={busy || !dirty}>
-          {t('Tagesordnung speichern')}
         </button>
       </div>
     </form>
@@ -1829,28 +1882,70 @@ function count(value: string): number | null {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null
 }
 
-function MinutesEditor({
-  base,
-  meeting,
-  editable,
-  onSaved,
-}: {
-  base: string
-  meeting: Meeting
-  editable: boolean
-  onSaved: () => Promise<void>
-}) {
-  const agenda = meeting.agenda ?? []
-  const initial: MinutesItem[] = agenda.map((a) => ({
+function minutesItems(agenda: AgendaItem[]): MinutesItem[] {
+  return agenda.map((a) => ({
     id: a.id!,
     minutes: a.minutes ?? '',
     resolutions: (a.resolutions ?? []).map((r) => ({ ...r })),
   }))
-  const [items, setItems] = useState(initial)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const dirty = JSON.stringify(items) !== JSON.stringify(initial)
-  useDraftGuard(dirty, () => setItems(initial))
+}
+
+/** So vollständig, dass der Server den Eintrag annimmt. */
+function resolutionComplete(r: Resolution): boolean {
+  if (r.kind === 'election') return !!r.office.trim() && (!!r.elected_name.trim() || !!r.elected)
+  return !!r.text.trim()
+}
+
+function MinutesEditor({
+  base,
+  meeting,
+  editable,
+  sync,
+}: {
+  base: string
+  meeting: Meeting
+  editable: boolean
+  sync: Sync
+}) {
+  const agenda = meeting.agenda ?? []
+  const [items, setItems] = useState(() => minutesItems(agenda))
+  const [, setErrors] = useState<Record<string, string>>({})
+  // Gespeichert wird das Protokoll als Ganzes, sobald kein Beschluss und keine Wahl mehr
+  // halb ausgefüllt ist
+  const complete = items.every((item) => item.resolutions.every(resolutionComplete))
+  const values = useMemo(() => ({ items }), [items])
+  const auto = useAutoSave(
+    { values, setErrors },
+    async (_changes, current) => {
+      const sent = current.items
+      const result = await meetingApi.saveMinutes(base, sync.current(), sent)
+      sync.stored(result)
+      // Neue Beschlüsse und Wahlen bekommen ihre Nummer vom Server, sonst entstünden sie
+      // beim nächsten Speichern noch einmal
+      const stored = new Map((result.agenda ?? []).map((a) => [a.id, a.resolutions ?? []]))
+      const counts = new Map(sent.map((item) => [item.id, item.resolutions.length]))
+      setItems((rows) => {
+        let changed = false
+        const next = rows.map((row) => {
+          const server = stored.get(row.id)
+          if (!server || row.resolutions.length !== counts.get(row.id)) return row
+          let touched = false
+          const resolutions = row.resolutions.map((r, j) => {
+            const id = server[j]?.id
+            if (r.id || !id) return r
+            touched = true
+            return { ...r, id }
+          })
+          if (!touched) return row
+          changed = true
+          return { ...row, resolutions }
+        })
+        return changed ? next : rows
+      })
+    },
+    { enabled: editable && complete },
+  )
+  useDraftGuard(editable && !complete, () => setItems(minutesItems(sync.current().agenda ?? [])))
   const change = (index: number, patch: Partial<MinutesItem>) =>
     setItems(items.map((item, i) => (i === index ? { ...item, ...patch } : item)))
   const changeResolution = (index: number, r: number, patch: Partial<Resolution>) =>
@@ -1886,23 +1981,19 @@ function MinutesEditor({
     )
   }
   return (
-    <form
-      className="card stack"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        setBusy(true)
-        setError('')
-        try {
-          await meetingApi.saveMinutes(base, meeting, items)
-          await onSaved()
-        } catch (err) {
-          setError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
+    <form className="card stack" onSubmit={(e) => e.preventDefault()}>
       <h2>{t('Protokoll der Versammlung')}</h2>
+      {complete ? (
+        <SaveStatus auto={auto} />
+      ) : (
+        <div className="save-status save-status-pending">
+          <p role="status" aria-live="polite">
+            {t(
+              'Noch nicht gespeichert: Ein Beschluss braucht einen Text, eine Wahl das Amt und die gewählte Person.',
+            )}
+          </p>
+        </div>
+      )}
       <p className="muted">
         {t(
           'Halte je Tagesordnungspunkt fest, was besprochen wurde, und trage Beschlüsse und Wahlen mit dem Ergebnis ein.',
@@ -2082,12 +2173,6 @@ function MinutesEditor({
           </li>
         ))}
       </ol>
-      {error && <p role="alert">{error}</p>}
-      <div className="button-row">
-        <button className="button button-primary" disabled={busy || !dirty}>
-          {t('Protokoll speichern')}
-        </button>
-      </div>
     </form>
   )
 }
@@ -2095,10 +2180,12 @@ function MinutesEditor({
 function ReleaseCard({
   base,
   meeting,
+  sync,
   onChanged,
 }: {
   base: string
   meeting: Meeting
+  sync: Sync
   onChanged: () => Promise<void>
 }) {
   const [busy, setBusy] = useState(false)
@@ -2177,7 +2264,12 @@ function ReleaseCard({
                       confirmLabel: t('Bestätigen'),
                     })
                     if (!yes) return
-                    await meetingApi.confirmMinutes(base, meeting, r.role)
+                    // Bestätigt wird der gespeicherte Stand: erst alles speichern
+                    if (!(await flushAllForms())) {
+                      setError(t('Das Protokoll ist noch nicht vollständig gespeichert.'))
+                      return
+                    }
+                    await meetingApi.confirmMinutes(base, sync.current(), r.role)
                     await onChanged()
                   })
                 }
@@ -2200,12 +2292,13 @@ function ReleaseCard({
           className="button"
           disabled={busy}
           onClick={() =>
-            run(async () =>
+            run(async () => {
+              await flushAllForms()
               saveBlob(
                 await meetingApi.minutesPdf(base, meeting),
                 done ? 'protokoll.pdf' : 'protokoll-entwurf.pdf',
-              ),
-            )
+              )
+            })
           }
         >
           {done ? t('Protokoll als PDF') : t('Vorschau als PDF')}
