@@ -177,6 +177,7 @@ November 2026:
 
 #### Help and app
 
+- Help: **Clearer and more complete.** Long page help texts are divided into sections that unfold in the panel; the help page has a jump bar to the menu groups and shows for each guide where you are. Music and "Evaluate & close" have their own help per page. There are also 37 new guides, for example on sub-units, business partners, the deadline calendar, surveys, the website, the letterhead, the budget and music, plus new packages for the first steps.
 - New guides: invite to a meeting, record attendance, approve minutes, plan volunteer shifts, create a task, plan a performance, add sheet music, add to the chronicle, website texts, pictures and structure, book a room or equipment, prepare the financial audit, check an incoming invoice and, for members, card, invoices, volunteer shifts and motions.
 - Help reorganised: the help has four tabs, **Guides**, **Pages**, **Terms** (the former glossary) and **News**, and follows the order of the sidebar. First steps come in packages per task (e.g. treasury or managing members), and members without management rights see their own short start page. The help for a page lists the terms used on it.
 - Help: Every page has "Help on this page" at the top (or the ? key), plus step-by-step guides with pictures. Under "For you" you find first steps that match your rights, to tick off.

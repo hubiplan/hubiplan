@@ -177,6 +177,7 @@ November 2026:
 
 #### Hilfe und App
 
+- Hilfe: **Übersichtlicher und vollständiger.** Lange Seitenhilfen sind in Abschnitte gegliedert, die sich in der Leiste aufklappen; die Hilfe-Seite hat eine Sprungleiste zu den Menügruppen und zeigt bei jeder Anleitung, wo du gerade bist. Musik und „Auswerten & abschließen“ haben je Seite eine eigene Hilfe. Dazu kommen 37 neue Anleitungen, etwa zu Untereinheiten, Geschäftspartnern, Fristenkalender, Umfragen, Webseite, Briefbogen, Haushaltsplan und Musik, sowie neue Pakete für die ersten Schritte.
 - Neue Anleitungen: Versammlung einladen, Anwesenheit erfassen, Protokoll freigeben, Helferdienste planen, Aufgabe anlegen, Auftritt planen, Noten aufnehmen, Chronik ergänzen, Texte, Bilder und Aufbau der Webseite, Raum oder Material buchen, Kassenprüfung vorbereiten, Eingangsrechnung prüfen und für Mitglieder Ausweis, Rechnungen, Helferdienste und Anträge.
 - Hilfe neu gegliedert: Die Hilfe hat vier Reiter, **Anleitungen**, **Seiten**, **Begriffe** (das bisherige Glossar) und **Neuigkeiten**, und ist geordnet wie die Seitenleiste. Die ersten Schritte stehen als Pakete je Aufgabe (z. B. Kasse oder Mitglieder verwalten), Mitglieder ohne Verwaltungsrechte sehen eine eigene, kurze Startseite. Die Hilfe zu einer Seite nennt die Begriffe der Seite.
 - Hilfe: Zu jeder Seite gibt es oben „Hilfe zu dieser Seite“ (oder die Taste ?), dazu Anleitungen Schritt für Schritt mit Bildern. Unter „Für dich“ stehen erste Schritte passend zu deinen Rechten zum Abhaken.
