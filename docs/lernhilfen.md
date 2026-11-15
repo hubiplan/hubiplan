@@ -13,12 +13,12 @@ angemeldete Bearbeitende, nicht im Mitgliederbereich und nicht auf öffentlichen
 | **Warum?** (Grundlage) | an Entscheidungen mit Basiswissen, z. B. Belege, Kassenprüfung | nur mit eingeschalteten Lernhilfen |
 | **?** an Begriffen | an Fachwörtern in Überschriften, Tabellenköpfen und Texten | nur mit eingeschalteten Lernhilfen; einfache Begriffe nur beim ersten Vorkommen pro Seite |
 | **Wie gerechnet?** / **So funktioniert es:** | an berechneten Werten und Abläufen | immer |
-| **Prüfliste** | vor dem Beitragslauf, dem Lastschriftlauf, dem Jahresabschluss, den Jahresbestätigungen für Zuwendungen, dem endgültigen Abschluss eines Wettbewerbs, der Einladung zu einer Versammlung und dem Abschluss der Kassenprüfung | immer; blockiert nie |
+| **Prüfliste** | vor dem Beitragslauf, dem Lastschriftlauf, dem Jahresabschluss, den Jahresbestätigungen für Zuwendungen, dem endgültigen Abschluss eines Wettbewerbs, der Einladung zu einer Versammlung, dem Abschluss der Kassenprüfung und dem Versenden eines Rundschreibens | immer; blockiert nie |
 | **Glossar** | Reiter „Begriffe“ der Hilfe (`/hilfe/begriffe`, [hilfe.md](hilfe.md); `/glossar` leitet weiter), verlinkt aus „Mein Konto“, aus jeder „?“-Box und aus der Seitenhilfe | immer |
 
 Hilfen zu Funktionen, die eine Einheit nicht freigeschaltet hat (Beiträge, Finanzen,
 Steuern & Gemeinnützigkeit, Termine, Versammlungen, Helferdienste, Material, Belegung,
-Webseite, Wettbewerbe), erscheinen weder an der Stelle noch im Glossar.
+Webseite, Wettbewerbe, Rundschreiben, Musik, Dokumente), erscheinen weder an der Stelle noch im Glossar.
 
 ## Schalter und Ausblenden
 
@@ -101,6 +101,14 @@ Trefferpunkt zu Ring, Zehntel und Teiler; Quellen BGB,
 DSGVO, KUG und DSB-Sportordnung). Die Prüfliste der Webseite
 behält ihre eigene Form, weil dort offene Pflichtpunkte das Veröffentlichen sperren; sie
 trägt aber das „?“ an Impressum und „Verantwortlich“.
+
+Seit November 2026 gibt es außerdem Hilfen zu Rundschreiben (Art, Form der Einladung, Briefe je
+Haushalt, Prüfliste vor dem Versenden), Musik (Programm und GEMA, Noten freigeben, Arrangement,
+Schutzfrist), Bildern und Abschnitten der Webseite (Urheber/in, Video als Link, Logos von
+Partnern, Würdenträger in der Chronik), Zusatzfeldern, Zahler im Haushalt, Familienbeitrag,
+Privatpersonen als Geschäftspartner, Zwei-Faktor-Anmeldung und Passkey, Material bei einem
+Mitglied, Registerangaben auf dem Briefbogen und zum Papierkorb der Dokumente (Quellen BGB, AO,
+UStG, DSGVO, KUG, TDDDG, UWG, UrhG, VGG, MarkenG und EPC-Regelwerk).
 
 Dazu kommen Online-Mitgliedsantrag (Beitragsordnung, freiwillige Einwilligungen, Minderjährige),
 Kündigung durch das Mitglied (Frist nach § 39 BGB, Ablauf beim Bestätigen), Versammlungen online

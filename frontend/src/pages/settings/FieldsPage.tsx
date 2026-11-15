@@ -11,6 +11,7 @@ import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 const typeLabel = (tmx: FieldType) => FIELD_TYPES.find((x) => x.value === tmx)?.label ?? tmx
 
@@ -101,6 +102,7 @@ export function FieldsAdmin({
           </button>
         )}
       </div>
+      <Why k="custom_fields" />
       <p className="muted small">
         {partners
           ? t(

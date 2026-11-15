@@ -15,6 +15,7 @@ import { PasskeyCard } from './PasskeyCard.tsx'
 import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { TodoPreferences } from '../../components/TodoPreferences.tsx'
 import { StatusMessage, Loading } from '../../components/ui.tsx'
 import { PersonalTodos } from '../../components/PersonalTodos.tsx'
@@ -211,6 +212,7 @@ function TwoFactorCard() {
   return (
     <div className="card">
       <h2>{t('Zwei-Faktor-Anmeldung')}</h2>
+      <Why k="two_factor" />
       <StatusMessage message={message} />
       {error && (
         <p className="alert alert-error" role="alert">

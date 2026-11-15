@@ -53,7 +53,7 @@ def by_key(sections):
 
 
 def test_neue_regler():
-    assert style.OPTIONS["hero_width"] == ("content", "full")
+    assert style.OPTIONS["hero_width"] == ("content", "stage", "full")
     assert style.OPTIONS["footer_layout"] == ("simple", "full")
     assert style.OPTIONS["footer_line"] == ("none", "ornament", "accent", "primary")
     assert "card" in style.OPTIONS["date"]

@@ -27,6 +27,7 @@ import { Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useSortable } from '../../components/useSortable.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { ImageChoice } from './images.tsx'
 import type { Unit } from './images.tsx'
 
@@ -1496,6 +1497,7 @@ function SectionContent({
             )}
             onChange={(e) => setData({ url: e.target.value })}
           />
+          <Why k="video_link" />
           {titleField()}
           {imageField(t('Vorschaubild (optional)'), d.image, (image) => setData({ image }))}
           <Field
@@ -2353,6 +2355,7 @@ function PartnerImport({
         >
           {t('Aus Geschäftspartnern übernehmen')}
         </button>
+        <Why k="partner_logos" />
       </div>
       {note && <p className="muted small">{note}</p>}
     </div>

@@ -138,6 +138,22 @@ const SOURCES_DATA = {
   bmfSponsoring: {
     full: 'Bundesministerium der Finanzen: Ertragsteuerliche Behandlung des Sponsoring, Schreiben vom 18. Februar 1998 (BStBl I S. 212); Anwendungserlass zur Abgabenordnung (AEAO) zu § 64 Abs. 1 AO, in der jeweils geltenden Fassung.',
   },
+  uwg: {
+    full: 'Gesetz gegen den unlauteren Wettbewerb (UWG) in der Fassung der Bekanntmachung vom 3. März 2010 (BGBl. I S. 254), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/uwg_2004/',
+  },
+  urhg: {
+    full: 'Gesetz über Urheberrecht und verwandte Schutzrechte (Urheberrechtsgesetz, UrhG) vom 9. September 1965 (BGBl. I S. 1273), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/urhg/',
+  },
+  vgg: {
+    full: 'Gesetz über die Wahrnehmung von Urheberrechten und verwandten Schutzrechten durch Verwertungsgesellschaften (Verwertungsgesellschaftengesetz, VGG) vom 24. Mai 2016 (BGBl. I S. 1190), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/vgg/',
+  },
+  markeng: {
+    full: 'Gesetz über den Schutz von Marken und sonstigen Kennzeichen (Markengesetz, MarkenG) vom 25. Oktober 1994 (BGBl. I S. 3082; 1995 I S. 156; 1996 I S. 682), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/markeng/',
+  },
 } satisfies Record<string, Source>
 
 export type SourceKey = keyof typeof SOURCES_DATA
@@ -155,6 +171,8 @@ export const PHASES = {
   competitions: { de: 'Wettbewerbe' },
   meetings: { de: 'Versammlungen' },
   organizing: { de: 'Helfer, Belegung und Ausleihe' },
+  communication: { de: 'Rundschreiben und Dokumente' },
+  music: { de: 'Musik und Noten' },
 } satisfies Record<string, Text>
 export type PhaseKey = keyof typeof PHASES
 
@@ -174,6 +192,9 @@ export type Feature =
   | 'surveys'
   | 'obligations'
   | 'qualifications'
+  | 'circulars'
+  | 'music'
+  | 'docs'
 
 export interface Decision {
   title: Text
@@ -1203,6 +1224,172 @@ const DECISIONS_DATA = {
     phase: 'privacy',
     feature: 'qualifications',
   },
+  circular_kind: {
+    title: d('Offizielle Mitteilung oder Information?'),
+    text: d(
+      'Was zur Mitgliedschaft gehört, etwa die Einladung zur Versammlung oder ein Hinweis zum Beitrag, darf der Verein jedem Mitglied schicken (Art. 6 Abs. 1 lit. b DSGVO). Werbung per E-Mail braucht dagegen eine ausdrückliche Einwilligung (§ 7 Abs. 2 Nr. 2 UWG), deshalb können sich Mitglieder von Informationen abmelden. Wähle im Zweifel „Information“: Dann erreicht die Nachricht etwas weniger Mitglieder, aber niemanden, der das nicht mehr möchte.',
+    ),
+    sources: ['dsgvo', 'uwg'],
+    place: d('Rundschreiben → Art'),
+    phase: 'communication',
+    feature: 'circulars',
+  },
+  circular_invite_form: {
+    title: d('Reicht eine E-Mail als Einladung?'),
+    text: d(
+      'In welcher Form die Mitgliederversammlung einberufen wird, regelt die Satzung (§ 58 Nr. 4 BGB). Eine E-Mail genügt nur, wenn die Satzung Textform oder E-Mail zulässt (§ 126b BGB); verlangt sie einen Brief, geht die Einladung per Post. Die Tagesordnung gehört in die Einladung, sonst sind Beschlüsse angreifbar (§ 32 Abs. 1 BGB).',
+    ),
+    sources: ['bgb'],
+    place: d('Rundschreiben → Offizielle Mitteilung'),
+    phase: 'communication',
+    basic: true,
+    feature: 'circulars',
+  },
+  circular_household_merge: {
+    title: d('Briefe je Haushalt zusammenfassen?'),
+    text: d(
+      'Ein Brief je Haushalt spart Porto und Papier, wenn mehrere Mitglieder unter einer Anschrift wohnen. Bei der Einladung zur Versammlung sollte aber jedes Mitglied nachweisbar eingeladen sein, weil Fehler bei der Berufung Beschlüsse angreifbar machen (§ 32 Abs. 1 BGB). Fasse deshalb Grüße und Informationen zusammen und verschicke förmliche Einladungen im Zweifel einzeln, sofern die Satzung nichts anderes erlaubt.',
+    ),
+    sources: ['bgb'],
+    place: d('Rundschreiben → Empfänger'),
+    phase: 'communication',
+    feature: 'circulars',
+  },
+  performance_program: {
+    title: d('Warum das Programm festhalten?'),
+    text: d(
+      'Wer geschützte Musik öffentlich aufführt, braucht vorher die Einwilligung, die meist die GEMA erteilt (§ 19 Abs. 2 UrhG, § 42 Abs. 1 VGG). Nach der Veranstaltung verlangt sie in der Regel eine Aufstellung der gespielten Werke (§ 42 Abs. 2 VGG). Mit dem Programm am Auftritt liegt diese Musikfolge schon vor.',
+    ),
+    sources: ['urhg', 'vgg'],
+    place: d('Musik → Auftritt → Programm'),
+    phase: 'music',
+    basic: true,
+    feature: 'music',
+  },
+  score_copies: {
+    title: d('Warum Noten ausdrücklich freigeben?'),
+    text: d(
+      'Noten dürfen grundsätzlich nur mit Einwilligung des Rechteinhabers kopiert werden, auch für die eigene Probe (§ 53 Abs. 4 lit. a UrhG). Ausnahmen gelten für das Abschreiben von Hand, für ein eigenes Archiv und für Werke, die seit mindestens zwei Jahren vergriffen sind. Gib digitale Noten deshalb nur frei, wenn der Verein die Rechte oder eine Lizenz dafür hat.',
+    ),
+    sources: ['urhg'],
+    place: d('Musik → Gastzugang → Noten freigeben'),
+    phase: 'music',
+    basic: true,
+    feature: 'music',
+  },
+  image_credit: {
+    title: d('Warum den Namen am Bild nennen?'),
+    text: d(
+      'Wer ein Foto gemacht hat, darf bestimmen, ob und wie sein Name am Bild steht (§ 13 UrhG). Fehlt die Nennung, drohen Abmahnung und Schadensersatz, auch wenn der Verein das Bild nutzen durfte. Trag den Namen gleich beim Bild ein; die Webseite zeigt ihn am Bild und im Impressum.',
+    ),
+    sources: ['urhg'],
+    place: d('Webseite → Bilder → Urheber/in'),
+    phase: 'website',
+    basic: true,
+    feature: 'website',
+  },
+  video_link: {
+    title: d('Warum nur ein Link zum Video?'),
+    text: d(
+      'Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf eurer Seite.',
+    ),
+    sources: ['tdddg', 'dsgvo'],
+    place: d('Webseite → Startseite → Abschnitt „Video“'),
+    phase: 'website',
+    feature: 'website',
+  },
+  chronicle_public: {
+    title: d('Würdenträger auf der Webseite zeigen?'),
+    text: d(
+      'Namen und Fotos früherer Könige sind Personendaten; für Lebende braucht die Veröffentlichung eine Grundlage, am sichersten die Einwilligung (Art. 6 Abs. 1 DSGVO). Bei Verstorbenen entscheiden über Fotos noch zehn Jahre lang die Angehörigen (§ 22 KUG). Frag im Zweifel nach, bevor du den Haken setzt.',
+    ),
+    sources: ['dsgvo', 'kug'],
+    place: d('Chronik → Würdenträger'),
+    phase: 'website',
+    basic: true,
+    feature: 'website',
+  },
+  partner_logos: {
+    title: d('Darf der Verein das Logo zeigen?'),
+    text: d(
+      'Ein fremdes Logo kann als Marke oder als Werk geschützt sein (§ 14 MarkenG, § 15 UrhG). Zeig es nur mit Zustimmung des Partners und in der Fassung, die er dir gibt. Halte die Zustimmung am besten in der Vereinbarung mit dem Partner fest.',
+    ),
+    sources: ['markeng', 'urhg'],
+    place: d('Webseite → Startseite → Abschnitt „Partner und Sponsoren“'),
+    phase: 'website',
+    basic: true,
+    feature: 'website',
+  },
+  custom_fields: {
+    title: d('Welche Angaben gehören in ein Zusatzfeld?'),
+    text: d(
+      'Erhebe nur, was der Verein für seinen Zweck braucht, etwa die Kleidergröße für die Uniform oder das Instrument (Art. 5 Abs. 1 lit. c DSGVO). Angaben zu Gesundheit, Religion oder politischer Meinung sind besonders geschützt und gehören nicht in ein Zusatzfeld (Art. 9 DSGVO). Jedes Feld macht außerdem Arbeit, weil es gepflegt und bei einer Auskunft mit herausgegeben werden muss.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Einstellungen → Zusatzfelder'),
+    phase: 'privacy',
+  },
+  household_payer: {
+    title: d('Wer zahlt, und wer erteilt das Mandat?'),
+    text: d(
+      'Den Beitrag darf auch ein anderer zahlen als das Mitglied, etwa ein Elternteil für die Kinder (§ 267 Abs. 1 BGB). Das Lastschriftmandat muss aber der Kontoinhaber selbst erteilen, sonst kann er den Einzug noch 13 Monate lang als nicht autorisiert zurückgeben (EPC SEPA Direct Debit Core Rulebook). Trag deshalb als Zahler die Person ein, der das Konto gehört.',
+    ),
+    sources: ['bgb', 'epcSdd'],
+    place: d('Mitglieder → Haushalte → Zahler'),
+    phase: 'billing',
+    basic: true,
+    feature: 'billing',
+  },
+  partner_person: {
+    title: d('Privatpersonen als Geschäftspartner speichern?'),
+    text: d(
+      'Daten einer Privatperson darf der Verein speichern, soweit er sie für einen Vertrag oder eine Anfrage dieser Person braucht (Art. 6 Abs. 1 lit. b DSGVO). Dazu reichen meist Name, Anschrift und ein Kontaktweg. Ist das Geschäft erledigt und läuft keine Aufbewahrungsfrist mehr, lösche den Eintrag (Art. 17 Abs. 1 lit. a DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Geschäftspartner → Privatperson'),
+    phase: 'privacy',
+    basic: true,
+  },
+  two_factor: {
+    title: d('Warum ein zweiter Faktor?'),
+    text: d(
+      'Wer Mitglieder- oder Bankdaten sieht, muss sie angemessen schützen (Art. 32 DSGVO). Ein zweiter Faktor, etwa ein Code aus einer App, schützt das Konto auch dann, wenn das Passwort bekannt wird. Der Preis ist ein Schritt mehr bei der Anmeldung.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Mein Konto → Zwei-Faktor-Anmeldung'),
+    phase: 'privacy',
+  },
+  material_with_member: {
+    title: d('Material bei einem Mitglied lagern?'),
+    text: d(
+      'Was dem Verein gehört, bleibt Vereinseigentum, auch wenn es bei einem Mitglied zu Hause liegt. Wer es für den Verein verwahrt, muss es herausgeben, spätestens wenn Amt oder Aufgabe enden (§ 667 BGB, für den Vorstand über § 27 Abs. 3 BGB). Trag den Standort ein, damit nach einem Wechsel klar ist, wo die Sachen sind.',
+    ),
+    sources: ['bgb'],
+    place: d('Material → Standort'),
+    phase: 'organizing',
+    basic: true,
+    feature: 'material',
+  },
+  letterhead_register: {
+    title: d('Registerangaben auf dem Briefbogen?'),
+    text: d(
+      'Für Vereine sind Registergericht und Registernummer auf Briefen freiwillig; sie zeigen aber, dass der Verein eingetragen ist. Auf Rechnungen sind dagegen vollständiger Name und Anschrift sowie Steuernummer oder Umsatzsteuer-Identifikationsnummer Pflicht (§ 14 Abs. 4 Nr. 1 und 2 UStG). Mit dem Haken stehen die Angaben aus dem Impressum auf jedem Brief, sodass sie nirgends fehlen.',
+    ),
+    sources: ['ustg'],
+    place: d('Einstellungen → Briefbogen'),
+    phase: 'communication',
+    basic: true,
+  },
+  docs_trash: {
+    title: d('Was darf endgültig gelöscht werden?'),
+    text: d(
+      'Buchungsbelege müssen acht Jahre, Bücher und Jahresabschlüsse zehn Jahre und Geschäftsbriefe sechs Jahre aufbewahrt werden (§ 147 Abs. 1 und 3 AO). Protokolle und die Satzung braucht der Verein auf Dauer, auch wenn dafür keine Frist im Gesetz steht. Nach 30 Tagen im Papierkorb ist ein Dokument endgültig weg; hol es vorher zurück, wenn die Frist noch läuft.',
+    ),
+    sources: ['ao'],
+    place: d('Dokumente → Papierkorb'),
+    phase: 'communication',
+    feature: 'docs',
+  },
 } satisfies Record<string, Decision>
 
 export type DecisionKey = keyof typeof DECISIONS_DATA
@@ -1222,6 +1409,7 @@ export const SECTIONS = {
   competitions: { de: 'Wettbewerbe' },
   meetings: { de: 'Versammlungen' },
   organizing: { de: 'Helfer, Belegung und Ausleihe' },
+  music: { de: 'Musik und Noten' },
 } satisfies Record<string, Text>
 export type SectionKey = keyof typeof SECTIONS
 
@@ -2334,6 +2522,78 @@ const TERMS_DATA = {
     sources: ['ustg'],
     section: 'tax',
     feature: 'finance',
+  },
+  text_form: {
+    name: d('Textform'),
+    meaning: d(
+      'Lesbare Erklärung auf einem dauerhaften Datenträger, in der die Person des Erklärenden genannt ist (§ 126b BGB). Eine E-Mail genügt; eine Unterschrift ist anders als bei der Schriftform nicht nötig.',
+    ),
+    example: d(
+      'Beispiel: Die Satzung verlangt die Einladung „in Textform“ mit einer Frist von 14 Tagen; eine E-Mail an alle Mitglieder genügt.',
+    ),
+    sources: ['bgb'],
+    section: 'law',
+    feature: 'circulars',
+  },
+  gema: {
+    symbol: 'GEMA',
+    name: d('Gesellschaft für musikalische Aufführungs- und mechanische Vervielfältigungsrechte'),
+    meaning: d(
+      'Verwertungsgesellschaft, die für Komponisten, Textdichter und Verlage die Rechte an öffentlichen Aufführungen wahrnimmt und dafür eine Vergütung einzieht (§ 2 VGG, § 15 Abs. 2 UrhG).',
+    ),
+    example: d(
+      'Beispiel: Für das Frühjahrskonzert mit 12 Stücken meldet der Verein die Veranstaltung vorher an und reicht danach die Musikfolge ein.',
+    ),
+    sources: ['vgg', 'urhg'],
+    section: 'music',
+    feature: 'music',
+  },
+  arrangement: {
+    name: d('Arrangement'),
+    meaning: d(
+      'Eigene Fassung eines Stücks, etwa für eine andere Besetzung; rechtlich eine Bearbeitung. Solange das Original geschützt ist, darf sie nur mit Zustimmung des Urhebers veröffentlicht oder aufgeführt werden (§ 23 Abs. 1 UrhG), und sie ist selbst wie ein eigenes Werk geschützt (§ 3 UrhG).',
+    ),
+    example: d(
+      'Beispiel: Der Dirigent setzt einen Schlager von 1985 für 25 Bläser; vor dem Konzert holt der Verein die Zustimmung des Verlags ein.',
+    ),
+    sources: ['urhg'],
+    section: 'music',
+    feature: 'music',
+  },
+  copyright_term: {
+    name: d('Schutzfrist'),
+    meaning: d(
+      'Das Urheberrecht erlischt 70 Jahre nach dem Tod des Urhebers (§ 64 UrhG). Danach ist das Werk frei, eine neuere Bearbeitung kann aber weiter geschützt sein (§ 3 UrhG).',
+    ),
+    example: d(
+      'Beispiel: Ein Komponist starb 1950; sein Marsch ist seit dem 1. Januar 2021 frei, ein Arrangement von 2010 nicht.',
+    ),
+    sources: ['urhg'],
+    section: 'music',
+    feature: 'music',
+  },
+  family_fee: {
+    name: d('Familienbeitrag'),
+    meaning: d(
+      'Gemeinsamer, meist ermäßigter Beitrag für mehrere Mitglieder eines Haushalts. Er gilt nur, wenn Satzung oder Beitragsordnung ihn vorsehen (§ 58 Nr. 2 BGB).',
+    ),
+    example: d(
+      'Beispiel: 2 Erwachsene und 2 Kinder zahlen zusammen 120 € statt einzeln 4 × 40 € = 160 €.',
+    ),
+    sources: ['bgb'],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  passkey: {
+    name: d('Passkey'),
+    meaning: d(
+      'Anmeldung mit einem Schlüsselpaar statt mit Passwort; der geheime Teil bleibt auf dem eigenen Gerät. Er lässt sich nicht erraten und nicht auf gefälschten Seiten abgreifen und ist damit eine Schutzmaßnahme nach dem Stand der Technik (Art. 32 Abs. 1 DSGVO).',
+    ),
+    example: d(
+      'Beispiel: Die Kassiererin meldet sich mit dem Fingerabdruck am Handy an; ein Passwort mit 12 Zeichen muss sie sich nicht mehr merken.',
+    ),
+    sources: ['dsgvo'],
+    section: 'law',
   },
 } satisfies Record<string, TermEntry>
 

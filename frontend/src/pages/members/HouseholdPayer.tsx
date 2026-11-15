@@ -19,6 +19,7 @@ import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Alert, Field, Loading, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 const KIND_LABELS: Record<PayerKind, string> = {
   member: t('Mitglied'),
@@ -125,6 +126,7 @@ function PayerDetails({
               )}
             </p>
           )}
+          <Why k="household_payer" />
           {canEdit && (
             <div className="button-row">
               <button type="button" className="button" onClick={() => setEditing(true)}>

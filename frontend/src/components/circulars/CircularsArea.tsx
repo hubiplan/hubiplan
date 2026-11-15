@@ -22,6 +22,9 @@ import { RecipientPanel } from './RecipientPanel.tsx'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t, tn } from '../../i18n/index.ts'
+import { Term, Why } from '../../learning/Aids.tsx'
+import { Checklist } from '../../learning/Checklist.tsx'
+import { circularSendChecks } from '../../learning/checks.ts'
 
 export function CircularsArea({ base, root }: { base: CircularBase; root: string }) {
   return (
@@ -265,6 +268,8 @@ function DraftEditor({
   const [attachments, setAttachments] = useState(initial.attachments)
   const [notice, setNotice] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [preview, setPreview] = useState(false)
+  // Probemail in dieser Sitzung verschickt (für die Prüfliste)
+  const [tested, setTested] = useState(false)
   // Nach jedem Speichern die Empfängerliste neu laden
   const [version, setVersion] = useState(0)
   const auto = useAutoSave(form, (changes) => circularApi.update(base, initial.id, changes), {
@@ -465,6 +470,16 @@ function DraftEditor({
             )
           )}
         </div>
+        <div className="aid-row">
+          <Why k="circular_kind" />
+          {v.kind === 'notice' && <Why k="circular_invite_form" />}
+        </div>
+        {v.kind === 'notice' && (
+          <p className="muted small">
+            {t('Für Einladungen zur Versammlung zählt die Form aus der Satzung. Oft genügt:')}{' '}
+            <Term k="text_form">{t('Textform')}</Term>
+          </p>
+        )}
         <Field
           label={t('Betreff')}
           value={v.subject}
@@ -588,6 +603,15 @@ function DraftEditor({
       )}
 
       <div className="card card-wide">
+        <Checklist
+          title={t('Vor dem Versenden')}
+          items={circularSendChecks({
+            subject: v.subject,
+            kind: v.kind,
+            tested,
+            attachments: attachments.length,
+          })}
+        />
         <div className="button-row">
           <button type="button" className="button button-primary" onClick={() => void sendNow()}>
             {t('Versenden …')}
@@ -598,6 +622,7 @@ function DraftEditor({
             onClick={() =>
               void act(async () => {
                 const r = await circularApi.test(base, initial.id)
+                setTested(true)
                 setNotice({
                   kind: 'success',
                   text: t('Probemail an {sent_to} geschickt.', { sent_to: r.sent_to }),
