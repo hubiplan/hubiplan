@@ -498,7 +498,10 @@ export interface WebsiteData {
   home_kind_hints?: Record<HomeKind, string>
   home_kind_needs_block?: Partial<Record<HomeKind, string>>
   home_choices?: HomeChoices
-  units: { id: number; name: string }[]
+  /** Untereinheiten in Baumreihenfolge; `parent` leer: oberste Ebene (fehlt bei älteren Ständen) */
+  units: { id: number; name: string; parent?: number | null }[]
+  /** Reihenfolge der Untereinheiten hier ziehen dürfen (wie unter „Untereinheiten“) */
+  can_sort_units?: boolean
   /** Es gibt Einheiten darüber, deren öffentliche Termine die Webseite zeigen kann */
   has_parent_units?: boolean
   /** Standarddesigns zur Auswahl (fehlt bei älteren Ständen) */
