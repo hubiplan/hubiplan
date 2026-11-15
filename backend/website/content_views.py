@@ -19,7 +19,13 @@ from core.api_base import ModelCleanMixin
 from core.reorder import reorder_response
 
 from . import content, services, timeline
-from .content_models import TIMELINE_SLUG, WebsiteImage, WebsiteRevision, WebsiteText
+from .content_models import (
+    CREDIT_MAX,
+    TIMELINE_SLUG,
+    WebsiteImage,
+    WebsiteRevision,
+    WebsiteText,
+)
 from .home import has_custom, normalize_page, normalize_unit
 from .views import _WebsiteMixin, page_section_options, unit_section_options
 
@@ -48,6 +54,7 @@ def image_data(org_id: int, image: WebsiteImage | None, used: bool | None = None
         "key": image.key,
         "caption": image.caption,
         "alt_text": image.alt_text,
+        "credit": image.credit,
         "decorative": image.decorative,
         "width": image.width,
         "height": image.height,
@@ -450,6 +457,9 @@ class TimelineImportView(_TextMixin, APIView):
 class ImageUploadSerializer(serializers.Serializer):
     caption = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
     alt_text = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+    credit = serializers.CharField(
+        max_length=CREDIT_MAX, required=False, allow_blank=True, default=""
+    )
     decorative = serializers.BooleanField(required=False, default=False)
     department = serializers.IntegerField(required=False, allow_null=True, default=None)
 
@@ -508,6 +518,7 @@ class ImageListView(_ContentMixin, APIView):
             ser.validated_data["alt_text"],
             request.user,
             decorative=ser.validated_data["decorative"],
+            credit=content.clean_credit(ser.validated_data["credit"]),
             original=original,
             crop=crop,
             department=_department(website, ser.validated_data["department"]),
@@ -549,6 +560,8 @@ class ImageDetailView(_ImageMixin, APIView):
             image.department = _department(image.website, values.pop("department", None))
         else:
             values.pop("department", None)
+        if "credit" in values:
+            values["credit"] = content.clean_credit(values["credit"])
         for key, value in values.items():
             setattr(image, key, value)
         image.updated_by = request.user

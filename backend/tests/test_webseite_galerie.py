@@ -50,8 +50,8 @@ def jpg(color="red"):
     return SimpleUploadedFile("foto.jpg", buf.getvalue(), content_type="image/jpeg")
 
 
-def upload(c, org, color="red", caption=""):
-    resp = c.post(url(org, "images/"), {"file": jpg(color), "caption": caption})
+def upload(c, org, color="red", caption="", credit=""):
+    resp = c.post(url(org, "images/"), {"file": jpg(color), "caption": caption, "credit": credit})
     assert resp.status_code == 201, resp.content
     return resp.json()
 
@@ -222,9 +222,9 @@ class TestOeffentlich:
         top = post(c, org, "albums/", {"title": "2024", "date": "2024-08-30"}).json()
         fest = post(c, org, "albums/", {"title": "Schützenfest", "parent": top["id"]}).json()
         hidden = post(c, org, "albums/", {"title": "Entwurf"}).json()
-        a = upload(c, org, "red", caption="Umzug")
-        b = upload(c, org, "blue", caption="Parade")
-        secret = upload(c, org, "green")
+        a = upload(c, org, "red", caption="Umzug", credit="Max Mustermann")
+        b = upload(c, org, "blue", caption="Parade", credit="max mustermann")
+        secret = upload(c, org, "green", credit="Geheime Fotografin")
         post(c, org, f"albums/{fest['id']}/images/", {"images": [a["id"], b["id"]]})
         post(c, org, f"albums/{hidden['id']}/images/", {"images": [secret["id"]]})
         for album in (top, fest):
@@ -263,6 +263,16 @@ class TestOeffentlich:
         fest = public("galleries/schuetzenfest/").json()
         assert [i["caption"] for i in fest["images"]] == ["", ""]
         assert fest["images"][0]["alt"] == "Umzug"
+        # Urheber/in bleibt auch ohne Bildunterschrift (Namensnennung, Ralf 15.11.)
+        assert fest["images"][0]["credit"] == "Max Mustermann"
+
+    def test_bildnachweis_im_impressum(self, alben, orgs, site):
+        credits = public("imprint/").json()["image_credits"]
+        # nur sichtbare Bilder, gleiche Namen einmal
+        assert credits == ["Max Mustermann"]
+        site.state = "maintenance"
+        site.save()
+        assert public("imprint/").json()["image_credits"] == []
 
     def test_bereich_aus(self, alben, site):
         site.blocks = {"gallery": False}

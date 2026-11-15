@@ -168,6 +168,20 @@ def _remove_later(storage, names: list) -> None:
         transaction.on_commit(_remove)
 
 
+# Vorsilben, die die Webseite selbst davorsetzt („Foto: …“); doppelt sähe es seltsam aus
+CREDIT_PREFIX = re.compile(r"^(?:(?:foto|bild|photo|quelle|source|credit)\s*:|©|\(c\))\s*", re.I)
+
+
+def clean_credit(value: str | None) -> str:
+    """Urheber/in ohne Leerraum-Wirrwarr und ohne vorangestelltes „Foto:“ oder „©“."""
+    text = " ".join((value or "").split())
+    while True:
+        stripped = CREDIT_PREFIX.sub("", text, count=1)
+        if stripped == text:
+            return text
+        text = stripped
+
+
 def store_image(
     website,
     upload,
@@ -176,6 +190,7 @@ def store_image(
     user,
     *,
     decorative: bool = False,
+    credit: str = "",
     original=None,
     crop: dict | None = None,
     department=None,
@@ -188,6 +203,7 @@ def store_image(
         key=WebsiteImage.new_key(),
         caption=caption,
         alt_text=alt_text,
+        credit=credit,
         decorative=decorative,
         department=department,
         crop=crop if original is not None and crop else {},
@@ -246,6 +262,7 @@ def copy_image(image: WebsiteImage, upload, crop: dict, user) -> WebsiteImage:
         key=WebsiteImage.new_key(),
         caption=image.caption,
         alt_text=image.alt_text,
+        credit=image.credit,
         decorative=image.decorative,
         department=image.department,
         crop=crop,

@@ -4062,7 +4062,6 @@
   "(OAuth) eintragen:": "(OAuth):",
   ") bleiben bei jedem Design gleich. Die Farben selbst legst du unter": ") stay the same with every design. You set the colours themselves under",
   "{added} Starter aus den Zusagen übernommen.": "{added} starters taken over from the acceptances.",
-  "{caption} {alt_text} {x}": "{caption} {alt_text} {x}",
   "{created} neue Beiträge abgerufen.": "{created} new posts fetched.",
   "{hostname} entfernen": "Remove {hostname}",
   "{label} verschieben": "Move {label}",
@@ -9333,5 +9332,9 @@
   "Weitere Anleitungen zu {x}": "More guides for {x}",
   "Die Seite erklärt:": "About the page:",
   "Webseite gestalten": "Design the website",
-  "Wettbewerbe, Musik und Umfragen": "Competitions, music and surveys"
+  "Wettbewerbe, Musik und Umfragen": "Competitions, music and surveys",
+  "Urheber/in": "Creator",
+  "Urheber/in (optional)": "Creator (optional)",
+  "Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.": "Who took the photos? The website credits them as “Photo: …”.",
+  "Wer das Foto gemacht oder bereitgestellt hat, z. B. „Max Mustermann“, bei freien Bildern mit Lizenz. Die Webseite zeigt „Foto: …“ am Bild und im Impressum.": "Who took or provided the photo, e.g. “Max Mustermann”, for free images with the licence. The website shows “Photo: …” on the image and in the legal notice."
 }
