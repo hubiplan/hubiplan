@@ -1192,6 +1192,28 @@ fieldset {
   }
 }
 
+/* Knopf neben einem Feld mit Beschriftung oben: Der Knopf gehört auf die Höhe des Feldes, nicht
+   der Beschriftung (Ralf 15.11.2026, Briefbogen › „Ablegen“). Im Raster rückt der Knopf um die
+   Höhe der Beschriftung (.field > span: 0.9rem bei Zeilenhöhe 1.5, dazu 0.3rem Rand) nach unten;
+   so bleibt er bündig, auch wenn unter dem Feld ein Hinweis oder Fehler steht. */
+:root {
+  --field-label-space: calc(0.9rem * 1.5 + 0.3rem);
+}
+@media (min-width: 40.0625rem) {
+  :where(.grid-2, .grid-3, .grid-4):has(> .field) > :is(.button-row, .button) {
+    margin-top: var(--field-label-space);
+  }
+}
+/* In Knopfzeilen und Kartenköpfen stehen Feld und Knopf unten bündig; der Rand unter dem Feld
+   fiele sonst unter den Knopf. */
+.button-row:has(> .field),
+.card-head:has(> .field) {
+  align-items: flex-end;
+}
+:is(.button-row, .card-head) > .field {
+  margin-bottom: 0;
+}
+
 .field select,
 .org-switch select,
 .inline-add input {
