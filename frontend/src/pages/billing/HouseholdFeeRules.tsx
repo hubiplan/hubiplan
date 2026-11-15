@@ -9,6 +9,7 @@ import type { FeeRuleMode, HouseholdFeeRule } from '../../api/households.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, Loading, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { Term } from '../../learning/Aids.tsx'
 
 const MODE_LABELS: Record<FeeRuleMode, string> = {
   none: t('keine Ermäßigung'),
@@ -85,7 +86,13 @@ function RuleForm({
 
   return (
     <form className="subcard stack" onSubmit={submit}>
-      <h3>{rule.kind === 'company' ? t('Firmenbeitrag') : t('Familienbeitrag')}</h3>
+      <h3>
+        {rule.kind === 'company' ? (
+          t('Firmenbeitrag')
+        ) : (
+          <Term k="family_fee">{t('Familienbeitrag')}</Term>
+        )}
+      </h3>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       <div className="grid-3">
         <SelectField

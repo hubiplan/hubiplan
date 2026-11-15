@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Term, Why } from '../../learning/Aids.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { ScoreForm } from './ScoresPage.tsx'
 import { formats, duration } from './scoreHelpers.ts'
@@ -131,6 +132,12 @@ export function ProgramPanel({ performance }: { performance: number }) {
         <Link className="button button-ghost" to="/musik/noten">
           {t('Zum Notenbestand')}
         </Link>
+      </div>
+      <div className="aid-row">
+        <Why k="performance_program" />
+        <span className="muted small">
+          <Term k="gema">{t('GEMA')}</Term>
+        </span>
       </div>
       {canEdit && (
         <button

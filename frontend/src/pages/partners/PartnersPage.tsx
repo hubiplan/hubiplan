@@ -31,6 +31,7 @@ import {
 } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { FieldsTab } from '../members/FieldsTab.tsx'
 import { FieldsAdmin } from '../settings/FieldsPage.tsx'
@@ -509,6 +510,7 @@ function PartnerForm({
             )}
           </p>
         )}
+        {value.kind === 'person' && <Why k="partner_person" />}
         {partner?.membership_name && (
           <p className="small">{t('Auch Mitglied: {name}', { name: partner.membership_name })}</p>
         )}
