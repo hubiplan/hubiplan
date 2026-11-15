@@ -159,6 +159,7 @@ def test_wasserzeichen_wappen_und_bild(club, site, manager):
     # Das Bild darf öffentlich ausgeliefert werden, weil ein eingeschalteter Abschnitt es nutzt
     from website.public import SiteView
 
+    site.refresh_from_db()
     assert hirsch.pk in SiteView(site).home_image_ids
 
 

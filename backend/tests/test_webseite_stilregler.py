@@ -85,8 +85,16 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     # Ausnahmen: Kopfhöhe und Titelbild mit vier Stufen (Ralf 13.11., Webseite #68)
     for key, options in catalog["options"].items():
         # und Überschriften und Karten mit vier Stufen (Webseite #89), Seitentitel (Webseite #96),
-        # Bilderkarussell mit „zufällig“ (#477)
-        vier = ("header_height", "hero", "headings", "cards", "title_size", "carousel")
+        # Bilderkarussell mit „zufällig“ (#477), Linie über dem Fuß (Webseite #125)
+        vier = (
+            "header_height",
+            "hero",
+            "headings",
+            "cards",
+            "title_size",
+            "carousel",
+            "footer_line",
+        )
         most = 4 if key in vier else 3
         # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)
         if key in ("font", "heading_font"):
