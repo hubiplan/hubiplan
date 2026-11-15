@@ -18,7 +18,7 @@ Für einen einzelnen Brief erzeugst du unter Rundschreiben › Brief eine Word-V
 
 Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.
 
-Ein Rundschreiben zu einem Termin legst du im Termin unter **Zu diesem Termin** an. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung.
+Ein Rundschreiben zu einem Termin legst du im geöffneten Termin mit **Rundschreiben dazu schreiben** in der Knopfleiste an; danach steht es dort unter **Zu diesem Termin**. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung.
 
 Gehört der Verein zu einem Dachverband, zeigt der Reiter **Empfangen** dessen Rundschreiben an die Vorstände. Ohne Dachverband gibt es diesen Reiter nicht.
 
