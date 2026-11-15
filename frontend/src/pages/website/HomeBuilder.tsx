@@ -118,7 +118,7 @@ function kindHint(kind: HomeKind): string {
     text_image: t('Überschrift, Text und ein Bild daneben, darüber oder darunter'),
     banner: t('ein breites Bild, auf Wunsch mit einer Zeile darauf'),
     buttons: t('ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen'),
-    tiles: t('zwei bis sechs Kacheln mit Bild, Titel und Ziel'),
+    tiles: t('zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf'),
     event: t('ein Termin groß mit „noch N Tage“; verschwindet danach'),
     album: t('vier bis acht Bilder aus einem Album der Galerie'),
     quote: t('ein kurzer Text mit Namen'),
@@ -1147,6 +1147,15 @@ function SectionContent({
                 website={website}
                 value={k.target}
                 onChange={(target) => setTile(i, { target })}
+              />
+              <Field
+                label={t('Knopftext (optional)')}
+                hint={t(
+                  'Mit Ziel steht unten in der Kachel ein Knopf, z. B. „Kontakt aufnehmen“. Ohne Knopftext wird der Titel zum Link.',
+                )}
+                value={k.button ?? ''}
+                maxLength={60}
+                onChange={(e) => setTile(i, { button: e.target.value })}
               />
               {tiles.length > 2 && (
                 <button

@@ -66,7 +66,7 @@ KIND_HINTS = {
     "text_image": "Überschrift, Text und ein Bild daneben, darüber oder darunter",
     "banner": "ein breites Bild, auf Wunsch mit einer Zeile darauf",
     "buttons": "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen",
-    "tiles": "zwei bis sechs Kacheln mit Bild, Titel und Ziel",
+    "tiles": "zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf",
     "event": "ein Termin groß mit „noch N Tage“; verschwindet danach",
     "album": "vier bis acht Bilder aus einem Album der Galerie",
     "quote": "ein kurzer Text mit Namen",
@@ -395,6 +395,8 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
                     "text": _text(k.get("text"), SHORT_MAX, gettext("Text")),
                     "image": _ref(k.get("image"), refs["images"]),
                     "target": _target(k.get("target"), refs),
+                    # Webseite #115: Knopf unten in der Kachel (nur mit Ziel sichtbar)
+                    "button": _text(k.get("button"), LABEL_MAX, gettext("Knopftext")),
                 }
             )
         columns = data.get("columns")
@@ -1036,6 +1038,7 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
                 "text": k.get("text") or "",
                 "image": images.get(k.get("image")),
                 "target": _public_target(site, k.get("target"), known, event_entry),
+                "button": k.get("button") or "",
             }
             for k in data.get("tiles") or []
             if k.get("title")

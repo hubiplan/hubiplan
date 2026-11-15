@@ -3,6 +3,7 @@
 // Rahmen die echte Webseite in der Vorschau (Handy, Tablet, Bildschirm); „Veröffentlichen“
 // macht den Entwurf öffentlich, frühere Fassungen lassen sich als Entwurf zurückholen.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { hasDraft, websiteApi } from '../../api/website.ts'
 import type { Website, WebsiteData } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -197,6 +198,38 @@ export function DesignVersions({
           </li>
         ))}
       </ul>
+    </>
+  )
+}
+
+/** Zuletzt veröffentlichte Texte und Textseiten; zurückgeholt wird beim jeweiligen Text (Ralf 15.11.) */
+export function TextVersions({ website }: { website: Website }) {
+  const versions = website.text_versions ?? []
+  return (
+    <>
+      <p className="muted small">
+        {t(
+          'Texte und Textseiten haben eigene Fassungen. Hier stehen die zuletzt veröffentlichten; zurückholen lässt sich eine Fassung beim Text unter Inhalte.',
+        )}
+      </p>
+      {versions.length === 0 ? (
+        <p className="muted">{t('Noch keine Texte veröffentlicht.')}</p>
+      ) : (
+        <ul className="design-versions">
+          {versions.map((v) => (
+            <li key={v.id}>
+              <span>
+                {formatDateTime(v.published_at)} · <strong>{v.title}</strong>
+                {v.published_by && <span className="muted"> · {v.published_by}</span>}
+                {v.current && <span className="muted"> · {t('jetzt öffentlich')}</span>}
+              </span>
+              <Link className="button button-ghost" to={`/webseite/inhalte?text=${v.text}`}>
+                {t('Öffnen')}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   )
 }

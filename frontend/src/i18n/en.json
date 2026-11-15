@@ -7848,7 +7848,6 @@
   "Überschrift, Text und ein Bild daneben, darüber oder darunter": "heading, text and an image beside, above or below it",
   "ein breites Bild, auf Wunsch mit einer Zeile darauf": "a wide image, optionally with a line of text on it",
   "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen": "one to three buttons to pages, the contact form or external sites",
-  "zwei bis sechs Kacheln mit Bild, Titel und Ziel": "two to six tiles with image, title and target",
   "ein Termin groß mit „noch N Tage“; verschwindet danach": "one event shown large with “N days to go”; disappears afterwards",
   "vier bis acht Bilder aus einem Album der Galerie": "four to eight images from a gallery album",
   "ein kurzer Text mit Namen": "a short text with a name",
@@ -9309,5 +9308,13 @@
   "Noch nicht gespeichert: Ein Beschluss braucht einen Text, eine Wahl das Amt und die gewählte Person.": "Not saved yet: a resolution needs a text, an election the office and the person elected.",
   "Das Protokoll ist noch nicht vollständig gespeichert.": "The minutes have not been saved completely yet.",
   "Bitte eine Frist angeben.": "Please enter a period.",
-  "gesperrt": "blocked"
+  "gesperrt": "blocked",
+  "Frühere Fassungen der Gestaltung": "Earlier versions of the design",
+  "Texte und Textseiten": "Texts and text pages",
+  "Texte und Textseiten haben eigene Fassungen. Hier stehen die zuletzt veröffentlichten; zurückholen lässt sich eine Fassung beim Text unter Inhalte.": "Texts and text pages have their own versions. The most recently published ones are listed here; you restore a version at the text under Content.",
+  "Noch keine Texte veröffentlicht.": "No texts published yet.",
+  "Keine Fassungen haben Einstellungen, Bilder, Designpakete und die Farben und das Logo der Einheit: Sie wirken sofort. Was geändert wurde, steht im Protokoll.": "Settings, images, design packages and the unit's colours and logo have no versions: they take effect immediately. What was changed is shown in the log.",
+  "Knopftext (optional)": "Button text (optional)",
+  "Mit Ziel steht unten in der Kachel ein Knopf, z. B. „Kontakt aufnehmen“. Ohne Knopftext wird der Titel zum Link.": "With a target, a button appears at the bottom of the tile, e.g. “Get in touch”. Without button text, the title becomes the link.",
+  "zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf": "two to six tiles with image, title, target and an optional button"
 }

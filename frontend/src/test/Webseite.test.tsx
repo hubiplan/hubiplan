@@ -838,7 +838,7 @@ describe('Webseite', () => {
     expect(calls.some((c) => c.key === `POST ${base}design/publish/`)).toBe(true)
     // Frühere Fassungen stehen unter „Fassungen“ (S3, Ralf 14.11.)
     await user.click(screen.getByRole('link', { name: 'Fassungen' }))
-    expect(await screen.findByText('Frühere Fassungen')).toBeInTheDocument()
+    expect(await screen.findByText('Frühere Fassungen der Gestaltung')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
   })
 

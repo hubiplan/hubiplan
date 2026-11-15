@@ -37,7 +37,10 @@ KIND_FIELDS = {
     ),
     "banner": "image (Bildnummer), line, height (low|high)",
     "buttons": "title, buttons [{label, target}] (höchstens 3), align (left|center|right)",
-    "tiles": "title, tiles [{title, text, image, target}] (2–6), columns (2|3)",
+    "tiles": (
+        "title, tiles [{title, text, image, target, button}] (2–6), columns (2|3); "
+        "button: Knopftext unten in der Kachel, nur mit target (dann ist der Titel kein Link)"
+    ),
     "event": "title, event (Terminnummer aus auswahl.events)",
     "album": "title, album (Albumnummer), count (4–8)",
     "quote": "text, name",

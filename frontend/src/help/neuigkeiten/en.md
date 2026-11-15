@@ -4,6 +4,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: **Button in a tile.** A tile with a target can get a button at the bottom, such as “Get in touch”, instead of only the title becoming a link. This works on the home page and on text pages, also for AI assistants.
+- Website: **Versions also show texts.** Under Website › Versions, besides the versions of the design, you now also see the most recently published texts and text pages with time and person; **Open** takes you to the text, where you restore an earlier version. A note names what takes effect immediately without versions (settings, images, design packages, colours and logo); that is shown in the log.
 - **Hide sub-units**: a club without sub-units (platoons, sections …) can permanently hide the menu item under Settings › Names and terms. Existing sub-units are kept.
 - Website: **Import design packages yourself.** Whoever manages the website imports a design package for their own unit under Design › Share design › Load design from package, without needing the operator. It applies only to your own website and is checked as before. Platform administrators see all units' designs in one list and can block them.
 - Website: **Several header images.** Under Design › Fine-tuning › Header you can choose up to ten header images (and header images for phones as well). The website then shows one of them on each visit, on every page, like many WordPress themes with a changing header image.
