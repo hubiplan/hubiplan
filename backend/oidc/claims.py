@@ -31,6 +31,8 @@ GROUP_MAX = 64
 # Feste Namen (nicht übersetzt): Die Nextcloud erkennt Gruppen am Namen
 BOARD_GROUP = "Vorstand"
 MEMBERS_GROUP = "Mitglieder"
+# Nie senden: Administratorgruppe der Nextcloud (Gesamtaudit 15.11., AUTH-07/OIDC-1)
+NEVER_GROUPS = frozenset({"admin"})
 
 
 class NotAllowed(Exception):
@@ -56,6 +58,19 @@ def subject(client: Client, user) -> str:
 
 def _group(name: str) -> str:
     return " ".join(str(name or "").split())[:GROUP_MAX]
+
+
+def _counts(user, assignment) -> bool:
+    """Zählt die Rolle? Wie in HUBIplan nur, soweit die Zwei-Faktor-Regel ihre Rechte gewährt.
+
+    Ohne zweiten Faktor ruhen nach Ablauf der Frist alle Verwaltungsrechte (accounts.mfa_policy).
+    Die Nextcloud-Anmeldung las die Rollen bisher direkt; ein Vorstand ohne 2FA bekam so weiter
+    die Gruppe „Vorstand“ (Gesamtaudit 15.11., AUTH-03). Rollen ohne Rechte zählen wie bisher.
+    """
+    from accounts.mfa_policy import gate
+
+    perms = set(assignment.role.permissions or [])
+    return not perms or bool(gate(user, perms))
 
 
 def profile(client: Client, user) -> Profile:
@@ -99,6 +114,8 @@ def profile(client: Client, user) -> Profile:
                 .select_related("role__department")
             )
 
+    roles = [a for a in roles if _counts(user, a)]
+    unit_roles = [h for h in unit_roles if _counts(user, h)]
     is_member = membership is not None
     if client.audience == Client.Audience.ROLES:
         # Nur Rollen dieser Einheit: Ämter in Untereinheiten zählen nicht, auch nicht als Gruppe
@@ -116,6 +133,18 @@ def profile(client: Client, user) -> Profile:
     groups: list[str] = []
     if client.groups_board and any(a.role.is_board for a in roles):
         groups.append(BOARD_GROUP)
+    # Frei benannte Gruppen (Rollen- und Einheitsnamen) dürfen keine feste Gruppe ergeben: Eine
+    # Untereinheit „Vorstand“ gäbe sonst allen ihren Mitgliedern die Vorstandsgruppe, eine Rolle
+    # „admin“ die Administratorgruppe der Nextcloud (Gesamtaudit 15.11., OIDC-1). Solche Namen
+    # entfallen; bestehende Gruppen werden nicht umbenannt.
+    reserved = {_group(g).casefold() for g in (BOARD_GROUP, MEMBERS_GROUP, client.account_group)}
+    reserved |= set(NEVER_GROUPS)
+    reserved.discard("")
+
+    def free(name: str) -> None:
+        if _group(name).casefold() not in reserved:
+            groups.append(name)
+
     # Zugeordnete Gruppen gehen immer mit; Rollen ohne Zuordnung nur mit „je Rolle eine Gruppe“
     named = [(a.role_id, a.role.name) for a in roles]
     named += [(h.role_id, f"{h.role.name} ({h.role.department.name})") for h in unit_roles]
@@ -124,9 +153,10 @@ def profile(client: Client, user) -> Profile:
         if mapped:
             groups += mapped
         elif client.groups_roles:
-            groups.append(role_name)
+            free(role_name)
     if client.groups_units:
-        groups += [u.name for u in units]
+        for u in units:
+            free(u.name)
     if client.groups_members and is_member:
         groups.append(MEMBERS_GROUP)
     # Gruppe aller Konten über HUBIplan: Ihr Gruppen-Admin (Dienstkonto) kann sie deaktivieren
@@ -135,7 +165,8 @@ def profile(client: Client, user) -> Profile:
     seen: set[str] = set()
     unique = []
     for g in map(_group, groups):
-        if g and g not in seen:
+        # Die Administratorgruppe nie, auch nicht über eine Zuordnung (AUTH-07)
+        if g and g not in seen and g.casefold() not in NEVER_GROUPS:
             seen.add(g)
             unique.append(g)
 
