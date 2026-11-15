@@ -453,6 +453,43 @@ def version_data(version: DesignVersion) -> dict:
     }
 
 
+TEXT_VERSIONS = 10  # Fassungen › Texte und Textseiten: die zuletzt veröffentlichten
+
+
+def text_versions(website: Website) -> list[dict]:
+    """Zuletzt veröffentlichte Fassungen aller Texte (Begrüßung, Textseiten, Untereinheiten).
+
+    Texte haben ihren eigenen Verlauf; ohne diese Liste sah es unter Webseite › Fassungen so
+    aus, als gäbe es keine neueren Änderungen, wenn nur Texte veröffentlicht wurden."""
+    from .content_models import WebsiteRevision
+
+    rows = list(
+        WebsiteRevision.objects.filter(text__website=website)
+        .select_related("text", "published_by")
+        .order_by("-published_at", "-pk")[:TEXT_VERSIONS]
+    )
+    # je Text höchstens MAX_REVISIONS Fassungen, also wenige Zeilen
+    latest: dict[int, int] = {}
+    for text_id, pk in WebsiteRevision.objects.filter(
+        text_id__in={r.text_id for r in rows}
+    ).order_by("-published_at", "-pk").values_list("text_id", "pk"):
+        latest.setdefault(text_id, pk)
+    return [
+        {
+            "id": r.pk,
+            "text": r.text_id,
+            "title": r.text.title or r.title or r.text.get_kind_display(),
+            "kind": r.text.kind,
+            "published_at": r.published_at,
+            "published_by": (r.published_by.get_full_name() or r.published_by.email)
+            if r.published_by
+            else "",
+            "current": latest.get(r.text_id) == r.pk,
+        }
+        for r in rows
+    ]
+
+
 def header_image_id(website: Website, key: str = "header_image") -> int | list[int] | None:
     """Kopfbild (``header_image``) oder Kopfbild für schmale Bildschirme (Webseite #73): null,
     eine Bildnummer oder ab zwei Bildern eine Liste (#480)."""
@@ -744,6 +781,7 @@ class WebsiteView(_WebsiteMixin, APIView):
                         :DESIGN_VERSIONS
                     ]
                 ],
+                "text_versions": text_versions(website),
                 "preview_links": [
                     link_data(link)
                     for link in website.preview_links.select_related("created_by")

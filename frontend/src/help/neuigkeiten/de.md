@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: **Fassungen zeigen auch Texte.** Unter Webseite › Fassungen stehen neben den Fassungen der Gestaltung jetzt auch die zuletzt veröffentlichten Texte und Textseiten mit Zeit und Person; **Öffnen** führt zum Text, wo ihr eine frühere Fassung zurückholt. Ein Hinweis nennt, was ohne Fassung sofort wirkt (Einstellungen, Bilder, Designpakete, Farben und Logo); das steht im Protokoll.
 - **Untereinheiten ausblenden**: Hat ein Verein keine Untereinheiten (Züge, Register, Sparten …), blendet er den Menüpunkt unter Einstellungen › Bezeichnungen dauerhaft aus. Bestehende Untereinheiten bleiben erhalten.
 - Webseite: **Designpakete selbst einspielen.** Wer die Webseite verwaltet, spielt unter Gestaltung › Design weitergeben › Design aus Paket laden ein Designpaket für die eigene Einheit ein, ohne den Betreiber zu brauchen. Es gilt nur für die eigene Webseite und wird geprüft wie bisher. Plattformverwalter sehen alle Designs der Einheiten in einer Liste und können sie sperren.
 - Webseite: **Mehrere Kopfbilder.** Unter Gestaltung › Feinabstimmung › Kopf wählt ihr bis zu zehn Kopfbilder (und ebenso Kopfbilder für Handys). Die Webseite zeigt dann bei jedem Aufruf eines davon, auf allen Seiten, wie bei vielen WordPress-Themes mit wechselndem Kopfbild.

@@ -425,6 +425,8 @@ export interface Website extends WebsiteSettings, WebsitePrivacy {
   draft?: DesignDraft
   /** Frühere veröffentlichte Gestaltungen, neueste zuerst */
   design_versions?: DesignVersion[]
+  /** Zuletzt veröffentlichte Fassungen der Texte und Textseiten, neueste zuerst */
+  text_versions?: TextVersion[]
   /** F7: Entwurf ändert nur Inhalte der Abschnitte (dann auch mit „Inhalte bearbeiten“) */
   draft_content_only?: boolean
 }
@@ -456,6 +458,18 @@ export interface DesignVersion {
   id: number
   published_at: string
   published_by: string
+}
+
+/** Veröffentlichte Fassung eines Textes (Begrüßung, Textseite, Untereinheit, Einleitung) */
+export interface TextVersion {
+  id: number
+  text: number
+  title: string
+  kind: string
+  published_at: string
+  published_by: string
+  /** Diese Fassung ist jetzt öffentlich */
+  current: boolean
 }
 
 /** Was der Abschnitts-Baukasten braucht (Startseite: WebsiteData, Textseiten: Texte-Liste) */

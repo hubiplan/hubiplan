@@ -199,3 +199,25 @@ def test_vorschau_zeigt_entwurf_der_texte(club, site, client_web):
     neu.refresh_from_db()
     assert text.published_title == "Mitmachen" and text.published_sections == []
     assert neu.published_at is None
+
+
+def test_fassungen_zeigen_auch_texte(club, site, client_web):
+    """Ralf 15.11.: Unter Webseite › Fassungen standen nur Gestaltungen; veröffentlichte
+    Textseiten fehlten, als hätte es keine Änderungen gegeben."""
+    from website import content
+    from website.content_models import WebsiteText
+
+    user = make_user("texte-fassungen@example.org")
+    page = WebsiteText.objects.create(
+        organization=club, website=site, kind="page", slug="mitmachen", title="Mitmachen"
+    )
+    content.publish(page, user)
+    page.body = "Neu"
+    page.save()
+    content.publish(page, user)
+    data = client_web.get(url(club)).json()["website"]
+    rows = data["text_versions"]
+    assert [r["title"] for r in rows] == ["Mitmachen", "Mitmachen"]
+    assert [r["current"] for r in rows] == [True, False]
+    assert rows[0]["text"] == page.pk and rows[0]["kind"] == "page"
+    assert data["design_versions"] == []

@@ -44,7 +44,7 @@ import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
 import { StyleTuning } from './StyleTuning.tsx'
 import type { PreviewFocus } from './StyleTuning.tsx'
-import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
+import { DesignVersions, DraftBar, PreviewFrame, TextVersions } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { AreaLayouts } from './AreaLayouts.tsx'
 import { DesignFile } from './DesignFile.tsx'
@@ -574,7 +574,7 @@ function WebsiteAdmin({
   const versions = shell(
     <>
       {settings(
-        t('Frühere Fassungen'),
+        t('Frühere Fassungen der Gestaltung'),
         (website.design_versions?.length ?? 0) > 0 ? (
           <DesignVersions
             website={website}
@@ -588,6 +588,12 @@ function WebsiteAdmin({
           </p>
         ),
       )}
+      {settings(t('Texte und Textseiten'), <TextVersions website={website} />)}
+      <p className="muted small">
+        {t(
+          'Keine Fassungen haben Einstellungen, Bilder, Designpakete und die Farben und das Logo der Einheit: Sie wirken sofort. Was geändert wurde, steht im Protokoll.',
+        )}
+      </p>
       {data.can_manage &&
         settings(
           t('Gestaltung als Datei'),
