@@ -470,9 +470,11 @@ def text_versions(website: Website) -> list[dict]:
     )
     # je Text höchstens MAX_REVISIONS Fassungen, also wenige Zeilen
     latest: dict[int, int] = {}
-    for text_id, pk in WebsiteRevision.objects.filter(
-        text_id__in={r.text_id for r in rows}
-    ).order_by("-published_at", "-pk").values_list("text_id", "pk"):
+    for text_id, pk in (
+        WebsiteRevision.objects.filter(text_id__in={r.text_id for r in rows})
+        .order_by("-published_at", "-pk")
+        .values_list("text_id", "pk")
+    ):
         latest.setdefault(text_id, pk)
     return [
         {

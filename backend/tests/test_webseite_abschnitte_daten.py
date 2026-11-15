@@ -190,6 +190,44 @@ def test_knopf_und_kachel_fuehren_zur_untereinheit(club, site, manager):
     assert out["c:k"]["buttons"][0]["target"] == ziel
 
 
+def test_kachel_mit_knopf(club, site, manager):
+    """Webseite #115: Kacheln bekommen auf Wunsch einen Knopftext; die Schnittstelle gibt ihn
+    weiter, ältere Kacheln ohne Knopf liefern einen leeren Text."""
+    resp = put(
+        manager,
+        club,
+        [
+            custom(
+                "t",
+                "tiles",
+                {
+                    "title": "So geht's",
+                    "tiles": [
+                        {
+                            "title": "1. Melde dich bei uns",
+                            "text": "",
+                            "target": {"page": "contact"},
+                            "button": "  Kontakt aufnehmen ",
+                        },
+                        {"title": "2. Komm vorbei", "text": "", "target": None},
+                    ],
+                },
+            ),
+        ],
+    )
+    assert resp.status_code == 200, resp.content
+    saved = {s["key"]: s for s in resp.json()["website"]["home_sections"]}
+    assert [k["button"] for k in saved["c:t"]["data"]["tiles"]] == ["Kontakt aufnehmen", ""]
+    out = {s["key"]: s for s in layout()}
+    assert [k["button"] for k in out["c:t"]["tiles"]] == ["Kontakt aufnehmen", ""]
+    zu_lang = put(
+        manager,
+        club,
+        [custom("t", "tiles", {"tiles": [{"title": "A", "button": "x" * 61}]})],
+    )
+    assert zu_lang.status_code == 400
+
+
 def test_umzug_stellt_untereinheit_im_ziel_um():
     from website.home import remap
 

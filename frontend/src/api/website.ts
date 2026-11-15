@@ -262,6 +262,8 @@ export interface HomeTile {
   text: string
   image: number | null
   target: HomeTarget
+  /** Webseite #115: Knopf unten in der Kachel (nur mit Ziel); fehlt bei älteren Ständen */
+  button?: string
 }
 
 /** Inhalt eines eigenen Abschnitts; welche Felder zählen, hängt von der Art ab */
