@@ -613,19 +613,31 @@ function NeutralCard({
         </button>
       </div>
       {withDocs && (
-        <div className="grid-2">
-          <SelectField
-            label={t('In der Dokumentenablage ablegen')}
-            value={folder}
-            onChange={(e) => setFolder(e.target.value ? Number(e.target.value) : '')}
-          >
-            <option value="">{t('Ordner wählen …')}</option>
-            {(folders.data ?? []).map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name} ({f.visibility_label})
-              </option>
-            ))}
-          </SelectField>
+        <>
+          <div className="grid-2">
+            <SelectField
+              label={t('In der Dokumentenablage ablegen')}
+              value={folder}
+              onChange={(e) => setFolder(e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">{t('Ordner wählen …')}</option>
+              {(folders.data ?? []).map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name} ({f.visibility_label})
+                </option>
+              ))}
+            </SelectField>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button"
+                disabled={!folder || busy}
+                onClick={() => void publish()}
+              >
+                {t('Ablegen')}
+              </button>
+            </div>
+          </div>
           {folders.error && (
             <LoadError
               message={t(
@@ -641,17 +653,7 @@ function NeutralCard({
               <Link to="/dokumente">{t('Dokumentenablage öffnen')}</Link>
             </p>
           )}
-          <div className="button-row">
-            <button
-              type="button"
-              className="button"
-              disabled={!folder || busy}
-              onClick={() => void publish()}
-            >
-              {t('Ablegen')}
-            </button>
-          </div>
-        </div>
+        </>
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
     </div>
