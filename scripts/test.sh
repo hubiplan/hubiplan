@@ -328,7 +328,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
     # Webserver-Konfiguration (Caddy, nginx-Vorlagen für HestiaCP), aus dem geprüften Stand
     if git cat-file -e "$REF:scripts/pruefe-proxy.sh" 2> /dev/null; then
         git archive --format=tar "$REF" scripts/pruefe-proxy.sh deploy/web.Dockerfile deploy/Caddyfile \
-            deploy/Caddyfile.proxy deploy/caddy deploy/hestia | tar -x -C "$WORK"
+            deploy/Caddyfile.proxy deploy/caddy deploy/hestia frontend/src/modules.tsx | tar -x -C "$WORK"
         "$WORK/scripts/pruefe-proxy.sh" "$WORK" "$CPUS"
     fi
     # Selbstupdate: Aktualisierer mit Wegwerf-Repository (braucht git und ssh-keygen)

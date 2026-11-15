@@ -35,8 +35,10 @@ import media.caddy
 
 # Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“).
 # Läuft er nicht, antwortet nur dieser Pfad mit einem Fehler.
-redir /webseite /webseite/ 308
-handle_path /webseite/* {
+# Nicht /webseite/: Den Pfad nutzt die Verwaltung (Webseite › Gestaltung …); beim Neuladen
+# landete er sonst bei der Vereinswebseite (400). scripts/pruefe-proxy.sh prüft das.
+redir /vereinsseite /vereinsseite/ 308
+handle_path /vereinsseite/* {
 	reverse_proxy {$WEBSITE_UPSTREAM:website:8000} {
 		import upstream
 		# Beim Ausrollen der Webseite kurz warten statt Fehler
