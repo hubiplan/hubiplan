@@ -25,6 +25,7 @@ IMAGE_PREVIEW = 640  # Kantenlänge des Bildes, das der Assistent zu sehen bekom
 MAX_NAME = 60
 MAX_URL = 500
 MAX_ALT = 300
+MAX_CREDIT = 200
 MAX_SOCIAL = 2200
 
 # Felder der eigenen Abschnitte (website/home.py ``_clean_data``), als Hilfe für den Assistenten
@@ -609,6 +610,7 @@ def _image_search(args: dict, ctx: ClubContext) -> str:
             for x in (
                 i.get("caption"),
                 i.get("alt_text"),
+                i.get("credit"),
                 i.get("file_name"),
                 i.get("department_name"),
             )
@@ -621,6 +623,7 @@ def _image_search(args: dict, ctx: ClubContext) -> str:
                 "schluessel": i["key"],
                 "alternativtext": i.get("alt_text") or "",
                 "bildunterschrift": i.get("caption") or "",
+                "urheber": i.get("credit") or "",
                 "dekorativ": i.get("decorative"),
                 "datei": i.get("file_name") or "",
                 "gehoert_zu": i.get("department_name"),
@@ -665,6 +668,7 @@ def _image_view(args: dict, ctx: ClubContext):
         "nummer": info["id"],
         "alternativtext": info.get("alt_text") or "",
         "bildunterschrift": info.get("caption") or "",
+        "urheber": info.get("credit") or "",
         "benutzt": info.get("usage") or [],
     }
     note = _(
@@ -686,8 +690,12 @@ def _image_describe(args: dict, ctx: ClubContext) -> str:
     pk = _int(args, "nummer")
     info = ctx.call(content_views.ImageDetailView, "GET", f"website/images/{pk}/", pk=pk)
     body = {}
-    for arg, field in (("alternativtext", "alt_text"), ("bildunterschrift", "caption")):
-        value = _str(args, arg, MAX_ALT)
+    for arg, field, limit in (
+        ("alternativtext", "alt_text", MAX_ALT),
+        ("bildunterschrift", "caption", MAX_ALT),
+        ("urheber", "credit", MAX_CREDIT),
+    ):
+        value = _str(args, arg, limit)
         if value is None:
             continue
         # Benutzte Bilder: vorhandene Texte nur in HUBIplan ändern (wirkt sofort öffentlich)
@@ -700,7 +708,7 @@ def _image_describe(args: dict, ctx: ClubContext) -> str:
             )
         body[field] = value.strip()
     if not body:
-        raise ToolError(_("Bitte alternativtext oder bildunterschrift angeben."))
+        raise ToolError(_("Bitte alternativtext, bildunterschrift oder urheber angeben."))
     ctx.call(content_views.ImageDetailView, "PUT", f"website/images/{pk}/", body, pk=pk)
     hint = (
         _("Das Bild ist schon in Gebrauch; der neue Text gilt dort sofort.")
@@ -734,7 +742,7 @@ def _image_fetch(args: dict, ctx: ClubContext) -> str:
 
     body = {
         "url": _str(args, "adresse", 2000, required=True),
-        "source": _str(args, "quelle", 200, required=True),
+        "source": _str(args, "quelle", MAX_CREDIT, required=True),
         "caption": _str(args, "bildunterschrift", MAX_ALT) or "",
         "alt_text": _str(args, "alternativtext", MAX_ALT) or "",
     }
@@ -1114,14 +1122,24 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         name="bild_beschreiben",
         title=gettext_lazy("Bild beschreiben"),
         description=gettext_lazy(
-            "Setzt Alternativtext und/oder Bildunterschrift eines Bildes. Bei Bildern, die schon "
-            "auf der Webseite stehen, nur, wenn der Text noch fehlt."
+            "Setzt Alternativtext, Bildunterschrift und/oder Urheber/in eines Bildes. Bei Bildern, "
+            "die schon auf der Webseite stehen, nur, wenn der Text noch fehlt. Urheber/in nur "
+            "eintragen, wenn die Person sie nennt; nie raten."
         ),
         schema=_schema(
             {
                 "nummer": NUMBER,
                 "alternativtext": {"type": "string", "maxLength": MAX_ALT},
                 "bildunterschrift": {"type": "string", "maxLength": MAX_ALT},
+                "urheber": {
+                    "type": "string",
+                    "maxLength": MAX_CREDIT,
+                    "description": gettext_lazy(
+                        "Wer das Bild gemacht oder bereitgestellt hat, ggf. mit Lizenz, z. B. "
+                        "„Max Mustermann“ oder „Erika Muster, CC BY 4.0“. Die Webseite zeigt "
+                        "„Foto: …“."
+                    ),
+                },
             },
             ["nummer"],
         ),
@@ -1147,15 +1165,17 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         description=gettext_lazy(
             "Holt ein JPG-, PNG- oder WebP-Bild von einem Server, den die Einheit freigegeben "
             "hat (Webseite › Internetadresse), in die Bilderverwaltung. Quelle und Lizenz sind "
-            "Pflicht und kommen in die Bildunterschrift."
+            "Pflicht und kommen ins Feld Urheber/in; die Webseite zeigt sie als „Foto: …“."
         ),
         schema=_schema(
             {
                 "adresse": {"type": "string", "maxLength": 2000},
                 "quelle": {
                     "type": "string",
-                    "maxLength": 200,
-                    "description": gettext_lazy("Urheber und Lizenz, z. B. „Foto: Verein“."),
+                    "maxLength": MAX_CREDIT,
+                    "description": gettext_lazy(
+                        "Urheber/in und Lizenz, z. B. „Erika Muster, CC BY 4.0“."
+                    ),
                 },
                 "alternativtext": {"type": "string", "maxLength": MAX_ALT},
                 "bildunterschrift": {"type": "string", "maxLength": MAX_ALT},

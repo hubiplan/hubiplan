@@ -314,3 +314,37 @@ class TestIphoneFotos:
         )
         assert resp.status_code == 400
         assert "HEIC" in str(resp.json()["file"])
+
+
+class TestUrheber:
+    """Feld Urheber/in (Ralf 15.11.): gespeichert, bereinigt, beim Kopieren übernommen."""
+
+    def test_hochladen_aendern_bereinigen(self, orgs, editor, api, site):
+        c = api(editor)
+        data = upload(c, orgs["a"], credit="  Foto:  Max   Mustermann ")
+        assert data["credit"] == "Max Mustermann"
+        resp = c.put(
+            url(orgs["a"], f"images/{data['id']}/"),
+            {"credit": "© Erika Muster, CC BY 4.0"},
+            "application/json",
+        )
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["credit"] == "Erika Muster, CC BY 4.0"
+        # Andere Angaben ändern lässt die Urheberin stehen
+        resp = c.put(
+            url(orgs["a"], f"images/{data['id']}/"), {"caption": "Fest"}, "application/json"
+        )
+        assert resp.json()["credit"] == "Erika Muster, CC BY 4.0"
+        image = WebsiteImage.objects.get(pk=data["id"])
+        copy = content.copy_image(image, jpg((200, 200)), CROP, editor)
+        assert copy.credit == "Erika Muster, CC BY 4.0"
+
+    def test_zu_lang(self, orgs, editor, api, site):
+        resp = api(editor).post(url(orgs["a"], "images/"), {"file": jpg(), "credit": "x" * 201})
+        assert resp.status_code == 400
+
+    def test_vorsilben(self):
+        assert content.clean_credit("Bild: (c) Verein") == "Verein"
+        assert content.clean_credit("Photo:Anna") == "Anna"
+        assert content.clean_credit("Fotostudio Muster") == "Fotostudio Muster"
+        assert content.clean_credit(None) == ""

@@ -4062,7 +4062,6 @@
   "(OAuth) eintragen:": "(OAuth):",
   ") bleiben bei jedem Design gleich. Die Farben selbst legst du unter": ") stay the same with every design. You set the colours themselves under",
   "{added} Starter aus den Zusagen übernommen.": "{added} starters taken over from the acceptances.",
-  "{caption} {alt_text} {x}": "{caption} {alt_text} {x}",
   "{created} neue Beiträge abgerufen.": "{created} new posts fetched.",
   "{hostname} entfernen": "Remove {hostname}",
   "{label} verschieben": "Move {label}",
@@ -9326,5 +9325,9 @@
   "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa Text mit Bild, Bilder, ein Zitat oder Trainingszeiten. Kontakt, Homepage, Termine und die anderen festen Blöcke lassen sich verschieben und ausblenden. Alles erscheint mit „Veröffentlichen“.": "You can add more sections above and below the text, such as text with image, pictures, a quote or training times. Contact, homepage, events and the other fixed blocks can be moved and hidden. Everything appears once you click “Publish”.",
   "Notiz zum Bildplatz (optional)": "Note for the picture slot (optional)",
   "Noch kein Bild? Die Vorschau zeigt dann einen Platzhalter mit dieser Notiz, etwa „Probenszene, Querformat“. Auf der veröffentlichten Seite erscheint er nicht.": "No picture yet? The preview then shows a placeholder with this note, e.g. “Rehearsal scene, landscape”. It does not appear on the published page.",
-  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there."
+  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there.",
+  "Urheber/in": "Creator",
+  "Urheber/in (optional)": "Creator (optional)",
+  "Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.": "Who took the photos? The website credits them as “Photo: …”.",
+  "Wer das Foto gemacht oder bereitgestellt hat, z. B. „Max Mustermann“, bei freien Bildern mit Lizenz. Die Webseite zeigt „Foto: …“ am Bild und im Impressum.": "Who took or provided the photo, e.g. “Max Mustermann”, for free images with the licence. The website shows “Photo: …” on the image and in the legal notice."
 }

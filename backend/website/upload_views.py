@@ -38,6 +38,7 @@ from organizations.imprint import ensure as ensure_imprint
 from organizations.theme import effective_theme
 
 from . import content
+from .content_models import CREDIT_MAX
 from .content_views import _ContentMixin, image_data
 from .models import ImageUploadLink, hash_token
 
@@ -152,7 +153,11 @@ class PublicImageUploadView(APIView):
             ).update(uploaded=F("uploaded") + 1)
             if not claimed:
                 raise Http404
-            image = content.store_image(link.website, upload, "", "", link.created_by)
+            # Urheber/in (Ralf 15.11.): wer die Fotos gemacht hat, optional für alle Bilder
+            credit = content.clean_credit(str(request.data.get("credit") or "")[:CREDIT_MAX])
+            image = content.store_image(
+                link.website, upload, "", "", link.created_by, credit=credit
+            )
             record(
                 org,
                 link.created_by,
@@ -170,7 +175,7 @@ class PublicImageUploadView(APIView):
 
 class ImageFetchSerializer(serializers.Serializer):
     url = serializers.CharField(max_length=2000)
-    source = serializers.CharField(max_length=200)
+    source = serializers.CharField(max_length=CREDIT_MAX)
     caption = serializers.CharField(max_length=CAPTION_MAX, required=False, allow_blank=True)
     alt_text = serializers.CharField(max_length=300, required=False, allow_blank=True)
 
@@ -229,17 +234,22 @@ class ImageFetchView(_ContentMixin, APIView):
         ser.is_valid(raise_exception=True)
         values = ser.validated_data
         upload = fetch(values["url"], list(website.image_hosts or []))
-        source = " ".join(values["source"].split())
-        caption = " ".join((values.get("caption") or "").split())
-        note = gettext("Quelle: {source}").format(source=source)
-        caption = f"{caption} ({note})" if caption else note
-        if len(caption) > CAPTION_MAX:
+        # Quelle (Urheber/in, Lizenz) steht seit 15.11. im eigenen Feld, nicht mehr in der
+        # Bildunterschrift; die Webseite nennt sie als „Foto: …“
+        credit = content.clean_credit(values["source"])
+        if not credit:
             raise ValidationError(
-                {"caption": gettext("Bildunterschrift und Quelle sind zusammen zu lang.")}
+                {"source": gettext("Bitte die Urheberin oder den Urheber nennen.")}
             )
+        caption = " ".join((values.get("caption") or "").split())
         with transaction.atomic():
             image = content.store_image(
-                website, upload, caption, values.get("alt_text") or "", request.user
+                website,
+                upload,
+                caption,
+                values.get("alt_text") or "",
+                request.user,
+                credit=credit,
             )
             record(
                 self.org,
