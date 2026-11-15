@@ -102,12 +102,9 @@ function matches(i: WebsiteImage, q: string, scope: Scope, state: State): boolea
   if (state === 'unused' && i.used !== false) return false
   if (state === 'no_alt' && !needsAlt(i)) return false
   if (q) {
-    const hay = t('{caption} {alt_text} {credit} {x}', {
-      caption: i.caption,
-      alt_text: i.alt_text,
-      credit: i.credit ?? '',
-      x: i.department_name ?? '',
-    }).toLowerCase()
+    const hay = [i.caption, i.alt_text, i.credit ?? '', i.department_name ?? '']
+      .join(' ')
+      .toLowerCase()
     if (
       !q
         .toLowerCase()
