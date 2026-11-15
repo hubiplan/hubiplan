@@ -17,5 +17,3 @@ stichworte: [budget, plan, actual, general meeting, forecast]
 7. Record the meeting's resolution with **Record as adopted**.
 
 An adopted budget is locked; **Edit as draft again** opens it for a change.
-
-![Starting point: Draw up the budget](bild:haushaltsplan-aufstellen)

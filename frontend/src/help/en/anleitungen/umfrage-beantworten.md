@@ -13,5 +13,3 @@ stichworte: [survey, answer, meal choice, date poll, anonymous]
 4. Until the end you can change your answer with **Change answer** or withdraw it with **Withdraw answer**.
 
 An anonymous survey tells you so beforehand: nobody sees what you answered there, and the answer can no longer be changed.
-
-![Starting point: Answer a survey](bild:umfrage-beantworten)

@@ -16,5 +16,3 @@ stichworte: [reserve, free reserve, section 62 AO, use of funds, purchase]
 6. Click **Release** as soon as the money is spent.
 
 Charitable clubs may build reserves only for the reasons in section 62 AO (German Fiscal Code).
-
-![Starting point: Build up and release a reserve](bild:ruecklage-bilden)

@@ -13,5 +13,3 @@ stichworte: [Umfrage, Antwort, Essenswahl, Terminfindung, anonym]
 4. Ändere deine Antwort bis zum Ende mit **Antwort ändern** oder nimm sie mit **Antwort zurückziehen** zurück.
 
 Eine anonyme Umfrage zeigt das vorher an: Dort sieht niemand, was du geantwortet hast, und die Antwort lässt sich nicht mehr ändern.
-
-![Ausgangspunkt: Umfrage beantworten](bild:umfrage-beantworten)

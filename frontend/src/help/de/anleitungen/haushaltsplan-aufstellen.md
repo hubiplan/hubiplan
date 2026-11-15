@@ -17,5 +17,3 @@ stichworte: [Haushaltsplan, Budget, Plan, Ist, Versammlung, Hochrechnung]
 7. Trage den Beschluss der Versammlung mit **Als beschlossen eintragen** ein.
 
 Ein beschlossener Plan ist gesperrt; **Wieder als Entwurf bearbeiten** öffnet ihn für eine Änderung.
-
-![Ausgangspunkt: Haushaltsplan aufstellen](bild:haushaltsplan-aufstellen)

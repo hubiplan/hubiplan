@@ -15,5 +15,3 @@ stichworte: [Brief, Word, Vorlage, Briefbogen, Unterschrift]
 6. Öffne die Datei in Word oder LibreOffice und schreibe den Brief.
 
 Für Briefe an viele Empfänger nimmst du ein Rundschreiben mit der Versandart Brief.
-
-![Ausgangspunkt: Einzelnen Brief auf dem Briefbogen schreiben](bild:brief-schreiben)

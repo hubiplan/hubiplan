@@ -15,5 +15,3 @@ stichworte: [letter, Word, template, letterhead, signature]
 6. Open the file in Word or LibreOffice and write the letter.
 
 For letters to many recipients, use a circular sent as a letter.
-
-![Starting point: Write a single letter on the letterhead](bild:brief-schreiben)

@@ -16,5 +16,3 @@ stichworte: [Rücklage, freie Rücklage, § 62 AO, Mittelverwendung, Anschaffung
 6. Klicke auf **Auflösen**, sobald das Geld ausgegeben wird.
 
 Gemeinnützige Vereine dürfen Rücklagen nur aus den Gründen des § 62 AO bilden.
-
-![Ausgangspunkt: Rücklage bilden und auflösen](bild:ruecklage-bilden)

@@ -519,24 +519,6 @@
       "ausschnitt": ""
     },
     {
-      "name": "umfrage-beantworten",
-      "zugang": "mitglied@hubertus-grimlinghausen.test",
-      "seite": "/mein-bereich/umfragen",
-      "ausschnitt": ""
-    },
-    {
-      "name": "brief-schreiben",
-      "zugang": "vorstand@hubertus-grimlinghausen.test",
-      "seite": "/rundschreiben/brief",
-      "ausschnitt": ""
-    },
-    {
-      "name": "haushaltsplan-aufstellen",
-      "zugang": "vorstand@hubertus-grimlinghausen.test",
-      "seite": "/finanzen/haushaltsplan",
-      "ausschnitt": ""
-    },
-    {
       "name": "umsatzsteuer-voranmeldung",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/finanzen/steuern/umsatzsteuer",
@@ -546,12 +528,6 @@
       "name": "veranstaltung-abrechnen",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/finanzen/veranstaltungen",
-      "ausschnitt": ""
-    },
-    {
-      "name": "ruecklage-bilden",
-      "zugang": "vorstand@hubertus-grimlinghausen.test",
-      "seite": "/finanzen/ruecklagen",
       "ausschnitt": ""
     },
     {
