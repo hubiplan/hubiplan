@@ -186,6 +186,21 @@ export function ProgramPanel({ performance }: { performance: number }) {
             })
             setEditing(null)
           }}
+          onAutoSave={
+            editing === 'new'
+              ? undefined
+              : async (_changes, values) => {
+                  // Die Schnittstelle speichert einen Programmpunkt immer als Ganzes
+                  await api.post(url, {
+                    ...values,
+                    action: 'save',
+                    id: editing.id,
+                    duration_seconds:
+                      values.duration_seconds === '' ? null : Number(values.duration_seconds),
+                  })
+                  void load.reload()
+                }
+          }
         />
       )}
       {!p.entries.length && (

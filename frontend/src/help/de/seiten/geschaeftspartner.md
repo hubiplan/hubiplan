@@ -20,7 +20,7 @@ stichworte:
 
 Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste, mit denen ihr zu tun habt: Lieferanten, Dienstleister, Sponsoren, Vermieter, Ämter oder die Presse.
 
-- **Geschäftspartner anlegen** fragt nach Art (Firma, Behörde/Amt, Verein/Verband, Privatperson, Sonstiges), Anschrift, Kontakt und Steuerangaben. Pflicht ist nur der Name. Jeder Eintrag bekommt eine fortlaufende Nummer wie „GP-0001“.
+- **Geschäftspartner anlegen** fragt nach Art (Firma, Behörde/Amt, Verein/Verband, Privatperson, Sonstiges), Anschrift, Kontakt und Steuerangaben. Pflicht ist nur der Name. Jeder Eintrag bekommt eine fortlaufende Nummer wie „GP-0001“. Änderungen an einem vorhandenen Partner speichern sich von selbst.
 - Unter **Rollen** kreuzt ihr an, was der Partner für euch ist, auch mehreres: etwa Lieferant und Sponsor. Kunde und Lieferant gelten auch für Rechnungen und den Rechnungseingang.
 - **Ansprechpartner hinzufügen** speichert Personen beim Partner mit Funktion, E-Mail und Telefon. Ein **Hauptansprechpartner** steht in der Liste vorn.
 - Unter **Kontakt zum Verein** haltet ihr fest, wann und wie der erste Kontakt zustande kam (**Erstkontakt am**, **Erstkontakt**) und welches Mitglied den Partner betreut (**Betreut von**).

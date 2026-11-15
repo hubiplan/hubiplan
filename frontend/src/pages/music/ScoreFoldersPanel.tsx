@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert, Loading } from '../../components/ui.tsx'
+import { Alert, Loading, SaveStatus } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { MusicEmptyState } from './MusicLayout.tsx'
 import { LeadersPanel } from './LeadersPanel.tsx'
@@ -106,6 +106,14 @@ export function ScoreFoldersPanel({
             setEditing(null)
             await load.reload()
           }}
+          onAutoSave={
+            editing === 'new'
+              ? undefined
+              : async (changes) => {
+                  await api.patch(`${base}score-folders/${editing.id}/`, changes)
+                  void load.reload()
+                }
+          }
         />
       )}
       {!folders.length && (
@@ -326,11 +334,14 @@ function FolderForm({
   initial,
   units,
   onSave,
+  onAutoSave,
   onClose,
 }: {
   initial?: Folder
   units: Unit[]
   onSave: (values: Partial<Folder>) => Promise<void>
+  /** Vorhandene Mappe: geänderte Felder automatisch speichern */
+  onAutoSave?: (changes: Partial<Folder>) => Promise<void>
   onClose: () => void
 }) {
   const [values, setValues] = useState({
@@ -344,12 +355,17 @@ function FolderForm({
     [busy, setBusy] = useState(false),
     [error, setError] = useState('')
   const [clean] = useState(JSON.stringify(values))
-  useDraftGuard(JSON.stringify(values) !== clean)
+  const [, setErrors] = useState<Record<string, string>>({})
+  const auto = useAutoSave({ values, setErrors, setValues }, (changes) => onAutoSave!(changes), {
+    enabled: !!onAutoSave,
+  })
+  useDraftGuard(!onAutoSave && JSON.stringify(values) !== clean)
   return (
     <form
       className="card stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (onAutoSave) return
         setBusy(true)
         try {
           await onSave(values)
@@ -360,6 +376,7 @@ function FolderForm({
         }
       }}
     >
+      {onAutoSave && <SaveStatus auto={auto} />}
       {error && <Alert kind="error">{error}</Alert>}
       <div className="music-form-fields">
         <label>
@@ -434,18 +451,33 @@ function FolderForm({
         </fieldset>
       )}
       <div className="button-row">
-        <button className="button button-primary" disabled={busy}>
-          {t('Speichern')}
-        </button>
-        <button
-          type="button"
-          className="button button-ghost"
-          onClick={async () => {
-            if (await confirmLeave()) onClose()
-          }}
-        >
-          {t('Abbrechen')}
-        </button>
+        {onAutoSave ? (
+          <button
+            type="button"
+            className="button"
+            onClick={async () => {
+              // Schließt erst, wenn alles gespeichert ist
+              if (await auto.flush()) onClose()
+            }}
+          >
+            {t('Schließen')}
+          </button>
+        ) : (
+          <>
+            <button className="button button-primary" disabled={busy}>
+              {t('Speichern')}
+            </button>
+            <button
+              type="button"
+              className="button button-ghost"
+              onClick={async () => {
+                if (await confirmLeave()) onClose()
+              }}
+            >
+              {t('Abbrechen')}
+            </button>
+          </>
+        )}
       </div>
     </form>
   )

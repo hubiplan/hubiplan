@@ -5,9 +5,9 @@ import { api } from '../../api/client.ts'
 import { memberApi } from '../../api/members.ts'
 import type { PickedMember } from '../../api/members.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
-import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useAutoSave, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
-import { Alert, EmptyState, Loading } from '../../components/ui.tsx'
+import { Alert, EmptyState, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -403,6 +403,14 @@ function MusicWorkspace() {
               setError(errorMessage(err))
             }
           }}
+          onAutoSave={
+            row
+              ? async (changes) => {
+                  await api.patch(`${base}${kind}/${row.id}/`, changes)
+                  void load.reload()
+                }
+              : undefined
+          }
         />
       )}
       <div className="stack">
@@ -564,12 +572,15 @@ function Editor({
   defaults,
   onClose,
   onSave,
+  onAutoSave,
 }: {
   fields: Field[]
   row?: Row
   defaults: Record<string, string>
   onClose: () => void
   onSave: (values: Record<string, unknown>) => Promise<void>
+  /** Vorhandener Eintrag: geänderte Felder automatisch speichern */
+  onAutoSave?: (changes: Record<string, unknown>) => Promise<void>
 }) {
   const initial = Object.fromEntries(
     fields.map((f) => [
@@ -596,33 +607,44 @@ function Editor({
   const [values, setValues] = useState(initial)
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false)
-  useDraftGuard(dirty)
+  const [, setErrors] = useState<Record<string, string>>({})
+  const prepare = (v: Record<string, unknown>) =>
+    Object.fromEntries(
+      Object.entries(v).map(([key, value]) => {
+        const f = fields.find((x) => x.key === key)
+        return [
+          key,
+          value === '' && (f?.options || f?.member)
+            ? null
+            : f?.type === 'datetime-local' && value
+              ? new Date(String(value)).toISOString()
+              : f?.type === 'datetime-local'
+                ? null
+                : value,
+        ]
+      }),
+    )
+  const auto = useAutoSave(
+    { values, setErrors, setValues },
+    (changes) => onAutoSave!(prepare(changes)),
+    { enabled: !!onAutoSave },
+  )
+  useDraftGuard(!onAutoSave && dirty)
   return (
     <form
       className="card stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (onAutoSave) return
         setBusy(true)
         try {
-          await onSave(
-            Object.fromEntries(
-              fields.map((f) => [
-                f.key,
-                values[f.key] === '' && (f.options || f.member)
-                  ? null
-                  : f.type === 'datetime-local' && values[f.key]
-                    ? new Date(String(values[f.key])).toISOString()
-                    : f.type === 'datetime-local'
-                      ? null
-                      : values[f.key],
-              ]),
-            ),
-          )
+          await onSave(prepare(values))
         } finally {
           setBusy(false)
         }
       }}
     >
+      {onAutoSave && <SaveStatus auto={auto} />}
       <div className="music-form-fields">
         {fields.map((f) =>
           f.member ? (
@@ -632,7 +654,7 @@ function Editor({
               id={String(values[f.key] ?? '')}
               fixedName={row ? String(row.display_name || '') : undefined}
               onChange={(id) => {
-                setValues({ ...values, [f.key]: id })
+                setValues((v) => ({ ...v, [f.key]: id }))
                 setDirty(true)
               }}
             />
@@ -648,7 +670,7 @@ function Editor({
                     ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
                   }
                   onChange={(e) => {
-                    setValues({ ...values, [f.key]: e.target.value })
+                    setValues((v) => ({ ...v, [f.key]: e.target.value }))
                     setDirty(true)
                   }}
                 >
@@ -663,7 +685,7 @@ function Editor({
                 <textarea
                   value={String(values[f.key])}
                   onChange={(e) => {
-                    setValues({ ...values, [f.key]: e.target.value })
+                    setValues((v) => ({ ...v, [f.key]: e.target.value }))
                     setDirty(true)
                   }}
                 />
@@ -676,10 +698,8 @@ function Editor({
                   value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
                   checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
                   onChange={(e) => {
-                    setValues({
-                      ...values,
-                      [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
-                    })
+                    const value = f.type === 'checkbox' ? e.target.checked : e.target.value
+                    setValues((v) => ({ ...v, [f.key]: value }))
                     setDirty(true)
                   }}
                 />
@@ -689,12 +709,27 @@ function Editor({
         )}
       </div>
       <div className="actions">
-        <button className="button button-primary" disabled={busy}>
-          {t('Speichern')}
-        </button>
-        <button className="button button-ghost" type="button" onClick={onClose}>
-          {t('Abbrechen')}
-        </button>
+        {onAutoSave ? (
+          <button
+            className="button"
+            type="button"
+            onClick={async () => {
+              // Schließt erst, wenn alles gespeichert ist
+              if (await auto.flush()) onClose()
+            }}
+          >
+            {t('Schließen')}
+          </button>
+        ) : (
+          <>
+            <button className="button button-primary" disabled={busy}>
+              {t('Speichern')}
+            </button>
+            <button className="button button-ghost" type="button" onClick={onClose}>
+              {t('Abbrechen')}
+            </button>
+          </>
+        )}
       </div>
     </form>
   )

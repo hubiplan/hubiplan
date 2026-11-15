@@ -26,10 +26,16 @@ Konto“. Versammlungen (November 2026): Angaben, Tagesordnung und Protokoll. Ta
 und Protokoll gehen als Ganzes an den Server (mit `version`), sobald jeder Punkt
 einen Titel bzw. jeder Beschluss einen Text und jede Wahl Amt und Person hat;
 neue Punkte und Beschlüsse übernehmen danach ihre ID. Statuswechsel, Bestätigen
-und PDF speichern vorher alles Offene. „Schließen“ schließt ein Formular erst, wenn alles gespeichert ist; einen eigenen „Fertig“-Knopf gibt es nicht.
+und PDF speichern vorher alles Offene. Ebenso Versammlungsarten,
+Geschäftspartner, Material und Räume (mit `version`), Einträge der Musik (Musiker,
+Auftritte, Noten, Mappen, Proben, Besetzungsvorlagen, Programmpunkte) und die
+persönlichen Musikerinnerungen. „Schließen“ schließt ein Formular erst, wenn alles gespeichert ist; einen eigenen „Fertig“-Knopf gibt es nicht.
 
 Bewusst weiter mit Knopf, weil folgenreich, nicht rückgängig oder ein Versand:
 Neuanlagen (auch Rechnungen, SEPA-Mandate, Mitgliedschaftszeiträume, Vorlagen),
+Wertung und Programme eines Wettbewerbs (Neuberechnung der Ergebnisse wird bestätigt),
+Belegungen (Serien, Überschneidungen), Ausgabe, Rückgabe und Wartung von Ausstattung,
+das Probenprogramm (Wahl „dieser Termin“ oder „ganze Serie“),
 Rollen und Rechte samt Zeiträumen der Rollenzuordnung, Freigaben im Verbund
 (Daten gehen an eine andere Instanz), Mitgliederportal (Änderungsmeldung an
 den Vorstand), E-Mail-Adresse und Passwort, Plattformseiten (Löschfrist,

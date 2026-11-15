@@ -16,7 +16,7 @@ Mit Bearbeitungsrecht kannst du ein Teil anlegen. Erfasse Bezeichnung, Kurzbesch
 einen Verwendungszweck oder Termin sowie den Standort. **Bei einem Mitglied** ist vorausgewählt.
 Wähle ein zugängliches Mitglied
 oder trage eine vollständige Adresse ein. Freie Adressen sehen alle Materialleser dieser Einheit.
-Speichere das Formular mit **Speichern**.
+Ein neues Teil speicherst du mit **Speichern**. Änderungen an einem vorhandenen Teil speichern sich von selbst; **Schließen** führt zurück zur Ansicht.
 
 Das Formular gliedert sich in Grunddaten, Standort und Zustand. Beschriftungen stehen über
 den Eingabefeldern. Bei der Auswahl von Mitgliedern, Terminen, Aufgaben oder Dokumenten

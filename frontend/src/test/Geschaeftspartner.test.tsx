@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import App from '../App.tsx'
@@ -81,7 +81,11 @@ const agreement = {
 }
 
 function show(permissions: string[], body: unknown[] = [partner]) {
-  fakeApi({
+  const api = fakeApi({
+    'PATCH /api/orgs/7/billing/partners/4/': (init) => ({
+      status: 200,
+      body: { ...partner, ...JSON.parse(String(init?.body)) },
+    }),
     'GET /_allauth/browser/v1/auth/session': () => ({
       status: 200,
       body: { status: 200, data: { user: testUser } },
@@ -143,9 +147,25 @@ function show(permissions: string[], body: unknown[] = [partner]) {
       </AuthProvider>
     </MemoryRouter>,
   )
+  return api
 }
 
 describe('Geschäftspartner', () => {
+  it('speichert Änderungen am Partner automatisch', async () => {
+    const api = show(['partners.view', 'partners.edit'])
+    fireEvent.click(await screen.findByRole('button', { name: 'Getränke Beispiel GmbH' }))
+    const notes = await screen.findByLabelText('Notizen')
+    expect(screen.queryByRole('button', { name: 'Speichern' })).not.toBeInTheDocument()
+    fireEvent.change(notes, { target: { value: 'Liefert auch Eis.' } })
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PATCH /api/orgs/7/billing/partners/4/')).toBe(true),
+      { timeout: 3000 },
+    )
+    const call = api.find((c) => c.key === 'PATCH /api/orgs/7/billing/partners/4/')!
+    // Nur das geänderte Feld
+    expect(JSON.parse(String(call.init?.body))).toEqual({ notes: 'Liefert auch Eis.' })
+  })
+
   it('listet Partner mit Rollen und Hauptansprechpartner', async () => {
     show(['partners.view', 'partners.edit'])
     expect(
