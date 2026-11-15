@@ -71,10 +71,57 @@ class AccountAdapter(DefaultAccountAdapter):
         request = allauth_context.request
         ctx = {"request": request, "email": email, "current_site": get_current_site(request)}
         ctx.update(context)
+        _links_auf_eigene_adresse(ctx, request, user)
         language = user_language(user) if user is not None else translation.get_language()
         with translation.override(language):
             msg = self.render_mail(template_prefix, email, ctx)
         deliver(msg)
+
+
+def _gehoert_zu(user, unit) -> bool:
+    """Hat das Konto eine Rolle oder einen Mitgliederzugang in ``unit`` oder darunter?"""
+    from access.models import RoleAssignment
+    from core.tenancy import rls_bypass
+    from organizations.models import Organization
+    from portal.models import PortalAccess
+
+    if user is None or getattr(user, "pk", None) is None:
+        return False
+    with rls_bypass():
+        ids = set(
+            RoleAssignment.objects.filter(user=user).values_list("organization_id", flat=True)
+        )
+        ids |= set(PortalAccess.objects.filter(user=user).values_list("organization_id", flat=True))
+        return any(unit in org.ancestors() for org in Organization.objects.filter(pk__in=ids))
+
+
+def _links_auf_eigene_adresse(ctx: dict, request, user) -> None:
+    """Links in Mails nur dann auf der aufgerufenen Vereinsadresse, wenn das Konto dazugehört.
+
+    Der Link folgt der Adresse, auf der er angefordert wurde (W7b). Wer aber auf der Adresse
+    eines fremden Vereins „Passwort vergessen“ für ein Konto anstößt, das mit diesem Verein
+    nichts zu tun hat, bekäme den Rücksetzlink dorthin: Wer das DNS dieser Adresse lenkt,
+    empfinge den Schlüssel (Gesamtaudit 15.11., AUTH-01). Dann gilt die Hauptadresse.
+    """
+    from urllib.parse import urlsplit, urlunsplit
+
+    from django.conf import settings
+
+    from organizations.addresses import request_unit
+
+    unit = request_unit(request) if request is not None else None
+    if unit is None or _gehoert_zu(user, unit):
+        return
+    main = urlsplit(settings.FRONTEND_URL)
+    # Auch die Begrüßung („Hallo von …“) nennt dann die Hauptadresse, nicht den fremden Host
+    from types import SimpleNamespace
+
+    ctx["current_site"] = SimpleNamespace(domain=main.netloc, name=main.netloc)
+    for key, value in list(ctx.items()):
+        if key.endswith("_url") and isinstance(value, str):
+            teile = urlsplit(value)
+            if teile.scheme in ("http", "https") and teile.netloc:
+                ctx[key] = urlunsplit((main.scheme, main.netloc, *teile[2:]))
 
 
 class HeadlessAdapter(DefaultHeadlessAdapter):
