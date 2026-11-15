@@ -122,6 +122,17 @@ DAYS_CHOICES = (3, 7, 14, 30, 60, 90, 180, 365)
 DAYS_BUILTINS = {"results"}
 DAYS_KINDS = {"competition", "albums", "posts"}
 
+# Webseite #122: Titelzeile und kleine Oberzeile auf dem randlosen Titelfoto (Stilregler
+# hero_width=full); stehen am festen Baustein „Bilderkarussell“. Mehrere Titelzeilen (eine je
+# Zeile im Feld, Nachtrag zu #122) wechseln mit den Bildern des Karussells.
+HERO_KEY = "carousel"
+HERO_TITLE_MAX = 120
+HERO_TITLE_LINES = 6
+HERO_KICKER_MAX = 60
+# Webseite #123: Wasserzeichen hinter einem Abschnitt mit Hintergrund: Wappen aus dem
+# Erscheinungsbild oder ein Bild aus der Bilderverwaltung (Bildnummer); fehlt = keins
+MARK_LOGO = "logo"
+
 CUSTOM_KEY = re.compile(r"^c:[a-z0-9]{1,24}$")
 MAX_CUSTOM = 30
 BACKGROUNDS = ("none", "light")  # dazu ``p0`` … ``p9``: Farbe aus der Palette
@@ -174,12 +185,35 @@ def is_custom(key: str) -> bool:
     return isinstance(key, str) and bool(CUSTOM_KEY.match(key))
 
 
+def _mark(value):
+    """Wasserzeichen: ``"logo"``, eine Bildnummer oder ``None``."""
+    if value == MARK_LOGO:
+        return value
+    if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+        return value
+    return None
+
+
+def _hero_text(value, limit: int, lines: int = 1) -> str:
+    """Text auf dem Titelfoto: je Zeile ohne doppelte Leerzeichen, leere Zeilen fallen weg."""
+    if not isinstance(value, str):
+        return ""
+    rows = [" ".join(r.split())[:limit] for r in value.splitlines()]
+    return "\n".join([r for r in rows if r][:lines])
+
+
+def _hero_rows(value) -> list[str]:
+    return [r for r in value.split("\n") if r] if isinstance(value, str) else []
+
+
 def _layout(item: dict, key_or_kind: str) -> dict:
     """Gestaltung eines Eintrags: unbekannte Werte fallen auf den Standard zurück."""
     bg = item.get("bg")
     width = item.get("width")
     column = item.get("column")
+    extra = {"mark": mark} if (mark := _mark(item.get("mark"))) is not None else {}
     return {
+        **extra,
         "bg": bg
         if bg in BACKGROUNDS
         or (isinstance(bg, str) and (PALETTE_BG.match(bg) or GRADIENT_BG.match(bg)))
@@ -222,6 +256,13 @@ def normalize(value, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
             entry = {"key": key, "on": bool(item.get("on", True)), **_layout(item, key)}
             if key in DAYS_BUILTINS:
                 entry["days"] = clean_days(item.get("days"))
+            if key == HERO_KEY:
+                for field, limit, lines in (
+                    ("title", HERO_TITLE_MAX, HERO_TITLE_LINES),
+                    ("kicker", HERO_KICKER_MAX, 1),
+                ):
+                    if text := _hero_text(item.get(field), limit, lines):
+                        entry[field] = text
             result.append(entry)
         elif is_custom(key) and item.get("kind") in kinds:
             seen.add(key)
@@ -763,8 +804,38 @@ def validate(value, website, builtin_keys, default_off, kinds=KINDS) -> list[dic
         raise Invalid(gettext("Höchstens {x0} eigene Abschnitte.").format(x0=MAX_CUSTOM))
     if sum(1 for v in custom if v.get("kind") == "cover") > 1:
         raise Invalid(gettext("Eine Seite hat höchstens ein Titelbild."))
-    refs = references(website) if custom and website is not None else None
+    for v in value:
+        if v["key"] != HERO_KEY:
+            continue
+        for field, limit, lines in (
+            ("title", HERO_TITLE_MAX, HERO_TITLE_LINES),
+            ("kicker", HERO_KICKER_MAX, 1),
+        ):
+            given = v.get(field)
+            if given is None:
+                continue
+            if not isinstance(given, str):
+                raise Invalid(gettext("Bitte einen Text angeben."))
+            rows = [r.strip() for r in given.splitlines() if r.strip()]
+            if len(rows) > lines:
+                raise Invalid(
+                    gettext("Höchstens {x0} Titelzeilen auf dem Titelfoto.").format(x0=lines)
+                )
+            if any(len(r) > limit for r in rows):
+                raise Invalid(
+                    gettext(
+                        "Der Text auf dem Titelfoto ist zu lang (höchstens {x0} Zeichen)."
+                    ).format(x0=limit)
+                )
+    marks = {m for v in value if isinstance(m := _mark(v.get("mark")), int)}
+    refs = references(website) if (custom or marks) and website is not None else None
     result = normalize(value, builtin_keys, default_off, kinds)
+    for item in result:
+        # Unbekannte Bilder fallen weg wie andere Verweise (Webseite #123)
+        if isinstance(item.get("mark"), int) and (
+            refs is None or item["mark"] not in refs["images"]
+        ):
+            del item["mark"]
     for item in result:
         if "kind" in item:
             if refs is None:
@@ -780,6 +851,8 @@ def image_ids(sections: list[dict]) -> set[int]:
     """Bilder eingeschalteter Abschnitte (dürfen öffentlich ausgeliefert werden)."""
     ids = set()
     for s in sections:
+        if s.get("on") and isinstance(s.get("mark"), int):
+            ids.add(s["mark"])
         if not s.get("on") or "kind" not in s:
             continue
         data = s["data"]
@@ -839,9 +912,19 @@ def resolve(
     result = []
     for s in sections:
         layout = {"key": s["key"], "bg": s["bg"], "width": s["width"], "column": s["column"]}
+        mark = s.get("mark")
+        if mark == MARK_LOGO:
+            layout["mark"] = MARK_LOGO
+        elif isinstance(mark, int) and mark in images:
+            layout["mark"] = images[mark]
         if "kind" not in s:
             if s["key"] in builtin_keys and (s["on"] or not builtin_on):
-                result.append({**layout, "kind": s["key"]})
+                extra = {}
+                if titles := _hero_rows(s.get("title")):
+                    extra["hero_titles"] = titles
+                if s.get("kicker"):
+                    extra["hero_kicker"] = s["kicker"]
+                result.append({**layout, "kind": s["key"], **extra})
             continue
         needs = KIND_NEEDS_BLOCK.get(s["kind"])
         if not s["on"] or (needs and not site.site.block_on(needs)):
@@ -863,7 +946,15 @@ def skeleton(sections) -> list[tuple]:
     """Aufbau der Abschnitte ohne Inhalt: Reihenfolge, Art, an/aus, Aussehen (F7).
     Wer nur Inhalte bearbeiten darf, darf daran nichts ändern."""
     return [
-        (s.get("key"), s.get("kind"), s.get("on"), s.get("bg"), s.get("width"), s.get("column"))
+        (
+            s.get("key"),
+            s.get("kind"),
+            s.get("on"),
+            s.get("bg"),
+            s.get("width"),
+            s.get("column"),
+            s.get("mark"),
+        )
         for s in sections
         if isinstance(s, dict)
     ]
@@ -939,6 +1030,8 @@ def remap(value, get) -> list:
 
     result = []
     for item in value:
+        if isinstance(item, dict) and isinstance(item.get("mark"), int):
+            item = {**item, "mark": one("website.websiteimage", item["mark"])}
         if not isinstance(item, dict) or not isinstance(item.get("data"), dict):
             result.append(item)
             continue

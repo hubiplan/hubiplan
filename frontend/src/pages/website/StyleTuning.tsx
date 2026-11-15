@@ -282,6 +282,14 @@ function GROUPS(): Group[] {
           options: { low: t('niedrig'), medium: t('mittel'), normal: t('normal'), high: t('hoch') },
         },
         {
+          key: 'hero_width',
+          label: t('Titelfoto als Bühne'),
+          options: { content: t('in Inhaltsbreite'), full: t('randlos') },
+          hint: t(
+            'Randlos: Das Titelfoto der Startseite reicht über die ganze Breite direkt unter den Kopf, unten mit einem Verlauf in der Vereinsfarbe. Titelzeilen und Oberzeile darauf stehen am Baustein „Bilderkarussell“ unter Startseite.',
+          ),
+        },
+        {
           key: 'hero_shade',
           label: t('Titelbild abdunkeln'),
           options: { none: t('nein'), light: t('leicht'), strong: t('kräftig') },
@@ -339,7 +347,10 @@ function GROUPS(): Group[] {
         {
           key: 'date',
           label: t('Datumsfeld'),
-          options: { tile: t('Kachel'), strip: t('Streifen') },
+          options: { tile: t('Kachel'), strip: t('Streifen'), card: t('Karten') },
+          hint: t(
+            'Karten: Die nächsten Termine auf der Startseite und den Seiten der Untereinheiten stehen als Karten nebeneinander mit großem Datum; der nächste Termin in der Vereinsfarbe.',
+          ),
         },
         {
           key: 'date_text',
@@ -365,6 +376,24 @@ function GROUPS(): Group[] {
           key: 'footer_align',
           label: t('Ausrichtung'),
           options: { left: t('links'), center: t('mittig'), right: t('rechts') },
+        },
+        {
+          key: 'footer_layout',
+          label: t('Aufbau'),
+          options: { simple: t('schlicht'), full: t('mit Wappen und Name') },
+          hint: t(
+            'Mit Wappen und Name: links das Wappen, daneben Vereinsname, Gründungsjahr und Ort, rechts die Links untereinander und Social Media.',
+          ),
+        },
+        {
+          key: 'footer_line',
+          label: t('Linie über dem Fuß'),
+          options: {
+            none: t('keine'),
+            ornament: t('Zierlinie'),
+            accent: t('Zweitfarbe'),
+            primary: t('Vereinsfarbe'),
+          },
         },
       ],
     },

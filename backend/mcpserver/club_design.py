@@ -426,7 +426,17 @@ def _new_key(taken: set[str]) -> str:
             return key
 
 
-LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column", "tage": "days"}
+LOOK = {
+    "hintergrund": "bg",
+    "breite": "width",
+    "spalte": "column",
+    "tage": "days",
+    # Webseite #123: Wasserzeichen hinter Abschnitten mit Hintergrund
+    "wasserzeichen": "mark",
+    # Webseite #122: Text auf dem randlosen Titelfoto (nur fester Bereich „carousel“)
+    "titelzeilen": "title",
+    "oberzeile": "kicker",
+}
 # Frist „wie lange aktuell“: Tage nach Wettbewerb, Album oder Beitrag; null = immer
 DAYS_HINT = "3, 7, 14, 30, 60, 90, 180, 365 oder null (immer); danach verschwindet es"
 
@@ -581,6 +591,11 @@ def _home_options(args: dict, ctx: ClubContext) -> str:
             "breite": "content, text, full",
             "spalte": "main, side (nur Design „Zeitung“)",
             "tage": "nur fester Bereich „results“: " + DAYS_HINT,
+            "wasserzeichen": 'null, "logo" (Wappen) oder Bildnummer; nur bei Hintergrund, '
+            "groß und zart rechts angeschnitten",
+            "titelzeilen": "nur fester Bereich „carousel“ und Stilregler hero_width=full: bis zu "
+            "6 Zeilen (getrennt mit \\n), wechseln mit den Bildern",
+            "oberzeile": "nur fester Bereich „carousel“: kleine Zeile über der Titelzeile",
         },
         "frist": "days bei competition, albums, posts: " + DAYS_HINT,
         "auswahl": choices,
