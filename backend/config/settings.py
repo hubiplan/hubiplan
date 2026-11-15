@@ -575,7 +575,7 @@ LOGGING = {
 # Webseite: auf dem Testserver alle Webseiten nur in der Vorschau zeigen
 # (erfundene Testdaten sollen nie öffentlich wirken)
 WEBSITE_PREVIEW_ONLY = env_bool("WEBSITE_PREVIEW_ONLY", False)
-# Testserver: feste Adresse der Vereinsseite (z. B. https://…/webseite/) statt der Domain
+# Testserver: feste Adresse der Vereinsseite (z. B. https://…/vereinsseite/) statt der Domain
 WEBSITE_PUBLIC_URL = os.environ.get("WEBSITE_PUBLIC_URL", "")
 # Social-Media-Beiträge: Version der Meta-Schnittstelle und (optional) eigene Adresse für
 # die Rückleitung von Meta (Standard: FRONTEND_URL)

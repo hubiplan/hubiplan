@@ -157,7 +157,7 @@ def redirect_uri() -> str:
 def frontend_return(ok: bool, message: str = "") -> str:
     base = settings.FRONTEND_URL.rstrip("/")
     query = {"verbunden": "1"} if ok else {"fehler": message[:900] or "unbekannt"}
-    # Nicht /webseite/…: Diesen Pfad gibt Caddy beim Neuladen an die Vereinswebseite weiter.
+    # Eigene Rückkehrseite außerhalb der Webseiten-Verwaltung
     return f"{base}/social-rueckkehr?{urllib.parse.urlencode(query)}"
 
 

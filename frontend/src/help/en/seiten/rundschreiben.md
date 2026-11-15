@@ -18,7 +18,7 @@ A mailing list turns a mail sent to a club address into a circular. Anyone may w
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
 
-You create a circular about an event in the event under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply.
+You create a circular about an event in the open event with **Write a circular about it** in the button bar; it is then listed there under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply.
 
 If the club belongs to an umbrella association, the **Received** tab shows its circulars to the boards. Without an umbrella association this tab does not exist.
 

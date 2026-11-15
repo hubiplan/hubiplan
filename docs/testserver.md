@@ -261,14 +261,16 @@ und Rücksicherung). Auf dem Server laufen keine Tests.
 
 Die Vereinsseite aus dem Repository `hubiplan-website` läuft auf dem Testserver als eigener
 Container `website` im Docker-Netz `hubiplan_web`. Caddy leitet
-`https://test.example.org/webseite/` dorthin weiter; läuft der Container nicht, antwortet
-nur dieser Pfad mit einem Fehler.
+`https://test.example.org/vereinsseite/` dorthin weiter; läuft der Container nicht, antwortet
+nur dieser Pfad mit einem Fehler. Nicht `/webseite/`: Diesen Pfad nutzt die Verwaltung
+(Webseite › Gestaltung …), beim Neuladen käme sonst die Vereinswebseite (Fehler 400).
+`scripts/pruefe-proxy.sh` prüft, dass kein Proxy-Pfad einen Bereich der Oberfläche verdeckt.
 
 In `/opt/hubiplan/.env`:
 
 ```bash
 WEBSITE_PREVIEW_ONLY=true          # alle Webseiten nur in der Vorschau (erfundene Daten)
-WEBSITE_PUBLIC_URL=https://test.example.org/webseite/
+WEBSITE_PUBLIC_URL=https://test.example.org/vereinsseite/
 ```
 
 `seed_testdata` richtet die Webseite des Demovereins mit erfundenen Inhalten ein

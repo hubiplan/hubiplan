@@ -1,10 +1,13 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
+// Aufbau (Ralf 15.11.2026): Kopf mit Wann/Ort/Kalender, Aktionsleiste, Rückmeldungen als Karte,
+// „Zu diesem Termin“ als Karte mit einer Zeile je Bereich, Löschen allein unten.
 import { RouteLinks } from './RouteLinks.tsx'
-import { EventTaskLink } from '../TodoEventLink.tsx'
+import { EventTaskRow } from '../TodoEventLink.tsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
-import { MaterialReferences } from '../MaterialReferences.tsx'
+import { EventMaterialRow } from '../MaterialReferences.tsx'
 import { useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { eventApi } from '../../api/events.ts'
 import type {
   CalendarBase,
@@ -18,7 +21,8 @@ import { Alert, Checkbox, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
-import { EventDocumentLink } from './EventDocumentLink.tsx'
+import { useEventDocumentLink } from './EventDocumentLink.tsx'
+import { EventRow } from './EventRow.tsx'
 import { berlin, formatDay, formatRange, toApi } from './time.ts'
 import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { circularApi } from '../../api/circulars.ts'
@@ -45,20 +49,11 @@ export function VisibilityBadge({ visibility }: { visibility: string }) {
   )
 }
 
-function MusicLink({ eventId }: { eventId: number }) {
-  const org = useOptionalOrg()?.active
-  return org?.modules.includes('music') && org.permissions.includes('music.view') ? (
-    <Link to={`/musik?art=performances&termin=${eventId}`}>{t('Auftritt planen')}</Link>
-  ) : null
-}
-
-/** Rundschreiben zum Termin: an die Eingeladenen, mit den PDF-Anhängen des Termins. */
-function CircularLinks({ base, event }: { base: string; event: EventDetail }) {
+/** Rundschreiben zum Termin schreiben: an die Eingeladenen, mit den PDF-Anhängen des Termins. */
+function useCircularWriter(base: string, event: EventDetail) {
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const rows = event.circulars
-  if (rows === undefined || (rows.length === 0 && !event.can_circular)) return null
   const write = async (reminder = false) => {
     setBusy(true)
     setError(null)
@@ -76,131 +71,346 @@ function CircularLinks({ base, event }: { base: string; event: EventDetail }) {
       setBusy(false)
     }
   }
-  return (
-    <div className="stack-sm">
-      {rows.map((c) => (
-        <p key={c.id}>
-          <Link to={`/rundschreiben/${c.id}`}>
-            {t('Rundschreiben: {subject}', { subject: c.subject })}
-          </Link>{' '}
-          <span className="muted small">{c.status_label}</span>
-        </p>
-      ))}
-      {event.can_circular && (
-        <p>
-          <button
-            type="button"
-            className="link-button"
-            disabled={busy}
-            onClick={() => void write()}
-          >
-            {rows.length
-              ? t('Weiteres Rundschreiben dazu schreiben')
-              : t('Rundschreiben dazu schreiben')}
-          </button>
-          {event.rsvp.enabled && (
-            <>
-              {' · '}
-              <button
-                type="button"
-                className="link-button"
-                disabled={busy}
-                onClick={() => void write(true)}
-              >
-                {t('Erinnerung an alle ohne Rückmeldung')}
-              </button>
-            </>
-          )}
-        </p>
-      )}
-      {error && <Alert kind="error">{error}</Alert>}
-    </div>
-  )
+  return { busy, error, write }
 }
 
-/** Was am Termin hängt: Versammlung, Dienstpläne, Belegungen (Menüprüfung 2, N-02). */
-function RelatedLinks({ event, originalStart }: { event: EventDetail; originalStart: string }) {
+/**
+ * Was am Termin hängt, je eine Zeile: Rundschreiben, Versammlung, Dienstpläne, Belegungen,
+ * Aufgaben, Musik, Material, Abrechnung, Anhänge (Menüprüfung 2, N-02; neu gegliedert
+ * Ralf 15.11.2026). Leere Bereiche bleiben einzeilig, Auswahlen klappen erst auf Klick auf.
+ */
+function RelatedCard({
+  base,
+  event,
+  originalStart,
+  onChanged,
+  attachments,
+}: {
+  base: CalendarBase
+  event: EventDetail
+  originalStart: string
+  onChanged: (event: EventDetail) => void
+  attachments: ReactNode
+}) {
+  const org = useOptionalOrg()?.active
   const plans = event.helper_plans
   const bookings = event.bookings
-  if (event.meeting === undefined && plans === undefined && bookings === undefined) return null
+  const circulars = event.circulars ?? []
   const book = new URLSearchParams({
     buchen: '1',
     termin: String(event.id),
     titel: event.title,
     vorkommen: originalStart,
   })
+  const music = !!org?.modules.includes('music') && !!org.permissions.includes('music.view')
   return (
-    <>
+    <section className="card event-card event-related">
+      <h3 className="event-card-title">{t('Zu diesem Termin')}</h3>
+      {circulars.length > 0 && (
+        <EventRow label={t('Rundschreiben')}>
+          <ul className="plain-list">
+            {circulars.map((c) => (
+              <li key={c.id}>
+                <Link to={`/rundschreiben/${c.id}`}>
+                  {t('Rundschreiben: {subject}', { subject: c.subject })}
+                </Link>{' '}
+                <span className="muted small">{c.status_label}</span>
+              </li>
+            ))}
+          </ul>
+        </EventRow>
+      )}
       {event.meeting && (
-        <p>
-          <Link to={`/versammlungen?versammlung=${event.meeting.id}`}>{t('Zur Versammlung')}</Link>{' '}
-          <span className="muted small">{event.meeting.status_label}</span>
-        </p>
+        <EventRow
+          label={t('Versammlung')}
+          actions={
+            <Link
+              className="button button-ghost"
+              to={`/versammlungen?versammlung=${event.meeting.id}`}
+              aria-label={t('Zur Versammlung')}
+            >
+              {t('Öffnen')}
+            </Link>
+          }
+        >
+          {event.meeting.status_label}
+        </EventRow>
       )}
       {plans && (plans.length > 0 || event.can_create_helper_plan) && (
-        <div className="stack-sm">
-          {plans.map((p) => (
-            <p key={p.id}>
-              <Link to={`/helferdienste?plan=${p.id}`}>
-                {t('Dienstplan: {title}', { title: p.title })}
-              </Link>{' '}
-              <span className="muted small">{p.status_label}</span>
-            </p>
-          ))}
-          {event.can_create_helper_plan && plans.length === 0 && (
-            <p>
-              <Link to={`/helferdienste?neu=1&termin=${event.id}`}>
-                {t('Dienstplan für diesen Termin anlegen')}
+        <EventRow
+          label={t('Dienstplan')}
+          actions={
+            event.can_create_helper_plan &&
+            plans.length === 0 && (
+              <Link
+                className="button button-ghost"
+                to={`/helferdienste?neu=1&termin=${event.id}`}
+                aria-label={t('Dienstplan für diesen Termin anlegen')}
+              >
+                <span aria-hidden="true">+</span> {t('Anlegen')}
               </Link>
-            </p>
+            )
+          }
+        >
+          {plans.length === 0 ? (
+            <span className="muted small">{t('keiner')}</span>
+          ) : (
+            <ul className="plain-list">
+              {plans.map((p) => (
+                <li key={p.id}>
+                  <Link to={`/helferdienste?plan=${p.id}`}>
+                    {t('Dienstplan: {title}', { title: p.title })}
+                  </Link>{' '}
+                  <span className="muted small">{p.status_label}</span>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
+        </EventRow>
       )}
       {bookings && (
-        <div className="stack-sm">
-          {bookings.map((b) => (
-            <p key={b.id}>
-              {t('Belegt: {item}', { item: b.item })}{' '}
-              <span className="muted small">{b.status_label}</span>
-            </p>
-          ))}
-          <p>
-            <Link to={`/belegung?${book}`}>{t('Raum oder Gerät für diesen Termin buchen')}</Link>
-          </p>
-        </div>
+        <EventRow
+          label={t('Belegung')}
+          actions={
+            <Link
+              className="button button-ghost"
+              to={`/belegung?${book}`}
+              aria-label={t('Raum oder Gerät für diesen Termin buchen')}
+            >
+              {t('Buchen')}
+            </Link>
+          }
+        >
+          {bookings.length === 0 ? (
+            <span className="muted small">{t('nichts gebucht')}</span>
+          ) : (
+            <ul className="plain-list">
+              {bookings.map((b) => (
+                <li key={b.id}>
+                  {t('Belegt: {item}', { item: b.item })}{' '}
+                  <span className="muted small">{b.status_label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </EventRow>
       )}
-    </>
+      <EventTaskRow base={base} eventId={event.id} />
+      {music && (
+        <EventRow
+          label={t('Musik')}
+          actions={
+            <Link className="button button-ghost" to={`/musik?art=performances&termin=${event.id}`}>
+              {t('Auftritt planen')}
+            </Link>
+          }
+        />
+      )}
+      <EventMaterialRow id={event.id} originalStart={originalStart} sourceBase={base} />
+      <EventProjectPanel base={base} event={event} onChanged={onChanged} />
+      {attachments}
+    </section>
   )
 }
 
-function RelatedSection({
+function rsvpNote(event: EventDetail): string {
+  return (
+    t('Zu- und Absagen sind eingeschaltet') +
+    (event.remind_days
+      ? t(', Erinnerung {remind_days} Tage vorher', { remind_days: event.remind_days })
+      : '') +
+    '.'
+  )
+}
+
+/** Aktionsleiste unter dem Kopf: alles, was man mit dem Termin tut, als gleichartige Knöpfe. */
+function EventActions({
   base,
   event,
-  originalStart,
+  busy,
+  onEdit,
+  onHide,
 }: {
-  base: string
+  base: CalendarBase
   event: EventDetail
-  originalStart: string
+  busy: boolean
+  onEdit: () => void
+  onHide: () => void
 }) {
-  const context = useOptionalOrg()
-  const org = context?.active
-  const permissions = org?.permissions ?? context?.activeDept?.permissions ?? []
-  const any =
-    event.meeting !== undefined ||
-    event.helper_plans !== undefined ||
-    event.bookings !== undefined ||
-    event.circulars !== undefined ||
-    (/^\/api\/(orgs|depts)\//.test(base) && permissions.includes('todos.view')) ||
-    (!!org?.modules.includes('music') && permissions.includes('music.view'))
-  if (!any) return null
+  const circular = useCircularWriter(base, event)
+  const series = event.repeat !== 'none'
   return (
-    <section className="stack-sm">
-      <strong>{t('Zu diesem Termin')}</strong>
-      <CircularLinks base={base} event={event} />
-      <RelatedLinks event={event} originalStart={originalStart} />
-      <EventTaskLink base={base} eventId={event.id} />
-      <MusicLink eventId={event.id} />
-    </section>
+    <div className="stack-sm">
+      <div className="button-row event-actions">
+        {event.can_edit && (
+          <button type="button" className="button button-primary" onClick={onEdit}>
+            {series ? t('Serie bearbeiten') : t('Bearbeiten')}
+          </button>
+        )}
+        {event.can_circular && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={circular.busy}
+            onClick={() => void circular.write()}
+          >
+            {event.circulars?.length
+              ? t('Weiteres Rundschreiben dazu schreiben')
+              : t('Rundschreiben dazu schreiben')}
+          </button>
+        )}
+        {event.can_circular && event.rsvp.enabled && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={circular.busy}
+            onClick={() => void circular.write(true)}
+          >
+            {t('Erinnerung an alle ohne Rückmeldung')}
+          </button>
+        )}
+        <a className="button button-ghost" href={eventApi.icsUrl(base, event.id)} download>
+          {series ? t('Serie in den eigenen Kalender') : t('In den eigenen Kalender')}
+        </a>
+        {event.can_hide && (
+          <button type="button" className="button button-ghost" disabled={busy} onClick={onHide}>
+            {t('Hier ausblenden')}
+          </button>
+        )}
+      </div>
+      {circular.error && <Alert kind="error">{circular.error}</Alert>}
+    </div>
+  )
+}
+
+/** Zeile „Anhänge“: Liste, Hochladen und Verknüpfen aus der Ablage als Knöpfe nebeneinander. */
+function AttachmentsRow({
+  base,
+  event,
+  busy,
+  inputKey,
+  onUpload,
+  onChanged,
+  onError,
+  setBusy,
+}: {
+  base: CalendarBase
+  event: EventDetail
+  busy: boolean
+  inputKey: number
+  onUpload: (file: File) => void
+  onChanged: (event: EventDetail) => void
+  onError: (text: string) => void
+  setBusy: (busy: boolean) => void
+}) {
+  const input = useRef<HTMLInputElement>(null)
+  const documents = useEventDocumentLink({ base, event, disabled: busy, onChanged }, true)
+  const items = event.attachments
+  return (
+    <EventRow
+      label={t('Anhänge')}
+      actions={
+        event.can_edit && (
+          <>
+            <button
+              type="button"
+              className="button button-ghost"
+              disabled={busy}
+              aria-describedby={`event-${event.id}-file-hint`}
+              onClick={() => input.current?.click()}
+            >
+              <span aria-hidden="true">+</span> {t('Datei hinzufügen')}
+            </button>
+            <input
+              key={inputKey}
+              ref={input}
+              type="file"
+              hidden
+              aria-label={t('Anhang hinzufügen (PDF, JPEG oder PNG, höchstens 15 MB)')}
+              accept="application/pdf,image/jpeg,image/png"
+              disabled={busy}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) onUpload(file)
+              }}
+            />
+            {documents.button}
+          </>
+        )
+      }
+      extra={documents.panel}
+    >
+      {items.length === 0 && <span className="muted small">{t('keine')}</span>}
+      {items.length > 0 && (
+        <ul className="plain-list">
+          {items.map((a) => (
+            <li key={a.id}>
+              {a.available === false ? (
+                <span className="muted">{a.name}</span>
+              ) : (
+                <a href={a.url} target="_blank" rel="noreferrer">
+                  {a.name}
+                </a>
+              )}{' '}
+              {a.available !== false && <span className="muted small">{formatSize(a.size)}</span>}
+              {a.kind === 'document' && (
+                <span className="muted small"> · {t('aus der Ablage')}</span>
+              )}
+              {event.can_edit && (
+                <button
+                  type="button"
+                  className="link-button"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (
+                      !(await confirmDialog({
+                        title: t('Anhang „{name}“ entfernen?', { name: a.name }),
+                        message:
+                          a.kind === 'document'
+                            ? t('Das Dokument bleibt in der Ablage.')
+                            : undefined,
+                        confirmLabel: t('Entfernen'),
+                      }))
+                    )
+                      return
+                    try {
+                      await eventApi.removeAttachment(a.url)
+                      onChanged(await eventApi.get(base, event.id))
+                    } catch (err) {
+                      onError(errorMessage(err))
+                    }
+                  }}
+                >
+                  {t('entfernen')}
+                </button>
+              )}
+              {event.can_edit && event.visibility === 'public' && a.available !== false && (
+                <Checkbox
+                  label={t('auf der Webseite zeigen')}
+                  checked={!!a.on_website}
+                  busy={busy}
+                  onChange={async (value) => {
+                    setBusy(true)
+                    try {
+                      onChanged(await eventApi.showOnWebsite(a.url, value))
+                    } catch (err) {
+                      onError(errorMessage(err))
+                    } finally {
+                      setBusy(false)
+                    }
+                  }}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {event.can_edit && (
+        <div id={`event-${event.id}-file-hint`} className="muted small">
+          {t('PDF, JPEG oder PNG, höchstens 15 MB')}
+        </div>
+      )}
+    </EventRow>
   )
 }
 
@@ -521,166 +731,69 @@ export function EventDialog({
             )}
           </dl>
           {data.description && <p className="event-description">{data.description}</p>}
+          <EventActions
+            base={base}
+            event={data}
+            busy={busy}
+            onEdit={() => setEditing(true)}
+            onHide={async () => {
+              if (
+                !(await confirmDialog({
+                  title: t('„{title}“ hier ausblenden?', { title: data.title }),
+                  message: t(
+                    'Der Termin verschwindet aus diesem Kalender und bleibt auch bei jedem Abruf ausgeblendet. Unter „Fremde Kalender“ lässt er sich wieder zeigen.',
+                  ),
+                  confirmLabel: t('Ausblenden'),
+                }))
+              )
+                return
+              try {
+                await eventApi.hide(base, data.id)
+                onChanged()
+                onClose()
+              } catch (err) {
+                setMessage({ kind: 'error', text: errorMessage(err) })
+              }
+            }}
+          />
           {data.rsvp.can_respond !== undefined && (
             <MyResponsePanel base={base} event={data} onChanged={changed} />
           )}
-          {data.rsvp.can_view_list && <ResponsesPanel base={base} event={data} />}
-          {data.can_edit && data.rsvp.enabled && (
-            <p className="muted small">
-              {t('Zu- und Absagen sind eingeschaltet')}
-              {data.remind_days
-                ? t(', Erinnerung {remind_days} Tage vorher', { remind_days: data.remind_days })
-                : ''}
-              .
-            </p>
+          {data.rsvp.can_view_list && (
+            <ResponsesPanel
+              base={base}
+              event={data}
+              note={data.can_edit && data.rsvp.enabled ? rsvpNote(data) : undefined}
+            />
           )}
-          <RelatedSection base={base} event={data} originalStart={occurrence.original_start} />
-          <MaterialReferences
-            kind="event"
-            id={data.id}
+          {!data.rsvp.can_view_list && data.can_edit && data.rsvp.enabled && (
+            <p className="muted small">{rsvpNote(data)}</p>
+          )}
+          <RelatedCard
+            base={base}
+            event={data}
             originalStart={occurrence.original_start}
-            sourceBase={base}
+            onChanged={changed}
+            attachments={
+              (data.attachments.length > 0 || data.can_edit) && (
+                <AttachmentsRow
+                  base={base}
+                  event={data}
+                  busy={busy}
+                  inputKey={inputKey}
+                  onUpload={(file) => void upload(file)}
+                  onChanged={changed}
+                  onError={(text) => setMessage({ kind: 'error', text })}
+                  setBusy={setBusy}
+                />
+              )
+            }
           />
-          <EventProjectPanel base={base} event={data} onChanged={changed} />
-          {(data.attachments.length > 0 || data.can_edit) && (
-            <div className="stack-sm">
-              <strong>{t('Anhänge')}</strong>
-              {data.attachments.length === 0 && (
-                <p className="muted small">{t('Keine Anhänge.')}</p>
-              )}
-              <ul className="plain-list">
-                {data.attachments.map((a) => (
-                  <li key={a.id}>
-                    {a.available === false ? (
-                      <span className="muted">{a.name}</span>
-                    ) : (
-                      <a href={a.url} target="_blank" rel="noreferrer">
-                        {a.name}
-                      </a>
-                    )}{' '}
-                    {a.available !== false && (
-                      <span className="muted small">{formatSize(a.size)}</span>
-                    )}
-                    {a.kind === 'document' && (
-                      <span className="muted small"> · {t('aus der Ablage')}</span>
-                    )}
-                    {data.can_edit && (
-                      <button
-                        type="button"
-                        className="link-button"
-                        disabled={busy}
-                        onClick={async () => {
-                          if (
-                            !(await confirmDialog({
-                              title: t('Anhang „{name}“ entfernen?', { name: a.name }),
-                              message:
-                                a.kind === 'document'
-                                  ? t('Das Dokument bleibt in der Ablage.')
-                                  : undefined,
-                              confirmLabel: t('Entfernen'),
-                            }))
-                          )
-                            return
-                          try {
-                            await eventApi.removeAttachment(a.url)
-                            changed(await eventApi.get(base, data.id))
-                          } catch (err) {
-                            setMessage({ kind: 'error', text: errorMessage(err) })
-                          }
-                        }}
-                      >
-                        {t('entfernen')}
-                      </button>
-                    )}
-                    {data.can_edit && data.visibility === 'public' && a.available !== false && (
-                      <Checkbox
-                        label={t('auf der Webseite zeigen')}
-                        checked={!!a.on_website}
-                        busy={busy}
-                        onChange={async (value) => {
-                          setBusy(true)
-                          setMessage(null)
-                          try {
-                            changed(await eventApi.showOnWebsite(a.url, value))
-                          } catch (err) {
-                            setMessage({ kind: 'error', text: errorMessage(err) })
-                          } finally {
-                            setBusy(false)
-                          }
-                        }}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {data.can_edit && (
-                <label className="field">
-                  <span>{t('Anhang hinzufügen (PDF, JPEG oder PNG, höchstens 15 MB)')}</span>
-                  <input
-                    key={inputKey}
-                    type="file"
-                    accept="application/pdf,image/jpeg,image/png"
-                    disabled={busy}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) void upload(file)
-                    }}
-                  />
-                </label>
-              )}
-              {data.can_edit && (
-                <EventDocumentLink base={base} event={data} disabled={busy} onChanged={changed} />
-              )}
-            </div>
-          )}
-          <p className="small">
-            <a href={eventApi.icsUrl(base, data.id)} download>
-              {data.repeat !== 'none' ? t('Serie') : t('Termin')}{' '}
-              {t('in den eigenen Kalender (.ics)')}
-            </a>
-          </p>
           {data.can_edit && data.repeat !== 'none' && (
             <OccurrencePanel base={base} event={data} occurrence={occurrence} onChanged={changed} />
           )}
-          {data.can_hide && (
-            <div className="button-row">
-              <button
-                type="button"
-                className="button"
-                disabled={busy}
-                onClick={async () => {
-                  if (
-                    !(await confirmDialog({
-                      title: t('„{title}“ hier ausblenden?', { title: data.title }),
-                      message: t(
-                        'Der Termin verschwindet aus diesem Kalender und bleibt auch bei jedem Abruf ausgeblendet. Unter „Fremde Kalender“ lässt er sich wieder zeigen.',
-                      ),
-                      confirmLabel: t('Ausblenden'),
-                    }))
-                  )
-                    return
-                  try {
-                    await eventApi.hide(base, data.id)
-                    onChanged()
-                    onClose()
-                  } catch (err) {
-                    setMessage({ kind: 'error', text: errorMessage(err) })
-                  }
-                }}
-              >
-                {t('Hier ausblenden')}
-              </button>
-            </div>
-          )}
           {data.can_edit && (
-            <div className="button-row">
-              <button
-                type="button"
-                className="button button-primary"
-                onClick={() => setEditing(true)}
-              >
-                {data.repeat !== 'none' ? t('Serie bearbeiten') : t('Bearbeiten')}
-              </button>
+            <div className="button-row event-danger-row">
               <button
                 type="button"
                 className="button button-danger"
