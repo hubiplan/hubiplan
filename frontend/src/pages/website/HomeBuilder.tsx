@@ -827,6 +827,8 @@ function SectionDialog({
 }) {
   const org = useActiveOrg()
   const [s, setS] = useState(section)
+  // Wasserzeichen „Bild“ auch, solange noch keins gewählt ist (Webseite #123)
+  const [markImage, setMarkImage] = useState(typeof section.mark === 'number')
   const images = useLoad(() => contentApi.images(org.id), [org.id])
   const palette = data.palette ?? []
   const gradients = data.gradients ?? []
@@ -870,6 +872,34 @@ function SectionDialog({
             )}
             onChange={(days) => setS({ ...s, days })}
           />
+        )}
+        {s.key === 'carousel' && !s.kind && !contentOnly && (
+          <>
+            <div className="field">
+              <label className="field-label" htmlFor="abschnitt-titelzeilen">
+                {t('Titelzeilen auf dem Titelfoto (optional)')}
+              </label>
+              <textarea
+                id="abschnitt-titelzeilen"
+                rows={4}
+                value={s.title ?? ''}
+                aria-describedby="abschnitt-titelzeilen-hinweis"
+                onChange={(e) => setS({ ...s, title: e.target.value })}
+              />
+              <small className="muted" id="abschnitt-titelzeilen-hinweis">
+                {t(
+                  'Nur bei Feinabstimmung › Startseite › Titelfoto als Bühne „randlos“. Eine Zeile je Titel, höchstens 6; mehrere wechseln mit den Bildern des Karussells.',
+                )}
+              </small>
+            </div>
+            <Field
+              label={t('Oberzeile (optional)')}
+              hint={t('Kleine Zeile über dem Titel, z. B. „Schützenverein seit 1920“.')}
+              value={s.kicker ?? ''}
+              maxLength={60}
+              onChange={(e) => setS({ ...s, kicker: e.target.value })}
+            />
+          </>
         )}
         {looks && <h3>{t('Aussehen')}</h3>}
         {looks && (
@@ -918,6 +948,42 @@ function SectionDialog({
               ))}
             </div>
           </div>
+        )}
+        {looks && !!s.bg && !['none'].includes(s.bg) && (
+          <>
+            <Segments
+              label={t('Wasserzeichen')}
+              value={s.mark === 'logo' ? 'logo' : markImage ? 'image' : 'none'}
+              options={[
+                ['none', t('keins')],
+                ['logo', t('Wappen')],
+                ['image', t('Bild')],
+              ]}
+              onChange={(v) => {
+                setMarkImage(v === 'image')
+                setS({
+                  ...s,
+                  mark:
+                    v === 'logo'
+                      ? 'logo'
+                      : v === 'image' && typeof s.mark === 'number'
+                        ? s.mark
+                        : null,
+                })
+              }}
+            />
+            {markImage &&
+              imageField(
+                t('Bild für das Wasserzeichen'),
+                typeof s.mark === 'number' ? s.mark : null,
+                (v) => setS({ ...s, mark: v }),
+              )}
+            <small className="muted">
+              {t(
+                'Groß, zart und rechts angeschnitten hinter dem Text, z. B. ein einfarbig weißes Wappentier mit durchsichtigem Hintergrund.',
+              )}
+            </small>
+          </>
         )}
         {looks && (
           <Segments

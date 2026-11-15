@@ -360,6 +360,11 @@ export interface HomeSection {
   column?: 'main' | 'side'
   /** Nur „Aktuelle Ergebnisse“: Tage nach dem Wettbewerb; null = immer */
   days?: number | null
+  /** Wasserzeichen hinter einem Abschnitt mit Hintergrund (Webseite #123): Wappen oder Bildnummer */
+  mark?: 'logo' | number | null
+  /** Nur „Bilderkarussell“ (Webseite #122): Titelzeilen (eine je Zeile) und Oberzeile */
+  title?: string
+  kicker?: string
   /** Nur eigene Abschnitte (Schlüssel c:…) */
   kind?: HomeKind
   data?: HomeSectionData

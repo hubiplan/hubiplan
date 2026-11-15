@@ -44,7 +44,8 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "tile_ratio": ("wide", "classic", "square"),
     "image_frame": bool,
     "buttons": ("filled", "outline", "label"),
-    "date": ("tile", "strip"),
+    # Webseite #124: „Karten“ zeigt die nächsten Termine als Karten nebeneinander mit großem Datum
+    "date": ("tile", "strip", "card"),
     # Kopf und Menü
     "header_bg": ("white", "color", "image"),
     "logo": bool,
@@ -73,11 +74,18 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "hero_tint": ("dark", "primary", "accent"),
     "hero_focus": ("top", "center", "bottom"),
     "hero_text": ("top", "center", "band"),
+    # Webseite #122: Titelfoto randlos über die ganze Breite direkt unter dem Kopf, mit Verlauf
+    # und eigener Titelzeile (Felder am Baustein „Bilderkarussell“)
+    "hero_width": ("content", "full"),
     # Abschnitte der Startseite trennen
     "sections": ("none", "line", "alternate"),
     # Fuß
     "footer": ("dark", "light", "color"),
     "footer_align": ("left", "center", "right"),
+    # Webseite #125: ausführlicher Fuß mit Wappen, Vereinsname und Links untereinander;
+    # Linie oben über dem Fuß in einer wählbaren Farbe
+    "footer_layout": ("simple", "full"),
+    "footer_line": ("none", "ornament", "accent", "primary"),
     # Ralf 14.11.2026: Überschrift der Unterseiten, Schrift der Überschriften, Menüschrift,
     # sanftes Einblenden, gestreifte Tabellen, Datum neben dem Datumsfeld
     "page_title": ("plain", "band", "image"),
@@ -101,7 +109,8 @@ LOCKS: dict[str, dict[str, tuple[str, ...] | None]] = {
         "sticky": None,
         "nav_mobile": None,
     },
-    "stage": {"width": ("narrow",), "hero_name": None},
+    # Die Bühne zeigt ihr Titelbild ohnehin randlos mit dem Namen
+    "stage": {"width": ("narrow",), "hero_name": None, "hero_width": None},
     "newspaper": {"nav": None},
 }
 
@@ -151,8 +160,10 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "hero_tint": "dark",
     "hero_focus": "center",
     "hero_text": "top",
+    "hero_width": "content",
     "sections": "none",
     "footer": "dark",
+    "footer_layout": "simple",
     "page_title": "plain",
     "heading_font": "text",
     "nav_case": "normal",
@@ -195,6 +206,7 @@ _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
         "hero_name": True,
         "hero_text": "band",
         "hero": None,
+        "hero_width": None,
         "sections": "alternate",
         "line": None,
     },

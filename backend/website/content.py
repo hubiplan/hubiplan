@@ -325,9 +325,13 @@ def _uses(image: WebsiteImage, t, *, published: bool) -> list[str]:
 
 
 def _section_images(sections) -> set[int]:
-    from .home import image_ids, normalize_page
+    from .home import image_ids, normalize_page, normalize_unit
 
-    return image_ids(normalize_page(sections)) if sections else set()
+    if not sections:
+        return set()
+    # Textseiten und Seiten der Untereinheiten; deren feste Abschnitte können ein
+    # Wasserzeichen tragen (Webseite #123)
+    return image_ids(normalize_page(sections)) | image_ids(normalize_unit(sections))
 
 
 def image_usage(image: WebsiteImage, texts=None) -> list[dict]:

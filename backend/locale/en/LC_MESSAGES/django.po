@@ -12965,3 +12965,12 @@ msgstr "Changes the content of a custom section of a text page or of a sub-unit'
 
 msgid "Text im Entwurf (Markdown; Bilder als ![Beschreibung](bild:Schlüssel), siehe webseite_bilder). Textseiten und Seiten der Untereinheiten haben „abschnitte“ wie die Startseite; ändern mit textseite_aufbau_aendern und textseite_abschnitt_aendern."
 msgstr "Draft text (Markdown; images as ![description](bild:key), see webseite_bilder). Text pages and sub-unit pages have “abschnitte” (sections) like the home page; change them with textseite_aufbau_aendern and textseite_abschnitt_aendern."
+
+msgid "Bitte einen Text angeben."
+msgstr "Please enter a text."
+
+msgid "Höchstens {x0} Titelzeilen auf dem Titelfoto."
+msgstr "At most {x0} title lines on the cover photo."
+
+msgid "Der Text auf dem Titelfoto ist zu lang (höchstens {x0} Zeichen)."
+msgstr "The text on the cover photo is too long (at most {x0} characters)."

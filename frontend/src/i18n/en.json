@@ -9326,5 +9326,22 @@
   "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa Text mit Bild, Bilder, ein Zitat oder Trainingszeiten. Kontakt, Homepage, Termine und die anderen festen Blöcke lassen sich verschieben und ausblenden. Alles erscheint mit „Veröffentlichen“.": "You can add more sections above and below the text, such as text with image, pictures, a quote or training times. Contact, homepage, events and the other fixed blocks can be moved and hidden. Everything appears once you click “Publish”.",
   "Notiz zum Bildplatz (optional)": "Note for the picture slot (optional)",
   "Noch kein Bild? Die Vorschau zeigt dann einen Platzhalter mit dieser Notiz, etwa „Probenszene, Querformat“. Auf der veröffentlichten Seite erscheint er nicht.": "No picture yet? The preview then shows a placeholder with this note, e.g. “Rehearsal scene, landscape”. It does not appear on the published page.",
-  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there."
+  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there.",
+  "Titelzeilen auf dem Titelfoto (optional)": "Title lines on the cover photo (optional)",
+  "Nur bei Feinabstimmung › Startseite › Titelfoto als Bühne „randlos“. Eine Zeile je Titel, höchstens 6; mehrere wechseln mit den Bildern des Karussells.": "Only with Fine-tuning › Home page › Cover photo as stage “edge to edge”. One line per title, at most 6; several lines change with the carousel images.",
+  "Oberzeile (optional)": "Overline (optional)",
+  "Kleine Zeile über dem Titel, z. B. „Schützenverein seit 1920“.": "Small line above the title, e.g. “Shooting club since 1920”.",
+  "Wasserzeichen": "Watermark",
+  "keins": "none",
+  "Wappen": "Crest",
+  "Bild für das Wasserzeichen": "Image for the watermark",
+  "Groß, zart und rechts angeschnitten hinter dem Text, z. B. ein einfarbig weißes Wappentier mit durchsichtigem Hintergrund.": "Large, faint and cropped on the right behind the text, e.g. a plain white heraldic animal on a transparent background.",
+  "Titelfoto als Bühne": "Cover photo as stage",
+  "in Inhaltsbreite": "content width",
+  "randlos": "edge to edge",
+  "Randlos: Das Titelfoto der Startseite reicht über die ganze Breite direkt unter den Kopf, unten mit einem Verlauf in der Vereinsfarbe. Titelzeilen und Oberzeile darauf stehen am Baustein „Bilderkarussell“ unter Startseite.": "Edge to edge: the home page cover photo spans the full width right below the header, with a gradient in the club colour at the bottom. Title lines and overline are set on the “Image carousel” block under Home page.",
+  "Karten: Die nächsten Termine auf der Startseite und den Seiten der Untereinheiten stehen als Karten nebeneinander mit großem Datum; der nächste Termin in der Vereinsfarbe.": "Cards: the upcoming events on the home page and sub-unit pages appear as cards side by side with a large date; the next event in the club colour.",
+  "mit Wappen und Name": "with crest and name",
+  "Mit Wappen und Name: links das Wappen, daneben Vereinsname, Gründungsjahr und Ort, rechts die Links untereinander und Social Media.": "With crest and name: the crest on the left, next to it the club name, founding year and town, on the right the links stacked and social media.",
+  "Linie über dem Fuß": "Line above the footer"
 }
