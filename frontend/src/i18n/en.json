@@ -6386,6 +6386,8 @@
   "Alltag": "Everyday",
   "Kommunikation": "Communication",
   "Vereinsleben": "Club life",
+  "Menüpunkt „{pl}“ im Hauptmenü zeigen": "Show “{pl}” in the main menu",
+  "Ausschalten, wenn der Verein keine {pl} hat. Bestehende {pl} bleiben erhalten.": "Turn off if the club has no {pl}. Existing {pl} are kept.",
   "Gelöscht wird in zwei Stufen. Zuerst wird die Einheit mit allen Untereinheiten stillgelegt. Weil sie nie Mitglieder und keine Finanzdaten hatte, lässt sie sich danach sofort endgültig löschen.": "Deletion happens in two steps. First the unit and all its sub-units are deactivated. Because it never had members or financial data, it can then be deleted permanently straight away.",
   "Nie Mitglieder und keine Finanzdaten: keine Wartezeit.": "Never had members and no financial data: no waiting period.",
   "Bezeichnungen": "Names and terms",

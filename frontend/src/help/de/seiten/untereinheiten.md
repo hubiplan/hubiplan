@@ -5,7 +5,7 @@ routen: [/untereinheiten]
 stichworte: [Zug, Abteilung, Untereinheit, Leitung, Verwalter]
 ---
 
-Hier stehen die {pl} eurer Einheit, frei verschachtelbar. Jede Untereinheit kann eigene Rollen, eine eigene Kasse, Termine und eine Webseite haben. Mit „Leitung besetzen“ bekommt eine Person aus der Untereinheit ein Konto mit allen Rechten für ihren Bereich.
+Hier stehen die {pl} eurer Einheit, frei verschachtelbar. Hat ein Verein keine {pl}, blendet er den Menüpunkt unter Einstellungen › Bezeichnungen aus. Jede Untereinheit kann eigene Rollen, eine eigene Kasse, Termine und eine Webseite haben. Mit „Leitung besetzen“ bekommt eine Person aus der Untereinheit ein Konto mit allen Rechten für ihren Bereich.
 
 Bei jeder Untereinheit lädst du ein Wappen bzw. Logo hoch und auf Wunsch ein zweites für den Dunkelmodus. Ohne dunkles Wappen gilt im Dunkeln das normale.
 

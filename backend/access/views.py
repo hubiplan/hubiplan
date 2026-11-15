@@ -553,6 +553,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "department_label": org.department_label,
         "department_label_plural": org.department_label_plural,
         "department_terms": department_terms(org),
+        # Menüpunkt Untereinheiten (nur Vereine schalten ihn aus)
+        "units_in_menu": org.type != Organization.Type.CLUB or org.units_in_menu,
         "date_precision": org.date_precision,
         "federation_member_access": (
             org.federation_member_access if org.type == Organization.Type.FEDERATION else None

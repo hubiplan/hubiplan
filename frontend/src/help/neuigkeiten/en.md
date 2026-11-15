@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Hide sub-units**: a club without sub-units (platoons, sections …) can permanently hide the menu item under Settings › Names and terms. Existing sub-units are kept.
 - Website: **Import design packages yourself.** Whoever manages the website imports a design package for their own unit under Design › Share design › Load design from package, without needing the operator. It applies only to your own website and is checked as before. Platform administrators see all units' designs in one list and can block them.
 - Website: **Several header images.** Under Design › Fine-tuning › Header you can choose up to ten header images (and header images for phones as well). The website then shows one of them on each visit, on every page, like many WordPress themes with a changing header image.
 - Website: **buttons and tiles can also lead to a sub-unit**, such as a platoon's page. Links to your own website open in the same window instead of a new one.

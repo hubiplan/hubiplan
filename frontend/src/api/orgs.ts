@@ -100,6 +100,8 @@ export interface OrgSummary {
   department_label: string
   department_label_plural: string
   department_terms?: DeptTerms
+  /** Menüpunkt Untereinheiten zeigen (Verein kann ihn ausschalten) */
+  units_in_menu?: boolean
   date_precision: DatePrecision
   federation_member_access: 'none' | 'read' | 'write' | null
   theme: EffectiveTheme
@@ -193,6 +195,7 @@ export interface OrgDetail {
   department_label_plural_en?: string
   department_terms?: DeptTerms
   allow_multiple_departments: boolean
+  units_in_menu?: boolean
   /** Oberste Einheit führt auch selbst Mitglieder */
   direct_members?: boolean
   /** führt eigene Mitglieder (Mitgliederliste, Mitgliedsarten, Ein-/Austritt) */

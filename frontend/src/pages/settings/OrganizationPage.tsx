@@ -442,6 +442,15 @@ function OrganizationForm({
             {detail.type === 'club' && (
               <>
                 <Checkbox
+                  label={t('Menüpunkt „{pl}“ im Hauptmenü zeigen', { pl: preview.pl })}
+                  hint={t(
+                    'Ausschalten, wenn der Verein keine {pl} hat. Bestehende {pl} bleiben erhalten.',
+                    { pl: preview.pl },
+                  )}
+                  checked={v.units_in_menu !== false}
+                  onChange={(val) => set('units_in_menu', val)}
+                />
+                <Checkbox
                   label={t('Ein Mitglied darf mehreren {pl_dat} gleichzeitig angehören', {
                     pl_dat: preview.pl_dat,
                   })}
@@ -522,6 +531,7 @@ const EDITABLE: (keyof OrgDetail)[] = [
   'department_label_en',
   'department_label_plural_en',
   'allow_multiple_departments',
+  'units_in_menu',
   'keeps_members',
   'department_access_enabled',
   'fiscal_start_month',
