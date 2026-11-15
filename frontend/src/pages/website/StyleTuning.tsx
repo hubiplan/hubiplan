@@ -284,10 +284,24 @@ function GROUPS(): Group[] {
         {
           key: 'hero_width',
           label: t('Titelfoto als Bühne'),
-          options: { content: t('in Inhaltsbreite'), full: t('randlos') },
+          options: {
+            content: t('ohne Bühne'),
+            stage: t('in Inhaltsbreite'),
+            full: t('randlos'),
+          },
           hint: t(
-            'Randlos: Das Titelfoto der Startseite reicht über die ganze Breite direkt unter den Kopf, unten mit einem Verlauf in der Vereinsfarbe. Titelzeilen und Oberzeile darauf stehen am Baustein „Bilderkarussell“ unter Startseite.',
+            'Das Titelfoto der Startseite steht direkt unter dem Kopf, unten mit einem Verlauf in der Vereinsfarbe. Randlos reicht es über die ganze Breite, in Inhaltsbreite bleibt auf breiten Bildschirmen mehr vom Foto sichtbar. Titelzeilen und Oberzeile darauf stehen am Baustein „Bilderkarussell“ unter Startseite.',
           ),
+        },
+        {
+          key: 'hero_stage_width',
+          label: t('Breite der Bühne'),
+          options: { content: t('wie der Inhalt'), wider: t('etwas breiter'), wide: t('breit') },
+        },
+        {
+          key: 'hero_side',
+          label: t('Fläche neben der Bühne'),
+          options: { page: t('Seitenhintergrund'), color: t('dunkle Vereinsfarbe') },
         },
         {
           key: 'hero_shade',
@@ -386,6 +400,14 @@ function GROUPS(): Group[] {
           ),
         },
         {
+          key: 'footer_name',
+          label: t('Vereinsname neben dem Wappen'),
+          hint: t(
+            'Aus, wenn der Name schon im Wappen oder im Kopf steht. Der Hinweis auf den Dachverband rückt dann mittig neben das Wappen.',
+          ),
+        },
+        { key: 'footer_founded', label: t('Gründungsjahr und Ort') },
+        {
           key: 'footer_line',
           label: t('Linie über dem Fuß'),
           options: {
@@ -423,6 +445,8 @@ const SWITCH_DEFAULTS: Record<string, boolean> = {
   to_top: false,
   nav_start: true,
   stripes: false,
+  footer_name: true,
+  footer_founded: true,
 }
 const SWITCH_BY_DESIGN: Record<string, Record<string, boolean>> = {
   stage: { sticky: true, hero_name: true },
@@ -439,7 +463,7 @@ export function previewFocus(key: string, eventsOn: boolean): PreviewFocus {
   if (key === 'nav_mobile') return { target: 'kopf', device: 'phone' }
   if (key === 'page_title' || key === 'title_size') return { target: 'unterseite' }
   if (key === 'date' || key === 'date_text') return eventsOn ? { target: 'termine' } : {}
-  if (key === 'footer' || key === 'footer_align') return { target: 'fuss' }
+  if (key.startsWith('footer')) return { target: 'fuss' }
   if (key === 'search') return { target: 'kopf' }
   const group = GROUPS().find((g) => g.rows.some((r) => r.key === key))
   if (group?.id === 'header' || group?.id === 'nav') return { target: 'kopf' }
@@ -528,6 +552,12 @@ export function StyleTuning({
       case 'date':
       case 'date_text':
         return eventsOn
+      case 'hero_side':
+      case 'hero_stage_width':
+        return hasHero && effective('hero_width') === 'stage'
+      case 'footer_name':
+      case 'footer_founded':
+        return effective('footer_layout') === 'full'
       default:
         return true
     }

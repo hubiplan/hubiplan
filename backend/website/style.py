@@ -76,7 +76,11 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "hero_text": ("top", "center", "band"),
     # Webseite #122: Titelfoto randlos über die ganze Breite direkt unter dem Kopf, mit Verlauf
     # und eigener Titelzeile (Felder am Baustein „Bilderkarussell“)
-    "hero_width": ("content", "full"),
+    "hero_width": ("content", "stage", "full"),
+    # Webseite #128: Fläche neben der Bühne in Inhaltsbreite (hero_width=stage)
+    "hero_side": ("page", "color"),
+    # Ralf 15.11.2026: Bühne so breit wie der Inhalt, etwas breiter (+8rem) oder breit (+16rem)
+    "hero_stage_width": ("content", "wider", "wide"),
     # Abschnitte der Startseite trennen
     "sections": ("none", "line", "alternate"),
     # Fuß
@@ -86,6 +90,9 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Linie oben über dem Fuß in einer wählbaren Farbe
     "footer_layout": ("simple", "full"),
     "footer_line": ("none", "ornament", "accent", "primary"),
+    # Webseite #127: im Fuß „mit Wappen und Name“ Vereinsname und Gründungszeile einzeln ausblenden
+    "footer_name": bool,
+    "footer_founded": bool,
     # Ralf 14.11.2026: Überschrift der Unterseiten, Schrift der Überschriften, Menüschrift,
     # sanftes Einblenden, gestreifte Tabellen, Datum neben dem Datumsfeld
     "page_title": ("plain", "band", "image"),
@@ -110,9 +117,15 @@ LOCKS: dict[str, dict[str, tuple[str, ...] | None]] = {
         "nav_mobile": None,
     },
     # Die Bühne zeigt ihr Titelbild ohnehin randlos mit dem Namen
-    "stage": {"width": ("narrow",), "hero_name": None, "hero_width": None},
+    "stage": {
+        "width": ("narrow",),
+        "hero_name": None,
+        "hero_width": None,
+        "hero_side": None,
+        "hero_stage_width": None,
+    },
     # In der Zeitung steht das Titelbild in der Hauptspalte
-    "newspaper": {"nav": None, "hero_width": None},
+    "newspaper": {"nav": None, "hero_width": None, "hero_side": None, "hero_stage_width": None},
 }
 
 
@@ -162,9 +175,13 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "hero_focus": "center",
     "hero_text": "top",
     "hero_width": "content",
+    "hero_side": "page",
+    "hero_stage_width": "content",
     "sections": "none",
     "footer": "dark",
     "footer_layout": "simple",
+    "footer_name": True,
+    "footer_founded": True,
     "page_title": "plain",
     "heading_font": "text",
     "nav_case": "normal",
@@ -201,6 +218,8 @@ _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
         "nav_active": "filled",
         "line": None,
         "hero_width": None,
+        "hero_side": None,
+        "hero_stage_width": None,
     },
     "sidebar": {"logo_pos": "center", "nav": None, "header_height": None},
     "stage": {
@@ -209,6 +228,8 @@ _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
         "hero_text": "band",
         "hero": None,
         "hero_width": None,
+        "hero_side": None,
+        "hero_stage_width": None,
         "sections": "alternate",
         "line": None,
     },

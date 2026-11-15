@@ -67,6 +67,31 @@ def test_neue_regler():
         style.validate({"footer_line": "gold"})
 
 
+def test_buehne_in_inhaltsbreite_und_fuss_ohne_name():
+    """Webseite #127/#128: Stufe „stage“, Fläche daneben, Name/Gründung im Fuß ausblendbar."""
+    assert style.OPTIONS["hero_width"] == ("content", "stage", "full")
+    assert style.OPTIONS["hero_side"] == ("page", "color")
+    assert style.OPTIONS["hero_stage_width"] == ("content", "wider", "wide")
+    assert style.LOCKS["stage"]["hero_stage_width"] is None
+    assert style.OPTIONS["footer_name"] is bool and style.OPTIONS["footer_founded"] is bool
+    assert style.LOCKS["stage"]["hero_side"] is None
+    assert style.LOCKS["newspaper"]["hero_side"] is None
+    werte = {
+        "hero_width": "stage",
+        "hero_side": "color",
+        "hero_stage_width": "wider",
+        "footer_name": False,
+        "footer_founded": False,
+    }
+    assert style.validate(werte) == werte
+    assert style.defaults("classic")["footer_name"] is True
+    assert style.defaults("classic")["hero_side"] == "page"
+    with pytest.raises(ValueError):
+        style.validate({"footer_name": "nein"})
+    with pytest.raises(ValueError):
+        style.validate({"hero_side": "gold"})
+
+
 def test_titelzeilen_werden_bereinigt():
     out = by_key(
         normalize(
