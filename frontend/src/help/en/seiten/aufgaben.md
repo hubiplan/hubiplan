@@ -8,17 +8,27 @@ stichworte: [Todo, Tasks]
 
 In the overview, tasks appear directly below the status controls and filter. “New task” sits beside the heading. Below the list, notices for tasks without a responsible account and incoming tasks from other installations appear only when there are entries, with a count. Loading errors remain visible with a retry action. Adopting the last entry removes its notice. The export action is below the list. Authorised role managers can also open “Administration” there to configure retention of shared tasks. This section is initially collapsed.
 
+## Own and shared tasks
+
 Create personal tasks with a title and an optional description and due date. Personal tasks are private. After creation, edits are saved automatically. Completed tasks appear under Done. Deleted tasks can be restored from the trash for 30 days. Export personal tasks downloads your private tasks.
 
 Shared tasks are also visible to selected people or current role holders. View permission allows reading; edit permission also allows changes and completion. Only the responsible account can delete or transfer responsibility. Under My account › Notifications, disable email and push notices when tasks are shared. Authorised role managers can take over orphaned shared tasks when the responsible account permanently loses access; personal tasks remain hidden. The outbox stores only a neutral delivery record for task notices.
 
+## Reminders and notifications
+
 Configure email and push under My account › Notifications. For each task with a due date, choose reminder times and channels or disable notices. Responsible participants are reminded; without an assignment, all participants with edit permission are reminded. Date-only deadlines last until the end of the day and reminders arrive at 8 am; timed deadlines use their exact time. Overdue tasks receive exactly one additional notice at 8 am the next day. Highlighting in HUBIplan remains active independently of email and push. Optionally move completed one-off tasks to the trash after twelve months; this is off by default. Recurring task history is excluded. In your profile, personal tasks can still be exported or permanently deleted after a role ends.
 
+## Attachments
+
 Under Attachments, upload multiple files by selecting them or dropping them in the upload area. Each file may be up to 20 MB; the document repository’s file types and safety checks apply. Restore removed attachments from the attachment trash for 30 days. Document links grant no additional repository permissions: without access, only a placeholder appears. The personal export downloads a ZIP file with tasks, settings and authorised files, including your private tasks after a role ends.
+
+## Recurring tasks
 
 Under Repeat, choose daily, weekly, monthly or yearly occurrences with an interval and an optional end date or total count. Completing a task creates exactly one next occurrence. Month-end dates and 29 February retain their original anchor; late completion skips past due dates. Choose whether the interval starts from the previous due date or from completion. Content changes can apply only to this occurrence or to all following ones. Document links and personal reminder rules are inherited; uploaded files are not. Reopening or undoing an occurrence may retract its successor only while it is untouched. End series keeps an existing open occurrence; the series trash deletes and restores the entire history without creating an extra occurrence.
 
 For recurring tasks, Transfer responsibility applies to the entire shared history and future continuation. If earlier private occurrences remain, the transfer is rejected to protect their contents; review their sharing permissions explicitly first.
+
+## Share with other units
 
 Use Target unit to share with allowed neighbouring levels on the same instance. Add same-named roles explicitly for the displayed units; units added later are not included automatically. A shared task is completed once for everyone. With a separate occurrence for each unit, each target unit owns its own copy and, for recurring tasks, an independent sequence. The distribution mode is fixed after sharing. Local editors manage notes, attachments and participants within their unit. Titles, descriptions and due dates remain controlled centrally. The source receives only progress, including the local occurrence number, due date, completion time and account. Central updates affect open copies while preserving local additions and completed history. Removing a target unit or deleting the source stops future occurrences and access to source attachments; the target unit retains its local data. When it revokes a local share, current permissions also apply to files, undo and reminders. For shared tasks, undo uses the authorised target context.
 
@@ -46,6 +56,8 @@ In the task dialog, **Share with another installation** selects a confirmed conn
 - **One jointly completed task**: Reading and completion are checked at the source. Completion applies across installations; reload after a version conflict. An unreachable source cannot confirm a new completion state. Revocation, a paused connection or an unconfirmed key change removes access.
 
 After adoption, local task permissions apply. Another board member does not automatically gain access. The source controls whether the receiving side may complete a task. The distribution mode cannot be changed after the first grant. Future occurrences require **Also share future occurrences**. Separate copies then have independent local sequences; jointly completed tasks create successors at the source.
+
+## List and controls
 
 The task list uses table rows for title, deadline and actions. The title is a link; clicking the free area of a row also opens the task. The checkbox only changes completion. The trash icon on the right moves a task to trash; the restore icon returns it from trash. On narrow screens, the deadline appears below the title.
 

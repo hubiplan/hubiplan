@@ -11,19 +11,25 @@ Unter **Versammlungen** bereitest du Mitgliederversammlungen, Vorstandssitzungen
 Versammlungen einer Untereinheit vor. Die Übersicht zeigt anstehende und vergangene
 Versammlungen mit ihrem Stand.
 
-Neue Versammlung: Wähle **Neue Versammlung**, dann Art, Beginn, Ende und Ort. HUBIplan legt
+## Neue Versammlung
+
+Wähle **Neue Versammlung**, dann Art, Beginn, Ende und Ort. HUBIplan legt
 dazu einen Termin im Kalender an. Mitgliederversammlungen sehen alle Mitglieder im Kalender,
 Vorstandssitzungen nur der Vorstand. Ist **Tagesordnung der letzten Versammlung dieser Art übernehmen** angekreuzt, übernimmt HUBIplan deren Punkte; bei der ersten Versammlung einer Art
 schlägt es eine übliche Tagesordnung vor.
 **Termin im Kalender** in der Versammlung führt zum zugehörigen Termin; dort zeigt der Block
 „Zu diesem Termin“ Dienstpläne und Belegungen für die Versammlung.
 
-Tagesordnung: Jeder Tagesordnungspunkt (TOP) hat einen Titel, eine Art (Bericht, Beschluss,
+## Tagesordnung
+
+Jeder Tagesordnungspunkt (TOP) hat einen Titel, eine Art (Bericht, Beschluss,
 Wahl oder Sonstiges) und eine Erläuterung. Mit den Pfeilen änderst du die Reihenfolge, die
 Nummern ergeben sich daraus. Die Tagesordnung speichert sich kurz nach jeder Änderung von selbst, sobald jeder Punkt einen Titel hat. Einen gespeicherten Punkt entfernst du erst nach einer Rückfrage.
 Auch die Angaben zur Versammlung (Ort, Leitung, Protokollführung, Notiz …) speichern sich von selbst; oben im Kasten steht, ob alles gespeichert ist.
 
-Unterpunkte: Mit **Unterpunkt hinzufügen** bekommt ein Punkt Unterpunkte, etwa TOP 8.1 und 8.2
+## Unterpunkte
+
+Mit **Unterpunkt hinzufügen** bekommt ein Punkt Unterpunkte, etwa TOP 8.1 und 8.2
 unter „Wahlen“. Einen vorhandenen Punkt hängst du unter einen anderen, indem du ihn auf diesen
 Punkt ziehst oder unter **Gehört zu** den Punkt wählst; mit „Eigener Punkt (oberste Ebene)“ wird
 er wieder ein eigener Punkt. Ziehen geht am Griff oder an jeder freien Stelle des Punkts (auf dem
@@ -33,35 +39,59 @@ auch die Pfeiltasten: ↑ und ↓ verschieben, → macht den Punkt zum Unterpunk
 ← wieder zum eigenen Punkt. Es gibt eine Ebene Unterpunkte. Die Nummern stehen so auch in der
 Einladung, im Protokoll, im Mitgliederbereich und bei der Online-Abstimmung.
 
-Einladungsfrist: Unter der Überschrift steht, bis wann die Einladung hinausgehen muss. Ist der
+## Einladungsfrist
+
+Unter der Überschrift steht, bis wann die Einladung hinausgehen muss. Ist der
 Tag vorbei, weist HUBIplan darauf hin. Die Frist stellst du je Art unter **Arten und Fristen**
 ein, passend zur Satzung.
 
-Absagen und Löschen: **Absagen** lässt den Termin im Kalender stehen und zeigt ihn als
+## Absagen und Löschen
+
+**Absagen** lässt den Termin im Kalender stehen und zeigt ihn als
 abgesagt. Löschen geht nur, solange noch nicht eingeladen wurde. Der Termin einer Versammlung
 lässt sich nicht im Kalender löschen, nur hier.
 
-Arten und Fristen: HUBIplan legt zu Beginn übliche Arten an, etwa Jahreshauptversammlung und
+## Arten und Fristen
+
+HUBIplan legt zu Beginn übliche Arten an, etwa Jahreshauptversammlung und
 Vorstandssitzung. Du kannst sie umbenennen, weitere hinzufügen oder abschalten. Je Art legst
 du die Einladungsfrist, die Form der Einladung, die Beschlussfähigkeit und fest, wer später das
 Protokoll sieht. Änderungen an einer vorhandenen Art speichern sich von selbst.
 
-Einladung: **Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an. Solange noch nicht eingeladen ist, zeigt die Prüfliste **Vor der Einladung**, ob die Frist noch reicht, ob die Tagesordnung Punkte hat und ob jeder Beschluss- und Wahlpunkt eine Erläuterung hat. Sie blockiert nichts.
+## Einladung
 
-Anwesenheit: Hast du zusätzlich Leserecht auf die Mitglieder, zeigt **Anwesenheit** alle Stimmberechtigten der Versammlung. Je Person wählst du **Anwesend**, **Entschuldigt** oder, wenn die Art Vollmachten erlaubt, **Vertreten** und dann, wer die Vollmacht hat. Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied. Gäste trägst du unter **Gast ohne Stimmrecht** ein. Oben stehen die Zahlen und ob die Versammlung nach der Regel der Art beschlussfähig ist.
+**Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an. Solange noch nicht eingeladen ist, zeigt die Prüfliste **Vor der Einladung**, ob die Frist noch reicht, ob die Tagesordnung Punkte hat und ob jeder Beschluss- und Wahlpunkt eine Erläuterung hat. Sie blockiert nichts.
+
+## Anwesenheit
+
+Hast du zusätzlich Leserecht auf die Mitglieder, zeigt **Anwesenheit** alle Stimmberechtigten der Versammlung. Je Person wählst du **Anwesend**, **Entschuldigt** oder, wenn die Art Vollmachten erlaubt, **Vertreten** und dann, wer die Vollmacht hat. Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied. Gäste trägst du unter **Gast ohne Stimmrecht** ein. Oben stehen die Zahlen und ob die Versammlung nach der Regel der Art beschlussfähig ist.
 
 Organisationen als Mitglied haben eine Stimme und sind **Durch Vertreter** anwesend: Du wählst einen Ansprechpartner mit „vertritt in Versammlungen“ oder gibst einen Namen ein. Das ist keine Vollmacht und geht auch, wenn die Art keine Vollmachten erlaubt. Das Mindestalter der Art gilt für Organisationen nicht. Ist der Vertreter selbst Mitglied, behält er seine eigene Stimme; die Liste zeigt dann „vertritt zusätzlich“. Das Protokoll nennt Organisation und Vertreter.
 
-Anmelden per App und Online-Abstimmung: **Anmeldung per App öffnen** zeigt einen QR-Code, der alle 30 Sekunden wechselt; mit **Code groß zeigen** erscheint er bildschirmfüllend für den Beamer. Mitglieder scannen ihn mit der HUBIplan-App oder der Handykamera und tippen **Ich bin da**, mit **Ich gehe** melden sie sich wieder ab (Vollmachten fallen dann weg). Erlaubt die Art die Teilnahme aus der Ferne, schaltest du sie mit **Teilnahme aus der Ferne für diese Versammlung erlauben** ein; Stimmberechtigte tippen dann im Mitgliederbereich auf **Online teilnehmen**. Ist bei der Art **Online-Abstimmung am Handy erlaubt** eingeschaltet, legst du bei Beschluss- und Wahlpunkten eine Abstimmung an, offen oder geheim, bei Wahlen mit einer oder mehreren Personen. **Abstimmung starten** gibt sie frei, **Abstimmung beenden** schließt sie und zeigt das Ergebnis, **Ins Protokoll übernehmen** trägt es als Beschluss oder Wahl ein. Abstimmen dürfen anwesende Stimmberechtigte, für jede Vollmacht eine Stimme mehr. Bei geheimer Abstimmung trägt der Stimmzettel keine Person; bei offener siehst du nach dem Ende unter **Wer wie gestimmt hat**, wer wie gestimmt hat. Teilnahme und Abstimmung aus der Ferne brauchen eine Grundlage in der Satzung (§ 32 Abs. 2 BGB).
+## Anmelden per App und Online-Abstimmung
 
-Protokoll: Nach der Versammlung wählst du **Als durchgeführt markieren**. Die Tagesordnung steht dann fest, und an ihrer Stelle erscheint das Protokoll. Zu jedem Tagesordnungspunkt schreibst du, was besprochen wurde. Mit **Beschluss hinzufügen** hältst du einen Beschluss mit Text und Ergebnis fest, mit **Wahl hinzufügen** eine Wahl mit Amt und gewählter Person. Das Abstimmungsergebnis trägst du als Ja, Nein und Enthaltung ein oder kreuzt **einstimmig** an. Das Protokoll speichert sich kurz nach jeder Eingabe von selbst, sobald jeder Beschluss einen Text und jede Wahl Amt und gewählte Person hat.
+**Anmeldung per App öffnen** zeigt einen QR-Code, der alle 30 Sekunden wechselt; mit **Code groß zeigen** erscheint er bildschirmfüllend für den Beamer. Mitglieder scannen ihn mit der HUBIplan-App oder der Handykamera und tippen **Ich bin da**, mit **Ich gehe** melden sie sich wieder ab (Vollmachten fallen dann weg). Erlaubt die Art die Teilnahme aus der Ferne, schaltest du sie mit **Teilnahme aus der Ferne für diese Versammlung erlauben** ein; Stimmberechtigte tippen dann im Mitgliederbereich auf **Online teilnehmen**. Ist bei der Art **Online-Abstimmung am Handy erlaubt** eingeschaltet, legst du bei Beschluss- und Wahlpunkten eine Abstimmung an, offen oder geheim, bei Wahlen mit einer oder mehreren Personen. **Abstimmung starten** gibt sie frei, **Abstimmung beenden** schließt sie und zeigt das Ergebnis, **Ins Protokoll übernehmen** trägt es als Beschluss oder Wahl ein. Abstimmen dürfen anwesende Stimmberechtigte, für jede Vollmacht eine Stimme mehr. Bei geheimer Abstimmung trägt der Stimmzettel keine Person; bei offener siehst du nach dem Ende unter **Wer wie gestimmt hat**, wer wie gestimmt hat. Teilnahme und Abstimmung aus der Ferne brauchen eine Grundlage in der Satzung (§ 32 Abs. 2 BGB).
 
-Freigabe: Unter **Freigabe des Protokolls** bestätigen Leitung und Protokollführung das Protokoll mit **Als Leitung bestätigen** und **Als Protokollführung bestätigen**. Vorher müssen beide unter den Angaben zur Versammlung eingetragen sein. **Vorschau als PDF** zeigt das Protokoll vorher als Entwurf. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf. Mit der zweiten Bestätigung ist das Protokoll freigegeben: Die Beschlüsse bekommen eine fortlaufende Nummer je Jahr (etwa 2027/03), das PDF wird mit Prüfsumme gespeichert und lässt sich nicht mehr ändern. Ist die Dokumentenablage eingeschaltet, legt HUBIplan das PDF im Ordner „Protokolle“ ab, den zunächst nur der Vorstand sieht. **Protokoll als PDF** lädt das freigegebene Protokoll herunter.
+## Protokoll
 
-Beschlussbuch: Der Reiter **Beschlussbuch** listet alle Beschlüsse und Wahlen aus freigegebenen Protokollen mit Nummer, Datum und Ergebnis. Du suchst nach Text, Amt oder Nummer und filterst nach Jahr, Art der Versammlung, Beschluss oder Wahl und Stand der Umsetzung. Mit Bearbeitungsrecht setzt du den Stand auf offen, umgesetzt oder aufgehoben. Ist das Modul Aufgaben eingeschaltet und darfst du Aufgaben anlegen, macht **Als Aufgabe anlegen** aus einem offenen Beschluss eine Aufgabe für dich, damit die Umsetzung nicht verloren geht. **Liste als Excel** lädt die gefilterte Liste herunter.
+Nach der Versammlung wählst du **Als durchgeführt markieren**. Die Tagesordnung steht dann fest, und an ihrer Stelle erscheint das Protokoll. Zu jedem Tagesordnungspunkt schreibst du, was besprochen wurde. Mit **Beschluss hinzufügen** hältst du einen Beschluss mit Text und Ergebnis fest, mit **Wahl hinzufügen** eine Wahl mit Amt und gewählter Person. Das Abstimmungsergebnis trägst du als Ja, Nein und Enthaltung ein oder kreuzt **einstimmig** an. Das Protokoll speichert sich kurz nach jeder Eingabe von selbst, sobald jeder Beschluss einen Text und jede Wahl Amt und gewählte Person hat.
 
-Wahlen ins Amt übernehmen: Bei einer angenommenen Wahl, deren gewählte Person aus der Mitgliederliste stammt, öffnet **Ins Amt übernehmen** im Verein den Dialog **Rolle besetzen**. Die Rolle mit dem Namen des Amts ist vorgewählt, die Amtszeit beginnt am Tag der Versammlung, und auf Wunsch endet die Amtszeit des Vorgängers am Vortag. Danach gilt die Wahl als umgesetzt. Dafür brauchst du das Recht, Rollen zu verwalten. Ämter von Untereinheiten besetzt du wie bisher unter Mitglieder › Ämter.
+## Freigabe
 
-Mitgliederbereich: Stimmberechtigte sehen dort Versammlungen, zu denen eingeladen ist, mit der Tagesordnung. Freigegebene Protokolle sehen sie nur, wenn die Art das Protokoll auch für alle Stimmberechtigten bestimmt; Vorstandsprotokolle bleiben den Rollen mit Leserecht vorbehalten.
+Unter **Freigabe des Protokolls** bestätigen Leitung und Protokollführung das Protokoll mit **Als Leitung bestätigen** und **Als Protokollführung bestätigen**. Vorher müssen beide unter den Angaben zur Versammlung eingetragen sein. **Vorschau als PDF** zeigt das Protokoll vorher als Entwurf. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf. Mit der zweiten Bestätigung ist das Protokoll freigegeben: Die Beschlüsse bekommen eine fortlaufende Nummer je Jahr (etwa 2027/03), das PDF wird mit Prüfsumme gespeichert und lässt sich nicht mehr ändern. Ist die Dokumentenablage eingeschaltet, legt HUBIplan das PDF im Ordner „Protokolle“ ab, den zunächst nur der Vorstand sieht. **Protokoll als PDF** lädt das freigegebene Protokoll herunter.
 
-Anträge: Je Art legst du unter **Arten und Fristen** fest, bis wie viele Tage vor der Versammlung Mitglieder Anträge stellen können; ein leeres Feld schaltet Anträge ab. Eingeladene Stimmberechtigte reichen ihre Anträge im Mitgliederbereich ein. Sie erscheinen in der Versammlung unter **Anträge**. Mit **In die Tagesordnung aufnehmen** wird ein Antrag zum neuen Tagesordnungspunkt; mit **Ablehnen** gibst du dem Mitglied eine Begründung. Das geht, solange die Versammlung in Vorbereitung oder eingeladen ist. Ist die Einladung schon verschickt, informiere die Mitglieder über die geänderte Tagesordnung.
+## Beschlussbuch
+
+Der Reiter **Beschlussbuch** listet alle Beschlüsse und Wahlen aus freigegebenen Protokollen mit Nummer, Datum und Ergebnis. Du suchst nach Text, Amt oder Nummer und filterst nach Jahr, Art der Versammlung, Beschluss oder Wahl und Stand der Umsetzung. Mit Bearbeitungsrecht setzt du den Stand auf offen, umgesetzt oder aufgehoben. Ist das Modul Aufgaben eingeschaltet und darfst du Aufgaben anlegen, macht **Als Aufgabe anlegen** aus einem offenen Beschluss eine Aufgabe für dich, damit die Umsetzung nicht verloren geht. **Liste als Excel** lädt die gefilterte Liste herunter.
+
+## Wahlen ins Amt übernehmen
+
+Bei einer angenommenen Wahl, deren gewählte Person aus der Mitgliederliste stammt, öffnet **Ins Amt übernehmen** im Verein den Dialog **Rolle besetzen**. Die Rolle mit dem Namen des Amts ist vorgewählt, die Amtszeit beginnt am Tag der Versammlung, und auf Wunsch endet die Amtszeit des Vorgängers am Vortag. Danach gilt die Wahl als umgesetzt. Dafür brauchst du das Recht, Rollen zu verwalten. Ämter von Untereinheiten besetzt du wie bisher unter Mitglieder › Ämter.
+
+## Mitgliederbereich
+
+Stimmberechtigte sehen dort Versammlungen, zu denen eingeladen ist, mit der Tagesordnung. Freigegebene Protokolle sehen sie nur, wenn die Art das Protokoll auch für alle Stimmberechtigten bestimmt; Vorstandsprotokolle bleiben den Rollen mit Leserecht vorbehalten.
+
+## Anträge
+
+Je Art legst du unter **Arten und Fristen** fest, bis wie viele Tage vor der Versammlung Mitglieder Anträge stellen können; ein leeres Feld schaltet Anträge ab. Eingeladene Stimmberechtigte reichen ihre Anträge im Mitgliederbereich ein. Sie erscheinen in der Versammlung unter **Anträge**. Mit **In die Tagesordnung aufnehmen** wird ein Antrag zum neuen Tagesordnungspunkt; mit **Ablehnen** gibst du dem Mitglied eine Begründung. Das geht, solange die Versammlung in Vorbereitung oder eingeladen ist. Ist die Einladung schon verschickt, informiere die Mitglieder über die geänderte Tagesordnung.

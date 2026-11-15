@@ -10,19 +10,25 @@ stichworte: [AGM, General meeting, Board meeting, Agenda, Item, Notice period, M
 Under **Meetings** you prepare general meetings, board meetings and meetings of a unit. The
 overview shows upcoming and past meetings with their status.
 
-New meeting: Choose **New meeting**, then the type, start, end and place. HUBIplan creates an
+## New meeting
+
+Choose **New meeting**, then the type, start, end and place. HUBIplan creates an
 event in the calendar for it. All members see general meetings in the calendar; only the board
 sees board meetings. If **Copy the agenda of the last meeting of this type** is ticked, HUBIplan
 copies its items; for the first meeting of a type it suggests a typical agenda.
 **Event in the calendar** in the meeting leads to its event; there the block “For this event”
 shows duty rosters and bookings for the meeting.
 
-Agenda: Each agenda item has a title, a type (report, resolution, election or other) and an
+## Agenda
+
+Each agenda item has a title, a type (report, resolution, election or other) and an
 explanation. Use the arrows to change the order; the numbers follow from it. The agenda saves
 itself shortly after each change, as soon as every item has a title. Removing a saved item asks first.
 The meeting details (location, chair, minute taker, note …) also save themselves; the top of the box shows whether everything is saved.
 
-Sub-items: **Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”.
+## Sub-items
+
+**Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”.
 To put an existing item under another one, drag it onto that item or pick the item under
 **Belongs to**; “Own item (top level)” makes it an item of its own again. You can drag by the
 handle or any empty spot of the item (on a phone only by the handle): dropped between two items
@@ -32,33 +38,57 @@ sub-item of the item above, ← makes it an item of its own again. There is one 
 sub-items. The numbers appear the same way in the invitation, the minutes, the member area and
 online voting.
 
-Notice period: Below the heading you see the date by which the invitation has to go out. Once
+## Notice period
+
+Below the heading you see the date by which the invitation has to go out. Once
 that day has passed, HUBIplan points it out. Set the notice period for each type under **Types and notice periods**, in line with your statutes.
 
-Cancelling and deleting: **Cancel** keeps the event in the calendar and shows it as cancelled.
+## Cancelling and deleting
+
+**Cancel** keeps the event in the calendar and shows it as cancelled.
 You can only delete a meeting before invitations have gone out. The event of a meeting cannot
 be deleted in the calendar, only here.
 
-Types and notice periods: HUBIplan starts with the usual types, such as the annual general
+## Types and notice periods
+
+HUBIplan starts with the usual types, such as the annual general
 meeting and the board meeting. You can rename them, add more or switch them off. For each type
 you set the notice period, how invitations are sent, the quorum and who will see the minutes. Changes to an existing type save themselves.
 
-Invitation: **Prepare invitation** creates a draft circular with the agenda. For general meetings it goes to the members entitled to vote under the type (member types and minimum age), for board meetings to the board, and for leadership meetings of a unit to its role holders. Use **Open circular** to check the recipients and text and to send the invitation. After that the meeting counts as invited; if it went out after the last day of the notice period, HUBIplan points this out. You also need the right to send circulars. If the agenda changes after the draft has been created, adjust the text in the circular. Until the invitation has gone out, the **Before the invitation** checklist shows whether the notice period can still be met, whether the agenda has items and whether every resolution and election item has an explanation. It never blocks anything.
+## Invitation
 
-Attendance: If you also have read access to members, **Attendance** lists everyone entitled to vote at the meeting. For each person choose **Present**, **Excused** or, if the type allows proxies, **Represented** and then who holds the proxy. Only a present member with voting rights can act as proxy. Enter guests under **Guest without a vote**. The figures at the top show whether the meeting has a quorum under the rule of its type.
+**Prepare invitation** creates a draft circular with the agenda. For general meetings it goes to the members entitled to vote under the type (member types and minimum age), for board meetings to the board, and for leadership meetings of a unit to its role holders. Use **Open circular** to check the recipients and text and to send the invitation. After that the meeting counts as invited; if it went out after the last day of the notice period, HUBIplan points this out. You also need the right to send circulars. If the agenda changes after the draft has been created, adjust the text in the circular. Until the invitation has gone out, the **Before the invitation** checklist shows whether the notice period can still be met, whether the agenda has items and whether every resolution and election item has an explanation. It never blocks anything.
+
+## Attendance
+
+If you also have read access to members, **Attendance** lists everyone entitled to vote at the meeting. For each person choose **Present**, **Excused** or, if the type allows proxies, **Represented** and then who holds the proxy. Only a present member with voting rights can act as proxy. Enter guests under **Guest without a vote**. The figures at the top show whether the meeting has a quorum under the rule of its type.
 
 Organisations as members have one vote and attend **By representative**: choose a contact person marked “represents at meetings” or enter a name. This is not a proxy and also works if the type does not allow proxies. The minimum age of the type does not apply to organisations. If the representative is a member themselves, they keep their own vote; the list then shows “also represents”. The minutes name the organisation and its representative.
 
-Check-in via app and online voting: **Open check-in via app** shows a QR code that changes every 30 seconds; **Show code full screen** displays it full screen for the projector. Members scan it with the HUBIplan app or their phone camera and tap **I'm here**; **I'm leaving** checks them out again (any proxies then lapse). If the type allows remote participation, switch it on with **Allow remote participation for this meeting**; members entitled to vote then tap **Take part online** in the member area. If **Online voting on the phone allowed** is switched on for the type, you create a vote for resolution and election items, open or secret, for elections with one or more candidates. **Start vote** opens it, **End vote** closes it and shows the result, **Transfer to the minutes** records it as a resolution or election. Members present and entitled to vote can vote, with one extra vote for each proxy. In a secret ballot no person is recorded on the ballot; in an open vote, **Who voted how** shows after the end who voted how. Remote participation and voting need a basis in the constitution (section 32 (2) German Civil Code).
+## Check-in via app and online voting
 
-Minutes: After the meeting choose **Mark as held**. The agenda is then fixed and the minutes appear in its place. For each agenda item write down what was discussed. Use **Add resolution** to record a resolution with its text and result, and **Add election** to record an election with the office and the person elected. Enter the vote as yes, no and abstentions or tick **unanimous**. The minutes save themselves shortly after each entry, as soon as every resolution has a text and every election the office and the person elected.
+**Open check-in via app** shows a QR code that changes every 30 seconds; **Show code full screen** displays it full screen for the projector. Members scan it with the HUBIplan app or their phone camera and tap **I'm here**; **I'm leaving** checks them out again (any proxies then lapse). If the type allows remote participation, switch it on with **Allow remote participation for this meeting**; members entitled to vote then tap **Take part online** in the member area. If **Online voting on the phone allowed** is switched on for the type, you create a vote for resolution and election items, open or secret, for elections with one or more candidates. **Start vote** opens it, **End vote** closes it and shows the result, **Transfer to the minutes** records it as a resolution or election. Members present and entitled to vote can vote, with one extra vote for each proxy. In a secret ballot no person is recorded on the ballot; in an open vote, **Who voted how** shows after the end who voted how. Remote participation and voting need a basis in the constitution (section 32 (2) German Civil Code).
 
-Approval: Under **Approval of the minutes** the chair and the minute taker confirm the minutes with **Confirm as chair** and **Confirm as minute taker**. Both must first be entered in the meeting details. **Preview as PDF** shows the minutes as a draft beforehand. Any change to the minutes or the attendance cancels the confirmations. With the second confirmation the minutes are approved: the resolutions receive a consecutive number per year (such as 2027/03), and the PDF is stored with a checksum and can no longer be changed. If document storage is switched on, HUBIplan files the PDF in the folder “Minutes”, which only the board sees at first. **Minutes as PDF** downloads the approved minutes.
+## Minutes
 
-Resolution book: The **Resolution book** tab lists all resolutions and elections from approved minutes with number, date and result. Search by text, office or number and filter by year, type of meeting, resolution or election and implementation status. With editing rights you set the status to open, implemented or repealed. If the tasks module is switched on and you may create tasks, **Create as task** turns an open resolution into a task for you so its implementation is not forgotten. **List as Excel** downloads the filtered list.
+After the meeting choose **Mark as held**. The agenda is then fixed and the minutes appear in its place. For each agenda item write down what was discussed. Use **Add resolution** to record a resolution with its text and result, and **Add election** to record an election with the office and the person elected. Enter the vote as yes, no and abstentions or tick **unanimous**. The minutes save themselves shortly after each entry, as soon as every resolution has a text and every election the office and the person elected.
 
-Taking elections into office: For an accepted election whose elected person was picked from the member list, **Take into office** opens the **Assign role** dialog in the club. The role named like the office is preselected, the term starts on the day of the meeting, and if you wish the predecessor's term ends the day before. The election then counts as implemented. You need the right to manage roles. Offices of units are still filled under Members › Offices.
+## Approval
 
-Member area: Members entitled to vote see meetings they are invited to there, with the agenda. They see approved minutes only if the meeting type makes them available to everyone entitled to vote; board minutes stay with the roles that have read access.
+Under **Approval of the minutes** the chair and the minute taker confirm the minutes with **Confirm as chair** and **Confirm as minute taker**. Both must first be entered in the meeting details. **Preview as PDF** shows the minutes as a draft beforehand. Any change to the minutes or the attendance cancels the confirmations. With the second confirmation the minutes are approved: the resolutions receive a consecutive number per year (such as 2027/03), and the PDF is stored with a checksum and can no longer be changed. If document storage is switched on, HUBIplan files the PDF in the folder “Minutes”, which only the board sees at first. **Minutes as PDF** downloads the approved minutes.
 
-Motions: For each type, **Types and notice periods** sets until how many days before the meeting members can submit motions; an empty field switches motions off. Invited members entitled to vote submit their motions in the member area. They appear in the meeting under **Motions**. **Add to agenda** turns a motion into a new agenda item; **Decline** gives the member a reason. This works while the meeting is in preparation or invited. If the invitation has already been sent, inform the members about the changed agenda.
+## Resolution book
+
+The **Resolution book** tab lists all resolutions and elections from approved minutes with number, date and result. Search by text, office or number and filter by year, type of meeting, resolution or election and implementation status. With editing rights you set the status to open, implemented or repealed. If the tasks module is switched on and you may create tasks, **Create as task** turns an open resolution into a task for you so its implementation is not forgotten. **List as Excel** downloads the filtered list.
+
+## Taking elections into office
+
+For an accepted election whose elected person was picked from the member list, **Take into office** opens the **Assign role** dialog in the club. The role named like the office is preselected, the term starts on the day of the meeting, and if you wish the predecessor's term ends the day before. The election then counts as implemented. You need the right to manage roles. Offices of units are still filled under Members › Offices.
+
+## Member area
+
+Members entitled to vote see meetings they are invited to there, with the agenda. They see approved minutes only if the meeting type makes them available to everyone entitled to vote; board minutes stay with the roles that have read access.
+
+## Motions
+
+For each type, **Types and notice periods** sets until how many days before the meeting members can submit motions; an empty field switches motions off. Invited members entitled to vote submit their motions in the member area. They appear in the meeting under **Motions**. **Add to agenda** turns a motion into a new agenda item; **Decline** gives the member a reason. This works while the meeting is in preparation or invited. If the invitation has already been sent, inform the members about the changed agenda.

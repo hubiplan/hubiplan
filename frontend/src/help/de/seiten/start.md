@@ -20,6 +20,8 @@ stichworte:
 
 Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anordnung hat sie für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, **Nächste Termine**, **Jubiläen**, **Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
 
+## Navigation, Hilfe und Schnellsuche
+
 Die Navigation links beginnt mit **Startseite**, **Aufgaben** und **Termine**. Darunter folgen die Bereiche des Vereinslebens, die Organisation und zuletzt die Verwaltung. Abstände gliedern die sichtbaren Bereiche; **Hilfe** bleibt unten abgesetzt.
 
 Oben öffnet **Hilfe zu dieser Seite** die Hilfe zur aktuellen Seite; auf schmalen Bildschirmen steht dort nur das Zeichen „?“. **Hilfe** in der Seitenleiste führt zur Übersicht aller Anleitungen. Unter **Mein Konto** findest du deine E-Mail-Adresse, die persönlichen Einstellungen und **Abmelden**.
@@ -28,9 +30,15 @@ Oben öffnet **Hilfe zu dieser Seite** die Hilfe zur aktuellen Seite; auf schmal
 
 Schaltflächen haben eine eigene, deckende Hintergrundfläche. Das gilt auch für dezente Aktionen, inaktive Schaltflächen und die Dateiauswahl. Gewählte Ansichten heben sich zusätzlich durch ihre Füllung ab. Bei sehr hellen Vereinsfarben wird die Farbe von Aktionsschaltflächen für die Erkennbarkeit abgedunkelt; das Vereinslogo und die übrige Markenfarbe bleiben erhalten.
 
+## Zu erledigen
+
 Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen, überfällige Rechnungen, offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular, eigene Rundschreiben-Entwürfe, die seit einer Woche liegen, Einladungen zu Versammlungen ab zwei Wochen vor der Einladungsfrist, eingegangene Anträge und offene Protokolle, offene Plätze in Helferdiensten der nächsten zwei Wochen, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen zur Prüfung, Rechnungsentwürfe, fällige Mahnungen und Lastschriften, abgelaufene Einladungen von Konten, Buchungen ohne Beleg im laufenden Geschäftsjahr, Bankkonten, deren Kontoauszug für den Vormonat ab dem 5. noch fehlt, und fehlende Pflichtpunkte der [Einrichtung](/einstellungen/einrichtung); jeder Eintrag erscheint nur mit dem passenden Recht. Finanzen › Übersicht zeigt dieselben Einträge, soweit sie die Finanzen betreffen. Die Anzahl steht direkt bei der Überschrift. **Neue Aufgabe** am unteren Kachelrand öffnet den Aufgabendialog. Daneben führt **Alle Aufgaben** zur Übersicht. Jede Zeile trennt Art, Titel und weitere Angaben; fällige Aufgaben zeigen zusätzlich einen Fristhinweis. Über das Häkchen erledigst du eine Aufgabe, sofern du dazu berechtigt bist. Der Titel führt zu den Einzelheiten.
 
+## Schnellaktionen
+
 **Schnellaktionen** sind Knöpfe für das, was du am häufigsten tust; der erste ist hervorgehoben. Ohne eigene Auswahl zeigt HUBIplan einen Vorschlag mit höchstens vier Aktionen deiner Rolle: Die Kasse bekommt **Buchung erfassen**, **Kontoauszug einlesen**, **Quittung ausstellen** und **Mahnlauf vorbereiten**, der Vorstand **Neuer Termin**, **Mitglied aufnehmen** und **Rundschreiben schreiben**, die Schriftführung **Versammlung anlegen** und **Protokoll schreiben**. Die Aktionen der Kasse kommen in den Vorschlag nur mit einer Kassenrolle (eine Rolle mit Kassenrechten, die keine Rollen vergeben darf); hast du mehrere Rollen, kommen sie zuerst. Unter **Anpassen** wählst du bis zu sechs Aktionen selbst aus allem, was deine Rechte erlauben, nach Bereichen geordnet: Finanzen (etwa **Einnahme erfassen**, **Rechnung schreiben**, **Beitragslauf vorbereiten**), Termine und Planung (**Aufgabe anlegen**, **Helferdienst anlegen**, **Belegung eintragen**), Mitglieder, Verein (**Chronik ergänzen**, **Wettbewerb anlegen**, **Ergebnisse eintragen**, **Noten hochladen**) sowie Schreiben und Ablegen (**Dokument ablegen**, **Webseite bearbeiten**, **Brief schreiben**). Die Reihenfolge legst du fest, indem du eine Aktion an beliebiger Stelle anfasst und ziehst; mit der Tastatur nimmst du den Griff und die Pfeiltasten. Die Auswahl gilt je Einheit und Untereinheit getrennt; **Vorschlag wiederherstellen** kehrt zum Vorschlag zurück. Im Arbeitsbereich einer Untereinheit stehen **Termin der Einheit**, **Mitglieder ansehen**, **Briefvorlage** und, wenn du darfst, **Aufgabe anlegen** zur Wahl. Mit **Schnellaktionen ganz ausblenden** verschwindet der ganze Block; wieder einschalten kannst du ihn unter Mein Konto › Profil › Startseite.
+
+## Termine, Jubiläen und Hinweise
 
 In **Nächste Termine** öffnet **Neuer Termin** mit Anlegerecht direkt den Termindialog, **Zum Kalender** führt zur Übersicht.
 
@@ -38,12 +46,18 @@ Die Karte **Jubiläen** zeigt die Jubiläen des laufenden Jahres, ab Oktober zus
 
 Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum und Hinweise zur Briefvorlage (mit **Später**). Die Zahl neben der Überschrift ist die Zahl dieser Hinweise. Ohne Hinweis gibt es keine Karte.
 
+## Startseite anpassen
+
 **Startseite anpassen** oben rechts stellt die Startseite nach deinem Geschmack zusammen. Jeder Block bekommt dann einen gestrichelten Rahmen und eine Leiste mit **Zeigen**, **Breite** und **Höhe nach Inhalt**. Fasse einen Block an beliebiger Stelle an und ziehe ihn an seinen neuen Platz; mit der Tastatur nimmst du den Griff und die Pfeiltasten. Die Ecke unten rechts ziehst du, um Breite und Höhe zu ändern; mit der Tastatur ändern dort die Pfeiltasten links und rechts die Breite, oben und unten die Höhe. Die Startseite hat ein Raster aus zwölf Spalten und feinen Zeilen: Ein Block rutscht in die nächste Lücke, die für ihn breit genug ist, auch unter einen kürzeren Block daneben. Die Breite wählst du als ¼, ⅓, ½, ⅔, ¾ oder ganz, an der Ecke auch in Zwölfteln. Hat ein Block eine feste Höhe, rollt sein Inhalt innerhalb der Karte; **Höhe nach Inhalt** macht ihn wieder so hoch wie nötig. Ausgeblendete Blöcke bleiben beim Anpassen blass sichtbar, damit du sie wieder einschalten kannst. Ein Block ohne Inhalt, etwa Geburtstage, wenn in den nächsten 30 Tagen keiner ist, erscheint auf der Startseite nicht. Jede Änderung wird sofort gespeichert, **Fertig** beendet das Anpassen. Die Anordnung gilt nur für dich und je Einheit und Untereinheit getrennt; **Standard wiederherstellen** kehrt zur Reihenfolge oben zurück, unter Mein Konto › Profil › Startseite geht das für alle Bereiche zugleich. Auf schmalen Bildschirmen stehen alle Blöcke untereinander; am Handy rollt die Seite über dem Inhalt weiter, gezogen wird an der Leiste mit dem Namen.
 
 ![Startseite des Vorstands mit Zu erledigen, Schnellaktionen, Jubiläen und Hinweisen](bild:startseite-vorstand)
 
+## Als Mitglied
+
 Als Mitglied steht der nächste Termin ganz oben, auch am Handy. Ist eine Rückmeldung möglich, sagst du dort direkt mit **Zusage** oder **Absage** zu oder ab; darunter folgen die nächsten Termine. Unter **Mein Bereich** stehen höchstens vier Kacheln, **Ausweis zeigen** zuerst; **Alles in Mein Bereich** führt zu den übrigen.
 
 ![Startseite eines Mitglieds mit dem nächsten Termin oben](bild:startseite-mitglied)
+
+## Hinweis zur Zwei-Faktor-Anmeldung
 
 Ist für deine Rechte die Zwei-Faktor-Anmeldung vorgeschrieben, steht auf jeder Seite derselbe kurze Hinweis mit **Jetzt einrichten**; **Mehr erfahren** zeigt, welche Rechte betroffen sind. Bricht die Verbindung ab, erscheint sofort das Band „Keine Verbindung“. Automatisch gespeicherte Änderungen werden nachgeholt, sobald die Verbindung wieder da ist; spätestens nach etwa zehn Sekunden zeigt das Formular, dass noch nicht gespeichert wurde.
