@@ -515,8 +515,12 @@ def set_header_image(website: Website, value, key: str = "header_image") -> None
 
 def can_import_designs(user) -> bool:
     from access.permissions import is_platform_admin
+    from accounts.mfa_policy import has_mfa
 
-    return bool(user and user.is_authenticated and (user.is_superuser or is_platform_admin(user)))
+    # Superuser nur mit Zwei-Faktor-Anmeldung, wie die Plattform-Verwaltung (AUTH-04)
+    if not (user and user.is_authenticated):
+        return False
+    return bool((user.is_superuser and has_mfa(user)) or is_platform_admin(user))
 
 
 def domain_data(d: WebsiteDomain) -> dict:

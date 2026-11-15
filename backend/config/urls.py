@@ -31,7 +31,21 @@ urlpatterns = [
     path("api/docs/", SwaggerView.as_view(url_name="schema"), name="docs"),
 ]
 
+
+def _admin_nur_mit_2fa(request) -> bool:
+    """Admin nur für aktive Superuser mit eingerichteter Zwei-Faktor-Anmeldung.
+
+    Mit eingerichtetem zweiten Faktor verlangt die Anmeldung ihn auch (allauth); eine reine
+    Passwortsitzung eines Superusers ohne 2FA kommt so nicht in den Admin, der Rechte und
+    Zeilenschutz übergeht (Gesamtaudit 15.11., AUTH-04)."""
+    from accounts.mfa_policy import has_mfa
+
+    user = request.user
+    return bool(user.is_active and user.is_superuser and has_mfa(user))
+
+
 if settings.ADMIN_ENABLED:
+    admin.site.has_permission = _admin_nur_mit_2fa
     urlpatterns += [
         # Der Admin hat eine eigene Passwort-Anmeldung ohne Zwei-Faktor-Abfrage.
         # Deshalb führt sie zur normalen Anmeldung; danach gilt die Sitzung auch hier.
