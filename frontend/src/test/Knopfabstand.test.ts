@@ -91,6 +91,19 @@ function klassen(el: Knoten): string[] | null {
   return teile.join(' ').split(/\s+/).filter(Boolean)
 }
 
+/** Eingabefelder, die neben einem Knopf ebenso Abstand brauchen (Suchfeld + „Suchen“). */
+const FELDER = new Set(['input', 'select', 'textarea'])
+
+function istFeld(el: Knoten): boolean {
+  if (!FELDER.has(tagName(el))) return false
+  const attribute = (el.openingElement as { attributes: Knoten[] }).attributes
+  const typ = attribute.find((a) => a.type === 'JSXAttribute' && (a.name as Knoten).name === 'type')
+    ?.value as Knoten | undefined
+  return !(
+    typ?.type === 'Literal' && ['checkbox', 'radio', 'hidden', 'file'].includes(typ.value as string)
+  )
+}
+
 function istKnopf(el: Knoten): boolean {
   const k = klassen(el)
   if (k?.includes('button-block')) return false // eigene Zeile mit Rand oben
@@ -99,8 +112,10 @@ function istKnopf(el: Knoten): boolean {
 }
 
 /** Kinder in Darstellungsreihenfolge; ein Platz ist ein Knopf, wenn er einer sein kann. */
-function plaetze(kinder: Knoten[]): ('knopf' | 'anderes')[] {
-  const ergebnis: ('knopf' | 'anderes')[] = []
+type Platz = 'knopf' | 'feld' | 'anderes'
+
+function plaetze(kinder: Knoten[]): Platz[] {
+  const ergebnis: Platz[] = []
   const ausdruck = (e: Knoten | null): boolean | null => {
     if (!e) return null
     switch (e.type) {
@@ -115,6 +130,10 @@ function plaetze(kinder: Knoten[]): ('knopf' | 'anderes')[] {
         return !!a || !!b
       }
       case 'JSXElement':
+        if (istFeld(e)) {
+          ergebnis.push('feld')
+          return null
+        }
         return istKnopf(e)
       case 'JSXFragment': {
         const innen = plaetze(e.children as Knoten[])
@@ -158,7 +177,7 @@ function plaetze(kinder: Knoten[]): ('knopf' | 'anderes')[] {
       continue
     }
     if (kind.type === 'JSXElement') {
-      ergebnis.push(istKnopf(kind) ? 'knopf' : 'anderes')
+      ergebnis.push(istFeld(kind) ? 'feld' : istKnopf(kind) ? 'knopf' : 'anderes')
       continue
     }
     if (kind.type === 'JSXFragment') {
@@ -189,7 +208,12 @@ function knopfPaareOhneAbstand(): string[] {
       const k = n as Knoten
       if (k.type === 'JSXElement') {
         const p = plaetze(k.children as Knoten[])
-        const nebeneinander = p.some((x, i) => x === 'knopf' && p[i + 1] === 'knopf')
+        // Knopf neben Knopf oder Feld neben Knopf (Suchfeld mit „Suchen“, Rechnungen 15.11.)
+        const nebeneinander = p.some(
+          (x, i) =>
+            (x === 'knopf' && (p[i + 1] === 'knopf' || p[i + 1] === 'feld')) ||
+            (x === 'feld' && p[i + 1] === 'knopf'),
+        )
         if (nebeneinander) {
           const tag = tagName(k)
           const kl = klassen(k) ?? []
@@ -222,5 +246,16 @@ describe('Knopfabstand', () => {
 
   it('setzt nebeneinanderstehende Knöpfe immer in einen Container mit Abstand', () => {
     expect(knopfPaareOhneAbstand()).toEqual([])
+  })
+})
+
+describe('Kartenkopf', () => {
+  // Knöpfe im Kartenkopf stehen über Inhalten anderer Komponenten (DataTable-Filter), die der
+  // Paartest oben nicht sieht; deshalb gibt index.css dem Kartenkopf selbst Rand nach unten.
+  it('hat Abstand zum folgenden Inhalt', () => {
+    const css = Object.entries(stile).find(([d]) => d.endsWith('/index.css'))![1]
+    expect(css).toMatch(
+      /:where\(:not\([^)]*\.stack[^)]*\) > \.card-head:not\(:last-child\)\)\s*\{\s*margin-bottom:\s*var\(--space-3\)/,
+    )
   })
 })
