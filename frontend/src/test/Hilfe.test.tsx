@@ -21,7 +21,8 @@ import { FIRST_STEPS, MEMBER_TOPICS, highlight, labelsIn } from '../help/extras.
 import { byMenu, partOf, placeOf } from '../help/menu.ts'
 import { parseNews } from '../help/news.ts'
 import { HelpContactsCard } from '../help/HelpExtras.tsx'
-import { renderHelp } from '../help/markdown.ts'
+import { renderHelp, sectionAnchor, splitSections } from '../help/markdown.ts'
+import { searchRank } from '../help/HelpPage.tsx'
 import SPEC from '../help/bilder.json'
 import EN from '../i18n/en.json'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -172,6 +173,25 @@ describe('Hilfedateien', () => {
     expect(missing).toEqual([])
   })
 
+  it('jede Seite der Navigation steht mit ihrer genauen Adresse in einer Seitenhilfe', () => {
+    // Sonst zeigt die Unterseite nur die Hilfe der Seite darüber (Evaluation 15.11.2026)
+    const exact = new Set(
+      [...DE.values()].filter((e) => e.kind === 'page').flatMap((e) => e.routes),
+    )
+    expect(NAV_ROUTES.filter((r) => !exact.has(r))).toEqual([])
+  })
+
+  it('lange Seitenhilfen sind mit Zwischenüberschriften gegliedert', () => {
+    // Die Leiste zeigt Abschnitte („## …“) eingeklappt; ohne sie ist ein langer Text eine Wand
+    const walls = [...DE.entries()]
+      .filter(([, e]) => e.kind === 'page')
+      .filter(
+        ([, e]) => e.body.split(/\s+/).length > 450 && splitSections(e.body).sections.length < 2,
+      )
+      .map(([name]) => name)
+    expect(walls).toEqual([])
+  })
+
   it('Anleitungen haben höchstens zehn Schritte', () => {
     for (const [name, e] of DE)
       expect(e.body.match(/^\d+\. /gm)?.length ?? 0, name).toBeLessThanOrEqual(10)
@@ -196,6 +216,26 @@ describe('Hilfedateien', () => {
         ).toContain(`${lang}/${img}.png`)
     }
     for (const b of SPEC.bilder) expect(used.has(b.name), `${b.name} wird nicht benutzt`).toBe(true)
+  })
+})
+
+describe('Abschnitte', () => {
+  it('teilt an Zwischenüberschriften in Einleitung und Abschnitte', () => {
+    const { lead, sections } = splitSections(
+      'Kurz.\n\n## Erstens\n\nA\n\n### Fein\n\nB\n\n## Zweitens\n\nC',
+    )
+    expect(lead).toBe('Kurz.')
+    expect(sections.map((x) => x.title)).toEqual(['Erstens', 'Zweitens'])
+    expect(sections[0].body).toContain('### Fein')
+    expect(splitSections('Nur Text').sections).toEqual([])
+    expect(sectionAnchor('Gäste einladen & Übriges')).toBe('abschnitt-gaeste-einladen-uebriges')
+  })
+
+  it('Suche: Treffer im Titel vor Stichworten vor Text', () => {
+    const e = { title: 'Passwort ändern', keywords: ['Kennwort'] }
+    expect(searchRank('passwort', e)).toBe(0)
+    expect(searchRank('kennwort', e)).toBe(1)
+    expect(searchRank('anmeldung', e)).toBe(2)
   })
 })
 

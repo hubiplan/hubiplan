@@ -43,9 +43,3 @@ Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung ersch
 Bei den Zu- und Absagen eines Termins schaltest du auf Wunsch **Antwort „Vielleicht“ erlauben** ein. „Vielleicht“ zählt nicht gegen die Höchstzahl, die Erinnerung vor dem Termin geht aber auch an diese Mitglieder. **Bemerkung erlauben** ist voreingestellt; mit **Eigene Frage zur Bemerkung (optional)** (z. B. „Essenswunsch?“) steht sie statt „Bemerkung“ über dem Feld. Teilnehmerliste und Export zeigen „Vielleicht“ und die Bemerkungen.
 
 Jede Mail zum Termin (Einladung, Erinnerung, Rundschreiben zum Termin) enthält für jedes Mitglied einen eigenen Link „Zu- oder absagen (ohne Anmeldung)“. Er öffnet eine Seite mit Zeit, Ort, Beschreibung und Anhängen; dort wählt das Mitglied „Ich komme“, „Vielleicht“ oder „Ich komme nicht“ und speichert. Das bloße Öffnen speichert nichts. Über denselben Link lässt sich die Antwort bis zum Anmeldeschluss ändern, ebenso im Mitgliederbereich und in der App. Die Einladung nimmt die Anhänge des Termins direkt als Mailanhang mit (bis 5 Dateien, je 10 MB); größere stehen auf der Seite hinter dem Link.
-
-## Kalender-Abo
-
-Für das Kalender-Abo erzeugst du einen persönlichen Link. Gib ihn nur an deine eigene Kalender-App weiter. Ein neuer Link macht den bisherigen Link ungültig. Nach dem Erzeugen wird **Dein Link ist bereit.** als Status bestätigt.
-
-![Persönliches Kalender-Abo erstellen](bild:kalender-abo)

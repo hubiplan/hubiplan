@@ -43,9 +43,3 @@ After successfully accepting, declining or withdrawing your response, a confirma
 For replies to an event you can switch on **Allow “Maybe” as an answer**. “Maybe” does not count against the maximum number, but the reminder before the event also goes to these members. **Allow a comment** is on by default; with **Own question for the comment (optional)** (e.g. “Meal preference?”) it appears above the field instead of “Comment”. The participant list and the export show “Maybe” and the comments.
 
 Every email about the event (invitation, reminder, circular about the event) contains a personal link “Accept or decline (without login)” for each member. It opens a page with time, place, description and attachments; there the member chooses “I am coming”, “Maybe” or “I am not coming” and saves. Just opening the link saves nothing. The same link lets them change the answer until the deadline, as do the member area and the app. The invitation carries the event's attachments directly as email attachments (up to 5 files, 10 MB each); larger ones are on the page behind the link.
-
-## Calendar subscription
-
-Create a personal calendar-subscription link for your own calendar app. Keep it private. Creating a new link invalidates the previous link. A status confirms when your link is ready.
-
-![Create a personal calendar subscription](bild:kalender-abo)
