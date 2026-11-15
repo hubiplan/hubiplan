@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import Http404
-from django.urls import include, path
+from django.http import Http404, JsonResponse
+from django.urls import include, path, re_path
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
@@ -18,7 +19,22 @@ class SwaggerView(SpectacularSwaggerView):
         return super().get(request, *args, **kwargs)
 
 
+@csrf_exempt
+def _allauth_gesperrt(request, *args, **kwargs):
+    """Kontoverwaltung von allauth, die HUBIplan selbst abgesichert anbietet (siehe unten)."""
+    return JsonResponse({"status": 404, "errors": [{"code": "not_found"}]}, status=404)
+
+
 urlpatterns = [
+    # E-Mail-Adressen und Passwort ändert HUBIplan selbst (accounts/self_service.py: Passwort
+    # nötig, alte Adresse bestätigt, Hinweismail). allauths eigene Verwaltung verlangte nichts
+    # davon: Mit einer übernommenen Sitzung ließ sich eine zweite Adresse anhängen und darüber
+    # das Passwort neu setzen (Gesamtaudit 15.11., AUTH-02). Deshalb hier gesperrt, vor dem
+    # Einbinden von allauth.
+    re_path(
+        r"^_allauth/(?:browser|app)/v1/account/(?:email|phone|password/change)/?$",
+        _allauth_gesperrt,
+    ),
     # Anmeldung, Abmeldung, 2FA (allauth headless, eigene OpenAPI-Doku unter
     # /_allauth/openapi.html)
     path("_allauth/", include("allauth.headless.urls")),
