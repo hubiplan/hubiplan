@@ -23,7 +23,7 @@ from reportlab.platypus import (
 
 from core.i18n import german
 from letterhead.data import letter_data
-from letterhead.pdf import LetterDocument, text_styles
+from letterhead.pdf import LetterDocument, table_colors, text_styles
 
 from .models import BillingSettings, Dunning, Invoice, Payment
 from .services import included_vat, settings_for, vat_breakdown
@@ -100,7 +100,7 @@ def invoice_story(
     cfg = settings_for(org)
     data = _letter(org, cache)
     st = text_styles(data)
-    primary = colors.HexColor(data.primary)
+    primary, stripes = table_colors(data)
 
     draft = invoice.status == Invoice.Status.DRAFT
     title = "Rechnung (Entwurf)" if draft else "Rechnung"
@@ -182,7 +182,7 @@ def invoice_story(
                 ("LINEBELOW", (0, 0), (-1, 0), 0.8, primary),
                 ("LINEABOVE", (0, -1), (-1, -1), 0.8, primary),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, colors.HexColor("#f4f5f4")]),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -2), stripes),
             ]
         )
     )
@@ -367,7 +367,7 @@ def cancellation_story(invoice: Invoice) -> list:
     cfg = settings_for(org)
     data = _letter(org)
     st = text_styles(data)
-    primary = colors.HexColor(data.primary)
+    primary, stripes = table_colors(data)
     date = invoice.cancellation_date or timezone.localdate()
     meta = [
         ("Stornorechnung", invoice.cancellation_number),
@@ -435,7 +435,7 @@ def cancellation_story(invoice: Invoice) -> list:
                 ("LINEBELOW", (0, 0), (-1, 0), 0.8, primary),
                 ("LINEABOVE", (0, -1), (-1, -1), 0.8, primary),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, colors.HexColor("#f4f5f4")]),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -2), stripes),
             ]
         )
     )
@@ -505,7 +505,7 @@ def receipt_story(payment: Payment) -> tuple[list, object]:
     cfg = settings_for(org)
     data = _letter(org)
     st = text_styles(data)
-    primary = colors.HexColor(data.primary)
+    primary, stripes = table_colors(data)
     meta = [
         ("Quittung zu", invoice.display_number),
         ("Buchung", payment.booking.display_number),
@@ -658,7 +658,7 @@ def cash_receipt_story(receipt, *, cancelled: bool = False) -> tuple[list, objec
     org = receipt.organization
     data = _letter(org)
     st = text_styles(data)
-    primary = colors.HexColor(data.primary)
+    primary, stripes = table_colors(data)
     final = receipt.status != receipt.Status.DRAFT
     when = receipt.finalized_at or timezone.now()
     meta = [("Beleg-Nr.", receipt.number if final else "Entwurf")]

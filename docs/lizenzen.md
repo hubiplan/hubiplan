@@ -57,6 +57,12 @@ Zeichenbereich), der Schriftzug „HUBIplan“ im Logo die Schrift Outfit (SIL O
 Schnitte). Beide liegen als Dateien in `frontend/src/assets/fonts/` und werden selbst
 ausgeliefert (keine fremden Server); die Lizenztexte stehen in `frontend/lizenzen/zusatz.txt`.
 
+Der Briefbogen bettet auf Wunsch Schriften der Webseite in PDF-Briefe ein (Source Sans 3,
+Crimson Pro, Atkinson Hyperlegible, Open Sans, Roboto, Oswald, UnifrakturMaguntia; alle SIL OFL
+1.1, je normal und fett). Sie liegen als TTF mit ihren Lizenztexten in
+`backend/letterhead/fonts/` (aus den WOFF2-Dateien von `hubiplan-website` umgewandelt). Die
+OFL erlaubt das Einbetten in Dokumente.
+
 ## Server (Backend und Dienste)
 
 Die Server-Images werden nur selbst betrieben (Test- und Produktionsserver) und **nicht an andere

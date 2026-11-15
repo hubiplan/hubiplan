@@ -33,11 +33,12 @@ from .docx import (
     MARGIN_LEFT,
     MARGIN_RIGHT,
     NO_WRAP,
-    SERIF,
     footer_columns,
     footer_rows,
     load_picture,
+    logo_box,
 )
+from .typefaces import pdf_fonts
 
 GREY = colors.HexColor("#595959")
 LIGHT = colors.HexColor("#808080")
@@ -51,10 +52,8 @@ INFO_LABEL_W = 24  # mm
 
 
 def fonts(name: str) -> tuple[str, str]:
-    """Standardschrift im PDF: serifenlose Schriften als Helvetica, sonst Times."""
-    if name in SERIF:
-        return "Times-Roman", "Times-Bold"
-    return "Helvetica", "Helvetica-Bold"
+    """Schrift im PDF: Webschriften eingebettet, Office-Schriften als Helvetica bzw. Times."""
+    return pdf_fonts(name)
 
 
 def fit(c: rl_canvas.Canvas, text: str, font: str, size: float, width: float) -> float:
@@ -98,14 +97,15 @@ def _y(c: rl_canvas.Canvas, top_mm: float) -> float:
 
 
 def draw_head(c: rl_canvas.Canvas, data: LetterData) -> None:
-    """Briefkopf: Logo, Name, Zusatzzeile und Linie in der Akzentfarbe."""
-    regular, bold = fonts(data.font)
-    form = FORMS[data.form]
+    """Briefkopf: Logo, Name, Zusatzzeile und Linie in der gewählten Farbe."""
+    regular, _ = fonts(data.font)
+    _, heading_bold = fonts(data.heading_font)
     top = 10 if data.form == "b" else 7
     name_x, name_w = MARGIN_LEFT, TEXT_W
     logo = load_picture(data.logo, "logo") if data.logo else None
+    logo_bottom = None
     if logo is not None:
-        lw, lhgt = logo.fit(55, form["logo_h"])
+        lw, lhgt = logo.fit(*logo_box(data))
         left = data.settings.logo_position == "left"
         lx = MARGIN_LEFT if left else 210 - MARGIN_RIGHT - lw
         c.drawImage(
@@ -116,23 +116,31 @@ def draw_head(c: rl_canvas.Canvas, data: LetterData) -> None:
             lhgt * mm,
             mask="auto",
         )
+        logo_bottom = _y(c, top + lhgt)
         name_w = TEXT_W - lw - 6
         if left:
             name_x = MARGIN_LEFT + lw + 6
-    size = fit(c, data.name, bold, 16 if len(data.name) < 45 else 13, name_w * mm)
-    c.setFillColor(colors.HexColor(data.primary))
-    c.setFont(bold, size)
-    c.drawString(name_x * mm, _y(c, top + 1) - size, data.name)
-    line_y = _y(c, top + 1) - size - 2 * mm
+    text_top = _y(c, top + 1)
+    if data.show_name:
+        size = fit(c, data.name, heading_bold, 16 if len(data.name) < 45 else 13, name_w * mm)
+        c.setFillColor(colors.HexColor(data.primary))
+        c.setFont(heading_bold, size)
+        c.drawString(name_x * mm, text_top - size, data.name)
+        text_top -= size
+    line_y = text_top - 2 * mm
     sub = " · ".join(p for p in (data.tagline, data.sub_line) if p)
     if sub:
         c.setFillColor(GREY)
         c.setFont(regular, 9)
-        c.drawString(name_x * mm, _y(c, top + 1) - size - 11, sub)
+        c.drawString(name_x * mm, text_top - 11, sub)
         line_y -= 11
-    c.setStrokeColor(colors.HexColor(data.accent))
-    c.setLineWidth(0.75)
-    c.line(name_x * mm, line_y, (name_x + name_w) * mm, line_y)
+    if not data.show_name and logo_bottom is not None:
+        # ohne Namen schließt die Linie mit dem Logo ab
+        line_y = min(line_y, logo_bottom)
+    if data.head_line:
+        c.setStrokeColor(colors.HexColor(data.line_color))
+        c.setLineWidth(0.75)
+        c.line(name_x * mm, line_y, (name_x + name_w) * mm, line_y)
 
 
 def draw_marks(c: rl_canvas.Canvas, data: LetterData) -> None:
@@ -164,9 +172,10 @@ def draw_footer(c: rl_canvas.Canvas, data: LetterData) -> None:
     regular, bold = fonts(data.font)
     col_w = TEXT_W / len(columns)
     base = 297 - footer_height(data) + 2
-    c.setStrokeColor(colors.HexColor(data.accent))
-    c.setLineWidth(0.75)
-    c.line(MARGIN_LEFT * mm, _y(c, base - 2), (210 - MARGIN_RIGHT) * mm, _y(c, base - 2))
+    if data.footer_line:
+        c.setStrokeColor(colors.HexColor(data.line_color))
+        c.setLineWidth(0.75)
+        c.line(MARGIN_LEFT * mm, _y(c, base - 2), (210 - MARGIN_RIGHT) * mm, _y(c, base - 2))
     for i, (heading, lines) in enumerate(columns):
         x = (MARGIN_LEFT + i * col_w) * mm
         c.setFillColor(colors.HexColor(data.primary))
@@ -208,16 +217,18 @@ def draw_info(c: rl_canvas.Canvas, data: LetterData, rows, top: float) -> float:
 
 def draw_later_head(c: rl_canvas.Canvas, data: LetterData, page: int) -> None:
     """Kleiner Kopf auf Folgeseiten: Name links, Seitenzahl rechts."""
-    regular, bold = fonts(data.font)
+    regular, _ = fonts(data.font)
+    _, heading_bold = fonts(data.heading_font)
     c.setFillColor(colors.HexColor(data.primary))
-    c.setFont(bold, 9)
+    c.setFont(heading_bold, 9)
     c.drawString(MARGIN_LEFT * mm, _y(c, 12), data.name)
     c.setFillColor(GREY)
     c.setFont(regular, 8)
     c.drawRightString((210 - MARGIN_RIGHT) * mm, _y(c, 12), f"Seite {page}")
-    c.setStrokeColor(colors.HexColor(data.accent))
-    c.setLineWidth(0.5)
-    c.line(MARGIN_LEFT * mm, _y(c, 14), (210 - MARGIN_RIGHT) * mm, _y(c, 14))
+    if data.head_line:
+        c.setStrokeColor(colors.HexColor(data.line_color))
+        c.setLineWidth(0.5)
+        c.line(MARGIN_LEFT * mm, _y(c, 14), (210 - MARGIN_RIGHT) * mm, _y(c, 14))
 
 
 # --- Briefe als Flowables -----------------------------------------------------
@@ -361,7 +372,9 @@ def text_styles(data: LetterData | None):
     from reportlab.lib.enums import TA_RIGHT
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 
-    regular, bold = fonts(data.font if data else "Arial")
+    regular, _ = fonts(data.font if data else "Arial")
+    _, heading_bold = fonts(data.heading_font if data else "Arial")
+    title_color = colors.HexColor(data.title_color if data else "#000000")
     base = getSampleStyleSheet()
     normal = ParagraphStyle("n", parent=base["Normal"], fontName=regular, fontSize=10, leading=13)
     return {
@@ -369,11 +382,26 @@ def text_styles(data: LetterData | None):
         "body": ParagraphStyle("b", parent=normal, fontSize=11, leading=15, spaceAfter=6),
         "small": ParagraphStyle("s", parent=normal, fontSize=8, leading=10),
         "title": ParagraphStyle(
-            "t", parent=normal, fontName=bold, fontSize=12, leading=16, spaceAfter=4
+            "t",
+            parent=normal,
+            fontName=heading_bold,
+            fontSize=12,
+            leading=16,
+            spaceAfter=4,
+            textColor=title_color,
         ),
         "right": ParagraphStyle("r", parent=normal, alignment=TA_RIGHT),
         "right_small": ParagraphStyle("rs", parent=normal, fontSize=8, alignment=TA_RIGHT),
     }
+
+
+def table_colors(data: LetterData | None) -> tuple:
+    """(Linienfarbe, Streifen) für Tabellen in Rechnungen und Quittungen."""
+    if data is None:
+        return colors.black, [colors.white, colors.HexColor("#f4f5f4")]
+    stripe = data.table_stripe
+    rows = [colors.white, colors.HexColor(stripe)] if stripe else [colors.white]
+    return colors.HexColor(data.table_line_color), rows
 
 
 def esc(text: str) -> str:

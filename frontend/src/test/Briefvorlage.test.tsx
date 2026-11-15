@@ -45,12 +45,27 @@ const letterhead = {
     show_board: true,
     show_register: true,
     show_social: false,
+    heading_font: '',
+    font_fallback: 'Arial',
+    heading_font_fallback: 'Georgia',
+    show_name: true,
+    logo_size: 'medium',
+    line_color: '1',
+    head_line: true,
+    footer_line: true,
+    title_color: 'black',
+    table_line_color: '0',
+    table_stripe: 'grey',
     updated_at: '2026-10-28T10:00:00Z',
   },
   may_have_own: true,
   owner: { id: 7, name: 'TV Beispielhausen', is_self: true },
   accounts: [{ id: 1, name: 'Girokonto', iban: 'DE89 3704', bank: 'Musterbank' }],
   board: [{ name: 'Vera Vorsitz', role: '1. Vorsitzende' }],
+  palette: [
+    { slot: 0, color: '#1d5c3a', contrast: 7.9 },
+    { slot: 1, color: '#fbc707', contrast: 1.6 },
+  ],
   hints: [],
 }
 
@@ -178,7 +193,7 @@ describe('Einstellungen › Briefbogen', () => {
     })
     const user = userEvent.setup()
     expect(await screen.findByText(/Heute: Vera Vorsitz \(1\. Vorsitzende\)/)).toBeInTheDocument()
-    await user.selectOptions(screen.getByLabelText(/^Schriftart/), 'Georgia')
+    await user.selectOptions(screen.getByLabelText(/^Schrift für den Text/), 'Georgia')
     await waitFor(
       () => {
         const patch = calls.find((c) => c.key === 'PATCH /api/orgs/7/letterhead/')
@@ -190,6 +205,45 @@ describe('Einstellungen › Briefbogen', () => {
     expect(screen.getByTitle('Vorschau der ersten Seite')).toHaveAttribute(
       'src',
       'blob:x#view=Fit&zoom=page-fit',
+    )
+  })
+
+  it('stellt Linienfarbe, Logogröße und Schriften ein (Issue #470)', async () => {
+    const calls = show('/einstellungen/briefbogen', {
+      'GET /api/orgs/7/letterhead/': () => ({ status: 200, body: letterhead }),
+      'GET /api/orgs/7/letterhead/preview/': () => ({ status: 200, body: '%PDF' }),
+      'PATCH /api/orgs/7/letterhead/': (init) => ({
+        status: 200,
+        body: {
+          ...letterhead,
+          letterhead: { ...letterhead.letterhead, ...JSON.parse(String(init?.body)) },
+        },
+      }),
+    })
+    const user = userEvent.setup()
+    const line = await screen.findByLabelText(/^Linienfarbe/)
+    // Palette mit Kontrast auf Weiß
+    expect(line).toHaveTextContent('Zweitfarbe (#fbc707, Kontrast 1,6:1)')
+    // Ersatzschrift erst bei einer Schrift der Webseite
+    expect(screen.queryByLabelText(/^Ersatzschrift in Word \(Text\)/)).not.toBeInTheDocument()
+    await user.selectOptions(line, '0')
+    await user.selectOptions(screen.getByLabelText(/^Größe von Logo/), 'large')
+    await user.click(screen.getByLabelText(/^Name als Text neben dem Logo/))
+    await user.selectOptions(screen.getByLabelText(/^Schrift für den Text/), 'Source Sans 3')
+    expect(await screen.findByLabelText(/^Ersatzschrift in Word \(Text\)/)).toBeInTheDocument()
+    await waitFor(
+      () => {
+        const sent = calls
+          .filter((c) => c.key === 'PATCH /api/orgs/7/letterhead/')
+          .reduce((all, c) => ({ ...all, ...JSON.parse(String(c.init?.body)) }), {})
+        expect(sent).toMatchObject({
+          line_color: '0',
+          logo_size: 'large',
+          show_name: false,
+          font: 'Source Sans 3',
+        })
+      },
+      { timeout: 4000 },
     )
   })
 })

@@ -12793,3 +12793,92 @@ msgstr "The sign-in has expired. Please try again."
 
 msgid "Die Freischaltung ist abgelaufen. Bitte in der App noch einmal beginnen."
 msgstr "The unlock has expired. Please start again in the app."
+
+msgid "Source Sans 3"
+msgstr "Source Sans 3"
+
+msgid "Crimson Pro"
+msgstr "Crimson Pro"
+
+msgid "Atkinson Hyperlegible"
+msgstr "Atkinson Hyperlegible"
+
+msgid "Open Sans"
+msgstr "Open Sans"
+
+msgid "Roboto"
+msgstr "Roboto"
+
+msgid "Oswald"
+msgstr "Oswald"
+
+msgid "UnifrakturMaguntia (Fraktur)"
+msgstr "UnifrakturMaguntia (blackletter)"
+
+msgid "klein"
+msgstr "small"
+
+msgid "mittel"
+msgstr "medium"
+
+msgid "groß"
+msgstr "large"
+
+msgid "Hauptfarbe"
+msgstr "Main colour"
+
+msgid "Zweitfarbe"
+msgstr "Second colour"
+
+msgid "Farbe 3"
+msgstr "Colour 3"
+
+msgid "Farbe 4"
+msgstr "Colour 4"
+
+msgid "Farbe 5"
+msgstr "Colour 5"
+
+msgid "Farbe 6"
+msgstr "Colour 6"
+
+msgid "Schwarz"
+msgstr "Black"
+
+msgid "hellgrau"
+msgstr "light grey"
+
+msgid "keine Streifen"
+msgstr "no stripes"
+
+msgid "Hauptfarbe, hell"
+msgstr "Main colour, light"
+
+msgid "Zweitfarbe, hell"
+msgstr "Second colour, light"
+
+msgid "Farbe 3, hell"
+msgstr "Colour 3, light"
+
+msgid "Farbe 4, hell"
+msgstr "Colour 4, light"
+
+msgid "Farbe 5, hell"
+msgstr "Colour 5, light"
+
+msgid "Farbe 6, hell"
+msgstr "Colour 6, light"
+
+msgid "wie der Text"
+msgstr "same as text"
+
+#, python-brace-format
+msgid "Die Linienfarbe hebt sich auf Weiß kaum ab (Kontrast {ratio}:1, empfohlen mindestens 3:1)."
+msgstr "The line colour barely stands out on white (contrast {ratio}:1, at least 3:1 recommended)."
+
+#, python-brace-format
+msgid "Die Linien in Tabellen heben sich auf Weiß kaum ab (Kontrast {ratio}:1)."
+msgstr "The table lines barely stand out on white (contrast {ratio}:1)."
+
+msgid "Ohne Logo/Wappen steht der Name trotzdem im Kopf, sonst fehlte er ganz."
+msgstr "Without a logo/crest the name is still shown in the header, otherwise it would be missing."
