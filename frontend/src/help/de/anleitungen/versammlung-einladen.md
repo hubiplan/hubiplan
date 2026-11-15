@@ -11,7 +11,7 @@ stichworte: [Mitgliederversammlung, JHV, Einladung, Tagesordnung, Frist]
 1. Öffne [Versammlungen](/versammlungen) und wähle **Neue Versammlung**.
 2. Wähle Art, Beginn, Ende und Ort; HUBIplan legt dazu einen Termin im Kalender an.
 3. Lass **Tagesordnung der letzten Versammlung dieser Art übernehmen** angekreuzt, wenn die Punkte vom letzten Mal passen.
-4. Ergänze die Tagesordnungspunkte mit Titel, Art und Erläuterung und klicke auf **Tagesordnung speichern**.
+4. Ergänze die Tagesordnungspunkte mit Titel, Art und Erläuterung. Die Tagesordnung speichert sich von selbst.
 5. Prüfe unter der Überschrift, bis wann die Einladung hinausgehen muss, und sieh dir die Prüfliste **Vor der Einladung** an.
 6. Wähle **Einladung vorbereiten**; HUBIplan legt ein Rundschreiben mit der Tagesordnung als Entwurf an.
 7. Öffne es mit **Rundschreiben öffnen**, prüfe Empfänger und Text und verschicke die Einladung.
