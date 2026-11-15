@@ -343,6 +343,10 @@ describe('Kalender', () => {
     await user.click(await screen.findByText('Jahreshauptversammlung'))
     const dialog = await screen.findByRole('dialog')
     expect(await within(dialog).findByText('Zu diesem Termin')).toBeInTheDocument()
+    // Eine Zeile je Bereich: Name, Stand, Knöpfe (Ralf 15.11.2026)
+    expect(within(dialog).getByRole('group', { name: 'Versammlung' })).toHaveTextContent(
+      'in Vorbereitung',
+    )
     expect(within(dialog).getByRole('link', { name: 'Zur Versammlung' })).toHaveAttribute(
       'href',
       '/versammlungen?versammlung=5',

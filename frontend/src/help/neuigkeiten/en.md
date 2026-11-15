@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Clearer events**: In an open event the buttons (Edit, circular, reminder, add to my calendar) now sit right below when and where. Responses show acceptances, refusals and open replies as large numbers, and **For this event** brings meeting, duty roster, booking, tasks, equipment, statement and attachments together, one row each with matching buttons. Empty areas take only one line now.
 - **Dark mode everywhere**: The dark appearance now applies to all pages, including administration. It is off to begin with: HUBIplan stays light until you choose “Dark” or “Same as device” under My account › Profile › **Appearance**. Accounts that used to follow the device are now set to “Light”.
 - **Quick search**: At the top (or with Ctrl+K) a few letters take you to any page; if you may see members, you find members there too.
 - **Fresher look**: HUBIplan has a new, highly legible typeface, clearer buttons and drop-downs and coloured badges for states such as “paid” or “open”. The sidebar shows the club colour and stays in place while scrolling. On phones, Home, Events and the most important area sit in a bar at the bottom edge; “More” opens the full menu. Events on the home page carry a date box. Search fields show a magnifying glass, an active filter is tinted, and home page cards and empty lists carry an icon.
