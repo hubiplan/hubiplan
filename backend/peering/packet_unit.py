@@ -89,7 +89,10 @@ def _logo(org, encoded):
         raw = base64.b64decode(encoded, validate=True)
         if len(raw) > LOGO_LIMIT:
             return
-        with Image.open(io.BytesIO(raw)) as img:
+        from core.bildsicher import IMAGE_FORMATS
+
+        # Logo der Partnerinstanz: nur übliche Bildformate, nie EPS (PUB-01)
+        with Image.open(io.BytesIO(raw), formats=IMAGE_FORMATS) as img:
             # Größe aus dem Dateikopf prüfen, bevor die Pixel entpackt werden (INF-S02)
             if img.width * img.height > 16_000_000:
                 return
