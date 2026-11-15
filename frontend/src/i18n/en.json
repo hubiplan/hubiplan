@@ -9322,5 +9322,9 @@
   "Keine Fassungen haben Einstellungen, Bilder, Designpakete und die Farben und das Logo der Einheit: Sie wirken sofort. Was geändert wurde, steht im Protokoll.": "Settings, images, design packages and the unit's colours and logo have no versions: they take effect immediately. What was changed is shown in the log.",
   "Knopftext (optional)": "Button text (optional)",
   "Mit Ziel steht unten in der Kachel ein Knopf, z. B. „Kontakt aufnehmen“. Ohne Knopftext wird der Titel zum Link.": "With a target, a button appears at the bottom of the tile, e.g. “Get in touch”. Without button text, the title becomes the link.",
-  "zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf": "two to six tiles with image, title, target and an optional button"
+  "zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf": "two to six tiles with image, title, target and an optional button",
+  "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa Text mit Bild, Bilder, ein Zitat oder Trainingszeiten. Kontakt, Homepage, Termine und die anderen festen Blöcke lassen sich verschieben und ausblenden. Alles erscheint mit „Veröffentlichen“.": "You can add more sections above and below the text, such as text with image, pictures, a quote or training times. Contact, homepage, events and the other fixed blocks can be moved and hidden. Everything appears once you click “Publish”.",
+  "Notiz zum Bildplatz (optional)": "Note for the picture slot (optional)",
+  "Noch kein Bild? Die Vorschau zeigt dann einen Platzhalter mit dieser Notiz, etwa „Probenszene, Querformat“. Auf der veröffentlichten Seite erscheint er nicht.": "No picture yet? The preview then shows a placeholder with this note, e.g. “Rehearsal scene, landscape”. It does not appear on the published page.",
+  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there."
 }

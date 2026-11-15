@@ -132,7 +132,9 @@ export function ContentPage() {
                         id={tm.id}
                         units={data.units}
                         linkTargets={data.link_targets ?? []}
-                        sectionOptions={data.section_options}
+                        sectionOptions={
+                          tm.kind === 'unit' ? data.unit_section_options : data.section_options
+                        }
                         onChanged={() => void reload()}
                         onDeleted={() => {
                           setOpen(null)
@@ -465,6 +467,34 @@ function TextForm({
     />
   )
 
+  // Abschnitte der Seite (G4); seit #491 auch auf den Seiten der Untereinheiten
+  const sectionsBox = (text.kind === 'page' || text.kind === 'unit') &&
+    !text.has_timeline &&
+    text.sections &&
+    sectionOptions && (
+      <section className="field" aria-labelledby={`abschnitte-${text.id}`}>
+        <h3 id={`abschnitte-${text.id}`}>{t('Abschnitte der Seite')}</h3>
+        <p className="muted small">
+          {text.kind === 'unit'
+            ? t(
+                'Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa Text mit Bild, Bilder, ein Zitat oder Trainingszeiten. Kontakt, Homepage, Termine und die anderen festen Blöcke lassen sich verschieben und ausblenden. Alles erscheint mit „Veröffentlichen“.',
+              )
+            : t(
+                'Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa ein Banner, Knöpfe oder Kacheln. Sie erscheinen mit „Veröffentlichen“.',
+              )}
+        </p>
+        <HomeBuilder
+          data={sectionOptions}
+          website={sectionOptions}
+          value={v.sections}
+          blocks={sectionOptions.blocks}
+          design=""
+          page
+          onChange={(next) => set('sections', next)}
+        />
+      </section>
+    )
+
   // Chronik mit Modul „Chronik“: Inhalt nur unter Verein › Chronik pflegen (Ralf 09.11.),
   // hier bleibt nur, was zur Webseite gehört (Adresse, Menü, Löschen).
   if (text.has_timeline && !chronicle) {
@@ -588,25 +618,7 @@ function TextForm({
         onImagesChanged={reloadImages}
       />
       {(text.kind === 'page' || text.kind === 'intro') && captionsBox}
-      {text.kind === 'page' && !text.has_timeline && text.sections && sectionOptions && (
-        <section className="field" aria-labelledby={`abschnitte-${text.id}`}>
-          <h3 id={`abschnitte-${text.id}`}>{t('Abschnitte der Seite')}</h3>
-          <p className="muted small">
-            {t(
-              'Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa ein Banner, Knöpfe oder Kacheln. Sie erscheinen mit „Veröffentlichen“.',
-            )}
-          </p>
-          <HomeBuilder
-            data={sectionOptions}
-            website={sectionOptions}
-            value={v.sections}
-            blocks={sectionOptions.blocks}
-            design=""
-            page
-            onChange={(next) => set('sections', next)}
-          />
-        </section>
-      )}
+      {text.kind === 'page' && sectionsBox}
       {text.has_timeline && (
         <TimelineEditor
           textId={text.id}
@@ -635,6 +647,7 @@ function TextForm({
         />
       )}
       {(text.kind === 'greeting' || text.kind === 'unit') && captionsBox}
+      {text.kind === 'unit' && sectionsBox}
       {message && <Alert kind="error">{message}</Alert>}
       <div className="button-row">
         <button

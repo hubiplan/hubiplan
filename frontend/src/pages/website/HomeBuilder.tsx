@@ -1005,6 +1005,17 @@ function SectionContent({
             onChange={(text) => setData({ text })}
           />
           {imageField(t('Bild'), d.image, (image) => setData({ image }))}
+          {!d.image && (
+            <Field
+              label={t('Notiz zum Bildplatz (optional)')}
+              hint={t(
+                'Noch kein Bild? Die Vorschau zeigt dann einen Platzhalter mit dieser Notiz, etwa „Probenszene, Querformat“. Auf der veröffentlichten Seite erscheint er nicht.',
+              )}
+              value={d.image_note ?? ''}
+              maxLength={120}
+              onChange={(e) => setData({ image_note: e.target.value })}
+            />
+          )}
           <Segments
             label={t('Bild steht')}
             value={d.side ?? 'right'}
@@ -1894,6 +1905,17 @@ function SectionContent({
             render={(item, set) => (
               <>
                 {imageField(t('Bild'), item.image, (image) => set({ image }))}
+                {!item.image && (
+                  <Field
+                    label={t('Notiz zum Bildplatz (optional)')}
+                    hint={t(
+                      'Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.',
+                    )}
+                    value={item.note ?? ''}
+                    maxLength={120}
+                    onChange={(e) => set({ note: e.target.value })}
+                  />
+                )}
                 <Field
                   label={t('Bildunterschrift (optional)')}
                   value={item.caption ?? ''}

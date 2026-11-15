@@ -599,3 +599,48 @@ def test_mehrere_kopfbilder_ueber_die_schnittstelle(club, site, manager):  # noq
     assert data_of(text)["kopfbild"] == sorted([first.pk, second.pk])
     text, failed = call(token, "webseite_gestaltung_aendern", kopfbild=["x"])
     assert failed
+
+
+def test_untereinheit_abschnitte_ueber_die_schnittstelle(club, site, editor):  # noqa: F811
+    """#491: Abschnitte auch für Texte der Art „unit“."""
+    from organizations.models import Department
+    from website.home import UNIT_BUILTINS
+
+    zug = Department.objects.create(organization=club, parent=club, name="Jägerzug")
+    text = WebsiteText.objects.create(
+        organization=club, website=site, kind=WebsiteText.Kind.UNIT, department=zug, title="Zug"
+    )
+    token = connect(editor, club)["access_token"]
+    read, failed = call(token, "webseite_text_lesen", nummer=text.pk)
+    assert not failed, read
+    data = data_of(read)
+    assert [s["key"] for s in data["abschnitte"]] == list(UNIT_BUILTINS)
+    out, failed = call(
+        token,
+        "textseite_aufbau_aendern",
+        nummer=text.pk,
+        neu=[{"art": "quote", "inhalt": {"text": "Horrido!"}, "nach": "body"}],
+        aus=["contact"],
+        reihenfolge=["events", "body"],
+    )
+    assert not failed, out
+    [key] = data_of(out)["neue_schluessel"]
+    text.refresh_from_db()
+    keys = [s["key"] for s in text.sections]
+    assert keys[:3] == ["events", "body", key]
+    assert next(s for s in text.sections if s["key"] == "contact")["on"] is False
+    out, failed = call(
+        token,
+        "textseite_abschnitt_aendern",
+        nummer=text.pk,
+        schluessel=key,
+        inhalt={"name": "Zugführer"},
+    )
+    assert not failed, out
+    text.refresh_from_db()
+    assert next(s for s in text.sections if s["key"] == key)["data"]["name"] == "Zugführer"
+    # Feste Blöcke haben keinen Inhalt
+    _out, failed = call(
+        token, "textseite_abschnitt_aendern", nummer=text.pk, schluessel="contact", inhalt={"x": 1}
+    )
+    assert failed

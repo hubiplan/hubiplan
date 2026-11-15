@@ -692,6 +692,42 @@ def page_section_options(org, website: Website) -> dict:
     }
 
 
+def unit_section_options(org, website: Website) -> dict:
+    """Auswahl für die Abschnitte der Seiten der Untereinheiten (#491): dieselben Arten wie auf
+    Textseiten (ohne Titelbild), dazu die festen Blöcke der Untereinheit."""
+    from .home import KIND_HINTS, KINDS
+
+    options = page_section_options(org, website)
+    options["home_labels"] = {
+        "body": gettext("Text der Seite"),
+        "contact": gettext("Kontakt"),
+        "homepage": gettext("Eigene Homepage"),
+        "honors": gettext("Majestäten"),
+        "events": gettext("Nächste Termine"),
+        "news": gettext("Aktuelles (Beiträge)"),
+        "follow": gettext("Folgt uns"),
+    }
+    options["home_hints"] = {
+        "body": gettext("Bild, Text und Bilderkarussell aus den Feldern oben"),
+        "contact": gettext("Ansprechpartner der Untereinheit"),
+        "homepage": gettext("Link zur eigenen Homepage, wenn freigegeben"),
+        "honors": gettext("aktuelle Majestäten der Untereinheit"),
+        "events": gettext("die nächsten Termine der Untereinheit"),
+        "news": gettext("neueste Beiträge aus Instagram und Facebook"),
+        "follow": gettext("Links zu den sozialen Medien der Untereinheit"),
+    }
+    options["home_needs_block"] = {
+        "contact": "board",
+        "honors": "honors",
+        "events": "events",
+        "news": "posts",
+        "follow": "social",
+    }
+    options["home_kinds"] = KINDS
+    options["home_kind_hints"] = KIND_HINTS
+    return options
+
+
 class WebsiteView(_WebsiteMixin, APIView):
     """GET: Stand · POST: Webseite einrichten · PUT: Einstellungen · DELETE: entfernen."""
 

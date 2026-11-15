@@ -12902,3 +12902,66 @@ msgstr "An own logo only exists with an own letterhead."
 
 msgid "Knopftext"
 msgstr "Button text"
+
+msgid "Abschnitte gibt es nur auf Textseiten und Seiten der Untereinheiten."
+msgstr "Sections only exist on text pages and on the pages of sub-units."
+
+msgid "Notiz zum Bild"
+msgstr "Note on the picture"
+
+msgid "Kontakt"
+msgstr "Contact"
+
+msgid "Eigene Homepage"
+msgstr "Own homepage"
+
+msgid "Majestäten"
+msgstr "Royalty"
+
+msgid "Nächste Termine"
+msgstr "Upcoming events"
+
+msgid "Aktuelles (Beiträge)"
+msgstr "News (posts)"
+
+msgid "Folgt uns"
+msgstr "Follow us"
+
+msgid "Bild, Text und Bilderkarussell aus den Feldern oben"
+msgstr "Picture, text and picture carousel from the fields above"
+
+msgid "Ansprechpartner der Untereinheit"
+msgstr "Contact persons of the sub-unit"
+
+msgid "Link zur eigenen Homepage, wenn freigegeben"
+msgstr "Link to the own homepage, if enabled"
+
+msgid "aktuelle Majestäten der Untereinheit"
+msgstr "current royalty of the sub-unit"
+
+msgid "die nächsten Termine der Untereinheit"
+msgstr "the upcoming events of the sub-unit"
+
+msgid "neueste Beiträge aus Instagram und Facebook"
+msgstr "latest posts from Instagram and Facebook"
+
+msgid "Links zu den sozialen Medien der Untereinheit"
+msgstr "links to the sub-unit's social media"
+
+msgid "Abschnitte gibt es nur auf Textseiten und Seiten der Untereinheiten (nicht in der Chronik mit Zeitleiste)."
+msgstr "Sections only exist on text pages and on the pages of sub-units (not in the chronicle with timeline)."
+
+msgid "Feste Abschnitte (Text der Seite, Kontakt, Termine …) haben hier keinen Inhalt; den Text der Seite ändert webseite_text_aendern."
+msgstr "Fixed sections (text of the page, contact, events …) have no content here; webseite_text_aendern changes the text of the page."
+
+msgid "Nummer der Textseite oder des Textes der Untereinheit."
+msgstr "Number of the text page or of the sub-unit's text."
+
+msgid "Abschnitte einer Textseite oder der Seite einer Untereinheit (Text der Art „unit“) wie auf der Startseite: neue eigene Abschnitte (z. B. Kacheln, Text mit Bild, Knopfleiste, Ansprechpartner; auf Textseiten dazu „cover“ = Titelbild mit inhalt {image}, höchstens eins), Reihenfolge, an/aus, Aussehen und Entfernen. Der Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern); Seiten der Untereinheiten haben dazu die festen Abschnitte „contact“, „homepage“, „honors“, „events“, „news“ und „follow“ (verschieben, an/aus). Ein Bild darf im Entwurf fehlen: „image_note“ (Text mit Bild) bzw. „note“ (je Bild bei „Bilder“) zeigt in der Vorschau einen Platzhalter, veröffentlicht erscheint er nicht. Schlüssel liefert webseite_text_lesen, Felder je Art startseite_bausteine."
+msgstr "Sections of a text page or of a sub-unit's page (text of kind “unit”) like on the home page: new custom sections (e.g. tiles, text with image, button bar, contact persons; on text pages also “cover” = cover image with inhalt {image}, at most one), order, on/off, appearance and removal. The page text is the fixed section “body” (change it with webseite_text_aendern); sub-unit pages also have the fixed sections “contact”, “homepage”, “honors”, “events”, “news” and “follow” (move, on/off). A picture may be missing in the draft: “image_note” (text with image) or “note” (per picture in “Bilder”) shows a placeholder in the preview; it does not appear when published. Keys come from webseite_text_lesen, fields per kind from startseite_bausteine."
+
+msgid "Ändert den Inhalt eines eigenen Abschnitts einer Textseite oder der Seite einer Untereinheit im Entwurf. „inhalt“ enthält nur die geänderten Felder, aufgebaut wie „data“ aus webseite_text_lesen."
+msgstr "Changes the content of a custom section of a text page or of a sub-unit's page in the draft. “inhalt” contains only the changed fields, structured like “data” from webseite_text_lesen."
+
+msgid "Text im Entwurf (Markdown; Bilder als ![Beschreibung](bild:Schlüssel), siehe webseite_bilder). Textseiten und Seiten der Untereinheiten haben „abschnitte“ wie die Startseite; ändern mit textseite_aufbau_aendern und textseite_abschnitt_aendern."
+msgstr "Draft text (Markdown; images as ![description](bild:key), see webseite_bilder). Text pages and sub-unit pages have “abschnitte” (sections) like the home page; change them with textseite_aufbau_aendern and textseite_abschnitt_aendern."

@@ -505,9 +505,13 @@ def _home_build(args: dict, ctx: ClubContext) -> str:
 def _page_sections(ctx: ClubContext, pk: int) -> list[dict]:
     _v, content_views = _views()
     t = ctx.call(content_views.TextDetailView, "GET", f"website/texts/{pk}/", pk=pk)
-    if t.get("kind") != "page" or t.get("has_timeline"):
+    # Textseiten und seit #491 auch Seiten der Untereinheiten (Art „unit“)
+    if t.get("kind") not in ("page", "unit") or t.get("has_timeline"):
         raise ToolError(
-            _("Abschnitte gibt es nur auf Textseiten (nicht in der Chronik mit Zeitleiste).")
+            _(
+                "Abschnitte gibt es nur auf Textseiten und Seiten der Untereinheiten "
+                "(nicht in der Chronik mit Zeitleiste)."
+            )
         )
     return list(t.get("sections") or [])
 
@@ -545,7 +549,10 @@ def _page_section_change(args: dict, ctx: ClubContext) -> str:
         raise ToolError(_("Diesen Abschnitt gibt es nicht. Erst webseite_text_lesen aufrufen."))
     if "kind" not in target:
         raise ToolError(
-            _("Den Text der Seite ändert webseite_text_aendern; er hat hier keinen Inhalt.")
+            _(
+                "Feste Abschnitte (Text der Seite, Kontakt, Termine …) haben hier keinen "
+                "Inhalt; den Text der Seite ändert webseite_text_aendern."
+            )
         )
     target["data"] = {**(target.get("data") or {}), **content}
     _save_page_sections(ctx, pk, sections)
@@ -992,10 +999,15 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         name="textseite_aufbau_aendern",
         title=gettext_lazy("Aufbau einer Textseite ändern (Entwurf)"),
         description=gettext_lazy(
-            "Abschnitte einer Textseite wie auf der Startseite: neue eigene Abschnitte (z. B. "
-            "Kacheln, Text mit Bild, Knopfleiste, Ansprechpartner; dazu „cover“ = Titelbild mit "
+            "Abschnitte einer Textseite oder der Seite einer Untereinheit (Text der Art "
+            "„unit“) wie auf der Startseite: neue eigene Abschnitte (z. B. Kacheln, Text mit "
+            "Bild, Knopfleiste, Ansprechpartner; auf Textseiten dazu „cover“ = Titelbild mit "
             "inhalt {image}, höchstens eins), Reihenfolge, an/aus, Aussehen und Entfernen. Der "
-            "Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern). "
+            "Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern); "
+            "Seiten der Untereinheiten haben dazu die festen Abschnitte „contact“, „homepage“, "
+            "„honors“, „events“, „news“ und „follow“ (verschieben, an/aus). Ein Bild darf im "
+            "Entwurf fehlen: „image_note“ (Text mit Bild) bzw. „note“ (je Bild bei „Bilder“) "
+            "zeigt in der Vorschau einen Platzhalter, veröffentlicht erscheint er nicht. "
             "Schlüssel liefert webseite_text_lesen, Felder je Art startseite_bausteine."
         ),
         schema=_schema(
@@ -1003,7 +1015,9 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                 "nummer": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": gettext_lazy("Nummer der Textseite."),
+                    "description": gettext_lazy(
+                        "Nummer der Textseite oder des Textes der Untereinheit."
+                    ),
                 },
                 "neu": {
                     "type": "array",
@@ -1048,15 +1062,18 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         name="textseite_abschnitt_aendern",
         title=gettext_lazy("Abschnitt einer Textseite ändern (Entwurf)"),
         description=gettext_lazy(
-            "Ändert den Inhalt eines eigenen Abschnitts einer Textseite im Entwurf. „inhalt“ "
-            "enthält nur die geänderten Felder, aufgebaut wie „data“ aus webseite_text_lesen."
+            "Ändert den Inhalt eines eigenen Abschnitts einer Textseite oder der Seite einer "
+            "Untereinheit im Entwurf. „inhalt“ enthält nur die geänderten Felder, aufgebaut wie "
+            "„data“ aus webseite_text_lesen."
         ),
         schema=_schema(
             {
                 "nummer": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": gettext_lazy("Nummer der Textseite."),
+                    "description": gettext_lazy(
+                        "Nummer der Textseite oder des Textes der Untereinheit."
+                    ),
                 },
                 "schluessel": {
                     "type": "string",

@@ -162,6 +162,7 @@ TEXT_MAX = 10000
 SHORT_MAX = 500
 LABEL_MAX = 60
 URL_MAX = 500
+NOTE_MAX = 120
 EVENT_DAYS_AHEAD = 400
 
 
@@ -355,6 +356,8 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
             "image": _ref(data.get("image"), refs["images"]),
             "side": _choice(data.get("side"), ("left", "right", "top", "bottom"), "right"),
             "size": _choice(data.get("size"), ("small", "half"), "half"),
+            # #491: Bildplatz ohne Bild im Entwurf, mit Notiz für die Vorschau
+            "image_note": _text(data.get("image_note"), NOTE_MAX, gettext("Notiz zum Bild")),
         }
     if kind == "banner":
         return {
@@ -617,6 +620,7 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
                 {
                     "image": _ref(i.get("image"), refs["images"]),
                     "caption": _text(i.get("caption"), SHORT_MAX // 2, gettext("Bildunterschrift")),
+                    "note": _text(i.get("note"), NOTE_MAX, gettext("Notiz zum Bild")),
                 }
                 for i in items
             ],
@@ -822,8 +826,12 @@ def public(site, home_keys: list[str], event_entry) -> list[dict]:
     return resolve(site, normalize_home_sections(site.site.home_sections), home_keys, event_entry)
 
 
-def resolve(site, sections: list[dict], builtin_keys, event_entry) -> list[dict]:
-    """Abschnitte (Startseite oder Textseite) mit aufgelöstem Inhalt für die Webseite."""
+def resolve(
+    site, sections: list[dict], builtin_keys, event_entry, builtin_on: bool = False
+) -> list[dict]:
+    """Abschnitte (Startseite oder Textseite) mit aufgelöstem Inhalt für die Webseite.
+
+    ``builtin_on``: ausgeschaltete feste Abschnitte weglassen (Seiten der Untereinheiten)."""
     from . import menu
 
     images = _images(site, image_ids(sections))
@@ -832,7 +840,7 @@ def resolve(site, sections: list[dict], builtin_keys, event_entry) -> list[dict]
     for s in sections:
         layout = {"key": s["key"], "bg": s["bg"], "width": s["width"], "column": s["column"]}
         if "kind" not in s:
-            if s["key"] in builtin_keys:
+            if s["key"] in builtin_keys and (s["on"] or not builtin_on):
                 result.append({**layout, "kind": s["key"]})
             continue
         needs = KIND_NEEDS_BLOCK.get(s["kind"])
@@ -874,6 +882,24 @@ def validate_page(value, website) -> list[dict]:
 
 def has_custom(sections) -> bool:
     return any(isinstance(s, dict) and "kind" in s for s in normalize_page(sections))
+
+
+# --- Seiten der Untereinheiten (#491) ---
+
+# Feste Abschnitte der Seite einer Untereinheit in der bisherigen Reihenfolge: Text der Seite
+# (Bild oben, Text, Bilderkarussell), Kontakt, eigene Homepage, Majestäten, nächste Termine,
+# Beiträge und „Folgt …“. Ohne eigene Abschnitte und Änderungen sieht die Seite aus wie vorher.
+UNIT_BUILTINS = ("body", "contact", "homepage", "honors", "events", "news", "follow")
+# Ein Titelbild hat die Seite einer Untereinheit schon (Bild der Untereinheit)
+UNIT_KINDS = KINDS
+
+
+def normalize_unit(value) -> list[dict]:
+    return normalize(value, UNIT_BUILTINS, set(), UNIT_KINDS)
+
+
+def validate_unit(value, website) -> list[dict]:
+    return validate(value, website, UNIT_BUILTINS, set(), UNIT_KINDS)
 
 
 # --- Datenumzug: Nummern im Inhalt auf die des neuen Servers umstellen ---
@@ -997,6 +1023,16 @@ def next_occurrence(site, event_pk: int):
     return found[0] if found else None
 
 
+def _placeholder(site, image, note) -> str:
+    """Bildplatz ohne Bild (#491): in der Vorschau die Notiz (oder „Bild folgt“), auf der
+    veröffentlichten Seite nichts."""
+    if image is not None or not getattr(site.site, "draft_shown", False):
+        return ""
+    if not isinstance(note, str):
+        return ""
+    return note.strip() or ""
+
+
 def _content(site, kind, data, images, known, event_entry) -> dict | None:
     title = data.get("title") or ""
     if kind == "text":
@@ -1005,15 +1041,19 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
         )
     if kind == "text_image":
         image = images.get(data.get("image"))
-        if not (title or data.get("text") or image):
+        placeholder = _placeholder(site, image, data.get("image_note"))
+        if not (title or data.get("text") or image or placeholder):
             return None
-        return {
+        result = {
             "title": title,
             "text": data.get("text") or "",
             "image": image,
             "side": data.get("side", "right"),
             "size": data.get("size", "half"),
         }
+        if placeholder:
+            result["placeholder"] = placeholder
+        return result
     if kind == "cover":
         image = images.get(data.get("image"))
         return {"image": image} if image is not None else None
@@ -1182,11 +1222,18 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
             return None
         return {"title": title, "text": data.get("text") or "", "style": data.get("style", "info")}
     if kind == "images":
-        items = [
-            {"image": images[i["image"]], "caption": i.get("caption") or ""}
-            for i in data.get("items") or []
-            if isinstance(i, dict) and images.get(i.get("image"))
-        ]
+        items = []
+        for i in data.get("items") or []:
+            if not isinstance(i, dict):
+                continue
+            image = images.get(i.get("image"))
+            if image:
+                items.append({"image": image, "caption": i.get("caption") or ""})
+            elif placeholder := _placeholder(site, None, i.get("note")):
+                # Bildplatz ohne Bild (#491), nur in der Vorschau
+                items.append(
+                    {"image": None, "caption": i.get("caption") or "", "placeholder": placeholder}
+                )
         if not items:
             return None
         return {"title": title, "items": items, "columns": data.get("columns", 3)}
