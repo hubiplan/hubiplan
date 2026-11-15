@@ -70,10 +70,14 @@ export function EraseCard({
       {state.error && <LoadError message={state.error} onRetry={() => void state.reload()} />}
       {s && !requested && (
         <p>
-          {t(
-            'Gelöscht wird in zwei Stufen. Zuerst wird die Einheit mit allen Untereinheiten stillgelegt: Niemand kommt mehr hinein, die Daten bleiben erhalten. Endgültig löschen lässt sie sich frühestens {n} Tage später und erst, wenn die Aufbewahrungsfristen für Bücher und Belege abgelaufen sind.',
-            { n: s.wait_days },
-          )}
+          {s.empty
+            ? t(
+                'Gelöscht wird in zwei Stufen. Zuerst wird die Einheit mit allen Untereinheiten stillgelegt. Weil sie nie Mitglieder und keine Finanzdaten hatte, lässt sie sich danach sofort endgültig löschen.',
+              )
+            : t(
+                'Gelöscht wird in zwei Stufen. Zuerst wird die Einheit mit allen Untereinheiten stillgelegt: Niemand kommt mehr hinein, die Daten bleiben erhalten. Endgültig löschen lässt sie sich frühestens {n} Tage später und erst, wenn die Aufbewahrungsfristen für Bücher und Belege abgelaufen sind.',
+                { n: s.wait_days },
+              )}
         </p>
       )}
       {s && requested && (
@@ -94,6 +98,7 @@ export function EraseCard({
             ) : (
               <li>{t('Keine Finanzdaten, keine Aufbewahrungsfrist.')}</li>
             )}
+            {s.empty && <li>{t('Nie Mitglieder und keine Finanzdaten: keine Wartezeit.')}</li>}
             {s.holds.map((hold) => (
               <li key={`${hold.unit}-${hold.year}`}>
                 {t('Löschsperre: {unit}, Geschäftsjahr {year}', hold)}

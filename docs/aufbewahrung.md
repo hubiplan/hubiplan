@@ -56,7 +56,8 @@ Stufen (`organizations/deletion.py`):
    sofort stillgelegt (kein Zugriff), die Daten bleiben. Solange die Vormerkung gilt, lässt
    sich die Einheit nicht wieder einschalten, auch nicht vom Dachverband. Die Plattform kann
    die Vormerkung zurücknehmen.
-2. **Endgültig löschen:** frühestens 30 Tage nach der Vormerkung und erst, wenn für jedes
+2. **Endgültig löschen:** frühestens 30 Tage nach der Vormerkung (leere Einheiten ohne je ein
+   Mitglied und ohne Finanzdaten sofort) und erst, wenn für jedes
    Geschäftsjahr mit Finanzdaten der Einheit und ihrer Untereinheiten beide Fristen nach
    § 147 AO abgelaufen sind (wie oben: Belege 8, Bücher 10 Jahre ab der letzten Eintragung).
    Eine Löschsperre in einem Geschäftsjahr verhindert das Löschen. Bestätigt wird mit dem
@@ -70,7 +71,7 @@ und täglich erneut gelöscht; lässt sie sich nicht automatisch löschen, kommt
 
 English: Units are deleted in two stages. Stage 1 deactivates the unit and its subunits and
 schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
-withdrawn. Stage 2 is possible 30 days later at the earliest and only after the § 147 AO
+withdrawn. Stage 2 is possible 30 days later at the earliest (immediately for an empty unit that never had members or financial data) and only after the § 147 AO
 retention periods of every financial year have expired, without legal holds, confirmed with
 the unit name, a fresh two-factor code and the person who verified the periods. Deleted
 units go on the deletion list and are deleted again after an older backup is restored.

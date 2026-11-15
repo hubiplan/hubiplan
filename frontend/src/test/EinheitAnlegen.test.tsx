@@ -33,6 +33,7 @@ function eraseState(extra: Record<string, unknown> = {}) {
     requested_at: null,
     requested_by: '',
     wait_days: 30,
+    empty: false,
     wait_until: null,
     retention_until: null,
     holds: [],
@@ -78,6 +79,24 @@ describe('Einheit anlegen auf der Plattform', () => {
     )
     const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/erase-request/')
     expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
+  })
+
+  it('nennt bei einer leeren Einheit keine Wartezeit', async () => {
+    fakeApi({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'GET /api/platform/orgs/': () => ({ status: 200, body: [bund] }),
+      'GET /api/platform/orgs/7/erase-state/': () => ({
+        status: 200,
+        body: eraseState({ wait_days: 0, empty: true }),
+      }),
+    })
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }))
+    expect(
+      await screen.findByText(/lässt sie sich danach sofort endgültig löschen/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/frühestens 0 Tage/)).toBeNull()
   })
 
   it('zeigt Fristen und löscht erst mit Bestätigung der Fristen', async () => {

@@ -726,6 +726,8 @@ export interface EraseState {
   requested_at: string | null
   requested_by: string
   wait_days: number
+  /** Nie Mitglieder, keine Finanzdaten: ohne Wartezeit löschbar */
+  empty: boolean
   wait_until: string | null
   retention_until: string | null
   holds: { unit: string; year: string }[]
