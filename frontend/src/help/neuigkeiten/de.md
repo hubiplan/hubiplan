@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: **Titelbild zufällig.** Unter Gestaltung › Feinabstimmung › Bilderkarussell blättert gibt es die Stufe **„zufällig“**: Bei jedem Aufruf zeigt die Startseite ein anderes Bild aus dem Bilderkarussell, das fest stehen bleibt, ohne durchzuwechseln. Das hilft etwa beim Umzug von WordPress-Seiten mit wechselndem Kopfbild.
 - Plattform: Eine **leere Einheit**, die nie Mitglieder und keine Finanzdaten hatte, lässt sich nach dem Stilllegen sofort endgültig löschen; die Wartezeit von 30 Tagen gilt nur noch für Einheiten mit Daten.
 - **Hauptmenü neu gegliedert**: Die neue Gruppe **Vereinsleben** fasst Wettbewerbe, Meldungen und Musik zusammen; unter **Verein** bleiben Mitglieder, Untereinheiten und Chronik. **Umfragen** stehen jetzt unter Kommunikation, **Geschäftspartner** unter Verwaltung direkt nach Finanzen. In den Apps stehen die Verwaltungsbereiche in derselben Reihenfolge.
 - **Briefbogen nach eigenem Styleguide**: Unter Einstellungen › Briefbogen wählt ihr jetzt eigene Schriften für Text und Überschriften (auch die Schriften der Webseite, im PDF eingebettet), die Größe von Logo/Wappen, ob der Name neben dem Logo steht, die Linienfarbe aus eurer Palette, Kopf- und Fußlinie getrennt, die Farbe von Titel und Betreff sowie Linien und Streifen der Rechnungstabellen. Das gilt für die Word-Vorlage und alle PDF-Briefe; ohne Änderung bleibt alles wie bisher. Ein KI-Assistent kann den Briefbogen ändern, wenn ihr es beim Verbinden eigens erlaubt.
