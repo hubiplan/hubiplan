@@ -111,7 +111,8 @@ LOCKS: dict[str, dict[str, tuple[str, ...] | None]] = {
     },
     # Die Bühne zeigt ihr Titelbild ohnehin randlos mit dem Namen
     "stage": {"width": ("narrow",), "hero_name": None, "hero_width": None},
-    "newspaper": {"nav": None},
+    # In der Zeitung steht das Titelbild in der Hauptspalte
+    "newspaper": {"nav": None, "hero_width": None},
 }
 
 
@@ -199,6 +200,7 @@ _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
         "nav": "bar",
         "nav_active": "filled",
         "line": None,
+        "hero_width": None,
     },
     "sidebar": {"logo_pos": "center", "nav": None, "header_height": None},
     "stage": {
