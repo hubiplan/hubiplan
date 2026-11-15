@@ -1199,9 +1199,13 @@ fieldset {
 :root {
   --field-label-space: calc(0.9rem * 1.5 + 0.3rem);
 }
-@media (min-width: 40.0625rem) {
+:where(.grid-2, .grid-3, .grid-4):has(> .field) > :is(.button-row, .button) {
+  margin-top: var(--field-label-space);
+}
+/* Auf dem Handy stehen Feld und Knopf untereinander; dort reicht der Rand unter dem Feld. */
+@media (max-width: 40rem) {
   :where(.grid-2, .grid-3, .grid-4):has(> .field) > :is(.button-row, .button) {
-    margin-top: var(--field-label-space);
+    margin-top: 0;
   }
 }
 /* In Knopfzeilen und Kartenköpfen stehen Feld und Knopf unten bündig; der Rand unter dem Feld
