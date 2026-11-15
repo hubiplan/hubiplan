@@ -12882,3 +12882,14 @@ msgstr "The table lines barely stand out on white (contrast {ratio}:1)."
 
 msgid "Ohne Logo/Wappen steht der Name trotzdem im Kopf, sonst fehlte er ganz."
 msgstr "Without a logo/crest the name is still shown in the header, otherwise it would be missing."
+
+#, python-brace-format
+msgid "Diese Webseite hat schon ein Design „{k}“. Bitte ein anderes Kürzel wählen."
+msgstr "This website already has a design “{k}”. Please choose a different short name."
+
+msgid "Designpakete spielt ein, wer die Webseite verwaltet."
+msgstr "Design packages can be imported by those who manage the website."
+
+#, python-brace-format
+msgid "Eine Einheit kann höchstens {n} eigene Designs einspielen."
+msgstr "A unit can import at most {n} designs of its own."

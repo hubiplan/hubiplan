@@ -584,3 +584,18 @@ def test_textseite_abschnitte_nicht_bei_anderen_texten(club, site, editor):  # n
         token, "textseite_aufbau_aendern", nummer=greeting.pk, neu=[{"art": "divider"}]
     )
     assert failed and "Textseiten" in text
+
+
+def test_mehrere_kopfbilder_ueber_die_schnittstelle(club, site, manager):  # noqa: F811
+    """#480: der KI-Assistent setzt mehrere Kopfbilder als Liste."""
+    first = add_image(site, manager)
+    second = add_image(site, manager)
+    token = connect(manager, club)["access_token"]
+    text, failed = call(token, "webseite_gestaltung_aendern", kopfbild=[second.pk, first.pk])
+    assert not failed, text
+    site.refresh_from_db()
+    assert site.draft["header_image"] == sorted([first.pk, second.pk])
+    text, failed = call(token, "webseite_gestaltung_ansehen")
+    assert data_of(text)["kopfbild"] == sorted([first.pk, second.pk])
+    text, failed = call(token, "webseite_gestaltung_aendern", kopfbild=["x"])
+    assert failed

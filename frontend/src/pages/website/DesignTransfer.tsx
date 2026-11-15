@@ -1,11 +1,17 @@
 // Webseite › Gestaltung › „Design weitergeben“: ein Design als Paket (ZIP) speichern und
 // Pakete als eigenes Design einspielen und freigeben (konzepte/designs-import-export.md,
-// Ralf 2026-11-02). Einspielen dürfen nur Plattformverwalter, weil ein Paket CSS und
-// Layoutauswahl enthält; HUBIplan prüft es streng.
+// Ralf 2026-11-02). Seit #481 spielt jeder, der die Webseite verwaltet, Pakete für die
+// eigene Einheit ein; für die ganze Installation und zum Sperren der Pakete einzelner
+// Einheiten braucht es Plattformverwalter. HUBIplan prüft jedes Paket streng.
 import { useEffect, useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import { websiteApi } from '../../api/website.ts'
-import type { DesignPackage, DesignPackageCheck, WebsiteData } from '../../api/website.ts'
+import type {
+  DesignPackage,
+  DesignPackageCheck,
+  UnitDesignPackage,
+  WebsiteData,
+} from '../../api/website.ts'
 import { errorMessage } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -54,7 +60,7 @@ export function DesignTransfer({
       <summary>{t('Design weitergeben')}</summary>
       <p className="muted small">
         {t(
-          'Ein Designpaket enthält CSS, Farbrollen und die Auswahl eines gepflegten Standardlayouts. Es enthält keine eigenen HTML-Vorlagen, Wappen, Texte oder Bilder. Plattformverwalter können es unter eigenem Namen einspielen. Das Layout folgt den gepflegten Standardkomponenten.',
+          'Ein Designpaket enthält CSS, Farbrollen und die Auswahl eines gepflegten Standardlayouts. Es enthält keine eigenen HTML-Vorlagen, Wappen, Texte oder Bilder. Wer die Webseite verwaltet, kann es unter eigenem Namen für diese Einheit einspielen. Das Layout folgt den gepflegten Standardkomponenten.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
@@ -81,12 +87,15 @@ export function DesignTransfer({
           </button>
         </div>
       </div>
-      {data.can_import_designs && <DesignImport onChanged={onChanged} />}
+      {data.can_import_designs && (
+        <DesignImport platform={data.designs_platform === true} onChanged={onChanged} />
+      )}
+      {data.designs_platform && <UnitPackages />}
     </details>
   )
 }
 
-function DesignImport({ onChanged }: { onChanged: () => void }) {
+function DesignImport({ platform, onChanged }: { platform: boolean; onChanged: () => void }) {
   const org = useActiveOrg()
   const [file, setFile] = useState<File | null>(null)
   const [inputKey, setInputKey] = useState(0)
@@ -94,6 +103,7 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
   const [label, setLabel] = useState('')
   const [labelEn, setLabelEn] = useState('')
   const [replace, setReplace] = useState(false)
+  const [unitOnly, setUnitOnly] = useState(false)
   const [check, setCheck] = useState<DesignPackageCheck | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
@@ -131,6 +141,7 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
         label_en: labelEn.trim(),
         check: onlyCheck,
         replace,
+        unit: !platform || unitOnly,
       })
       if (onlyCheck) {
         setCheck(result.package as DesignPackageCheck)
@@ -193,8 +204,17 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
       <h3>{t('Design aus Paket laden')}</h3>
       <p className="muted small">
         {t(
-          'Nur für Plattformverwalter. Erlaubt sind CSS, Farbrollen und Standardlayouts. Freie HTML-/Django-Vorlagen werden abgelehnt. Alte Pakete mit freien Vorlagen zeigen Klassisch, bis sie durch ein Paket ohne Vorlagen ersetzt werden.',
+          'Erlaubt sind CSS, Farbrollen und Standardlayouts. Freie HTML-/Django-Vorlagen werden abgelehnt. Alte Pakete mit freien Vorlagen zeigen Klassisch, bis sie durch ein Paket ohne Vorlagen ersetzt werden.',
         )}
+      </p>
+      <p className="muted small">
+        {platform
+          ? t(
+              'Als Plattformverwalter spielt ihr ein Paket für die ganze Installation ein und gebt es je Webseite frei, oder nur für diese Einheit.',
+            )
+          : t(
+              'Das Paket gilt nur für die Webseite dieser Einheit; andere Vereine sehen es nicht. Höchstens 10 eigene Designs, je Paket höchstens 2 MB.',
+            )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
       {done && <Alert kind="success">{done}</Alert>}
@@ -247,6 +267,16 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
           ))}
         </Alert>
       )}
+      {platform && (
+        <Checkbox
+          label={t('nur für diese Einheit')}
+          checked={unitOnly}
+          onChange={(value) => {
+            setUnitOnly(value)
+            setCheck(null)
+          }}
+        />
+      )}
       {check?.exists && (
         <Checkbox
           label={t('Vorhandenes Design mit diesem Kürzel ersetzen')}
@@ -278,7 +308,17 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
           <ul className="plain-list">
             {packages.map((p) => (
               <li key={p.key}>
-                <strong>{p.label}</strong> <span className="muted small">({p.key})</span>
+                <strong>{p.label}</strong> <span className="muted small">({p.key})</span>{' '}
+                <span className="muted small">
+                  {p.scope === 'unit' ? t('nur diese Einheit') : t('ganze Installation')}
+                </span>
+                {p.blocked && (
+                  <Alert kind="error">
+                    {t(
+                      'Plattformverwalter haben dieses Design gesperrt. Die Webseite zeigt Klassisch.',
+                    )}
+                  </Alert>
+                )}
                 {p.templates.length > 0 && (
                   <Alert kind="error">
                     {t(
@@ -289,14 +329,14 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
                 <Checkbox
                   label={t('für diese Webseite freigegeben')}
                   checked={p.released}
-                  disabled={p.in_use}
+                  disabled={p.in_use || p.can_change === false}
                   hint={p.in_use ? t('wird hier genutzt') : undefined}
                   onChange={(value) => void release(p, value)}
                 />
                 <button
                   type="button"
                   className="button button-ghost"
-                  disabled={p.in_use}
+                  disabled={p.in_use || p.can_change === false}
                   onClick={() => void remove(p)}
                 >
                   {t('Löschen')}
@@ -306,6 +346,60 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
           </ul>
         </>
       )}
+    </>
+  )
+}
+
+/** Plattformverwalter: Designs, die Einheiten selbst eingespielt haben, prüfen und sperren */
+function UnitPackages() {
+  const org = useActiveOrg()
+  const [packages, setPackages] = useState<UnitDesignPackage[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    websiteApi
+      .unitDesignPackages(org.id)
+      .then((list) => active && setPackages(list))
+      .catch((err: unknown) => active && setError(errorMessage(err)))
+    return () => {
+      active = false
+    }
+  }, [org.id])
+
+  async function block(p: UnitDesignPackage, blocked: boolean) {
+    setError(null)
+    try {
+      const next = await websiteApi.blockUnitDesign(org.id, p.id, blocked)
+      setPackages((list) => list?.map((x) => (x.id === next.id ? next : x)) ?? null)
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+
+  if (!error && (!packages || packages.length === 0)) return null
+  return (
+    <>
+      <h3>{t('Designs der Einheiten')}</h3>
+      <p className="muted small">
+        {t(
+          'Diese Designs haben Einheiten selbst eingespielt. Ein gesperrtes Design zeigt keine Webseite mehr; wer es nutzt, sieht Klassisch.',
+        )}
+      </p>
+      {error && <Alert kind="error">{error}</Alert>}
+      <ul className="plain-list">
+        {(packages ?? []).map((p) => (
+          <li key={p.id}>
+            <strong>{p.label}</strong> <span className="muted small">({p.key})</span>{' '}
+            <span className="muted small">{p.unit}</span>
+            <Checkbox
+              label={t('gesperrt')}
+              checked={p.blocked}
+              onChange={(value) => void block(p, value)}
+            />
+          </li>
+        ))}
+      </ul>
     </>
   )
 }

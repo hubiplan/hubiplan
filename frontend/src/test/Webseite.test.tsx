@@ -893,7 +893,7 @@ describe('Webseite', () => {
     },
   )
 
-  it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
+  it('zeigt eingespielte Designs und lädt Pakete für die eigene Einheit', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [
       { key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false },
@@ -950,10 +950,54 @@ describe('Webseite', () => {
     const form = post?.init?.body as FormData
     expect(form.get('key')).toBe('muster')
     expect(form.get('check')).toBe('1')
+    // Ohne Plattformrecht immer nur für die eigene Einheit (#481)
+    expect(form.get('unit')).toBe('1')
+    expect(screen.queryByLabelText('nur für diese Einheit')).not.toBeInTheDocument()
+    expect(screen.queryByText('Designs der Einheiten')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Einspielen' })).toBeEnabled()
   })
 
-  it('ohne Plattformrecht kein Einspielen', async () => {
+  it('Plattformverwalter sperren Designs der Einheiten', async () => {
+    const body = {
+      ...data(website('maintenance', { design: 'classic', color_roles: {} })),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles: [] }],
+      can_import_designs: true,
+      designs_platform: true,
+    }
+    const unitPackage = {
+      id: 7,
+      key: 'eigen',
+      label: 'Eigenes Muster',
+      unit: 'Musterverein',
+      blocked: false,
+      css_bytes: 20,
+      created_at: '2026-11-15T10:00:00Z',
+      updated_at: '2026-11-15T10:00:00Z',
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`GET ${base}design-packages/`]: () => ({ status: 200, body: [] }),
+        [`GET ${base}design-package-units/`]: () => ({ status: 200, body: [unitPackage] }),
+        [`PATCH ${base}design-package-units/`]: () => ({
+          status: 200,
+          body: { ...unitPackage, blocked: true },
+        }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByText('Design weitergeben'))
+    expect(screen.getByLabelText('nur für diese Einheit')).not.toBeChecked()
+    expect(await screen.findByText('Designs der Einheiten')).toBeInTheDocument()
+    expect(screen.getByText('Musterverein')).toBeInTheDocument()
+    await user.click(screen.getByLabelText('gesperrt'))
+    const patch = calls.find((c) => c.key === `PATCH ${base}design-package-units/`)
+    expect(JSON.parse(patch?.init?.body as string)).toEqual({ id: 7, blocked: true })
+    expect(await screen.findByLabelText('gesperrt')).toBeChecked()
+  })
+
+  it('ohne Verwaltungsrecht kein Einspielen', async () => {
     const body = {
       ...data(website('maintenance', { design: 'classic', color_roles: {} })),
       designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles: [] }],

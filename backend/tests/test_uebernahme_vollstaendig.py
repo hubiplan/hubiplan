@@ -38,6 +38,7 @@ NICHT = {
     "changes.ChangeRecord": "Änderungsverlauf der alten Instanz",
     "website.WebsiteDomain": "Domain zeigt auf die alte Instanz, am Ziel neu verbinden",
     "website.PreviewLink": "Vorschau-Link, wird am Ziel neu vergeben",
+    "website.DesignPackage": "eigenes Designpaket (#481), als ZIP sichern und neu einspielen",
     "meetings.Poll": "Online-Abstimmung; das Ergebnis steht im übernommenen Beschluss",
     "meetings.PollOption": "Online-Abstimmung; das Ergebnis steht im übernommenen Beschluss",
     "meetings.VoteCast": "Wer online abgestimmt hat; das Ergebnis steht im übernommenen Beschluss",

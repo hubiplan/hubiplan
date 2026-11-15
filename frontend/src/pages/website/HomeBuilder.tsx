@@ -2381,7 +2381,7 @@ function ContactsField({
   )
 }
 
-/** Ziel eines Knopfs oder einer Kachel: Seite der Webseite, Termin oder Link nach außen */
+/** Ziel eines Knopfs oder einer Kachel: Seite der Webseite, Untereinheit, Termin oder Link */
 export function TargetField({
   data,
   website,
@@ -2397,14 +2397,17 @@ export function TargetField({
     (it) => !it.heading && !it.key.startsWith('link:'),
   )
   const events = data.home_choices?.events ?? []
+  const units = data.home_choices?.units ?? []
   const current =
     value && 'page' in value
       ? `page:${value.page}`
-      : value && 'event' in value
-        ? `event:${value.event}`
-        : value && 'url' in value
-          ? 'url'
-          : ''
+      : value && 'unit' in value
+        ? `unit:${value.unit}`
+        : value && 'event' in value
+          ? `event:${value.event}`
+          : value && 'url' in value
+            ? 'url'
+            : ''
   return (
     <>
       <SelectField
@@ -2415,6 +2418,7 @@ export function TargetField({
           if (!v) onChange(null)
           else if (v === 'url') onChange({ url: 'https://' })
           else if (v.startsWith('event:')) onChange({ event: Number(v.slice(6)) })
+          else if (v.startsWith('unit:')) onChange({ unit: Number(v.slice(5)) })
           else onChange({ page: v.slice(5) })
         }}
       >
@@ -2426,6 +2430,15 @@ export function TargetField({
             </option>
           ))}
         </optgroup>
+        {units.length > 0 && (
+          <optgroup label={t('Untereinheit')}>
+            {units.map((u) => (
+              <option key={u.id} value={`unit:${u.id}`}>
+                {u.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
         {events.length > 0 && (
           <optgroup label={t('Termin')}>
             {events.map((e) => (
