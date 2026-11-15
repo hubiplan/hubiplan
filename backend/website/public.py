@@ -35,7 +35,7 @@ from organizations.models import Department, DepartmentRole, SocialLink
 
 from . import content, services
 from .content_models import GALLERY_INTERVAL, TIMELINE_SLUG, WebsiteImage, WebsiteText
-from .models import PublicationConsent, Website
+from .models import PublicationConsent, Website, header_ids
 
 Category = PublicationConsent.Category
 
@@ -1246,7 +1246,9 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
-        if self.header_image_pk and image.pk in (self.header_image_pk, self.header_image_narrow_pk):
+        if self.header_image_pks and (
+            image.pk in self.header_image_pks or image.pk in self.header_image_narrow_pks
+        ):
             # Kopfbild der Webseite (Ralf 05.11.) und seine Fassung für schmale Bildschirme
             # (#73), in der Vorschau auch die des Entwurfs
             return image
@@ -1281,38 +1283,56 @@ class SiteView:
 
         return text_image_keys(normalize_page(sections)) if sections else set()
 
-    def _header_pk(self, key: str, flag: str) -> int | None:
-        # Vorschau mit Entwurf (Website.apply_draft): das Kopfbild des Entwurfs
+    def _header_pks(self, key: str, flag: str) -> list[int]:
+        # Vorschau mit Entwurf (Website.apply_draft): die Kopfbilder des Entwurfs
         if hasattr(self.site, f"draft_{key}"):
-            return getattr(self.site, f"draft_{key}")
-        return (
-            WebsiteImage.objects.filter(website=self.site, **{flag: True})
-            .values_list("pk", flat=True)
-            .first()
+            return header_ids(getattr(self.site, f"draft_{key}"))
+        return header_ids(
+            list(
+                WebsiteImage.objects.filter(website=self.site, **{flag: True}).values_list(
+                    "pk", flat=True
+                )
+            )
         )
 
     @cached_property
-    def header_image_pk(self) -> int | None:
-        return self._header_pk("header_image", "header")
+    def header_image_pks(self) -> list[int]:
+        return self._header_pks("header_image", "header")
 
     @cached_property
-    def header_image_narrow_pk(self) -> int | None:
-        return self._header_pk("header_image_narrow", "header_narrow")
+    def header_image_narrow_pks(self) -> list[int]:
+        return self._header_pks("header_image_narrow", "header_narrow")
+
+    @property
+    def header_image_pk(self) -> int | None:
+        return self.header_image_pks[0] if self.header_image_pks else None
+
+    def header_images(self, narrow: bool = False) -> list[dict]:
+        """Kopfbilder statt Wappen und Vereinsname (Ralf 05.11., mehrere seit #480): die
+        Webseite zeigt bei jedem Aufruf eines davon.
+
+        ``narrow``: Fassungen für schmale Bildschirme (Webseite #73), nur zusammen mit einem
+        Kopfbild; ohne sie bleibt es beim Kopfbild."""
+        if narrow and not self.header_image_pks:
+            return []
+        pks = self.header_image_narrow_pks if narrow else self.header_image_pks
+        if not pks:
+            return []
+        images = {i.pk: i for i in WebsiteImage.objects.filter(website=self.site, pk__in=pks)}
+        result = []
+        for pk in pks:
+            image = images.get(pk)
+            data = self.image(image)
+            if data is not None:
+                # Das Bild ersetzt den Vereinsnamen: ohne eigenen Alternativtext steht er dort
+                data["alt"] = image.alt_text or self.org.name
+                result.append(data)
+        return result
 
     def header_image(self, narrow: bool = False) -> dict | None:
-        """Kopfbild statt Wappen und Vereinsname (Ralf 05.11.).
-
-        ``narrow``: Fassung für schmale Bildschirme (Webseite #73), nur zusammen mit einem
-        Kopfbild; ohne sie bleibt es beim Kopfbild."""
-        if narrow and not self.header_image_pk:
-            return None
-        pk = self.header_image_narrow_pk if narrow else self.header_image_pk
-        image = WebsiteImage.objects.filter(website=self.site, pk=pk).first() if pk else None
-        data = self.image(image)
-        if data is not None:
-            # Das Bild ersetzt den Vereinsnamen: ohne eigenen Alternativtext steht er dort
-            data["alt"] = image.alt_text or self.org.name
-        return data
+        """Erstes Kopfbild (für Webseiten vor #480, die nur eines kennen)."""
+        images = self.header_images(narrow)
+        return images[0] if images else None
 
     def menu(self) -> list[dict]:
         return [

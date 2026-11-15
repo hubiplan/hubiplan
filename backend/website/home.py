@@ -269,12 +269,16 @@ def _ref(value, known: set[int]) -> int | None:
 
 
 def _target(value, refs: dict) -> dict | None:
-    """Ziel eines Knopfs oder einer Kachel: Menüpunkt (Seite, Kontakt …), Termin oder Link."""
+    """Ziel eines Knopfs oder einer Kachel: Menüpunkt (Seite, Kontakt …), Untereinheit (Webseite
+    #111), Termin oder Link."""
     if not isinstance(value, dict):
         return None
     page = value.get("page")
     if isinstance(page, str) and page:
         return {"page": page} if page in refs["pages"] else None
+    if "unit" in value:
+        unit = _ref(value.get("unit"), refs["units"])
+        return {"unit": unit} if unit is not None else None
     event = _ref(value.get("event"), refs["events"])
     if event is not None:
         return {"event": event}
@@ -900,6 +904,9 @@ def remap(value, get) -> list:
         if isinstance(t, dict) and "event" in t:
             new = one("events.event", t["event"])
             return {"event": new} if new is not None else None
+        if isinstance(t, dict) and "unit" in t:
+            new = one("organizations.department", t["unit"])
+            return {"unit": new} if new is not None else None
         return t
 
     result = []
@@ -958,6 +965,10 @@ def _public_target(site, target, known, event_entry) -> dict | None:
         return {"key": "link", "url": target["url"]}
     if "page" in target:
         return menu.public_target(site, target["page"], known)
+    if "unit" in target:
+        # Seite einer Untereinheit (Webseite #111), nur wenn sie auf der Webseite steht
+        slug = site.unit_slugs.get(target["unit"])
+        return {"key": "unit", "slug": slug} if slug else None
     if "event" in target:
         if not site.site.block_on("events"):
             return None

@@ -143,3 +143,63 @@ def test_fremde_verweise_fallen_weg(club, site, manager, orgs):
     assert resp.status_code == 200
     saved = [s for s in resp.json()["website"]["home_sections"] if s["key"] == "c:w"][0]
     assert saved["data"]["competition"] is None
+
+
+def test_knopf_und_kachel_fuehren_zur_untereinheit(club, site, manager):
+    """Webseite #111: Knöpfe und Kacheln können auf die Seite einer Untereinheit zeigen;
+    eine Untereinheit, die nicht auf der Webseite steht, ergibt kein Ziel."""
+    zug = Department.objects.create(organization=club, parent=club, name="Jägerzug")
+    fremd = Department.objects.create(organization=club, parent=club, name="Altzug")
+    fremd.is_active = False
+    fremd.save()
+    resp = put(
+        manager,
+        club,
+        [
+            custom(
+                "k",
+                "buttons",
+                {
+                    "title": "",
+                    "buttons": [
+                        {"label": "Zum Zug", "target": {"unit": zug.pk}},
+                        {"label": "Alt", "target": {"unit": fremd.pk}},
+                    ],
+                },
+            ),
+            custom(
+                "t",
+                "tiles",
+                {
+                    "title": "Mitmachen",
+                    "tiles": [
+                        {"title": "Jägerzug", "text": "", "target": {"unit": zug.pk}},
+                        {"title": "Kontakt", "text": "", "target": {"page": "contact"}},
+                    ],
+                },
+            ),
+        ],
+    )
+    assert resp.status_code == 200, resp.content
+    saved = {s["key"]: s for s in resp.json()["website"]["home_sections"]}
+    assert saved["c:k"]["data"]["buttons"][0]["target"] == {"unit": zug.pk}
+    assert saved["c:k"]["data"]["buttons"][1]["target"] is None  # nicht auf der Webseite
+    out = {s["key"]: s for s in layout()}
+    ziel = out["c:t"]["tiles"][0]["target"]
+    assert ziel["key"] == "unit" and ziel["slug"]
+    assert out["c:k"]["buttons"][0]["target"] == ziel
+
+
+def test_umzug_stellt_untereinheit_im_ziel_um():
+    from website.home import remap
+
+    sections = [
+        {
+            "key": "c:k1",
+            "kind": "tiles",
+            "on": True,
+            "data": {"tiles": [{"title": "A", "target": {"unit": 4}}, {"target": {"unit": 5}}]},
+        }
+    ]
+    out = remap(sections, lambda table, old: {4: 40}.get(old) if "department" in table else None)
+    assert [t["target"] for t in out[0]["data"]["tiles"]] == [{"unit": 40}, None]

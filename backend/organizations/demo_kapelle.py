@@ -606,7 +606,7 @@ def _website(club) -> None:
             ended_at=None,
             defaults={"since": datetime.date(2021, 3, 1), "source": "paper"},
         )
-    package = DesignPackage.objects.filter(key=DESIGN_PACKAGE).first()
+    package = DesignPackage.objects.filter(key=DESIGN_PACKAGE, organization=None).first()
     if package is not None:
         package.websites.add(website)
         website.design = package.key

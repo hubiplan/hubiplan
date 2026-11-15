@@ -52,6 +52,7 @@ from .models import (
     HOME_SECTIONS,
     HOSTNAME_RE,
     LINK_URL_MAX,
+    MAX_HEADER_IMAGES,
     MAX_IMAGE_HOSTS,
     MENU_DRAFT_FIELDS,
     PREVIEW_LINK_MAX_DAYS,
@@ -62,6 +63,8 @@ from .models import (
     WebsiteDomain,
     WebsiteImage,
     blocks_without_module,
+    header_ids,
+    header_value,
     home_without_module,
     is_extra_block,
     is_heading_key,
@@ -128,10 +131,11 @@ IP_LIKE = re.compile(r"^[0-9.]+$")
 
 
 class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
-    # Kopfbild (Ralf 05.11.): Nummer eines Bildes der Bilderverwaltung oder null
-    header_image = serializers.IntegerField(required=False, allow_null=True)
-    # Kopfbild für schmale Bildschirme (Webseite #73), optional
-    header_image_narrow = serializers.IntegerField(required=False, allow_null=True)
+    # Kopfbild (Ralf 05.11.): Nummer eines Bildes der Bilderverwaltung oder null; seit #480
+    # auch eine Liste mehrerer Bilder, von denen die Webseite bei jedem Aufruf eines zeigt
+    header_image = serializers.JSONField(required=False, allow_null=True)
+    # Kopfbild für schmale Bildschirme (Webseite #73), optional, ebenso eines oder mehrere
+    header_image_narrow = serializers.JSONField(required=False, allow_null=True)
     # Ziel der Hinweisleiste (G6): null oder {} entfernt es
     notice_target = serializers.JSONField(required=False, allow_null=True)
 
@@ -140,12 +144,22 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         fields = [*SETTINGS_FIELDS, *HEADER_IMAGE_FIELDS]
 
     def validate_header_image(self, value):
-        if value is not None and (
+        items = value if isinstance(value, list) else [value]
+        if any(
+            v is not None and (not isinstance(v, int) or isinstance(v, bool)) for v in items
+        ) or (isinstance(value, list) and None in value):
+            raise serializers.ValidationError(_("Unbekanntes Bild."))
+        ids = header_ids(value)
+        if len(ids) > MAX_HEADER_IMAGES:
+            raise serializers.ValidationError(
+                _("Höchstens {x0} Kopfbilder.").format(x0=MAX_HEADER_IMAGES)
+            )
+        if ids and (
             self.instance is None
-            or not WebsiteImage.objects.filter(website=self.instance, pk=value).exists()
+            or WebsiteImage.objects.filter(website=self.instance, pk__in=ids).count() != len(ids)
         ):
             raise serializers.ValidationError(_("Unbekanntes Bild."))
-        return value
+        return header_value(ids)
 
     validate_header_image_narrow = validate_header_image
 
@@ -281,7 +295,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         return " ".join((value or "").split())
 
     def validate_notice_target(self, value):
-        # Ziel wie bei Knöpfen der Startseite: Menüpunkt, Termin oder Link nach außen
+        # Ziel wie bei Knöpfen der Startseite: Menüpunkt, Untereinheit, Termin oder Link nach außen
         if value in (None, {}) or self.instance is None:
             return {}
         try:
@@ -439,23 +453,24 @@ def version_data(version: DesignVersion) -> dict:
     }
 
 
-def header_image_id(website: Website, key: str = "header_image") -> int | None:
-    """Kopfbild (``header_image``) oder Kopfbild für schmale Bildschirme (Webseite #73)."""
+def header_image_id(website: Website, key: str = "header_image") -> int | list[int] | None:
+    """Kopfbild (``header_image``) oder Kopfbild für schmale Bildschirme (Webseite #73): null,
+    eine Bildnummer oder ab zwei Bildern eine Liste (#480)."""
     flag = HEADER_IMAGE_FIELDS[key]
-    return (
-        WebsiteImage.objects.filter(website=website, **{flag: True})
-        .values_list("pk", flat=True)
-        .first()
+    return header_value(
+        WebsiteImage.objects.filter(website=website, **{flag: True}).values_list("pk", flat=True)
     )
 
 
-def set_header_image(website: Website, pk: int | None, key: str = "header_image") -> None:
+def set_header_image(website: Website, value, key: str = "header_image") -> None:
+    """Kopfbild(er) setzen: null, eine Bildnummer oder eine Liste (#480)."""
     flag = HEADER_IMAGE_FIELDS[key]
-    WebsiteImage.objects.filter(website=website, **{flag: True}).exclude(pk=pk).update(
+    ids = header_ids(value)
+    WebsiteImage.objects.filter(website=website, **{flag: True}).exclude(pk__in=ids).update(
         **{flag: False}
     )
-    if pk is not None:
-        WebsiteImage.objects.filter(website=website, pk=pk).update(**{flag: True})
+    if ids:
+        WebsiteImage.objects.filter(website=website, pk__in=ids).update(**{flag: True})
 
 
 def can_import_designs(user) -> bool:
@@ -674,8 +689,10 @@ class WebsiteView(_WebsiteMixin, APIView):
             "style_catalog": style.catalog(),
             # Darstellung der festen Bereiche (G5)
             "layout_catalog": variants.catalog(),
-            # Designpakete einspielen und freigeben: nur Plattformverwalter
-            "can_import_designs": can_import_designs(self.request.user),
+            # Designpakete einspielen: wer die Webseite verwaltet, für die eigene Einheit
+            # (#481); für die ganze Installation und zum Sperren nur Plattformverwalter
+            "can_import_designs": WEBSITE_MANAGE in self.org_permissions,
+            "designs_platform": can_import_designs(self.request.user),
             # Termine-Block: Häkchen „übergeordnete Einheiten“ nur, wenn es sie gibt
             "has_parent_units": services.has_parent_events(self.org),
             "units": [

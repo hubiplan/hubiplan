@@ -32,6 +32,11 @@ org_patterns = [
         name="website-design-packages",
     ),
     path(
+        "website/design-package-units/",
+        design_views.UnitDesignPackageListView.as_view(),
+        name="website-design-package-units",
+    ),
+    path(
         "website/design-packages/<slug:key>/",
         design_views.DesignPackageDetailView.as_view(),
         name="website-design-package",

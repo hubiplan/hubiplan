@@ -818,11 +818,13 @@ def remap_design(data, ids: IdMap) -> dict:
         return {}
     data = dict(data)
     remap = _menu_key(ids)
-    if "header_image" in data:
-        old = data["header_image"]
-        data["header_image"] = (
-            ids.get("website.websiteimage", old) if isinstance(old, int) else None
-        )
+    from website.models import header_ids, header_value
+
+    for key in ("header_image", "header_image_narrow"):
+        if key in data:
+            # eine Nummer oder seit #480 eine Liste
+            new = (ids.get("website.websiteimage", old) for old in header_ids(data[key]))
+            data[key] = header_value([n for n in new if n is not None])
     if "home_sections" in data:
         data["home_sections"] = remap_sections(data["home_sections"], ids.get)
     if isinstance(data.get("menu"), list):

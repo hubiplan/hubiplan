@@ -80,7 +80,9 @@ KIND_FIELDS = {
     "live_facts": "title, items [{fact (members|years|units), label (optional)}]",
 }
 TARGET_HINT = (
-    'target: {"page": "<Menüschlüssel>"}, {"event": <Terminnummer>} oder {"url": "https://…"}'
+    'target: {"page": "<Menüschlüssel>"}, {"unit": <Nummer aus auswahl.units>}, '
+    '{"event": <Terminnummer>} oder {"url": "https://…"}; eine Adresse der eigenen Webseite '
+    "öffnet im selben Fenster"
 )
 
 
@@ -193,6 +195,18 @@ def _design_read(args: dict, ctx: ClubContext) -> str:
     )
 
 
+def _header_arg(args: dict, name: str):
+    """Kopfbild: null, eine Bildnummer oder eine Liste von Bildnummern (#480)."""
+    value = args[name]
+    if value is None:
+        return None
+    if isinstance(value, list):
+        for i, v in enumerate(value):
+            _int({f"{name}[{i}]": v}, f"{name}[{i}]")
+        return value
+    return _int(args, name)
+
+
 def _design_change(args: dict, ctx: ClubContext) -> str:
     _data, site = _site(ctx)
     v = _current(site)
@@ -215,16 +229,9 @@ def _design_change(args: dict, ctx: ClubContext) -> str:
     if layouts is not None:
         merged = {**(v.get("layouts") or {}), **layouts}
         draft["layouts"] = {k: x for k, x in merged.items() if x is not None}
-    if "kopfbild" in args:
-        value = args["kopfbild"]
-        if value is not None:
-            value = _int(args, "kopfbild")
-        draft["header_image"] = value
-    if "kopfbild_schmal" in args:
-        value = args["kopfbild_schmal"]
-        if value is not None:
-            value = _int(args, "kopfbild_schmal")
-        draft["header_image_narrow"] = value
+    for name, key in (("kopfbild", "header_image"), ("kopfbild_schmal", "header_image_narrow")):
+        if name in args:
+            draft[key] = _header_arg(args, name)
     if not draft:
         raise ToolError(_("Bitte angeben, was sich ändern soll (design, stil, farben, …)."))
     saved = _save_draft(ctx, draft)
@@ -823,14 +830,19 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                     "description": gettext_lazy("Bereich → Variante oder null."),
                 },
                 "kopfbild": {
-                    "type": ["integer", "null"],
-                    "description": gettext_lazy("Bildnummer oder null (Wappen und Name)."),
+                    "type": ["integer", "array", "null"],
+                    "items": {"type": "integer"},
+                    "description": gettext_lazy(
+                        "Bildnummer, Liste von Bildnummern (die Webseite zeigt bei jedem Aufruf "
+                        "eines davon) oder null (Wappen und Name)."
+                    ),
                 },
                 "kopfbild_schmal": {
-                    "type": ["integer", "null"],
+                    "type": ["integer", "array", "null"],
+                    "items": {"type": "integer"},
                     "description": gettext_lazy(
-                        "Bildnummer eines Kopfbilds für Handys (unter 600 px Breite) oder null "
-                        "(überall das Kopfbild)."
+                        "Bildnummer oder Liste von Bildnummern für Handys (unter 600 px Breite) "
+                        "oder null (überall das Kopfbild)."
                     ),
                 },
             }
