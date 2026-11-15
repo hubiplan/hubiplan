@@ -47,11 +47,12 @@ In der HUBIplan-App tippst du beim Verbinden auf **Mit Passkey anmelden** und gi
 deines Vereins ein. Es gilt derselbe Passkey wie im Browser, wenn er bei Google, Apple oder in
 deinem Passwortmanager gespeichert ist.
 
-- **Android:** Das Telefon fragt direkt nach Fingerabdruck, Gesicht oder PIN. Auch die
-  **Verwaltung** öffnest du statt mit Passwort und Code mit **Mit Passkey freischalten**.
-- **iPhone:** Die App öffnet die Anmeldeseite deines Vereins. Melde dich dort mit **Mit Passkey
-  anmelden** an und tippe auf **Verbinden**. Die **Verwaltung** schaltest du genauso mit **Mit
-  Passkey freischalten** frei: Anmelden, prüfen, ob das Gerät stimmt, und **Freischalten**.
+- Android: Das Telefon fragt direkt nach Fingerabdruck, Gesicht oder PIN. Auch die
+  **Verwaltung** öffnest du statt mit Passwort und Code mit „Mit Passkey freischalten“.
+- iPhone: Die App öffnet die Anmeldeseite deines Vereins. Melde dich dort mit
+  **Mit Passkey anmelden** an und tippe auf **Verbinden**. Die **Verwaltung** schaltest du
+  genauso mit „Mit Passkey freischalten“ frei: Anmelden, prüfen, ob das Gerät stimmt, und
+  **Freischalten**.
 
 Klappt es nicht, verbindest du die App wie bisher per QR-Code unter **Mein Konto** › App &
 andere Instanzen.
