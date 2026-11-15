@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
-import { useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Field } from '../../components/ui.tsx'
+import { useAutoSave, useLoad } from '../../components/forms.ts'
+import { Alert, Field, SaveStatus } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MusicHeader } from './MusicLayout.tsx'
@@ -44,40 +43,23 @@ function ReminderSettings() {
 function ReminderForm({ initial, url }: { initial: Preference; url: string }) {
   const org = useActiveOrg()
   const [value, setValue] = useState(initial)
-  const [saved, setSaved] = useState(initial)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
-  const dirty = JSON.stringify(value) !== JSON.stringify(saved)
-  useDraftGuard(dirty)
+  const [, setErrors] = useState<Record<string, string>>({})
+  const canEdit = org.permissions.includes('todos.edit')
+  // Die Schnittstelle nimmt die Auswahl immer als Ganzes
+  const auto = useAutoSave(
+    { values: value, setErrors, setValues: setValue },
+    (_changes, all) => api.post<Preference>(url, all),
+    { enabled: canEdit },
+  )
   return (
-    <form
-      className="card stack"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        setBusy(true)
-        setError('')
-        setMessage('')
-        try {
-          const next = await api.post<Preference>(url, value)
-          setSaved(next)
-          setValue(next)
-          setMessage(t('Erinnerungseinstellungen gespeichert.'))
-        } catch (e) {
-          setError(errorMessage(e))
-        } finally {
-          setBusy(false)
-        }
-      }}
-    >
+    <form className="card stack" onSubmit={(e) => e.preventDefault()}>
       <p>
         {t(
           'Nur für dich und nur nach Aktivierung. Fällige Rückgaben und Wartungen erzeugen private Aufgaben; Benachrichtigungen folgen deinen vorhandenen Aufgabeneinstellungen. Es werden keine Aufgaben an andere Personen verteilt.',
         )}
       </p>
-      {error && <Alert kind="error">{error}</Alert>}
-      {message && <Alert kind="success">{message}</Alert>}
-      <fieldset className="stack" disabled={busy || !org.permissions.includes('todos.edit')}>
+      {canEdit && <SaveStatus auto={auto} />}
+      <fieldset className="stack" disabled={!canEdit}>
         <legend>{t('Meine Erinnerungsauswahl')}</legend>
         <label>
           <input
@@ -112,9 +94,6 @@ function ReminderForm({ initial, url }: { initial: Preference; url: string }) {
           />{' '}
           {t('Rückgaben und Wartungen der Ausstattung')}
         </label>
-        <button className="button button-primary" disabled={!dirty}>
-          {t('Erinnerungseinstellungen speichern')}
-        </button>
       </fieldset>
       <p className="muted">
         {t(

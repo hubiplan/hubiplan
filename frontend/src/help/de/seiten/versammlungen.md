@@ -44,7 +44,7 @@ lässt sich nicht im Kalender löschen, nur hier.
 Arten und Fristen: HUBIplan legt zu Beginn übliche Arten an, etwa Jahreshauptversammlung und
 Vorstandssitzung. Du kannst sie umbenennen, weitere hinzufügen oder abschalten. Je Art legst
 du die Einladungsfrist, die Form der Einladung, die Beschlussfähigkeit und fest, wer später das
-Protokoll sieht.
+Protokoll sieht. Änderungen an einer vorhandenen Art speichern sich von selbst.
 
 Einladung: **Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an. Solange noch nicht eingeladen ist, zeigt die Prüfliste **Vor der Einladung**, ob die Frist noch reicht, ob die Tagesordnung Punkte hat und ob jeder Beschluss- und Wahlpunkt eine Erläuterung hat. Sie blockiert nichts.
 

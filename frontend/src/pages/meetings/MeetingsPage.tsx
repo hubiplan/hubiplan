@@ -1268,26 +1268,41 @@ function KindForm({
     remote_allowed: kind?.remote_allowed ?? false,
     active: kind?.active ?? true,
   }
-  const [form, setForm] = useState(initial)
+  const f = useForm(initial)
+  const form = f.values
+  const setForm = f.setValues
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  useDraftGuard(JSON.stringify(form) !== JSON.stringify(initial))
+  const toInput = (values: Partial<typeof initial>) => {
+    const data: Record<string, unknown> = { ...values }
+    if ('invite_days' in values) data.invite_days = Number(values.invite_days)
+    if ('quorum_percent' in values)
+      data.quorum_percent = values.quorum_percent ? Number(values.quorum_percent) : null
+    if ('motion_days' in values)
+      data.motion_days = values.motion_days === '' ? null : Number(values.motion_days)
+    return data
+  }
+  // Bestehende Arten speichern automatisch, neue erst mit „Anlegen“
+  const auto = useAutoSave(
+    f,
+    async (changes) => {
+      if (changes.invite_days === '')
+        throw new ApiError(400, { invite_days: t('Bitte eine Frist angeben.') })
+      await meetingApi.updateKind(base, kind!.id, toInput(changes))
+    },
+    { enabled: !!kind },
+  )
+  useDraftGuard(!kind && JSON.stringify(form) !== JSON.stringify(initial))
   return (
     <form
       className="stack kind-form"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (kind) return
         setBusy(true)
         setError('')
-        const data = {
-          ...form,
-          invite_days: Number(form.invite_days),
-          quorum_percent: form.quorum_percent ? Number(form.quorum_percent) : null,
-          motion_days: form.motion_days === '' ? null : Number(form.motion_days),
-        }
         try {
-          if (kind) await meetingApi.updateKind(base, kind.id, data)
-          else await meetingApi.createKind(base, data)
+          await meetingApi.createKind(base, toInput(form))
           onDone(true)
         } catch (err) {
           setError(errorMessage(err))
@@ -1296,20 +1311,21 @@ function KindForm({
       }}
     >
       <h3>{kind ? t('Art bearbeiten') : t('Neue Art')}</h3>
+      {kind && <SaveStatus auto={auto} />}
       <label className="field">
         <span>{t('Name')}</span>
         <input
           value={form.name}
           maxLength={100}
           required
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onChange={(e) => setForm((v) => ({ ...v, name: e.target.value }))}
         />
       </label>
       <label className="field">
         <span>{t('Grundtyp')}</span>
         <select
           value={form.base}
-          onChange={(e) => setForm({ ...form, base: e.target.value as MeetingBase })}
+          onChange={(e) => setForm((v) => ({ ...v, base: e.target.value as MeetingBase }))}
         >
           {BASES.map((b) => (
             <option key={b} value={b}>
@@ -1326,7 +1342,7 @@ function KindForm({
           max={365}
           required
           value={form.invite_days}
-          onChange={(e) => setForm({ ...form, invite_days: e.target.value })}
+          onChange={(e) => setForm((v) => ({ ...v, invite_days: e.target.value }))}
         />
       </label>
       <label className="field">
@@ -1334,7 +1350,7 @@ function KindForm({
         <select
           value={form.invite_form}
           onChange={(e) =>
-            setForm({ ...form, invite_form: e.target.value as MeetingKind['invite_form'] })
+            setForm((v) => ({ ...v, invite_form: e.target.value as MeetingKind['invite_form'] }))
           }
         >
           <option value="mail">{t('E-Mail, sonst Brief')}</option>
@@ -1348,7 +1364,7 @@ function KindForm({
           min={1}
           max={100}
           value={form.quorum_percent}
-          onChange={(e) => setForm({ ...form, quorum_percent: e.target.value })}
+          onChange={(e) => setForm((v) => ({ ...v, quorum_percent: e.target.value }))}
         />
       </label>
       <label className="field">
@@ -1356,7 +1372,7 @@ function KindForm({
         <select
           value={form.minutes_for}
           onChange={(e) =>
-            setForm({ ...form, minutes_for: e.target.value as MeetingKind['minutes_for'] })
+            setForm((v) => ({ ...v, minutes_for: e.target.value as MeetingKind['minutes_for'] }))
           }
         >
           <option value="board">{t('nur Rollen mit Leserecht')}</option>
@@ -1367,7 +1383,7 @@ function KindForm({
         <input
           type="checkbox"
           checked={form.proxies_allowed}
-          onChange={(e) => setForm({ ...form, proxies_allowed: e.target.checked })}
+          onChange={(e) => setForm((v) => ({ ...v, proxies_allowed: e.target.checked }))}
         />
         {t('Vertretung mit Vollmacht erlaubt')}
       </label>
@@ -1375,7 +1391,7 @@ function KindForm({
         <input
           type="checkbox"
           checked={form.online_voting}
-          onChange={(e) => setForm({ ...form, online_voting: e.target.checked })}
+          onChange={(e) => setForm((v) => ({ ...v, online_voting: e.target.checked }))}
         />
         {t('Online-Abstimmung am Handy erlaubt')}
       </label>
@@ -1383,7 +1399,7 @@ function KindForm({
         <input
           type="checkbox"
           checked={form.remote_allowed}
-          onChange={(e) => setForm({ ...form, remote_allowed: e.target.checked })}
+          onChange={(e) => setForm((v) => ({ ...v, remote_allowed: e.target.checked }))}
         />
         {t('Teilnahme aus der Ferne erlaubt (hybride Versammlung)')}
       </label>
@@ -1401,25 +1417,40 @@ function KindForm({
           min={0}
           max={90}
           value={form.motion_days}
-          onChange={(e) => setForm({ ...form, motion_days: e.target.value })}
+          onChange={(e) => setForm((v) => ({ ...v, motion_days: e.target.value }))}
         />
       </label>
       <label className="checkbox">
         <input
           type="checkbox"
           checked={form.active}
-          onChange={(e) => setForm({ ...form, active: e.target.checked })}
+          onChange={(e) => setForm((v) => ({ ...v, active: e.target.checked }))}
         />
         {t('Für neue Versammlungen wählbar')}
       </label>
       {error && <p role="alert">{error}</p>}
       <div className="button-row">
-        <button className="button button-primary" disabled={busy}>
-          {t('Speichern')}
-        </button>
-        <button type="button" className="button button-ghost" onClick={() => onDone(false)}>
-          {t('Abbrechen')}
-        </button>
+        {kind ? (
+          <button
+            type="button"
+            className="button"
+            onClick={async () => {
+              // Schließt erst, wenn alles gespeichert ist
+              if (await auto.flush()) onDone(true)
+            }}
+          >
+            {t('Schließen')}
+          </button>
+        ) : (
+          <>
+            <button className="button button-primary" disabled={busy}>
+              {t('Anlegen')}
+            </button>
+            <button type="button" className="button button-ghost" onClick={() => onDone(false)}>
+              {t('Abbrechen')}
+            </button>
+          </>
+        )}
       </div>
     </form>
   )

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert, Loading } from '../../components/ui.tsx'
+import { Alert, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
@@ -221,6 +221,15 @@ export function ScoresPage() {
                 setSelected(null)
                 await load.reload()
               }}
+              onAutoSave={
+                selected === 'new'
+                  ? undefined
+                  : async (changes) => {
+                      const endpoint = tab === 'files' ? 'score-documents' : tab
+                      await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
+                      void load.reload()
+                    }
+              }
             />
           )}
           {!visibleRows.length && (
@@ -310,11 +319,17 @@ export function ScoreForm({
   fields,
   initial,
   onSave,
+  onAutoSave,
   onClose,
 }: {
   fields: Field[]
   initial?: Row
   onSave: (v: Record<string, unknown>) => Promise<void>
+  /**
+   * Bearbeiten eines vorhandenen Eintrags: speichert geänderte Felder automatisch
+   * (`changes`), dazu alle Werte für Schnittstellen, die alles auf einmal brauchen.
+   */
+  onAutoSave?: (changes: Record<string, unknown>, all: Record<string, unknown>) => Promise<void>
   onClose?: () => void
 }) {
   const [values, setValues] = useState<Record<string, unknown>>(() =>
@@ -337,22 +352,29 @@ export function ScoreForm({
     [busy, setBusy] = useState(false),
     [error, setError] = useState('')
   const [clean] = useState(JSON.stringify(values))
-  useDraftGuard(JSON.stringify(values) !== clean)
+  const [, setErrors] = useState<Record<string, string>>({})
+  const prepare = (v: Record<string, unknown>) =>
+    Object.fromEntries(
+      Object.entries(v).map(([key, value]) => {
+        const f = fields.find((x) => x.key === key)
+        return [key, value === '' && f?.optional && f.options ? null : value]
+      }),
+    )
+  const auto = useAutoSave(
+    { values, setErrors, setValues },
+    (changes, all) => onAutoSave!(prepare(changes), prepare(all)),
+    { enabled: !!onAutoSave },
+  )
+  useDraftGuard(!onAutoSave && JSON.stringify(values) !== clean)
   return (
     <form
       className="card stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (onAutoSave) return
         setBusy(true)
         try {
-          await onSave(
-            Object.fromEntries(
-              fields.map((f) => [
-                f.key,
-                values[f.key] === '' && f.optional && f.options ? null : values[f.key],
-              ]),
-            ),
-          )
+          await onSave(prepare(values))
         } catch (e) {
           setError(errorMessage(e))
         } finally {
@@ -360,6 +382,7 @@ export function ScoreForm({
         }
       }}
     >
+      {onAutoSave && <SaveStatus auto={auto} />}
       {error && <Alert kind="error">{error}</Alert>}
       <div className="music-form-fields">
         {fields.map((f) => (
@@ -369,7 +392,7 @@ export function ScoreForm({
               <select
                 required={!f.optional}
                 value={String(values[f.key] ?? '')}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               >
                 {f.optional && <option value="">—</option>}
                 {f.options.map(([v, l]) => (
@@ -382,7 +405,7 @@ export function ScoreForm({
               <textarea
                 maxLength={2000}
                 value={String(values[f.key])}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
               />
             ) : (
               <input
@@ -391,22 +414,35 @@ export function ScoreForm({
                 min={f.type === 'number' ? 0 : undefined}
                 value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
                 checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
-                onChange={(e) =>
-                  setValues({
-                    ...values,
-                    [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  const value = f.type === 'checkbox' ? e.target.checked : e.target.value
+                  setValues((v) => ({ ...v, [f.key]: value }))
+                }}
               />
             )}
           </label>
         ))}
       </div>
       <div className="actions">
-        <button className="button button-primary" disabled={busy}>
-          {t('Speichern')}
-        </button>
-        {onClose && (
+        {onAutoSave ? (
+          onClose && (
+            <button
+              type="button"
+              className="button"
+              onClick={async () => {
+                // Schließt erst, wenn alles gespeichert ist
+                if (await auto.flush()) onClose()
+              }}
+            >
+              {t('Schließen')}
+            </button>
+          )
+        ) : (
+          <button className="button button-primary" disabled={busy}>
+            {t('Speichern')}
+          </button>
+        )}
+        {onClose && !onAutoSave && (
           <button
             type="button"
             className="button button-ghost"

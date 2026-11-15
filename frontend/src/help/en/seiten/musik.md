@@ -9,7 +9,7 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Music and performances
 
-The music sub-items are in the sidebar, grouped as Performances (Overview, Performances, Availability), Musicians (Musicians, Rehearsals and sheet music checkout), Sheet music (Sheet music library) and Setup (Instrumentation templates). Each item has its own address, e.g. `/musik/noten`. Instruments and uniforms are under Equipment & rooms, batch payouts under Finance (Book) and the personal reminders under Tasks.
+The music sub-items are in the sidebar, grouped as Performances (Overview, Performances, Availability), Musicians (Musicians, Rehearsals and sheet music checkout), Sheet music (Sheet music library) and Setup (Instrumentation templates). Each item has its own address, e.g. `/musik/noten`. Instruments and uniforms are under Equipment & rooms, batch payouts under Finance (Book) and the personal reminders under Tasks. Changes to existing entries (musicians, performances, sheet music, folders, rehearsals, instrumentation templates) save themselves; you add new ones with **Save**.
 
 **Performance overview** combines staffing, pending responses, known conflicts,
 sheet music requirements and permitted settlement issues. Select a period and choose
@@ -170,7 +170,7 @@ PDFs use the existing letterhead.
 
 In Tasks › **Personal music reminders**, enable private tasks for your own sheet music returns and equipment
 returns and maintenance. Choose zero to 30 days ahead; overdue records are included.
-Tasks are reconciled on save and hourly. Equipment still requires inventory read access;
+Your choice saves itself; tasks are reconciled then and hourly. Equipment still requires inventory read access;
 department equipment is excluded. Enabling requires task read and edit permission.
 You cannot select another recipient. Each task links directly to its source record.
 Notifications use your existing task settings. Unchanged tasks are completed after a

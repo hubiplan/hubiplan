@@ -9,7 +9,7 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Musik und Auftritte
 
-Die Unterpunkte von Musik stehen in der Seitenleiste, gegliedert nach Auftritte (Übersicht, Auftritte, Verfügbarkeiten), Musiker (Musiker, Proben und Notenausgabe), Noten (Notenbestand) und Einrichtung (Besetzungsvorlagen). Jeder Punkt hat eine eigene Adresse, etwa `/musik/noten`. Instrumente und Uniformen stehen unter Material & Räume, Sammelauszahlungen unter Finanzen (Buchen) und die persönlichen Erinnerungen unter Aufgaben.
+Die Unterpunkte von Musik stehen in der Seitenleiste, gegliedert nach Auftritte (Übersicht, Auftritte, Verfügbarkeiten), Musiker (Musiker, Proben und Notenausgabe), Noten (Notenbestand) und Einrichtung (Besetzungsvorlagen). Jeder Punkt hat eine eigene Adresse, etwa `/musik/noten`. Instrumente und Uniformen stehen unter Material & Räume, Sammelauszahlungen unter Finanzen (Buchen) und die persönlichen Erinnerungen unter Aufgaben. Änderungen an vorhandenen Einträgen (Musiker, Auftritte, Noten, Mappen, Proben, Besetzungsvorlagen) speichern sich von selbst; Neues legst du mit **Speichern** an.
 
 Unter **Auftrittsübersicht** siehst du Besetzung, ausstehende Rückmeldungen, bekannte
 Konflikte, Notenbedarf und berechtigte Abrechnungshinweise gemeinsam. Wähle bei Bedarf
@@ -181,7 +181,7 @@ Musik- und Kassenbearbeitungsrecht. Für PDFs wird der bestehende Briefbogen ver
 
 Unter Aufgaben › **Persönliche Musikerinnerungen** kannst du für dich private Aufgaben zu Notenrückgaben sowie
 Rückgaben und Wartungen der Ausstattung aktivieren. Die Vorschau umfasst null bis
-30 Tage und bereits überfällige Vorgänge. Aufgaben werden beim Speichern und danach
+30 Tage und bereits überfällige Vorgänge. Die Auswahl speichert sich von selbst; Aufgaben werden dabei und danach
 stündlich abgeglichen. Für Ausstattung brauchst du weiterhin Materialleserecht;
 Abteilungsausstattung wird hier nicht einbezogen. Aufgabenlese- und Bearbeitungsrecht
 sind für die Aktivierung nötig. Du kannst keine andere Person als Empfänger eintragen.

@@ -9255,5 +9255,6 @@
   "Tagesordnungspunkt entfernen?": "Remove agenda item?",
   "„{title}“ wird mit seiner Erläuterung gelöscht. Unterpunkte bleiben als eigene Punkte stehen.": "“{title}” will be deleted together with its explanation. Sub-items stay as items of their own.",
   "Noch nicht gespeichert: Ein Beschluss braucht einen Text, eine Wahl das Amt und die gewählte Person.": "Not saved yet: a resolution needs a text, an election the office and the person elected.",
-  "Das Protokoll ist noch nicht vollständig gespeichert.": "The minutes have not been saved completely yet."
+  "Das Protokoll ist noch nicht vollständig gespeichert.": "The minutes have not been saved completely yet.",
+  "Bitte eine Frist angeben.": "Please enter a period."
 }

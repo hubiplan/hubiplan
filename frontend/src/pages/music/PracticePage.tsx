@@ -254,6 +254,20 @@ export function PracticePage() {
             setSelected(null)
             await load.reload()
           }}
+          onAutoSave={
+            selected === 'new' || tab === 'loans'
+              ? undefined
+              : async (changes) => {
+                  const endpoint =
+                    tab === 'items'
+                      ? 'rehearsal-items'
+                      : tab === 'invitations'
+                        ? 'rehearsal-invitations'
+                        : tab
+                  await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
+                  void load.reload()
+                }
+          }
         />
       )}
       {!(tab === 'overview' ? d.overview : rows).length && <MusicEmptyState />}
