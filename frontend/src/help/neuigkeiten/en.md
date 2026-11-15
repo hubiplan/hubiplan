@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Letterhead: own logo and name in the letterhead.** Under Settings › Letterhead you can set a **logo only for letters**, such as a landscape word-and-image mark, while HUBIplan keeps the coat of arms. With **Name in the letterhead** you decide how a long name breaks over two lines, the second one smaller if you like. Without an entry, HUBIplan reduces a long name and spreads it evenly over two lines, in Word as in the PDF; a single word alone on the second line no longer happens. An AI assistant can set both if you allow the letterhead when connecting.
 - Website: **Button in a tile.** A tile with a target can get a button at the bottom, such as “Get in touch”, instead of only the title becoming a link. This works on the home page and on text pages, also for AI assistants.
 - Website: **Versions also show texts.** Under Website › Versions, besides the versions of the design, you now also see the most recently published texts and text pages with time and person; **Open** takes you to the text, where you restore an earlier version. A note names what takes effect immediately without versions (settings, images, design packages, colours and logo); that is shown in the log.
 - **Hide sub-units**: a club without sub-units (platoons, sections …) can permanently hide the menu item under Settings › Names and terms. Existing sub-units are kept.

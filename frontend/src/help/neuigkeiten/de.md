@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- **Briefbogen: eigenes Logo und Name im Briefkopf.** Unter Einstellungen › Briefbogen setzt ihr ein **Logo nur für Briefe**, etwa eine querformatige Wort-Bild-Marke, während in HUBIplan das Wappen bleibt. Mit **Name im Briefkopf** bestimmt ihr selbst, wie ein langer Name auf zwei Zeilen umbricht, die zweite auf Wunsch kleiner. Ohne Eintrag verkleinert HUBIplan einen langen Namen und verteilt ihn ausgewogen auf zwei Zeilen, in Word wie im PDF; ein einzelnes Wort allein in der zweiten Zeile gibt es nicht mehr. Ein KI-Assistent kann beides setzen, wenn ihr den Briefbogen beim Verbinden erlaubt.
 - Webseite: **Knopf in der Kachel.** Eine Kachel mit Ziel bekommt auf Wunsch unten einen Knopf, etwa „Kontakt aufnehmen“, statt dass nur der Titel zum Link wird. Das gilt auf der Startseite und auf Textseiten, auch für KI-Assistenten.
 - Webseite: **Fassungen zeigen auch Texte.** Unter Webseite › Fassungen stehen neben den Fassungen der Gestaltung jetzt auch die zuletzt veröffentlichten Texte und Textseiten mit Zeit und Person; **Öffnen** führt zum Text, wo ihr eine frühere Fassung zurückholt. Ein Hinweis nennt, was ohne Fassung sofort wirkt (Einstellungen, Bilder, Designpakete, Farben und Logo); das steht im Protokoll.
 - **Untereinheiten ausblenden**: Hat ein Verein keine Untereinheiten (Züge, Register, Sparten …), blendet er den Menüpunkt unter Einstellungen › Bezeichnungen dauerhaft aus. Bestehende Untereinheiten bleiben erhalten.

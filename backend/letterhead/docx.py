@@ -21,6 +21,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from organizations.theme import SURFACE, contrast
 
 from .data import LetterData
+from .headname import WORD_RESERVE
 from .typefaces import WEB_FONTS, pdf_fonts, word_family
 
 # Maße
@@ -356,20 +357,17 @@ def first_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
     jc = "left"
     sub = " · ".join(p for p in (data.tagline, data.sub_line) if p)
     if data.show_name:
-        blocks.append(
-            para(
-                run(
-                    data.name,
-                    heading=True,
-                    bold=True,
-                    size=16 if len(data.name) < 45 else 13,
-                    color=primary,
-                ),
-                frame=name_frame,
-                jc=jc,
-                after=40,
+        # Größe und Umbruch wie im PDF, damit Word kein einzelnes Wort umbricht (Issue #487)
+        lines = data.head_lines(name_w, reserve=WORD_RESERVE)
+        for i, head in enumerate(lines):
+            blocks.append(
+                para(
+                    run(head.text, heading=True, bold=True, size=head.size, color=primary),
+                    frame=name_frame,
+                    jc=jc,
+                    after=40 if i == len(lines) - 1 else 0,
+                )
             )
-        )
     elif not sub and logo_h:
         # ohne Namen und Zusatzzeile schließt die Linie mit dem Logo ab
         blocks.append(

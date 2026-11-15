@@ -39,6 +39,7 @@ organizations_organization logo media
 organizations_organization logo_dark media
 organizations_organization website_image media
 organizations_organization brand_icon media
+letterhead_letterhead logo media
 organizations_platformsettings brand_icon media
 peering_remoteinvoice file private
 peering_remotestate file private

@@ -188,7 +188,37 @@ def register_lines(owner: Organization) -> list[str]:
 
 
 def logo_path(unit: Organization) -> str | None:
+    """Logo aus dem Erscheinungsbild (auch für Urkunden)."""
     for item in unit.ancestors():
+        if item.logo:
+            try:
+                return item.logo.path
+            except (ValueError, NotImplementedError):
+                return None
+    return None
+
+
+def letter_logo_path(unit: Organization) -> str | None:
+    """Logo im Briefkopf: je Ebene zuerst das eigene Logo des Briefbogens (Issue #488), dann
+    das Logo aus dem Erscheinungsbild. Untereinheiten, die den Briefbogen übernehmen, haben
+    kein eigenes Briefbogen-Logo."""
+    chain = unit.ancestors()
+    with rls_bypass():
+        own = {
+            lh.organization_id: lh
+            for lh in Letterhead.objects.filter(organization__in=[i.pk for i in chain]).exclude(
+                logo=""
+            )
+        }
+    for item in chain:
+        lh = own.get(item.pk)
+        if lh is not None and (
+            item.type != Organization.Type.UNIT or lh.mode == Letterhead.Mode.OWN
+        ):
+            try:
+                return lh.logo.path
+            except (ValueError, NotImplementedError):
+                pass
         if item.logo:
             try:
                 return item.logo.path
@@ -271,6 +301,19 @@ class LetterData:
     def show_name(self) -> bool:
         """Name im Kopf; ohne Logo steht er immer da."""
         return getattr(self.settings, "show_name", True) or not self.logo
+
+    def head_lines(self, width_mm: float, reserve: float = 1.0):
+        """Zeilen des Namens im Briefkopf mit Schriftgröße (Issue #487)."""
+        from .headname import head_lines
+
+        return head_lines(
+            self.name,
+            getattr(self.settings, "head_name", ""),
+            self.heading_font,
+            width_mm,
+            small_second=getattr(self.settings, "head_name_small", False),
+            reserve=reserve,
+        )
 
     @property
     def logo_size(self) -> str:
@@ -361,7 +404,7 @@ def letter_data(
         name=owner.name,
         tagline=lh.tagline.strip(),
         sub_line=unit.name if unit.pk != owner.pk else "",
-        logo=logo_path(unit) if show_logo else None,
+        logo=letter_logo_path(unit) if show_logo else None,
         primary=theme["primary"],
         on_primary=theme["on_primary"],
         accent=theme["accent"],
@@ -626,6 +669,8 @@ DESIGN_FIELDS = (
     "font_fallback",
     "heading_font_fallback",
     "show_name",
+    "head_name",
+    "head_name_small",
     "logo_size",
     "line_color",
     "head_line",

@@ -127,3 +127,54 @@ def test_ohne_recht_nur_lesen(club, site, editor):  # noqa: F811
     _text, failed = call(token, "briefbogen_aendern", linienfarbe=0)
     assert failed
     assert service.ensure(club).line_color == "1"
+
+
+def test_name_im_kopf(club, site, secretary):  # noqa: F811
+    token = connect(secretary, club, scope=ALL, haken=[LETTERHEAD])["access_token"]
+    text, failed = call(
+        token,
+        "briefbogen_aendern",
+        name_im_kopf="Musterschützen-Bruderschaft\nMusterstadt von 1920",
+        zweite_zeile_kleiner=True,
+    )
+    assert not failed, text
+    lh = Letterhead.objects.get(organization=club)
+    assert (lh.head_name, lh.head_name_small) == (
+        "Musterschützen-Bruderschaft\nMusterstadt von 1920",
+        True,
+    )
+    assert data_of(text)["einstellungen"]["zweite_zeile_kleiner"] is True
+    _text, failed = call(token, "briefbogen_aendern", name_im_kopf="Eins\nZwei\nDrei")
+    assert failed
+    assert Letterhead.objects.get(organization=club).head_name.count("\n") == 1
+
+
+def test_logo_fuer_briefbogen(club, site, secretary, settings, tmp_path):  # noqa: F811
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    from website import content
+
+    settings.PRIVATE_ROOT = tmp_path / "private"
+    settings.MEDIA_ROOT = tmp_path / "media"
+    buf = io.BytesIO()
+    Image.new("RGBA", (500, 100), (18, 62, 122, 255)).save(buf, "PNG")
+    upload = SimpleUploadedFile("marke.png", buf.getvalue(), content_type="image/png")
+    image = content.store_image(site, upload, "", "", secretary)
+    token = connect(secretary, club, scope=ALL, haken=[LETTERHEAD])["access_token"]
+    text, failed = call(token, "briefbogen_ansehen")
+    assert not failed, text
+    assert data_of(text)["eigenes_logo"] is False
+    text, failed = call(token, "briefbogen_logo_aus_bild", nummer=image.pk)
+    assert not failed, text
+    assert data_of(text)["eigenes_logo"] is True
+    club.refresh_from_db()
+    assert not club.logo.name  # Erscheinungsbild bleibt
+    assert Letterhead.objects.get(organization=club).logo.name.startswith("logos/briefbogen/")
+    text, failed = call(token, "briefbogen_logo_aus_bild", entfernen=True)
+    assert not failed, text
+    assert not Letterhead.objects.get(organization=club).logo.name
+    _text, failed = call(token, "briefbogen_logo_aus_bild")
+    assert failed

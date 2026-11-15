@@ -12894,5 +12894,11 @@ msgstr "Design packages can be imported by those who manage the website."
 msgid "Eine Einheit kann höchstens {n} eigene Designs einspielen."
 msgstr "A unit can import at most {n} designs of its own."
 
+msgid "Höchstens zwei Zeilen."
+msgstr "Two lines at most."
+
+msgid "Ein eigenes Logo gibt es nur mit eigenem Briefbogen."
+msgstr "An own logo only exists with an own letterhead."
+
 msgid "Knopftext"
 msgstr "Button text"

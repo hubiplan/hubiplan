@@ -213,8 +213,9 @@ sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Ha
 
 | Werkzeug | Bereich | Was |
 |---|---|---|
-| `briefbogen_ansehen` | lesen | Einstellungen, Palette mit Kontrast auf Weiß, Hinweise; `untereinheit` optional |
-| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `zusatzzeile`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `anrede`, `grussformel`, `fusszeile` {…}; nur Angegebenes ändert sich |
+| `briefbogen_ansehen` | lesen | Einstellungen, Palette mit Kontrast auf Weiß, Hinweise, `eigenes_logo`; `untereinheit` optional |
+| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `name_im_kopf` (höchstens zwei Zeilen, #487), `zweite_zeile_kleiner`, `zusatzzeile`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `anrede`, `grussformel`, `fusszeile` {…}; nur Angegebenes ändert sich |
+| `briefbogen_logo_aus_bild` | briefbogen | Issue #488: Bild der Bilderverwaltung als eigenes Logo nur für den Briefbogen (`LetterheadLogoView`, `letterhead/logo/` bzw. `letterhead/units/<id>/logo/`), `entfernen` setzt zurück aufs Erscheinungsbild; Untereinheiten nur mit eigenem Briefbogen |
 
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
 `club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `website/upload_views.py` (Hochladelink, Bild per Adresse),

@@ -46,6 +46,8 @@ EDIT_FIELDS = [
     "font_fallback",
     "heading_font_fallback",
     "show_name",
+    "head_name",
+    "head_name_small",
     "logo_size",
     "line_color",
     "head_line",
@@ -77,6 +79,15 @@ class LetterheadSerializer(ModelCleanMixin, serializers.ModelSerializer):
                 gettext("Einen eigenen Briefbogen gibt es nur mit eigenem Arbeitsbereich.")
             )
         return value
+
+    def validate_head_name(self, value):
+        # Höchstens zwei Zeilen; leere Zeilen und Ränder fallen weg (Issue #487)
+        from .headname import MAX_LINES
+
+        lines = [line.strip() for line in (value or "").splitlines() if line.strip()]
+        if len(lines) > MAX_LINES:
+            raise serializers.ValidationError(gettext("Höchstens zwei Zeilen."))
+        return "\n".join(lines)
 
     def validate_account(self, value):
         # Konten liegen im Datenbereich der Einheit; gewählt werden darf nur ein eigenes
@@ -157,6 +168,8 @@ def _state(org: Organization) -> dict:
         "palette": palette_state(letter),
         "web_fonts": sorted(WEB_FONTS),
         "hints": _hints(owner, letter),
+        # Eigenes Logo nur für den Briefbogen (Issue #488); sonst gilt das Erscheinungsbild
+        "logo_url": letterhead.logo.url if letterhead.logo else None,
     }
 
 
@@ -214,6 +227,59 @@ class UnitLetterheadView(_OrgLetterheadMixin, APIView):
 
     def patch(self, request, org_id: int, unit_id: int):
         return Response(_update(request, self.target(unit_id), self.org))
+
+
+class LetterheadLogoView(_OrgLetterheadMixin, APIView):
+    """Eigenes Logo des Briefbogens hochladen oder entfernen (Issue #488).
+
+    Geprüft und aufbereitet wie das Logo im Erscheinungsbild (PNG, höchstens 2 MB, auf
+    Wunsch ohne weißen Rand). Ohne eigenes Logo gilt das aus dem Erscheinungsbild."""
+
+    parser_classes = [MultiPartParser, FormParser]
+
+    def _letterhead(self, unit_id) -> tuple[Organization, Letterhead]:
+        org = self.target(unit_id)
+        letterhead = service.ensure(org)
+        if org.type == Organization.Type.UNIT and (
+            letterhead.mode != Letterhead.Mode.OWN or not service.may_have_own(org)
+        ):
+            raise serializers.ValidationError(
+                {"logo": gettext("Ein eigenes Logo gibt es nur mit eigenem Briefbogen.")}
+            )
+        return org, letterhead
+
+    def post(self, request, org_id: int, unit_id: int | None = None):
+        from organizations.serializers import LogoSerializer
+
+        org, letterhead = self._letterhead(unit_id)
+        serializer = LogoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            before = snapshot(letterhead)
+            old = letterhead.logo.name if letterhead.logo else ""
+            letterhead.logo = serializer.validated_data["logo"]
+            with rls_bypass():
+                letterhead.save(update_fields=["logo", "updated_at"])
+            record(self.org, request.user, "update", letterhead, diff(before, snapshot(letterhead)))
+        if old:
+            letterhead.logo.storage.delete(old)
+        return Response(_state(org))
+
+    def delete(self, request, org_id: int, unit_id: int | None = None):
+        org = self.target(unit_id)
+        letterhead = service.ensure(org)
+        if letterhead.logo:
+            with transaction.atomic():
+                before = snapshot(letterhead)
+                old = letterhead.logo.name
+                letterhead.logo = ""
+                with rls_bypass():
+                    letterhead.save(update_fields=["logo", "updated_at"])
+                record(
+                    self.org, request.user, "update", letterhead, diff(before, snapshot(letterhead))
+                )
+            letterhead.logo.storage.delete(old)
+        return Response(_state(org))
 
 
 class OrgLetterheadPreviewView(_OrgLetterheadMixin, APIView):
