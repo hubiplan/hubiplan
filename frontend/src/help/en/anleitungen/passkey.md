@@ -49,7 +49,8 @@ password manager.
 - **Android:** The phone asks for your fingerprint, face or PIN straight away. You can also open
   **Administration** with **Unlock with passkey** instead of your password and code.
 - **iPhone:** The app opens your club’s sign-in page. Sign in there with **Sign in with
-  passkey** and tap **Connect**.
+  passkey** and tap **Connect**. You unlock **Administration** the same way with **Unlock with
+  passkey**: sign in, check that the device is right and tap **Unlock**.
 
 If it does not work, connect the app as before with the QR code under **My account** › App &
 other instances.
