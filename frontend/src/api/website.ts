@@ -115,7 +115,7 @@ export interface DesignInfo {
   sketch?: string
 }
 
-/** Eingespieltes Designpaket (nur für Plattformverwalter) */
+/** Eingespieltes Designpaket: der Installation oder nur dieser Einheit (#481) */
 export interface DesignPackage {
   key: string
   label: string
@@ -127,6 +127,24 @@ export interface DesignPackage {
   in_use: boolean
   released_count: number
   templates: string[]
+  /** „unit“: nur für diese Einheit eingespielt; sonst für die ganze Installation */
+  scope?: 'unit' | 'installation'
+  /** von Plattformverwaltern gesperrt: keine Webseite zeigt es */
+  blocked?: boolean
+  /** darf hier freigegeben und gelöscht werden */
+  can_change?: boolean
+  created_at: string
+  updated_at: string
+}
+
+/** Paket einer Einheit in der Liste der Plattformverwalter (#481) */
+export interface UnitDesignPackage {
+  id: number
+  key: string
+  label: string
+  unit: string
+  blocked: boolean
+  css_bytes: number
   created_at: string
   updated_at: string
 }
@@ -144,6 +162,7 @@ export interface DesignPackageCheck {
   warnings: string[]
   exists: boolean
   source: string
+  scope?: 'unit' | 'installation'
 }
 
 export interface DesignImportOptions {
@@ -152,6 +171,8 @@ export interface DesignImportOptions {
   label_en: string
   check?: boolean
   replace?: boolean
+  /** Plattformverwalter: nur für diese Einheit statt für die Installation */
+  unit?: boolean
 }
 
 /** Punkt im Menübaum (höchstens zwei Ebenen) */
@@ -487,7 +508,10 @@ export interface WebsiteData {
   /** Verläufe der Einheit (Einstellungen › Erscheinungsbild) */
   gradients?: Gradient[]
   /** Darf Designpakete einspielen und freigeben (Plattformverwalter) */
+  /** Designpakete einspielen (für die eigene Einheit, #481) */
   can_import_designs?: boolean
+  /** Plattformverwalter: auch für die Installation einspielen, Pakete der Einheiten sperren */
+  designs_platform?: boolean
   /** Stilregler der Feinabstimmung (fehlt bei älteren Ständen) */
   style_catalog?: StyleCatalog
   /** Darstellung der festen Bereiche (G5, fehlt bei älteren Ständen) */
@@ -541,6 +565,7 @@ export const websiteApi = {
     if (options.label_en) form.append('label_en', options.label_en)
     if (options.check) form.append('check', '1')
     if (options.replace) form.append('replace', '1')
+    if (options.unit) form.append('unit', '1')
     return api.post<{ ok: boolean; package: DesignPackageCheck | DesignPackage }>(
       `${base(org)}design-packages/`,
       form,
@@ -549,6 +574,10 @@ export const websiteApi = {
   releaseDesign: (org: number, key: string, released: boolean) =>
     api.patch<DesignPackage>(`${base(org)}design-packages/${key}/`, { released }),
   removeDesign: (org: number, key: string) => api.del(`${base(org)}design-packages/${key}/`),
+  unitDesignPackages: (org: number) =>
+    api.get<UnitDesignPackage[]>(`${base(org)}design-package-units/`),
+  blockUnitDesign: (org: number, id: number, blocked: boolean) =>
+    api.patch<UnitDesignPackage>(`${base(org)}design-package-units/`, { id, blocked }),
   exportDesign: (org: number, key: string) =>
     requestBlob('GET', `${base(org)}design-packages/${key}/export/`),
   openPreview: (org: number) =>

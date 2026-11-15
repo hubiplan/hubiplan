@@ -689,8 +689,10 @@ class WebsiteView(_WebsiteMixin, APIView):
             "style_catalog": style.catalog(),
             # Darstellung der festen Bereiche (G5)
             "layout_catalog": variants.catalog(),
-            # Designpakete einspielen und freigeben: nur Plattformverwalter
-            "can_import_designs": can_import_designs(self.request.user),
+            # Designpakete einspielen: wer die Webseite verwaltet, für die eigene Einheit
+            # (#481); für die ganze Installation und zum Sperren nur Plattformverwalter
+            "can_import_designs": WEBSITE_MANAGE in self.org_permissions,
+            "designs_platform": can_import_designs(self.request.user),
             # Termine-Block: Häkchen „übergeordnete Einheiten“ nur, wenn es sie gibt
             "has_parent_units": services.has_parent_events(self.org),
             "units": [

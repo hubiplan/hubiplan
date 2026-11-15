@@ -430,7 +430,9 @@ class Website(models.Model):
         # Legacy free templates remain stored for administrators, but are quarantined
         # from all public clients, including older website versions.
         return [
-            p for p in self.design_packages.all() if not p.templates and p.sketch_like in DESIGNS
+            p
+            for p in self.design_packages.all()
+            if not p.templates and not p.blocked and p.sketch_like in DESIGNS
         ]
 
     def apply_draft(self) -> None:
@@ -532,11 +534,23 @@ HOSTNAME_RE = r"^(?=.{1,253}$)(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(
 class DesignPackage(models.Model):
     """Eingespieltes Design (Paket aus design_packages.py), nicht im Repository.
 
-    Gilt für die ganze Installation; wählen können es nur freigegebene Webseiten.
-    Einspielen, Freigeben und Löschen dürfen nur Plattformverwalter (Ralf 2026-11-02).
+    Ohne Einheit gilt es für die ganze Installation; einspielen, freigeben und löschen
+    dürfen dann nur Plattformverwalter (Ralf 2026-11-02). Seit #481 spielen auch
+    Verwalter einer Webseite Pakete für ihre eigene Einheit ein: Die gelten nur für deren
+    Webseite, das Kürzel ist nur innerhalb der Einheit eindeutig, und Plattformverwalter
+    können sie sperren. Wählen können ein Paket nur freigegebene Webseiten.
     """
 
-    key = models.CharField("Kürzel", max_length=40, unique=True)
+    key = models.CharField("Kürzel", max_length=40)
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="nur für Einheit",
+    )
+    blocked = models.BooleanField("gesperrt", default=False, db_default=False)
     label = models.CharField("Name", max_length=60)
     label_en = models.CharField("Name (Englisch)", max_length=60, blank=True)
     hint = models.CharField("Beschreibung", max_length=300, blank=True)
@@ -557,6 +571,16 @@ class DesignPackage(models.Model):
 
     class Meta:
         ordering = ["label", "key"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["key"],
+                condition=models.Q(organization__isnull=True),
+                name="designpaket_kuerzel_installation",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "key"], name="designpaket_kuerzel_einheit"
+            ),
+        ]
         verbose_name = "Designpaket"
         verbose_name_plural = "Designpakete"
 

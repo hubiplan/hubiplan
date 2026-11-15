@@ -19,8 +19,14 @@ Startseite trägt `<body data-seite="start">`, damit ein Paket sie anders gestal
 der Suche steht in `.suche-punkt`.
 
 Standarddesigns exportiert die Webseite unter `/design-paket/<layout>.zip` ohne
-Vorlagendateien. Plattformverwalter importieren unter Webseite › Gestaltung mit eigenem
-Kürzel, prüfen und geben je Webseite frei. `quelle` übernimmt auch die Farbzuordnung.
+Vorlagendateien. Wer die Webseite einer Einheit verwaltet, importiert unter Webseite ›
+Gestaltung mit eigenem Kürzel ein Paket nur für diese Einheit (`DesignPackage.organization`,
+#481): Es ist sofort für deren Webseite freigegeben, für andere unsichtbar, das Kürzel ist
+nur je Einheit eindeutig, höchstens 10 Pakete je Einheit. Plattformverwalter importieren
+außerdem für die ganze Installation (`organization` leer) und geben je Webseite frei; Pakete
+der Einheiten sehen sie unter „Designs der Einheiten“ und sperren sie dort (`blocked`,
+die Webseite zeigt dann Klassisch). Zwei freigegebene Pakete gleichen Kürzels auf einer
+Webseite lehnt HUBIplan ab. `quelle` übernimmt auch die Farbzuordnung.
 Der gewählte Layoutschlüssel ist Teil der Prüfsumme. Ein freigegebenes Datenpaket kann
 wieder exportiert und importiert werden.
 

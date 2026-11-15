@@ -200,9 +200,10 @@ def upload(c, org, data: bytes, **fields):
 
 
 class TestEinspielen:
-    def test_nur_plattformverwalter(self, api, orgs, board_a, site):
-        resp = upload(api(board_a), orgs["a"], make_zip(key="hubertus"))
-        assert resp.status_code == 403
+    def test_ohne_verwaltungsrecht_nicht(self, api, orgs, board_b, site):
+        # Vorstand eines anderen Vereins: keine Rechte an dieser Webseite
+        resp = upload(api(board_b), orgs["a"], make_zip(key="hubertus"))
+        assert resp.status_code in (403, 404)
         assert not DesignPackage.objects.exists()
 
     def test_pruefen_ohne_speichern(self, api, orgs, admin, site):
@@ -239,7 +240,7 @@ class TestEinspielen:
         entry = next(d for d in data["designs"] if d["key"] == "hubertus")
         assert entry["package"] is True and entry["sketch"] == "classic"
         assert "hubertus" in data["website"]["design_colors"]
-        assert data["can_import_designs"] is False
+        assert data["can_import_designs"] is True and data["designs_platform"] is False
         resp = b.put(
             url,
             {"design": "hubertus", "color_roles": {"hubertus": {"footer": 1}}},
@@ -312,6 +313,113 @@ class TestEinspielen:
         info = Client().get("/api/public/site/v1/schluessel-p/").json()
         classic = info["design_catalog"]["classic"]
         assert classic["label"] == "Klassisch" and classic["roles"]["header"] == [0]
+
+
+@pytest.fixture
+def site_b(orgs):
+    org = orgs["b"]
+    org.enabled_modules = [*org.enabled_modules, "website"]
+    org.save()
+    return Website.objects.create(organization=org, public_key="schluessel-b", state="public")
+
+
+class TestEigeneEinheit:
+    """#481: Verwalter einer Webseite spielen Pakete nur für die eigene Einheit ein."""
+
+    def test_verein_spielt_eigenes_design_ein(self, api, orgs, board_a, board_b, site, site_b):
+        c = api(board_a)
+        resp = upload(c, orgs["a"], make_zip(), key="hubertus", label="Hubertus", check="1")
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["package"]["scope"] == "unit"
+        resp = upload(c, orgs["a"], make_zip(), key="hubertus", label="Hubertus")
+        assert resp.status_code == 201, resp.content
+        pkg = DesignPackage.objects.get(key="hubertus")
+        assert pkg.organization == orgs["a"] and list(pkg.websites.all()) == [site]
+        assert resp.json()["package"]["scope"] == "unit"
+        listed = c.get(f"/api/orgs/{orgs['a'].pk}/website/design-packages/").json()
+        assert [(p["key"], p["can_change"]) for p in listed] == [("hubertus", True)]
+
+        # Derselbe Kürzel im anderen Verein: eigenes Paket, keins sieht das andere
+        b = api(board_b)
+        resp = upload(b, orgs["b"], make_zip(), key="hubertus", label="Anders")
+        assert resp.status_code == 201, resp.content
+        assert DesignPackage.objects.filter(key="hubertus").count() == 2
+        listed = b.get(f"/api/orgs/{orgs['b'].pk}/website/design-packages/").json()
+        assert [p["label"] for p in listed] == ["Anders"]
+        assert site_b.design_choices() >= {"hubertus"}
+        url_b = f"/api/orgs/{orgs['b'].pk}/website/design-packages/hubertus/"
+        assert b.delete(url_b).status_code == 204
+        assert DesignPackage.objects.get(key="hubertus") == pkg
+
+        # Wählen und ausliefern wie ein Paket der Installation
+        url = f"/api/orgs/{orgs['a'].pk}/website/"
+        assert c.put(url, {"design": "hubertus"}, content_type=JSON).status_code == 200
+        info = Client().get("/api/public/site/v1/schluessel-p/").json()
+        assert info["design"] == "hubertus"
+        assert Client().get("/api/public/site/v1/schluessel-p/design/hubertus/").status_code == 200
+
+    def test_hoechstens_zehn_je_einheit(self, api, orgs, board_a, site):
+        c = api(board_a)
+        for i in range(10):
+            resp = upload(c, orgs["a"], make_zip(), key=f"eigen-{i}", label=f"Eigen {i}")
+            assert resp.status_code == 201, resp.content
+        resp = upload(c, orgs["a"], make_zip(), key="eigen-x", label="Zu viel")
+        assert resp.status_code == 400 and "höchstens" in str(resp.json())
+        # Ersetzen geht weiter
+        resp = upload(c, orgs["a"], make_zip(), key="eigen-1", label="Neu", replace="1")
+        assert resp.status_code == 200, resp.content
+
+    def test_pruefung_wie_bisher(self, api, orgs, board_a, site):
+        resp = upload(api(board_a), orgs["a"], make_zip({"design.css": "@import 'x';"}, key="h2"))
+        assert resp.status_code == 400 and "@import" in str(resp.json())
+        resp = upload(api(board_a), orgs["a"], make_zip({"vorlagen/kopf.html": KOPF}, key="h3"))
+        assert resp.status_code == 400
+        assert not DesignPackage.objects.exists()
+
+    def test_kein_doppeltes_kuerzel_auf_einer_webseite(self, api, orgs, admin, board_a, site):
+        # Paket der Installation, für diese Webseite freigegeben
+        assert upload(api(admin), orgs["a"], make_zip(), key="hubertus").status_code == 201
+        c = api(board_a)
+        resp = upload(c, orgs["a"], make_zip(), key="hubertus", label="Eigen")
+        assert resp.status_code == 400 and "schon ein Design" in str(resp.json())
+        # Der Verein sieht es, darf es aber nicht ändern oder löschen
+        listed = c.get(f"/api/orgs/{orgs['a'].pk}/website/design-packages/").json()
+        assert [(p["scope"], p["can_change"]) for p in listed] == [("installation", False)]
+        detail = f"/api/orgs/{orgs['a'].pk}/website/design-packages/hubertus/"
+        assert c.delete(detail).status_code == 403
+        assert c.patch(detail, {"released": False}, content_type=JSON).status_code == 403
+        assert c.get(detail + "export/").status_code == 200
+
+    def test_plattformverwalter_sperrt(self, api, orgs, admin, board_a, site):
+        c = api(board_a)
+        upload(c, orgs["a"], make_zip(), key="hubertus", label="Hubertus")
+        url = f"/api/orgs/{orgs['a'].pk}/website/"
+        c.put(url, {"design": "hubertus"}, content_type=JSON)
+        units = f"/api/orgs/{orgs['a'].pk}/website/design-package-units/"
+        assert c.get(units).status_code == 403
+        a = api(admin)
+        listed = a.get(units).json()
+        assert [(p["key"], p["unit"], p["blocked"]) for p in listed] == [
+            ("hubertus", "Verein A", False)
+        ]
+        pk = listed[0]["id"]
+        assert c.patch(units, {"id": pk, "blocked": True}, content_type=JSON).status_code == 403
+        resp = a.patch(units, {"id": pk, "blocked": True}, content_type=JSON)
+        assert resp.status_code == 200 and resp.json()["blocked"] is True
+        site.refresh_from_db()
+        assert site.effective_design() == "classic"
+        assert Client().get("/api/public/site/v1/schluessel-p/").json()["design"] == "classic"
+        assert Client().get("/api/public/site/v1/schluessel-p/design/hubertus/").status_code == 404
+        assert a.patch(units, {"id": pk, "blocked": False}, content_type=JSON).status_code == 200
+        site.refresh_from_db()
+        assert site.effective_design() == "hubertus"
+
+    def test_plattformverwalter_waehlt_einheit_oder_installation(self, api, orgs, admin, site):
+        a = api(admin)
+        assert upload(a, orgs["a"], make_zip(), key="nur-hier", unit="1").status_code == 201
+        assert upload(a, orgs["a"], make_zip(), key="ueberall").status_code == 201
+        owners = dict(DesignPackage.objects.values_list("key", "organization"))
+        assert owners == {"nur-hier": orgs["a"].pk, "ueberall": None}
 
 
 @pytest.mark.parametrize(
