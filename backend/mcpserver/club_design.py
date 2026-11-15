@@ -80,7 +80,9 @@ KIND_FIELDS = {
     "live_facts": "title, items [{fact (members|years|units), label (optional)}]",
 }
 TARGET_HINT = (
-    'target: {"page": "<Menüschlüssel>"}, {"event": <Terminnummer>} oder {"url": "https://…"}'
+    'target: {"page": "<Menüschlüssel>"}, {"unit": <Nummer aus auswahl.units>}, '
+    '{"event": <Terminnummer>} oder {"url": "https://…"}; eine Adresse der eigenen Webseite '
+    "öffnet im selben Fenster"
 )
 
 

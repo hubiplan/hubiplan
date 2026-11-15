@@ -281,7 +281,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         return " ".join((value or "").split())
 
     def validate_notice_target(self, value):
-        # Ziel wie bei Knöpfen der Startseite: Menüpunkt, Termin oder Link nach außen
+        # Ziel wie bei Knöpfen der Startseite: Menüpunkt, Untereinheit, Termin oder Link nach außen
         if value in (None, {}) or self.instance is None:
             return {}
         try:

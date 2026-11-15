@@ -225,7 +225,12 @@ export type HomeKind =
   | 'cover'
 
 /** Ziel eines Knopfs oder einer Kachel: Menüpunkt, Termin oder Link nach außen */
-export type HomeTarget = { page: string } | { event: number } | { url: string } | null
+export type HomeTarget =
+  | { page: string }
+  | { unit: number }
+  | { event: number }
+  | { url: string }
+  | null
 
 export interface HomeButton {
   label: string
