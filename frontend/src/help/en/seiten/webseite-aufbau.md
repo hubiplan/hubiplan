@@ -47,4 +47,6 @@ Search: With the “Search” section a magnifying glass appears in the menu. It
 
 People: “Show titles before names” puts the title from the member record before the name (e.g. “Dr. Max Muster”) for the board, lists and results as well as for the authorised representatives in the legal notice (if the role is linked to the member record); when off, names appear without a title. “Show main instrument below the name” takes the main instrument from Music › Musicians. “Show postal address for the board” only applies to people with the consent “Postal address” in their member record.
 
+Sub-units: Under “Units on the website” you choose “all”, “selected” (with a check box per sub-unit) or “none”. Anyone allowed to edit the unit drags the sub-units in this list by their handle into the order in which they appear on the website; nested sub-units are sorted within their level. The order is saved immediately and is the same as under the sub-units menu item with “Change order”.
+
 Events: If there are sub-units, a check box adds their public events to the website calendar; if there are parent units with events (e.g. the umbrella association), a second one adds their events that are shared downwards. If there are neither, the “Events” block is not shown.

@@ -858,6 +858,47 @@ describe('Webseite', () => {
     expect(screen.getByRole('button', { name: 'Verwerfen' })).not.toHaveClass('button-primary')
   })
 
+  it('sortiert die Untereinheiten direkt in der Liste der Webseite (Ralf 15.11.)', async () => {
+    const units = [
+      { id: 1, name: 'Jägerzug', parent: null },
+      { id: 2, name: 'Fahnenzug', parent: null },
+      { id: 3, name: 'Tambourcorps', parent: 1 },
+    ]
+    const site = website('public', { units_mode: 'selected', unit_ids: [1] })
+    const body = { ...data(site), units, can_sort_units: true }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        'POST /api/orgs/7/departments/reorder/': () => ({ status: 200, body: {} }),
+      },
+      '/webseite/aufbau',
+      ['org.edit'],
+    )
+    // Häkchen bleiben, dazu je Zeile ein Griff
+    expect(await screen.findByRole('checkbox', { name: 'Jägerzug' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Tambourcorps' })).not.toBeChecked()
+    const handle = screen.getByRole('button', { name: 'Fahnenzug verschieben' })
+    handle.focus()
+    await userEvent.keyboard('{ArrowUp}')
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'POST /api/orgs/7/departments/reorder/')).toBe(true),
+    )
+    const call = calls.find((c) => c.key === 'POST /api/orgs/7/departments/reorder/')
+    expect(JSON.parse(String(call?.init?.body))).toEqual({ parent: null, ids: [2, 1] })
+  })
+
+  it('zeigt ohne Recht „Einheit bearbeiten“ nur die Häkchen ohne Griff', async () => {
+    const units = [
+      { id: 1, name: 'Jägerzug', parent: null },
+      { id: 2, name: 'Fahnenzug', parent: null },
+    ]
+    const site = website('public', { units_mode: 'selected', unit_ids: [] })
+    const body = { ...data(site), units, can_sort_units: false }
+    renderApp({ [`GET ${base}`]: () => ({ status: 200, body }) }, '/webseite/aufbau')
+    expect(await screen.findByRole('checkbox', { name: 'Fahnenzug' })).not.toBeChecked()
+    expect(screen.queryByRole('button', { name: /verschieben/ })).not.toBeInTheDocument()
+  })
+
   it.each([
     { units: [], parents: false, unitsBox: false, parentBox: false },
     { units: [], parents: true, unitsBox: false, parentBox: true },

@@ -95,6 +95,7 @@ export function InvoicesPage() {
     <div className="stack">
       <div className="card card-wide filters">
         <form
+          className="button-row"
           onSubmit={(e) => {
             e.preventDefault()
             setParam('suche', search.trim())

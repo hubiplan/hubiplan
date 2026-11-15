@@ -1134,6 +1134,13 @@ h3 {
   margin: 0;
 }
 
+/* Abstand unter dem Kartenkopf (Ralf 15.11.2026, Züge: „Reihenfolge ändern“ klebte am
+   Statusfilter der Tabelle). Folgt ein Absatz, fällt der Rand mit dessen Rand zusammen; in
+   Gap-Containern (.stack) zählt nur gap. Spezifität 0. */
+:where(:not(.stack, .stack-sm, .tiles) > .card-head:not(:last-child)) {
+  margin-bottom: var(--space-3);
+}
+
 .push-right {
   margin-left: auto;
 }

@@ -140,6 +140,16 @@ def test_webseite_zeigt_untereinheiten_in_gezogener_reihenfolge(client_a, orgs):
     data = Client().get("/api/public/site/v1/schluessel-r/").json()
     assert [u["slug"] for u in data["units"]] == ["beta", "alpha"]
 
+    # Die Verwaltung der Webseite liefert Ebene und Recht zum Ziehen (Ralf 15.11.)
+    c = Department.objects.create(organization=org, parent=a, name="Gamma")
+    admin = client_a.get(f"/api/orgs/{org.pk}/website/").json()
+    assert admin["can_sort_units"] is True
+    assert admin["units"] == [
+        {"id": b.pk, "name": "Beta", "parent": None},
+        {"id": a.pk, "name": "Alpha", "parent": None},
+        {"id": c.pk, "name": "Gamma", "parent": a.pk},
+    ]
+
 
 def test_wuerden_je_einheit(client_a, orgs):
     from honors.models import Dignity
