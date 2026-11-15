@@ -49,6 +49,8 @@ const letterhead = {
     font_fallback: 'Arial',
     heading_font_fallback: 'Georgia',
     show_name: true,
+    head_name: '',
+    head_name_small: false,
     logo_size: 'medium',
     line_color: '1',
     head_line: true,
@@ -245,5 +247,56 @@ describe('Einstellungen › Briefbogen', () => {
       },
       { timeout: 4000 },
     )
+  })
+
+  it('nimmt einen eigenen Namen im Briefkopf mit zwei Zeilen (Issue #487)', async () => {
+    const calls = show('/einstellungen/briefbogen', {
+      'GET /api/orgs/7/letterhead/': () => ({ status: 200, body: letterhead }),
+      'GET /api/orgs/7/letterhead/preview/': () => ({ status: 200, body: '%PDF' }),
+      'PATCH /api/orgs/7/letterhead/': (init) => ({
+        status: 200,
+        body: {
+          ...letterhead,
+          letterhead: { ...letterhead.letterhead, ...JSON.parse(String(init?.body)) },
+        },
+      }),
+    })
+    const user = userEvent.setup()
+    const name = await screen.findByLabelText(/^Name im Briefkopf/)
+    // „Zweite Zeile kleiner“ erst bei zwei Zeilen
+    expect(screen.queryByLabelText(/^Zweite Zeile kleiner/)).not.toBeInTheDocument()
+    await user.type(name, 'TV Beispielhausen{Enter}von 1900')
+    await user.click(await screen.findByLabelText(/^Zweite Zeile kleiner/))
+    await waitFor(
+      () => {
+        const sent = calls
+          .filter((c) => c.key === 'PATCH /api/orgs/7/letterhead/')
+          .reduce((all, c) => ({ ...all, ...JSON.parse(String(c.init?.body)) }), {})
+        expect(sent).toMatchObject({
+          head_name: 'TV Beispielhausen\nvon 1900',
+          head_name_small: true,
+        })
+      },
+      { timeout: 4000 },
+    )
+  })
+
+  it('zeigt ein eigenes Logo für den Briefbogen (Issue #488)', async () => {
+    show('/einstellungen/briefbogen', {
+      'GET /api/orgs/7/letterhead/': () => ({
+        status: 200,
+        body: { ...letterhead, logo_url: '/media/logos/briefbogen/7-x.png' },
+      }),
+      'GET /api/orgs/7/letterhead/preview/': () => ({ status: 200, body: '%PDF' }),
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Logo für den Briefbogen' }),
+    ).toBeInTheDocument()
+    expect(
+      screen
+        .getAllByAltText('Logo')
+        .some((img) => img.getAttribute('src') === '/media/logos/briefbogen/7-x.png'),
+    ).toBe(true)
+    expect(screen.getByText('Anderes Bild wählen')).toBeInTheDocument()
   })
 })

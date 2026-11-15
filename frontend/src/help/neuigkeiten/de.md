@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- **Briefbogen: eigenes Logo und Name im Briefkopf.** Unter Einstellungen › Briefbogen setzt ihr ein **Logo nur für Briefe**, etwa eine querformatige Wort-Bild-Marke, während in HUBIplan das Wappen bleibt. Mit **Name im Briefkopf** bestimmt ihr selbst, wie ein langer Name auf zwei Zeilen umbricht, die zweite auf Wunsch kleiner. Ohne Eintrag verkleinert HUBIplan einen langen Namen und verteilt ihn ausgewogen auf zwei Zeilen, in Word wie im PDF; ein einzelnes Wort allein in der zweiten Zeile gibt es nicht mehr. Ein KI-Assistent kann beides setzen, wenn ihr den Briefbogen beim Verbinden erlaubt.
 - **Untereinheiten ausblenden**: Hat ein Verein keine Untereinheiten (Züge, Register, Sparten …), blendet er den Menüpunkt unter Einstellungen › Bezeichnungen dauerhaft aus. Bestehende Untereinheiten bleiben erhalten.
 - Webseite: **Designpakete selbst einspielen.** Wer die Webseite verwaltet, spielt unter Gestaltung › Design weitergeben › Design aus Paket laden ein Designpaket für die eigene Einheit ein, ohne den Betreiber zu brauchen. Es gilt nur für die eigene Webseite und wird geprüft wie bisher. Plattformverwalter sehen alle Designs der Einheiten in einer Liste und können sie sperren.
 - Webseite: **Mehrere Kopfbilder.** Unter Gestaltung › Feinabstimmung › Kopf wählt ihr bis zu zehn Kopfbilder (und ebenso Kopfbilder für Handys). Die Webseite zeigt dann bei jedem Aufruf eines davon, auf allen Seiten, wie bei vielen WordPress-Themes mit wechselndem Kopfbild.

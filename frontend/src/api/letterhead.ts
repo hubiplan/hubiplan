@@ -40,6 +40,8 @@ export interface LetterheadFields {
   font_fallback: string
   heading_font_fallback: string
   show_name: boolean
+  head_name: string
+  head_name_small: boolean
   logo_size: LogoSize
   line_color: PaletteSlot
   head_line: boolean
@@ -58,6 +60,8 @@ export interface LetterheadState {
   board: { name: string; role: string }[]
   palette: { slot: number; color: string; contrast: number }[]
   hints: string[]
+  /** Eigenes Logo nur für den Briefbogen (Issue #488); null: wie im Erscheinungsbild */
+  logo_url?: string | null
 }
 
 export type ContactKey = 'unit' | 'role' | 'own_email' | 'own_phone' | 'own_address'
@@ -133,6 +137,8 @@ export const letterheadApi = {
   unit: (id: number, unit: number) => api.get<LetterheadState>(`${org(id)}/units/${unit}/`),
   updateUnit: (id: number, unit: number, data: Partial<LetterheadFields>) =>
     api.patch<LetterheadState>(`${org(id)}/units/${unit}/`, data),
+  logoUrl: (id: number, unit?: number | null) =>
+    unit ? `${org(id)}/units/${unit}/logo/` : `${org(id)}/logo/`,
   preview: (id: number, unit?: number | null) =>
     requestBlob('GET', `${org(id)}/preview/${unit ? `?unit=${unit}` : ''}`),
   neutral: (id: number, format: FileFormat, unit?: number | null) =>

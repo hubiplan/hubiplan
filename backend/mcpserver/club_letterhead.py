@@ -34,6 +34,8 @@ FIELDS = {
     "logo": "logo_position",
     "logo_groesse": "logo_size",
     "name_neben_logo": "show_name",
+    "name_im_kopf": "head_name",
+    "zweite_zeile_kleiner": "head_name_small",
     "zusatzzeile": "tagline",
     "schrift": "font",
     "schrift_ueberschriften": "heading_font",
@@ -93,6 +95,8 @@ def _summary(data: dict) -> dict:
         if (data.get("owner") or {}).get("is_self")
         else (data.get("owner") or {}).get("name"),
         "einstellungen": result,
+        # Issue #488: eigenes Logo nur für den Briefbogen, sonst das aus dem Erscheinungsbild
+        "eigenes_logo": bool(data.get("logo_url")),
         "palette": [
             {"platz": p["slot"], "farbe": p["color"], "kontrast_auf_weiss": p["contrast"]}
             for p in data.get("palette") or []
@@ -141,6 +145,50 @@ def _change(args: dict, ctx: ClubContext) -> str:
             "Briefbogen geändert ({keys}). Er gilt ab sofort für neue Briefe, Rechnungen und die "
             "Word-Vorlage; die Vorschau steht unter Einstellungen › Briefbogen."
         ).format(keys=", ".join(sorted(body)))
+        + "\n\n"
+        + _dump(_summary(data))
+    )
+
+
+def _logo(args: dict, ctx: ClubContext) -> str:
+    """Eigenes Logo des Briefbogens aus der Bilderverwaltung setzen oder entfernen."""
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from core.tenancy import rls_bypass
+    from website import content_views
+    from website.content_models import WebsiteImage
+
+    path, kwargs = _path(args)
+    view = _views().LetterheadLogoView
+    if args.get("entfernen") is True:
+        data = ctx.call(view, "DELETE", path + "logo/", **kwargs)
+        return (
+            _(
+                "Eigenes Logo des Briefbogens entfernt; es gilt wieder das Logo aus dem "
+                "Erscheinungsbild."
+            )
+            + "\n\n"
+            + _dump(_summary(data))
+        )
+    pk = args.get("nummer")
+    if isinstance(pk, bool) or not isinstance(pk, int) or pk < 1:
+        raise ToolError(_("Bitte „nummer“ (Bild) oder „entfernen“ angeben."))
+    # Rechte auf das Bild wie in der Oberfläche prüfen, dann die Datei lesen
+    ctx.call(content_views.ImageDetailView, "GET", f"website/images/{pk}/", pk=pk)
+    with rls_bypass():
+        image = WebsiteImage.objects.filter(pk=pk, organization_id=ctx.org_id).first()
+    if image is None or not image.file.name:
+        raise ToolError(_("Dieses Bild gibt es nicht."))
+    with image.file.open("rb") as f:
+        content = f.read()
+    upload = SimpleUploadedFile(image.file.name.rsplit("/", 1)[-1], content)
+    form = {"logo": upload, "remove_background": bool(args.get("hintergrund_entfernen"))}
+    data = ctx.call(view, "POST", path + "logo/", multipart=form, **kwargs)
+    return (
+        _(
+            "Eigenes Logo für den Briefbogen gesetzt. Es gilt ab sofort für neue Briefe, "
+            "Rechnungen und die Word-Vorlage; das Logo im Erscheinungsbild bleibt, wie es ist."
+        )
         + "\n\n"
         + _dump(_summary(data))
     )
@@ -198,6 +246,21 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                         "Aus, wenn das Logo den Namen schon enthält (Bildmarke mit Schriftzug)."
                     ),
                 },
+                "name_im_kopf": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": gettext_lazy(
+                        "Eigener Name im Briefkopf, höchstens zwei Zeilen (durch Zeilenumbruch "
+                        "getrennt), z. B. bei langen Namen. Leer: der Name der Einheit, dann "
+                        "bricht HUBIplan selbst ausgewogen um."
+                    ),
+                },
+                "zweite_zeile_kleiner": {
+                    "type": "boolean",
+                    "description": gettext_lazy(
+                        "Zweite Zeile des eigenen Namens kleiner setzen, wie eine Unterzeile."
+                    ),
+                },
                 "zusatzzeile": {"type": "string", "maxLength": 150},
                 "schrift": FONT,
                 "schrift_ueberschriften": {
@@ -234,6 +297,31 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
             }
         ),
         run=_change,
+        writes=True,
+        scope=SCOPE_LETTERHEAD,
+    ),
+    Tool(
+        name="briefbogen_logo_aus_bild",
+        title=gettext_lazy("Logo für den Briefbogen setzen"),
+        description=gettext_lazy(
+            "Setzt ein Bild aus der Bilderverwaltung der Webseite als eigenes Logo nur für den "
+            "Briefbogen (z. B. eine querformatige Wort-Bild-Marke statt des Wappens), oder "
+            "entfernt es wieder (dann gilt das Logo aus dem Erscheinungsbild). Gilt SOFORT für "
+            "neue Briefe: vorher die Person fragen. Untereinheiten nur mit eigenem Briefbogen. "
+            "Neue Bilder: bild_hochladen_vorbereiten."
+        ),
+        schema=_schema(
+            {
+                "untereinheit": UNIT,
+                "nummer": {"type": "integer", "minimum": 1},
+                "entfernen": {"type": "boolean"},
+                "hintergrund_entfernen": {
+                    "type": "boolean",
+                    "description": gettext_lazy("Weißen Rand durchsichtig machen."),
+                },
+            }
+        ),
+        run=_logo,
         writes=True,
         scope=SCOPE_LETTERHEAD,
     ),

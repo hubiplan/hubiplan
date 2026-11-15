@@ -122,11 +122,13 @@ def draw_head(c: rl_canvas.Canvas, data: LetterData) -> None:
             name_x = MARGIN_LEFT + lw + 6
     text_top = _y(c, top + 1)
     if data.show_name:
-        size = fit(c, data.name, heading_bold, 16 if len(data.name) < 45 else 13, name_w * mm)
         c.setFillColor(colors.HexColor(data.primary))
-        c.setFont(heading_bold, size)
-        c.drawString(name_x * mm, text_top - size, data.name)
-        text_top -= size
+        for i, line in enumerate(data.head_lines(name_w)):
+            if i:
+                text_top -= line.size * 0.2
+            c.setFont(heading_bold, line.size)
+            c.drawString(name_x * mm, text_top - line.size, line.text)
+            text_top -= line.size
     line_y = text_top - 2 * mm
     sub = " · ".join(p for p in (data.tagline, data.sub_line) if p)
     if sub:
