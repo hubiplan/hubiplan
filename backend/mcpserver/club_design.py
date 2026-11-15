@@ -593,8 +593,8 @@ def _home_options(args: dict, ctx: ClubContext) -> str:
             "tage": "nur fester Bereich „results“: " + DAYS_HINT,
             "wasserzeichen": 'null, "logo" (Wappen) oder Bildnummer; nur bei Hintergrund, '
             "groß und zart rechts angeschnitten",
-            "titelzeilen": "nur fester Bereich „carousel“ und Stilregler hero_width=full: bis zu "
-            "6 Zeilen (getrennt mit \\n), wechseln mit den Bildern",
+            "titelzeilen": "nur fester Bereich „carousel“ und Stilregler hero_width=stage|full: "
+            "bis zu 6 Zeilen (getrennt mit \\n), wechseln mit den Bildern",
             "oberzeile": "nur fester Bereich „carousel“: kleine Zeile über der Titelzeile",
         },
         "frist": "days bei competition, albums, posts: " + DAYS_HINT,
