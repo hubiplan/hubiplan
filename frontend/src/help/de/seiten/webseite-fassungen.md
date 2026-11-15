@@ -4,7 +4,18 @@ titel: Webseite › Fassungen
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/fassungen]
-stichworte: [Fassungen, Frühere Fassungen, Texte, Textseiten, Protokoll, Zurückholen, Gestaltung als Datei, Export, Import]
+stichworte:
+  [
+    Fassungen,
+    Frühere Fassungen,
+    Texte,
+    Textseiten,
+    Protokoll,
+    Zurückholen,
+    Gestaltung als Datei,
+    Export,
+    Import,
+  ]
 ---
 
 Unter **Fassungen** steht alles, was die ganze Gestaltung betrifft.

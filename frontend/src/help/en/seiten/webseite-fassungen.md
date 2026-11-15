@@ -4,7 +4,8 @@ titel: Website › Versions
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/fassungen]
-stichworte: [versions, earlier versions, texts, text pages, log, restore, design as a file, export, import]
+stichworte:
+  [versions, earlier versions, texts, text pages, log, restore, design as a file, export, import]
 ---
 
 Under **Versions** you find everything that concerns the whole design.
