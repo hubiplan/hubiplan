@@ -556,7 +556,11 @@ describe('Oberfläche', () => {
     const put = api.find((c) => c.key.startsWith('PUT '))
     expect(JSON.parse(String(put?.init?.body))).toEqual({ text: 'Bei uns die Kasse fragen.' })
 
-    await user.click(screen.getByRole('link', { name: '← Alle Hilfe' }))
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Du bist hier' })).getByRole('link', {
+        name: 'Hilfe',
+      }),
+    )
     expect(await screen.findByText('Anna Beispiel')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'anna@example.org' })).toHaveAttribute(
       'href',

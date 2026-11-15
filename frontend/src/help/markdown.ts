@@ -34,3 +34,43 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
 export function renderHelp(body: string): string {
   return md.render(body)
 }
+
+export interface HelpSectionText {
+  /** Überschrift ohne „## “ */
+  title: string
+  body: string
+}
+
+/**
+ * Text an den Zwischenüberschriften („## …“) teilen: Einleitung und Abschnitte. Lange
+ * Seitenhilfen zeigt die Leiste so eingeklappt, die Hilfe-Seite mit Inhaltsübersicht.
+ */
+export function splitSections(body: string): { lead: string; sections: HelpSectionText[] } {
+  const lead: string[] = []
+  const sections: HelpSectionText[] = []
+  let fenced = false
+  for (const line of body.split('\n')) {
+    if (line.startsWith('```')) fenced = !fenced
+    const m = fenced ? null : /^## +(.+?)\s*$/.exec(line)
+    if (m) sections.push({ title: m[1], body: '' })
+    else if (sections.length) sections[sections.length - 1].body += `${line}\n`
+    else lead.push(line)
+  }
+  return {
+    lead: lead.join('\n').trim(),
+    sections: sections.map((x) => ({ ...x, body: x.body.trim() })),
+  }
+}
+
+/** Anker eines Abschnitts auf der Hilfe-Seite, z. B. „abschnitt-gaeste-einladen“. */
+export function sectionAnchor(title: string): string {
+  const slug = title
+    .toLocaleLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  return `abschnitt-${slug}`
+}

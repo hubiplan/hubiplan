@@ -9326,5 +9326,10 @@
   "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa Text mit Bild, Bilder, ein Zitat oder Trainingszeiten. Kontakt, Homepage, Termine und die anderen festen Blöcke lassen sich verschieben und ausblenden. Alles erscheint mit „Veröffentlichen“.": "You can add more sections above and below the text, such as text with image, pictures, a quote or training times. Contact, homepage, events and the other fixed blocks can be moved and hidden. Everything appears once you click “Publish”.",
   "Notiz zum Bildplatz (optional)": "Note for the picture slot (optional)",
   "Noch kein Bild? Die Vorschau zeigt dann einen Platzhalter mit dieser Notiz, etwa „Probenszene, Querformat“. Auf der veröffentlichten Seite erscheint er nicht.": "No picture yet? The preview then shows a placeholder with this note, e.g. “Rehearsal scene, landscape”. It does not appear on the published page.",
-  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there."
+  "Die Vorschau zeigt einen Platzhalter mit dieser Notiz, bis das Bild da ist.": "The preview shows a placeholder with this note until the picture is there.",
+  "Auf dieser Seite": "On this page",
+  "Springe zu": "Jump to",
+  "Du bist hier": "You are here",
+  "Weitere Anleitungen zu {x}": "More guides for {x}",
+  "Die Seite erklärt:": "About the page:"
 }
