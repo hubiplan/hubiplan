@@ -555,6 +555,14 @@
     "section": "Mitglieder → Online-Antrag"
    },
    {
+    "key": "arrangement",
+    "kind": "term",
+    "name": "Arrangement",
+    "text": "Eigene Fassung eines Stücks, etwa für eine andere Besetzung; rechtlich eine Bearbeitung. Solange das Original geschützt ist, darf sie nur mit Zustimmung des Urhebers veröffentlicht oder aufgeführt werden (§ 23 Abs. 1 UrhG), und sie ist selbst wie ein eigenes Werk geschützt (§ 3 UrhG).",
+    "example": "Beispiel: Der Dirigent setzt einen Schlager von 1985 für 25 Bläser; vor dem Konzert holt der Verein die Zustimmung des Verlags ein.",
+    "section": "Musik und Noten"
+   },
+   {
     "key": "artist_fee_mark",
     "kind": "decision",
     "name": "Welche Ausgaben als Künstlerhonorar kennzeichnen?",
@@ -761,6 +769,38 @@
     "text": "Jeder Eintrag im Änderungsprotokoll enthält eine Prüfsumme seines Vorgängers; wird einer geändert oder gelöscht, passt die Kette nicht mehr. So bleibt nachweisbar, dass Änderungen nicht unterdrückt wurden (§ 146 Abs. 4 AO, GoBD).",
     "example": "Beispiel: Eintrag Nr. 1205 verweist auf die Prüfsumme von Nr. 1204; fehlt Nr. 1204, meldet die tägliche Prüfung „Nr. 1204 bis 1204 fehlen“.",
     "section": "Recht und Datenschutz"
+   },
+   {
+    "key": "chronicle_public",
+    "kind": "decision",
+    "name": "Würdenträger auf der Webseite zeigen?",
+    "text": "Namen und Fotos früherer Könige sind Personendaten; für Lebende braucht die Veröffentlichung eine Grundlage, am sichersten die Einwilligung (Art. 6 Abs. 1 DSGVO). Bei Verstorbenen entscheiden über Fotos noch zehn Jahre lang die Angehörigen (§ 22 KUG). Frag im Zweifel nach, bevor du den Haken setzt.",
+    "example": "",
+    "section": "Chronik → Würdenträger"
+   },
+   {
+    "key": "circular_household_merge",
+    "kind": "decision",
+    "name": "Briefe je Haushalt zusammenfassen?",
+    "text": "Ein Brief je Haushalt spart Porto und Papier, wenn mehrere Mitglieder unter einer Anschrift wohnen. Bei der Einladung zur Versammlung sollte aber jedes Mitglied nachweisbar eingeladen sein, weil Fehler bei der Berufung Beschlüsse angreifbar machen (§ 32 Abs. 1 BGB). Fasse deshalb Grüße und Informationen zusammen und verschicke förmliche Einladungen im Zweifel einzeln, sofern die Satzung nichts anderes erlaubt.",
+    "example": "",
+    "section": "Rundschreiben → Empfänger"
+   },
+   {
+    "key": "circular_invite_form",
+    "kind": "decision",
+    "name": "Reicht eine E-Mail als Einladung?",
+    "text": "In welcher Form die Mitgliederversammlung einberufen wird, regelt die Satzung (§ 58 Nr. 4 BGB). Eine E-Mail genügt nur, wenn die Satzung Textform oder E-Mail zulässt (§ 126b BGB); verlangt sie einen Brief, geht die Einladung per Post. Die Tagesordnung gehört in die Einladung, sonst sind Beschlüsse angreifbar (§ 32 Abs. 1 BGB).",
+    "example": "",
+    "section": "Rundschreiben → Offizielle Mitteilung"
+   },
+   {
+    "key": "circular_kind",
+    "kind": "decision",
+    "name": "Offizielle Mitteilung oder Information?",
+    "text": "Was zur Mitgliedschaft gehört, etwa die Einladung zur Versammlung oder ein Hinweis zum Beitrag, darf der Verein jedem Mitglied schicken (Art. 6 Abs. 1 lit. b DSGVO). Werbung per E-Mail braucht dagegen eine ausdrückliche Einwilligung (§ 7 Abs. 2 Nr. 2 UWG), deshalb können sich Mitglieder von Informationen abmelden. Wähle im Zweifel „Information“: Dann erreicht die Nachricht etwas weniger Mitglieder, aber niemanden, der das nicht mehr möchte.",
+    "example": "",
+    "section": "Rundschreiben → Art"
    },
    {
     "key": "closing_balance",
@@ -1123,12 +1163,28 @@
     "section": "Geschäftspartner → Vereinbarung"
    },
    {
+    "key": "copyright_term",
+    "kind": "term",
+    "name": "Schutzfrist",
+    "text": "Das Urheberrecht erlischt 70 Jahre nach dem Tod des Urhebers (§ 64 UrhG). Danach ist das Werk frei, eine neuere Bearbeitung kann aber weiter geschützt sein (§ 3 UrhG).",
+    "example": "Beispiel: Ein Komponist starb 1950; sein Marsch ist seit dem 1. Januar 2021 frei, ein Arrangement von 2010 nicht.",
+    "section": "Musik und Noten"
+   },
+   {
     "key": "creditor_id",
     "kind": "term",
     "name": "Gläubiger-ID",
     "text": "Die Gläubiger-Identifikationsnummer kennzeichnet den Verein als Lastschrift-Einreicher; in Deutschland vergibt sie die Bundesbank auf Antrag. Zusammen mit der Mandatsreferenz macht sie jedes Mandat eindeutig (Bundesbank, EPC016-06).",
     "example": "Beispiel: DE98ZZZ09999999999: Das „DE“ steht für Deutschland, „ZZZ“ ist ein fester Platzhalter.",
     "section": "SEPA-Lastschrift"
+   },
+   {
+    "key": "custom_fields",
+    "kind": "decision",
+    "name": "Welche Angaben gehören in ein Zusatzfeld?",
+    "text": "Erhebe nur, was der Verein für seinen Zweck braucht, etwa die Kleidergröße für die Uniform oder das Instrument (Art. 5 Abs. 1 lit. c DSGVO). Angaben zu Gesundheit, Religion oder politischer Meinung sind besonders geschützt und gehören nicht in ein Zusatzfeld (Art. 9 DSGVO). Jedes Feld macht außerdem Arbeit, weil es gepflegt und bei einer Auskunft mit herausgegeben werden muss.",
+    "example": "",
+    "section": "Einstellungen → Zusatzfelder"
    },
    {
     "key": "cutoff_date",
@@ -1193,6 +1249,14 @@
     "text": "Je weiter ein Ordner sichtbar ist, desto leichter finden Mitglieder Satzung und Protokolle, desto größer ist aber das Risiko, dass Personendaten zu weit gehen (Art. 5 Abs. 1 lit. c und f DSGVO). Allgemeines wie die Satzung kann breit sichtbar sein, Protokolle mit Namen, Verträge und Listen nur für den Vorstand. Fang im Zweifel eng an und erweitere später.",
     "example": "",
     "section": "Dokumente → Ordner"
+   },
+   {
+    "key": "docs_trash",
+    "kind": "decision",
+    "name": "Was darf endgültig gelöscht werden?",
+    "text": "Buchungsbelege müssen acht Jahre, Bücher und Jahresabschlüsse zehn Jahre und Geschäftsbriefe sechs Jahre aufbewahrt werden (§ 147 Abs. 1 und 3 AO). Protokolle und die Satzung braucht der Verein auf Dauer, auch wenn dafür keine Frist im Gesetz steht. Nach 30 Tagen im Papierkorb ist ein Dokument endgültig weg; hol es vorher zurück, wenn die Frist noch läuft.",
+    "example": "",
+    "section": "Dokumente → Papierkorb"
    },
    {
     "key": "donation_enabled",
@@ -1355,6 +1419,14 @@
     "section": "Spenden"
    },
    {
+    "key": "family_fee",
+    "kind": "term",
+    "name": "Familienbeitrag",
+    "text": "Gemeinsamer, meist ermäßigter Beitrag für mehrere Mitglieder eines Haushalts. Er gilt nur, wenn Satzung oder Beitragsordnung ihn vorsehen (§ 58 Nr. 2 BGB).",
+    "example": "Beispiel: 2 Erwachsene und 2 Kinder zahlen zusammen 120 € statt einzeln 4 × 40 € = 160 €.",
+    "section": "Beiträge und Rechnungen"
+   },
+   {
     "key": "federation_number",
     "kind": "term",
     "name": "Verbandsnr. – Verbandsnummer",
@@ -1387,6 +1459,14 @@
     "section": "Kasse und Abschluss"
    },
    {
+    "key": "gema",
+    "kind": "term",
+    "name": "GEMA – Gesellschaft für musikalische Aufführungs- und mechanische Vervielfältigungsrechte",
+    "text": "Verwertungsgesellschaft, die für Komponisten, Textdichter und Verlage die Rechte an öffentlichen Aufführungen wahrnimmt und dafür eine Vergütung einzieht (§ 2 VGG, § 15 Abs. 2 UrhG).",
+    "example": "Beispiel: Für das Frühjahrskonzert mit 12 Stücken meldet der Verein die Veranstaltung vorher an und reicht danach die Musikfolge ein.",
+    "section": "Musik und Noten"
+   },
+   {
     "key": "giro_qr",
     "kind": "decision",
     "name": "QR-Code auf der Rechnung?",
@@ -1403,6 +1483,14 @@
     "section": "Helferdienste → Dienst bearbeiten"
    },
    {
+    "key": "household_payer",
+    "kind": "decision",
+    "name": "Wer zahlt, und wer erteilt das Mandat?",
+    "text": "Den Beitrag darf auch ein anderer zahlen als das Mitglied, etwa ein Elternteil für die Kinder (§ 267 Abs. 1 BGB). Das Lastschriftmandat muss aber der Kontoinhaber selbst erteilen, sonst kann er den Einzug noch 13 Monate lang als nicht autorisiert zurückgeben (EPC SEPA Direct Debit Core Rulebook). Trag deshalb als Zahler die Person ein, der das Konto gehört.",
+    "example": "",
+    "section": "Mitglieder → Haushalte → Zahler"
+   },
+   {
     "key": "iban_bic",
     "kind": "term",
     "name": "IBAN / BIC – Kontonummer und Bankkennung",
@@ -1417,6 +1505,14 @@
     "text": "Die eigentliche Vereinsarbeit für den Satzungszweck, finanziert vor allem durch Beiträge und Spenden. Bei gemeinnützigen Vereinen ist dieser Bereich steuerfrei (§ 52 AO, § 5 Abs. 1 Nr. 9 KStG).",
     "example": "Beispiel: Mitgliedsbeiträge 9.360,00 € und Spenden 800,00 € gehören in den ideellen Bereich.",
     "section": "Steuer"
+   },
+   {
+    "key": "image_credit",
+    "kind": "decision",
+    "name": "Warum den Namen am Bild nennen?",
+    "text": "Wer ein Foto gemacht hat, darf bestimmen, ob und wie sein Name am Bild steht (§ 13 UrhG). Fehlt die Nennung, drohen Abmahnung und Schadensersatz, auch wenn der Verein das Bild nutzen durfte. Trag den Namen gleich beim Bild ein; die Webseite zeigt ihn am Bild und im Impressum.",
+    "example": "",
+    "section": "Webseite → Bilder → Urheber/in"
    },
    {
     "key": "imprint",
@@ -1451,6 +1547,14 @@
     "section": "Beiträge und Rechnungen"
    },
    {
+    "key": "letterhead_register",
+    "kind": "decision",
+    "name": "Registerangaben auf dem Briefbogen?",
+    "text": "Für Vereine sind Registergericht und Registernummer auf Briefen freiwillig; sie zeigen aber, dass der Verein eingetragen ist. Auf Rechnungen sind dagegen vollständiger Name und Anschrift sowie Steuernummer oder Umsatzsteuer-Identifikationsnummer Pflicht (§ 14 Abs. 4 Nr. 1 und 2 UStG). Mit dem Haken stehen die Angaben aus dem Impressum auf jedem Brief, sodass sie nirgends fehlen.",
+    "example": "",
+    "section": "Einstellungen → Briefbogen"
+   },
+   {
     "key": "loan",
     "kind": "term",
     "name": "Ausleihe",
@@ -1481,6 +1585,14 @@
     "text": "Eindeutige Kennung eines Mandats beim Verein, bis zu 35 Zeichen. Sie steht auf jeder Lastschrift und Vorabankündigung, damit der Zahler sie zuordnen kann (EPC016-06).",
     "example": "Beispiel: Mandatsreferenz M-0042: Auf dem Kontoauszug erkennt das Mitglied, zu welchem Mandat der Einzug gehört.",
     "section": "SEPA-Lastschrift"
+   },
+   {
+    "key": "material_with_member",
+    "kind": "decision",
+    "name": "Material bei einem Mitglied lagern?",
+    "text": "Was dem Verein gehört, bleibt Vereinseigentum, auch wenn es bei einem Mitglied zu Hause liegt. Wer es für den Verein verwahrt, muss es herausgeben, spätestens wenn Amt oder Aufgabe enden (§ 667 BGB, für den Vorstand über § 27 Abs. 3 BGB). Trag den Standort ein, damit nach einem Wechsel klar ist, wo die Sachen sind.",
+    "example": "",
+    "section": "Material → Standort"
    },
    {
     "key": "meeting_invite",
@@ -1651,12 +1763,44 @@
     "section": "Lastschrift → Mandate → Schriftliches Mandat erfassen"
    },
    {
+    "key": "partner_logos",
+    "kind": "decision",
+    "name": "Darf der Verein das Logo zeigen?",
+    "text": "Ein fremdes Logo kann als Marke oder als Werk geschützt sein (§ 14 MarkenG, § 15 UrhG). Zeig es nur mit Zustimmung des Partners und in der Fassung, die er dir gibt. Halte die Zustimmung am besten in der Vereinbarung mit dem Partner fest.",
+    "example": "",
+    "section": "Webseite → Startseite → Abschnitt „Partner und Sponsoren“"
+   },
+   {
+    "key": "partner_person",
+    "kind": "decision",
+    "name": "Privatpersonen als Geschäftspartner speichern?",
+    "text": "Daten einer Privatperson darf der Verein speichern, soweit er sie für einen Vertrag oder eine Anfrage dieser Person braucht (Art. 6 Abs. 1 lit. b DSGVO). Dazu reichen meist Name, Anschrift und ein Kontaktweg. Ist das Geschäft erledigt und läuft keine Aufbewahrungsfrist mehr, lösche den Eintrag (Art. 17 Abs. 1 lit. a DSGVO).",
+    "example": "",
+    "section": "Geschäftspartner → Privatperson"
+   },
+   {
+    "key": "passkey",
+    "kind": "term",
+    "name": "Passkey",
+    "text": "Anmeldung mit einem Schlüsselpaar statt mit Passwort; der geheime Teil bleibt auf dem eigenen Gerät. Er lässt sich nicht erraten und nicht auf gefälschten Seiten abgreifen und ist damit eine Schutzmaßnahme nach dem Stand der Technik (Art. 32 Abs. 1 DSGVO).",
+    "example": "Beispiel: Die Kassiererin meldet sich mit dem Fingerabdruck am Handy an; ein Passwort mit 12 Zeichen muss sie sich nicht mehr merken.",
+    "section": "Recht und Datenschutz"
+   },
+   {
     "key": "peering_named",
     "kind": "decision",
     "name": "Namentlich melden oder nur Zahlen?",
     "text": "Zahlen reichen für Beiträge und Statistik, namentliche Meldungen braucht der Verband etwa für Ehrungen oder Startberechtigungen. Namen dürfen nur fließen, wenn Satzung oder Mitgliedschaft im Verband das vorsehen (Art. 6 Abs. 1 lit. b DSGVO) und nicht mehr als nötig (Art. 5 Abs. 1 lit. c DSGVO). Nenn den Verband außerdem in den Datenschutzhinweisen als Empfänger.",
     "example": "",
     "section": "Einstellungen → Verbund"
+   },
+   {
+    "key": "performance_program",
+    "kind": "decision",
+    "name": "Warum das Programm festhalten?",
+    "text": "Wer geschützte Musik öffentlich aufführt, braucht vorher die Einwilligung, die meist die GEMA erteilt (§ 19 Abs. 2 UrhG, § 42 Abs. 1 VGG). Nach der Veranstaltung verlangt sie in der Regel eine Aufstellung der gespielten Werke (§ 42 Abs. 2 VGG). Mit dem Programm am Auftritt liegt diese Musikfolge schon vor.",
+    "example": "",
+    "section": "Musik → Auftritt → Programm"
    },
    {
     "key": "person_data_mode",
@@ -1835,6 +1979,14 @@
     "section": "Rollen bearbeiten"
    },
    {
+    "key": "score_copies",
+    "kind": "decision",
+    "name": "Warum Noten ausdrücklich freigeben?",
+    "text": "Noten dürfen grundsätzlich nur mit Einwilligung des Rechteinhabers kopiert werden, auch für die eigene Probe (§ 53 Abs. 4 lit. a UrhG). Ausnahmen gelten für das Abschreiben von Hand, für ein eigenes Archiv und für Werke, die seit mindestens zwei Jahren vergriffen sind. Gib digitale Noten deshalb nur frei, wenn der Verein die Rechte oder eine Lizenz dafür hat.",
+    "example": "",
+    "section": "Musik → Gastzugang → Noten freigeben"
+   },
+   {
     "key": "sepa_use",
     "kind": "decision",
     "name": "Lastschrift oder Überweisung?",
@@ -1923,6 +2075,14 @@
     "section": "Finanzen → Einrichtung → Kategorien"
    },
    {
+    "key": "text_form",
+    "kind": "term",
+    "name": "Textform",
+    "text": "Lesbare Erklärung auf einem dauerhaften Datenträger, in der die Person des Erklärenden genannt ist (§ 126b BGB). Eine E-Mail genügt; eine Unterschrift ist anders als bei der Schriftform nicht nötig.",
+    "example": "Beispiel: Die Satzung verlangt die Einladung „in Textform“ mit einer Frist von 14 Tagen; eine E-Mail an alle Mitglieder genügt.",
+    "section": "Recht und Datenschutz"
+   },
+   {
     "key": "trainer_allowance",
     "kind": "term",
     "name": "Übungsleiterfreibetrag",
@@ -1937,6 +2097,14 @@
     "text": "Geld wandert zwischen zwei eigenen Konten, etwa von der Barkasse auf das Girokonto. Das ist weder Einnahme noch Ausgabe und ändert das Ergebnis nicht (§ 259 Abs. 1 BGB).",
     "example": "Beispiel: 600,00 € Kasseneinnahmen vom Fest auf das Girokonto eingezahlt: Kasse −600,00 €, Girokonto +600,00 €, Ergebnis unverändert.",
     "section": "Kasse und Abschluss"
+   },
+   {
+    "key": "two_factor",
+    "kind": "decision",
+    "name": "Warum ein zweiter Faktor?",
+    "text": "Wer Mitglieder- oder Bankdaten sieht, muss sie angemessen schützen (Art. 32 DSGVO). Ein zweiter Faktor, etwa ein Code aus einer App, schützt das Konto auch dann, wenn das Passwort bekannt wird. Der Preis ist ein Schritt mehr bei der Anmeldung.",
+    "example": "",
+    "section": "Mein Konto → Zwei-Faktor-Anmeldung"
    },
    {
     "key": "unit_self_managed",
@@ -1993,6 +2161,14 @@
     "text": "Echte Mitgliedsbeiträge, die alle für den Vereinszweck zahlen, sind kein steuerbarer Umsatz; auf sie gehört keine Umsatzsteuer (UStAE 1.4). Steuer weist du nur für Leistungen gegen Entgelt aus, etwa Verkauf oder Werbung, und nur, wenn der Verein kein Kleinunternehmer ist (§ 19 UStG: Vorjahr bis 25.000 €, laufendes Jahr bis 100.000 €). Wer Steuer ausweist, ohne sie zu schulden, schuldet sie trotzdem (§ 14c UStG); frag im Zweifel das Finanzamt oder eine Steuerberatung.",
     "example": "",
     "section": "Beitragsregeln → Umsatzsteuer"
+   },
+   {
+    "key": "video_link",
+    "kind": "decision",
+    "name": "Warum nur ein Link zum Video?",
+    "text": "Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf eurer Seite.",
+    "example": "",
+    "section": "Webseite → Startseite → Abschnitt „Video“"
    },
    {
     "key": "volunteer_allowance",
@@ -2099,6 +2275,14 @@
     "text": "Joining creates the duty to pay fees and therefore needs the parents' consent (§ 107 BGB); in the application at least one person with parental responsibility confirms it. If a child under 16 consents online, for example to photos on the website, the parents' consent is needed as well (Art. 8 GDPR). Without this switch the form does not accept applications from minors.",
     "example": "",
     "section": "Members → Online application"
+   },
+   {
+    "key": "arrangement",
+    "kind": "term",
+    "name": "Arrangement",
+    "text": "A version of a piece of your own, for example for a different line-up; legally an adaptation. As long as the original is protected, it may only be published or performed with the author’s consent (§ 23(1) UrhG), and it is itself protected like a work of its own (§ 3 UrhG).",
+    "example": "Example: The conductor arranges a 1985 pop song for 25 wind players; before the concert the club obtains the publisher’s consent.",
+    "section": "Music and sheet music"
    },
    {
     "key": "artist_fee_mark",
@@ -2307,6 +2491,38 @@
     "text": "Every entry in the change log contains a checksum of its predecessor; if one is changed or deleted, the chain no longer fits. This keeps it provable that changes were not suppressed (§ 146(4) AO, GoBD).",
     "example": "Example: entry no. 1205 refers to the checksum of no. 1204; if no. 1204 is missing, the daily check reports “no. 1204 to 1204 missing”.",
     "section": "Law and data protection"
+   },
+   {
+    "key": "chronicle_public",
+    "kind": "decision",
+    "name": "Show title holders on the website?",
+    "text": "Names and photos of former kings are personal data; for living people publication needs a legal basis, most safely consent (Art. 6(1) GDPR). For the deceased, relatives decide on photos for another ten years (§ 22 KUG). When in doubt, ask before you tick the box.",
+    "example": "",
+    "section": "Chronicle → title holders"
+   },
+   {
+    "key": "circular_household_merge",
+    "kind": "decision",
+    "name": "Combine letters per household?",
+    "text": "One letter per household saves postage and paper when several members live at one address. For the invitation to the meeting, however, every member should demonstrably be invited, because errors in convening make resolutions open to challenge (§ 32(1) BGB). So combine greetings and information, and when in doubt send formal invitations individually unless the constitution allows otherwise.",
+    "example": "",
+    "section": "Circulars → recipients"
+   },
+   {
+    "key": "circular_invite_form",
+    "kind": "decision",
+    "name": "Is an email enough as an invitation?",
+    "text": "The constitution sets the form in which the general meeting is convened (§ 58 no. 4 BGB). An email is only enough if the constitution allows text form or email (§ 126b BGB); if it requires a letter, the invitation goes by post. The agenda belongs in the invitation, otherwise resolutions can be challenged (§ 32(1) BGB).",
+    "example": "",
+    "section": "Circulars → official notice"
+   },
+   {
+    "key": "circular_kind",
+    "kind": "decision",
+    "name": "Official notice or information?",
+    "text": "What belongs to membership, such as the invitation to the meeting or a note on the fee, the club may send to every member (Art. 6(1)(b) GDPR). Advertising by email, by contrast, needs express consent (§ 7(2) no. 2 UWG), which is why members can unsubscribe from information. When in doubt choose “Information”: the message then reaches slightly fewer members, but nobody who no longer wants it.",
+    "example": "",
+    "section": "Circulars → type"
    },
    {
     "key": "closing_balance",
@@ -2669,12 +2885,28 @@
     "section": "Business partners → Agreement"
    },
    {
+    "key": "copyright_term",
+    "kind": "term",
+    "name": "Term of protection",
+    "text": "Copyright expires 70 years after the author’s death (§ 64 UrhG). After that the work is free, but a more recent adaptation may still be protected (§ 3 UrhG).",
+    "example": "Example: A composer died in 1950; his march has been free since 1 January 2021, an arrangement from 2010 has not.",
+    "section": "Music and sheet music"
+   },
+   {
     "key": "creditor_id",
     "kind": "term",
     "name": "Creditor ID (Gläubiger-ID)",
     "text": "The creditor identifier marks the club as a submitter of direct debits; in Germany the Bundesbank issues it on application. Together with the mandate reference it makes every mandate unique (Bundesbank, EPC016-06).",
     "example": "Example: DE98ZZZ09999999999: “DE” stands for Germany, “ZZZ” is a fixed placeholder.",
     "section": "SEPA direct debit"
+   },
+   {
+    "key": "custom_fields",
+    "kind": "decision",
+    "name": "Which details belong in a custom field?",
+    "text": "Collect only what the club needs for its purpose, such as the clothing size for the uniform or the instrument (Art. 5(1)(c) GDPR). Details on health, religion or political opinion are specially protected and do not belong in a custom field (Art. 9 GDPR). Every field also means work, because it has to be kept up to date and handed over when someone requests their data.",
+    "example": "",
+    "section": "Settings → custom fields"
    },
    {
     "key": "cutoff_date",
@@ -2739,6 +2971,14 @@
     "text": "The more widely a folder is visible, the more easily members find the constitution and minutes, but the greater the risk that personal data goes too far (Art. 5(1)(c) and (f) GDPR). General items such as the constitution can be widely visible; minutes with names, contracts and lists only for the board. If in doubt, start narrow and widen later.",
     "example": "",
     "section": "Documents → folder"
+   },
+   {
+    "key": "docs_trash",
+    "kind": "decision",
+    "name": "What may be deleted for good?",
+    "text": "Accounting vouchers must be kept for eight years, books and annual accounts for ten years and business letters for six years (§ 147(1) and (3) AO). The club needs minutes and the constitution permanently, even though the law sets no period for them. After 30 days in the bin a document is gone for good; restore it before then if the period is still running.",
+    "example": "",
+    "section": "Documents → bin"
    },
    {
     "key": "donation_enabled",
@@ -2901,6 +3141,14 @@
     "section": "Donations"
    },
    {
+    "key": "family_fee",
+    "kind": "term",
+    "name": "Family fee",
+    "text": "A joint, usually reduced fee for several members of one household. It only applies if the constitution or the fee rules provide for it (§ 58 no. 2 BGB).",
+    "example": "Example: 2 adults and 2 children together pay €120 instead of 4 × €40 = €160 individually.",
+    "section": "Fees and invoices"
+   },
+   {
     "key": "federation_number",
     "kind": "term",
     "name": "Verbandsnr. – Association number (Verbandsnummer)",
@@ -2933,6 +3181,14 @@
     "section": "Treasury and closing"
    },
    {
+    "key": "gema",
+    "kind": "term",
+    "name": "GEMA – Society for musical performing and mechanical reproduction rights",
+    "text": "Collecting society that manages the rights in public performances for composers, lyricists and publishers and collects a fee for them (§ 2 VGG, § 15(2) UrhG).",
+    "example": "Example: For the spring concert with 12 pieces the club registers the event beforehand and submits the set list afterwards.",
+    "section": "Music and sheet music"
+   },
+   {
     "key": "giro_qr",
     "kind": "decision",
     "name": "QR code on the invoice?",
@@ -2949,6 +3205,14 @@
     "section": "Helper rosters → edit roster"
    },
    {
+    "key": "household_payer",
+    "kind": "decision",
+    "name": "Who pays, and who gives the mandate?",
+    "text": "The fee may also be paid by someone other than the member, such as a parent for the children (§ 267(1) BGB). The direct debit mandate, however, must be given by the account holder themselves, otherwise they can return the collection as unauthorised for another 13 months (EPC SEPA Direct Debit Core Rulebook). So enter as payer the person who owns the account.",
+    "example": "",
+    "section": "Members → households → payer"
+   },
+   {
     "key": "iban_bic",
     "kind": "term",
     "name": "IBAN / BIC – Account number and bank code (IBAN/BIC)",
@@ -2963,6 +3227,14 @@
     "text": "The actual club work for the statutory purpose, financed mainly by fees and donations. For non-profit clubs this area is tax-free (§ 52 AO, § 5(1) no. 9 KStG).",
     "example": "Example: membership fees €9,360.00 and donations €800.00 belong to the non-profit sphere.",
     "section": "Tax"
+   },
+   {
+    "key": "image_credit",
+    "kind": "decision",
+    "name": "Why name the author on the picture?",
+    "text": "Whoever took a photo may decide whether and how their name appears on the picture (§ 13 UrhG). Without the credit there is a risk of a warning letter and damages, even if the club was allowed to use the picture. Enter the name with the picture straight away; the website shows it on the picture and in the legal notice.",
+    "example": "",
+    "section": "Website → pictures → author"
    },
    {
     "key": "imprint",
@@ -2997,6 +3269,14 @@
     "section": "Fees and invoices"
    },
    {
+    "key": "letterhead_register",
+    "kind": "decision",
+    "name": "Register details on the letterhead?",
+    "text": "For clubs, the register court and register number are voluntary on letters; they do show, however, that the club is registered. On invoices, by contrast, the full name and address as well as the tax number or VAT identification number are mandatory (§ 14(4) nos. 1 and 2 UStG). With the box ticked, the details from the legal notice appear on every letter, so they are missing nowhere.",
+    "example": "",
+    "section": "Settings → letterhead"
+   },
+   {
     "key": "loan",
     "kind": "term",
     "name": "Lending (Ausleihe)",
@@ -3027,6 +3307,14 @@
     "text": "Unique identifier of a mandate at the club, up to 35 characters. It appears on every direct debit and pre-notification so that the payer can match it (EPC016-06).",
     "example": "Example: mandate reference M-0042: on the bank statement the member recognises which mandate the collection belongs to.",
     "section": "SEPA direct debit"
+   },
+   {
+    "key": "material_with_member",
+    "kind": "decision",
+    "name": "Store material with a member?",
+    "text": "What belongs to the club remains club property, even if it is kept at a member’s home. Whoever keeps it for the club must hand it over, at the latest when the office or task ends (§ 667 BGB, for the board via § 27(3) BGB). Enter the location so that after a change it is clear where the things are.",
+    "example": "",
+    "section": "Material → location"
    },
    {
     "key": "meeting_invite",
@@ -3197,12 +3485,44 @@
     "section": "Direct debit → mandates → record written mandate"
    },
    {
+    "key": "partner_logos",
+    "kind": "decision",
+    "name": "May the club show the logo?",
+    "text": "Someone else’s logo can be protected as a trade mark or as a work (§ 14 MarkenG, § 15 UrhG). Show it only with the partner’s consent and in the version they give you. Ideally record the consent in the agreement with the partner.",
+    "example": "",
+    "section": "Website → home page → “Partners and sponsors” section"
+   },
+   {
+    "key": "partner_person",
+    "kind": "decision",
+    "name": "Store private individuals as business partners?",
+    "text": "The club may store a private individual’s data as far as it needs them for a contract with or an enquiry from that person (Art. 6(1)(b) GDPR). Name, address and one way of contact are usually enough. Once the business is done and no retention period is running, delete the entry (Art. 17(1)(a) GDPR).",
+    "example": "",
+    "section": "Business partners → private individual"
+   },
+   {
+    "key": "passkey",
+    "kind": "term",
+    "name": "Passkey",
+    "text": "Sign-in with a key pair instead of a password; the secret part stays on your own device. It cannot be guessed or captured on fake pages and is thus a state-of-the-art safeguard (Art. 32(1) GDPR).",
+    "example": "Example: The treasurer signs in with her fingerprint on the phone; she no longer has to remember a 12-character password.",
+    "section": "Law and data protection"
+   },
+   {
     "key": "peering_named",
     "kind": "decision",
     "name": "Report by name or only numbers?",
     "text": "Numbers are enough for fees and statistics; the association needs reports by name, for example for honours or eligibility to compete. Names may only be passed on if the constitution or membership of the association provides for it (Art. 6(1)(b) GDPR) and no more than necessary (Art. 5(1)(c) GDPR). Also name the association as a recipient in the privacy notice.",
     "example": "",
     "section": "Settings → Federation"
+   },
+   {
+    "key": "performance_program",
+    "kind": "decision",
+    "name": "Why record the programme?",
+    "text": "Anyone performing protected music in public needs prior consent, which is usually granted by GEMA (§ 19(2) UrhG, § 42(1) VGG). After the event it generally requires a list of the works played (§ 42(2) VGG). With the programme recorded at the performance, this set list already exists.",
+    "example": "",
+    "section": "Music → performance → programme"
    },
    {
     "key": "person_data_mode",
@@ -3381,6 +3701,14 @@
     "section": "Edit roles"
    },
    {
+    "key": "score_copies",
+    "kind": "decision",
+    "name": "Why release sheet music explicitly?",
+    "text": "Sheet music may as a rule only be copied with the consent of the rights holder, even for your own rehearsal (§ 53(4)(a) UrhG). Exceptions apply to copying by hand, to an archive of your own and to works that have been out of print for at least two years. So only release digital sheet music if the club holds the rights or a licence for it.",
+    "example": "",
+    "section": "Music → guest access → release sheet music"
+   },
+   {
     "key": "sepa_use",
     "kind": "decision",
     "name": "Direct debit or bank transfer?",
@@ -3469,6 +3797,14 @@
     "section": "Finance → Setup → Categories"
    },
    {
+    "key": "text_form",
+    "kind": "term",
+    "name": "Text form",
+    "text": "A readable declaration on a durable medium that names the person making it (§ 126b BGB). An email is enough; unlike written form, no signature is needed.",
+    "example": "Example: The constitution requires the invitation “in text form” with 14 days’ notice; an email to all members is enough.",
+    "section": "Law and data protection"
+   },
+   {
     "key": "trainer_allowance",
     "kind": "term",
     "name": "Trainer allowance (Übungsleiterfreibetrag)",
@@ -3483,6 +3819,14 @@
     "text": "Money moves between two of your own accounts, for example from the cash box to the current account. It is neither income nor expense and does not change the result (§ 259(1) BGB).",
     "example": "Example: €600.00 cash takings from the festival paid into the current account: cash box −€600.00, current account +€600.00, result unchanged.",
     "section": "Treasury and closing"
+   },
+   {
+    "key": "two_factor",
+    "kind": "decision",
+    "name": "Why a second factor?",
+    "text": "Anyone who sees member or bank data must protect them appropriately (Art. 32 GDPR). A second factor, such as a code from an app, protects the account even if the password becomes known. The price is one more step when signing in.",
+    "example": "",
+    "section": "My account → two-factor sign-in"
    },
    {
     "key": "unit_self_managed",
@@ -3539,6 +3883,14 @@
     "text": "Genuine membership fees that everyone pays for the club's purpose are not a taxable supply; no VAT belongs on them (UStAE 1.4). You only show tax for services in return for payment, such as sales or advertising, and only if the club is not a small business (§ 19 UStG: previous year up to €25,000, current year up to €100,000). Whoever shows tax without owing it owes it anyway (§ 14c UStG); if in doubt, ask the tax office or a tax adviser.",
     "example": "",
     "section": "Fee rules → VAT"
+   },
+   {
+    "key": "video_link",
+    "kind": "decision",
+    "name": "Why only a link to the video?",
+    "text": "A link loads nothing from third-party servers as long as nobody clicks. An embedded video transfers visitors’ data to the provider as soon as the page is opened and often sets cookies; that needs consent (§ 25(1) TDDDG, Art. 6(1)(a) GDPR). With the link the website gets by without a consent prompt; in return the video plays at the provider and not on your page.",
+    "example": "",
+    "section": "Website → home page → “Video” section"
    },
    {
     "key": "volunteer_allowance",

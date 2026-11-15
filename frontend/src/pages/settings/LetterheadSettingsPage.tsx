@@ -22,6 +22,7 @@ import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { TextArea } from './TextArea.tsx'
 import { LogoUpload } from './AppearancePage.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 const FIELDS: (keyof LetterheadFields)[] = [
   'mode',
@@ -501,6 +502,7 @@ function LetterheadEditor({
             checked={v.show_register}
             onChange={(val) => set('show_register', val)}
           />
+          <Why k="letterhead_register" />
         </fieldset>
       )}
       {current.hints.length > 0 && (

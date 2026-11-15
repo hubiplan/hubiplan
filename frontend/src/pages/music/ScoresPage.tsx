@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Term } from '../../learning/Aids.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { formats, duration } from './scoreHelpers.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
@@ -151,6 +152,11 @@ export function ScoresPage() {
           'Stücke, Arrangements, Stimmen und digitale Notenunterlagen an einem Ort verwalten.',
         )}
       />
+      <p className="muted small">
+        {t('Vor dem Kopieren und Aufführen die Rechte klären:')}{' '}
+        <Term k="arrangement">{t('Arrangement')}</Term>,{' '}
+        <Term k="copyright_term">{t('Schutzfrist')}</Term>
+      </p>
       <nav className="tabs" aria-label={t('Ansichten')}>
         {Object.entries(names).map(([key, label]) => (
           <button

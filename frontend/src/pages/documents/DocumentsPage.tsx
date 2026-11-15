@@ -1004,6 +1004,7 @@ function TrashPanel({ base }: { base: DocBase }) {
           'Gelöschte Dokumente bleiben 30 Tage im Papierkorb und werden danach endgültig entfernt.',
         )}
       </p>
+      <Why k="docs_trash" />
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {data.length === 0 ? (
         <p className="muted">{t('Der Papierkorb ist leer.')}</p>

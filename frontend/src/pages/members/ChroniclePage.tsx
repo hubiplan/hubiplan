@@ -32,7 +32,7 @@ import {
 } from '../../components/ui.tsx'
 import { SortableList, SortHint } from '../../components/Sortable.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
-import { HowTo } from '../../learning/Aids.tsx'
+import { HowTo, Why } from '../../learning/Aids.tsx'
 import { MembersSection } from '../MembersPage.tsx'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
@@ -991,6 +991,7 @@ function DignityForm({
         checked={v.is_public}
         onChange={(on) => set('is_public', on)}
       />
+      <Why k="chronicle_public" />
       <Checkbox
         label={t('An Untereinheiten weitergeben')}
         hint={t(

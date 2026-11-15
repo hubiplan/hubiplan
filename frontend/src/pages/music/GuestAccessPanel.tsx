@@ -5,6 +5,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Access = {
   active: boolean
@@ -158,6 +159,7 @@ export function GuestAccessPanel({
           {data.active && !!data.scores?.length && (
             <fieldset className="stack" disabled={busy}>
               <legend>{t('Noten ausdrücklich freigeben')}</legend>
+              <Why k="score_copies" />
               <p>
                 {t(
                   'Nur passende Noten des aktuellen Programms. Die Freigabe gilt für die aktuelle Dateifassung. Nutzungsrechte vor der Freigabe prüfen.',

@@ -234,6 +234,7 @@ export function ImagesPage() {
       <div className="aid-row">
         <Why k="web_photos" />
         <Why k="web_alt_text" />
+        <Why k="image_credit" />
       </div>
       <p className="muted small">
         {t(

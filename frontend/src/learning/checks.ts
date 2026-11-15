@@ -705,3 +705,51 @@ export function auditCloseChecks(c: AuditCloseInput): CheckItem[] {
   })
   return items
 }
+
+// --- vor dem Versenden eines Rundschreibens ---
+
+export interface CircularSendInput {
+  subject: string
+  /** notice = offizielle Mitteilung, info = Information, short = Kurzmitteilung */
+  kind: string
+  /** Probemail in dieser Sitzung verschickt */
+  tested: boolean
+  attachments: number
+}
+
+/** Versendete Mails lassen sich nicht zurückholen. Die Form der Einladung zur
+ *  Versammlung steht in der Satzung (§ 58 Nr. 4 BGB). */
+export function circularSendChecks(c: CircularSendInput): CheckItem[] {
+  const items: CheckItem[] = [
+    {
+      key: 'subject',
+      ok: c.subject.trim().length > 0,
+      text: c.subject.trim() ? t('Der Betreff ist ausgefüllt.') : t('Der Betreff fehlt noch.'),
+      fix: t('Ein kurzer Betreff sagt, worum es geht.'),
+    },
+    {
+      key: 'test',
+      ok: c.tested,
+      text: c.tested
+        ? t('Du hast dir eine Probemail geschickt.')
+        : t('Noch keine Probemail geschickt.'),
+      fix: t('Mit „Probemail an mich“ siehst du die Mail so, wie die Mitglieder sie bekommen.'),
+    },
+  ]
+  if (c.kind === 'notice')
+    items.push({
+      key: 'form',
+      ok: true,
+      info: true,
+      text: t('Bei einer Einladung zur Versammlung: Form und Frist aus der Satzung einhalten.'),
+      why: 'circular_invite_form',
+    })
+  if (c.attachments > 0)
+    items.push({
+      key: 'attachments',
+      ok: true,
+      info: true,
+      text: t('Anhänge geprüft: keine Listen mit Daten anderer Mitglieder.'),
+    })
+  return items
+}

@@ -8,6 +8,7 @@ import { choiceDialog, confirmDialog, promptDialog } from '../../components/dial
 import { Loading, StatusMessage } from '../../components/ui.tsx'
 import { formatDay } from '../../i18n/format.ts'
 import { t } from '../../i18n/index.ts'
+import { Term } from '../../learning/Aids.tsx'
 
 export function PasskeyCard() {
   const [list, setList] = useState<PasskeyList | null>(null)
@@ -165,7 +166,9 @@ export function PasskeyCard() {
 
   return (
     <div className="card">
-      <h2>{t('Passkeys')}</h2>
+      <h2>
+        <Term k="passkey">{t('Passkeys')}</Term>
+      </h2>
       <p className="muted">
         {t(
           'Mit einem Passkey meldest du dich per Fingerabdruck, Gesicht oder Geräte-PIN an, ohne Passwort und ohne Code. Er zählt als Zwei-Faktor-Anmeldung. Ein Passkey gilt nur für die Adresse, unter der du ihn einrichtest.',

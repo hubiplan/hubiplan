@@ -19,6 +19,7 @@ import {
 } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, tn, locale } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { BookingRulesCard } from '../bookings/BookingsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
@@ -776,6 +777,7 @@ function ItemForm({
             </label>
             {values.location_kind === 'member' ? (
               <>
+                <Why k="material_with_member" />
                 <p>{memberName || t('Bitte ein Mitglied wählen.')}</p>
                 <MaterialPicker
                   base={base}

@@ -18,6 +18,7 @@ import { errorMessage } from '../forms.ts'
 import { Alert, Checkbox } from '../ui.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 function toggle(list: number[] | undefined, id: number, on: boolean): number[] {
   const set = new Set(list ?? [])
@@ -435,12 +436,15 @@ export function RecipientPanel({
           )}
 
           {audience === 'members' && !federation && !event && (
-            <Checkbox
-              label={t('Briefe je Haushalt zusammenfassen')}
-              hint={t('ein Brief bzw. eine Mail je Haushalt mit gleicher Anschrift')}
-              checked={filters.households_merge !== false}
-              onChange={(on) => onFilters({ households_merge: on })}
-            />
+            <>
+              <Checkbox
+                label={t('Briefe je Haushalt zusammenfassen')}
+                hint={t('ein Brief bzw. eine Mail je Haushalt mit gleicher Anschrift')}
+                checked={filters.households_merge !== false}
+                onChange={(on) => onFilters({ households_merge: on })}
+              />
+              <Why k="circular_household_merge" />
+            </>
           )}
           {audience === 'members' && (
             <div className="stack-sm">

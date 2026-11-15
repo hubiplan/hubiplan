@@ -15,6 +15,7 @@ import {
   easterSunday,
   feeRunChecks,
   isBankBusinessDay,
+  circularSendChecks,
   meetingInviteChecks,
   MIN_DUE_DAYS,
   auditCloseChecks,
@@ -483,6 +484,9 @@ describe('Glossar', () => {
       'surveys',
       'obligations',
       'qualifications',
+      'circulars',
+      'music',
+      'docs',
     ])
     await waitFor(() => expect(document.getElementById(termAnchor('mandate'))).not.toBeNull())
     for (const k of Object.keys(TERMS))
@@ -653,6 +657,27 @@ describe('Prüflisten', () => {
     expect(items[0].why).toBe('meeting_invite')
     expect(items[2].text).toBe('1 Beschluss- oder Wahlpunkt ohne Erläuterung.')
     expect(items[3].info).toBe(true)
+  })
+
+  it('12: Prüfliste vor dem Versenden eines Rundschreibens', () => {
+    const plain = circularSendChecks({ subject: ' ', kind: 'info', tested: false, attachments: 0 })
+    expect(plain.map((c) => [c.key, c.ok])).toEqual([
+      ['subject', false],
+      ['test', false],
+    ])
+    const notice = circularSendChecks({
+      subject: 'Einladung zur Jahreshauptversammlung',
+      kind: 'notice',
+      tested: true,
+      attachments: 2,
+    })
+    expect(notice.map((c) => [c.key, c.ok, !!c.info])).toEqual([
+      ['subject', true, false],
+      ['test', true, false],
+      ['form', true, true],
+      ['attachments', true, true],
+    ])
+    expect(notice[2].why).toBe('circular_invite_form')
   })
 
   it('12: Prüfliste vor dem Abschluss der Kassenprüfung', () => {
