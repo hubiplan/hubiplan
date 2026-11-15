@@ -1,73 +1,87 @@
 # Gemeinsamer Inhalt beider Caddyfiles (direkt mit eigenem HTTPS oder hinter
-# einem vorgeschalteten Webserver). Erwartet ein Snippet (upstream) für die
-# Kopfzeilen an das Backend.
-encode zstd gzip
+# einem vorgeschalteten Webserver). Erwartet zwei Snippets aus der jeweiligen Caddyfile:
+#   (vorlauf)  läuft vor allem anderen (hinter nginx: Besucheradresse, Proxy-Geheimnis entfernen)
+#   (upstream) Kopfzeilen an das Backend
+#
+# Reihenfolge ausdrücklich in einem „route“-Block: Caddy sortiert Direktiven auf oberster Ebene
+# sonst nach einer festen Liste (handle vor route vor respond). Dadurch liefen früher der
+# Vorlauf und „respond @intern 404“ erst nach den handle-Blöcken, also nie: Hinter nginx kam
+# die Besucheradresse nicht an, der geheime Kopfwert ging weiter und /api/intern/ war von
+# außen erreichbar (Gesamtaudit 15.11., OPS-03). Innerhalb von „route“ gilt die geschriebene
+# Reihenfolge; scripts/pruefe-caddy.sh prüft das Verhalten mit dem gepinnten Caddy-Abbild.
+route {
+	import vorlauf
 
-# Nur für Caddy selbst (Zertifikatsabfrage, direkt im Docker-Netz), nie von außen
-@intern path /api/intern/*
-respond @intern 404
+	encode zstd gzip
 
-# /.well-known/oauth-…: Anmeldung der KI-Assistenten (RFC 8414, RFC 9728; docs/mcp.md)
-# /.well-known/assetlinks.json: Passkeys in der Android-App (docs/app.md)
-@backend path /api/* /_allauth/* /admin /admin/* /static/* /.well-known/oauth-protected-resource /.well-known/oauth-protected-resource/* /.well-known/oauth-authorization-server /.well-known/oauth-authorization-server/* /.well-known/openid-configuration/api/mcp/oauth /.well-known/assetlinks.json
-# Nur die Vollübernahme (Datenimport) braucht bis 500 MB (Gesamtaudit 31.10.b, INF-S02);
-# alles andere höchstens 64 MB (Rundschreiben mit Anhängen, Verbundpakete bis 48 MB).
-# So belegt kein anderer Pfad mit Riesenanfragen Speicher und Platte (Gesamtaudit 05.11. GA-09).
-@grossupload path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
-@normalupload not path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
-handle @backend {
-	request_body @grossupload {
-		max_size 520MB
+	header {
+		Strict-Transport-Security "max-age=15552000"
+		# Kamera nur für HUBIplan selbst (Live-Kamera im Standmodus), nie für fremde Rahmen
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
 	}
-	request_body @normalupload {
-		max_size 64MB
-	}
-	reverse_proxy backend:8000 {
-		import upstream
-		# Startet das Backend neu (z. B. beim Ausrollen), wartet Caddy bis zu 30 s,
-		# statt sofort mit 502 zu antworten. Wiederholt wird nur der Verbindungsaufbau;
-		# eine Anfrage, die das Backend schon erreicht hat, wird nie doppelt gesendet.
-		lb_try_duration 30s
-		lb_try_interval 250ms
-	}
-}
 
-import media.caddy
-
-# Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“).
-# Läuft er nicht, antwortet nur dieser Pfad mit einem Fehler.
-# Nicht /webseite/: Den Pfad nutzt die Verwaltung (Webseite › Gestaltung …); beim Neuladen
-# landete er sonst bei der Vereinswebseite (400). scripts/pruefe-proxy.sh prüft das.
-redir /vereinsseite /vereinsseite/ 308
-handle_path /vereinsseite/* {
-	reverse_proxy {$WEBSITE_UPSTREAM:website:8000} {
-		import upstream
-		# Beim Ausrollen der Webseite kurz warten statt Fehler
-		lb_try_duration 15s
-		lb_try_interval 250ms
+	# Nur für Caddy selbst (Zertifikatsabfrage, direkt im Docker-Netz), nie von außen
+	@intern path /api/intern /api/intern/*
+	handle @intern {
+		respond 404
 	}
-}
 
-handle {
-	# frame-src https:: Vorschau der Vereinswebseite im Rahmen (Webseite › Gestaltung); die
-	# Webseite erlaubt das Einbetten nur HUBIplan und nur in der Vorschau (frame-ancestors)
-	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-	root * /srv
-	try_files {path} /index.html
-	# Fertig komprimierte Fassungen aus dem Bau (frontend/scripts/vorkomprimieren.mjs):
-	# Brotli, sonst gzip; fehlt eine, komprimiert „encode“ oben wie bisher beim Abruf
-	file_server {
-		precompressed br gzip
+	# /.well-known/oauth-…: Anmeldung der KI-Assistenten (RFC 8414, RFC 9728; docs/mcp.md)
+	# /.well-known/assetlinks.json: Passkeys in der Android-App (docs/app.md)
+	@backend path /api/* /_allauth/* /admin /admin/* /static/* /.well-known/oauth-protected-resource /.well-known/oauth-protected-resource/* /.well-known/oauth-authorization-server /.well-known/oauth-authorization-server/* /.well-known/openid-configuration/api/mcp/oauth /.well-known/assetlinks.json
+	# Nur die Vollübernahme (Datenimport) braucht bis 500 MB (Gesamtaudit 31.10.b, INF-S02);
+	# alles andere höchstens 64 MB (Rundschreiben mit Anhängen, Verbundpakete bis 48 MB).
+	# So belegt kein anderer Pfad mit Riesenanfragen Speicher und Platte (Gesamtaudit 05.11. GA-09).
+	@grossupload path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
+	@normalupload not path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
+	handle @backend {
+		request_body @grossupload {
+			max_size 520MB
+		}
+		request_body @normalupload {
+			max_size 64MB
+		}
+		reverse_proxy backend:8000 {
+			import upstream
+			# Startet das Backend neu (z. B. beim Ausrollen), wartet Caddy bis zu 30 s,
+			# statt sofort mit 502 zu antworten. Wiederholt wird nur der Verbindungsaufbau;
+			# eine Anfrage, die das Backend schon erreicht hat, wird nie doppelt gesendet.
+			lb_try_duration 30s
+			lb_try_interval 250ms
+		}
 	}
-}
 
-header {
-	Strict-Transport-Security "max-age=15552000"
-	# Kamera nur für HUBIplan selbst (Live-Kamera im Standmodus), nie für fremde Rahmen
-	Permissions-Policy "camera=(self), microphone=(), geolocation=()"
-	X-Content-Type-Options "nosniff"
-	Referrer-Policy "strict-origin-when-cross-origin"
-	-Server
+	import media.caddy
+
+	# Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“).
+	# Läuft er nicht, antwortet nur dieser Pfad mit einem Fehler.
+	# Nicht /webseite/: Den Pfad nutzt die Verwaltung (Webseite › Gestaltung …); beim Neuladen
+	# landete er sonst bei der Vereinswebseite (400). scripts/pruefe-proxy.sh prüft das.
+	redir /vereinsseite /vereinsseite/ 308
+	handle_path /vereinsseite/* {
+		reverse_proxy {$WEBSITE_UPSTREAM:website:8000} {
+			import upstream
+			# Beim Ausrollen der Webseite kurz warten statt Fehler
+			lb_try_duration 15s
+			lb_try_interval 250ms
+		}
+	}
+
+	handle {
+		# frame-src https:: Vorschau der Vereinswebseite im Rahmen (Webseite › Gestaltung); die
+		# Webseite erlaubt das Einbetten nur HUBIplan und nur in der Vorschau (frame-ancestors)
+		header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		root * /srv
+		try_files {path} /index.html
+		# Fertig komprimierte Fassungen aus dem Bau (frontend/scripts/vorkomprimieren.mjs):
+		# Brotli, sonst gzip; fehlt eine, komprimiert „encode“ oben wie bisher beim Abruf
+		file_server {
+			precompressed br gzip
+		}
+	}
 }
 
 # Ist das Backend oder die Webseite nicht erreichbar (z. B. beim Ausrollen), statt einer

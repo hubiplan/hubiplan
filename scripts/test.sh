@@ -331,6 +331,12 @@ if [ "$RUN_BACKEND" = 1 ]; then
             deploy/Caddyfile.proxy deploy/caddy deploy/hestia frontend/src/modules.tsx | tar -x -C "$WORK"
         "$WORK/scripts/pruefe-proxy.sh" "$WORK" "$CPUS"
     fi
+    # Verhalten der Caddy-Konfiguration (Besucheradresse, Proxy-Geheimnis, /api/intern/, Kopfzeilen)
+    if git cat-file -e "$REF:scripts/pruefe-caddy.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-caddy.sh deploy/web.Dockerfile deploy/Caddyfile \
+            deploy/Caddyfile.proxy deploy/caddy | tar -x -C "$WORK"
+        "$WORK/scripts/pruefe-caddy.sh" "$WORK" "$CPUS"
+    fi
     # Selbstupdate: Aktualisierer mit Wegwerf-Repository (braucht git und ssh-keygen)
     if git cat-file -e "$REF:scripts/pruefe-aktualisierer.sh" 2> /dev/null; then
         git archive --format=tar "$REF" scripts/pruefe-aktualisierer.sh deploy/aktualisierer \

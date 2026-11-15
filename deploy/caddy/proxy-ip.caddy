@@ -5,9 +5,12 @@
 # (deploy/hestia/proxy-geheim.sh, Gesamtaudit 08.11. GA8-03). Sonst zählt die Adresse der
 # Verbindung. Ohne HUBIPLAN_PROXY_GEHEIM gilt X-Real-IP nie (Gesamtaudit 13.11., H-02);
 # docker-compose.proxy.yml und deploy/server-setup.sh starten ohne den Wert gar nicht erst.
+#
+# Wird über das Snippet (vorlauf) als Erstes im „route“-Block von site.caddy eingebunden,
+# also vor jeder Weiterleitung an Backend oder Webseite (Gesamtaudit 15.11., OPS-03). In
+# „route“ gilt die geschriebene Reihenfolge: erst die Verbindungsadresse, dann X-Real-IP nur
+# mit Geheimnis, zuletzt wird der Kopfwert entfernt.
 @hubiplan_vom_proxy expression `"{$HUBIPLAN_PROXY_GEHEIM}" != "" && {http.request.header.X-Hubiplan-Proxy} == "{$HUBIPLAN_PROXY_GEHEIM}"`
-route {
-	vars hubiplan_client_ip {http.request.remote.host}
-	vars @hubiplan_vom_proxy hubiplan_client_ip {http.request.header.X-Real-IP}
-	request_header -X-Hubiplan-Proxy
-}
+vars hubiplan_client_ip {http.request.remote.host}
+vars @hubiplan_vom_proxy hubiplan_client_ip {http.request.header.X-Real-IP}
+request_header -X-Hubiplan-Proxy

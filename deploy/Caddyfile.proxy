@@ -19,8 +19,12 @@
 	header_up X-Forwarded-Proto https
 }
 
-:80 {
+# Läuft in site.caddy als Erstes, vor jeder Weiterleitung (Besucheradresse, Geheimnis entfernen)
+(vorlauf) {
 	import caddy/proxy-ip.caddy
+}
+
+:80 {
 	import caddy/site.caddy
 }
 
