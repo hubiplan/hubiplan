@@ -1286,7 +1286,8 @@ class SiteView:
         candidates = (
             WebsiteImage.objects.filter(website=self.site)
             .exclude(credit="")
-            .only("pk", "key", "credit")[:CREDITS_MAX]
+            .only("pk", "key", "credit")
+            .order_by("pk")[:CREDITS_MAX]
         )
         for image in candidates:
             if image.credit.casefold() in names:

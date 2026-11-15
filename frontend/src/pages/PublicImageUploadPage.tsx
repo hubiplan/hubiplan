@@ -126,9 +126,7 @@ export function PublicImageUploadPage() {
             {info.remaining > 0 && (
               <Field
                 label={t('Urheber/in (optional)')}
-                hint={t(
-                  'Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.',
-                )}
+                hint={t('Wer hat die Fotos gemacht? Die Webseite nennt den Namen als „Foto: …“.')}
                 value={credit}
                 maxLength={200}
                 disabled={busy}
