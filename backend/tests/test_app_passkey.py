@@ -155,6 +155,15 @@ class TestAnmelden:
         start = begin()
         assert login(start, key.sign(start["options"])).status_code == 400
 
+    def test_entwicklung_fremde_herkunft_abgewiesen(self, apps, member):
+        """Auch in der Entwicklung (unsichere Herkunft erlaubt) nur http der eigenen Adresse."""
+        apps.MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = True
+        user, _ = member
+        key = with_passkey(user)
+        key.origin = "http://boese.example"
+        start = begin()
+        assert login(start, key.sign(start["options"])).status_code == 400
+
     def test_ohne_entsperren_keine_anmeldung(self, apps, member):
         user, _ = member
         key = with_passkey(user)
@@ -226,7 +235,7 @@ class TestVerwaltungFreischalten:
         assert overview["passkey"] is True and overview["two_factor"] is False
         resp = self._unlock(token, key)
         assert resp.status_code == 201, resp.json()
-        assert app(resp.json()["token"]).get(f"{APP}admin/").status_code == 200
+        assert app(token).get(f"{APP}admin/").json()["unlocked"] is True
 
     def test_passkey_eines_anderen_kontos(self, apps, cal, member):
         from .factories import give_role, make_user

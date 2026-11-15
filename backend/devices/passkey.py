@@ -22,6 +22,7 @@ import base64
 import logging
 import re
 import secrets
+from urllib.parse import urlsplit
 
 from allauth.account.utils import url_str_to_user_pk
 from allauth.mfa.models import Authenticator
@@ -131,10 +132,16 @@ def _server(request) -> Fido2Server:
     rp = PublicKeyCredentialRpEntity(id=host, name=passkeys.rp_name(request))
     apps = android_origins()
 
+    insecure = getattr(settings, "MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN", False)
+
     def verify_origin(origin: str) -> bool:
-        if getattr(settings, "MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN", False):
+        if origin in apps or verify_rp_id(host, origin):
             return True
-        return origin in apps or verify_rp_id(host, origin)
+        # Entwicklung (DJANGO_DEBUG): auch http, aber nur die eigene Adresse, nie fremde Apps
+        if insecure:
+            parts = urlsplit(origin)
+            return parts.scheme == "http" and parts.hostname == host
+        return False
 
     return Fido2Server(rp, verify_origin=verify_origin)
 
