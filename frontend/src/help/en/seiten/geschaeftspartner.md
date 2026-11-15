@@ -20,7 +20,7 @@ stichworte:
 
 This lists all companies, authorities, associations and people outside the member list that you deal with: suppliers, service providers, sponsors, landlords, public offices or the press.
 
-- **Create business partner** asks for the type (company, authority/office, association/federation, private person, other), address, contact and tax details. Only the name is required. Each entry gets a running number such as “GP-0001”.
+- **Create business partner** asks for the type (company, authority/office, association/federation, private person, other), address, contact and tax details. Only the name is required. Each entry gets a running number such as “GP-0001”. Changes to an existing partner save themselves.
 - Under **Roles** you tick what the partner is for you, several if needed: for example supplier and sponsor. Customer and supplier also apply to invoices and incoming invoices.
 - **Add contact** stores people at the partner with function, email and phone. A **Primary contact** is shown first in the list.
 - Under **Contact with the club** you record when and how the first contact came about (**First contact on**, **First contact**) and which member looks after the partner (**Looked after by**).
