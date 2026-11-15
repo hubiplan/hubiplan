@@ -359,10 +359,10 @@ def first_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
     if data.show_name:
         # Größe und Umbruch wie im PDF, damit Word kein einzelnes Wort umbricht (Issue #487)
         lines = data.head_lines(name_w, reserve=WORD_RESERVE)
-        for i, line in enumerate(lines):
+        for i, head in enumerate(lines):
             blocks.append(
                 para(
-                    run(line.text, heading=True, bold=True, size=line.size, color=primary),
+                    run(head.text, heading=True, bold=True, size=head.size, color=primary),
                     frame=name_frame,
                     jc=jc,
                     after=40 if i == len(lines) - 1 else 0,
