@@ -12899,3 +12899,6 @@ msgstr "Two lines at most."
 
 msgid "Ein eigenes Logo gibt es nur mit eigenem Briefbogen."
 msgstr "An own logo only exists with an own letterhead."
+
+msgid "Knopftext"
+msgstr "Button text"
