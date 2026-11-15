@@ -977,6 +977,18 @@ Ein Passkey gilt nur für die Adresse, unter der er entstand (Relying Party ID =
 Host). Bei mehreren Adressen je Instanz braucht jede Adresse eigene Passkeys. Gespeichert wird
 nur der öffentliche Schlüssel. Anmelden mit Passkey geht nur über https.
 
+Die Apps nutzen dieselben Passkeys (docs/app.md, „Passkeys: Android und iOS“). Für Android
+liefert HUBIplan unter `/.well-known/assetlinks.json` aus, welche Apps Passkeys dieser Adresse
+verwenden dürfen; die offizielle App steht in `backend/devices/passkey.py`. Der Pfad muss ohne
+Umleitung über https erreichbar sein. Eigene Builds ergänzen in der `.env` (Musterwerte):
+
+```
+HUBIPLAN_APP_ANDROID_FINGERPRINTS=AB:CD:…:EF   # SHA-256 des Signaturzertifikats, mehrere mit Komma
+HUBIPLAN_APP_ANDROID_PACKAGE=de.hubiplan.app   # nur bei eigenem Paketnamen
+```
+
+Die iOS-App meldet sich im eingebetteten Browser an (`/app/anmelden`) und braucht nichts weiter.
+
 ## Virenprüfung
 
 Ist in der `.env` `CLAMD_SOCKET_DIR` gesetzt (Ordner mit dem Socket des clamd auf dem

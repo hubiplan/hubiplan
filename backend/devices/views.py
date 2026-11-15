@@ -153,6 +153,18 @@ def push_ways() -> list[dict]:
     return ways
 
 
+def passkey_ways() -> list[str]:
+    """Anmeldewege mit Passkey: ``android`` (App bestätigt, Credential Manager) und ``browser``
+    (eingebetteter Browser unter /app/anmelden, für iOS)."""
+    from accounts import passkeys
+
+    from .passkey import android_fingerprints
+
+    if not passkeys.enabled():
+        return []
+    return (["android"] if android_fingerprints() else []) + ["browser"]
+
+
 class InstanceView(APIView):
     """Selbstauskunft der Instanz für die App (ohne Anmeldung)."""
 
@@ -172,6 +184,8 @@ class InstanceView(APIView):
                 "url": settings.FRONTEND_URL,
                 # Push-Wege der Instanz; Abruf geht immer
                 "push": push_ways(),
+                # Anmelden mit Passkey (devices/passkey.py)
+                "passkey": passkey_ways(),
             }
         )
 

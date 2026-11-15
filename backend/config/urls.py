@@ -6,6 +6,8 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from devices import passkey as app_passkey
+
 
 class SwaggerView(SpectacularSwaggerView):
     """Swagger-Oberfläche nur, wenn eingeschaltet (lädt Code von einem CDN)."""
@@ -21,6 +23,8 @@ urlpatterns = [
     # /_allauth/openapi.html)
     path("_allauth/", include("allauth.headless.urls")),
     path("api/", include("core.urls")),
+    # Passkeys in der Android-App: welche Apps diese Adresse nutzen dürfen (devices/passkey.py)
+    path(".well-known/assetlinks.json", app_passkey.assetlinks, name="assetlinks"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Anmeldung der KI-Assistenten: Beschreibungen unter /.well-known/ (docs/mcp.md)
     path("", include("mcpserver.urls_root")),

@@ -14,9 +14,46 @@ Wege zum Schlüssel:
 |---|---|
 | QR-Code | Im Browser unter „Mein Konto › App & andere Instanzen › App auf dem Telefon“ `POST /api/app/v1/pairing/` (nur mit Sitzung). Der QR-Code enthält `https://<Instanz>/app/verbinden#code=<Code>`, 10 Minuten gültig, einmal nutzbar. Die App schickt `POST /api/app/v1/pair/` mit `{"code", "name", "platform", "app_version"}`. Der Browser fragt `GET /api/app/v1/pairing/<id>/` alle 3 Sekunden ab und zeigt nach dem Scannen „Verbunden: <Gerät>“. Die App zeigt vor dem Verbinden die Adresse der Instanz und fragt nach. |
 | Anmeldelink | Wie oben, aber `{"login_link": "<Token aus /anmelden/link/<Token>>"}`. Nicht für Vorstände und Konten mit 2FA (wie im Browser). |
+| Passkey | `POST /api/app/v1/passkey/begin/` (ohne Anmeldung) liefert `challenge_id`, `options` (WebAuthn-JSON wie `publicKey` für `navigator.credentials.get`, `userVerification` immer `required`) und `expires_in` (300 s). Die App lässt das Telefon einen Passkey für `options.rpId` (Adresse der Instanz) wählen und schickt `POST /api/app/v1/passkey/` mit `{"challenge_id", "credential", "name", "platform", "app_version", "device_key"}`; `credential` wie im Browser (`id`, `rawId`, `type`, `response` mit `clientDataJSON`, `authenticatorData`, `signature`, `userHandle`). Jede Aufgabe gilt einmal. Fehler: 400 (`passkey_expired`, `passkey_failed`), 403 ohne Mitgliederbereich, 404 wenn Passkeys aus sind. |
 | Passwort (+2FA) | allauth headless, Client `app`: `POST /_allauth/app/v1/auth/login`, ggf. `/auth/2fa/authenticate`; mit dem `session_token` dann `POST /api/app/v1/devices/` (Kopfzeile `X-Session-Token`). Die Sitzung wird danach gelöscht. |
 
 Antwort jeweils `201` mit `token`, `device`, `user`.
+
+### Passkeys: Android und iOS
+
+**Android** bietet der App einen Passkey nur an, wenn die Adresse die App unter
+`GET /.well-known/assetlinks.json` bestätigt (Beziehung `delegate_permission/common.get_login_creds`,
+Paket `de.hubiplan.app`, SHA-256-Fingerabdrücke der Signaturzertifikate). Die App unterschreibt
+mit der Herkunft `android:apk-key-hash:<base64url des Fingerabdrucks>`; HUBIplan lässt genau
+diese Herkünfte zu. Ohne bestätigte App antwortet der Pfad mit 404. Die offiziellen Werte stehen
+in `backend/devices/passkey.py`; eigene Builds ergänzen `HUBIPLAN_APP_ANDROID_FINGERPRINTS`
+(siehe [betrieb.md](betrieb.md)).
+
+**iOS** gibt Passkeys nur für Adressen heraus, die beim Bauen der App fest eingetragen sind
+(Associated Domains). Selbst betriebene Instanzen mit eigener Adresse gehen so nicht. Die
+iOS-App öffnet deshalb `https://<Instanz>/app/anmelden` in einem eingebetteten Browserfenster
+(`ASWebAuthenticationSession`, Rückruf-Schema `hubiplan`). Dort meldet sich die Person wie auf
+der Webseite an, auf Wunsch mit Passkey, und tippt auf „Verbinden“. Die Seite erzeugt einen
+Einmalcode (`POST /api/app/v1/pairing/`) und ruft `hubiplan://verbinden?server=…&code=…` auf;
+die App verbindet sich damit wie beim QR-Code.
+
+`GET /api/app/v1/instance/` nennt in `passkey` die Wege: `android` (App bestätigt) und
+`browser` (Anmeldung im eingebetteten Browser, solange Passkeys eingeschaltet sind).
+
+Die Verwaltung (`POST /api/app/v1/admin/unlock/`) lässt sich statt mit `password` und `code`
+auch mit `passkey_challenge_id` und `passkey_credential` freischalten (Aufgabe ebenfalls aus
+`passkey/begin/`, der Passkey muss zum Konto des Geräts gehören). Eine eingerichtete
+Authenticator-App ist dafür nicht nötig.
+
+Die iOS-App schaltet über den eingebetteten Browser frei (`devices/browser_unlock.py`):
+`POST admin/unlock/` mit `{"browser": true, "admin_key"}` liefert 202 mit `ticket` (10 Minuten,
+an Gerät, Konto und `admin_key` gebunden) und `path` (`/app/freischalten`). Die App öffnet
+`https://<Instanz>/app/freischalten#t=<ticket>`; nach dem Anmelden bestätigt die Seite mit
+`POST /api/app/v1/admin/unlock/browser/confirm/` (`{"ticket", "confirm": true}`, nur mit
+Browser-Sitzung, verlangt eingerichtete 2FA und frische Bestätigung, Passkey zählt) und ruft
+`hubiplan://freischalten?ticket=<ticket>` auf. Die App löst mit `POST admin/unlock/`
+`{"browser_ticket", "admin_key"}` (derselbe Schlüssel) ein; das Ticket gilt einmal. `GET /api/app/v1/admin/` nennt in `passkey`, ob für
+diese Adresse ein Passkey eingerichtet ist (`two_factor`: Authenticator-App).
 
 ## Was der Geräteschlüssel darf
 

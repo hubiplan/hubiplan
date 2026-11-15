@@ -28,6 +28,8 @@ import { JoinFormPage } from './pages/join/JoinFormPage.tsx'
 import { JoinStatusPage } from './pages/join/JoinStatusPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { McpConnectPage } from './pages/McpConnectPage.tsx'
+import { AppLoginPage } from './pages/AppLoginPage.tsx'
+import { AppUnlockPage } from './pages/AppUnlockPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
@@ -251,6 +253,22 @@ export default function App() {
           <Route path="/foto/:token" element={<PublicPhotoPage />} />
           <Route path="/bilder-hochladen/:token" element={<PublicImageUploadPage />} />
           <Route path="/app/verbinden" element={<AppPairNoticePage />} />
+          <Route
+            path="/app/anmelden"
+            element={
+              <RequireAuth>
+                <AppLoginPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/app/freischalten"
+            element={
+              <RequireAuth>
+                <AppUnlockPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/verbund/start" element={<VerbundStartPage />} />
           <Route path="/verbund/angemeldet" element={<VerbundFinishPage />} />
           <Route

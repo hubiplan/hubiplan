@@ -26,12 +26,21 @@ export interface PairingStatus {
   expires_at: string
 }
 
+export interface BrowserUnlock {
+  device: string
+  confirmed: boolean
+  redirect?: string
+}
+
 export const devicesApi = {
   list: () => api.get<AppDevice[]>('/api/app/v1/devices/'),
   remove: (id: number) => api.del(`/api/app/v1/devices/${id}/`),
   lockAdmin: (id: number) => api.del(`/api/app/v1/devices/${id}/admin/`),
   pairingCode: () => api.post<PairingCode>('/api/app/v1/pairing/'),
   pairingStatus: (id: number) => api.get<PairingStatus>(`/api/app/v1/pairing/${id}/`),
+  // Verwaltung der iPhone-App im Browser freischalten (devices/browser_unlock.py)
+  browserUnlock: (ticket: string, confirm: boolean) =>
+    api.post<BrowserUnlock>('/api/app/v1/admin/unlock/browser/confirm/', { ticket, confirm }),
   hasPortal: () =>
     api.get<{ portal: unknown[] }>('/api/me/contexts/').then((c) => c.portal.length > 0),
 }
