@@ -19,6 +19,12 @@ nicht selbst Port 80 oder 443. Die konkrete Belegung anderer Dienste gehört nic
 - Den lokalen Port erreicht auf einem geteilten Server jeder Prozess. Deshalb schickt nginx
   zusätzlich einen geheimen Kopfwert `X-Hubiplan-Proxy` mit; nur damit übernimmt Caddy
   `X-Real-IP` (`HUBIPLAN_PROXY_GEHEIM` in der `.env`, `deploy/caddy/proxy-ip.caddy`).
+  Caddy entfernt den Kopfwert, bevor die Anfrage an Backend oder Vereinswebseite geht. Damit
+  das vor jeder Weiterleitung geschieht, steht der Inhalt von `deploy/caddy/site.caddy` in einem
+  `route`-Block mit fester Reihenfolge; `scripts/pruefe-caddy.sh` prüft das Verhalten bei jedem
+  Testlauf (Besucheradresse, Kopfwert, `/api/intern/` von außen 404, Sicherheits-Kopfzeilen).
+  Ältere Stände ließen die Besucheradresse hinter nginx leer, sodass alle Besucher als eine
+  Adresse zählten: Hinter einem vorgeschalteten Webserver zügig aktualisieren.
   `deploy/hestia/einrichten.sh` richtet das ein. Bestehende Installationen: erst die Vorlagen
   erneuern (siehe unten), dann einmal
 

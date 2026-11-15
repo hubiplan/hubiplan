@@ -19,6 +19,13 @@
 	header_up X-Forwarded-Proto {http.request.scheme}
 }
 
+# Läuft in site.caddy als Erstes. Mit eigenem HTTPS ist Caddy der erste Proxy; X-Forwarded-For
+# setzt reverse_proxy dann selbst aus der Verbindungsadresse. Der Kopfwert des vorgeschalteten
+# Webservers hat hier keine Bedeutung und wird nie weitergereicht.
+(vorlauf) {
+	request_header -X-Hubiplan-Proxy
+}
+
 {$SITE_HOST} {
 	import caddy/site.caddy
 }
