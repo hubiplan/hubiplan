@@ -24,6 +24,7 @@ from access.catalog import (
     CHRONICLE_EDIT,
     CHRONICLE_VIEW,
     MEMBERS_EDIT,
+    ORG_EDIT,
     WEBCONTENT_VIEW,
     WEBSITE_CONTENT,
     WEBSITE_MANAGE,
@@ -695,10 +696,20 @@ class WebsiteView(_WebsiteMixin, APIView):
             "designs_platform": can_import_designs(self.request.user),
             # Termine-Block: Häkchen „übergeordnete Einheiten“ nur, wenn es sie gibt
             "has_parent_units": services.has_parent_events(self.org),
+            # Mit Einheit darüber (``parent``; leer: oberste Ebene), damit die Liste unter
+            # Webseite › Untereinheiten je Ebene sortiert werden kann
             "units": [
-                {"id": u.pk, "name": u.name}
+                {
+                    "id": u.pk,
+                    "name": u.name,
+                    "parent": None if u.parent_id == self.org.pk else u.parent_id,
+                }
                 for u in services.in_tree_order(services.units_below(self.org))
             ],
+            # Reihenfolge dort ziehen: wie unter „Untereinheiten“ nur mit Recht
+            # „Einheit bearbeiten“ und nicht auf der Webseite einer Untereinheit
+            "can_sort_units": ORG_EDIT in self.org_permissions
+            and not services.is_unit_site(self.org),
             "website": None,
         }
         if website is not None:

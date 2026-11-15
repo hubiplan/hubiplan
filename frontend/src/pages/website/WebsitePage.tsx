@@ -3,6 +3,7 @@
 // der Webseite stehen unter Einstellungen › Datenschutz (WebsitePrivacy.tsx).
 // Die Seite selbst zeigt das Projekt „hubiplan-website“.
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
 import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
@@ -19,6 +20,8 @@ import type {
   WebsiteSettings,
 } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
+import { SortHint, SortableList } from '../../components/Sortable.tsx'
+import { orgApi } from '../../api/orgs.ts'
 import {
   errorMessage,
   formatDateTime,
@@ -846,20 +849,16 @@ function WebsiteAdmin({
             <option value="selected">{t('ausgewählte')}</option>
             <option value="none">{t('keine')}</option>
           </SelectField>
-          {v.units_mode === 'selected' &&
-            data.units.map((u) => (
-              <Checkbox
-                key={u.id}
-                label={u.name}
-                checked={v.unit_ids.includes(u.id)}
-                onChange={(on) =>
-                  set(
-                    'unit_ids',
-                    on ? [...v.unit_ids, u.id] : v.unit_ids.filter((id) => id !== u.id),
-                  )
-                }
-              />
-            ))}
+          {v.units_mode !== 'none' && (
+            <UnitList
+              orgId={org.id}
+              units={data.units}
+              sortable={!!data.can_sort_units && data.units.length > 1}
+              selected={v.units_mode === 'selected' ? v.unit_ids : null}
+              onSelect={(ids) => set('unit_ids', ids)}
+              onReorder={reload}
+            />
+          )}
           {errors.unit_ids && <Alert kind="error">{errors.unit_ids}</Alert>}
         </>,
       )}
@@ -1464,5 +1463,70 @@ function HeldCard() {
       </ul>
       {message && <Alert kind="error">{message}</Alert>}
     </div>
+  )
+}
+
+type UnitItem = WebsiteData['units'][number]
+
+/** Untereinheiten unter Webseite › Untereinheiten: bei „ausgewählte“ mit Häkchen, und wer
+ *  die Einheit bearbeiten darf, zieht sie hier in die Reihenfolge (je Ebene, wie unter
+ *  „Untereinheiten“; sie gilt überall). */
+function UnitList({
+  orgId,
+  units,
+  sortable,
+  selected,
+  onSelect,
+  onReorder,
+}: {
+  orgId: number
+  units: UnitItem[]
+  sortable: boolean
+  selected: number[] | null
+  onSelect: (ids: number[]) => void
+  onReorder: () => void
+}) {
+  const row = (u: UnitItem) =>
+    selected === null ? (
+      <span>{u.name}</span>
+    ) : (
+      <Checkbox
+        label={u.name}
+        checked={selected.includes(u.id)}
+        onChange={(on) => onSelect(on ? [...selected, u.id] : selected.filter((id) => id !== u.id))}
+      />
+    )
+  if (!sortable)
+    return selected === null ? null : (
+      <>
+        {units.map((u) => (
+          <div key={u.id}>{row(u)}</div>
+        ))}
+      </>
+    )
+  const level = (parent: number | null): ReactNode => {
+    const children = units.filter((u) => (u.parent ?? null) === parent)
+    if (children.length === 0) return null
+    return (
+      <SortableList
+        ariaLabel={parent === null ? t('Reihenfolge') : t('Reihenfolge darunter')}
+        items={children}
+        id={(u) => u.id}
+        label={(u) => u.name}
+        onReorder={(ids) => orgApi.reorderDepartments(orgId, parent, ids).then(() => onReorder())}
+        render={(u) => (
+          <>
+            {row(u)}
+            {level(u.id)}
+          </>
+        )}
+      />
+    )
+  }
+  return (
+    <>
+      <SortHint />
+      {level(null)}
+    </>
   )
 }
