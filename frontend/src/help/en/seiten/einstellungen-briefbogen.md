@@ -3,6 +3,7 @@ key: page.settings_letterhead
 titel: Settings › Letterhead
 rechte: [org.edit]
 routen: [/einstellungen/briefbogen]
+# prettier-ignore
 stichworte: [letterhead, header, footer, font, line colour, logo size, style guide, word mark, name in the letterhead, line break]
 ---
 

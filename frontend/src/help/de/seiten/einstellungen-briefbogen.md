@@ -3,6 +3,7 @@ key: page.settings_letterhead
 titel: Einstellungen › Briefbogen
 rechte: [org.edit]
 routen: [/einstellungen/briefbogen]
+# prettier-ignore
 stichworte: [Briefbogen, Briefkopf, Fußzeile, Schrift, Linienfarbe, Logogröße, Styleguide, Wort-Bild-Marke, Name im Briefkopf, Umbruch]
 ---
 
