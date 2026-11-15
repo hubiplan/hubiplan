@@ -174,6 +174,34 @@ def test_first_step_only_deactivates_and_keeps_data(api, admin, orgs, monkeypatc
     assert Organization.objects.filter(pk=org.pk).exists()
 
 
+def test_empty_unit_can_be_erased_right_after_marking(api, admin, orgs, monkeypatch):
+    """Nie Mitglieder, keine Finanzdaten: keine Wartezeit (Ralf 15.11.2026)."""
+    monkeypatch.setattr(deletion, "_today", timezone.localdate)
+    org = orgs["c"]
+    with tenant_context(org.pk):
+        Membership._base_manager.filter(organization=org).delete()
+    assert erase(api, admin, org, prepare=False).status_code == 400  # erst vormerken
+    assert mark(api, admin, org, days_ago=0).status_code == 204
+    state = api(admin).get(f"/api/platform/orgs/{org.pk}/erase-state/").json()
+    assert state["empty"] and state["wait_days"] == 0 and state["can_erase"]
+    assert erase(api, admin, org, prepare=False, confirmed_by="").status_code == 204
+    assert not Organization.objects.filter(pk=org.pk).exists()
+
+
+def test_unit_with_members_keeps_waiting(api, admin, orgs, monkeypatch):
+    monkeypatch.setattr(deletion, "_today", timezone.localdate)
+    org = orgs["c"]
+    with tenant_context(org.pk):
+        person = Person.objects.create(
+            scope=org, first_name="Erika", last_name="Muster", birth_date="1990-01-01"
+        )
+        Membership.objects.create(organization=org, scope=org, person=person)
+    mark(api, admin, org, days_ago=0)
+    state = api(admin).get(f"/api/platform/orgs/{org.pk}/erase-state/").json()
+    assert not state["empty"] and state["wait_days"] == 30
+    assert erase(api, admin, org, prepare=False).status_code == 400
+
+
 def test_retention_blocks_until_deadline(api, admin, orgs, monkeypatch):
     org = orgs["c"]
     _booking(org)

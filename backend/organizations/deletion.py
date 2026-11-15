@@ -5,7 +5,8 @@
    Vormerkung gilt, lässt sich die Einheit nicht wieder einschalten; die Plattform kann die
    Vormerkung zurücknehmen.
 2. **Endgültig löschen** (Plattform, zweite Bestätigung): frühestens ``WAIT_DAYS`` Tage nach
-   der Vormerkung und erst nach Ablauf der Aufbewahrungsfristen aller Geschäftsjahre
+   der Vormerkung (bei leeren Einheiten ohne Mitglieder und Finanzdaten sofort) und erst nach
+   Ablauf der Aufbewahrungsfristen aller Geschäftsjahre
    (§ 147 AO, ``finance.retention``; Löschsperren verlängern), mit Namen, Passwort und ggf.
    Code sowie der Angabe, wer die Fristen bestätigt hat. Untereinheiten werden mit gelöscht.
 
@@ -148,12 +149,25 @@ def retention(org) -> dict:
     return {"until": until, "holds": holds}
 
 
+def has_members(org) -> bool:
+    """Hat die Einheit oder eine Untereinheit je ein Mitglied geführt (auch ausgetretene)?"""
+    from members.models import Membership
+
+    with rls_bypass():
+        ids = [unit.pk for unit in subtree(org)]
+        return Membership._base_manager.filter(organization_id__in=ids).exists()
+
+
 def erase_state(org) -> dict:
     """Stand für die Plattform: vorgemerkt seit, frühestens löschbar ab, was noch fehlt."""
     kept = retention(org)
     requested = org.erase_requested_at
+    # Leere Einheit (nie Mitglieder, keine Finanzdaten): kein Versehen mit Folgen, die
+    # Wartezeit entfällt (Ralf 15.11.2026). Vorgemerkt werden muss sie trotzdem.
+    empty = kept["until"] is None and not kept["holds"] and not has_members(org)
+    wait_days = 0 if empty else WAIT_DAYS
     wait_until = (
-        timezone.localdate(requested) + datetime.timedelta(days=WAIT_DAYS) if requested else None
+        timezone.localdate(requested) + datetime.timedelta(days=wait_days) if requested else None
     )
     today = _today()
     possible_from = max(d for d in (wait_until, kept["until"]) if d) if wait_until else None
@@ -165,7 +179,7 @@ def erase_state(org) -> dict:
     if requested is None:
         blockers.append(gettext("Die Löschung ist noch nicht vorgemerkt."))
     elif wait_until and today < wait_until:
-        blockers.append(gettext("Frühestens {n} Tage nach der Vormerkung.").format(n=WAIT_DAYS))
+        blockers.append(gettext("Frühestens {n} Tage nach der Vormerkung.").format(n=wait_days))
     if kept["until"] and today < kept["until"]:
         blockers.append(gettext("Die Aufbewahrungsfristen laufen noch."))
     if kept["holds"]:
@@ -177,7 +191,8 @@ def erase_state(org) -> dict:
             if org.erase_requested_by
             else ""
         ),
-        "wait_days": WAIT_DAYS,
+        "wait_days": wait_days,
+        "empty": empty,
         "wait_until": wait_until,
         "retention_until": kept["until"],
         "holds": kept["holds"],
