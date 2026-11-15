@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { api, newRequestKey } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Loading } from '../../components/ui.tsx'
+import { Alert, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
@@ -115,7 +115,17 @@ function TemplateForm({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [key, setKey] = useState(newRequestKey)
-  useDraftGuard(JSON.stringify(values) !== clean)
+  const [, setErrors] = useState<Record<string, string>>({})
+  // Vorhandene Vorlagen speichern automatisch, neue erst mit „Speichern“
+  const auto = useAutoSave(
+    { values, setErrors, setValues },
+    async (changes) => {
+      await api.patch(`${url}${initial!.id}/`, changes)
+      await onSaved()
+    },
+    { enabled: !!initial },
+  )
+  useDraftGuard(!initial && JSON.stringify(values) !== clean)
   function update(next: typeof values) {
     setValues(next)
     setKey(newRequestKey())
@@ -125,11 +135,11 @@ function TemplateForm({
       className="card stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (initial) return
         setBusy(true)
         setError('')
         try {
-          if (initial) await api.patch(`${url}${initial.id}/`, values)
-          else await api.post(url, values, key)
+          await api.post(url, values, key)
           await onSaved()
           onClose()
         } catch (e) {
@@ -139,6 +149,7 @@ function TemplateForm({
         }
       }}
     >
+      {initial && <SaveStatus auto={auto} />}
       {error && <Alert kind="error">{error}</Alert>}
       <fieldset disabled={busy} className="music-form-fields">
         <label>
@@ -246,16 +257,31 @@ function TemplateForm({
           {t('Besetzungsposition hinzufügen')}
         </button>
         <div className="actions">
-          <button className="button button-primary">{t('Speichern')}</button>
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={async () => {
-              if (await confirmLeave()) onClose()
-            }}
-          >
-            {t('Abbrechen')}
-          </button>
+          {initial ? (
+            <button
+              type="button"
+              className="button"
+              onClick={async () => {
+                // Schließt erst, wenn alles gespeichert ist
+                if (await auto.flush()) onClose()
+              }}
+            >
+              {t('Schließen')}
+            </button>
+          ) : (
+            <>
+              <button className="button button-primary">{t('Speichern')}</button>
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={async () => {
+                  if (await confirmLeave()) onClose()
+                }}
+              >
+                {t('Abbrechen')}
+              </button>
+            </>
+          )}
         </div>
       </fieldset>
     </form>

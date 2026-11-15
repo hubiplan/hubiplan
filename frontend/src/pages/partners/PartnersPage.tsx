@@ -18,9 +18,17 @@ import type { PickedMember } from '../../api/members.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Checkbox, Field, LoadError, Loading, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  Loading,
+  SaveStatus,
+  SelectField,
+} from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
@@ -163,6 +171,7 @@ export function PartnersPage() {
             void load.reload()
             setSelected(saved ?? null)
           }}
+          onChanged={() => void load.reload()}
           onClose={() => setSelected(null)}
         />
       )}
@@ -344,11 +353,14 @@ function PartnerForm({
   partner,
   others,
   onSaved,
+  onChanged,
   onClose,
 }: {
   partner?: BusinessPartner
   others: BusinessPartner[]
   onSaved: (saved?: BusinessPartner) => void
+  /** Nach jedem automatischen Speichern (Liste auffrischen) */
+  onChanged?: () => void
   onClose: () => void
 }) {
   const org = useActiveOrg()
@@ -393,18 +405,33 @@ function PartnerForm({
   const [error, setError] = useState('')
   const [mergeWith, setMergeWith] = useState('')
   const [initial] = useState(() => JSON.stringify(value))
-  useDraftGuard(canEdit && JSON.stringify(value) !== initial)
+  const [, setErrors] = useState<Record<string, string>>({})
+  // Bestehende Geschäftspartner speichern automatisch (nur geänderte Teile),
+  // neue erst mit „Anlegen“
+  const auto = useAutoSave(
+    { values: value, setErrors, setValues: setValue },
+    (changes) => partnerApi.save(org.id, changes, partner!.id),
+    {
+      enabled: !!partner && canEdit,
+      onSaved: () => onChanged?.(),
+    },
+  )
+  useDraftGuard(!partner && canEdit && JSON.stringify(value) !== initial)
   const details = value.details!
   const setDetail = (key: keyof typeof details, v: string) =>
-    setValue({ ...value, details: { ...details, [key]: v } })
+    setValue((cur) => ({ ...cur, details: { ...cur.details!, [key]: v } }))
   const setBank = (key: 'iban' | 'bic' | 'holder', v: string) =>
-    setValue({ ...value, bank: { ...(value.bank ?? { iban: '', bic: '', holder: '' }), [key]: v } })
-  const toggleRole = (r: PartnerRole, on: boolean) => {
-    const roles = new Set(value.roles ?? [])
-    if (on) roles.add(r)
-    else roles.delete(r)
-    setValue({ ...value, roles: PARTNER_ROLES.filter((x) => roles.has(x)) })
-  }
+    setValue((cur) => ({
+      ...cur,
+      bank: { ...(cur.bank ?? { iban: '', bic: '', holder: '' }), [key]: v },
+    }))
+  const toggleRole = (r: PartnerRole, on: boolean) =>
+    setValue((cur) => {
+      const roles = new Set(cur.roles ?? [])
+      if (on) roles.add(r)
+      else roles.delete(r)
+      return { ...cur, roles: PARTNER_ROLES.filter((x) => roles.has(x)) }
+    })
   const disabled = !canEdit || busy
   const moneyDisabled = disabled || !access.moneyEdit
   const detailFields: [keyof typeof details, string, string?][] = [
@@ -425,10 +452,11 @@ function PartnerForm({
       className="card stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (partner) return
         setBusy(true)
         setError('')
         try {
-          const saved = await partnerApi.save(org.id, value, partner?.id)
+          const saved = await partnerApi.save(org.id, value)
           onSaved(saved)
         } catch (err) {
           setError(errorMessage(err))
@@ -442,6 +470,7 @@ function PartnerForm({
           ? `${partner.number ? `${partner.number} · ` : ''}${partner.name}`
           : t('Neuer Geschäftspartner')}
       </h3>
+      {partner && canEdit && <SaveStatus auto={auto} />}
       {error && <Alert kind="error">{error}</Alert>}
       <fieldset disabled={disabled} className="subcard">
         <legend>{t('Übersicht')}</legend>
@@ -449,7 +478,7 @@ function PartnerForm({
           <SelectField
             label={t('Art')}
             value={value.kind}
-            onChange={(e) => setValue({ ...value, kind: e.target.value as PartnerKind })}
+            onChange={(e) => setValue((cur) => ({ ...cur, kind: e.target.value as PartnerKind }))}
           >
             {PARTNER_KINDS.map((k) => (
               <option key={k} value={k}>
@@ -470,7 +499,7 @@ function PartnerForm({
           <Field
             label={t('Unsere Kundennummer dort')}
             value={value.our_customer_number ?? ''}
-            onChange={(e) => setValue({ ...value, our_customer_number: e.target.value })}
+            onChange={(e) => setValue((cur) => ({ ...cur, our_customer_number: e.target.value }))}
           />
         </div>
         {value.kind === 'person' && (
@@ -505,14 +534,16 @@ function PartnerForm({
             label={t('Erstkontakt am')}
             type="date"
             value={value.first_contact_on ?? ''}
-            onChange={(e) => setValue({ ...value, first_contact_on: e.target.value || null })}
+            onChange={(e) =>
+              setValue((cur) => ({ ...cur, first_contact_on: e.target.value || null }))
+            }
           />
           <Field
             label={t('Erstkontakt')}
             hint={t('Wie und wo, z. B. Schützenfest 2026')}
             maxLength={300}
             value={value.first_contact_note ?? ''}
-            onChange={(e) => setValue({ ...value, first_contact_note: e.target.value })}
+            onChange={(e) => setValue((cur) => ({ ...cur, first_contact_note: e.target.value }))}
           />
           {canEdit ? (
             <MemberPicker
@@ -521,7 +552,7 @@ function PartnerForm({
               value={liaison}
               onChange={(m) => {
                 setLiaison(m)
-                setValue({ ...value, liaison: m?.id ?? null })
+                setValue((cur) => ({ ...cur, liaison: m?.id ?? null }))
               }}
             />
           ) : (
@@ -556,10 +587,10 @@ function PartnerForm({
               hint={t('Wird beim Buchen vorgeschlagen')}
               value={value.default_category ?? ''}
               onChange={(e) =>
-                setValue({
-                  ...value,
+                setValue((cur) => ({
+                  ...cur,
                   default_category: e.target.value ? Number(e.target.value) : null,
-                })
+                }))
               }
             >
               <option value="">{t('keine')}</option>
@@ -576,10 +607,10 @@ function PartnerForm({
               max={365}
               value={value.payment_terms_days ?? ''}
               onChange={(e) =>
-                setValue({
-                  ...value,
+                setValue((cur) => ({
+                  ...cur,
                   payment_terms_days: e.target.value ? Number(e.target.value) : null,
-                })
+                }))
               }
             />
           </div>
@@ -595,7 +626,7 @@ function PartnerForm({
             label={t('Künstler/Publizist (zählt für die Künstlersozialabgabe)')}
             checked={!!value.artist}
             disabled={moneyDisabled}
-            onChange={(artist) => setValue({ ...value, artist })}
+            onChange={(artist) => setValue((cur) => ({ ...cur, artist }))}
           />
         </fieldset>
       ) : null}
@@ -605,7 +636,7 @@ function PartnerForm({
           label={t('Darf auf unserer Webseite als Partner oder Sponsor genannt werden')}
           checked={!!value.website_consent}
           disabled={disabled}
-          onChange={(website_consent) => setValue({ ...value, website_consent })}
+          onChange={(website_consent) => setValue((cur) => ({ ...cur, website_consent }))}
         />
         {value.website_consent && (
           <Field
@@ -613,7 +644,7 @@ function PartnerForm({
             type="url"
             hint={t('Leer: die Webseite des Partners')}
             value={value.website_url ?? ''}
-            onChange={(e) => setValue({ ...value, website_url: e.target.value })}
+            onChange={(e) => setValue((cur) => ({ ...cur, website_url: e.target.value }))}
           />
         )}
         <p className="muted small">
@@ -627,19 +658,19 @@ function PartnerForm({
         <TextArea
           label={t('Notizen')}
           value={value.notes ?? ''}
-          onChange={(notes) => setValue({ ...value, notes })}
+          onChange={(notes) => setValue((cur) => ({ ...cur, notes }))}
         />
         <Checkbox
           label={t('Aktiv')}
           checked={!!value.is_active}
           disabled={disabled}
-          onChange={(is_active) => setValue({ ...value, is_active })}
+          onChange={(is_active) => setValue((cur) => ({ ...cur, is_active }))}
         />
       </fieldset>
       <div className="button-row">
-        {canEdit && (
+        {canEdit && !partner && (
           <button className="button button-primary" disabled={busy}>
-            {t('Speichern')}
+            {t('Anlegen')}
           </button>
         )}
         <button

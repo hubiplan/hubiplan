@@ -15,7 +15,7 @@ or address. Use the filters to include retired items or open the recycle bin.
 With editing permission, create an item with a name, short description, purpose or event,
 and location. The default location type is **With a member**. Select an accessible member
 or enter a complete address. Everyone with
-equipment viewing permission in this unit can see manually entered addresses. Choose **Save**.
+equipment viewing permission in this unit can see manually entered addresses. Save a new item with **Save**. Changes to an existing item save themselves; **Close** returns to the view.
 
 The form is divided into basic data, location and condition, with labels above the fields.
 To select members, events, tasks or documents, enter at least two characters in **Search choices**.

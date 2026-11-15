@@ -1,5 +1,5 @@
 import { EquipmentPage } from '../music/EquipmentPage.tsx'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { materialApi } from '../../api/materials.ts'
@@ -10,13 +10,19 @@ import type {
   StockKind,
   StockRow,
 } from '../../api/materials.ts'
-import { errorMessage, useLoad, useQueryLoad, whenLabel } from '../../components/forms.ts'
+import {
+  errorMessage,
+  useAutoSave,
+  useLoad,
+  useQueryLoad,
+  whenLabel,
+} from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, tn, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { BookingRulesCard } from '../bookings/BookingsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
-import { Loading } from '../../components/ui.tsx'
+import { Loading, SaveStatus } from '../../components/ui.tsx'
 import './materials.css'
 import { PageNav } from '../../components/ListControls.tsx'
 
@@ -476,10 +482,50 @@ function ItemForm({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
-  useDraftGuard(!saved && (JSON.stringify(values) !== JSON.stringify(initial) || !!event), () => {
-    setValues(initial)
-    setEvent(null)
-  })
+  const payloadOf = (v: typeof initial) => {
+    const payload: Record<string, unknown> = {
+      ...v,
+      member: v.location_kind === 'member' ? v.member : null,
+      facility: v.location_kind === 'facility' ? v.facility : null,
+    }
+    if (facility) delete payload.belongs_to
+    else
+      for (const key of ['facility_type', 'ownership', 'capacity', 'lanes', 'access_note'])
+        delete payload[key]
+    if (facility && v.facility_type !== 'range') payload.lanes = []
+    return payload
+  }
+  // Vorhandenes speichert automatisch: nur, was sich seit dem letzten Speichern geändert hat
+  // (unveränderte Mitgliedsreferenzen nicht ohne Mitgliederdatenrecht neu validieren)
+  const sent = useRef(payloadOf(initial))
+  const version = useRef(item?.version)
+  const [, setErrors] = useState<Record<string, string>>({})
+  const auto = useAutoSave(
+    { values, setErrors, setValues },
+    async (_changes, all) => {
+      const payload = payloadOf(all)
+      const changes = Object.fromEntries(
+        Object.entries(payload).filter(
+          ([key, value]) => JSON.stringify(value) !== JSON.stringify(sent.current[key]),
+        ),
+      )
+      if (Object.keys(changes).length === 0) return
+      const result = await materialApi.update(base, item!.id, {
+        ...changes,
+        version: version.current,
+      })
+      sent.current = payload
+      version.current = result.version
+    },
+    { enabled: !!item },
+  )
+  useDraftGuard(
+    !item && !saved && (JSON.stringify(values) !== JSON.stringify(initial) || !!event),
+    () => {
+      setValues(initial)
+      setEvent(null)
+    },
+  )
   const lanes = values.lanes
   return (
     <>
@@ -496,36 +542,15 @@ function ItemForm({
         className="card material-form"
         onSubmit={async (e) => {
           e.preventDefault()
+          if (item) return
           setBusy(true)
           setError(null)
           try {
-            const payload: Record<string, unknown> = {
-              ...values,
-              member: values.location_kind === 'member' ? values.member : null,
-              facility: values.location_kind === 'facility' ? values.facility : null,
+            const payload = {
+              ...payloadOf(values),
               events: event ? [{ event: event.id, kind: event.series ? 'series' : 'event' }] : [],
             }
-            if (facility) delete payload.belongs_to
-            else
-              for (const key of ['facility_type', 'ownership', 'capacity', 'lanes', 'access_note'])
-                delete payload[key]
-            if (facility && values.facility_type !== 'range') payload.lanes = []
-            // Unveränderte Mitgliedsreferenzen nicht ohne Mitgliederdatenrecht neu validieren.
-            const changes: Record<string, unknown> = item
-              ? Object.fromEntries(
-                  Object.entries(payload).filter(
-                    ([key, value]) =>
-                      key !== 'events' &&
-                      JSON.stringify(value) !==
-                        JSON.stringify(initial[key as keyof typeof initial]),
-                  ),
-                )
-              : payload
-            if (item && item.location_kind !== values.location_kind)
-              changes.location_kind = values.location_kind
-            const result = item
-              ? await materialApi.update(base, item.id, { ...changes, version: item.version })
-              : await materialApi.create(base, payload)
+            const result = await materialApi.create(base, payload)
             setSaved(true)
             if (onSaved) onSaved()
             else navigate(`${stock.root}/${result.id}`)
@@ -536,6 +561,7 @@ function ItemForm({
           }
         }}
       >
+        {item && <SaveStatus auto={auto} />}
         <fieldset disabled={busy}>
           <fieldset className="material-form-section">
             <legend>{t('Grunddaten')}</legend>
@@ -893,21 +919,38 @@ function ItemForm({
         )}
         {error && <p role="alert">{error}</p>}
         <div className="button-row">
-          <button className="button button-primary" disabled={busy}>
-            {t('Speichern')}
-          </button>
-          <button
-            className="button button-ghost"
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setSaved(true)
-              if (onSaved) onSaved()
-              else navigate(stock.root)
-            }}
-          >
-            {t('Abbrechen')}
-          </button>
+          {item ? (
+            <button
+              className="button"
+              type="button"
+              onClick={async () => {
+                // Schließt erst, wenn alles gespeichert ist
+                if (!(await auto.flush())) return
+                if (onSaved) onSaved()
+                else navigate(stock.root)
+              }}
+            >
+              {t('Schließen')}
+            </button>
+          ) : (
+            <>
+              <button className="button button-primary" disabled={busy}>
+                {t('Speichern')}
+              </button>
+              <button
+                className="button button-ghost"
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setSaved(true)
+                  if (onSaved) onSaved()
+                  else navigate(stock.root)
+                }}
+              >
+                {t('Abbrechen')}
+              </button>
+            </>
+          )}
         </div>
       </form>
     </>
