@@ -98,7 +98,7 @@ x-backend-env: &backend-env
   # er dort voranstellt). Ohne sie gehen Mails an Verteiler „direkt versenden“ nie direkt
   # hinaus, sondern immer mit Bestätigungslink.
   MAIL_AUTHSERV_ID: ${MAIL_AUTHSERV_ID:-}
-  # Vereinswebseite: Testserver nur Vorschau, feste Adresse unter /webseite/
+  # Vereinswebseite: Testserver nur Vorschau, feste Adresse unter /vereinsseite/
   WEBSITE_PREVIEW_ONLY: ${WEBSITE_PREVIEW_ONLY:-false}
   WEBSITE_PUBLIC_URL: ${WEBSITE_PUBLIC_URL:-}
 
