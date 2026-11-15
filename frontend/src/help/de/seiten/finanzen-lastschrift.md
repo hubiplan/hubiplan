@@ -3,7 +3,7 @@ key: page.finance_debits
 titel: Finanzen › Lastschriften
 modul: billing
 rechte: [billing.view]
-routen: [/finanzen/lastschrift]
+routen: [/finanzen/lastschrift, /finanzen/lastschrift/mandate]
 stichworte: [SEPA, Lastschrift, Einzug, Mandat, Bank]
 ---
 

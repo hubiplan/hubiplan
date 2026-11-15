@@ -11,24 +11,38 @@ Die Reiter stehen in Arbeitsreihenfolge: **Stammdaten**, **Mitgliedschaft**, **B
 
 ![Mitgliedsakte mit Kopf, „Auf einen Blick“ und Reitern](bild:mitgliedsakte)
 
+## Auf einen Blick
+
 Oben steht **Auf einen Blick** mit bis zu vier Kacheln: **Mitglied seit** (mit Dauer und nächstem Jubiläum), **Beiträge** (offene Rechnungen und Summe, rot abgesetzt bei Überfälligkeit), **Konto** (Mitgliederbereich, App, Zwei-Faktor, letzte Anmeldung) und **Material** (ausgegebene Teile). Eine Kachel erscheint nur, wenn du den zugehörigen Reiter sehen darfst und es etwas zu zeigen gibt; ein Klick öffnet den Reiter.
 
+## Stammdaten
+
 Neben Geschlecht steht der **Titel**: Wähle Dr., Dr. Dr., Prof. oder Prof. Dr., oder mit **anderer Titel …** einen eigenen (z. B. Dipl.-Ing.). Der Titel steht im Kopf der Akte, in Anschriften von Briefen und Rechnungen („Dr. Max Muster“) und in der förmlichen Anrede von Rundschreiben („Sehr geehrter Herr Dr. Muster“); die Anrede mit „Du“ bleibt ohne Titel. Auf der Webseite erscheint er nur, wenn dort „Titel vor dem Namen nennen“ eingeschaltet ist. Ein Zusatzfeld „Titel“ übernimmt HUBIplan einmalig in das feste Feld; das Zusatzfeld bleibt bestehen.
+
+## Organisationen und Ansprechpartner
 
 Bei einer Organisation als Mitglied (Firma, Verein, Behörde …) stehen in den Stammdaten statt Vorname, Geburtsdatum und Geschlecht der Namenszusatz, die Rechtsform, das Register, die USt-IdNr., die Webseite und die Größe (z. B. Mitarbeiter oder Einwohner) für die Staffel nach Größe. In der Mitgliederliste filterst du mit **nur Organisationen** bzw. **nur Personen**.
 
 Im Abschnitt **Ansprechpartner** trägst du ein, wer für die Organisation spricht. Wähle **Mitglied auswählen**, wenn die Person selbst Mitglied ist; Name und Kontakt kommen dann aus ihrer Akte. Sonst gibst du Name, Funktion, E-Mail-Adresse und Telefon ein. Genau einer ist **Hauptansprechpartner**. Die Kennzeichen **erhält Rundschreiben**, **erhält Rechnungen**, **vertritt in Versammlungen** legen fest, wer wofür zuständig ist. Einen eigenen Zugang zum Mitgliederbereich richtest du je Ansprechpartner im Reiter **Rollen und Konto** ein; wer ihn hat, ist mit **Mitgliederzugang** gekennzeichnet. Ist der Ansprechpartner selbst Mitglied, wählt er nach der Anmeldung, ob er für sich oder für die Organisation unterwegs ist. Statt eines Fotos hat eine Organisation ein **Logo**; es braucht keine Einwilligung und erscheint auch auf dem Ausweis. Entfernst du einen Ansprechpartner, werden seine Kontaktdaten sofort gelöscht.
 
+## Erziehungsberechtigte, Haushalt und Firma
+
 Bei Mitgliedern unter 18 heißt der Abschnitt **Erziehungsberechtigte**. Dort trägst du Eltern oder Vormund ein, ebenfalls frei oder als verknüpftes Mitglied. Mit **erhält Rundschreiben** bekommen sie Rundschreiben an das Kind zusätzlich per Mail. Einen Zugang richtest du wie bei Ansprechpartnern im Reiter **Rollen und Konto** ein; Eltern mit mehreren Kindern wählen nach der Anmeldung, für wen sie unterwegs sind. Vier Wochen vor dem 18. Geburtstag bekommen die Erziehungsberechtigten eine Mail, am Geburtstag enden ihr Zugang und ihr Eintrag automatisch.
 
 Gehört die Person zu einem **Haushalt** oder einer **Firma**, steht im Reiter Stammdaten ein Abschnitt mit dem Namen, ihrer Rolle und den übrigen Mitgliedern. Zuordnen und herausnehmen geht unter [Mitglieder › Haushalte und Firmen](/mitglieder/haushalte).
+
+## Beiträge und Rechnungsanschrift
 
 Im Reiter **Beiträge** stehen die Rechnungen des Mitglieds mit dem offenen Betrag und, wenn SEPA eingeschaltet ist, seine Mandate (mit dem Recht, Beiträge und Rechnungen zu sehen). Eine Rechnung öffnest du über ihre Nummer.
 
 Im Reiter **Beiträge** legst du unter **Rechnungsanschrift** fest, wohin Rechnungen und Mahnungen gehen, wenn das nicht die Anschrift des Mitglieds ist, z. B. die Buchhaltung einer Firma, die Kämmerei einer Stadt oder die Eltern eines Kindes. Dort stehen auch Rechnungs-E-Mail, Bestellnummer und Leitweg-ID; die beiden letzten werden auf jede Rechnung gedruckt. Ohne eigene Rechnungsanschrift trägt eine Rechnung an eine Organisation „z. Hd.“ des Ansprechpartners mit „erhält Rechnungen“, und die Mail geht an ihn.
 
+## Mitgliedschaft und Verlauf
+
 Die Akte zeigt alles zu einer Person: Stammdaten, Mitgliedschaften mit Zeiträumen und Mitgliedsarten, Ehrungen, Ämter, Kontakt, SEPA-Mandat und Foto. Änderungen werden kurz nach der Eingabe gespeichert; oben rechts machst du sie bei Bedarf rückgängig. Einen Austritt erfasst du als Ende der Mitgliedschaft, die Akte bleibt erhalten. Ehrungen stehen im Reiter **Mitgliedschaft**. Im Reiter **Rollen und Konto** siehst du die Rollen der Person und schaltest ihr den Mitgliederbereich frei oder sperrst ihn. **Rolle besetzen** öffnet denselben Dialog wie unter Mitglieder › Ämter.
 
 Im Reiter **Mitgliedschaft** korrigierst du bei einer Zuordnung zu einer Untereinheit (etwa einem Zug) über **Bearbeiten** den Beginn und das Ende. Das gilt auch für frühere Zuordnungen. Ein leeres Ende bedeutet, dass die Mitgliedschaft weiter besteht. Übernimm die Korrektur mit **Speichern**. Überschneidungen mit anderen Zuordnungen werden geprüft. Frühere Zuordnungen trägst du direkt mit Beginn und Ende nach: Untereinheit wählen, „ab“ und „bis“ eingeben, dann **Hinzufügen**. Ohne „bis“ gilt die Zuordnung bis heute. Auch nicht mehr aktive Untereinheiten stehen zur Auswahl, mit dem Zusatz „(inaktiv)“; für sie ist „bis“ Pflicht. Meldet HUBIplan eine Überschneidung, nennt es die betroffene Zuordnung mit genauem Zeitraum; auch wenn die Akte nur Jahre zeigt, wird tagesgenau geprüft.
+
+## Datenschutz
 
 Unter **Datenschutz** gibt es die Auskunft als ZIP. Bei ehemaligen Mitgliedern löschst du dort auf Verlangen die Daten. Wie nach Ablauf der Löschfrist bleiben dann nur Name, Geburtsjahr und Mitgliedszeiten, für die Vereinsgeschichte. Widerspricht die Person auch dem, entfernst du danach mit „Namen aus Chronik und Ehrungen entfernen“ ihren Namen aus Würden, Begleitungen, Ehrungen und Wettbewerbsergebnissen. Fotos dieser Würden werden dabei gelöscht.

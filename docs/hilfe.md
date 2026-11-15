@@ -20,7 +20,7 @@ nach `konzepte/hilfe-neustruktur.md` (HN1–HN4).
 | Zeig es mir | in der Seitenhilfe unter einer Anleitung: hebt auf der Seite das erste Bedienelement hervor, das die Anleitung **fett** nennt; auf `/hilfe/<name>` öffnet es erst die Seite |
 | Neuigkeiten | Reiter `/hilfe/neuigkeiten`: oben „Was ist neu“ nach Monaten aus `src/help/neuigkeiten/de.md` und `en.md` (je Monat eine Zeile „November 2026:“, neueste oben, die letzten drei Monate aufgeklappt; bei sichtbaren Neuerungen ergänzen), darunter die Änderungen je Release aus `CHANGELOG.md`/`CHANGELOG.en.md`. `/hilfe/was-ist-neu` leitet dorthin weiter |
 | Seitenhilfe: Begriffe | In der Leiste stehen unter „Begriffe auf dieser Seite“ bis zu sechs Glossarbegriffe, deren Name im Text der Seitenhilfe vorkommt; „Mehr zu …“ springt zum Menüpunkt im Reiter „Seiten“ |
-| App | Mein Konto in der Android-App: „Hilfe und Anleitungen im Browser“ öffnet `/hilfe` der Instanz |
+| App | Mein Konto in der Android- und der iOS-App: „Hilfe und Anleitungen im Browser“ öffnet `/hilfe` der Instanz |
 
 Sichtbar ist nur, was zur Person passt: Das Modul (`modul`) muss freigeschaltet sein und die Person
 braucht eines der Rechte (`rechte`) in der gewählten Einheit. In der Ansicht als Rolle gelten die
@@ -64,6 +64,12 @@ Regeln (geprüft von `src/test/Hilfe.test.tsx`):
 - Knopf- und Feldnamen stehen **fett** und genau so, wie die Oberfläche sie zeigt (deutsch: Schlüssel
   in `src/i18n/en.json`, englisch: deren Werte).
 - Höchstens zehn Schritte je Anleitung, jeder ein Satz.
+- Seitenhilfen mit mehr als 450 Wörtern sind mit `## Überschrift` in mindestens zwei Abschnitte
+  gegliedert. Die Leiste zeigt die Einleitung, dann die Anleitungen der Seite und die Abschnitte
+  zum Aufklappen; die Hilfe-Seite zeigt ab drei Abschnitten eine Inhaltsübersicht.
+- Jede Adresse aus dem Menü (`NAV_ROUTES`) steht mit genauer Adresse in einer Seitenhilfe, damit
+  Unterseiten nicht die Hilfe der übergeordneten Seite zeigen.
+- Die Neuigkeiten eines Monats sind mit `#### Bereich` gegliedert, „Das Wichtigste“ steht oben.
 - Platzhalter der Einheit wie `{pl}` (z. B. „Züge“) werden eingesetzt (`org/terms.ts`).
 - Wer eine Seite oder einen Ablauf ändert, passt die Hilfe im selben PR an.
 - Danach im Ordner `frontend` `node scripts/mcp-hilfe.mjs` ausführen und

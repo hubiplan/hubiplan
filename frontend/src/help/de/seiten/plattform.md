@@ -32,11 +32,13 @@ Einmal am Tag fragt HUBIplan bei GitHub nach, ob es ein neueres Release gibt. Da
 
 Unter Plattform › Version steht, welche Version läuft und ob es ein neueres Release gibt. Hat der Betreiber das Selbstupdate eingeschaltet (`HUBIPLAN_SELBSTUPDATE=1`, siehe `docs/betrieb.md`), kannst du dort mit „Auf … aktualisieren“ das neue Release einspielen lassen. Dafür brauchst du die Zwei-Faktor-Anmeldung und gibst dein Passwort noch einmal ein.
 
+HUBIplan legt dabei nur einen Auftrag ab. Ein Dienst auf dem Server sichert zuerst die Datenbank, prüft die Signatur des Releases und dass es neuer ist als die laufende Version, und spielt es dann ein. HUBIplan ist dabei einige Minuten nicht erreichbar; die Seite fragt von selbst nach und zeigt danach das Ergebnis. Schlägt etwas fehl, läuft die bisherige Version weiter. Jeder Auftrag steht im Änderungsprotokoll, und der Betreiber bekommt eine Sicherheitsmail.
+
+## Virenprüfung
+
 Ist auf dem Server keine Virenprüfung eingerichtet oder für die Weitergabe abgeschaltet, steht dort ein Hinweis: Rundschreiben-Anhänge und öffentliche Dokumente gehen dann ungeprüft hinaus. Mit eingerichteter Virenprüfung (ClamAV) gibt HUBIplan solche Dateien nur geprüft weiter.
 
 Ist der Virenscanner kurz nicht erreichbar, nimmt HUBIplan hochgeladene Dokumente, Anhänge und Belege trotzdem an, sperrt sie aber, bis der Scanner sie nachgeprüft hat (Quarantäne). Plattform › Version zeigt, wie viele Dateien gerade warten und ob in einer Schadsoftware gefunden wurde; solche Dateien bleiben dauerhaft gesperrt.
-
-HUBIplan legt dabei nur einen Auftrag ab. Ein Dienst auf dem Server sichert zuerst die Datenbank, prüft die Signatur des Releases und dass es neuer ist als die laufende Version, und spielt es dann ein. HUBIplan ist dabei einige Minuten nicht erreichbar; die Seite fragt von selbst nach und zeigt danach das Ergebnis. Schlägt etwas fehl, läuft die bisherige Version weiter. Jeder Auftrag steht im Änderungsprotokoll, und der Betreiber bekommt eine Sicherheitsmail.
 
 ## Adressen je Einheit
 

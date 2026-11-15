@@ -8,17 +8,27 @@ stichworte: [Todo, Tasks]
 
 In der Übersicht stehen die Aufgaben direkt unter der Statusauswahl und dem Filter. „Neue Aufgabe“ steht rechts neben der Überschrift. Unterhalb der Liste erscheinen Hinweise auf Aufgaben ohne verantwortliches Konto oder auf eingehende Aufgaben anderer Installationen nur dann, wenn tatsächlich Einträge vorliegen; die Anzahl steht am Hinweis. Ladefehler bleiben mit einer erneuten Lademöglichkeit sichtbar. Nach der letzten Übernahme verschwindet der jeweilige Hinweis. Unter der Liste findest du den Export. Berechtigte Rollenverwalter öffnen dort außerdem „Verwaltung“, um die Aufbewahrung geteilter Aufgaben einzustellen. Dieser Bereich ist zunächst eingeklappt.
 
+## Eigene und geteilte Aufgaben
+
 Lege eigene Aufgaben mit Titel und optionaler Beschreibung und Frist an. Eigene Aufgaben sind privat. Nach dem Anlegen speichert das Formular Änderungen automatisch. Erledigte Aufgaben stehen unter „Erledigt“. Gelöschte Aufgaben kannst du 30 Tage im Papierkorb wiederherstellen. Unter „Eigene Aufgaben exportieren“ erhältst du deine privaten Aufgaben.
 
 Geteilte Aufgaben sind zusätzlich für ausgewählte Personen oder aktive Rolleninhaber sichtbar. Mit Lesen sehen sie die Aufgabe, mit Bearbeiten dürfen sie auch ändern und erledigen. Nur das verantwortliche Konto löscht oder überträgt die Verantwortung. Unter „Mein Konto › Benachrichtigungen“ kannst du Hinweise beim Teilen per Mail und Push abschalten. Bei dauerhaft weggefallenem Zugang können berechtigte Rollenverwalter die Verantwortung für verwaiste geteilte Aufgaben übernehmen; private Aufgaben bleiben verborgen. Der Postausgang speichert bei Aufgabenhinweisen nur einen neutralen Versandvermerk.
 
+## Erinnerungen und Benachrichtigungen
+
 Unter „Mein Konto › Benachrichtigungen“ stellst du Mail und Push ein. In jeder Aufgabe mit Frist kannst du deine Erinnerungszeitpunkte und Kanäle ändern oder Hinweise abschalten. Erinnert werden Zuständige, ohne Zuständige alle beteiligten Bearbeiter. Tagesfristen gelten bis zum Tagesende und erinnern um 8 Uhr; Uhrzeitfristen verwenden den genauen Zeitpunkt. Bei Überfälligkeit gibt es am Folgetag um 8 Uhr genau einen zusätzlichen Hinweis. Die Hervorhebung in HUBIplan bleibt unabhängig von Mail und Push aktiv. Optional lassen sich erledigte einmalige Aufgaben nach zwölf Monaten in den Papierkorb verschieben; die Vorgabe ist aus. Serienverläufe bleiben davon ausgenommen. Im Profil sind private Aufgaben auch nach einem Rollenverlust exportierbar und endgültig löschbar.
 
+## Anhänge
+
 Unter „Anhänge“ lädst du mehrere Dateien über die Auswahl oder durch Ziehen in den Uploadbereich hoch. Jede Datei darf höchstens 20 MB groß sein; die gleichen Dateiarten und Sicherheitsprüfungen wie in der Dokumentenablage gelten. Entfernte Anhänge kannst du 30 Tage im Anhang-Papierkorb wiederherstellen. Dokumentverweise geben keine zusätzlichen Ablagerechte: Ohne Zugriff erscheint nur ein Platzhalter. Der persönliche Export lädt eine ZIP-Datei mit Aufgaben, Einstellungen und berechtigt lesbaren Dateien herunter, auch für eigene private Aufgaben nach einem Rollenverlust.
+
+## Wiederholungen
 
 Unter „Wiederholen“ legst du tägliche, wöchentliche, monatliche oder jährliche Folgen mit Abstand und optionalem Enddatum oder einer Gesamtzahl fest. Beim Erledigen entsteht genau eine nächste Ausgabe. Monatsenden und der 29. Februar behalten ihren ursprünglichen Anker; verspätetes Erledigen überspringt vergangene Fristen. Du wählst, ob der Abstand ab alter Frist oder ab Erledigung zählt. Bei Inhaltsänderungen entscheidest du zwischen nur dieser und allen folgenden Ausgaben. Dokumentverweise und persönliche Erinnerungsregeln werden übernommen, hochgeladene Dateien nicht. Wiederöffnen oder Rückgängig darf eine Folge nur zurücknehmen, solange sie unberührt ist. „Serie beenden“ lässt die offene Ausgabe bestehen; der Serien-Papierkorb löscht und restauriert den ganzen Verlauf, ohne eine zusätzliche Ausgabe zu erzeugen.
 
 Bei Serien überträgt „Verantwortung übertragen“ die Verantwortung für den ganzen geteilten Verlauf und die Fortsetzung. Enthält die Serie noch private frühere Ausgaben, wird die Übertragung zum Schutz dieser Inhalte abgelehnt; deren Freigaben musst du zuerst ausdrücklich prüfen.
+
+## Mit anderen Einheiten teilen
 
 Über „Zieleinheit“ teilst du an erlaubte Nachbarebenen derselben Instanz. Gleichnamige Rollen kannst du ausdrücklich für die angezeigten Zieleinheiten hinzufügen; später hinzugekommene Einheiten werden nicht automatisch aufgenommen. Eine gemeinsame Aufgabe wird einmal für alle erledigt. Bei „je Einheit eine eigene Ausgabe“ besitzt jede Zieleinheit ihren eigenen Bestand; bei Serien eine unabhängige Folge. Die Verteilart steht nach dem ersten Teilen fest. Lokale Bearbeiter pflegen Notizen, Anhänge und Beteiligte in ihrer Einheit. Titel, Beschreibung und Frist bleiben zentral vorgegeben. Die Quelle erhält ausschließlich Fortschritt mit lokaler Ausgabennummer, Frist, Erledigungszeit und Konto. Zentrale Änderungen aktualisieren nur offene Kopien und überschreiben keine lokalen Ergänzungen oder erledigte Historie. Beim Entzug einer Zieleinheit oder Löschen der Quelle enden weitere Ausgaben und der Zugriff auf Quellanhänge; der lokale Bestand bleibt der Zieleinheit erhalten. Entzieht diese eine lokale Freigabe, gelten ihre heutigen Rechte auch für Dateien, Rücknahme und Erinnerungen. Bei gemeinsamen Aufgaben öffnet Rückgängig die Aufgabe im berechtigten Zielkontext.
 
@@ -46,6 +56,8 @@ Im Aufgaben-Dialog unter **Mit anderer Installation teilen** wählst du eine bes
 - **Eine gemeinsam erledigte Aufgabe**: Lesen und Erledigen werden bei der Quelle geprüft. Ein Erledigen gilt für alle Installationen; bei einem Versionskonflikt bitte neu laden. Ist die Quelle nicht erreichbar, kann kein neuer Erledigungsstand bestätigt werden. Widerruf, pausierte Kopplung oder ausstehender Schlüsselwechsel entziehen den Zugriff.
 
 Nach der Übernahme gelten die örtlichen Aufgabenfreigaben. Ein anderer Vorstand erhält dadurch keinen automatischen Zugriff. Die Quelle bestimmt, ob die Gegenseite erledigen darf. Die Verteilart lässt sich nach der ersten Freigabe nicht wechseln. Folgeausgaben werden nur mit **Auch folgende Ausgaben freigeben** übertragen. Bei eigenen Kopien erhält jede Zieleinheit dann ihre eigene Ausgabenfolge; bei gemeinsamen Aufgaben entstehen die Folgeausgaben an der Quelle.
+
+## Liste und Bedienung
 
 Die Aufgabenliste zeigt Titel, Frist und Aktionen in Tabellenzeilen. Der Titel ist ein Link; auch ein Klick auf die freie Zeilenfläche öffnet die Aufgabe. Das Häkchen ändert nur den Erledigungsstand. Am rechten Rand verschiebt das Papierkorb-Symbol die Aufgabe in den Papierkorb; dort stellt das Zurück-Symbol sie wieder her. Auf schmalen Bildschirmen steht die Frist unter dem Titel.
 

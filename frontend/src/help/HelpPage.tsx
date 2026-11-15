@@ -13,13 +13,14 @@ import { GlossaryPage } from '../learning/GlossaryPage.tsx'
 import { useLearning } from '../learning/LearningContext.tsx'
 import { NewsPage } from '../news/NewsPage.tsx'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
-import { matchesQuery } from './content.ts'
+import { matchesQuery, pageHelpFor } from './content.ts'
 import type { HelpEntry } from './content.ts'
 import { MEMBER_TOPICS, useBlocked } from './extras.ts'
 import { useHelp } from './HelpContext.tsx'
 import { BlockedGuide, ForYou, GuideNotes, HelpContacts, RightsHint } from './HelpExtras.tsx'
-import { HelpMarkdown } from './HelpMarkdown.tsx'
+import { HelpSections } from './HelpMarkdown.tsx'
 import { byMenu, groupLabel, itemLabel, partOf, partRank, placeOf } from './menu.ts'
+import type { HelpGroup } from './menu.ts'
 const byTitle = (a: HelpEntry, b: HelpEntry) => a.title.localeCompare(b.title)
 
 export type HelpTab = 'anleitungen' | 'seiten' | 'begriffe' | 'neuigkeiten'
@@ -69,6 +70,13 @@ export function memberOnly(entries: HelpEntry[]): boolean {
   })
 }
 
+/** Treffer im Titel zuerst, dann in den Stichworten, dann im Text. */
+// oxlint-disable-next-line react/only-export-components
+export function searchRank(query: string, e: Pick<HelpEntry, 'title' | 'keywords'>): number {
+  if (matchesQuery(query, e.title)) return 0
+  return matchesQuery(query, e.title, e.keywords.join(' ')) ? 1 : 2
+}
+
 const entryLink = (e: HelpEntry) => <Link to={`/hilfe/${e.slug}`}>{e.title}</Link>
 
 export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
@@ -87,7 +95,7 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
     () =>
       (entries ?? [])
         .filter((e) => matchesQuery(query, e.title, e.body, e.keywords.join(' ')))
-        .sort(byTitle),
+        .sort((a, b) => searchRank(query, a) - searchRank(query, b) || byTitle(a, b)),
     [entries, query],
   )
   const terms = useMemo(
@@ -124,6 +132,8 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
     const item = place ? itemLabel(place.item, org) : ''
     return e.kind === 'page' ? t('Seite') : item
   }
+  const foundGuides = found.filter((e) => e.kind === 'guide')
+  const foundPages = found.filter((e) => e.kind === 'page')
 
   return (
     <section className="help-page">
@@ -168,14 +178,28 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
             {found.length + terms.length + decisions.length + blocked.length === 0 && (
               <p role="status">{t('Nichts gefunden.')}</p>
             )}
-            {found.length > 0 && (
+            {foundGuides.length > 0 && (
               <section>
-                <h2>{t('Anleitungen und Seiten')}</h2>
+                <h2>
+                  {t('Anleitungen')} <span className="muted small">({foundGuides.length})</span>
+                </h2>
                 <ul className="help-list">
-                  {found.map((e) => (
+                  {foundGuides.map((e) => (
                     <li key={e.key}>
                       {entryLink(e)} <span className="muted small">({where(e)})</span>
                     </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {foundPages.length > 0 && (
+              <section>
+                <h2>
+                  {t('Seiten')} <span className="muted small">({foundPages.length})</span>
+                </h2>
+                <ul className="help-list">
+                  {foundPages.map((e) => (
+                    <li key={e.key}>{entryLink(e)}</li>
                   ))}
                 </ul>
               </section>
@@ -233,28 +257,64 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
   )
 }
 
-/** Gruppen und Menüpunkte als Überschriften, darunter die Einträge. */
+/** Anker einer Gruppe auf der Hilfe-Seite (Sprungleiste). */
+const groupAnchor = (g: HelpGroup) => `hilfe-gruppe-${g}`
+
+/**
+ * Gruppen und Menüpunkte als Überschriften, darunter die Einträge. Davor eine Sprungleiste zu
+ * den Gruppen. Mit `collapsible` sind die Menüpunkte zugeklappt (Reiter „Seiten“); der Punkt
+ * aus der Adresse (#hilfe-<menüpunkt>) ist offen.
+ */
 function MenuList({
   entries,
   render,
   anchors = false,
+  collapsible = false,
 }: {
   entries: HelpEntry[]
   render: (items: HelpEntry[], item: string) => ReactNode
   anchors?: boolean
+  collapsible?: boolean
 }) {
   const org = useOptionalOrg()?.active ?? null
+  const sections = byMenu(entries)
+  const wanted = useLocation().hash.slice(1)
   return (
     <>
-      {byMenu(entries).map((s) => (
-        <section key={s.group} className="help-area">
-          <h2>{groupLabel(s.group)}</h2>
-          {s.items.map((i) => (
-            <div key={i.item} className="help-item" id={anchors ? `hilfe-${i.item}` : undefined}>
-              <h3>{itemLabel(i.item, org)}</h3>
-              {render(i.entries, i.item)}
-            </div>
+      {sections.length > 2 && (
+        <nav className="help-jump" aria-label={t('Springe zu')}>
+          <span className="muted small">{t('Springe zu')}</span>
+          {sections.map((s) => (
+            <a key={s.group} href={`#${groupAnchor(s.group)}`}>
+              {groupLabel(s.group)}
+            </a>
           ))}
+        </nav>
+      )}
+      {sections.map((s) => (
+        <section key={s.group} className="help-area" id={groupAnchor(s.group)}>
+          <h2>{groupLabel(s.group)}</h2>
+          {s.items.map((i) =>
+            collapsible ? (
+              <details
+                key={i.item}
+                className="help-item help-item-fold"
+                id={anchors ? `hilfe-${i.item}` : undefined}
+                open={wanted === `hilfe-${i.item}`}
+              >
+                <summary>
+                  <h3>{itemLabel(i.item, org)}</h3>{' '}
+                  <span className="muted small">({i.entries.length})</span>
+                </summary>
+                {render(i.entries, i.item)}
+              </details>
+            ) : (
+              <div key={i.item} className="help-item" id={anchors ? `hilfe-${i.item}` : undefined}>
+                <h3>{itemLabel(i.item, org)}</h3>
+                {render(i.entries, i.item)}
+              </div>
+            ),
+          )}
         </section>
       ))}
     </>
@@ -336,6 +396,7 @@ function PagesTab({ entries }: { entries: HelpEntry[] }) {
         entries={entries.filter((e) => e.kind === 'page')}
         render={(items) => <EntryList items={items} />}
         anchors
+        collapsible
       />
     </>
   )
@@ -352,12 +413,22 @@ export function HelpEntryPage() {
   const hidden = !entry ? help?.entries?.find((e) => e.slug === slug) : undefined
   const missing = hidden ? (help?.missing(hidden) ?? []) : []
   const target = entry?.routes.find((r) => !r.includes(':') && r !== '/hilfe')
-  const related =
-    entry?.kind === 'page'
+  const org = useOptionalOrg()?.active ?? null
+  const place = entry ? placeOf(entry) : null
+  const sameItem = (e: HelpEntry) => {
+    const p = placeOf(e)
+    return !!place && p?.group === place.group && p.item === place.item
+  }
+  // Seitenhilfe: Anleitungen ihrer Seiten. Anleitung: die übrigen Anleitungen des Menüpunkts.
+  const related = !entry
+    ? []
+    : entry.kind === 'page'
       ? (entries ?? []).filter(
           (e) => e.kind === 'guide' && e.routes.some((r) => entry.routes.includes(r)),
         )
-      : []
+      : (entries ?? []).filter((e) => e.kind === 'guide' && e.key !== entry.key && sameItem(e))
+  // Anleitung: die Erklärung der Seite, auf der sie beginnt
+  const pageHelp = entry?.kind === 'guide' && target ? pageHelpFor(entries ?? [], target) : null
   // Tab-Titel nennt die Anleitung (UX-Audit 05.11. W-04)
   const articleTitle = entry?.title ?? hidden?.title ?? null
   usePageTitle(
@@ -365,9 +436,25 @@ export function HelpEntryPage() {
   )
   return (
     <section className="help-page">
-      <p>
-        <Link to="/hilfe">← {t('Alle Hilfe')}</Link>
-      </p>
+      <nav className="help-crumbs" aria-label={t('Du bist hier')}>
+        <Link to="/hilfe">{t('Hilfe')}</Link>
+        {entry && place && (
+          <>
+            {' › '}
+            <Link
+              to={
+                entry.kind === 'page'
+                  ? `/hilfe/seiten#hilfe-${place.item}`
+                  : `/hilfe/anleitungen#hilfe-gruppe-${place.group}`
+              }
+            >
+              {groupLabel(place.group) === itemLabel(place.item, org)
+                ? itemLabel(place.item, org)
+                : `${groupLabel(place.group)} › ${itemLabel(place.item, org)}`}
+            </Link>
+          </>
+        )}
+      </nav>
       {!entries && <LoadState failed={failed} retry={retry} />}
       {entries && !entry && hidden && missing.length > 0 && (
         <>
@@ -388,7 +475,7 @@ export function HelpEntryPage() {
       {entry && (
         <article>
           <h1>{entry.title}</h1>
-          <HelpMarkdown body={entry.body} />
+          <HelpSections body={entry.body} />
           <GuideNotes entry={entry} editable />
           {target && (
             <p className="help-actions">
@@ -407,9 +494,20 @@ export function HelpEntryPage() {
               )}
             </p>
           )}
+          {pageHelp && (
+            <p>
+              {t('Die Seite erklärt:')} <Link to={`/hilfe/${pageHelp.slug}`}>{pageHelp.title}</Link>
+            </p>
+          )}
           {related.length > 0 && (
             <section>
-              <h2>{t('Häufige Aufgaben')}</h2>
+              <h2>
+                {entry.kind === 'page'
+                  ? t('Häufige Aufgaben')
+                  : t('Weitere Anleitungen zu {x}', {
+                      x: place ? itemLabel(place.item, org) : '',
+                    })}
+              </h2>
               <ul className="help-list">
                 {related.map((g) => (
                   <li key={g.key}>

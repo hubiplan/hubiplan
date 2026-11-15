@@ -3,7 +3,7 @@ key: page.finance_debits
 titel: Finance › Direct debits
 modul: billing
 rechte: [billing.view]
-routen: [/finanzen/lastschrift]
+routen: [/finanzen/lastschrift, /finanzen/lastschrift/mandate]
 stichworte: [SEPA, direct debit, collection, mandate, bank]
 ---
 

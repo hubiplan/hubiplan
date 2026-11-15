@@ -415,6 +415,156 @@
       "zugang": "mitglied@hubertus-grimlinghausen.test",
       "seite": "/mein-bereich/versammlungen/live/1",
       "ausschnitt": ""
+    },
+    {
+      "name": "untereinheit-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/untereinheiten",
+      "ausschnitt": ""
+    },
+    {
+      "name": "leitung-besetzen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/untereinheiten",
+      "ausschnitt": ""
+    },
+    {
+      "name": "geschaeftspartner-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/geschaeftspartner",
+      "ausschnitt": ""
+    },
+    {
+      "name": "pflicht-eintragen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/fristenkalender",
+      "ausschnitt": ""
+    },
+    {
+      "name": "meldung-abgeben",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/meldungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "material-aufnehmen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/material",
+      "ausschnitt": ""
+    },
+    {
+      "name": "startseite-anpassen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-design-waehlen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/gestaltung",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-startseite-zusammenstellen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/startseite",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-feinabstimmung",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/feinabstimmung",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-veroeffentlichen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/fassungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-album-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/galerie",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-domain",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/domain",
+      "ausschnitt": ""
+    },
+    {
+      "name": "briefbogen-gestalten",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/briefbogen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "erscheinungsbild-festlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/erscheinungsbild",
+      "ausschnitt": ""
+    },
+    {
+      "name": "ort-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/orte",
+      "ausschnitt": ""
+    },
+    {
+      "name": "umfrage-essenswahl",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/umfragen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "umsatzsteuer-voranmeldung",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/finanzen/steuern/umsatzsteuer",
+      "ausschnitt": ""
+    },
+    {
+      "name": "veranstaltung-abrechnen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/finanzen/veranstaltungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "amt-besetzen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/aemter",
+      "ausschnitt": ""
+    },
+    {
+      "name": "wuerdentraeger-eintragen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/wuerdentraeger",
+      "ausschnitt": ""
+    },
+    {
+      "name": "zusatzfeld-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/einrichtung/zusatzfelder",
+      "ausschnitt": ""
+    },
+    {
+      "name": "urkunden-drucken",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/wettbewerbe/urkunden",
+      "ausschnitt": ""
+    },
+    {
+      "name": "probe-planen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/musik/proben",
+      "ausschnitt": ""
+    },
+    {
+      "name": "musiker-erfassen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/musik/musiker",
+      "ausschnitt": ""
     }
   ]
 }

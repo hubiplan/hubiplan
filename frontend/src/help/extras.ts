@@ -10,7 +10,14 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
   {
     id: 'alle',
     label: () => t('Für alle'),
-    keys: ['guide.password', 'guide.two_factor', 'guide.language', 'guide.app_pair'],
+    keys: [
+      'guide.password',
+      'guide.two_factor',
+      'guide.passkey',
+      'guide.language',
+      'guide.app_pair',
+      'guide.home_arrange',
+    ],
   },
   {
     id: 'mitglieder',
@@ -20,6 +27,9 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
       'guide.member_import',
       'guide.member_change_review',
       'guide.member_export',
+      'guide.household_add',
+      'guide.custom_field',
+      'guide.office_fill',
     ],
   },
   {
@@ -44,6 +54,8 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
       'guide.einvoice_receive',
       'guide.year_closing',
       'guide.cash_audit',
+      'guide.budget_plan',
+      'guide.event_finance',
     ],
   },
   {
@@ -62,15 +74,48 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
     label: () => t('Rundschreiben, Dokumente und Webseite'),
     keys: [
       'guide.circular_send',
+      'guide.letter_write',
       'guide.document_upload',
+      'guide.folder_share',
       'guide.website_text',
       'guide.website_images',
     ],
   },
   {
+    id: 'webseite',
+    label: () => t('Webseite gestalten'),
+    keys: [
+      'guide.website_design',
+      'guide.website_home',
+      'guide.website_page',
+      'guide.website_album',
+      'guide.website_publish',
+    ],
+  },
+  {
+    id: 'vereinsleben',
+    label: () => t('Wettbewerbe, Musik und Umfragen'),
+    keys: [
+      'guide.competition_create',
+      'guide.certificates',
+      'guide.entry_submit',
+      'guide.musician_add',
+      'guide.rehearsal_plan',
+      'guide.survey_meal',
+    ],
+  },
+  {
     id: 'einstellungen',
     label: () => t('Vereinseinstellungen'),
-    keys: ['guide.club_setup', 'guide.role_create', 'guide.role_preview'],
+    keys: [
+      'guide.club_setup',
+      'guide.role_create',
+      'guide.role_preview',
+      'guide.unit_create',
+      'guide.appearance',
+      'guide.letterhead',
+      'guide.obligation_add',
+    ],
   },
 ]
 
@@ -84,9 +129,13 @@ export const MEMBER_TOPICS = [
   'guide.portal_invoices',
   'guide.portal_helpers',
   'guide.portal_meetings',
+  'guide.portal_meeting_live',
+  'guide.portal_survey',
+  'guide.portal_cancel',
   'guide.app_pair',
   'guide.password',
   'guide.two_factor',
+  'guide.passkey',
   'guide.language',
 ]
 

@@ -12,7 +12,7 @@ import type { HelpEntry } from './content.ts'
 import { useHelp } from './HelpContext.tsx'
 import type { HelpState } from './HelpContext.tsx'
 import { BlockedGuide, GuideNotes, HelpContacts, ShowMe } from './HelpExtras.tsx'
-import { HelpMarkdown } from './HelpMarkdown.tsx'
+import { HelpMarkdown, HelpSections } from './HelpMarkdown.tsx'
 import { itemLabel, placeOf } from './menu.ts'
 import './help.css'
 
@@ -114,6 +114,28 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
   const guideKey = chosen?.path === pathname ? chosen.key : null
   const guide = guideKey ? all.find((e) => e.key === guideKey) : undefined
 
+  const tasks = guides.length + blocked.length > 0 && (
+    <section>
+      <h3>{t('Häufige Aufgaben')}</h3>
+      <ul className="help-list">
+        {guides.map((g) => (
+          <li key={g.key}>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setChosen({ key: g.key, path: pathname })}
+            >
+              {g.title}
+            </button>
+          </li>
+        ))}
+        {blocked.map((g) => (
+          <BlockedGuide key={g.key} entry={g} />
+        ))}
+      </ul>
+    </section>
+  )
+
   return (
     <aside id="seitenhilfe" className="help-panel" aria-labelledby="seitenhilfe-titel">
       <div className="help-panel-head">
@@ -152,31 +174,14 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
           {page ? (
             <section aria-label={page.title}>
               <h3>{page.title}</h3>
-              <HelpMarkdown body={page.body} />
+              {/* Lange Seitenhilfen: Einleitung, dann die Aufgaben, Abschnitte eingeklappt */}
+              <HelpSections body={page.body} collapsed between={tasks} />
             </section>
           ) : (
-            <p className="muted">{t('Zu dieser Seite gibt es noch keine eigene Hilfe.')}</p>
-          )}
-          {guides.length + blocked.length > 0 && (
-            <section>
-              <h3>{t('Häufige Aufgaben')}</h3>
-              <ul className="help-list">
-                {guides.map((g) => (
-                  <li key={g.key}>
-                    <button
-                      type="button"
-                      className="link-button"
-                      onClick={() => setChosen({ key: g.key, path: pathname })}
-                    >
-                      {g.title}
-                    </button>
-                  </li>
-                ))}
-                {blocked.map((g) => (
-                  <BlockedGuide key={g.key} entry={g} />
-                ))}
-              </ul>
-            </section>
+            <>
+              <p className="muted">{t('Zu dieser Seite gibt es noch keine eigene Hilfe.')}</p>
+              {tasks}
+            </>
           )}
           {terms.length > 0 && (
             <section>
