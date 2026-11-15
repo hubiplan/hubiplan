@@ -6,6 +6,7 @@ import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { t } from '../i18n/index.ts'
 import { errorMessage, useLoad } from './forms.ts'
 import { useState } from 'react'
+import { EventRow } from './calendar/EventRow.tsx'
 
 export function TodoEventLink({
   base,
@@ -71,7 +72,8 @@ export function TodoEventLink({
   )
 }
 
-export function EventTaskLink({ base, eventId }: { base: string; eventId: number }) {
+/** Zeile „Aufgaben“ im Block „Zu diesem Termin“: anzeigen und anlegen als gleichartige Knöpfe. */
+export function EventTaskRow({ base, eventId }: { base: string; eventId: number }) {
   const context = useOptionalOrg()
   const active = context?.active
   const activeDept = context?.activeDept
@@ -81,14 +83,27 @@ export function EventTaskLink({ base, eventId }: { base: string; eventId: number
   if (!permissions.includes('todos.view')) return null
   const query = new URLSearchParams({ termin: String(eventId) })
   query.set(match[1] === 'depts' ? 'abteilung' : 'einheit', match[2])
-  // Anlegen als Knopf, Anzeigen als Verweis (Ralf 14.11.2026: zwei Verweise nebeneinander
-  // lasen sich wie ein Satz)
   return (
-    <p className="button-row">
-      <Link className="button" to={`/aufgaben?${query}&neu=1`}>
-        <span aria-hidden="true">+</span> {t('Aufgabe zu diesem Termin anlegen')}
-      </Link>
-      <Link to={`/aufgaben?${query}`}>{t('Aufgaben zu diesem Termin anzeigen')}</Link>
-    </p>
+    <EventRow
+      label={t('Aufgaben')}
+      actions={
+        <>
+          <Link
+            className="button button-ghost"
+            to={`/aufgaben?${query}`}
+            aria-label={t('Aufgaben zu diesem Termin anzeigen')}
+          >
+            {t('Anzeigen')}
+          </Link>
+          <Link
+            className="button button-ghost"
+            to={`/aufgaben?${query}&neu=1`}
+            aria-label={t('Aufgabe zu diesem Termin anlegen')}
+          >
+            <span aria-hidden="true">+</span> {t('Anlegen')}
+          </Link>
+        </>
+      }
+    />
   )
 }
