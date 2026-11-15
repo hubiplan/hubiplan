@@ -272,6 +272,8 @@ export interface HomeSectionData {
   text?: string
   image?: number | null
   side?: 'left' | 'right' | 'top' | 'bottom'
+  /** Bildplatz ohne Bild (#491): Notiz für die Vorschau */
+  image_note?: string
   /** Text mit Bild: small/half; Trenner: small/large */
   size?: 'small' | 'half' | 'large'
   line?: string
@@ -786,6 +788,8 @@ export const contentApi = {
       link_targets?: LinkTarget[]
       /** Auswahl für die Abschnitte der Textseiten (fehlt bei älteren Ständen) */
       section_options?: PageSectionOptions
+      /** Auswahl für die Abschnitte der Seiten der Untereinheiten (#491) */
+      unit_section_options?: PageSectionOptions
       /** Bereiche, über denen eine Einleitung stehen kann (G5) */
       intro_areas?: { area: string; label: string }[]
     }>(`${base(org)}texts/`),

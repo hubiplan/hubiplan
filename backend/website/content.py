@@ -631,11 +631,12 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
     text.show_captions = revision.show_captions
     text.timeline_newest_first = revision.timeline_newest_first
     # Abschnitte (G4): Verweise auf Gelöschtes fallen bei der Prüfung weg
-    if text.kind == WebsiteText.Kind.PAGE and revision.sections:
-        from .home import Invalid, validate_page
+    if text.kind in (WebsiteText.Kind.PAGE, WebsiteText.Kind.UNIT) and revision.sections:
+        from .home import Invalid, validate_page, validate_unit
 
+        check = validate_unit if text.kind == WebsiteText.Kind.UNIT else validate_page
         try:
-            text.sections = validate_page(revision.sections, text.website)
+            text.sections = check(revision.sections, text.website)
         except Invalid:
             text.sections = []
     else:

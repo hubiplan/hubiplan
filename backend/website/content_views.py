@@ -20,8 +20,8 @@ from core.reorder import reorder_response
 
 from . import content, services, timeline
 from .content_models import TIMELINE_SLUG, WebsiteImage, WebsiteRevision, WebsiteText
-from .home import has_custom, normalize_page
-from .views import _WebsiteMixin, page_section_options
+from .home import has_custom, normalize_page, normalize_unit
+from .views import _WebsiteMixin, page_section_options, unit_section_options
 
 
 class _ContentMixin(_WebsiteMixin):
@@ -112,7 +112,9 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "show_captions": t.show_captions,
                 "timeline": list(t.timeline or []),
                 "timeline_newest_first": t.timeline_newest_first,
-                "sections": normalize_page(t.sections),
+                "sections": normalize_unit(t.sections)
+                if t.kind == WebsiteText.Kind.UNIT
+                else normalize_page(t.sections),
                 "has_timeline": is_chronicle(t) and module_on(t.website.organization, "chronicle"),
                 "published_title": t.published_title,
                 "published_body": t.published_body,
@@ -167,11 +169,14 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
         extra_kwargs = {"kind": {"required": False}}
 
     def validate_sections(self, value):
-        # Textseite aus Abschnitten (G4): dieselben Arten wie auf der Startseite
-        from .home import Invalid, validate_page
+        # Textseite aus Abschnitten (G4): dieselben Arten wie auf der Startseite; Seiten der
+        # Untereinheiten (#491) mit ihren festen Abschnitten (Kontakt, Termine …)
+        from .home import Invalid, validate_page, validate_unit
 
+        kind = self.instance.kind if self.instance is not None else self.initial_data.get("kind")
+        check = validate_unit if kind == WebsiteText.Kind.UNIT else validate_page
         try:
-            return validate_page(value, self.context["website"])
+            return check(value, self.context["website"])
         except Invalid as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
@@ -248,9 +253,15 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
                     )
                 }
             )
-        if kind != WebsiteText.Kind.PAGE and has_custom(attrs.get("sections")):
+        if kind not in (WebsiteText.Kind.PAGE, WebsiteText.Kind.UNIT) and has_custom(
+            attrs.get("sections")
+        ):
             raise serializers.ValidationError(
-                {"sections": gettext("Abschnitte gibt es nur auf Textseiten.")}
+                {
+                    "sections": gettext(
+                        "Abschnitte gibt es nur auf Textseiten und Seiten der Untereinheiten."
+                    )
+                }
             )
         slug = attrs.get("slug", self.instance.slug if self.instance else "")
         if attrs.get("timeline") and not (kind == WebsiteText.Kind.PAGE and slug == TIMELINE_SLUG):
@@ -301,6 +312,8 @@ class TextListView(_ContentMixin, APIView):
             from .variants import INTRO_AREAS
 
             data["section_options"] = page_section_options(self.org, website)
+            # Seiten der Untereinheiten (#491): feste Abschnitte Kontakt, Termine …
+            data["unit_section_options"] = unit_section_options(self.org, website)
             # Bereiche mit Einleitungstext (G5)
             data["intro_areas"] = [
                 {"area": a, "label": area_label(website, a)} for a in INTRO_AREAS

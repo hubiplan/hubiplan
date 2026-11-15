@@ -1098,7 +1098,17 @@ class SiteView:
             "events_url": self.url(f"events/?einheit={self.unit_slugs[u.pk]}")
             if self.site.block_on("events")
             else None,
+            # Abschnitte der Seite (#491): feste Blöcke (Text der Seite, Kontakt, Homepage,
+            # Majestäten, Termine, Beiträge, Folgt …) und eigene, in Reihenfolge
+            "sections": self.unit_sections(text),
         }
+
+    def unit_sections(self, text: WebsiteText | None) -> list[dict]:
+        from .home import UNIT_BUILTINS, normalize_unit, resolve
+        from .public_views import event_entry
+
+        sections = normalize_unit(text.published_sections if text else [])
+        return resolve(self, sections, UNIT_BUILTINS, event_entry, builtin_on=True)
 
     # --- Sonstiges ---
 

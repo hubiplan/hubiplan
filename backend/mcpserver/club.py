@@ -262,14 +262,16 @@ def _text_read(args: dict, ctx: ClubContext) -> str:
     if t.get("has_changes") and t.get("is_published"):
         data["veroeffentlichter_titel"] = t.get("published_title")
         data["veroeffentlichter_text"] = t.get("published_body")
-    if t.get("kind") == "page" and not t.get("has_timeline"):
-        # Abschnitte der Textseite (#78); „body“ ist der Text der Seite mit dem Bild oben
+    if t.get("kind") in ("page", "unit") and not t.get("has_timeline"):
+        # Abschnitte der Textseite (#78) und der Seite einer Untereinheit (#491); „body“ ist
+        # der Text der Seite mit dem Bild oben
         data["abschnitte"] = list(t.get("sections") or [])
     return (
         _(
             "Text im Entwurf (Markdown; Bilder als ![Beschreibung](bild:Schlüssel), siehe "
-            "webseite_bilder). Textseiten haben „abschnitte“ wie die Startseite; ändern mit "
-            "textseite_aufbau_aendern und textseite_abschnitt_aendern."
+            "webseite_bilder). Textseiten und Seiten der Untereinheiten haben „abschnitte“ wie "
+            "die Startseite; ändern mit textseite_aufbau_aendern und "
+            "textseite_abschnitt_aendern."
         )
         + "\n\n"
         + _dump(data)

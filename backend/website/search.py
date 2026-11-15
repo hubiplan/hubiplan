@@ -17,6 +17,7 @@ import unicodedata
 
 from . import gallery
 from .content_models import WebsiteText
+from .home import UNIT_BUILTINS
 from .menu import HISTORY_SLUG, MEMORIAL_SLUG
 
 MIN_QUERY = 2
@@ -189,6 +190,12 @@ def search(site, query: str, events) -> list[dict]:
         text = site.unit_text(u)
         title = (text.published_title if text else "") or u.name
         body = plain(text.published_body) if text else ""
+        if text is not None and text.published_sections:
+            # Eigene Abschnitte der Seite einer Untereinheit (#491)
+            extra = [
+                section_text(s) for s in site.unit_sections(text) if s["kind"] not in UNIT_BUILTINS
+            ]
+            body = " ".join(p for p in (body, *extra) if p)
         if matches(words, u.name, u.short_name, title, body):
             result.append(
                 {
