@@ -133,8 +133,9 @@ def load_social_links(org: Organization, items: list | None) -> None:
         )
 
 
-def load_letterhead(org: Organization, data: dict | None) -> None:
-    """Briefbogen übernehmen; unbekannte Werte fallen auf den Standard zurück."""
+def load_letterhead(org: Organization, data: dict | None, loader=None) -> None:
+    """Briefbogen übernehmen; unbekannte Werte fallen auf den Standard zurück. Das eigene
+    Logo des Briefbogens (Issue #488) prüft ``loader`` wie jedes andere Logo."""
     from letterhead.data import ensure
     from letterhead.models import Letterhead
 
@@ -155,6 +156,8 @@ def load_letterhead(org: Organization, data: dict | None) -> None:
             setattr(lh, field, str(value or "")[: model_field.max_length])
     if lh.mode == Letterhead.Mode.INHERIT and org.type != Organization.Type.UNIT:
         lh.mode = Letterhead.Mode.OWN
+    if loader is not None and data.get("logo"):
+        loader.save_logo(lh.logo, data["logo"])
     with rls_bypass():  # Einheit vom Import gewählt, auch neue Untereinheiten
         lh.save()
 
@@ -1112,7 +1115,7 @@ class Loader:
         self.role_assignments(org, data)
         load_imprint(org, data.get("imprint"))
         load_social_links(org, data.get("social_links"))
-        load_letterhead(org, data.get("letterhead"))
+        load_letterhead(org, data.get("letterhead"), self)
         for t in data.get("member_types") or []:
             mt = MemberType.objects.create(
                 organization=org,
@@ -1208,7 +1211,7 @@ class Loader:
         dept.save()
         self.load_logos(dept, d)
         load_imprint(dept, d.get("imprint"))
-        load_letterhead(dept, d.get("letterhead"))
+        load_letterhead(dept, d.get("letterhead"), self)
         self.ids.set("department", d.get("id"), dept.pk)
         for r in d.get("roles") or []:
             role = DepartmentRole.objects.create(
@@ -1478,7 +1481,7 @@ class Loader:
         org.save()
         self.load_logos(org, data)
         load_imprint(org, data.get("imprint"))
-        load_letterhead(org, data.get("letterhead"))
+        load_letterhead(org, data.get("letterhead"), self)
         # Rollen der Untereinheit werden Rollen der Einheit; Rechte nur, soweit es sie gibt.
         # Zugänge gehen nicht mit (Fachfrage 4), Inhaber bleiben als Ämter ohne Konto.
         allowed = set(codes_for(org.type))

@@ -19,6 +19,8 @@ import {
   Loading,
 } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
+import { TextArea } from './TextArea.tsx'
+import { LogoUpload } from './AppearancePage.tsx'
 import { t } from '../../i18n/index.ts'
 
 const FIELDS: (keyof LetterheadFields)[] = [
@@ -41,6 +43,8 @@ const FIELDS: (keyof LetterheadFields)[] = [
   'font_fallback',
   'heading_font_fallback',
   'show_name',
+  'head_name',
+  'head_name_small',
   'logo_size',
   'line_color',
   'head_line',
@@ -128,11 +132,15 @@ function LetterheadEditor({
   editable,
   save,
   preview,
+  logoUploadUrl,
+  reload,
 }: {
   state: LetterheadState
   editable: boolean
   save: (changes: Partial<LetterheadFields>) => Promise<LetterheadState>
   preview: () => Promise<Blob>
+  logoUploadUrl: string
+  reload: () => Promise<LetterheadState>
 }) {
   const [current, setCurrent] = useState(state)
   const form = useForm(pick(state))
@@ -365,6 +373,52 @@ function LetterheadEditor({
             checked={v.show_name}
             onChange={(val) => set('show_name', val)}
           />
+          {v.show_name && (
+            <>
+              <TextArea
+                label={t('Name im Briefkopf')}
+                value={v.head_name}
+                error={errors.head_name}
+                rows={2}
+                hint={t(
+                  'Höchstens zwei Zeilen, umbrochen wie hier eingegeben. Leer: der Name der Einheit; ein langer Name wird dann verkleinert und ausgewogen auf zwei Zeilen verteilt. Folgeseiten und Rücksendeangabe zeigen immer den vollen Namen.',
+                )}
+                onChange={(val) => set('head_name', val)}
+              />
+              {v.head_name.trim().includes('\n') && (
+                <Checkbox
+                  label={t('Zweite Zeile kleiner')}
+                  checked={v.head_name_small}
+                  onChange={(val) => set('head_name_small', val)}
+                />
+              )}
+            </>
+          )}
+          {v.logo_position !== 'none' && (
+            <>
+              <h3>{t('Logo für den Briefbogen')}</h3>
+              <p className="muted small">
+                {t(
+                  'Ohne eigenes Logo gilt das Logo aus dem Erscheinungsbild. Ein eigenes passt z. B., wenn Briefe eine querformatige Wort-Bild-Marke statt des Wappens zeigen sollen. Es gilt nur für Word-Vorlage und PDF-Briefe.',
+                )}
+              </p>
+              {editable ? (
+                <LogoUpload
+                  uploadUrl={logoUploadUrl}
+                  logoUrl={current.logo_url ?? null}
+                  onChange={async () => setCurrent(await reload())}
+                />
+              ) : current.logo_url ? (
+                <img
+                  src={current.logo_url}
+                  alt={t('Logo für den Briefbogen')}
+                  className="logo-preview"
+                />
+              ) : (
+                <p className="muted">{t('wie im Erscheinungsbild')}</p>
+              )}
+            </>
+          )}
           <Checkbox
             label={t('Linie unter dem Kopf')}
             checked={v.head_line}
@@ -667,6 +721,8 @@ export function LetterheadSettingsPage() {
                 : letterheadApi.update(org.id, changes)
             }
             preview={() => letterheadApi.preview(org.id, unitId)}
+            logoUploadUrl={letterheadApi.logoUrl(org.id, unitId)}
+            reload={() => (unitId ? letterheadApi.unit(org.id, unitId) : letterheadApi.get(org.id))}
           />
           <NeutralCard orgId={org.id} unit={unitId} unitLabel={unitLabel} />
         </>

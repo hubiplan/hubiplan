@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Letterhead: own logo and name in the letterhead.** Under Settings › Letterhead you can set a **logo only for letters**, such as a landscape word-and-image mark, while HUBIplan keeps the coat of arms. With **Name in the letterhead** you decide how a long name breaks over two lines, the second one smaller if you like. Without an entry, HUBIplan reduces a long name and spreads it evenly over two lines, in Word as in the PDF; a single word alone on the second line no longer happens. An AI assistant can set both if you allow the letterhead when connecting.
 - **Hide sub-units**: a club without sub-units (platoons, sections …) can permanently hide the menu item under Settings › Names and terms. Existing sub-units are kept.
 - Website: **Import design packages yourself.** Whoever manages the website imports a design package for their own unit under Design › Share design › Load design from package, without needing the operator. It applies only to your own website and is checked as before. Platform administrators see all units' designs in one list and can block them.
 - Website: **Several header images.** Under Design › Fine-tuning › Header you can choose up to ten header images (and header images for phones as well). The website then shows one of them on each visit, on every page, like many WordPress themes with a changing header image.

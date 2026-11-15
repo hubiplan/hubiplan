@@ -109,6 +109,8 @@ LETTERHEAD_FIELDS = [
     "font_fallback",
     "heading_font_fallback",
     "show_name",
+    "head_name",
+    "head_name_small",
     "logo_size",
     "line_color",
     "head_line",
@@ -119,13 +121,19 @@ LETTERHEAD_FIELDS = [
 ]
 
 
-def letterhead_data(org: Organization) -> dict | None:
-    """Briefbogen ohne Kontowahl (Konten bekommen beim Einlesen neue Nummern)."""
+def letterhead_data(org: Organization, packer=None) -> dict | None:
+    """Briefbogen ohne Kontowahl (Konten bekommen beim Einlesen neue Nummern), mit eigenem
+    Logo des Briefbogens (Issue #488), wenn ``packer`` Dateien mitnimmt."""
     from letterhead.models import Letterhead
 
     with rls_bypass():  # auch Untereinheiten der exportierten Einheit
         lh = Letterhead.objects.filter(organization=org).first()
-    return {f: getattr(lh, f) for f in LETTERHEAD_FIELDS} if lh else None
+    if lh is None:
+        return None
+    data = {f: getattr(lh, f) for f in LETTERHEAD_FIELDS}
+    if packer is not None and lh.logo:
+        data["logo"] = packer.add(lh.logo, "logos")
+    return data
 
 
 def social_data(org: Organization) -> list[dict]:
@@ -453,7 +461,7 @@ class Dumper:
                 for r in DepartmentRole.objects.filter(department=dept)
             ],
             "imprint": imprint_data(dept),
-            "letterhead": letterhead_data(dept),
+            "letterhead": letterhead_data(dept, self.packer),
         }
         if tables:
             # Kasse, Rechnungen, Belege … des eigenen Arbeitsbereichs (Audit 31.10. D31-01)
@@ -549,7 +557,7 @@ class Dumper:
             "fields": self.fields(org),
             "imprint": imprint_data(org),
             "social_links": social_data(org),
-            "letterhead": letterhead_data(org),
+            "letterhead": letterhead_data(org, self.packer),
         }
         if not org.is_remote:
             # Verbund: offene Kopplungen ziehen beim Umzug mit (ohne Schlüssel dieser Instanz)

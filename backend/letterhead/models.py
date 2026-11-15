@@ -9,9 +9,16 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
-from organizations.models import Organization
+from organizations.models import Organization, validate_logo
+
+
+def letterhead_logo_path(instance, filename: str) -> str:
+    """Eigenes Logo des Briefbogens (Issue #488); immer PNG, nie eine Seitenendung."""
+    stamp = timezone.now().strftime("%Y%m%d%H%M%S")
+    return f"logos/briefbogen/{instance.organization_id or 'neu'}-{stamp}.png"
 
 
 class Letterhead(models.Model):
@@ -122,6 +129,25 @@ class Letterhead(models.Model):
         db_default=OfficeFont.GEORGIA,
     )
     show_name = models.BooleanField("Name neben dem Logo zeigen", default=True, db_default=True)
+    # Eigenes Logo nur für den Briefbogen (Issue #488); leer: Logo aus dem Erscheinungsbild
+    logo = models.ImageField(
+        "Logo für den Briefbogen",
+        upload_to=letterhead_logo_path,
+        blank=True,
+        default="",
+        db_default="",
+        validators=[validate_logo],
+    )
+    # Eigener Name im Briefkopf mit selbst gewähltem Umbruch (Issue #487); leer: Name der Einheit
+    head_name = models.CharField(
+        "Name im Briefkopf",
+        max_length=200,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="Höchstens zwei Zeilen; leer: der Name der Einheit.",
+    )
+    head_name_small = models.BooleanField("Zweite Zeile kleiner", default=False, db_default=False)
     logo_size = models.CharField(
         "Größe von Logo/Wappen",
         max_length=10,
