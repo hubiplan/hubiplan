@@ -240,6 +240,13 @@ def test_benutzte_bilder_nur_ergaenzen(club, site, editor):  # noqa: F811
     assert not failed, text
     image.refresh_from_db()
     assert image.alt_text == "Fahne" and image.caption == "Am Markt"
+    text, failed = call(token, "bild_beschreiben", nummer=image.pk, urheber="Erika Muster")
+    assert not failed, text
+    image.refresh_from_db()
+    assert image.credit == "Erika Muster"
+    # vorhandene Urheberin nur in HUBIplan ändern
+    text, failed = call(token, "bild_beschreiben", nummer=image.pk, urheber="Jemand")
+    assert failed and "HUBIplan" in text
 
 
 def test_hochladelink(club, site, editor):  # noqa: F811
@@ -257,11 +264,12 @@ def test_hochladelink(club, site, editor):  # noqa: F811
     assert info.json()["remaining"] == link.max_files
     assert "organization" in info.json()
     up = SimpleUploadedFile("feld.jpg", picture("JPEG"), content_type="image/jpeg")
-    resp = HttpClient().post(public, {"file": up})
+    resp = HttpClient().post(public, {"file": up, "credit": "Foto: Erika Muster"})
     assert resp.status_code == 201, resp.content
     assert resp.json()["remaining"] == link.max_files - 1
     with rls_bypass():
         image = WebsiteImage.objects.get(pk=resp.json()["id"])
+    assert image.credit == "Erika Muster"
     assert image.website_id == site.pk and image.uploaded_by_id == editor.pk
     # Kein Bild: abgelehnt und nicht gezählt
     bad = SimpleUploadedFile("x.jpg", b"kein bild", content_type="image/jpeg")
@@ -331,7 +339,8 @@ def test_bild_von_adresse_nur_von_freigegebenen_servern(
     )
     assert not failed, text
     image = WebsiteImage.objects.get(website=site)
-    assert image.caption == "Quelle: Foto: Verein" and image.alt_text == "Wiese"
+    # Quelle steht im eigenen Feld Urheber/in, ohne doppeltes „Foto:“ (Ralf 15.11.)
+    assert image.caption == "" and image.credit == "Verein" and image.alt_text == "Wiese"
     _text, failed = call(
         token, "bild_von_adresse", adresse="https://cloud.example.org/x.html", quelle="Q"
     )

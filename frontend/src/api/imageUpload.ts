@@ -23,9 +23,10 @@ export const imageUploadApi = {
     const result = await call(token, { method: 'GET' })
     return { status: result.status, body: result.body as unknown as ImageUploadInfo }
   },
-  upload: (token: string, file: File) => {
+  upload: (token: string, file: File, credit = '') => {
     const form = new FormData()
     form.append('file', file, file.name || 'bild.jpg')
+    if (credit.trim()) form.append('credit', credit.trim())
     return call(token, { method: 'POST', body: form })
   },
 }

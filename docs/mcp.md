@@ -161,9 +161,9 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 | `startseite_aufbau_aendern` | entwurf | `neu`, `reihenfolge`, `an`, `aus`, `aussehen`, `entfernen` (nur eigene Abschnitte) |
 | `textseite_aufbau_aendern` | entwurf | `nummer` + wie `startseite_aufbau_aendern` für die Abschnitte einer Textseite (#78); `body` ist der Text der Seite, `cover` das Titelbild; über `PUT website/texts/<nummer>/` mit „Inhalte bearbeiten“ |
 | `textseite_abschnitt_aendern` | entwurf | `nummer`, `schluessel`, `inhalt` (nur geänderte Felder) eines eigenen Abschnitts einer Textseite |
-| `bilder_suchen` | lesen | Suche über Bildunterschrift, Alternativtext, Datei, Untereinheit |
+| `bilder_suchen` | lesen | Suche über Bildunterschrift, Alternativtext, Urheber/in, Datei, Untereinheit |
 | `bild_ansehen` | lesen | kleine Fassung (640 px, JPEG) als Bildinhalt; Hinweis: keine Personen erkennen |
-| `bild_beschreiben` | entwurf | Alternativtext, Bildunterschrift; bei benutzten Bildern nur leere Felder füllen |
+| `bild_beschreiben` | entwurf | Alternativtext, Bildunterschrift, Urheber/in (`urheber`, nur wenn genannt); bei benutzten Bildern nur leere Felder füllen |
 | `bild_hochladen_vorbereiten` | entwurf | Hochladelink (30 Minuten, 20 Bilder) |
 | `bild_von_adresse` | entwurf | Bild von einem freigegebenen Server, `quelle` Pflicht |
 | `social_beitrag_entwerfen` | entwurf | Text (2200 Zeichen), bis 10 Bilder, Kanal → `SocialDraft` |
@@ -180,7 +180,7 @@ Namen der Person, die den Link erzeugt hat.
 **Bild per Adresse**: `Website.image_hosts` (Webseite › Internetadresse, höchstens 10 Rechnernamen, keine
 IP-Adressen). Nur `https`, genauer Rechnername, Abruf über `core.safehttp` (keine internen
 Adressen, keine Weiterleitungen, höchstens 15 MB, 15 s), Inhaltstyp JPG/PNG/WebP. Die Quelle
-steht danach in der Bildunterschrift.
+steht danach im Feld Urheber/in (`WebsiteImage.credit`); die Webseite zeigt sie als „Foto: …“.
 
 **Beitragsentwürfe** (`SocialDraft`): Unter Webseite › Social Media mit „Text kopieren“, Bildern
 zum Speichern, „Als erledigt markieren“ und „Löschen“. HUBIplan postet nichts bei Meta; die

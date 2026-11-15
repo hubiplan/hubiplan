@@ -152,6 +152,9 @@ class _Consents:
         return default if active is None else active
 
 
+# Bildnachweis im Impressum: so viele Bilder mit Urheber/in werden höchstens geprüft
+CREDITS_MAX = 300
+
 DRAFT_TEXT_FIELDS = (
     "title",
     "body",
@@ -1138,6 +1141,9 @@ class SiteView:
             # Ohne Alternativtext trägt die Bildunterschrift die Beschreibung, außer
             # das Bild ist ausdrücklich nur Schmuck (Barrierefreiheit W-06)
             "alt": image.alt_text or ("" if image.decorative else image.caption),
+            # Urheber/in (Ralf 15.11.): auch ohne Bildunterschrift, die Webseite zeigt
+            # „Foto: …“ (Namensnennung, § 13 UrhG)
+            "credit": image.credit,
         }
 
     # --- Social-Media-Beiträge (lokal gespeichert, nie von Meta ausgeliefert) ---
@@ -1272,6 +1278,22 @@ class SiteView:
         if image.pk in gallery.visible_image_ids(self.site):
             return image
         return None
+
+    def image_credits(self) -> list[str]:
+        """Bildnachweis fürs Impressum (Ralf 15.11.): Urheber/innen aller Bilder, die auf
+        der Webseite zu sehen sind, ohne Doppelte, alphabetisch."""
+        names: dict[str, str] = {}
+        candidates = (
+            WebsiteImage.objects.filter(website=self.site)
+            .exclude(credit="")
+            .only("pk", "key", "credit")[:CREDITS_MAX]
+        )
+        for image in candidates:
+            if image.credit.casefold() in names:
+                continue
+            if self.public_image(image.key) is not None:
+                names[image.credit.casefold()] = image.credit
+        return sorted(names.values(), key=str.casefold)
 
     @cached_property
     def home_image_ids(self) -> set[int]:

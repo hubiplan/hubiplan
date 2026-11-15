@@ -731,6 +731,9 @@ class ImprintView(_Public):
         data = imprint.public_data(site.org)
         # Die Webseite hat eigene Datenschutzhinweise (nicht die für Mitglieder)
         data["privacy"] = public_privacy(site.site)
+        # Bildnachweis (Ralf 15.11.): nur, wenn die Webseite sichtbar ist; im Wartungsmodus
+        # zeigt sie keine Bilder
+        data["image_credits"] = site.image_credits() if self.visible else []
         return self.respond(data, site)
 
 
