@@ -228,6 +228,8 @@ class LetterData:
     social: list[tuple[str, str]]
     sender: Sender | None = None
     stand: datetime.date = field(default_factory=timezone.localdate)
+    # Farben der Palette der Einheit (Platz 0 Hauptfarbe, 1 Zweitfarbe, 2–5 weitere)
+    palette: list[str] = field(default_factory=list)
 
     @property
     def form(self) -> str:
@@ -236,6 +238,75 @@ class LetterData:
     @property
     def font(self) -> str:
         return self.settings.font
+
+    @property
+    def heading_font(self) -> str:
+        """Schrift für Name, Titel und Betreff; leer heißt wie der Text."""
+        return getattr(self.settings, "heading_font", "") or self.settings.font
+
+    def slot(self, value, fallback: str) -> str:
+        """Farbe eines Palettenplatzes; fehlt der Platz, gilt ``fallback``."""
+        try:
+            index = int(value)
+        except (TypeError, ValueError):
+            return fallback
+        if 0 <= index < len(self.palette):
+            return self.palette[index]
+        return fallback
+
+    @property
+    def line_color(self) -> str:
+        """Farbe der Linien im Kopf, über der Fußzeile und auf Folgeseiten."""
+        return self.slot(getattr(self.settings, "line_color", "1"), self.accent)
+
+    @property
+    def head_line(self) -> bool:
+        return getattr(self.settings, "head_line", True)
+
+    @property
+    def footer_line(self) -> bool:
+        return getattr(self.settings, "footer_line", True)
+
+    @property
+    def show_name(self) -> bool:
+        """Name im Kopf; ohne Logo steht er immer da."""
+        return getattr(self.settings, "show_name", True) or not self.logo
+
+    @property
+    def logo_size(self) -> str:
+        return getattr(self.settings, "logo_size", "medium") or "medium"
+
+    @property
+    def title_color(self) -> str:
+        if getattr(self.settings, "title_color", "black") == "primary":
+            return self.primary
+        return "#000000"
+
+    @property
+    def table_line_color(self) -> str:
+        return self.slot(getattr(self.settings, "table_line_color", "0"), self.primary)
+
+    @property
+    def table_stripe(self) -> str | None:
+        """Farbe der Zebrastreifen in Rechnungen (None: keine)."""
+        value = getattr(self.settings, "table_stripe", "grey")
+        if value == "none":
+            return None
+        if value == "grey":
+            return STRIPE_GREY
+        return tint(self.slot(value, STRIPE_GREY), 0.88)
+
+
+STRIPE_GREY = "#f4f5f4"
+
+
+def tint(color: str, share: float) -> str:
+    """``color`` mit ``share`` Anteil Weiß gemischt (für helle Flächen)."""
+    raw = color.lstrip("#")
+    if len(raw) != 6:
+        return STRIPE_GREY
+    rgb = [int(raw[i : i + 2], 16) for i in (0, 2, 4)]
+    return "#" + "".join(f"{round(c * (1 - share) + 255 * share):02x}" for c in rgb)
 
 
 # Rücksendeangabe passt nur einzeilig über das Anschriftfeld (85 mm, 6,5 pt)
@@ -301,6 +372,7 @@ def letter_data(
         board=board(owner) if lh.show_board else [],
         register=register_lines(owner) if lh.show_register else [],
         social=social,
+        palette=[p["color"] for p in theme.get("palette") or []],
         sender=sender,
     )
 
@@ -549,6 +621,32 @@ def _logo_stamp(path: str | None) -> str:
         return path
 
 
+DESIGN_FIELDS = (
+    "heading_font",
+    "font_fallback",
+    "heading_font_fallback",
+    "show_name",
+    "logo_size",
+    "line_color",
+    "head_line",
+    "footer_line",
+    "title_color",
+)
+
+
+def _design_values(lh: Letterhead) -> list:
+    """Neue Gestaltungswerte nur, wenn sie vom Grundwert abweichen.
+
+    So bleiben die Prüfwerte bestehender Vorlagen gleich und niemand bekommt
+    „Vorlage veraltet“, nur weil es die Regler jetzt gibt."""
+    values = []
+    for name in DESIGN_FIELDS:
+        value = getattr(lh, name)
+        if value != Letterhead._meta.get_field(name).default:
+            values.append(f"{name}={value}")
+    return values
+
+
 def section_values(data: LetterData) -> dict:
     lh = data.settings
     sender = data.sender
@@ -568,6 +666,7 @@ def section_values(data: LetterData) -> dict:
             lh.logo_position,
             lh.salutation,
             lh.closing,
+            *_design_values(lh),
         ],
         "sender": (
             [sender.name, sender.function, sender.lines, sender.reply_address] if sender else []

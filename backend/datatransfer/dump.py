@@ -105,6 +105,17 @@ LETTERHEAD_FIELDS = [
     "show_board",
     "show_register",
     "show_social",
+    "heading_font",
+    "font_fallback",
+    "heading_font_fallback",
+    "show_name",
+    "logo_size",
+    "line_color",
+    "head_line",
+    "footer_line",
+    "title_color",
+    "table_line_color",
+    "table_stripe",
 ]
 
 

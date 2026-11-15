@@ -7,6 +7,18 @@ export type LogoPosition = 'right' | 'left' | 'none'
 export type FileFormat = 'dotx' | 'docx'
 
 export const FONTS = ['Arial', 'Calibri', 'Cambria', 'Georgia', 'Times New Roman', 'Verdana']
+/** Schriften der Webseite: im PDF eingebettet, in Word mit Ersatzschrift (Issue #470). */
+export const WEB_FONTS = [
+  'Source Sans 3',
+  'Crimson Pro',
+  'Atkinson Hyperlegible',
+  'Open Sans',
+  'Roboto',
+  'Oswald',
+  'UnifrakturMaguntia',
+]
+export type LogoSize = 'small' | 'medium' | 'large'
+export type PaletteSlot = '0' | '1' | '2' | '3' | '4' | '5'
 
 export interface LetterheadFields {
   mode: LetterheadMode
@@ -24,6 +36,17 @@ export interface LetterheadFields {
   show_board: boolean
   show_register: boolean
   show_social: boolean
+  heading_font: string
+  font_fallback: string
+  heading_font_fallback: string
+  show_name: boolean
+  logo_size: LogoSize
+  line_color: PaletteSlot
+  head_line: boolean
+  footer_line: boolean
+  title_color: 'black' | 'primary'
+  table_line_color: PaletteSlot
+  table_stripe: 'grey' | 'none' | PaletteSlot
 }
 
 export interface LetterheadState {
@@ -33,6 +56,7 @@ export interface LetterheadState {
   owner: { id: number; name: string; is_self: boolean }
   accounts: { id: number; name: string; iban: string; bank: string }[]
   board: { name: string; role: string }[]
+  palette: { slot: number; color: string; contrast: number }[]
   hints: string[]
 }
 

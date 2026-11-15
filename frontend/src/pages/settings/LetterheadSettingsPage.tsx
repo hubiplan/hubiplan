@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { saveBlob } from '../../api/client.ts'
 import { docApi, docBase } from '../../api/documents.ts'
 import type { DocFolder } from '../../api/documents.ts'
-import { FONTS, letterFileName, letterheadApi } from '../../api/letterhead.ts'
+import { FONTS, WEB_FONTS, letterFileName, letterheadApi } from '../../api/letterhead.ts'
 import type { FileFormat, LetterheadFields, LetterheadState } from '../../api/letterhead.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { Department } from '../../api/orgs.ts'
@@ -37,7 +37,34 @@ const FIELDS: (keyof LetterheadFields)[] = [
   'show_board',
   'show_register',
   'show_social',
+  'heading_font',
+  'font_fallback',
+  'heading_font_fallback',
+  'show_name',
+  'logo_size',
+  'line_color',
+  'head_line',
+  'footer_line',
+  'title_color',
+  'table_line_color',
+  'table_stripe',
 ]
+
+function slotName(slot: number): string {
+  if (slot === 0) return t('Hauptfarbe')
+  if (slot === 1) return t('Zweitfarbe')
+  return t('Farbe {n}', { n: slot + 1 })
+}
+
+/** Auswahl aus der Palette der Einheit, mit Kontrast auf Weiß. */
+function slotOptions(palette: LetterheadState['palette'] | undefined) {
+  return (palette ?? []).map((p) => (
+    <option key={p.slot} value={String(p.slot)}>
+      {slotName(p.slot)} ({p.color},{' '}
+      {t('Kontrast {x}:1', { x: p.contrast.toFixed(1).replace('.', ',') })})
+    </option>
+  ))
+}
 
 function pick(state: LetterheadState): LetterheadFields {
   return Object.fromEntries(
@@ -187,17 +214,79 @@ function LetterheadEditor({
               onChange={(e) => set('tagline', e.target.value)}
             />
             <SelectField
-              label={t('Schriftart')}
+              label={t('Schrift für den Text')}
               value={v.font}
-              hint={t('Überall vorhandene Schriften; die Vorlage bettet keine Schrift ein.')}
+              hint={t(
+                'Office-Schriften sind überall vorhanden. Schriften der Webseite stehen im PDF eingebettet, in Word mit Ersatzschrift.',
+              )}
               onChange={(e) => set('font', e.target.value)}
             >
-              {FONTS.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
+              <optgroup label={t('Office-Schriften')}>
+                {FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label={t('Schriften der Webseite')}>
+                {WEB_FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </optgroup>
             </SelectField>
+            <SelectField
+              label={t('Schrift für Name, Titel und Betreff')}
+              value={v.heading_font}
+              onChange={(e) => set('heading_font', e.target.value)}
+            >
+              <option value="">{t('wie der Text')}</option>
+              <optgroup label={t('Office-Schriften')}>
+                {FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label={t('Schriften der Webseite')}>
+                {WEB_FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </optgroup>
+            </SelectField>
+            {WEB_FONTS.includes(v.font) && (
+              <SelectField
+                label={t('Ersatzschrift in Word (Text)')}
+                value={v.font_fallback}
+                hint={t('Gilt, wenn {f} auf dem Rechner nicht installiert ist.', { f: v.font })}
+                onChange={(e) => set('font_fallback', e.target.value)}
+              >
+                {FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+            {WEB_FONTS.includes(v.heading_font) && (
+              <SelectField
+                label={t('Ersatzschrift in Word (Überschriften)')}
+                value={v.heading_font_fallback}
+                hint={t('Gilt, wenn {f} auf dem Rechner nicht installiert ist.', {
+                  f: v.heading_font,
+                })}
+                onChange={(e) => set('heading_font_fallback', e.target.value)}
+              >
+                {FONTS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </SelectField>
+            )}
             <Field
               label={t('Anrede')}
               value={v.salutation}
@@ -211,6 +300,81 @@ function LetterheadEditor({
               onChange={(e) => set('closing', e.target.value)}
             />
           </div>
+          <h3>{t('Kopf, Linien und Farben')}</h3>
+          <div className="grid-2">
+            <SelectField
+              label={t('Größe von Logo/Wappen')}
+              value={v.logo_size}
+              disabled={v.logo_position === 'none'}
+              onChange={(e) => set('logo_size', e.target.value as LetterheadFields['logo_size'])}
+            >
+              <option value="small">{t('klein')}</option>
+              <option value="medium">{t('mittel')}</option>
+              <option value="large">{t('groß')}</option>
+            </SelectField>
+            <SelectField
+              label={t('Linienfarbe')}
+              value={v.line_color}
+              hint={t('Linie unter dem Kopf, über der Fußzeile und auf Folgeseiten.')}
+              onChange={(e) => set('line_color', e.target.value as LetterheadFields['line_color'])}
+            >
+              {slotOptions(current.palette)}
+            </SelectField>
+            <SelectField
+              label={t('Farbe von Titel und Betreff')}
+              value={v.title_color}
+              hint={t('z. B. „Rechnung“, „Stornorechnung“ und der Betreff der Word-Vorlage.')}
+              onChange={(e) =>
+                set('title_color', e.target.value as LetterheadFields['title_color'])
+              }
+            >
+              <option value="black">{t('Schwarz')}</option>
+              <option value="primary">{t('Hauptfarbe')}</option>
+            </SelectField>
+            <SelectField
+              label={t('Linien in Tabellen')}
+              value={v.table_line_color}
+              hint={t('Kopf- und Summenlinie in Rechnungen und Quittungen.')}
+              onChange={(e) =>
+                set('table_line_color', e.target.value as LetterheadFields['table_line_color'])
+              }
+            >
+              {slotOptions(current.palette)}
+            </SelectField>
+            <SelectField
+              label={t('Streifen in Tabellen')}
+              value={v.table_stripe}
+              onChange={(e) =>
+                set('table_stripe', e.target.value as LetterheadFields['table_stripe'])
+              }
+            >
+              <option value="grey">{t('hellgrau')}</option>
+              <option value="none">{t('keine Streifen')}</option>
+              {(current.palette ?? []).map((p) => (
+                <option key={p.slot} value={String(p.slot)}>
+                  {t('{name}, hell', { name: slotName(p.slot) })}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+          <Checkbox
+            label={t('Name als Text neben dem Logo')}
+            hint={t(
+              'Ausschalten, wenn das Logo den Namen schon enthält. Ohne Logo steht der Name immer da.',
+            )}
+            checked={v.show_name}
+            onChange={(val) => set('show_name', val)}
+          />
+          <Checkbox
+            label={t('Linie unter dem Kopf')}
+            checked={v.head_line}
+            onChange={(val) => set('head_line', val)}
+          />
+          <Checkbox
+            label={t('Linie über der Fußzeile')}
+            checked={v.footer_line}
+            onChange={(val) => set('footer_line', val)}
+          />
           <h3>{t('Fußzeile')}</h3>
           <Checkbox
             label={t('Bankverbindung')}

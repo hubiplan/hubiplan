@@ -21,6 +21,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from organizations.theme import SURFACE, contrast
 
 from .data import LetterData
+from .typefaces import WEB_FONTS, pdf_fonts, word_family
 
 # Maße
 PAGE_W, PAGE_H = 11906, 16838  # A4 in twips
@@ -78,6 +79,7 @@ def hexcolor(value: str) -> str:
 
 def rpr(
     *,
+    heading: bool = False,
     bold: bool = False,
     size: float | None = None,
     color: str | None = None,
@@ -87,6 +89,9 @@ def rpr(
     parts = []
     if style:
         parts.append(f'<w:rStyle w:val="{style}"/>')
+    if heading:
+        # Design-Schrift für Überschriften (Name, Betreff)
+        parts.append('<w:rFonts w:asciiTheme="majorHAnsi" w:hAnsiTheme="majorHAnsi"/>')
     if bold:
         parts.append("<w:b/><w:bCs/>")
     if color:
@@ -100,7 +105,18 @@ def rpr(
 
 
 INFO_W = 70  # mm: Breite des Informationsblocks in der Word-Vorlage
-SERIF = {"Cambria", "Georgia", "Times New Roman"}
+# Größe von Logo/Wappen im Kopf: (größte Breite, größte Höhe) in mm je Form; „mittel“ wie bisher
+LOGO_BOXES = {
+    "a": {"small": (45, 11), "medium": (55, 15), "large": (75, 19)},
+    "b": {"small": (45, 18), "medium": (55, 25), "large": (75, 33)},
+}
+
+
+def logo_box(data: LetterData) -> tuple[float, float]:
+    boxes = LOGO_BOXES[data.form]
+    return boxes.get(data.logo_size, boxes["medium"])
+
+
 # Diese Angaben stehen im Informationsblock immer in einer Zeile (Ralf: E-Mail nicht umbrechen)
 NO_WRAP = {"E-Mail", "Web"}
 INFO_SIZE = 9.0  # pt
@@ -114,7 +130,7 @@ def single_line_size(
 
     Gemessen mit Helvetica bzw. Times, die Arial bzw. Times New Roman entsprechen;
     5 % Reserve, weil Word mit der echten Schrift etwas anders misst."""
-    face = "Times-Roman" if font in SERIF else "Helvetica"
+    face = pdf_fonts(font)[0]
     limit = width_mm / 25.4 * 72 * 0.95
     while size > minimum and stringWidth(text, face, size) > limit:
         size -= 0.5
@@ -320,13 +336,15 @@ def emphasis_color(data: LetterData) -> str:
 def first_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
     form = FORMS[data.form]
     primary = hexcolor(data.primary)
-    accent = hexcolor(data.accent)
+    line = hexcolor(data.line_color)
     text_w = 210 - MARGIN_LEFT - MARGIN_RIGHT
     top = 10 if data.form == "b" else 7
     blocks = []
     name_x, name_w = MARGIN_LEFT, text_w
+    logo_h = 0.0
     if logo is not None:
-        lw, lh = logo.fit(55, form["logo_h"])
+        lw, lh = logo.fit(*logo_box(data))
+        logo_h = lh
         left = data.settings.logo_position == "left"
         lx = MARGIN_LEFT if left else 210 - MARGIN_RIGHT - lw
         image = pkg.inline_image("word/header1.xml", logo, lw, lh)
@@ -336,19 +354,39 @@ def first_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
             name_x = MARGIN_LEFT + lw + 6
     name_frame = frame(name_x, top + 1, name_w)
     jc = "left"
-    blocks.append(
-        para(
-            run(data.name, bold=True, size=16 if len(data.name) < 45 else 13, color=primary),
-            frame=name_frame,
-            jc=jc,
-            after=40,
-        )
-    )
     sub = " · ".join(p for p in (data.tagline, data.sub_line) if p)
+    if data.show_name:
+        blocks.append(
+            para(
+                run(
+                    data.name,
+                    heading=True,
+                    bold=True,
+                    size=16 if len(data.name) < 45 else 13,
+                    color=primary,
+                ),
+                frame=name_frame,
+                jc=jc,
+                after=40,
+            )
+        )
+    elif not sub and logo_h:
+        # ohne Namen und Zusatzzeile schließt die Linie mit dem Logo ab
+        blocks.append(
+            para(
+                "",
+                frame=name_frame,
+                exact=max(mm(logo_h - 3), 20),
+                before=0,
+                after=0,
+                run_props='<w:rPr><w:sz w:val="2"/></w:rPr>',
+            )
+        )
     if sub:
         blocks.append(para(run(sub, size=9, color=GREY), frame=name_frame, jc=jc, after=0))
-    # feine Linie in der Akzentfarbe unter dem Kopf
-    blocks.append(para("", frame=name_frame, border_bottom=accent, after=0, exact=60))
+    if data.head_line:
+        # feine Linie unter dem Kopf
+        blocks.append(para("", frame=name_frame, border_bottom=line, after=0, exact=60))
     # Falz- und Lochmarken am linken Rand
     for y in (*form["folds"], HOLE_MARK):
         blocks.append(
@@ -372,7 +410,7 @@ def follow_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
     if logo is not None:
         lw, lh = logo.fit(25, 9)
         content += pkg.inline_image("word/header2.xml", logo, lw, lh) + run("  ")
-    content += run(data.name, bold=True, size=9, color=primary)
+    content += run(data.name, heading=True, bold=True, size=9, color=primary)
     if data.sub_line:
         content += run(f" · {data.sub_line}", size=9, color=GREY)
     page = (
@@ -381,12 +419,15 @@ def follow_header(data: LetterData, pkg: Package, logo: Picture | None) -> str:
         + run(" von ", size=8, color=GREY)
         + field("NUMPAGES", "2", size=8, color=GREY)
     )
+    border = (
+        f'<w:bottom w:val="single" w:sz="6" w:space="0" w:color="{hexcolor(data.line_color)}"/>'
+        if data.head_line
+        else '<w:bottom w:val="nil"/>'
+    )
     table = (
         "<w:tbl><w:tblPr>"
         f'<w:tblW w:w="{text_w}" w:type="dxa"/>'
-        "<w:tblBorders>"
-        f'<w:bottom w:val="single" w:sz="6" w:space="0" w:color="{hexcolor(data.accent)}"/>'
-        "</w:tblBorders>"
+        f"<w:tblBorders>{border}</w:tblBorders>"
         '<w:tblLayout w:type="fixed"/>'
         '<w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>'
         '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" '
@@ -445,13 +486,14 @@ def footer_rows(data: LetterData) -> int:
     if not columns:
         return 0
     width = ((210 - MARGIN_LEFT - MARGIN_RIGHT) / len(columns) - 2) / 25.4 * 72
+    face = pdf_fonts(data.font)[0]
     rows = 0
     for _, lines in columns:
         count = 1
         for line in lines:
             used, n = 0.0, 1
             for word in line.split():
-                w = stringWidth(word + " ", "Helvetica", FOOTER_SIZE)
+                w = stringWidth(word + " ", face, FOOTER_SIZE)
                 if used and used + w > width:
                     n += 1
                     used = 0.0
@@ -481,12 +523,15 @@ def first_footer(data: LetterData) -> str:
         content = para(run(heading, bold=True, size=7, color=primary), style="Fusszeile")
         content += "".join(para(run(line, size=7), style="Fusszeile") for line in lines)
         cells += f'<w:tc><w:tcPr><w:tcW w:w="{width}" w:type="dxa"/></w:tcPr>{content}</w:tc>'
+    border = (
+        f'<w:top w:val="single" w:sz="6" w:space="0" w:color="{hexcolor(data.line_color)}"/>'
+        if data.footer_line
+        else '<w:top w:val="nil"/>'
+    )
     table = (
         "<w:tbl><w:tblPr>"
         f'<w:tblW w:w="{width * len(columns)}" w:type="dxa"/>'
-        "<w:tblBorders>"
-        f'<w:top w:val="single" w:sz="6" w:space="0" w:color="{hexcolor(data.accent)}"/>'
-        "</w:tblBorders>"
+        f"<w:tblBorders>{border}</w:tblBorders>"
         '<w:tblLayout w:type="fixed"/>'
         '<w:tblCellMar><w:top w:w="57" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'
         '<w:right w:w="113" w:type="dxa"/></w:tblCellMar>'
@@ -636,6 +681,13 @@ def styles_xml(data: LetterData) -> str:
     primary = hexcolor(data.primary)
     on_primary = hexcolor(data.on_primary)
     emph = hexcolor(emphasis_color(data))
+    # Betreff in der Überschriftenschrift, Farbe wählbar (Issue #470); Grundwert wie bisher
+    subject_font = ""
+    if data.heading_font != data.font:
+        subject_font = '<w:rFonts w:asciiTheme="majorHAnsi" w:hAnsiTheme="majorHAnsi"/>'
+    subject_color = ""
+    if data.title_color.lower() != "#000000":
+        subject_color = f'<w:color w:val="{hexcolor(data.title_color)}"/>'
     return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="{NS_W}">
 <w:docDefaults>
@@ -647,7 +699,7 @@ def styles_xml(data: LetterData) -> str:
 <w:style w:type="table" w:default="1" w:styleId="NormaleTabelle"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style>
 <w:style w:type="numbering" w:default="1" w:styleId="KeineListe"><w:name w:val="No List"/><w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/></w:style>
 <w:style w:type="paragraph" w:customStyle="1" w:styleId="Brieftext"><w:name w:val="Brieftext"/><w:basedOn w:val="Standard"/><w:qFormat/><w:pPr><w:spacing w:after="160" w:line="264" w:lineRule="auto"/></w:pPr></w:style>
-<w:style w:type="paragraph" w:customStyle="1" w:styleId="Betreff"><w:name w:val="Betreff"/><w:basedOn w:val="Standard"/><w:next w:val="Brieftext"/><w:qFormat/><w:pPr><w:keepNext/></w:pPr><w:rPr><w:b/><w:bCs/></w:rPr></w:style>
+<w:style w:type="paragraph" w:customStyle="1" w:styleId="Betreff"><w:name w:val="Betreff"/><w:basedOn w:val="Standard"/><w:next w:val="Brieftext"/><w:qFormat/><w:pPr><w:keepNext/></w:pPr><w:rPr>{subject_font}<w:b/><w:bCs/>{subject_color}</w:rPr></w:style>
 <w:style w:type="paragraph" w:customStyle="1" w:styleId="Anschrift"><w:name w:val="Anschrift"/><w:basedOn w:val="Standard"/><w:qFormat/></w:style>
 <w:style w:type="paragraph" w:customStyle="1" w:styleId="Infoblock"><w:name w:val="Informationsblock"/><w:basedOn w:val="Standard"/><w:pPr><w:spacing w:after="0"/></w:pPr><w:rPr><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr></w:style>
 <w:style w:type="paragraph" w:customStyle="1" w:styleId="Fusszeile"><w:name w:val="Fußzeile klein"/><w:basedOn w:val="Standard"/><w:pPr><w:spacing w:after="0" w:line="216" w:lineRule="auto"/></w:pPr><w:rPr><w:sz w:val="14"/><w:szCs w:val="14"/></w:rPr></w:style>
@@ -694,13 +746,14 @@ def theme_xml(data: LetterData) -> str:
         _mix(a, "#FFFFFF", 0.45),
     ]
     font = esc(data.font)
+    heading = esc(data.heading_font)
     accent_xml = "".join(
         f'<a:accent{i + 1}><a:srgbClr val="{c}"/></a:accent{i + 1}>' for i, c in enumerate(accents)
     )
 
-    def font_block(tag: str) -> str:
+    def font_block(tag: str, face: str) -> str:
         return (
-            f'<a:{tag}><a:latin typeface="{font}"/><a:ea typeface=""/><a:cs typeface=""/></a:{tag}>'
+            f'<a:{tag}><a:latin typeface="{face}"/><a:ea typeface=""/><a:cs typeface=""/></a:{tag}>'
         )
 
     fill = '<a:solidFill><a:schemeClr val="phClr"/></a:solidFill>'
@@ -710,7 +763,29 @@ def theme_xml(data: LetterData) -> str:
     )
     effect = "<a:effectStyle><a:effectLst/></a:effectStyle>"
     return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<a:theme xmlns:a="{NS_A}" name="HUBIplan"><a:themeElements><a:clrScheme name="Einheit"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="{_mix(p, "#000000", 0.6)}"/></a:dk2><a:lt2><a:srgbClr val="{_mix(p, "#FFFFFF", 0.9)}"/></a:lt2>{accent_xml}<a:hlink><a:srgbClr val="{hexcolor(p)}"/></a:hlink><a:folHlink><a:srgbClr val="{_mix(p, "#000000", 0.35)}"/></a:folHlink></a:clrScheme><a:fontScheme name="Einheit">{font_block("majorFont")}{font_block("minorFont")}</a:fontScheme><a:fmtScheme name="Einheit"><a:fillStyleLst>{fill * 3}</a:fillStyleLst><a:lnStyleLst>{line * 3}</a:lnStyleLst><a:effectStyleLst>{effect * 3}</a:effectStyleLst><a:bgFillStyleLst>{fill * 3}</a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>"""
+<a:theme xmlns:a="{NS_A}" name="HUBIplan"><a:themeElements><a:clrScheme name="Einheit"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="{_mix(p, "#000000", 0.6)}"/></a:dk2><a:lt2><a:srgbClr val="{_mix(p, "#FFFFFF", 0.9)}"/></a:lt2>{accent_xml}<a:hlink><a:srgbClr val="{hexcolor(p)}"/></a:hlink><a:folHlink><a:srgbClr val="{_mix(p, "#000000", 0.35)}"/></a:folHlink></a:clrScheme><a:fontScheme name="Einheit">{font_block("majorFont", heading)}{font_block("minorFont", font)}</a:fontScheme><a:fmtScheme name="Einheit"><a:fillStyleLst>{fill * 3}</a:fillStyleLst><a:lnStyleLst>{line * 3}</a:lnStyleLst><a:effectStyleLst>{effect * 3}</a:effectStyleLst><a:bgFillStyleLst>{fill * 3}</a:bgFillStyleLst></a:fmtScheme></a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>"""
+
+
+def font_table_xml(data: LetterData) -> str:
+    """Schrifttabelle: Webschriften mit Ersatzschrift, falls sie nicht installiert sind."""
+    lh = data.settings
+    fallbacks = {
+        data.font: getattr(lh, "font_fallback", "") or "Arial",
+        data.heading_font: getattr(lh, "heading_font_fallback", "") or "Georgia",
+    }
+    if data.heading_font == data.font:
+        fallbacks = {data.font: fallbacks[data.font]}
+    entries = ""
+    for name, fallback in fallbacks.items():
+        alt = f'<w:altName w:val="{esc(fallback)}"/>' if name in WEB_FONTS else ""
+        entries += (
+            f'<w:font w:name="{esc(name)}">{alt}<w:charset w:val="00"/>'
+            f'<w:family w:val="{word_family(name)}"/><w:pitch w:val="variable"/></w:font>'
+        )
+    return (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+        f'<w:fonts xmlns:w="{NS_W}">{entries}</w:fonts>'
+    )
 
 
 def _rels(entries: list[tuple[str, str, str]]) -> str:
@@ -756,6 +831,7 @@ def content_types(fmt: str) -> str:
         "/word/styles.xml": f"{wp}.styles+xml",
         "/word/settings.xml": f"{wp}.settings+xml",
         "/word/numbering.xml": f"{wp}.numbering+xml",
+        "/word/fontTable.xml": f"{wp}.fontTable+xml",
         "/word/theme/theme1.xml": "application/vnd.openxmlformats-officedocument.theme+xml",
         "/word/header1.xml": f"{wp}.header+xml",
         "/word/header2.xml": f"{wp}.header+xml",
@@ -797,12 +873,14 @@ def build(data: LetterData, fmt: str = "dotx") -> bytes:
         "word/numbering.xml": numbering_xml(),
         "word/settings.xml": settings_xml(),
         "word/theme/theme1.xml": theme_xml(data),
+        "word/fontTable.xml": font_table_xml(data),
     }
     doc_rels = [
         ("rIdStyles", f"{REL_BASE}/styles", "styles.xml"),
         ("rIdSettings", f"{REL_BASE}/settings", "settings.xml"),
         ("rIdNumbering", f"{REL_BASE}/numbering", "numbering.xml"),
         ("rIdTheme", f"{REL_BASE}/theme", "theme/theme1.xml"),
+        ("rIdFonts", f"{REL_BASE}/fontTable", "fontTable.xml"),
         ("rIdHdrFirst", f"{REL_BASE}/header", "header1.xml"),
         ("rIdHdr", f"{REL_BASE}/header", "header2.xml"),
         ("rIdFtrFirst", f"{REL_BASE}/footer", "footer1.xml"),

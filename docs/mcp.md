@@ -107,7 +107,7 @@ Regeln:
   (`HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN`, Standard `claude.ai,claude.com`, Endungen zählen mit),
   warnt sie vor einer Täuschung; ebenso bei einem Programm auf dem eigenen Rechner.
 - Bereiche: `webseite.lesen`, `webseite.entwurf` (schließt lesen ein). Die Hilfe ist immer dabei.
-  `verein.erscheinungsbild` gibt es nur, wenn die Person es auf der Seite eigens anhakt (nicht
+  `verein.erscheinungsbild` und `verein.briefbogen` gibt es nur, wenn die Person sie auf der Seite eigens anhakt (nicht
   vorangekreuzt), auch wenn der Assistent danach fragt; die Seite schickt den Haken als `extra` mit.
 - Zugriffsschlüssel `hpm_…` 1 Stunde, Erneuerung `hpmr_…` dreht sich bei jeder Nutzung; die
   Verbindung (`McpGrant`) gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung. Wer
@@ -204,7 +204,19 @@ Recht `theme.edit`, Ansichten `ThemeView` (PATCH `theme/`) und `OrganizationLogo
 | `erscheinungsbild_aendern` | erscheinungsbild | `hauptfarbe`/`zweitfarbe` {farbe, name, verwendung}, `weitere_farben` und `verlaeufe` (ersetzen), `farbrollen` (ergänzen, `null` entfernt), `farbrollen_in_hubiplan` |
 | `logo_aus_bild` | erscheinungsbild | Bild der Bilderverwaltung als Logo oder Dunkel-Logo, optional Hintergrund entfernen |
 
+## Briefbogen (Bereich `verein.briefbogen`)
+
+Issue #470: Der Briefbogen (Word-Vorlage und alle PDF-Briefe) hat keinen Entwurf, Änderungen gelten
+sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Haken beim Verbinden;
+ältere Verbindungen neu verbinden), Recht `org.edit`, Ansichten `OrgLetterheadView` (PATCH
+`letterhead/`) und `UnitLetterheadView` (`letterhead/units/<id>/`) mit Änderungsprotokoll.
+
+| Werkzeug | Bereich | Was |
+|---|---|---|
+| `briefbogen_ansehen` | lesen | Einstellungen, Palette mit Kontrast auf Weiß, Hinweise; `untereinheit` optional |
+| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `zusatzzeile`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `anrede`, `grussformel`, `fusszeile` {…}; nur Angegebenes ändert sich |
+
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
-`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `website/upload_views.py` (Hochladelink, Bild per Adresse),
-`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`,
+`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `website/upload_views.py` (Hochladelink, Bild per Adresse),
+`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`, `test_mcp_briefbogen.py`,
 `frontend/src/test/McpConnect.test.tsx`.
