@@ -75,7 +75,8 @@ und täglich erneut gelöscht; lässt sie sich nicht automatisch löschen, kommt
 Personen eines Vereins im Dachverband liegen im Bereich des Dachverbands. Waren sie nur in der
 gelöschten Einheit (und ihren Untereinheiten) Mitglied, gehen Person, gemeinsame Kontaktdaten
 und Verbandsmeldung mit (Gesamtaudit 15.11., PF-15); wer noch anderswo Mitglied ist, bleibt.
-Verweist noch etwas anderes auf eine Person, bleibt sie stehen (Protokoll des Workers).
+Verweist außer Kontaktdaten und Verbandsmeldung noch etwas auf eine Person (etwa ein Amt, eine Ehrung,
+eine Würde oder eine Qualifikation im Dachverband), bleibt sie stehen (Protokoll des Workers).
 
 English: Units are deleted in two stages. Stage 1 deactivates the unit and its subunits and
 schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
