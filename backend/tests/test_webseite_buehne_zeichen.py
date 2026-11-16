@@ -202,3 +202,10 @@ def test_wasserzeichen_gehoert_zum_aussehen():
     plain = [{"key": "greeting", "on": True, "bg": "light"}]
     marked = [{"key": "greeting", "on": True, "bg": "light", "mark": "logo"}]
     assert skeleton(plain) != skeleton(marked)
+
+
+def test_knoepfe_am_karussell_einstellbar():
+    """Ralf 16.11.2026: Knöpfe am Karussell immer sichtbar oder bei Mauszeiger; ohne Regler
+    leitet die Oberfläche die Markierung aus der Bühne ab, daher keine feste Vorgabe."""
+    assert style.OPTIONS["carousel_controls"] == ("always", "hover")
+    assert "carousel_controls" not in style.defaults("classic")
