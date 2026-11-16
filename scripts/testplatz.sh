@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # testplatz: gemeinsame Testplätze für alle Projekte auf einem lokalen Arbeitsrechner.
 #
-#   testplatz [--kerne N] [--] Befehl [Argumente …]
+#   testplatz [--kerne N] [--zug] [--] Befehl [Argumente …]
 #   testplatz --liste        belegte Plätze und Warteschlange anzeigen
 #
 # testplatz wartet auf einen freien Platz, bindet den Befehl an dessen Kerne und gibt
@@ -15,6 +15,9 @@
 #   PLAETZE=2
 #   KERNE=4
 # oder in den Umgebungsvariablen TESTPLATZ_PLAETZE und TESTPLATZ_KERNE.
+# Plätze verschiedener Größe: PLATZ_KERNE="12 6" (Kerne je Platz, PLAETZE ergibt sich).
+# ZUG_PLATZ=1 behält Platz 1 dem Merge-Zug vor (scripts/zug.sh, Aufruf mit --zug); alle
+# anderen Läufe nehmen die übrigen Plätze. Ohne ZUG_PLATZ nimmt --zug einen beliebigen Platz.
 # Ist TESTPLATZ schon gesetzt, läuft der Befehl direkt (verschachtelte Aufrufe).
 # Die Plätze werden in der Reihenfolge der Anfragen vergeben (Warteschlange).
 #
@@ -37,13 +40,32 @@ EINSTELLUNG="${TESTPLATZ_EINSTELLUNG:-${XDG_CONFIG_HOME:-$HOME/.config}/testplat
 PLAETZE="${TESTPLATZ_PLAETZE:-$PLAETZE}"
 MAX_KERNE="${TESTPLATZ_KERNE:-${KERNE:-$(nproc --all)}}"
 WSL_DISTRO="${TESTPLATZ_DISTRO:-Debian}"
+# Kerne je Platz (PLATZ_KERNE="12 6"); sonst alle Plätze gleich groß
+read -r -a GROESSEN <<< "${TESTPLATZ_PLATZ_KERNE:-${PLATZ_KERNE:-}}"
+if [ "${#GROESSEN[@]}" -gt 0 ]; then
+    PLAETZE=${#GROESSEN[@]}
+    MAX_KERNE=0
+    for g in "${GROESSEN[@]}"; do [ "$g" -gt "$MAX_KERNE" ] && MAX_KERNE=$g; done
+else
+    for _ in $(seq 1 "$PLAETZE"); do GROESSEN+=("$MAX_KERNE"); done
+fi
+ZUG_PLATZ="${TESTPLATZ_ZUG_PLATZ:-${ZUG_PLATZ:-}}"
+platz_groesse() { echo "${GROESSEN[$(($1 - 1))]}"; }
+# Erster Kern eines Platzes: Summe der Plätze davor
+platz_start() {
+    local i s=0
+    for ((i = 1; i < $1; i++)); do s=$((s + $(platz_groesse "$i"))); done
+    echo "$s"
+}
 
-KERNE=$MAX_KERNE
+KERNE=""
+ZUG=0
 WIN_DIR=""
 LISTE=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --kerne) KERNE="$2"; shift 2 ;;
+        --zug) ZUG=1; shift ;;
         --windows) WIN_DIR="$2"; shift 2 ;;  # intern: vom Windows-Aufruf
         --liste) LISTE=1; shift ;;
         --) shift; break ;;
@@ -63,28 +85,33 @@ if [ "$LISTE" = 1 ]; then
             if [ -r "$DIR/platz-$p.wer" ] && kill -0 "$(head -c 20 "$DIR/platz-$p.wer" | cut -d' ' -f1)" 2> /dev/null; then
                 wer=$(tr '\n' ' ' < "$DIR/platz-$p.wer")
             fi
-            echo "Platz $p belegt${wer:+: $wer}"
+            echo "Platz $p ($(platz_groesse "$p") Kerne${ZUG_PLATZ:+$([ "$p" = "$ZUG_PLATZ" ] && echo ", Zug")}) belegt${wer:+: $wer}"
         else
-            echo "Platz $p frei"
+            echo "Platz $p ($(platz_groesse "$p") Kerne${ZUG_PLATZ:+$([ "$p" = "$ZUG_PLATZ" ] && echo ", Zug")}) frei"
         fi
     done
-    n=0
-    for t in "$DIR/warteschlange"/*; do
-        [ -e "$t" ] && kill -0 "${t##*-}" 2> /dev/null || continue
-        n=$((n + 1))
-        echo "wartet $n: $(tr '\n' ' ' < "$t")"
+    for q in warteschlange warteschlange-zug; do
+        n=0
+        for t in "$DIR/$q"/*; do
+            [ -e "$t" ] && kill -0 "${t##*-}" 2> /dev/null || continue
+            n=$((n + 1))
+            echo "wartet${q#warteschlange} $n: $(tr '\n' ' ' < "$t")"
+        done
     done
     exit 0
 fi
 if [ $# -eq 0 ] && [ -z "$WIN_DIR" ]; then
-    sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
     exit 2
 fi
-[ "$KERNE" -gt "$MAX_KERNE" ] && KERNE=$MAX_KERNE
-[ "$KERNE" -lt 1 ] && KERNE=1
+if [ -n "$KERNE" ]; then
+    [ "$KERNE" -gt "$MAX_KERNE" ] && KERNE=$MAX_KERNE
+    [ "$KERNE" -lt 1 ] && KERNE=1
+fi
 
 # Schon in einem Platz: nicht noch einen belegen
 if [ -n "${TESTPLATZ:-}" ]; then
+    [ -z "$KERNE" ] && KERNE=${TEST_KERNE:-$MAX_KERNE}
     [ "$KERNE" -gt "${TEST_KERNE:-$KERNE}" ] && KERNE=$TEST_KERNE
     export TEST_KERNE=$KERNE
     exec "$@"
@@ -103,8 +130,10 @@ if [ "$(uname -o 2> /dev/null)" = "Msys" ]; then
         printf 'exec'; printf ' %q' "$@"; echo
     } > "$SKRIPT"
     rc=0
+    zugarg=""
+    [ "$ZUG" = 1 ] && zugarg="--zug"
     MSYS_NO_PATHCONV=1 wsl.exe -d "$WSL_DISTRO" -e bash -lc \
-        'exec testplatz --kerne "$1" --windows "$2"' _ "$KERNE" "$(cygpath -w "$SKRIPT")" || rc=$?
+        'exec testplatz ${1:+--kerne "$1"} $3 --windows "$2"' _ "$KERNE" "$(cygpath -w "$SKRIPT")" "$zugarg" || rc=$?
     rm -f "$SKRIPT"
     exit $rc
 fi
@@ -122,7 +151,9 @@ fi
 # Warteschlange: Wer zuerst kommt, bekommt zuerst einen Platz. Jeder Wartende legt ein
 # Ticket „<Nanosekunden>-<PID>“ ab; nur das älteste Ticket darf einen Platz nehmen. Tickets
 # beendeter Prozesse räumt jeder Wartende weg, ein abgebrochener Lauf hält also niemanden auf.
+# Der Zug hat eine eigene Warteschlange für seinen Platz, alle anderen eine gemeinsame.
 Q="$DIR/warteschlange"
+[ "$ZUG" = 1 ] && [ -n "$ZUG_PLATZ" ] && Q="$DIR/warteschlange-zug"
 mkdir -p "$Q"
 TICKET="$Q/$(date +%s%N)-$$"
 printf '%s\n' "$(pwd)" "$*" > "$TICKET"
@@ -130,6 +161,11 @@ trap 'rm -f "$TICKET"' EXIT
 platz_nehmen() {
     local p
     for p in $(seq 1 "$PLAETZE"); do
+        # Der Zug-Platz nur für den Zug, der Zug nur auf seinem Platz
+        if [ -n "$ZUG_PLATZ" ] && [ "$PLAETZE" -gt 1 ]; then
+            if [ "$ZUG" = 1 ]; then [ "$p" = "$ZUG_PLATZ" ] || continue
+            else [ "$p" = "$ZUG_PLATZ" ] && continue; fi
+        fi
         exec {fd}> "$DIR/platz-$p.lock"
         if flock -n "$fd"; then
             PLATZ=$p
@@ -165,12 +201,15 @@ trap - EXIT
 # Wer den Platz hat (für testplatz --liste)
 printf '%s\n' "$$ $(date -Iseconds)" "$(pwd)" "$*" > "$DIR/platz-$PLATZ.wer"
 
-# Kerne des Platzes: nebeneinander ab Kern 0 (bei 6 Kernen: Platz 1 0–5, Platz 2 6–11 …).
-# Reichen die Kerne nicht, rückt der Platz ans Ende und teilt sich Kerne mit dem vorigen.
+# Kerne des Platzes: nebeneinander ab Kern 0 (bei 6 Kernen: Platz 1 0–5, Platz 2 6–11 …;
+# bei PLATZ_KERNE="12 6": Platz 1 0–11, Platz 2 12–17). Reichen die Kerne nicht, rückt der
+# Platz ans Ende und teilt sich Kerne mit dem vorigen.
 N=$(nproc --all)
-[ "$MAX_KERNE" -gt "$N" ] && MAX_KERNE=$N
+GROESSE=$(platz_groesse "$PLATZ")
+[ -z "$KERNE" ] || [ "$KERNE" -gt "$GROESSE" ] && KERNE=$GROESSE
 [ "$KERNE" -gt "$N" ] && KERNE=$N
-start=$(( (PLATZ - 1) * MAX_KERNE ))
+start=$(platz_start "$PLATZ")
+win_start=$start
 [ $((start + KERNE)) -gt "$N" ] && start=$((N - KERNE))
 CPUS="$start-$((start + KERNE - 1))"
 export TESTPLATZ=$PLATZ TEST_KERNE=$KERNE TESTPLATZ_CPUS=$CPUS
@@ -182,8 +221,7 @@ echo "testplatz: Platz $PLATZ, $KERNE Kerne ($CPUS)" >&2
 
 if [ -n "$WIN_DIR" ]; then
     # Windows-Kerne: ebenfalls nebeneinander ab Kern 0
-    start=$(( (PLATZ - 1) * MAX_KERNE ))
-    export TESTPLATZ_MASKE=$(( ((1 << KERNE) - 1) << start ))
+    export TESTPLATZ_MASKE=$(( ((1 << KERNE) - 1) << win_start ))
     export WSLENV="TESTPLATZ:TEST_KERNE:TESTPLATZ_CPUS:TESTPLATZ_MASKE${WSLENV:+:$WSLENV}"
     exec "/mnt/c/Program Files/Git/bin/bash.exe" "$WIN_DIR"
 fi
