@@ -517,6 +517,11 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
 EMAIL_TIMEOUT = 15
+# Vorübergehend abgelehnte Mails (4xx, Verbindung kam nicht zustande) nach so vielen Sekunden
+# erneut senden (Gesamtaudit 15.11., PF-09); leer: keine Wiederholung
+MAIL_RETRY_DELAYS = tuple(
+    int(x) for x in os.environ.get("MAIL_RETRY_DELAYS", "2,10").split(",") if x.strip()
+)
 EMAIL_BACKEND = os.environ.get("DJANGO_EMAIL_BACKEND", "outbox.backend.OutboxBackend")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "HUBIplan <noreply@localhost>")
 # Höchstens so viele Rundschreiben-Mails je Stunde (Limit des Mailpostfachs, z. B. Hestia
