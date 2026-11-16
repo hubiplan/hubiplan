@@ -35,6 +35,7 @@ const settings = {
   rhythm: 'yearly',
   due_days: 14,
   pro_rata: false,
+  pro_rata_step: 'off',
   account: 1,
   category: 3,
   intro_text: '',

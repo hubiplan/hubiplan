@@ -225,6 +225,58 @@ class TestBeitragslauf:
         nina = Invoice.objects.get(membership=members["neu"])
         assert nina.total == Decimal("30.00")  # Juli bis Dezember: 6/12
         assert "anteilig 6/12 Monate" in nina.lines.get().detail
+        assert c.get(f"{base}/settings/").json()["pro_rata_step"] == "month"
+
+    def test_anteilig_halbjaehrlich(self, c, base, members):
+        resp = c.patch(f"{base}/settings/", {"pro_rata_step": "halfyear"}, content_type=JSON)
+        assert resp.status_code == 200, resp.json()
+        assert resp.json()["pro_rata"] is True  # Spiegel für die vorige Fassung
+        start_run(c, base)
+        nina = Invoice.objects.get(membership=members["neu"])
+        assert nina.total == Decimal("30.00")  # Eintritt Mitte Juli: zweites Halbjahr
+        assert "anteilig 1/2 Halbjahre" in nina.lines.get().detail
+        # Wer im ersten Halbjahr eintritt, zahlt voll
+        assert Invoice.objects.get(membership=members["erika"]).total == Decimal("60.00")
+
+    def test_anteilig_halbjahr_stichtag(self, club, c, base, members):
+        c.patch(f"{base}/settings/", {"pro_rata_step": "halfyear"}, content_type=JSON)
+        with tenant_context(club.pk):
+            MembershipPeriod.objects.filter(membership=members["neu"]).update(
+                entry_date=datetime.date(2025, 6, 30)
+            )
+        start_run(c, base)
+        assert Invoice.objects.get(membership=members["neu"]).total == Decimal("60.00")
+
+    def test_anteilig_vierteljaehrlich(self, club, c, base, members):
+        c.patch(f"{base}/settings/", {"pro_rata_step": "quarter"}, content_type=JSON)
+        with tenant_context(club.pk):
+            MembershipPeriod.objects.filter(membership=members["neu"]).update(
+                entry_date=datetime.date(2025, 5, 20)
+            )
+        start_run(c, base)
+        nina = Invoice.objects.get(membership=members["neu"])
+        assert nina.total == Decimal("45.00")  # 2. bis 4. Quartal: 9/12
+        assert "anteilig 3/4 Quartale" in nina.lines.get().detail
+
+    def test_anteilig_stichtag_folgt_dem_geschaeftsjahr(self, club, c, base, members):
+        from billing import services
+
+        club.fiscal_start_month = 7
+        club.fiscal_start_day = 1
+        club.save()
+        p = services.period(club, 2025, "yearly", 1)
+        first_half = MembershipPeriod(entry_date=p.start + datetime.timedelta(days=150))
+        second_half = MembershipPeriod(entry_date=services.add_months(p.start, 6))
+        assert services._member_months([first_half], p, 6) == 12
+        assert services._member_months([second_half], p, 6) == 6
+
+    def test_anteil_alter_schalter_aus_und_an(self, c, base, members):
+        c.patch(f"{base}/settings/", {"pro_rata_step": "quarter"}, content_type=JSON)
+        # Ältere Oberflächen schicken nur pro_rata: an lässt die Wahl, aus schaltet ab
+        data = c.patch(f"{base}/settings/", {"pro_rata": True}, content_type=JSON).json()
+        assert data["pro_rata_step"] == "quarter"
+        data = c.patch(f"{base}/settings/", {"pro_rata": False}, content_type=JSON).json()
+        assert (data["pro_rata_step"], data["pro_rata"]) == ("off", False)
 
     def test_festschreiben_versenden_pdf(self, club, c, base, members):
         run = start_run(c, base).json()

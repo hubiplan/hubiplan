@@ -58,7 +58,7 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           {
             to: '/mein-bereich/belegung',
             label: t('Belegung'),
-            tile: { title: t('Belegung'), text: t('Schützenhaus, Stand oder Material anfragen') },
+            tile: { title: t('Belegung'), text: t('Vereinsheim, Räume oder Material anfragen') },
           },
         ]
       : []),

@@ -19,6 +19,7 @@ from .models import (
     InvoiceLine,
     Mandate,
     Payment,
+    ProRata,
     SizeRate,
 )
 
@@ -37,6 +38,7 @@ class BillingSettingsSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "rhythm",
             "due_days",
             "pro_rata",
+            "pro_rata_step",
             "account",
             "category",
             "intro_text",
@@ -57,6 +59,17 @@ class BillingSettingsSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "einvoice_email",
             "einvoice_identifier",
         ]
+
+    def validate(self, attrs):
+        # Ältere Oberflächen und Apps schicken nur den Schalter pro_rata (= je Monat)
+        if "pro_rata" in attrs and "pro_rata_step" not in attrs:
+            current = self.instance.pro_rata_step if self.instance else ProRata.OFF
+            if not attrs["pro_rata"]:
+                attrs["pro_rata_step"] = ProRata.OFF
+            elif current == ProRata.OFF:
+                attrs["pro_rata_step"] = ProRata.MONTH
+        attrs.pop("pro_rata", None)
+        return super().validate(attrs)
 
     def validate_creditor_id(self, value):
         from .sepa import creditor_id_valid

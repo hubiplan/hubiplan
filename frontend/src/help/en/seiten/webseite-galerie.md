@@ -7,7 +7,7 @@ routen: [/webseite/galerie]
 stichworte: [gallery, photo album, album, sub-album, photos, cover image, sorting]
 ---
 
-In the gallery you create photo albums for the website. An album can have sub-albums, for example “2024” with “Schützenfest” and “Königsball”; it does not go any deeper.
+In the gallery you create photo albums for the website. An album can have sub-albums, for example “2024” with “Summer party” and “Annual trip”; it does not go any deeper.
 
 Create an album: enter a title and choose “New album”. The address on the website (e.g. /galerie/schuetzenfest-2024/) is made from the title and can be changed. With a date the website shows the year and can sort the albums by it. For a sub-album, choose the parent album under “Belongs to album”.
 

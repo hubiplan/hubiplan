@@ -7,8 +7,8 @@ routen: [/infrastruktur]
 stichworte: [Shooting range, Clubhouse, Hall, Room, Area, Key, Shooting lanes]
 ---
 
-Equipment & rooms › **Rooms and facilities** (Facilities module) lists the fixed premises of your active unit, for example a shooting range,
-a clubhouse or a club hall. Each facility has its own number (INF-…), a type, a short
+Equipment & rooms › **Rooms and facilities** (Facilities module) lists the fixed premises of your active unit, for example a clubhouse,
+a sports ground or a shooting range. Each facility has its own number (INF-…), a type, a short
 description and an address.
 
 With editing permission, choose **Create facility**. Optionally enter the capacity,

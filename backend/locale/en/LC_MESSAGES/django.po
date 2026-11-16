@@ -13615,3 +13615,24 @@ msgstr "{n} self-approved"
 
 msgid "Eigene Auslagen der Kasse nachträglich sichten"
 msgstr "Review the treasurer's own expense claims afterwards"
+
+msgid "nicht anteilig (voller Beitrag)"
+msgstr "not pro rata (full fee)"
+
+msgid "je angefangenem Monat"
+msgstr "per started month"
+
+msgid "je angefangenem Quartal"
+msgstr "per started quarter"
+
+msgid "je angefangenem Halbjahr"
+msgstr "per started half-year"
+
+msgid "anteilig {n}/{total} Monate"
+msgstr "pro rata {n}/{total} months"
+
+msgid "anteilig {n}/{total} Quartale"
+msgstr "pro rata {n}/{total} quarters"
+
+msgid "anteilig {n}/{total} Halbjahre"
+msgstr "pro rata {n}/{total} half-years"

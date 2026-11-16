@@ -13,4 +13,4 @@ Under **Planned income (optional)** and **Planned expenses (optional)** you ente
 
 ## Series
 
-A series groups recurring events, e.g. “Schützenfest”. Choose the series when editing an event under **Series (optional)**; this lets you compare the years.
+A series groups recurring events, e.g. “Summer party”. Choose the series when editing an event under **Series (optional)**; this lets you compare the years.

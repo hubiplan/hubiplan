@@ -163,7 +163,7 @@ export function AccountsPage() {
               />
               <p className="muted small">
                 {t(
-                  'Rücklagen nach § 62 AO binden einen Teil der Mittel für einen Zweck, etwa das nächste Schützenfest oder ein neues Zelt. Es wird kein Geld bewegt.',
+                  'Rücklagen nach § 62 AO binden einen Teil der Mittel für einen Zweck, etwa die nächste Veranstaltung oder eine größere Anschaffung. Es wird kein Geld bewegt.',
                 )}
               </p>
             </>
@@ -446,7 +446,7 @@ export function CategoriesPage() {
       <h2>{t('Kategorien')}</h2>
       <p className="muted small">
         {t(
-          'Kategorien ordnen Einnahmen und Ausgaben, zum Beispiel Beiträge, Schützenfest, Getränke oder Saalmiete.',
+          'Kategorien ordnen Einnahmen und Ausgaben, zum Beispiel Beiträge, Sommerfest, Getränke oder Saalmiete.',
         )}
         {areas.length > 0 && t(' Jede Kategorie gehört zu einem steuerlichen Bereich.')}
       </p>

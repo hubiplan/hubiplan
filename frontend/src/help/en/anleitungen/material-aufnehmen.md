@@ -5,7 +5,7 @@ modul: material
 rechte: [material.edit]
 routen: [/material]
 reihe: 10
-stichworte: [inventory, location, flag, tent, key, photo]
+stichworte: [inventory, location, tent, projector, key, photo]
 ---
 
 1. Open [Equipment](/material).

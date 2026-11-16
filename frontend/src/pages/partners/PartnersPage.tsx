@@ -542,7 +542,7 @@ function PartnerForm({
           />
           <Field
             label={t('Erstkontakt')}
-            hint={t('Wie und wo, z. B. Schützenfest 2026')}
+            hint={t('Wie und wo, z. B. Sommerfest 2026')}
             maxLength={300}
             value={value.first_contact_note ?? ''}
             onChange={(e) => setValue((cur) => ({ ...cur, first_contact_note: e.target.value }))}
