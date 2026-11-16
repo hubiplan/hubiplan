@@ -12,6 +12,7 @@ Dazu der öffentliche Link ohne Anmeldung: ``/api/public/calendar/<key>/``.
 from __future__ import annotations
 
 import datetime
+import hashlib
 
 from django.db import transaction
 from django.http import Http404, HttpResponse
@@ -1970,6 +1971,19 @@ class PublicCalendarIcsView(APIView):
         body = ical.calendar(
             owner.name, items, request.get_host().split(":")[0], description=_imprint_note(owner)
         )
-        response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
-        response["Content-Disposition"] = 'inline; filename="termine.ics"'
+        # ETag nur aus dem ausgelieferten, öffentlichen Inhalt (ohne den Zeitstempel DTSTAMP):
+        # Kalender-Clients, die alle paar Minuten fragen, bekommen 304 ohne Inhalt (PF-12)
+        tag = '"' + _content_tag(body) + '"'
+        if tag in [t.strip() for t in request.headers.get("If-None-Match", "").split(",")]:
+            response = HttpResponse(status=304)
+        else:
+            response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+            response["Content-Disposition"] = 'inline; filename="termine.ics"'
+        response["ETag"] = tag
         return _cors(response)
+
+
+def _content_tag(body: str) -> str:
+    stable = "
+".join(line for line in body.splitlines() if not line.startswith("DTSTAMP:"))
+    return hashlib.sha256(stable.encode()).hexdigest()[:32]

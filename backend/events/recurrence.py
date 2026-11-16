@@ -10,6 +10,7 @@ import datetime
 from dataclasses import dataclass
 
 from dateutil import rrule
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils import timezone
 
 from .models import Event, EventException
@@ -103,8 +104,40 @@ def series_starts(
     return starts
 
 
+# Vorfilter (Gesamtaudit 15.11., PF-12): großzügige Ränder, damit kein Einzeltermin fehlt.
+# Ganztägige gelten bis zum Ende ihres letzten Tages; Serien laufen über ihr Ende hinaus, so
+# lange ein Termin dauert; verschobene Ausnahmen können weit vom Regeltermin wegliegen.
+SINGLE_MARGIN = datetime.timedelta(days=2)
+SERIES_MARGIN = datetime.timedelta(days=400)
+
+
+def in_window(events: QuerySet, start: datetime.datetime, end: datetime.datetime) -> QuerySet:
+    """Nur Termine, die im Zeitraum Einzeltermine haben können. Ohne diesen Filter lud jeder
+    Kalender-, Abo- und Webseitenaufruf die ganze Terminhistorie (PF-12)."""
+    single = Q(repeat=Event.Repeat.NONE, starts_at__lt=end, ends_at__gte=start - SINGLE_MARGIN)
+    series = ~Q(repeat=Event.Repeat.NONE) & (
+        Q(starts_at__lt=end)
+        & (
+            Q(repeat_until__isnull=True)
+            | Q(repeat_until__gte=(start - SERIES_MARGIN).date())
+        )
+    )
+    moved = ~Q(repeat=Event.Repeat.NONE) & Q(
+        Exists(
+            EventException.objects.filter(
+                event=OuterRef("pk"),
+                starts_at__lt=end,
+                starts_at__gte=start - SERIES_MARGIN,
+            )
+        )
+    )
+    return events.filter(single | series | moved)
+
+
 def occurrences(events, start: datetime.datetime, end: datetime.datetime) -> list[Occurrence]:
     """Einzeltermine, die sich mit dem Zeitraum [start, end) überschneiden."""
+    if isinstance(events, QuerySet):
+        events = in_window(events, start, end)
     events = list(events)
     exceptions: dict[int, dict[datetime.datetime, EventException]] = {}
     series_ids = [e.pk for e in events if e.is_series]
