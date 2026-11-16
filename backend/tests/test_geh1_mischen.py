@@ -17,6 +17,13 @@ from surveys.models import Survey, SurveyAnswer
 from .test_umfragen import JSON, answer, new_survey, ok, setup, start  # noqa: F401
 
 pytestmark = pytest.mark.django_db(transaction=True)
+
+
+@pytest.fixture(autouse=True)
+def ohne_broker(settings):
+    # Mit echten Transaktionen laufen on_commit-Aufgaben (Bescheid beim Start); ohne Broker
+    # im Testaufbau gleich im Prozess ausführen
+    settings.CELERY_TASK_ALWAYS_EAGER = True
 YESNO = {"kind": "yesno", "text": "Neue Uniformjacken bestellen?"}
 
 
