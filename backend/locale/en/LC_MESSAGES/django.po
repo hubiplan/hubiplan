@@ -13636,3 +13636,45 @@ msgstr "pro rata {n}/{total} quarters"
 
 msgid "anteilig {n}/{total} Halbjahre"
 msgstr "pro rata {n}/{total} half-years"
+
+msgid "Akzentfarbe"
+msgstr "Accent colour"
+
+msgid "Achtung"
+msgstr "Attention"
+
+msgid "Festlich"
+msgstr "Festive"
+
+msgid "Schlicht in Kopffarbe"
+msgstr "Plain in header colour"
+
+msgid "über dem Kopf"
+msgstr "above the header"
+
+msgid "unter dem Kopf"
+msgstr "below the header"
+
+msgid "schwebend unten"
+msgstr "floating at the bottom"
+
+msgid "passend zum Stil"
+msgstr "matching the style"
+
+msgid "Lautsprecher"
+msgstr "Megaphone"
+
+msgid "Kalender"
+msgstr "Calendar"
+
+msgid "Stern"
+msgstr "Star"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Ausrufezeichen"
+msgstr "Exclamation mark"
+
+msgid "kein Symbol"
+msgstr "no icon"

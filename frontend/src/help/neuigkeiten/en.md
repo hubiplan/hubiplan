@@ -16,6 +16,7 @@ November 2026:
 
 #### Website
 
+- Website: **Eye-catching notice bar.** The notice bar under Website › Overview now appears in the accent colour below the header, with an icon, a button to its target and an optional countdown (“5 days to go”). Style (accent, attention, festive, plain), place (above or below the header, floating at the bottom) and icon can be chosen.
 - Website: **Set off the band of sub-units.** Under Design › Fine-tuning › **Band of sub-units** the band on the pages of sub-units can use the box colour, a light tone or plain with a line, so it does not look like a second page header.
 - **Wide logos** (landscape wordmarks) are no longer tiny in the header of HUBIplan and the website, on cards, certificates and in PDFs: the height is fixed and the width follows the image.
 - Website: **Long lists in two columns.** Under Design › Fine-tuning › **Long lists** › “in two columns”, long, narrow tables such as all kings or the winners over the years appear side by side in two columns on a computer screen; on a phone it stays a single column.
