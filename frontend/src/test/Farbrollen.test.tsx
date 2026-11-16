@@ -147,6 +147,27 @@ describe('Farbrollen in der Oberfläche', () => {
     expect(root.style.getPropertyValue('--color-bg')).toBe('')
   })
 
+  it('#539: Felder bleiben weiß auf getönter Fläche', () => {
+    applyTheme(vereinstheme)
+    // kein eigener Wert: theme.css setzt --color-input-bg auf Weiß
+    expect(document.documentElement.style.getPropertyValue('--color-input-bg')).toBe('')
+  })
+
+  it('#539: heller Text auf dunkler Fläche: Felder wie die Fläche', () => {
+    const dunkel = [
+      { color: '#05487a' },
+      { color: '#032e52' },
+      { color: '#f2f2f2' },
+      { color: '#c8c8c8' },
+      { color: '#1f2a33' },
+      { color: '#10161c' },
+    ]
+    applyTheme({ ...vereinstheme, palette: dunkel })
+    const root = document.documentElement
+    expect(root.style.getPropertyValue('--color-surface')).toBe('#1f2a33')
+    expect(root.style.getPropertyValue('--color-input-bg')).toBe('#1f2a33')
+  })
+
   it('ohne Schalter bleibt die Oberfläche, wie sie ist', () => {
     applyTheme({ ...vereinstheme, palette_roles_in_app: false })
     expect(document.documentElement.style.getPropertyValue('--color-text')).toBe('')

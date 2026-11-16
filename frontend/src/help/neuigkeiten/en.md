@@ -141,6 +141,7 @@ November 2026:
 
 #### Look and feel
 
+- **Fields stand out:** With the colour role “Surfaces” in HUBIplan, input and selection fields and buttons stay white instead of taking on the tinted colour of the card. The same goes for the search and form fields on the website.
 - **Main menu reorganised**: the new group **Club life** brings together competitions, entries and music; **Club** keeps members, sub-units and the chronicle. **Surveys** are now under Communication, **Business partners** under Administration right after Finances. The apps list their admin areas in the same order.
 - **Dark mode everywhere**: The dark appearance now applies to all pages, including administration. It is off to begin with: HUBIplan stays light until you choose “Dark” or “Same as device” under My account › Profile › **Appearance**. Accounts that used to follow the device are now set to “Light”.
 - **Quick search**: At the top (or with Ctrl+K) a few letters take you to any page; if you may see members, you find members there too.

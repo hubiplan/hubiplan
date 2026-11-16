@@ -34,7 +34,13 @@ const BASE_VARS = [
   '--button-brand-on-primary',
 ] as const
 /** Nur mit Farbrollen und nur im hellen Modus gesetzt */
-const ROLE_VARS = ['--color-text', '--color-text-muted', '--color-surface', '--color-bg'] as const
+const ROLE_VARS = [
+  '--color-text',
+  '--color-text-muted',
+  '--color-surface',
+  '--color-bg',
+  '--color-input-bg',
+] as const
 const VARS = [...BASE_VARS, ...ROLE_VARS]
 type ThemeVars = Record<(typeof BASE_VARS)[number], string> &
   Partial<Record<(typeof ROLE_VARS)[number], string>>
@@ -314,6 +320,11 @@ export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVa
   if (!dark && theme.palette_roles_in_app && theme.palette && theme.palette_roles) {
     const { colors } = appColors(theme.palette, theme.palette_roles)
     for (const [role, color] of Object.entries(colors)) roles[APP_VARS[role as AppRole]] = color
+    // #539: Felder bleiben weiß (theme.css), außer Text wäre darauf schlechter lesbar als 4,5 : 1
+    // (heller Text auf dunkler Fläche); dann wie bisher in der Fläche
+    const text = colors.text ?? APP_DEFAULTS.text
+    if (colors.surface && contrastRatio(text, '#ffffff') < 4.5)
+      roles['--color-input-bg'] = colors.surface
   }
   return {
     ...roles,

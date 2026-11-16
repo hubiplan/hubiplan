@@ -141,6 +141,7 @@ November 2026:
 
 #### Aussehen und Bedienung
 
+- **Felder heben sich ab:** Mit der Farbrolle „Flächen“ in HUBIplan bleiben Eingabe- und Auswahlfelder und Knöpfe weiß, statt die getönte Farbe der Karte zu übernehmen. Ebenso die Such- und Formularfelder der Webseite.
 - **Hauptmenü neu gegliedert**: Die neue Gruppe **Vereinsleben** fasst Wettbewerbe, Meldungen und Musik zusammen; unter **Verein** bleiben Mitglieder, Untereinheiten und Chronik. **Umfragen** stehen jetzt unter Kommunikation, **Geschäftspartner** unter Verwaltung direkt nach Finanzen. In den Apps stehen die Verwaltungsbereiche in derselben Reihenfolge.
 - **Dunkelmodus überall**: Die dunkle Darstellung gilt jetzt für alle Seiten, auch für die Verwaltung. Sie ist zunächst aus: HUBIplan bleibt hell, bis du unter Mein Konto › Profil › **Darstellung** „Dunkel“ oder „Wie Gerät“ wählst. Konten, die bisher dem Gerät folgten, stehen jetzt auf „Hell“.
 - **Schnellsuche**: Oben im Kopf (oder mit Strg+K) springst du mit ein paar Buchstaben zu jeder Seite; wer Mitglieder sehen darf, findet dort auch Mitglieder.
