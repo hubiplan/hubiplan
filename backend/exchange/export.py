@@ -20,6 +20,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from core.logobox import logo_size
 from customfields.models import FieldValue, format_year_range
 from customfields.views import definitions_for
 from members.duration import jubilees_between
@@ -536,11 +537,13 @@ def render_pdf(org: Organization, title: str, table: list[list], orientation: st
         Paragraph(escape(title), styles["Heading2"]),
     ]
     if logo:
-        img = Image(logo, width=18 * mm, height=18 * mm, kind="proportional")
+        # #527: Höhe fest, Breite nach dem Seitenverhältnis (Schriftzüge im Querformat)
+        lw, lh = logo_size(logo, 55 * mm, 18 * mm)
+        img = Image(logo, width=lw, height=lh)
         story.append(
             Table(
                 [[img, heading]],
-                colWidths=[22 * mm, None],
+                colWidths=[lw + 4 * mm, None],
                 style=[("VALIGN", (0, 0), (-1, -1), "MIDDLE")],
             )
         )
