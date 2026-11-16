@@ -16,6 +16,7 @@ November 2026:
 
 #### Website
 
+- Website: **Clearer fine-tuning.** Design › Fine-tuning now has a bar on the left with the areas of the website from top to bottom (basic style, font, readability, header and menu, title image and home page, subpages, website areas, footer), each with the number of changed controls. The most important controls come first, the rest is under “More settings”. Whatever does not apply right now stays greyed out and says why. **Show** above the preview: a click on the header, title image or footer opens the matching controls. New: **Undo** and **Redo** (also Ctrl+Z). The display of areas (events as a calendar etc.) is now part of it, and the formal or informal form of address is under Website › Overview.
 - Website: **Eye-catching notice bar.** The notice bar under Website › Overview now appears in the accent colour below the header, with an icon, a button to its target and an optional countdown (“5 days to go”). Style (accent, attention, festive, plain), place (above or below the header, floating at the bottom) and icon can be chosen.
 - Website: **Readable addresses** for dignities, competitions and series, such as `/majestaeten/hubertuskoenige/` instead of a long identifier. You can choose the address yourself; old addresses and links redirect.
 - Website: **House font from the style guide.** Under Design › Fine-tuning › Font, **Own font stack** uses fonts installed on the device, such as “Lucida Sans, Segoe UI, Arial”. No font file is delivered; anyone without the font sees the next one. Also for AI assistants.

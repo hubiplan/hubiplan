@@ -295,13 +295,30 @@ export function previewUrl(base: string, n: number, focus: PreviewFocus = {}): s
 /** Die echte Webseite in der Vorschau, umschaltbar Handy / Tablet / Bildschirm. Nach einer
  * Änderung zeigt sie die Stelle, die ``focus`` nennt (z. B. den Fuß), und wechselt für das
  * Handymenü auf „Handy“. */
-export function PreviewFrame({ website, focus }: { website: Website; focus?: PreviewFocus }) {
+export function PreviewFrame({
+  website,
+  focus,
+  onPick,
+  pickNames,
+}: {
+  website: Website
+  focus?: PreviewFocus
+  /** „Zeigen“ (Feinabstimmung, Ralf 16.11.2026): Klick in die Vorschau wählt einen Bereich */
+  onPick?: (area: string) => void
+  /** Namen der Bereiche für das Schild in der Vorschau */
+  pickNames?: Record<string, string>
+}) {
   const org = useActiveOrg()
   const [device, setDevice] = useState<Device>('desktop')
   const [src, setSrc] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [paneWidth, setPaneWidth] = useState(0)
   const pane = useRef<HTMLDivElement>(null)
+  const frame = useRef<HTMLIFrameElement>(null)
+  // Nur Webseiten ab 16.11.2026 melden „zeigen-bereit“; ältere bekommen den Knopf nicht
+  const [ready, setReady] = useState(0)
+  const canPoint = ready > 0
+  const [pointing, setPointing] = useState(false)
   const count = useRef(0)
   const stamp = stampOf(website)
   const base = website.url
@@ -357,6 +374,40 @@ export function PreviewFrame({ website, focus }: { website: Website; focus?: Pre
     return () => observer.disconnect()
   }, [])
 
+  // „Zeigen“: an die Webseite im Rahmen melden, Klicks von dort als Bereich übernehmen
+  const pick = useRef(onPick)
+  useEffect(() => {
+    pick.current = onPick
+  })
+  function tell(on: boolean) {
+    const target = frame.current?.contentWindow
+    if (!target || !src) return
+    let origin = '*'
+    try {
+      origin = new URL(src, window.location.href).origin
+    } catch {
+      return
+    }
+    target.postMessage({ hubiplan: 'zeigen', an: on, namen: pickNames ?? {} }, origin)
+  }
+  useEffect(() => {
+    if (!onPick) return
+    function onMessage(e: MessageEvent) {
+      if (!frame.current || e.source !== frame.current.contentWindow) return
+      const d = e.data as { hubiplan?: string; bereich?: unknown } | null
+      if (d?.hubiplan === 'zeigen-bereit') setReady((n) => n + 1)
+      else if (d?.hubiplan === 'bereich' && typeof d.bereich === 'string') pick.current?.(d.bereich)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [!onPick])
+  // Neu geladene Seite meldet sich wieder; dann den Zustand erneut schicken
+  useEffect(() => {
+    if (canPoint) tell(pointing)
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, pointing])
+
   const width = DEVICES[device].width
   const scale = paneWidth > 0 ? Math.min(1, paneWidth / width) : 1
 
@@ -378,6 +429,17 @@ export function PreviewFrame({ website, focus }: { website: Website; focus?: Pre
         <button type="button" className="button button-ghost" onClick={() => void connect()}>
           {t('Neu laden')}
         </button>
+        {onPick && canPoint && (
+          <button
+            type="button"
+            className="button button-ghost"
+            aria-pressed={pointing}
+            title={t('Klick in die Vorschau öffnet die passenden Regler')}
+            onClick={() => setPointing((p) => !p)}
+          >
+            ☝ {t('Zeigen')}
+          </button>
+        )}
         {src && (
           <a href={src} target="_blank" rel="noopener noreferrer">
             {t('In neuem Fenster')}
@@ -386,9 +448,15 @@ export function PreviewFrame({ website, focus }: { website: Website; focus?: Pre
       </div>
       {!base && <Alert kind="info">{t('Für die Vorschau fehlt noch eine Domain.')}</Alert>}
       {error && <Alert kind="error">{error}</Alert>}
+      {pointing && canPoint && (
+        <p className="muted small">
+          {t('Fahre über die Webseite und klicke auf den Teil, den du einstellen möchtest.')}
+        </p>
+      )}
       <div className="preview-frame" ref={pane}>
         {src && (
           <iframe
+            ref={frame}
             title={t('Vorschau der Webseite')}
             src={src}
             sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"

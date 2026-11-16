@@ -23,10 +23,10 @@ const ALL: NavItem[] = [
   { to: '/webseite/galerie', label: t('Galerie'), section: content },
   { to: '/webseite/dokumente', label: t('Dokumente'), section: content },
   { to: '/webseite/beitraege', label: t('Social Media'), section: content },
-  // S1/S3 (Ralf 14.11.2026): Gestaltung in eigenen Punkten, jeder mit Vorschau
+  // S1/S3 (Ralf 14.11.2026): Gestaltung in eigenen Punkten, jeder mit Vorschau; „Bereiche“ steht
+  // seit 16.11.2026 in der Feinabstimmung (/webseite/bereiche leitet dorthin)
   { to: '/webseite/gestaltung', label: t('Design und Farben'), section: design },
   { to: '/webseite/feinabstimmung', label: t('Feinabstimmung'), section: design },
-  { to: '/webseite/bereiche', label: t('Bereiche'), section: design },
   { to: '/webseite/fassungen', label: t('Fassungen'), section: design },
   { to: '/webseite/aufbau', label: t('Menü und Bausteine'), section: structure },
   { to: '/webseite/kontakt', label: t('Kontaktformular'), section: operation },

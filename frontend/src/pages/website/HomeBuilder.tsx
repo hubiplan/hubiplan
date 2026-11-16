@@ -889,7 +889,7 @@ function SectionDialog({
               />
               <small className="muted" id="abschnitt-titelzeilen-hinweis">
                 {t(
-                  'Nur bei Feinabstimmung › Startseite › Titelfoto als Bühne „randlos“. Eine Zeile je Titel, höchstens 6; mehrere wechseln mit den Bildern des Karussells.',
+                  'Nur bei Feinabstimmung › Titelbild und Startseite › Breite „randlos“ oder „in Inhaltsbreite“. Eine Zeile je Titel, höchstens 6; mehrere wechseln mit den Bildern des Karussells.',
                 )}
               </small>
             </div>
