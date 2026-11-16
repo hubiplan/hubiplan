@@ -9414,5 +9414,9 @@
   "Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.": "You still hold roles in: {names}. Please have them ended first.",
   "Deine Anmelde-E-Mail zur Bestätigung": "Your login email to confirm",
   "Konto endgültig löschen": "Delete account permanently",
-  "Konto löschen …": "Delete account …"
+  "Konto löschen …": "Delete account …",
+  "Lange Listen": "Long lists",
+  "untereinander": "one below the other",
+  "zweispaltig": "in two columns",
+  "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column."
 }

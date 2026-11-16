@@ -441,6 +441,15 @@ function GROUPS(): Group[] {
             'Die ersten drei Plätze jeder Wertung stehen als Karten mit großer Platzziffer über der Tabelle; bei Gleichstand bekommen alle Gleichplatzierten eine Karte.',
           ),
         },
+        // Webseite #145 (Ralf 16.11.2026)
+        {
+          key: 'long_tables',
+          label: t('Lange Listen'),
+          options: { rows: t('untereinander'), columns: t('zweispaltig') },
+          hint: t(
+            'Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.',
+          ),
+        },
       ],
     },
     {

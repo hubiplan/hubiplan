@@ -124,7 +124,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 66
+    assert len(style.OPTIONS) == 67
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
@@ -256,3 +256,9 @@ def test_seitentitel_eigene_groesse(club, site, client_web):
     assert put(client_web, club, {"style": {"title_size": "tiny"}}).status_code == 400
     cat = client_web.get(f"/api/orgs/{club.pk}/website/").json()["style_catalog"]
     assert cat["options"]["title_size"] == ["small", "medium", "normal", "large"]
+
+
+def test_lange_listen_zweispaltig():
+    """Webseite #145: lange, schmale Tabellen wahlweise zweispaltig; ohne Wahl untereinander."""
+    assert style.OPTIONS["long_tables"] == ("rows", "columns")
+    assert style.defaults("classic")["long_tables"] == "rows"

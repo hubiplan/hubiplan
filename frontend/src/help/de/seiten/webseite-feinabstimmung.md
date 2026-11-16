@@ -36,6 +36,8 @@ stichworte:
     Epochen,
     Podium,
     Rangliste,
+    Listen,
+    zweispaltig,
   ]
 ---
 
@@ -86,6 +88,7 @@ Dazu kommen Regler für einzelne Seiten; ohne eigene Wahl bleibt jede Seite, wie
 - **Anrede im Kontaktformular** „Sie“ oder „du“: gilt für Beschriftungen, Einleitung, Fehlermeldungen und die Bestätigung. Den Kasten rechts neben dem Formular (z. B. „Du möchtest mitmachen?“ mit Knopf) schreibt ihr unter Webseite › Texte als Einleitung des Bereichs **Kontakt**.
 - **Epochen der Chronik** „als Band“: jede Epoche randlos in der dunklen Vereinsfarbe, darin groß der Zeitraum in der Zweitfarbe, der Titel und der Text der Epoche; die Zeitleiste läuft darunter weiter. Die Sprungmarken oben werden zu unterstrichenen Links, die Jahreszahlen stehen in der Schrift der Überschriften.
 - **Ranglisten der Ergebnisse** „Plätze 1 bis 3 als Karten“: Über jeder Rangliste stehen die ersten drei Plätze als Karten mit großer Platzziffer (Platz 1 in der Vereinsfarbe), Name, Untereinheit und Ergebnis mit Einheit, etwa „48 Ringe“. Bei Gleichstand bekommt jeder Gleichplatzierte eine Karte; die Tabelle darunter beginnt mit Platz 4 und entfällt, wenn es nicht mehr Plätze gibt.
+- **Lange Listen** „zweispaltig“: Lange, schmale Tabellen wie die Liste aller Könige, die Gewinner eines Wanderpokals oder die Sieger eines Wettbewerbs über die Jahre stehen am Bildschirm in zwei Spalten nebeneinander, so ist die Seite nur noch halb so lang. Gelesen wird erst die linke Spalte von oben nach unten, dann die rechte; bei ungerader Zahl hat die linke eine Zeile mehr, beide zeigen die Kopfzeile. Das gilt nur für Tabellen mit höchstens zwei Spalten und mindestens 20 Zeilen und erst ab etwa 800 Pixeln Breite; auf dem Handy und in schmalen Fenstern bleibt es eine Spalte. Vorleseprogramme lesen weiter eine Tabelle in der richtigen Reihenfolge.
 
 Etiketten, die Ziffern der Plätze 2 und 3 und der Kasten neben dem Kontaktformular stehen in der Farbe, die ihr bei den Farben des Designs für das Datumsfeld gewählt habt.
 
