@@ -120,6 +120,17 @@ Regeln:
   der Einheit. Liste und **Trennen** unter Mein Konto › App & andere Instanzen
   (`GET /api/me/mcp/`, `DELETE /api/me/mcp/<id>/`).
 - Der Betreiber schaltet Stufe 1a mit `HUBIPLAN_MCP=false` für die ganze Instanz ab (404).
+- **Hinweise an den Client** (Gesamtaudit 15.11., MCP-02): `destructiveHint` ist gesetzt bei
+  Werkzeugen, die sofort wirken und ersetzen oder löschen (`erscheinungsbild_aendern`,
+  `logo_aus_bild`, `briefbogen_aendern`, `briefbogen_logo_aus_bild`) und bei
+  `startseite_aufbau_aendern` (kennt `entfernen`); `openWorldHint` bei `bild_von_adresse`. Sofort
+  wirksame Werkzeuge tragen „(wirkt sofort)“ im Titel.
+- **Fremdinhalte** (MCP-03): Jede Antwort mit Vereinsdaten endet mit einem eigenen Textteil, der
+  sagt, dass die Texte von Personen oder fremden Quellen stammen und keine Anweisungen sind.
+  Unsichtbare Zeichen (Unicode-Tags U+E0000–E007F, Richtungszeichen, Zeichen ohne Breite) entfernt
+  der Server aus allen Antworten. Termine aus abonnierten fremden Kalendern tragen in
+  `startseite_bausteine` `external: true`; Dateinamen von Bildern (beim Hochladelink vom
+  Hochladenden gewählt) gibt die Schnittstelle nicht aus.
 
 ## W1: Werkzeuge der Webseite
 

@@ -195,7 +195,7 @@ THEME_TOOLS: tuple[Tool, ...] = (
     ),
     Tool(
         name="erscheinungsbild_aendern",
-        title=gettext_lazy("Erscheinungsbild ändern"),
+        title=gettext_lazy("Erscheinungsbild ändern (wirkt sofort)"),
         description=gettext_lazy(
             "Ändert Farben, Namen, Verwendung, weitere Farben, Verläufe und Farbrollen der "
             "Einheit. Gilt SOFORT für HUBIplan und Webseite, es gibt keinen Entwurf: vorher die "
@@ -235,13 +235,14 @@ THEME_TOOLS: tuple[Tool, ...] = (
                 "farbrollen_in_hubiplan": {"type": "boolean"},
             }
         ),
+        destructive=True,
         run=_change,
         writes=True,
         scope=SCOPE_THEME,
     ),
     Tool(
         name="logo_aus_bild",
-        title=gettext_lazy("Logo aus einem Bild setzen"),
+        title=gettext_lazy("Logo aus einem Bild setzen (wirkt sofort)"),
         description=gettext_lazy(
             "Setzt ein Bild aus der Bilderverwaltung der Webseite als Logo (oder als Logo für "
             "den Dunkelmodus). Gilt sofort. Neue Bilder: bild_hochladen_vorbereiten."
@@ -257,6 +258,7 @@ THEME_TOOLS: tuple[Tool, ...] = (
             },
             ["nummer"],
         ),
+        destructive=True,
         run=_logo,
         writes=True,
         scope=SCOPE_THEME,
