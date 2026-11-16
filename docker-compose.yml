@@ -87,7 +87,8 @@ services:
   worker:
     build: ./backend
     environment: *backend-env
-    command: celery -A config worker --loglevel=info
+    # Entwicklung: ein Worker für beide Warteschlangen (Betrieb: worker und worker-zeitplan)
+    command: celery -A config worker --loglevel=info -Q eilig,celery,zeitplan
     volumes:
       - ./backend:/app
     depends_on:

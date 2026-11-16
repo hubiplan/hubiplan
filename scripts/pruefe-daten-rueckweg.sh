@@ -27,7 +27,7 @@ done
 
 daten_rueckweg "$ZIEL_TEST" > /dev/null
 [ "$(wc -l < "$LOG")" -eq 2 ]
-head -n 1 "$LOG" | grep -q '^stop|-t|60|backend|worker|beat|backup|$'
+head -n 1 "$LOG" | grep -q '^stop|-t|60|backend|worker|worker-zeitplan|beat|backup|$'
 tail -n 1 "$LOG" | grep -q -- '--entrypoint|python|'
 tail -n 1 "$LOG" | grep -Fq -- "$ZIEL_TEST/backend:/rueckweg-backend:ro|"
 tail -n 1 "$LOG" | grep -q -- 'daten_verschluesseln|--rueckweg-zu|/rueckweg-backend|$'

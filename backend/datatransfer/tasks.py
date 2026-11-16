@@ -11,6 +11,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from core import alarm
+from core.einzeln import LONG_HARD, LONG_SOFT
 from core.tenancy import rls_bypass, tenant_context
 
 from . import dump, load
@@ -31,7 +32,7 @@ def _save(job: TransferJob) -> None:
         job.save()
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def run_export(job_id: int) -> None:
     job = _load(job_id)
     job.status = TransferJob.Status.RUNNING
@@ -73,7 +74,7 @@ def run_export(job_id: int) -> None:
     _save(job)
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def check_import(job_id: int) -> None:
     job = _load(job_id)
     try:
@@ -91,7 +92,7 @@ def check_import(job_id: int) -> None:
     _save(job)
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def run_import(job_id: int) -> None:
     """Import einmalig ausführen (Gesamtaudit 30.10., B-F02).
 

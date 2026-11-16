@@ -66,7 +66,7 @@ cleanup() {
     local rc=$?
     trap - EXIT
     if [ "$SUCCESS" != 1 ] && [ "$PAUSE" = 1 ]; then
-        compose stop -t 60 backend worker beat backup >&2 || true
+        compose stop -t 60 backend worker worker-zeitplan beat backup >&2 || true
         echo "Schreibpause bleibt bestehen. Ursache beheben; danach: bash deploy/datenschluessel-wechseln.sh --organisation $ORG --fortsetzen" >&2
     fi
     rm -f "$LOCK/lauf"
@@ -127,10 +127,10 @@ mkdir -p "$OPEN"
 sync -f "$STATE_DIR"
 PAUSE=1
 save_state
-compose stop -t 60 backend worker beat backup
+compose stop -t 60 backend worker worker-zeitplan beat backup
 ensure_stopped() {
     local running
-    running=$(compose ps --status running -q backend worker beat backup) || return 1
+    running=$(compose ps --status running -q backend worker worker-zeitplan beat backup) || return 1
     [ -z "$running" ] || {
         echo "Schreibdienste sind noch aktiv; Wechsel abgebrochen." >&2; return 1;
     }
@@ -190,7 +190,7 @@ PHASE=neustart; save_state
 ensure_stopped
 manage --pruefen
 compose up -d --no-deps --wait --wait-timeout 300 backend
-compose up -d --no-deps --wait --wait-timeout 300 worker beat backup
+compose up -d --no-deps --wait --wait-timeout 300 worker worker-zeitplan beat backup
 PHASE=abgeschlossen; save_state
 rmdir "$OPEN"
 mv "$STATUS" "$STATE_DIR/letzter-abschluss"

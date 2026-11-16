@@ -2,6 +2,8 @@
 
 from celery import shared_task
 
+from core.einzeln import einzeln
+
 
 @shared_task
 def archive_invoices() -> int:
@@ -21,6 +23,7 @@ def check_incoming(org_id: int) -> int:
 
 
 @shared_task(soft_time_limit=3 * 60 * 60, time_limit=3 * 60 * 60 + 60)
+@einzeln
 def check_incoming_all() -> int:
     """Liegengebliebene Prüfungen nachholen (jede Minute)."""
     from .incoming_check import check_all

@@ -66,4 +66,6 @@ def deliver(message) -> None:
         message.send()
         return
     data = _message_data(message)
-    transaction.on_commit(lambda: send_message.delay(data), robust=True)
+    transaction.on_commit(
+        lambda: send_message.apply_async((data,), expires=settings.EILIG_EXPIRES), robust=True
+    )
