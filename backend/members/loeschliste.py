@@ -217,12 +217,10 @@ def _history_left(rows: list[dict]) -> set[int]:
     """Mitgliedschaften, bei denen Chronik, Würden oder Ehrungen den Namen wieder tragen.
 
     Gesammelt über alle Einträge mit ``h``, je Tabelle eine Abfrage. Großzügig: Ein Treffer
-    in einem anderen Verein der Person führt nur zu einem unnötigen, wirkungslosen Aufruf von
-    ``erase_history``."""
+    in einem anderen Verein der Person oder ein Name, der wegen einer Mitgliedschaft
+    anderswo bleibt, führt nur zu einem wirkungslosen Aufruf von ``erase_history``."""
     if not rows:
         return set()
-    from django.db.models import Count
-
     from competitions.models import AwardGrant
     from honors.models import Companion, Reign
     from qualifications.models import Qualification
@@ -237,13 +235,13 @@ def _history_left(rows: list[dict]) -> set[int]:
         hit_persons.update(
             model.objects.filter(person_id__in=persons).values_list("person_id", flat=True)
         )
-    # Name der Person wieder da, obwohl sie nur diese eine Mitgliedschaft hat
-    # (Namen sind verschlüsselt, der Vergleich geht nur hier)
+    # Name der Person wieder da: großzügig für jede Person der Liste; ob der Name wirklich
+    # entfernt wird (keine Mitgliedschaft außerhalb des Vereinsbaums), entscheidet
+    # erase_history, sonst ist der Aufruf wirkungslos. Namen sind verschlüsselt, der
+    # Vergleich geht nur hier.
     hit_persons.update(
         person.pk
         for person in Person.objects.filter(pk__in=persons)
-        .annotate(n=Count("memberships"))
-        .filter(n=1)
         if person.last_name != NAME_REMOVED
     )
     hit = set(

@@ -217,3 +217,23 @@ def test_loeschliste_fehler_haelt_die_uebrigen_nicht_auf(settings):
         )
     assert left == [rows[0].pk]
     assert any("Löschliste: Löschungen gescheitert" in c.args[0] for c in alert.call_args_list)
+
+
+def test_loeschliste_name_bei_zwei_mitgliedschaften_im_selben_verein(settings):
+    """Verein und Untereinheit: Nach dem Einspielen ist der Name wieder da und wird wieder
+    entfernt, auch ohne Würden oder Ehrungen (Durchsicht #508)."""
+    club = make_org("Löschverein Baum")
+    unit = make_org("Löschverein Abteilung", "unit", parent=club)
+    member = make_member(club, "Erika", "Baum")
+    with rls_bypass():
+        Membership.objects.create(organization=unit, scope=club, person=member.person)
+        Membership.objects.filter(person=member.person).update(
+            purged_at=datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC)
+        )
+        row = Membership.objects.get(pk=member.pk)
+    _write_list(settings, [_entry(row, h=True)])
+    assert loeschliste.apply() == 1
+    with rls_bypass():
+        person = Person.objects.get(pk=member.person_id)
+    assert person.last_name == workflows.NAME_REMOVED
+    assert loeschliste.apply() == 0
