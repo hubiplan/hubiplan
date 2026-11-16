@@ -12,6 +12,7 @@ import pytest
 from peering import packets, services
 from peering.models import Coupling, Message
 
+from .test_rls import as_app_role
 from .test_verbund_kopplung import VEREIN, _setup, couple, net, world  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -88,3 +89,27 @@ def test_getrennt_waehrend_des_baus_verhindert_das_paket(net, world, monkeypatch
         monkeypatch.setattr(packets, "build", build_and_end)
         assert services.sync(lower) == 0
         assert _out(lower) == before
+
+
+def test_unter_der_anwendungsrolle_dasselbe_paket(net, world):
+    """Der Job läuft mit rls_bypass unter der Rolle der Anwendung (Kontext sitzungsweit, nicht
+    nur in der Transaktion). Der Bau außerhalb der Sperre liefert dasselbe wie vorher."""
+    from core.tenancy import rls_bypass
+
+    lower, _upper = couple(net, world)
+    world["club"].name = "Schützenverein Beispiel 1920"
+    world["club"].save()
+    with net.on(VEREIN):
+        coupling = Coupling.objects.get(pk=lower.pk)
+        expected = {
+            p.key: packets.digest(packets.build(coupling, p))
+            for p in packets.sendable(coupling)
+            if p.build is not None
+        }
+        before = _out(lower)
+        with as_app_role(), rls_bypass():
+            assert services.sync(Coupling.objects.get(pk=lower.pk)) == 1
+        lower.refresh_from_db()
+        assert _out(lower) == before + 1
+        for key, digest in expected.items():
+            assert lower.sent_hashes[key] == digest, key
