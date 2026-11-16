@@ -117,10 +117,7 @@ def in_window(events: QuerySet, start: datetime.datetime, end: datetime.datetime
     single = Q(repeat=Event.Repeat.NONE, starts_at__lt=end, ends_at__gte=start - SINGLE_MARGIN)
     series = ~Q(repeat=Event.Repeat.NONE) & (
         Q(starts_at__lt=end)
-        & (
-            Q(repeat_until__isnull=True)
-            | Q(repeat_until__gte=(start - SERIES_MARGIN).date())
-        )
+        & (Q(repeat_until__isnull=True) | Q(repeat_until__gte=(start - SERIES_MARGIN).date()))
     )
     moved = ~Q(repeat=Event.Repeat.NONE) & Q(
         Exists(

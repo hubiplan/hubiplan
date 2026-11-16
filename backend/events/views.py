@@ -1984,6 +1984,5 @@ class PublicCalendarIcsView(APIView):
 
 
 def _content_tag(body: str) -> str:
-    stable = "
-".join(line for line in body.splitlines() if not line.startswith("DTSTAMP:"))
+    stable = "\n".join(line for line in body.splitlines() if not line.startswith("DTSTAMP:"))
     return hashlib.sha256(stable.encode()).hexdigest()[:32]
