@@ -2,16 +2,107 @@
 
 Es werden nur die Such-/Sortierspalten geladen. Das zurückgegebene QuerySet behält
 Annotationen, Fachfilter und Beziehungen; seine Reihenfolge enthält nur Zeilen-IDs.
-Kein Cache und keine zusätzliche Freigabe von Personen außerhalb der Kandidaten.
+Keine zusätzliche Freigabe von Personen außerhalb der Kandidaten.
+
+Entschlüsselte Namen (Gesamtaudit 15.11., PF-24): Jede Seite der Mitgliederliste entschlüsselte
+alle Namen der Einheit neu. Ein kleiner Zwischenspeicher je Prozess hält entschlüsselte Werte,
+Schlüssel ist das Chiffrat selbst (mit Feld): Ändert sich ein Name, ändert sich das Chiffrat,
+und der alte Eintrag wird nie wieder getroffen. Nur im Arbeitsspeicher, nie in Redis, Logs oder
+Fehlermeldungen; feste Obergrenze und Ablaufzeit, damit gelöschte oder anonymisierte Namen nicht
+beliebig lange im Prozess liegen (Fachfrage F1 zu Block 6: Namen bleiben verschlüsselt).
 """
 
 from __future__ import annotations
 
+import threading
+import time
 import unicodedata
+from collections import OrderedDict
 from collections.abc import Sequence
 
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import BigIntegerField, F, Func, IntegerField, Value
+from django.db.models import BigIntegerField, F, Func, IntegerField, TextField, Value
+from django.db.models.functions import Cast
+
+from core.encfields import EncryptedMixin
+
+PLAIN_MAX = 50_000
+PLAIN_TTL = 10 * 60
+
+
+class _PlainCache:
+    """LRU mit Ablaufzeit: (Feld, Chiffrat) -> Klartext. Nur im Arbeitsspeicher."""
+
+    def __init__(self, size: int, ttl: float):
+        self.size, self.ttl = size, ttl
+        self.items: OrderedDict = OrderedDict()
+        self.lock = threading.Lock()
+
+    def get(self, key):
+        now = time.monotonic()
+        with self.lock:
+            hit = self.items.get(key)
+            if hit is None:
+                return None
+            if hit[0] < now:
+                del self.items[key]
+                return None
+            self.items.move_to_end(key)
+            return hit[1]
+
+    def put(self, key, value) -> None:
+        with self.lock:
+            self.items[key] = (time.monotonic() + self.ttl, value)
+            self.items.move_to_end(key)
+            while len(self.items) > self.size:
+                self.items.popitem(last=False)
+
+    def clear(self) -> None:
+        with self.lock:
+            self.items.clear()
+
+
+PLAIN = _PlainCache(PLAIN_MAX, PLAIN_TTL)
+
+
+def _field(model, path: str):
+    """Modellfeld am Ende eines Pfads wie ``person__last_name``; None bei Annotationen."""
+    from django.core.exceptions import FieldDoesNotExist
+
+    field = None
+    for part in path.split("__"):
+        try:
+            field = model._meta.get_field(part)
+        except FieldDoesNotExist:
+            return None
+        if field.is_relation:
+            model = field.related_model
+    return field
+
+
+def plain_values(qs, *paths: str):
+    """Wie ``values_list("pk", *paths)``, verschlüsselte Felder über den Zwischenspeicher.
+
+    Die Datenbank liefert für verschlüsselte Felder das Chiffrat (Cast nach text, ohne
+    Entschlüsseln); entschlüsselt wird nur, was noch nicht im Speicher liegt."""
+    fields = [_field(qs.model, path) for path in paths]
+    secret = [isinstance(f, EncryptedMixin) for f in fields]
+    columns = [
+        Cast(F(path), output_field=TextField()) if enc else path
+        for path, enc in zip(paths, secret, strict=True)
+    ]
+    for row in qs.order_by().values_list("pk", *columns).iterator():
+        out = [row[0]]
+        for value, field, enc in zip(row[1:], fields, secret, strict=True):
+            if enc and value is not None:
+                key = (field.model._meta.label_lower, field.attname, value)
+                plain = PLAIN.get(key)
+                if plain is None:
+                    plain = field.decrypt_db_value(value)
+                    PLAIN.put(key, plain)
+                value = plain
+            out.append(value)
+        yield tuple(out)
 
 
 def normalize(value: str) -> str:
@@ -38,7 +129,7 @@ def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name
     matches = {word: set() for word in needles}
     if not needles:
         return matches
-    for row in qs.order_by().values_list("pk", *fields).iterator():
+    for row in plain_values(qs, *fields):
         values = [normalize(value) for value in row[1:] if value is not None]
         for word, needle in needles.items():
             if any(needle == value if exact else needle in value for value in values):
@@ -56,9 +147,7 @@ def filter_names(qs, search: str, *, variants=None, max_words=3):
     ]
     ids = [
         pk
-        for pk, last, first in qs.order_by().values_list(
-            "pk", "person__last_name", "person__first_name"
-        )
+        for pk, last, first in plain_values(qs, "person__last_name", "person__first_name")
         if all(
             any(needle in normalize(value) for needle in group for value in (last, first))
             for group in needles
@@ -122,7 +211,7 @@ def ordered(qs, *ordering, limit=None, lazy=False):
             desc = term.descending
             nulls_first = bool(term.nulls_first or (desc and not term.nulls_last))
         terms.append((field, desc, nulls_first))
-    rows = list(qs.order_by().values_list("pk", *(field for field, _, _ in terms)))
+    rows = list(plain_values(qs, *(field for field, _, _ in terms)))
     # DISTINCT mit Beziehungen darf dieselbe Eingangszeile nicht vervielfachen.
     rows = list({row[0]: row for row in rows}.values())
     rows.sort(key=lambda row: row[0])
