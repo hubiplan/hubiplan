@@ -115,6 +115,8 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "address": ("formal", "informal"),
     "timeline_chapter": ("plain", "band"),
     "ranking": ("table", "podium"),
+    # Webseite #143: Ehrungen als eigene Karte je Person, Ehrung oder Titel als Etikett
+    "honorary_layout": ("list", "cards"),
 }
 
 # Was ein Design selbst festlegt (ausgegraut in der Oberfläche, die Webseite übergeht es):
@@ -208,6 +210,7 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "address": "formal",
     "timeline_chapter": "plain",
     "ranking": "table",
+    "honorary_layout": "list",
 }
 _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
     "classic": {
