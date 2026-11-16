@@ -382,7 +382,9 @@ def results_hidden(survey: Survey, count: int, now=None) -> bool:
     Ergebnis nach jeder Antwort ändert, könnte sonst auf einzelne Personen schließen."""
     if not survey.anonymous:
         return False
-    return count < ANONYMOUS_MIN or status_of(survey, now) != Survey.Status.CLOSED
+    # Erst nach dem förmlichen Schließen, das die Antworten mischt (GEH-1); per Zeitablauf
+    # beendet, aber noch nicht geschlossen: bis zum nächsten Lauf (alle 15 Minuten) warten
+    return count < ANONYMOUS_MIN or survey.status != Survey.Status.CLOSED
 
 
 def result_data(survey: Survey, *, with_names: bool) -> dict:
@@ -390,8 +392,8 @@ def result_data(survey: Survey, *, with_names: bool) -> dict:
         return {**survey.archived, "archived": True}
     count = participants(survey)
     if results_hidden(survey, count):
-        # until_close: anonym und noch nicht beendet (FF-22); sonst zu wenige Antworten
-        until_close = status_of(survey) != Survey.Status.CLOSED
+        # until_close: anonym und noch nicht geschlossen (FF-22); sonst zu wenige Antworten
+        until_close = survey.status != Survey.Status.CLOSED
         return {"participants": count, "hidden": True, "until_close": until_close, "questions": []}
     names_on = with_names and not survey.anonymous
     name_of: dict[int, str] = {}
@@ -499,8 +501,56 @@ ANONYMOUS_RESULTS = (Survey.Results.AFTER_CLOSE, Survey.Results.MANAGERS)
 # --- Ablauf ---
 
 
+def mix_answers(survey: Survey) -> int:
+    """Antworten einer anonymen Umfrage in zufälliger Reihenfolge neu schreiben (Gesamtaudit
+    15.11., GEH-1). Teilnahme und Antwort entstehen in derselben Transaktion; ohne Mischen
+    ließen sie sich über die Transaktionsnummer (xmin) und die Lage in der Tabelle (ctid)
+    einander zuordnen. Danach tragen alle Antworten dieselbe neue Transaktionsnummer, neue
+    Kennungen und eine zufällige Reihenfolge. Die Umfrage muss gesperrt sein
+    (select_for_update), damit keine Stimme dazwischen kommt. Zählungen ändern sich nicht."""
+    if not survey.anonymous:
+        return 0
+    fields = [f.attname for f in SurveyAnswer._meta.concrete_fields if not f.primary_key]
+    found = list(SurveyAnswer.objects.filter(survey=survey))
+    if not found:
+        return 0
+    rows = [{k: getattr(a, k) for k in fields} for a in found]
+    random.SystemRandom().shuffle(rows)
+    # Nur die gelesenen Zeilen: eine Stimme, die doch dazwischen kam, bleibt erhalten
+    SurveyAnswer.objects.filter(pk__in=[a.pk for a in found]).delete()
+    SurveyAnswer.objects.bulk_create([SurveyAnswer(**r) for r in rows])
+    return len(rows)
+
+
+def mix_open() -> int:
+    """Alle 15 Minuten: offene anonyme Umfragen mischen. Gerade gesperrte (jemand stimmt ab) kommen
+    beim nächsten Lauf dran; beim Schließen wird ohnehin gemischt."""
+    from core.tenancy import rls_bypass
+
+    done = 0
+    with rls_bypass():
+        ids = list(
+            Survey.objects.filter(
+                names=Survey.Names.ANONYMOUS, status=Survey.Status.OPEN
+            ).values_list("pk", flat=True)
+        )
+        for pk in ids:
+            with transaction.atomic():
+                survey = (
+                    Survey.objects.select_for_update(skip_locked=True)
+                    .filter(pk=pk, status=Survey.Status.OPEN)
+                    .first()
+                )
+                if survey is not None and mix_answers(survey):
+                    done += 1
+    return done
+
+
 def close(survey: Survey, now: datetime.datetime | None = None) -> None:
+    """Umfrage schließen; die Umfrage muss gesperrt sein. Anonyme Antworten werden vorher
+    gemischt, erst danach erscheint das Ergebnis (GEH-1)."""
     now = now or timezone.now()
+    mix_answers(survey)
     survey.invited = len(eligible_ids(survey))
     survey.status = Survey.Status.CLOSED
     survey.closed_at = now
@@ -579,11 +629,23 @@ def close_due(now: datetime.datetime | None = None) -> int:
     now = now or timezone.now()
     done = 0
     with rls_bypass():
-        for survey in Survey.objects.filter(
-            status=Survey.Status.OPEN, closes_at__lte=now
-        ).select_related("organization", "department", "event"):
-            close(survey, now)
-            done += 1
+        ids = list(
+            Survey.objects.filter(status=Survey.Status.OPEN, closes_at__lte=now).values_list(
+                "pk", flat=True
+            )
+        )
+        for pk in ids:
+            with transaction.atomic():
+                survey = (
+                    Survey.objects.select_for_update(of=("self",))
+                    .filter(pk=pk, status=Survey.Status.OPEN)
+                    .select_related("organization", "department", "event")
+                    .first()
+                )
+                if survey is None:
+                    continue
+                close(survey, now)
+                done += 1
     return done
 
 
