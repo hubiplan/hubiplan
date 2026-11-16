@@ -134,7 +134,8 @@ also vorhanden sein. Details: [lizenzen.md](lizenzen.md).
 ## Mailversand und Verteiler
 
 SMTP-Zugang und Versandgrenzen werden je Installation in der `.env` hinterlegt.
-`MAIL_RATE_PER_HOUR` muss zum Limit des eigenen Mailanbieters passen. Verteiler werden
+`MAIL_RATE_PER_HOUR` muss zum Limit des eigenen Mailanbieters passen; die Grenze gilt für
+Rundschreiben und Termin-Mails (siehe [rundschreiben.md](rundschreiben.md)). Verteiler werden
 über einen eigenen Domain-/Catch-all-Postfach-Aufbau eingerichtet:
 
 ```powershell
