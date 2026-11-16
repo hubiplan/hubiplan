@@ -204,6 +204,26 @@ Recht `theme.edit`, Ansichten `ThemeView` (PATCH `theme/`) und `OrganizationLogo
 | `erscheinungsbild_aendern` | erscheinungsbild | `hauptfarbe`/`zweitfarbe` {farbe, name, verwendung}, `weitere_farben` und `verlaeufe` (ersetzen), `farbrollen` (ergänzen, `null` entfernt), `farbrollen_in_hubiplan` |
 | `logo_aus_bild` | erscheinungsbild | Bild der Bilderverwaltung als Logo oder Dunkel-Logo, optional Hintergrund entfernen |
 
+## Chronik (Bereiche `webseite.lesen`/`webseite.entwurf`)
+
+Die Chronik (Modul „Chronik“) ist die Textseite `geschichte` mit Einleitung und Zeitleiste
+(`website/timeline.py`). Die Werkzeuge rufen `ChronicleView` (GET `chronicle/`, legt die Chronik wie
+die Oberfläche bei Bedarf an) und `TextDetailView` (PUT `website/texts/<id>/`) auf: Recht
+`chronicle.edit` oder Inhalte der Webseite bearbeiten, gleiche Prüfung, Änderungsprotokoll. Nur der
+Entwurf ändert sich; veröffentlicht wird unter Chronik. Einträge haben keine feste Kennung, sie
+heißen nach ihrer Stelle `nr` in der nach Jahren sortierten Liste; `ueberschrift_bisher` schützt
+vor veralteten Nummern. Verbinden darf auch, wer nur `chronicle.view` hat (ohne Rechte an der
+Webseite). Namen im Freitext prüft HUBIplan nicht gegen Widersprüche (FF-25); die Beschreibungen
+der Werkzeuge weisen darauf hin.
+
+| Werkzeug | Bereich | Was |
+|---|---|---|
+| `chronik_ansehen` | lesen | Titel, Einleitung, `neueste_zuerst`, Veröffentlichungsstand, alle Einträge mit `nr` |
+| `chronik_aendern` | entwurf | `titel`, `einleitung` (Markdown), `neueste_zuerst` |
+| `chronik_eintraege_anlegen` | entwurf | `eintraege` (bis 100): `art` (ereignis/kapitel), `jahr`, `bis`, `ueberschrift`, `text`, `bilder`, `bildposition` |
+| `chronik_eintrag_aendern` | entwurf | `nr`, optional `ueberschrift_bisher`, dazu die Felder eines Eintrags; nur Angegebenes ändert sich |
+| `chronik_eintrag_loeschen` | entwurf | `nr` und `ueberschrift_bisher` (Pflicht) |
+
 ## Briefbogen (Bereich `verein.briefbogen`)
 
 Issue #470: Der Briefbogen (Word-Vorlage und alle PDF-Briefe) hat keinen Entwurf, Änderungen gelten
@@ -218,6 +238,6 @@ sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Ha
 | `briefbogen_logo_aus_bild` | briefbogen | Issue #488: Bild der Bilderverwaltung als eigenes Logo nur für den Briefbogen (`LetterheadLogoView`, `letterhead/logo/` bzw. `letterhead/units/<id>/logo/`), `entfernen` setzt zurück aufs Erscheinungsbild; Untereinheiten nur mit eigenem Briefbogen |
 
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
-`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `website/upload_views.py` (Hochladelink, Bild per Adresse),
-`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`, `test_mcp_briefbogen.py`,
+`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `club_chronicle.py` (Chronik), `website/upload_views.py` (Hochladelink, Bild per Adresse),
+`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`, `test_mcp_briefbogen.py`, `test_mcp_chronik.py`,
 `frontend/src/test/McpConnect.test.tsx`.

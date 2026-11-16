@@ -22,3 +22,6 @@ an Excel file.
 
 Anyone with the “Maintain chronicle” right may edit it; anyone with “Read chronicle” may read
 it. Roles that edit website content already have both.
+
+A connected AI assistant can also maintain the chronicle in the draft, for example take over
+entries from an anniversary publication (see [Connect an AI assistant](/hilfe/ki-assistent-verbinden)).
