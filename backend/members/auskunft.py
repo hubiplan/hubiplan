@@ -799,6 +799,46 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from expenses.models import ExpenseClaim, ExpenseLink
+
+    # Auslagen: eigene Anträge mit Positionen und Verlauf (Bankverbindung nur verkürzt)
+    files["auslagen.json"] = _dump(
+        [
+            {
+                "nummer": c.number,
+                "art": c.kind,
+                "stand": c.status,
+                "zweck": c.purpose,
+                "kaufdatum": c.purchase_date,
+                "auszahlung": c.payout,
+                "iban": ("…" + c.payee.get("iban", "")[-4:]) if c.payee.get("iban") else "",
+                "strecke": c.route,
+                "km": c.km,
+                "betrag": c.total,
+                "freigegeben": c.approved_amount,
+                "kuerzung": c.reduce_reason,
+                "ablehnung": c.reject_reason,
+                "eingereicht": c.submitted_at,
+                "ausgezahlt": c.paid_at,
+                "positionen": [
+                    {"betrag": line.amount, "text": line.text} for line in c.lines.all()
+                ],
+                "belege": [f.name for f in c.files.all()],
+                "verlauf": [
+                    {"was": e.kind, "wann": e.created_at, "text": e.text}
+                    for e in c.events.order_by("created_at")
+                ],
+            }
+            for c in ExpenseClaim.objects.filter(membership=membership).prefetch_related(
+                "lines", "files", "events"
+            )
+        ]
+        + [
+            {"link_fuer": link.name, "gueltig_bis": link.valid_until, "erstellt": link.created_at}
+            for link in ExpenseLink.objects.filter(membership=membership)
+        ]
+    )
+
     from qualifications.models import Qualification
 
     files["qualifikationen.json"] = _dump(

@@ -13,6 +13,7 @@ APP_FEATURES: dict[str, str] = {
     "app-senden": "Senden aus der App (send/)",
     "app-sprache": "Sprache je Konto (me/language/)",
     "app-passkey": "Anmelden mit Passkey (passkey/begin/, passkey/; nutzbar laut passkey)",
+    "app-pruefwert": "Verbindungscode mit Prüfwert der App (anmelden?challenge=, pair/ verifier)",
 }
 
 # /api/public/site/v1/instance/

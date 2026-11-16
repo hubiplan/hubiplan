@@ -1,0 +1,61 @@
+/* Auslagen erstatten */
+.expense-facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0.5rem 0 1rem;
+}
+.expense-facts dt {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+.expense-facts dd {
+  margin: 0;
+}
+.expense-facts .contents {
+  display: contents;
+}
+.expense-line {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: end;
+}
+.expense-line:has(select) {
+  grid-template-columns: minmax(7rem, 10rem) 1fr minmax(10rem, 14rem) auto;
+}
+.expense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.expense-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.expense-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.expense-girocode {
+  max-width: 12rem;
+}
+@media (max-width: 40rem) {
+  .expense-line,
+  .expense-line:has(select) {
+    grid-template-columns: 1fr;
+  }
+  .expense-facts {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+  .expense-facts dd {
+    margin-bottom: 0.4rem;
+  }
+}

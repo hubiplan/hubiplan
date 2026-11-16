@@ -85,6 +85,14 @@ const ScoresOnlyPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'Sc
 const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'HelpersPage')
 const SurveysPage = lazyPage(() => import('./pages/surveys/SurveysPage.tsx'), 'SurveysPage')
 const PublicSurveyPage = lazyPage(() => import('./pages/PublicSurveyPage.tsx'), 'PublicSurveyPage')
+const PublicExpensePage = lazyPage(
+  () => import('./pages/PublicExpensePage.tsx'),
+  'PublicExpensePage',
+)
+const DeptExpensesPage = lazyPage(
+  () => import('./pages/expenses/DeptExpensesPage.tsx'),
+  'DeptExpensesPage',
+)
 const ObligationsPage = lazyPage(
   () => import('./pages/obligations/ObligationsPage.tsx'),
   'ObligationsPage',
@@ -298,6 +306,7 @@ export default function App() {
           <Route path="/rundschreiben/abmelden/:token" element={<PublicOptOutPage />} />
           <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
           <Route path="/umfrage/:token" element={<PublicSurveyPage />} />
+          <Route path="/auslage/:token" element={<PublicExpensePage />} />
           <Route path="/mitglied-werden/stand/:token" element={<JoinFormPage kiosk />} />
           <Route path="/mitglied-werden/:key" element={<JoinFormPage />} />
           <Route path="/antrag/:token" element={<JoinStatusPage />} />
@@ -376,6 +385,7 @@ export default function App() {
           <Route path="noten" element={<ScoresOnlyPage />} />
           <Route path="helferdienste" element={<HelpersPage />} />
           <Route path="umfragen" element={<SurveysPage />} />
+          <Route path="auslagen" element={<DeptExpensesPage />} />
           <Route path="fristenkalender" element={<ObligationsPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
