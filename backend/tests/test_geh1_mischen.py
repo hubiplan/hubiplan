@@ -72,6 +72,35 @@ def test_zaehlung_vor_und_nach_dem_mischen_gleich(setup):
     assert before["questions"][0]["values"]["yes"]["count"] == 2
 
 
+def test_stimme_zwischen_lesen_und_loeschen_bleibt(setup):
+    """Absicherung, falls ein Aufrufer die Umfrage einmal nicht sperrt: Nur die gelesenen Zeilen
+    werden neu geschrieben, eine dazwischen gespeicherte Stimme bleibt."""
+    from unittest import mock
+
+    s = setup
+    survey = new_survey(s, [YESNO], names="anonymous", results="after_close")
+    start(s, survey)
+    _vote(s, survey, {"Anna": "yes", "Bernd": "no"})
+    with rls_bypass():
+        obj = Survey.objects.get(pk=survey["id"])
+        late = SurveyAnswer.objects.filter(survey=obj).first()
+        real_shuffle = services.random.SystemRandom.shuffle
+
+        def shuffle_and_vote(self, rows):
+            real_shuffle(self, rows)
+            SurveyAnswer.objects.create(
+                organization_id=obj.organization_id,
+                survey=obj,
+                question_id=late.question_id,
+                value="yes",
+            )
+
+        with mock.patch.object(services.random.SystemRandom, "shuffle", shuffle_and_vote):
+            assert services.mix_answers(obj) == 2
+        assert SurveyAnswer.objects.filter(survey=obj).count() == 3
+        assert SurveyAnswer.objects.filter(survey=obj, value="yes").count() == 2
+
+
 def test_ergebnis_erst_nach_schliessen_und_mischen(setup):
     s = setup
     survey = new_survey(s, [YESNO], names="anonymous", results="after_close")

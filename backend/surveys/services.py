@@ -511,11 +511,13 @@ def mix_answers(survey: Survey) -> int:
     if not survey.anonymous:
         return 0
     fields = [f.attname for f in SurveyAnswer._meta.concrete_fields if not f.primary_key]
-    rows = [{k: getattr(a, k) for k in fields} for a in SurveyAnswer.objects.filter(survey=survey)]
-    if not rows:
+    found = list(SurveyAnswer.objects.filter(survey=survey))
+    if not found:
         return 0
-    SurveyAnswer.objects.filter(survey=survey).delete()
+    rows = [{k: getattr(a, k) for k in fields} for a in found]
     random.SystemRandom().shuffle(rows)
+    # Nur die gelesenen Zeilen: eine Stimme, die doch dazwischen kam, bleibt erhalten
+    SurveyAnswer.objects.filter(pk__in=[a.pk for a in found]).delete()
     SurveyAnswer.objects.bulk_create([SurveyAnswer(**r) for r in rows])
     return len(rows)
 
