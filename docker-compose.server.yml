@@ -4,6 +4,8 @@
 # Geheimnisse liegen nur in dieser .env auf dem Server, nie im Repository.
 
 x-backend-env: &backend-env
+  # Warteschlange der Zeitplan-Jobs (worker-zeitplan); leer: alles in „celery“ (PF-08)
+  HUBIPLAN_ZEITPLAN_QUEUE: ${HUBIPLAN_ZEITPLAN_QUEUE-zeitplan}
   # Uploads über 5 MB auf die Platte (eigenes Volume), nicht in den Arbeitsspeicher
   FILE_UPLOAD_TEMP_DIR: /app/upload-tmp
   PEERING_RECEPTION_INSTANCE_BYTES: ${PEERING_RECEPTION_INSTANCE_BYTES:-10737418240}
@@ -223,10 +225,32 @@ services:
   worker:
     <<: *backend
     pull_policy: never
-    # Höchstens zwei Aufträge gleichzeitig (Import, Export, Mails)
-    command: celery -A config worker --loglevel=info --concurrency=2
+    # Was Benutzer auslösen: Mails (Anmeldelinks), Import, Export; höchstens zwei zugleich.
+    # Zeitplan-Jobs laufen in worker-zeitplan (Gesamtaudit 15.11., PF-08).
+    command: celery -A config worker --loglevel=info --concurrency=2 -Q celery
     mem_limit: ${WORKER_MEM_LIMIT:-2g}
     cpus: ${WORKER_CPUS:-2}
+    volumes:
+      - media-data:/app/media
+      - private-data:/app/private
+      - loeschliste:/app/loeschliste
+      # Stand des Backups lesen (Alarm-Mail bei Fehler oder Lücke)
+      - backup-status:/backup-status:ro
+    environment:
+      <<: *backend-env
+      BACKUP_STATUS_DIR: /backup-status
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Jobs aus dem Zeitplan von beat (Warteschlange „zeitplan“), getrennt von worker: Ein
+  # stundenlanger Job hält keine Anmeldelinks oder Exporte mehr auf (Gesamtaudit 15.11., PF-08)
+  worker-zeitplan:
+    <<: *backend
+    pull_policy: never
+    command: celery -A config worker --loglevel=info --concurrency=2 -Q zeitplan -n zeitplan@%h
+    mem_limit: ${WORKER_ZEITPLAN_MEM_LIMIT:-1536m}
+    cpus: ${WORKER_ZEITPLAN_CPUS:-1}
     volumes:
       - media-data:/app/media
       - private-data:/app/private

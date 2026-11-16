@@ -34,7 +34,6 @@ from email.parser import BytesParser
 from email.utils import getaddresses, parseaddr
 
 from django.conf import settings
-from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
@@ -348,8 +347,19 @@ def fetch() -> int:
     """Neue Mails aus dem Rechnungspostfach abholen. Gibt die Anzahl verarbeiteter Mails."""
     if not configured():
         return 0
-    if not cache.add(LOCK, 1, timeout=10 * 60):
-        return 0  # läuft schon
+    from core.einzeln import lock
+
+    # Sitzungssperre der Datenbank statt Cache-Sperre mit 10 Minuten (Gesamtaudit 15.11., PF-13):
+    # Sie gilt, solange der Abruf läuft, und niemand löscht eine fremde Sperre.
+    with lock(LOCK) as locked:
+        if not locked:
+            return 0  # läuft schon
+        return _fetch_locked()
+
+
+def _fetch_locked() -> int:
+    from celery.exceptions import SoftTimeLimitExceeded
+
     done = 0
     try:
         context = ssl.create_default_context()
@@ -386,6 +396,9 @@ def fetch() -> int:
                     # Anhänge nicht prüfbar: Mail bleibt ungelesen, weitere später
                     logger.warning("Rechnungspostfach: Virenprüfung aus, Mail %s bleibt", uid)
                     break
+                except SoftTimeLimitExceeded:
+                    # Zeitgrenze: Mail nicht als gelesen markieren, der nächste Lauf holt sie
+                    raise
                 except Exception:  # noqa: BLE001
                     logger.exception("Rechnungspostfach: Mail %s nicht verarbeitet", uid)
                     result = Result.KEEP
@@ -397,8 +410,6 @@ def fetch() -> int:
                 imap.expunge()
     except (OSError, imaplib.IMAP4.error):
         logger.exception("Rechnungspostfach nicht erreichbar")
-    finally:
-        cache.delete(LOCK)
     return done
 
 

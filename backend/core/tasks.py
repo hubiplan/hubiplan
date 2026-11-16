@@ -5,6 +5,7 @@ from celery import shared_task
 # Jobs in eigenen Modulen; der Import meldet sie beim Worker an (Celery sucht nur tasks.py).
 # joblauf meldet dabei auch die Aufzeichnung der Jobläufe (Signale) an.
 from .backup_status import check_backup  # noqa: F401
+from .einzeln import einzeln
 from .joblauf import check_jobs  # noqa: F401
 from .update_check import check_latest  # noqa: F401
 
@@ -15,6 +16,7 @@ def ping() -> str:
 
 
 @shared_task
+@einzeln
 def recheck_quarantine() -> dict:
     """Dateien in Quarantäne nachprüfen, sobald der Virenscanner wieder antwortet."""
     from .virenscan import recheck_quarantine as recheck

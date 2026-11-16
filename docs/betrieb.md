@@ -10,7 +10,8 @@ Echtserver gehört zu jedem `docker compose`-Befehl zusätzlich `-f docker-compo
 | --- | --- |
 | `web` | Caddy: HTTPS (Let's Encrypt), Oberfläche, Weiterleitung an das Backend, Sicherheits-Header |
 | `backend` | Django mit gunicorn (3 Prozesse × 4 Threads), führt beim Start die Migrationen aus |
-| `worker` | Celery: Import, Export und andere Hintergrund-Jobs |
+| `worker` | Celery, Warteschlange `celery`: was Benutzer auslösen (Mails wie Anmeldelinks, Import, Export) |
+| `worker-zeitplan` | Celery, Warteschlange `zeitplan`: Jobs aus dem Zeitplan von `beat`, siehe [Hintergrundjobs](#hintergrundjobs) |
 | `beat` | Zeitplan für wiederkehrende Jobs (Löschfrist täglich), siehe [Hintergrundjobs](#hintergrundjobs) |
 | `backup` | tägliches verschlüsseltes Backup mit Rücksicherungstest |
 | `postgres`, `redis` | Datenbank und Warteschlange, von außen nicht erreichbar |
@@ -230,12 +231,12 @@ die Namen umstellen, ihre Chiffrate streng prüfen, danach die vom Trigger entwe
 Suchmarken nachfüllen und prüfen. Erst bei erfolgreicher Prüfung die Dienste starten:
 
 ```bash
-docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml stop backend worker worker-zeitplan beat backup
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py daten_verschluesseln --feld members.Person.last_name --feld members.Person.first_name
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py daten_verschluesseln --pruefen --feld members.Person.last_name --feld members.Person.first_name
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py personen_suchmarken
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py personen_suchmarken --pruefen
-docker compose -f docker-compose.server.yml up -d backend worker beat backup
+docker compose -f docker-compose.server.yml up -d backend worker worker-zeitplan beat backup
 ```
 
 Die ausdrückliche Entrypoint-Auswahl verhindert Migrationen in Verwaltungscontainern.
@@ -304,10 +305,10 @@ Schreiber anhalten; mit der neuen Fassung den abgegrenzten Bestandslauf und sein
 vollständige Lesbarkeitsprüfung ausführen. Erst bei Erfolg Dienste starten:
 
 ```bash
-docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml stop backend worker worker-zeitplan beat backup
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py namenskopien_verschluesseln
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py namenskopien_verschluesseln --pruefen
-docker compose -f docker-compose.server.yml up -d backend worker beat backup
+docker compose -f docker-compose.server.yml up -d backend worker worker-zeitplan beat backup
 ```
 
 `--probe` zählt nur Kandidaten. Der Bestandslauf ist wiederholbar, erhält Zeitstempel
@@ -428,7 +429,7 @@ dauerhaft gespeichert werden.
 Beispiel mit der erfundenen Schlüsselinhaber-Nummer `42`, nach Backup und Ausrollen:
 
 ```bash
-docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml stop backend worker worker-zeitplan beat backup
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --probe
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --starten --schreiber-angehalten
 docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --pruefen
@@ -754,7 +755,7 @@ DATEI=/opt/hubiplan-backups/db_JJJJ-MM-TT_HHMM.sql.gz.enc
 # Erst die Prüfsumme prüfen (bricht bei veränderter Datei ab)
 docker compose -f docker-compose.server.yml run --rm --no-deps --entrypoint verify.sh \
     backup "/backups/$(basename "$DATEI")"
-docker compose -f docker-compose.server.yml stop backend worker beat
+docker compose -f docker-compose.server.yml stop backend worker worker-zeitplan beat
 docker compose -f docker-compose.server.yml exec -T postgres \
     psql -U hubiplan -d postgres -c "DROP DATABASE hubiplan" -c "CREATE DATABASE hubiplan"
 openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE -in "$DATEI" \
@@ -1129,6 +1130,28 @@ Der Dienst `beat` stößt wiederkehrende Jobs an (`CELERY_BEAT_SCHEDULE` in
   26 Stunden, wöchentliche nach 7 Tagen und 2 Stunden, Intervalle nach dem doppelten
   Abstand (mindestens Abstand plus eine Stunde). Nach einer Neuinstallation zählt der
   Abstand ab der ersten Prüfung.
+- **Zwei Warteschlangen** (Gesamtaudit 15.11., PF-08): `beat` stellt seine Jobs in die
+  Warteschlange `zeitplan`, die der Dienst `worker-zeitplan` abarbeitet (2 Plätze,
+  `WORKER_ZEITPLAN_MEM_LIMIT` Standard 1536m, `WORKER_ZEITPLAN_CPUS` Standard 1). Alles, was
+  Benutzer auslösen, läuft in `celery` im Dienst `worker`. So hält eine stundenlange
+  E-Rechnungsprüfung keine Anmeldelinks, Mails oder Exporte mehr auf. Mit
+  `HUBIPLAN_ZEITPLAN_QUEUE=` (leer) in der `.env` stellt `beat` alles wieder in `celery`;
+  `worker-zeitplan` hat dann nichts zu tun.
+- **Verfall und Grenzen:** Jeder Zeitplan-Auftrag verfällt, wenn er nicht rechtzeitig startet:
+  Intervalle nach ihrem Abstand, feste Uhrzeiten nach sechs Stunden. Es staut sich nichts
+  auf, der nächste Lauf kommt ohnehin. Aufgaben ohne eigene Grenze enden nach drei Stunden
+  (`CELERY_TASK_SOFT_TIME_LIMIT`/`CELERY_TASK_TIME_LIMIT`); jeder Worker-Prozess wird nach
+  200 Aufträgen erneuert und holt nur so viele Aufträge, wie er Plätze hat.
+- **Nie doppelt:** Langläufer unter den Minutenjobs (E-Rechnungsprüfung und -postfach,
+  Verteilerpostfach, Verbund, fremde Kalender, Wallet, Webseiten-Beiträge, Kettenprüfung,
+  Virenprüfung) nehmen eine Sitzungssperre der Datenbank (`core/einzeln.py`); läuft derselbe
+  Job noch, entfällt der neue Lauf. Die Sperre endet mit der Verbindung, auch wenn der Worker
+  abstürzt.
+- **Rückweg auf eine ältere Fassung:** Sie kennt nur `celery`; `deploy/zurueck.sh` entfernt
+  `worker-zeitplan` (`--remove-orphans`). Aufträge, die noch in `zeitplan` liegen, sind
+  ausschließlich Zeitplan-Jobs mit Verfallszeit: Die ältere Fassung braucht sie nicht (ihr
+  `beat` stellt seine Jobs wieder in `celery`), und beim nächsten Ausrollen verwirft
+  `worker-zeitplan` die abgelaufenen. Aufträge der Benutzer liegen nie in `zeitplan`.
 - **Alarm:** Der Job `jobs-pruefen` (stündlich) schickt bei überfälligen Jobs eine Alarm-Mail
   (siehe Alarm-Mails), höchstens einmal am Tag je Stand. Erste Schritte: `docker compose …
   ps` (laufen `worker` und `beat`?), `docker compose … logs --since 24h beat worker`.
