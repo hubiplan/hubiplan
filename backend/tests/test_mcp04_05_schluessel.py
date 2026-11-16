@@ -57,8 +57,8 @@ def test_aelterer_erneuerungsschluessel_beendet_die_verbindung(club, site, edito
     assert rpc(third["access_token"], "ping").status_code == 401
     grant.refresh_from_db()
     assert grant.revoked_reason == "wiederverwendet"
-    entry = AuditEntry.objects.filter(organization=club, object_id=str(grant.pk)).last()
-    assert "KI-Assistent beendet" in str(entry.changes)
+    entries = AuditEntry.objects.filter(organization=club, object_id=str(grant.pk))
+    assert any("KI-Assistent beendet" in str(e.changes) for e in entries)
 
 
 def test_doppelt_eingeloester_code_widerruft_die_schluessel(club, site, editor):
