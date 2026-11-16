@@ -101,6 +101,10 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
         if key in ("font", "heading_font"):
             assert 6 <= len(options) <= 8
             continue
+        # #526: eigene Schriftfolge als Textfeld
+        if key in style.FONT_STACKS:
+            assert options == "fonts"
+            continue
         assert options == "switch" or 2 <= len(options) <= most
 
 

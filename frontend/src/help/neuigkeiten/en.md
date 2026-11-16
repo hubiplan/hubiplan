@@ -16,6 +16,7 @@ November 2026:
 
 #### Website
 
+- Website: **House font from the style guide.** Under Design › Fine-tuning › Font, **Own font stack** uses fonts installed on the device, such as “Lucida Sans, Segoe UI, Arial”. No font file is delivered; anyone without the font sees the next one. Also for AI assistants.
 - Website: **Set off the band of sub-units.** Under Design › Fine-tuning › **Band of sub-units** the band on the pages of sub-units can use the box colour, a light tone or plain with a line, so it does not look like a second page header.
 - **Wide logos** (landscape wordmarks) are no longer tiny in the header of HUBIplan and the website, on cards, certificates and in PDFs: the height is fixed and the width follows the image.
 - Website: **Long lists in two columns.** Under Design › Fine-tuning › **Long lists** › “in two columns”, long, narrow tables such as all kings or the winners over the years appear side by side in two columns on a computer screen; on a phone it stays a single column.

@@ -6114,6 +6114,11 @@ label:has(> .file-input:focus-visible) {
   width: 18rem;
   max-width: 100%;
 }
+/* #526: eigene Schriftfolge */
+.style-fonts {
+  width: 24rem;
+  max-width: 100%;
+}
 .style-segments button {
   font: inherit;
   font-size: 0.9rem;

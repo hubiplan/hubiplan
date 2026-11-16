@@ -11905,8 +11905,12 @@ msgstr "Draft social media post"
 msgid "Social-Media-Entwürfe"
 msgstr "Social media drafts"
 
-msgid "Stilregler → Stufe, ja/nein oder null."
-msgstr "Style control → level, yes/no or null."
+msgid ""
+"Stilregler → Stufe, ja/nein oder null; font_family und heading_font_family: "
+"Namen installierter Schriften mit Komma."
+msgstr ""
+"Style control → level, yes/no or null; font_family and heading_font_family: "
+"names of installed fonts separated by commas."
 
 msgid ""
 "Sucht Bilder der Webseite nach Bildunterschrift, Alternativtext, Dateiname "
@@ -13212,3 +13216,16 @@ msgstr "Unknown section. Possible: {areas}."
 
 msgid "Einleitung des Bereichs „{area}“ angelegt (Nummer {pk})."
 msgstr "Introduction of the section “{area}” created (number {pk})."
+
+msgid "Bitte die Schriftfolge als Text mit Komma angeben."
+msgstr "Please give the font stack as text separated by commas."
+
+msgid ""
+"Schriftnamen bitte nur aus Buchstaben, Ziffern, Leerzeichen und Bindestrich "
+"(höchstens 40 Zeichen): {name}"
+msgstr ""
+"Font names may only contain letters, digits, spaces and hyphens (at most 40 "
+"characters): {name}"
+
+msgid "Höchstens {n} Schriften in der Schriftfolge."
+msgstr "At most {n} fonts in the font stack."

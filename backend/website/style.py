@@ -10,6 +10,8 @@ stehen in der Oberfläche (StyleTuning.tsx).
 
 from __future__ import annotations
 
+import re
+
 from django.utils.translation import gettext as _
 
 # Regler → Stufen; ``bool`` = Schalter
@@ -123,6 +125,54 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Webseite #145 (Ralf 16.11.2026): lange, schmale Tabellen am Bildschirm in zwei Spalten
     "long_tables": ("rows", "columns"),
 }
+
+# hubiplan #526: eigene Schriftfolge (CSS ``font-family``) aus Schriften, die auf dem Gerät
+# installiert sind, etwa die Hausschrift eines Styleguides. Keine Schriftdatei, kein freies CSS:
+# nur Namen aus Buchstaben, Ziffern, Leerzeichen und Bindestrich, gespeichert als Text mit Komma.
+# Die Webseite setzt die Namen in Anführungszeichen und hängt die Ersatzfamilie an. Leer = Stufe
+# des Reglers ``font`` bzw. ``heading_font``. Gleiche Prüfung in hubiplan-website/seite/stil.py.
+FONT_STACKS = ("font_family", "heading_font_family")
+FONT_NAME = re.compile(r"^[^\W_][\w -]{0,39}$")
+GENERIC_FAMILIES = ("sans-serif", "serif")
+MAX_FONTS = 6
+
+
+def font_stack(value) -> str:
+    """Schriftfolge geprüft und vereinheitlicht („A, B, serif“); leer bei leerer Eingabe.
+
+    Wirft ValueError mit einem Text für die Oberfläche."""
+    if value is None:
+        return ""
+    if isinstance(value, list | tuple):
+        parts = [str(v) for v in value]
+    elif isinstance(value, str):
+        parts = value.split(",")
+    else:
+        raise ValueError(_("Bitte die Schriftfolge als Text mit Komma angeben."))
+    names: list[str] = []
+    generic = None
+    for raw in parts:
+        name = " ".join(raw.strip().strip("\"'").split())
+        if not name:
+            continue
+        if name.lower() in GENERIC_FAMILIES:
+            generic = name.lower()
+            continue
+        if not FONT_NAME.match(name):
+            raise ValueError(
+                _(
+                    "Schriftnamen bitte nur aus Buchstaben, Ziffern, Leerzeichen und Bindestrich "
+                    "(höchstens 40 Zeichen): {name}"
+                ).format(name=name[:40])
+            )
+        if name.lower() not in (n.lower() for n in names):
+            names.append(name)
+    if len(names) > MAX_FONTS:
+        raise ValueError(_("Höchstens {n} Schriften in der Schriftfolge.").format(n=MAX_FONTS))
+    if not names:
+        return ""
+    return ", ".join(names + ([generic] if generic else []))
+
 
 # Was ein Design selbst festlegt (ausgegraut in der Oberfläche, die Webseite übergeht es):
 # ``None`` = ganzer Regler, sonst nur diese Stufen. Gleiche Liste in hubiplan-website.
@@ -338,7 +388,10 @@ def catalog() -> dict:
     from .designs import DESIGNS
 
     return {
-        "options": {k: "switch" if v is bool else list(v) for k, v in OPTIONS.items()},
+        "options": {
+            **{k: "switch" if v is bool else list(v) for k, v in OPTIONS.items()},
+            **dict.fromkeys(FONT_STACKS, "fonts"),
+        },
         "locks": {
             design: {k: None if v is None else list(v) for k, v in locks.items()}
             for design, locks in LOCKS.items()
@@ -357,6 +410,11 @@ def validate(value) -> dict:
         raise ValueError(_("Bitte die Stilregler als Zuordnung angeben."))
     result = {}
     for key, given in value.items():
+        if key in FONT_STACKS:
+            stack = font_stack(given)
+            if stack:
+                result[key] = stack
+            continue
         if key not in OPTIONS:
             raise ValueError(_("Unbekannter Stilregler: {key}").format(key=key))
         if given is None:
@@ -370,7 +428,7 @@ def validate(value) -> dict:
         result[key] = given
     if result.get("logo") is False and result.get("name") is False:
         raise ValueError(_("Wappen und Vereinsname lassen sich nicht beide ausblenden."))
-    return {k: result[k] for k in OPTIONS if k in result}
+    return {k: result[k] for k in (*OPTIONS, *FONT_STACKS) if k in result}
 
 
 def public(value) -> dict:

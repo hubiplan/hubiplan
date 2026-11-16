@@ -16,6 +16,7 @@ November 2026:
 
 #### Webseite
 
+- Webseite: **Hausschrift aus dem Styleguide.** Unter Gestaltung › Feinabstimmung › Schrift nimmt **Eigene Schriftfolge** Schriften, die auf dem Gerät installiert sind, etwa „Lucida Sans, Segoe UI, Arial“. Es wird keine Schriftdatei ausgeliefert; wer die Schrift nicht hat, sieht die nächste. Auch für KI-Assistenten.
 - Webseite: **Band der Untereinheiten absetzen.** Unter Gestaltung › Feinabstimmung › **Band der Untereinheiten** steht das Band auf den Seiten der Untereinheiten wahlweise in der Kastenfarbe, hell oder schlicht mit Linie, damit es nicht wie ein zweiter Seitenkopf wirkt.
 - **Breite Logos** (Schriftzüge im Querformat) erscheinen im Kopf von HUBIplan und der Webseite, auf Ausweisen, Urkunden und in PDFs nicht mehr winzig: Die Höhe ist fest, die Breite folgt dem Bild.
 - Webseite: **Lange Listen zweispaltig.** Unter Gestaltung › Feinabstimmung › **Lange Listen** › „zweispaltig“ stehen lange, schmale Tabellen wie alle Könige oder die Sieger über die Jahre am Bildschirm in zwei Spalten nebeneinander; auf dem Handy bleibt es eine Spalte.

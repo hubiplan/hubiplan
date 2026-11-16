@@ -9430,5 +9430,9 @@
   "Band der Untereinheiten": "Band of sub-units",
   "Kastenfarbe": "box colour",
   "schlicht mit Linie": "plain with line",
-  "Nur auf den Seiten der Untereinheiten und nur bei Überschrift als Band: hell oder schlicht, damit das Band nicht wie ein zweiter Seitenkopf wirkt. Kastenfarbe ist die Farbrolle „Datumsfeld“.": "Only on the pages of sub-units and only with the heading as a band: light or plain, so the band does not look like a second page header. Box colour is the colour role “Date field”."
+  "Nur auf den Seiten der Untereinheiten und nur bei Überschrift als Band: hell oder schlicht, damit das Band nicht wie ein zweiter Seitenkopf wirkt. Kastenfarbe ist die Farbrolle „Datumsfeld“.": "Only on the pages of sub-units and only with the heading as a band: light or plain, so the band does not look like a second page header. Box colour is the colour role “Date field”.",
+  "Eigene Schriftfolge": "Own font stack",
+  "Eigene Schriftfolge der Überschriften": "Own font stack for headings",
+  "Leer: wie oben eingestellt.": "Empty: as set above.",
+  "Namen von Schriften, die auf dem Gerät installiert sind, durch Komma getrennt, höchstens sechs. Wer die erste nicht hat, sieht die nächste; am Ende steht immer eine Ersatzschrift (mit „serif“ am Schluss eine mit Serifen). Auf Handys und unter Linux erscheint meist die Ersatzschrift. Geht der Schriftart vor und gilt auch für Überschriften, solange dort nichts anderes gewählt ist.": "Names of fonts installed on the device, separated by commas, at most six. Anyone without the first sees the next; a fallback font always comes last (with “serif” at the end, one with serifs). On phones and under Linux the fallback usually appears. Takes precedence over the font and also applies to headings unless something else is chosen there."
 }

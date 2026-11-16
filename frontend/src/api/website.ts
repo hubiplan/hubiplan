@@ -78,7 +78,8 @@ export interface LayoutArea {
 }
 
 export interface StyleCatalog {
-  options: Record<string, string[] | 'switch'>
+  /** 'fonts': eigene Schriftfolge als Text mit Komma (#526) */
+  options: Record<string, string[] | 'switch' | 'fonts'>
   locks: Record<string, Record<string, string[] | null>>
   /** Stufe, die jedes Standarddesign ohne eigene Wahl zeigt (fehlt bei älteren Ständen) */
   defaults?: Record<string, Record<string, string | boolean>>
