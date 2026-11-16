@@ -234,6 +234,11 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'notice_target',
   'notice_from',
   'notice_until',
+  'notice_style',
+  'notice_place',
+  'notice_icon',
+  'notice_button',
+  'notice_date',
   'image_hosts',
 ]
 
@@ -443,6 +448,70 @@ function WebsiteAdmin({
             onChange={(target) => set('notice_target', target ?? {})}
           />
           {errors.notice_target && <Alert kind="error">{errors.notice_target}</Alert>}
+          {v.notice_target && Object.keys(v.notice_target).length > 0 && (
+            <Field
+              label={t('Beschriftung des Knopfs')}
+              value={v.notice_button ?? ''}
+              maxLength={40}
+              error={errors.notice_button}
+              hint={t('leer = „Mehr erfahren“')}
+              onChange={(e) => set('notice_button', e.target.value)}
+            />
+          )}
+          <div className="grid-2">
+            <SelectField
+              label={t('Stil')}
+              value={v.notice_style ?? 'accent'}
+              error={errors.notice_style}
+              onChange={(e) =>
+                set('notice_style', e.target.value as WebsiteSettings['notice_style'])
+              }
+            >
+              <option value="accent">{t('Akzentfarbe')}</option>
+              <option value="alert">{t('Achtung (Signalfarbe)')}</option>
+              <option value="festive">{t('Festlich (Akzentfarbe mit Muster)')}</option>
+              <option value="quiet">{t('Schlicht in Kopffarbe')}</option>
+            </SelectField>
+            <SelectField
+              label={t('Platz')}
+              value={v.notice_place ?? 'below'}
+              error={errors.notice_place}
+              hint={
+                v.notice_place === 'float'
+                  ? t('Besucher können den Kasten schließen.')
+                  : undefined
+              }
+              onChange={(e) =>
+                set('notice_place', e.target.value as WebsiteSettings['notice_place'])
+              }
+            >
+              <option value="top">{t('über dem Kopf')}</option>
+              <option value="below">{t('unter dem Kopf')}</option>
+              <option value="float">{t('schwebend unten')}</option>
+            </SelectField>
+            <SelectField
+              label={t('Symbol')}
+              value={v.notice_icon ?? 'auto'}
+              error={errors.notice_icon}
+              onChange={(e) => set('notice_icon', e.target.value as WebsiteSettings['notice_icon'])}
+            >
+              <option value="auto">{t('passend zum Stil')}</option>
+              <option value="megaphone">{t('Lautsprecher')}</option>
+              <option value="calendar">{t('Kalender')}</option>
+              <option value="star">{t('Stern')}</option>
+              <option value="info">{t('Info')}</option>
+              <option value="alert">{t('Ausrufezeichen')}</option>
+              <option value="none">{t('kein Symbol')}</option>
+            </SelectField>
+            <Field
+              label={t('Countdown bis')}
+              type="date"
+              value={v.notice_date ?? ''}
+              error={errors.notice_date}
+              hint={t('zeigt „noch 5 Tage“; leer = Datum des Termins, wenn das Ziel ein Termin ist')}
+              onChange={(e) => set('notice_date', e.target.value || null)}
+            />
+          </div>
           <div className="grid-2">
             <Field
               label={t('Zeigen ab')}

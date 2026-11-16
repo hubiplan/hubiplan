@@ -123,6 +123,11 @@ SETTINGS_FIELDS = [
     "notice_target",
     "notice_from",
     "notice_until",
+    "notice_style",
+    "notice_place",
+    "notice_icon",
+    "notice_button",
+    "notice_date",
     "image_hosts",
 ]
 
@@ -293,6 +298,9 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(str(exc)) from exc
 
     def validate_notice_text(self, value):
+        return " ".join((value or "").split())
+
+    def validate_notice_button(self, value):
         return " ".join((value or "").split())
 
     def validate_notice_target(self, value):
