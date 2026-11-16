@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from django.conf import settings as django_settings
 from django.core.cache import cache
@@ -16,6 +18,19 @@ def pytest_collection_modifyitems(config, items):
     # Langsame Tests zuerst: Mit pytest-xdist hängen sie sonst am Ende allein auf einem Kern.
     # Zusammen mit --maxschedchunk=2 (scripts/test.sh) landen sie auf verschiedenen Workern.
     items.sort(key=lambda item: item.get_closest_marker("langsam") is None)
+    # Migrationstests, deren Schlüssel schon grün war (scripts/test.sh setzt MIG_AUSLASSEN,
+    # durch Leerzeichen getrennte Dateien wie „tests/test_orte.py“), laufen nicht noch einmal.
+    # Andere Tests derselben Datei laufen weiter.
+    auslassen = set(os.environ.get("MIG_AUSLASSEN", "").split())
+    if auslassen:
+        weg = [
+            item
+            for item in items
+            if item.get_closest_marker("migration") and item.nodeid.split("::")[0] in auslassen
+        ]
+        if weg:
+            config.hook.pytest_deselected(items=weg)
+            items[:] = [item for item in items if item not in weg]
 
 
 # Zeilen aus Datenmigrationen (z. B. die Plattform-Organisation). Tests mit
