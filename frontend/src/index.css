@@ -1867,7 +1867,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 .logo-upload {
   object-fit: contain;
 }
-/* #527: Hochgeladene Logos behalten ihr Seitenverhältnis. Die Höhe ist fest, die Breite folgt
+/* Issue 527: Hochgeladene Logos behalten ihr Seitenverhältnis. Die Höhe ist fest, die Breite folgt
    dem Bild bis zu einer Obergrenze; so bleiben Schriftzüge (etwa 3 : 1) lesbar, quadratische
    Wappen sehen aus wie bisher. Das H-Zeichen (SVG) bleibt quadratisch. */
 .logo-img.logo-upload {
