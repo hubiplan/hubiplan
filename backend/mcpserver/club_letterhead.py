@@ -229,7 +229,7 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
     ),
     Tool(
         name="briefbogen_aendern",
-        title=gettext_lazy("Briefbogen ändern"),
+        title=gettext_lazy("Briefbogen ändern (wirkt sofort)"),
         description=gettext_lazy(
             "Ändert den Briefbogen für Word-Vorlage und PDF-Briefe (Rechnungen, Mahnungen, "
             "Spendenquittungen, Rundschreiben): Aufbau, Logo, Schriften, Farben, Linien und "
@@ -299,13 +299,14 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                 },
             }
         ),
+        destructive=True,
         run=_change,
         writes=True,
         scope=SCOPE_LETTERHEAD,
     ),
     Tool(
         name="briefbogen_logo_aus_bild",
-        title=gettext_lazy("Logo für den Briefbogen setzen"),
+        title=gettext_lazy("Logo für den Briefbogen setzen (wirkt sofort)"),
         description=gettext_lazy(
             "Setzt ein Bild aus der Bilderverwaltung der Webseite als eigenes Logo nur für den "
             "Briefbogen (z. B. eine querformatige Wort-Bild-Marke statt des Wappens), oder "
@@ -324,6 +325,7 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                 },
             }
         ),
+        destructive=True,
         run=_logo,
         writes=True,
         scope=SCOPE_LETTERHEAD,

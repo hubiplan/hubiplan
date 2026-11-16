@@ -44,6 +44,10 @@ class Tool:
     writes: bool = False
     # Nötiger Bereich der Zustimmung (None: immer, z. B. die Hilfe)
     scope: str | None = None
+    # Gesamtaudit 15.11., MCP-02: wirkt sofort und ersetzt oder löscht (kein Entwurf) …
+    destructive: bool = False
+    # … bzw. ruft fremde Server ab. KI-Clients steuern ihre Rückfragen danach.
+    open_world: bool = False
 
     def describe(self) -> dict:
         return {
@@ -53,9 +57,9 @@ class Tool:
             "inputSchema": _resolve(self.schema),
             "annotations": {
                 "readOnlyHint": not self.writes,
-                "destructiveHint": False,
+                "destructiveHint": self.destructive,
                 "idempotentHint": not self.writes,
-                "openWorldHint": False,
+                "openWorldHint": self.open_world,
             },
         }
 
