@@ -397,11 +397,18 @@ class PublicPhotoUploadView(APIView):
             ).update(used_at=now)
             if not claimed:
                 raise Http404
-            status_ = "pending" if org.photo_approval_required else "approved"
+            from .guardians import needs_guardian_consent
+
+            # Unter 16 willigen die Erziehungsberechtigten ein (Art. 8 DSGVO, Gesamtaudit
+            # 15.11., PF-21): Das Häkchen des Kindes zählt nicht; das Foto wartet, bis der
+            # Vorstand die Einwilligung erfasst und es freigibt.
+            child = needs_guardian_consent(membership.person) and not membership.photo_consent_at
+            status_ = "pending" if org.photo_approval_required or child else "approved"
             photos.store(membership, processed, status_, "member")
-            Membership.objects.filter(pk=membership.pk).update(
-                photo_consent_at=timezone.localdate(), photo_consent_source="member"
-            )
+            if not child:
+                Membership.objects.filter(pk=membership.pk).update(
+                    photo_consent_at=timezone.localdate(), photo_consent_source="member"
+                )
             record(
                 org,
                 None,
@@ -413,7 +420,12 @@ class PublicPhotoUploadView(APIView):
                         "vom Mitglied über Upload-Link hochgeladen"
                         + (" (wartet auf Freigabe)" if status_ == "pending" else ""),
                     ],
-                    "Foto-Einwilligung": [None, f"{timezone.localdate():%d.%m.%Y} (Mitglied)"],
+                    "Foto-Einwilligung": [
+                        None,
+                        "fehlt (unter 16, Erziehungsberechtigte)"
+                        if child
+                        else f"{timezone.localdate():%d.%m.%Y} (Mitglied)",
+                    ],
                 },
                 person=membership.person,
             )
@@ -485,9 +497,18 @@ class PortalPhotoView(_PortalPhotoMixin, APIView):
             photos.store(
                 m, processed, MemberPhoto.Status.PENDING, MemberPhoto.Source.APP, request.user
             )
-            Membership.objects.filter(pk=m.pk).update(
-                photo_consent_at=timezone.localdate(), photo_consent_source="app"
+            from .guardians import needs_guardian_consent
+
+            # Unter 16 zählt die Einwilligung nur über den Zugang eines Erziehungsberechtigten
+            child = (
+                needs_guardian_consent(m.person)
+                and not (self.access.contact_person_id and self.access.contact_person.is_guardian)
+                and not m.photo_consent_at
             )
+            if not child:
+                Membership.objects.filter(pk=m.pk).update(
+                    photo_consent_at=timezone.localdate(), photo_consent_source="app"
+                )
             record(
                 self.club,
                 request.user,
