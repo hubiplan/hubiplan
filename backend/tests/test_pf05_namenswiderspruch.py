@@ -85,7 +85,9 @@ def test_ohne_geburtsdatum_wie_minderjaehrig():
     adult = make_member(club, "Anna", "Erwachsen", birth_date=datetime.date(1980, 1, 1))
     year_only = make_member(club, "Paul", "Jahrgang", birth_date=datetime.date(2008, 1, 1))
     with rls_bypass():
-        Person.objects.filter(pk=unknown.person_id).update(birth_date=None)
+        nobody = Person.objects.get(pk=unknown.person_id)
+        nobody.birth_date = None
+        nobody.save(update_fields=["birth_date"])
         person = Person.objects.get(pk=year_only.person_id)
         person.birth_year_only = True
         person.save(update_fields=["birth_year_only"])
