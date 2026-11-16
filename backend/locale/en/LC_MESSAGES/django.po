@@ -10361,15 +10361,6 @@ msgstr ""
 "startseite_ansehen."
 
 msgid ""
-"Texte der Webseite (art: greeting = Begrüßung der Startseite, page = "
-"Textseite, unit = Text einer Untereinheit, intro = Einleitung eines "
-"Bereichs). Den Inhalt liefert webseite_text_lesen mit der Nummer."
-msgstr ""
-"Texts of the website (art: greeting = welcome text of the home page, page = "
-"text page, unit = text of a sub-unit, intro = introduction of a section). "
-"webseite_text_lesen returns the content for a number."
-
-msgid ""
 "Text im Entwurf (Markdown; Bilder als ![Beschreibung](bild:Schlüssel), "
 "siehe webseite_bilder)."
 msgstr ""
@@ -10500,20 +10491,6 @@ msgstr ""
 
 msgid "Text ändern (Entwurf)"
 msgstr "Change text (draft)"
-
-msgid ""
-"Ändert Titel, Inhalt (Markdown) und/oder Bild eines Textes im Entwurf. Den "
-"bisherigen Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn "
-"ganz. „bild“ ist das Bild oben auf der Seite (bei der Begrüßung das große "
-"Titelbild der Startseite), „bilder“ das Bilderkarussell der Begrüßung. "
-"Bildnummern liefert webseite_bilder. Veröffentlicht wird nur in HUBIplan."
-msgstr ""
-"Changes title, content (Markdown) and/or image of a text in the draft. Fetch"
-" the current content with webseite_text_lesen first; “text” replaces it "
-"completely. “bild” is the image at the top of the page (for the greeting the"
-" large title image of the home page), “bilder” the image carousel of the "
-"greeting. Image numbers come from webseite_bilder. Publishing happens only "
-"in HUBIplan."
 
 msgid "Neuer Inhalt in Markdown (ersetzt den alten)."
 msgstr "New content in Markdown (replaces the old one)."
@@ -13217,3 +13194,21 @@ msgstr "You still hold roles in: {names}. Please have them ended first."
 
 msgid "Bitte melde dich mit einem neuen Anmeldelink an und lösche das Konto dann innerhalb von 10 Minuten."
 msgstr "Please sign in with a new login link and then delete the account within 10 minutes."
+
+msgid "Texte der Webseite (art: greeting = Begrüßung der Startseite, page = Textseite, unit = Text einer Untereinheit, intro = Einleitung eines Bereichs). Den Inhalt liefert webseite_text_lesen mit der Nummer. Einleitungen ohne Nummer gibt es noch nicht; webseite_text_aendern mit „bereich“ statt „nummer“ legt sie als Entwurf an."
+msgstr "Texts of the website (art: greeting = welcome text of the home page, page = text page, unit = text of a sub-unit, intro = introduction of a section). webseite_text_lesen returns the content for a number. Introductions without a number do not exist yet; webseite_text_aendern with “bereich” instead of “nummer” creates them as a draft."
+
+msgid "Ändert Titel, Inhalt (Markdown) und/oder Bild eines Textes im Entwurf. Den bisherigen Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn ganz. „bild“ ist das Bild oben auf der Seite (bei der Begrüßung das große Titelbild der Startseite), „bilder“ das Bilderkarussell der Begrüßung. Bildnummern liefert webseite_bilder. Statt „nummer“ nimmt es für die Einleitung eines festen Bereichs auch „bereich“ an und legt sie an, wenn es sie noch nicht gibt. Veröffentlicht wird nur in HUBIplan."
+msgstr "Changes title, content (Markdown) and/or image of a text in the draft. Fetch the current content with webseite_text_lesen first; “text” replaces it completely. “bild” is the image at the top of the page (for the greeting the large title image of the home page), “bilder” the image carousel of the greeting. Image numbers come from webseite_bilder. Instead of “nummer” it also takes “bereich” for the introduction of a fixed section and creates it if it does not exist yet. Publishing happens only in HUBIplan."
+
+msgid "Statt „nummer“: Bereich, dessen Einleitung geändert oder angelegt wird (board = Vorstand, events = Termine, units = Untereinheiten, gallery = Galerie, contact = Kontakt, Kasten neben dem Formular)."
+msgstr "Instead of “nummer”: section whose introduction is changed or created (board = board, events = events, units = sub-units, gallery = gallery, contact = contact, box next to the form)."
+
+msgid "Bitte entweder „nummer“ oder „bereich“ angeben."
+msgstr "Please give either “nummer” or “bereich”."
+
+msgid "Unbekannter Bereich. Möglich: {areas}."
+msgstr "Unknown section. Possible: {areas}."
+
+msgid "Einleitung des Bereichs „{area}“ angelegt (Nummer {pk})."
+msgstr "Introduction of the section “{area}” created (number {pk})."

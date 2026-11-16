@@ -217,14 +217,27 @@ def _texts(args: dict, ctx: ClubContext) -> str:
             "entwurf_geaendert": t["has_changes"],
             "im_menue": t["show_in_menu"],
             "untereinheit": t.get("department_name"),
+            **(
+                {"bereich": t["slug"], "bereich_name": t.get("area_label")}
+                if t["kind"] == "intro"
+                else {}
+            ),
         }
         for t in data.get("texts", [])
+    ]
+    # Bereiche ohne Einleitung (#515): ohne Nummer, anlegen mit webseite_text_aendern + bereich
+    have = {t["slug"] for t in data.get("texts", []) if t["kind"] == "intro"}
+    rows += [
+        {"nummer": None, "art": "intro", "bereich": a["area"], "bereich_name": a["label"]}
+        for a in data.get("intro_areas", [])
+        if a["area"] not in have
     ]
     return (
         _(
             "Texte der Webseite (art: greeting = Begrüßung der Startseite, page = Textseite, "
             "unit = Text einer Untereinheit, intro = Einleitung eines Bereichs). Den Inhalt "
-            "liefert webseite_text_lesen mit der Nummer."
+            "liefert webseite_text_lesen mit der Nummer. Einleitungen ohne Nummer gibt es noch "
+            "nicht; webseite_text_aendern mit „bereich“ statt „nummer“ legt sie als Entwurf an."
         )
         + "\n\n"
         + _dump(rows)
@@ -331,9 +344,28 @@ def _chosen_images(body: dict) -> list[int]:
     return ids + [v for v in body.get("gallery") or [] if v not in ids]
 
 
+def _intro_text(ctx: ClubContext, area: str) -> dict | None:
+    """Einleitung eines festen Bereichs, falls es sie schon gibt (#515)."""
+    _v, content_views = _views()
+    data = ctx.call(content_views.TextListView, "GET", "website/texts/")
+    return next(
+        (t for t in data.get("texts", []) if t["kind"] == "intro" and t["slug"] == area), None
+    )
+
+
 def _text_change(args: dict, ctx: ClubContext) -> str:
     _v, content_views = _views()
-    pk = _int(args, "nummer")
+    from website.variants import INTRO_AREAS
+
+    if ("nummer" in args) == ("bereich" in args):
+        raise ToolError(_("Bitte entweder „nummer“ oder „bereich“ angeben."))
+    area = None
+    if "bereich" in args:
+        area = _str(args, "bereich", 40, required=True)
+        if area not in INTRO_AREAS:
+            raise ToolError(
+                _("Unbekannter Bereich. Möglich: {areas}.").format(areas=", ".join(INTRO_AREAS))
+            )
     body = {}
     title = _str(args, "titel", MAX_TITLE)
     text = _str(args, "text", MAX_BODY)
@@ -346,6 +378,24 @@ def _text_change(args: dict, ctx: ClubContext) -> str:
     _image_args(args, body, carousel=True)
     if not body:
         raise ToolError(_("Bitte titel, text, bild oder bilder angeben."))
+    existing = _intro_text(ctx, area) if area else None
+    if area and existing is None:
+        # Einleitung fehlt noch: als unveröffentlichten Entwurf anlegen (#515)
+        t = ctx.call(
+            content_views.TextListView,
+            "POST",
+            "website/texts/",
+            {"kind": "intro", "slug": area, **body},
+        )
+        return (
+            _("Einleitung des Bereichs „{area}“ angelegt (Nummer {pk}).").format(
+                area=t.get("area_label") or area, pk=t["id"]
+            )
+            + " "
+            + _draft_hint()
+            + _alt_hint(ctx, _chosen_images(body))
+        )
+    pk = existing["id"] if existing else _int(args, "nummer")
     t = ctx.call(content_views.TextDetailView, "PUT", f"website/texts/{pk}/", body, pk=pk)
     return (
         _("Text „{title}“ (Nummer {pk}) geändert.").format(title=t["title"], pk=t["id"])
@@ -596,11 +646,22 @@ CLUB_TOOLS: tuple[Tool, ...] = (
             "bisherigen Inhalt vorher mit webseite_text_lesen holen; „text“ ersetzt ihn ganz. "
             "„bild“ ist das Bild oben auf der Seite (bei der Begrüßung das große Titelbild der "
             "Startseite), „bilder“ das Bilderkarussell der Begrüßung. Bildnummern liefert "
-            "webseite_bilder. Veröffentlicht wird nur in HUBIplan."
+            "webseite_bilder. Statt „nummer“ nimmt es für die Einleitung eines festen Bereichs "
+            "auch „bereich“ an und legt sie an, wenn es sie noch nicht gibt. Veröffentlicht "
+            "wird nur in HUBIplan."
         ),
         schema=_schema(
             {
                 "nummer": NUMBER,
+                "bereich": {
+                    "type": "string",
+                    "enum": ["board", "events", "units", "gallery", "contact"],
+                    "description": gettext_lazy(
+                        "Statt „nummer“: Bereich, dessen Einleitung geändert oder angelegt "
+                        "wird (board = Vorstand, events = Termine, units = Untereinheiten, "
+                        "gallery = Galerie, contact = Kontakt, Kasten neben dem Formular)."
+                    ),
+                },
                 "titel": {"type": "string", "maxLength": MAX_TITLE},
                 "text": {
                     "type": "string",
@@ -628,7 +689,6 @@ CLUB_TOOLS: tuple[Tool, ...] = (
                     "description": gettext_lazy("Karussell mit einem zufälligen Bild beginnen."),
                 },
             },
-            ["nummer"],
         ),
         run=_text_change,
         writes=True,

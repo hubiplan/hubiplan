@@ -9397,7 +9397,8 @@
   "Epochen der Chronik": "Chronicle eras",
   "Zwischentitel": "Subheadings",
   "als Band": "as a band",
-  "Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe; die Sprungmarken oben werden zu unterstrichenen Links.": "As a band: each era edge to edge in the dark club colour with the period in large type in the second colour; the jump links at the top become underlined links.",
+  "als flaches Band": "as a slim band",
+  "Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe. Als flaches Band: Zeitraum und Titel in einer Zeile, deutlich niedriger. Bei beiden werden die Sprungmarken oben zu unterstrichenen Links.": "As a band: each era edge to edge in the dark club colour with the period in large type in the second colour. As a slim band: period and title on one line, much lower. With both, the jump links at the top become underlined links.",
   "Ranglisten der Ergebnisse": "Result rankings",
   "Plätze 1 bis 3 als Karten": "Places 1 to 3 as cards",
   "Die ersten drei Plätze jeder Wertung stehen als Karten mit großer Platzziffer über der Tabelle; bei Gleichstand bekommen alle Gleichplatzierten eine Karte.": "The first three places of each ranking appear as cards with a large place number above the table; in a tie, everyone sharing a place gets a card.",
@@ -9416,5 +9417,9 @@
   "{name} ({club}) ist volljährig": "{name} ({club}) is of age",
   "{name} ist volljährig": "{name} is of age",
   "{name} (Pfand {prize}) ist volljährig": "{name} (prize {prize}) is of age",
-  "Alle als volljährig angeben": "Mark all as of age"
+  "Alle als volljährig angeben": "Mark all as of age",
+  "Lange Listen": "Long lists",
+  "untereinander": "one below the other",
+  "zweispaltig": "in two columns",
+  "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column."
 }
