@@ -132,38 +132,59 @@ def apply() -> int:
         )
 
     from .models import Membership
-    from .workflows import erase_history, purge_membership
+    from .workflows import erase_history, purge_membership, report_failures
 
     # Je Mitgliedschaft zählt der letzte Eintrag (Löschung oder Wiederaufnahme)
     last: dict[tuple, dict] = {}
     for item in entries():
         last[(item["m"], item.get("c"))] = item
+    items = [item for item in last.values() if not item.get("r")]
     count = 0
+    failed: list[int] = []
     with rls_bypass():
-        for item in last.values():
-            if item.get("r"):
-                continue
-            membership = (
-                Membership.objects.select_related("person", "organization")
-                .filter(pk=item["m"], organization_id=item.get("o"))
-                .first()
-            )
+        # Die Liste wächst mit jeder Löschung und wird täglich angewendet: Stand der
+        # Mitgliedschaften gesammelt lesen statt einer Abfrage je Eintrag (Gesamtaudit 15.11.,
+        # PF-10). Angefasst wird nur, was wieder ungelöscht ist.
+        found = _memberships([item["m"] for item in items])
+        todo = []
+        for item in items:
+            row = found.get(item["m"])
             created = parse_datetime(item.get("c") or "")
-            if membership is None or created is None or membership.created_at != created:
+            if row is None or created is None or row["created_at"] != created:
                 continue
-            if membership.purged_at is not None and not item.get("h"):
+            if row["organization_id"] != item.get("o"):
                 continue
-            with transaction.atomic():
-                again = membership.purged_at is None
-                if again:
-                    purge_membership(membership, after_deadline=bool(item.get("d")), listed=True)
-                if item.get("h"):
-                    # Auch die Namen in Chronik und Ehrungen (FQ12); ändert nichts, wenn
-                    # sie schon entfernt sind
-                    changed = erase_history(membership, listed=True)
-                    again = again or any(changed.values())
+            if row["purged_at"] is not None and not item.get("h"):
+                continue
+            todo.append((item, row))
+        history = _history_left([row for item, row in todo if item.get("h")])
+        for item, row in todo:
+            restored = row["purged_at"] is None
+            if not restored and row["pk"] not in history:
+                continue
+            try:
+                membership = Membership.objects.select_related("person", "organization").get(
+                    pk=row["pk"]
+                )
+                with transaction.atomic():
+                    again = restored
+                    if restored:
+                        purge_membership(
+                            membership, after_deadline=bool(item.get("d")), listed=True
+                        )
+                    if item.get("h"):
+                        # Auch die Namen in Chronik und Ehrungen (FQ12); ändert nichts, wenn
+                        # sie schon entfernt sind
+                        changed = erase_history(membership, listed=True)
+                        again = again or any(changed.values())
+            except Exception:  # noqa: BLE001 – ein Eintrag darf die übrigen nicht aufhalten
+                logger.exception("Löschliste: Mitgliedschaft %s nicht erneut gelöscht", row["pk"])
+                failed.append(row["pk"])
+                continue
             if again:
                 count += 1
+    if failed:
+        report_failures("Löschliste", failed)
     if count:
         logger.warning("Löschliste: %s Mitgliedschaften erneut gelöscht", count)
         from core.alarm import send_alert
@@ -176,3 +197,59 @@ def apply() -> int:
             ],
         )
     return count
+
+
+def _memberships(pks: list[int]) -> dict[int, dict]:
+    """Stand der Mitgliedschaften auf der Liste, in Blöcken gelesen (ohne RLS-Kontext)."""
+    from .models import Membership
+
+    result = {}
+    unique = sorted(set(pks))
+    for start in range(0, len(unique), 1000):
+        for row in Membership.objects.filter(pk__in=unique[start : start + 1000]).values(
+            "pk", "organization_id", "person_id", "created_at", "purged_at"
+        ):
+            result[row["pk"]] = row
+    return result
+
+
+def _history_left(rows: list[dict]) -> set[int]:
+    """Mitgliedschaften, bei denen Chronik, Würden oder Ehrungen den Namen wieder tragen.
+
+    Gesammelt über alle Einträge mit ``h``, je Tabelle eine Abfrage. Großzügig: Ein Treffer
+    in einem anderen Verein der Person führt nur zu einem unnötigen, wirkungslosen Aufruf von
+    ``erase_history``."""
+    if not rows:
+        return set()
+    from django.db.models import Count
+
+    from competitions.models import AwardGrant
+    from honors.models import Companion, Reign
+    from qualifications.models import Qualification
+
+    from .models import HonoraryTitleAward, Person
+    from .workflows import NAME_REMOVED
+
+    persons = {row["person_id"] for row in rows}
+    memberships = {row["pk"] for row in rows}
+    hit_persons: set[int] = set()
+    for model in (Reign, Companion, HonoraryTitleAward, Qualification):
+        hit_persons.update(
+            model.objects.filter(person_id__in=persons).values_list("person_id", flat=True)
+        )
+    # Name der Person wieder da, obwohl sie nur diese eine Mitgliedschaft hat
+    # (Namen sind verschlüsselt, der Vergleich geht nur hier)
+    hit_persons.update(
+        person.pk
+        for person in Person.objects.filter(pk__in=persons)
+        .annotate(n=Count("memberships"))
+        .filter(n=1)
+        if person.last_name != NAME_REMOVED
+    )
+    hit = set(
+        AwardGrant.objects.filter(membership_id__in=memberships).values_list(
+            "membership_id", flat=True
+        )
+    )
+    hit.update(row["pk"] for row in rows if row["person_id"] in hit_persons)
+    return hit
