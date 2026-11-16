@@ -121,7 +121,8 @@ def test_gaeste_nur_volljaehrig_mit_namen():
         assert names.of_starter(unknown.pk) == WITHOUT_NAME
         assert names.of_starter(adult.pk) == "Grete Gast"
         # Frei eingetragener Pfandgewinner ohne Starter: ohne Angabe ohne Namen
-        assert names.of(None, "Freie Eintragung") == WITHOUT_NAME
+        assert names.of(None, "Freie Eintragung", guest=True) == WITHOUT_NAME
+        assert names.of(None, "Karl Frei") == "Karl Frei"  # z. B. Titel aus der Chronik
         # Nachtragen
         update_starter(club, user, Starter.objects.get(pk=unknown.pk), {"adult": True})
         assert _names(comp, []).of_starter(unknown.pk) == "Gerd Gast"
