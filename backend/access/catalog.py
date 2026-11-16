@@ -290,6 +290,19 @@ AREAS: tuple[Area, ...] = (
         module="finance",
     ),
     Area(
+        "expenses",
+        gettext_noop("Auslagen"),
+        gettext_noop("Auslagen der Mitglieder und ihre Belege sehen"),
+        gettext_noop(
+            "Auslagen prüfen und freigeben, in Untereinheiten sachlich bestätigen (auszahlen "
+            "nur mit dem Recht, die Kasse zu führen)"
+        ),
+        org_types=("club",),
+        dept_levels=_BOTH,
+        module="expenses",
+        dept_label=gettext_noop("Auslagen {gen}"),
+    ),
+    Area(
         "billing",
         gettext_noop("Beiträge und Rechnungen"),
         gettext_noop("Beiträge, Rechnungen und Zahlungsstand lesen"),
