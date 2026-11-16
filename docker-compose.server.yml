@@ -6,6 +6,8 @@
 x-backend-env: &backend-env
   # Warteschlange der Zeitplan-Jobs (worker-zeitplan); leer: alles in „celery“ (PF-08)
   HUBIPLAN_ZEITPLAN_QUEUE: ${HUBIPLAN_ZEITPLAN_QUEUE-zeitplan}
+  # Anmeldelinks und Sicherheitsmails (beide Worker bedienen sie zuerst); leer: „celery“
+  HUBIPLAN_EILIG_QUEUE: ${HUBIPLAN_EILIG_QUEUE-eilig}
   # Uploads über 5 MB auf die Platte (eigenes Volume), nicht in den Arbeitsspeicher
   FILE_UPLOAD_TEMP_DIR: /app/upload-tmp
   PEERING_RECEPTION_INSTANCE_BYTES: ${PEERING_RECEPTION_INSTANCE_BYTES:-10737418240}
@@ -227,7 +229,7 @@ services:
     pull_policy: never
     # Was Benutzer auslösen: Mails (Anmeldelinks), Import, Export; höchstens zwei zugleich.
     # Zeitplan-Jobs laufen in worker-zeitplan (Gesamtaudit 15.11., PF-08).
-    command: celery -A config worker --loglevel=info --concurrency=2 -Q celery
+    command: celery -A config worker --loglevel=info --concurrency=2 -Q eilig,celery
     mem_limit: ${WORKER_MEM_LIMIT:-2g}
     cpus: ${WORKER_CPUS:-2}
     volumes:
@@ -248,7 +250,7 @@ services:
   worker-zeitplan:
     <<: *backend
     pull_policy: never
-    command: celery -A config worker --loglevel=info --concurrency=2 -Q zeitplan -n zeitplan@%h
+    command: celery -A config worker --loglevel=info --concurrency=2 -Q eilig,zeitplan -n zeitplan@%h
     mem_limit: ${WORKER_ZEITPLAN_MEM_LIMIT:-1536m}
     cpus: ${WORKER_ZEITPLAN_CPUS:-1}
     volumes:

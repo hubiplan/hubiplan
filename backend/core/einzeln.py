@@ -23,6 +23,13 @@ logger = logging.getLogger(__name__)
 
 NAMESPACE = 0x48554245  # "HUBE"
 
+# Grenze für Datenaufträge (Import, Export, Datenübernahme) und Massenversand (Rundschreiben,
+# Termin-Mails): 12 Stunden statt der allgemeinen 3 (CELERY_TASK_SOFT_TIME_LIMIT). Bei Ablauf
+# melden Import und Export ihren Auftrag als fehlgeschlagen; Rundschreiben setzt der
+# Wiederanlauf (alle 15 Minuten) mit den noch wartenden Empfängern fort.
+LONG_SOFT = 12 * 60 * 60
+LONG_HARD = LONG_SOFT + 60
+
 
 def _key(name: str) -> int:
     value = zlib.crc32(name.encode())

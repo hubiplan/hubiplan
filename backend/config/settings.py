@@ -464,6 +464,19 @@ CELERY_BEAT_SCHEDULE = {
 # erwartet. Leer gesetzt (HUBIPLAN_ZEITPLAN_QUEUE=) läuft alles wie früher in „celery“.
 CELERY_TASK_DEFAULT_QUEUE = "celery"
 ZEITPLAN_QUEUE = os.environ.get("HUBIPLAN_ZEITPLAN_QUEUE", "zeitplan")
+# Anmeldelinks und Sicherheitsmails warten nicht hinter Importen, Exporten oder Rundschreiben:
+# eigene Warteschlange „eilig“, die beide Worker zuerst bedienen. Solche Aufträge verfallen
+# nach einer Stunde (ein Anmeldelink danach nützt nichts mehr; man fordert einen neuen an).
+EILIG_QUEUE = os.environ.get("HUBIPLAN_EILIG_QUEUE", "eilig")
+EILIG_EXPIRES = 60 * 60
+CELERY_TASK_ROUTES = (
+    {
+        "outbox.tasks.send_message": {"queue": EILIG_QUEUE},
+        "portal.tasks.send_requested_link": {"queue": EILIG_QUEUE},
+    }
+    if EILIG_QUEUE
+    else {}
+)
 # Grenzen für Aufgaben ohne eigene: drei Stunden wie die längste bisherige (E-Rechnungen)
 CELERY_TASK_SOFT_TIME_LIMIT = 3 * 60 * 60
 CELERY_TASK_TIME_LIMIT = 3 * 60 * 60 + 60

@@ -2,12 +2,12 @@
 
 from celery import shared_task
 
-from core.einzeln import einzeln
+from core.einzeln import LONG_HARD, LONG_SOFT, einzeln
 
 from . import notify
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def send_event_mails(event_id: int, kind: str) -> int:
     """Einladung, Änderung oder Absage an die Eingeladenen."""
     return notify.send(event_id, kind)

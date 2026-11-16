@@ -1137,10 +1137,19 @@ Der Dienst `beat` stößt wiederkehrende Jobs an (`CELERY_BEAT_SCHEDULE` in
   E-Rechnungsprüfung keine Anmeldelinks, Mails oder Exporte mehr auf. Mit
   `HUBIPLAN_ZEITPLAN_QUEUE=` (leer) in der `.env` stellt `beat` alles wieder in `celery`;
   `worker-zeitplan` hat dann nichts zu tun.
+- **Eilig:** Anmeldelinks, „Passwort vergessen“ und andere Sicherheitsmails, die im
+  Hintergrund laufen, gehen in die Warteschlange `eilig`. Beide Worker bedienen sie zusätzlich;
+  sind die zwei Plätze von `worker` mit Importen oder Rundschreiben belegt, nimmt
+  `worker-zeitplan` sie. Sie verfallen nach einer Stunde. `HUBIPLAN_EILIG_QUEUE=` (leer) legt
+  sie wieder in `celery`.
 - **Verfall und Grenzen:** Jeder Zeitplan-Auftrag verfällt, wenn er nicht rechtzeitig startet:
   Intervalle nach ihrem Abstand, feste Uhrzeiten nach sechs Stunden. Es staut sich nichts
   auf, der nächste Lauf kommt ohnehin. Aufgaben ohne eigene Grenze enden nach drei Stunden
-  (`CELERY_TASK_SOFT_TIME_LIMIT`/`CELERY_TASK_TIME_LIMIT`); jeder Worker-Prozess wird nach
+  (`CELERY_TASK_SOFT_TIME_LIMIT`/`CELERY_TASK_TIME_LIMIT`), Importe, Exporte, Datenübernahme,
+  Rundschreiben und Termin-Mails nach zwölf Stunden. Bei Ablauf melden Import und Export
+  ihren Auftrag als fehlgeschlagen; ein Rundschreiben setzt der Wiederanlauf alle 15 Minuten
+  mit den noch wartenden Empfängern fort (die eine gerade gesendete Mail gilt als „unklar“ und
+  wird nicht von selbst wiederholt). Jeder Worker-Prozess wird nach
   200 Aufträgen erneuert und holt nur so viele Aufträge, wie er Plätze hat.
 - **Nie doppelt:** Langläufer unter den Minutenjobs (E-Rechnungsprüfung und -postfach,
   Verteilerpostfach, Verbund, fremde Kalender, Wallet, Webseiten-Beiträge, Kettenprüfung,
@@ -1151,7 +1160,9 @@ Der Dienst `beat` stößt wiederkehrende Jobs an (`CELERY_BEAT_SCHEDULE` in
   `worker-zeitplan` (`--remove-orphans`). Aufträge, die noch in `zeitplan` liegen, sind
   ausschließlich Zeitplan-Jobs mit Verfallszeit: Die ältere Fassung braucht sie nicht (ihr
   `beat` stellt seine Jobs wieder in `celery`), und beim nächsten Ausrollen verwirft
-  `worker-zeitplan` die abgelaufenen. Aufträge der Benutzer liegen nie in `zeitplan`.
+  `worker-zeitplan` die abgelaufenen. Aufträge der Benutzer liegen nie in `zeitplan`. In
+  `eilig` liegende Mails (Anmeldelinks aus den letzten Minuten vor dem Rückweg) bedient die
+  ältere Fassung nicht; sie verfallen nach einer Stunde, die Person fordert den Link neu an.
 - **Alarm:** Der Job `jobs-pruefen` (stündlich) schickt bei überfälligen Jobs eine Alarm-Mail
   (siehe Alarm-Mails), höchstens einmal am Tag je Stand. Erste Schritte: `docker compose …
   ps` (laufen `worker` und `beat`?), `docker compose … logs --since 24h beat worker`.

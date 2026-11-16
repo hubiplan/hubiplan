@@ -29,9 +29,13 @@ def test_zeitplan_jobs_in_eigener_warteschlange_mit_verfall():
             assert options["expires"] == 6 * 60 * 60, name
         else:
             assert 60 <= options["expires"] <= entry["schedule"] + 60, name
-    # Was Benutzer auslösen, bleibt in der Standardwarteschlange
+    # Was Benutzer auslösen, bleibt in der Standardwarteschlange; nur Anmelde- und
+    # Sicherheitsmails gehen nach „eilig“
     assert settings.CELERY_TASK_DEFAULT_QUEUE == "celery"
-    assert not getattr(settings, "CELERY_TASK_ROUTES", None)
+    assert settings.CELERY_TASK_ROUTES == {
+        "outbox.tasks.send_message": {"queue": "eilig"},
+        "portal.tasks.send_requested_link": {"queue": "eilig"},
+    }
 
 
 def test_globale_grenzen():
@@ -46,8 +50,8 @@ def test_compose_trennt_die_worker():
     if not compose.exists():
         pytest.skip("Compose-Dateien im Testcontainer nicht vorhanden")
     text = compose.read_text(encoding="utf-8")
-    assert "--concurrency=2 -Q celery" in text
-    assert "worker-zeitplan:" in text and "-Q zeitplan" in text
+    assert "--concurrency=2 -Q eilig,celery" in text
+    assert "worker-zeitplan:" in text and "-Q eilig,zeitplan" in text
     clamav = (REPO / "docker-compose.clamav.yml").read_text(encoding="utf-8")
     assert "worker-zeitplan:" in clamav  # Virenprüfung läuft im Zeitplan
     for script in ("deploy/server-setup.sh", "deploy/datenschluessel-wechseln.sh"):
@@ -134,3 +138,39 @@ def test_postfach_zeitgrenze_markiert_mail_nicht_als_gelesen(settings):
     ):
         inbound.fetch_inbound()
     assert fake.stored == []  # nicht \\Seen: der nächste Lauf holt sie
+
+
+def test_datenauftraege_und_massenversand_mit_eigener_grenze():
+    """Import, Export, Datenübernahme, Rundschreiben, Termin-Mails: 12 statt 3 Stunden."""
+    from circulars.tasks import send_circular
+    from datatransfer import tasks as dt
+    from events.tasks import send_event_mails
+    from exchange import tasks as ex
+
+    for task in (
+        send_circular,
+        send_event_mails,
+        dt.run_export,
+        dt.check_import,
+        dt.run_import,
+        ex.run_export,
+        ex.validate_import,
+        ex.run_import,
+    ):
+        assert task.soft_time_limit == einzeln.LONG_SOFT, task.name
+        assert task.time_limit > task.soft_time_limit, task.name
+
+
+def test_sicherheitsmail_im_hintergrund_eilig_mit_verfall(settings):
+    from django.core.mail import EmailMessage
+
+    from outbox import tasks
+
+    settings.MAIL_IN_BACKGROUND = True
+    message = EmailMessage("Anmeldelink", "Text", "verein@example.org", ["erika@example.org"])
+    with (
+        mock.patch.object(tasks.send_message, "apply_async") as later,
+        mock.patch("django.db.transaction.on_commit", side_effect=lambda f, robust=False: f()),
+    ):
+        tasks.deliver(message)
+    assert later.call_args.kwargs["expires"] == settings.EILIG_EXPIRES
