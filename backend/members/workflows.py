@@ -668,6 +668,39 @@ def purge_expired(on: datetime.date | None = None) -> int:
 NAME_REMOVED = "Name auf Wunsch entfernt"
 
 
+def _object_everywhere(membership: Membership, orgs: list[int]) -> int:
+    """Widerspruch gegen die Namensnennung in allen öffentlichen Ausgaben (Fachfrage FF-25,
+    Gesamtaudit 15.11., PF-05): Ranglisten, Preise, Ämter, Chronik.
+
+    Der Name stand weiter in Ergebnislisten und Preisen, solange die Person noch in einem
+    anderen Verein Mitglied war (dann bleibt ihr Name an der Person). Deshalb gelten jetzt
+    alle Widersprüche der Webseite für diese Mitgliedschaft, alle Einwilligungen enden, und
+    die Namenskopien in Wettbewerben (Starter, Stechen, Meldungen, Preise) werden ersetzt.
+    Interne Protokolle (Versammlungen, Änderungsprotokoll) bleiben. Rückgabe: Zahl der neu
+    eingetragenen Widersprüche (0, wenn schon alles gilt)."""
+    from competitions.models import Prize, ShootOffEntry, Starter
+    from entries.models import EntryPerson
+    from website.models import PublicationConsent
+    from website.services import set_entry
+
+    in_orgs = {"organization_id__in": orgs, "membership": membership}
+    update_encrypted(Starter.objects.filter(**in_orgs), name=NAME_REMOVED)
+    update_encrypted(ShootOffEntry.objects.filter(**in_orgs), name=NAME_REMOVED)
+    update_encrypted(EntryPerson.objects.filter(**in_orgs), name=NAME_REMOVED)
+    update_encrypted(
+        Prize.objects.filter(organization_id__in=orgs, winner__membership=membership),
+        winner_name=NAME_REMOVED,
+    )
+    Source = PublicationConsent.Source
+    new = 0
+    for category, _ in PublicationConsent.Category.choices:
+        objection = category in PublicationConsent.OBJECTION_CATEGORIES
+        before, _after = set_entry(membership, category, objection, Source.BOARD, None)
+        if objection and not before:
+            new += 1
+    return new
+
+
 @transaction.atomic
 def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, int]:
     """Namen eines ehemaligen, schon gelöschten Mitglieds auf Wunsch auch aus Chronik,
@@ -711,6 +744,7 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
                 name=NAME_REMOVED,
             ),
         }
+        counts["Widersprüche"] = _object_everywhere(membership, orgs)
         elsewhere = (
             Membership.objects.filter(person=person).exclude(organization_id__in=orgs).exists()
         )

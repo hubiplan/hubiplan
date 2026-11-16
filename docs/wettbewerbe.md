@@ -372,7 +372,9 @@ Zusage, die noch nicht Starter sind. Wird der Termin gelöscht, bleibt der Wettb
   2026-11-01) und lädt die Tabelle nur bei einer Änderung.
 - **Namen** im Namensformat der Webseite. Einwilligungen: „Wettbewerbsergebnisse“
   (Widerspruch, wie Würden) und „Wettbewerbsergebnisse unter 18“ (Einwilligung; maßgeblich ist
-  das Alter am Wettbewerbstag). Ohne Erlaubnis steht „ohne Namen“, der Platz bleibt. Gäste
+  das Alter am Wettbewerbstag; ohne Geburtsdatum gilt das Mitglied als minderjährig, ist nur
+  das Geburtsjahr bekannt, zählt der 31.12., Fachfrage FF-24). Ohne Erlaubnis steht „ohne
+  Namen“, der Platz bleibt. Gäste
   erscheinen mit Namen und Verein. Der Datenschutztext der Webseite nennt Ergebnisse, sobald der
   Baustein an ist.
 - **Mitgliederbereich** „Meine Ergebnisse“ (`/api/portal/<Zugang>/results/`, auch für die

@@ -93,6 +93,12 @@ bleiben auch nach der Löschfrist, weil die Vereinsgeschichte ohne sie nicht vol
   Wunsch entfernt“) und löscht Ehrungen und Fotos dieser Würden. Jahre und Würden bleiben als
   Lücke. Ist die Person in keinem anderen Verein erfasst, wird auch ihr Name anonymisiert.
   Das geht erst nach dem Löschen der Mitgliedsdaten und steht auf der Löschliste.
+  Der Widerspruch gilt für alle öffentlichen Ausgaben (Fachfrage FF-25): Für die
+  Mitgliedschaft gelten danach alle Widersprüche der Webseite (Name mit Funktion, Würden und
+  Chronik, Wettbewerbsergebnisse), alle Einwilligungen enden, und die Namenskopien in
+  Startern, Stechen, Meldungen und Preisen werden ersetzt. So bleibt der Name auch dann
+  verborgen, wenn die Person in einem anderen Verein noch Mitglied ist. Interne Protokolle
+  (Versammlungen, Änderungsprotokoll) bleiben.
 
 ## DSGVO-Auskunft bei Sammelrechnungen (FQ13)
 
