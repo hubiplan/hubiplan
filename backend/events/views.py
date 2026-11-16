@@ -1983,6 +1983,8 @@ class PublicCalendarIcsView(APIView):
         return _cors(response)
 
 
-def _content_tag(body: str) -> str:
+def _content_tag(body: bytes | str) -> str:
+    if isinstance(body, bytes):
+        body = body.decode()
     stable = "\n".join(line for line in body.splitlines() if not line.startswith("DTSTAMP:"))
     return hashlib.sha256(stable.encode()).hexdigest()[:32]
