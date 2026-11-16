@@ -43,7 +43,8 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Änderungen zum Rückgängigmachen | Fehlerkorrektur, Art. 6 (1) f | Änderung | nach 30 Tagen gelöscht |
 | Änderungsprotokoll | Nachvollziehbarkeit, GoBD, Art. 6 (1) c, f | – | Inhalte zu einer Person werden mit deren Löschung geleert (Kette bleibt prüfbar) |
 | Exporte, Importe, Datenübernahmen | Arbeitsdateien, Art. 6 (1) f | Erstellung | nach 7 bzw. 30 Tagen gelöscht |
-| App-Geräte | Anmeldung, Art. 6 (1) b | letzte Nutzung | nach 180 Tagen ohne Nutzung abgemeldet |
+| Benutzerkonto (Anmelde-E-Mail, Passkeys, Zwei-Faktor, Geräte, Nextcloud- und KI-Freigaben, Anmeldungen über andere Instanzen, Unterschrift, persönliche Aufgaben) | Anmeldung, Art. 6 (1) b | letzter Zugang (Mitgliederzugang oder Rolle) endet | nach 90 Tagen ohne Zugang gelöscht, zwei Wochen vorher Hinweismail; jederzeit selbst löschbar unter Mein Konto › Anmeldung & Sicherheit (ohne laufende Ämter) |
+| App-Geräte | Anmeldung, Art. 6 (1) b | letzte Nutzung | nach 180 Tagen ohne Nutzung abgemeldet, Push-Adresse gelöscht (täglicher Job `konten-aufraeumen`) |
 | Entwürfe in der App (nicht gesendet, nach dem Abmelden) | Kasse unterwegs, Art. 6 (1) b, c | Abmelden | nach 90 Tagen Rückfrage mit Export, nach 120 Tagen gelöscht; unlesbare sofort (FQ24) |
 | Backups | Wiederherstellung, Art. 6 (1) f, Art. 32 | Erstellung | nach `BACKUP_KEEP_DAYS` Tagen |
 

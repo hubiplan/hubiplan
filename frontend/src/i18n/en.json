@@ -9402,5 +9402,12 @@
   "Plätze 1 bis 3 als Karten": "Places 1 to 3 as cards",
   "Die ersten drei Plätze jeder Wertung stehen als Karten mit großer Platzziffer über der Tabelle; bei Gleichstand bekommen alle Gleichplatzierten eine Karte.": "The first three places of each ranking appear as cards with a large place number above the table; in a tie, everyone sharing a place gets a card.",
   "Den Kasten neben dem Formular (z. B. „Du möchtest mitmachen?“) schreibst du unter Webseite › Texte › Einleitungen der Bereiche › Kontakt: Titel, Text und als letzten Absatz einen Link, der als Knopf erscheint.": "You write the box next to the form (e.g. “Want to join in?”) under Website › Texts › Introductions of the areas › Contact: title, text and, as the last paragraph, a link that appears as a button.",
-  "Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie; die Einleitung „Kontakt“ steht als Kasten neben dem Kontaktformular, ein Link allein im letzten Absatz wird dort zum Knopf. Wie diese Bereiche aussehen, wählst du unter": "An introduction appears at the top of the board, events, sub-units or gallery; the “Contact” introduction appears as a box next to the contact form, where a link on its own in the last paragraph becomes a button. You choose how these areas look under"
+  "Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie; die Einleitung „Kontakt“ steht als Kasten neben dem Kontaktformular, ein Link allein im letzten Absatz wird dort zum Knopf. Wie diese Bereiche aussehen, wählst du unter": "An introduction appears at the top of the board, events, sub-units or gallery; the “Contact” introduction appears as a box next to the contact form, where a link on its own in the last paragraph becomes a button. You choose how these areas look under",
+  "Dein Konto ist gelöscht.": "Your account has been deleted.",
+  "Konto löschen": "Delete account",
+  "Löscht dein Konto mit Passkeys, verbundenen Geräten, Freigaben für Nextcloud und KI-Assistenten und deinen persönlichen Aufgaben. Was dein Verein über dich als Mitglied führt, bleibt; austreten oder die Löschung deiner Mitgliedsdaten verlangen kannst du nur beim Verein.": "Deletes your account with passkeys, connected devices, authorisations for Nextcloud and AI assistants and your personal tasks. What your club keeps about you as a member remains; you can only leave or request deletion of your member data with the club.",
+  "Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.": "You still hold roles in: {names}. Please have them ended first.",
+  "Deine Anmelde-E-Mail zur Bestätigung": "Your login email to confirm",
+  "Konto endgültig löschen": "Delete account permanently",
+  "Konto löschen …": "Delete account …"
 }

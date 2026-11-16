@@ -30,6 +30,70 @@ export function LoginSections() {
   )
 }
 
+/** Mein Konto › Anmeldung & Sicherheit: Konto löschen (Gesamtaudit 15.11., PF-02) */
+export function DeleteAccountSection() {
+  const { data, error } = useLoad(() => accountApi.get(), [])
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <Loading />
+  return <DeleteAccountCard data={data} />
+}
+
+function DeleteAccountCard({ data }: { data: AccountData }) {
+  const form = useForm({ email: '' })
+  const [open, setOpen] = useState(false)
+  const blockers = data.delete_blockers ?? []
+  async function remove(e: FormEvent) {
+    e.preventDefault()
+    const done = await form.submit(async () => {
+      await accountApi.deleteAccount({ email: form.values.email })
+      return true
+    }, t('Dein Konto ist gelöscht.'))
+    if (done) window.location.assign('/')
+  }
+  return (
+    <form className="card card-wide" onSubmit={remove}>
+      <h2>{t('Konto löschen')}</h2>
+      <p className="muted small">
+        {t(
+          'Löscht dein Konto mit Passkeys, verbundenen Geräten, Freigaben für Nextcloud und KI-Assistenten und deinen persönlichen Aufgaben. Was dein Verein über dich als Mitglied führt, bleibt; austreten oder die Löschung deiner Mitgliedsdaten verlangen kannst du nur beim Verein.',
+        )}
+      </p>
+      {blockers.length > 0 ? (
+        <Alert kind="info">
+          {t('Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.', {
+            names: blockers.join(', '),
+          })}
+        </Alert>
+      ) : open ? (
+        <>
+          <Field
+            label={t('Deine Anmelde-E-Mail zur Bestätigung')}
+            type="email"
+            required
+            autoComplete="off"
+            value={form.values.email}
+            error={form.errors.email}
+            onChange={(e) => form.set('email', e.target.value)}
+          />
+          {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+          <div className="button-row">
+            <button type="submit" className="button button-danger" disabled={form.busy}>
+              {t('Konto endgültig löschen')}
+            </button>
+            <button type="button" className="button" onClick={() => setOpen(false)}>
+              {t('Abbrechen')}
+            </button>
+          </div>
+        </>
+      ) : (
+        <button type="button" className="button" onClick={() => setOpen(true)}>
+          {t('Konto löschen …')}
+        </button>
+      )}
+    </form>
+  )
+}
+
 function NameCard({ data, onSaved }: { data: AccountData; onSaved: (d: AccountData) => void }) {
   const { user, setUser } = useAuth()
   const form = useForm({ first_name: data.first_name, last_name: data.last_name })

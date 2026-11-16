@@ -426,6 +426,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "accounts.tasks.expire_initial_passwords",
         "schedule": 60 * 60,  # stündlich
     },
+    # Konten ohne Zugang nach 90 Tagen löschen (vorher Hinweismail), App-Geräte nach 180 Tagen
+    # ohne Nutzung abmelden (Gesamtaudit 15.11., PF-02)
+    "konten-aufraeumen": {
+        "task": "accounts.tasks.purge_orphaned_accounts",
+        "schedule": crontab(minute=55, hour=4),
+    },
     # Mailverteiler: Sammelpostfach abholen (ohne IMAP-Zugang: nichts zu tun)
     "verteiler-abholen": {"task": "circulars.tasks.fetch_inbound", "schedule": 60},
     # Backup-Stand prüfen, Alarm-Mail bei Fehler oder Lücke (ohne Statusordner: nichts)
