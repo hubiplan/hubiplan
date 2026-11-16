@@ -37,6 +37,10 @@ Inhalt
 - zuwendungen.json: Spenden und Zuwendungen
 - mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat
 - zugang.json: Mitgliederzugang, Anmeldekonto und verbundene Geräte der App
+- konto.json: Anmeldekonten der Person: E-Mail-Adressen, Sprache, Zwei-Faktor-Verfahren und
+  Passkeys (nur Art, Name und Zeiten, nie Schlüssel), Geräte mit Benachrichtigungsdienst,
+  Nextcloud-Konten, verbundene KI-Assistenten, Anmeldungen über andere Instanzen, gespeicherte
+  Unterschrift, Briefbogen-Auswahl, eigene Aufgaben und Erinnerungseinstellungen dieses Vereins
 - termine.json: Zu- und Absagen zu Terminen
 - qualifikationen.json: Qualifikationen und Nachweise mit Gültigkeit (bei Einsichtsvermerken wie
   dem Führungszeugnis nur das Datum der Einsicht, nie der Inhalt)
@@ -71,6 +75,14 @@ SECRET = {
     "fingerprint",
     "pdf_sha256",
     "cancel_sha256",
+    "old_token_hash",
+    "access_hash",
+    "refresh_hash",
+    "previous_refresh_hash",
+    "push_endpoint",
+    "push_p256dh",
+    "push_auth",
+    "checksums",
 }
 
 # Wer etwas angelegt, bearbeitet oder entschieden hat, sind Daten anderer Personen
@@ -316,6 +328,163 @@ def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | byte
     return files
 
 
+def _users(membership: Membership, org_ids: list[int]) -> list:
+    """Anmeldekonten der Person: Mitgliederzugang und Ämter in diesem Verein."""
+    from access.models import RoleAssignment
+    from portal.models import PortalAccess
+
+    ids = set(
+        PortalAccess.objects.filter(membership=membership, user__isnull=False).values_list(
+            "user_id", flat=True
+        )
+    )
+    ids.update(
+        RoleAssignment.objects.filter(
+            Q(membership=membership)
+            | Q(person_id=membership.person_id, organization_id__in=org_ids),
+            user__isnull=False,
+        ).values_list("user_id", flat=True)
+    )
+    from django.contrib.auth import get_user_model
+
+    return list(get_user_model().objects.filter(pk__in=ids).order_by("pk"))
+
+
+def _host(url: str) -> str:
+    from urllib.parse import urlsplit
+
+    return urlsplit(url).hostname or "" if url else ""
+
+
+def _account(user, org_ids: list[int]) -> dict:
+    """Alles, was am Anmeldekonto hängt (Gesamtaudit 15.11., PF-02/PF-20).
+
+    Kontoweite Angaben vollständig; was einer Einheit gehört (Nextcloud, KI-Assistenten,
+    Aufgaben, Briefbogen) nur aus diesem Verein und seinen Untereinheiten. Schlüssel,
+    Prüfsummen und die Push-Adresse (sie erlaubt das Senden an das Gerät) stehen nie darin.
+    Persönliche, nicht geteilte Aufgaben nur mit Status und Daten: Ihren Inhalt sieht in
+    HUBIplan nur die Person selbst."""
+    from allauth.account.models import EmailAddress
+    from allauth.mfa.models import Authenticator
+
+    from accounts.models import EmailChange, StoredSignature
+    from devices.models import Device
+    from letterhead.models import LetterheadChoice
+    from mcpserver.models import McpGrant
+    from music.models import MusicReminderPreference
+    from oidc.models import Account
+    from peering.models import RemoteAccount
+    from todos.models import (
+        Todo,
+        TodoNotice,
+        TodoPreference,
+        TodoReminder,
+        TodoReminderConfig,
+        TodoShare,
+    )
+
+    signature = StoredSignature.objects.filter(user=user).first()
+    own = Todo.objects.filter(owner=user, organization_id__in=org_ids, deleted_at__isnull=True)
+    shared_with = Todo.objects.filter(
+        shares__user=user, organization_id__in=org_ids, deleted_at__isnull=True
+    ).distinct()
+
+    def todo(t, content: bool) -> dict:
+        row = {
+            "status": t.get_status_display(),
+            "frist": t.due_date,
+            "angelegt": t.created_at,
+            "erledigt": t.done_at,
+            "geteilt": t.shared,
+        }
+        if content:
+            row["titel"] = t.title
+        return row
+
+    return {
+        "anmelde_email": user.email,
+        "vorname": user.first_name,
+        "nachname": user.last_name,
+        "angelegt": user.date_joined,
+        "letzte_anmeldung": user.last_login,
+        "aktiv": user.is_active,
+        "sprache": user.language,
+        "darstellung": user.color_scheme,
+        "email_adressen": [
+            {"email": a.email, "bestätigt": a.verified, "haupt": a.primary}
+            for a in EmailAddress.objects.filter(user=user)
+        ],
+        "email_wechsel": _rows(EmailChange.objects.filter(user=user)),
+        "zwei_faktor": [
+            {
+                "art": a.type,
+                "name": (a.data or {}).get("name", "") if a.type == "webauthn" else "",
+                "angelegt": a.created_at,
+                "zuletzt_benutzt": a.last_used_at,
+            }
+            for a in Authenticator.objects.filter(user=user)
+        ],
+        "gespeicherte_unterschrift": (
+            {"vorhanden": True, "geändert": signature.updated_at} if signature else None
+        ),
+        "geräte": [
+            {
+                **_row(d, {"user", "device_key", "admin_key"}),
+                "benachrichtigungsdienst": _host(d.push_endpoint),
+            }
+            for d in Device.objects.filter(user=user)
+        ],
+        "nextcloud": [
+            {
+                "dienst": a.client.name,
+                "benutzername": a.nc_user,
+                "erste_anmeldung": a.first_login_at,
+                "letzte_anmeldung": a.last_login_at,
+                "von_hubiplan_deaktiviert": a.disabled_by_hubiplan,
+            }
+            for a in Account.objects.filter(user=user, organization_id__in=org_ids).select_related(
+                "client"
+            )
+        ],
+        "ki_assistenten": [
+            {
+                "assistent": g.client.name,
+                "rechte": g.scopes,
+                "verbunden": g.created_at,
+                "zuletzt_benutzt": g.last_used_at,
+                "gültig_bis": g.expires_at,
+                "getrennt": g.revoked_at,
+            }
+            for g in McpGrant.objects.filter(user=user, organization_id__in=org_ids).select_related(
+                "client"
+            )
+        ],
+        "andere_instanzen": [
+            {"instanz": r.peer.base_url, "angelegt": r.created_at, "zuletzt": r.last_used_at}
+            for r in RemoteAccount.objects.filter(user=user).select_related("peer")
+        ],
+        "briefbogen": _rows(
+            LetterheadChoice.objects.filter(user=user, unit_id__in=org_ids), {"user", "unit"}
+        ),
+        "aufgaben": {
+            "eigene": [todo(t, t.shared) for t in own.order_by("created_at")],
+            "mit_dir_geteilt": [todo(t, True) for t in shared_with.order_by("created_at")],
+            "freigaben": TodoShare.objects.filter(user=user, organization_id__in=org_ids).count(),
+            "einstellungen": _rows(TodoPreference.objects.filter(user=user)),
+            "erinnerungen": _rows(
+                TodoReminderConfig.objects.filter(user=user, organization_id__in=org_ids)
+            ),
+            "geplante_erinnerungen": TodoReminder.objects.filter(
+                user=user, organization_id__in=org_ids
+            ).count(),
+            "hinweise": TodoNotice.objects.filter(user=user, organization_id__in=org_ids).count(),
+        },
+        "musik_erinnerungen": _rows(
+            MusicReminderPreference.objects.filter(user=user, organization_id__in=org_ids)
+        ),
+    }
+
+
 def build(membership: Membership, org) -> bytes:
     """ZIP mit allen Daten der Person in diesem Verein."""
     from audit.models import AuditEntry
@@ -406,6 +575,7 @@ def build(membership: Membership, org) -> bytes:
             }
         )
     files["zugang.json"] = _dump(access_rows)
+    files["konto.json"] = _dump([_account(u, org_ids) for u in _users(membership, org_ids)])
 
     files["termine.json"] = _dump(
         [

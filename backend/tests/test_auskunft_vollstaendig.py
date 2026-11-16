@@ -65,6 +65,54 @@ def test_ausnahmelisten_sind_aktuell():
     assert set(IN_DER_AKTE) | set(AUSNAHMEN) <= labels
 
 
+# Gesamtaudit 15.11., PF-02/PF-20/PF-23: Auch was am Anmeldekonto hängt, gehört in die
+# Auskunft (konto.json). Erfasst sind Modelle, die mit dem Konto gelöscht werden (CASCADE,
+# auch aus allauth). Verweise mit SET_NULL nennen nur, wer etwas angelegt oder bearbeitet
+# hat; sie sind Angaben zu einem Vorgang des Vereins, nicht Daten des Kontos.
+KONTO_AUSNAHMEN = {
+    "access.RoleAssignment": "Ämter, in der Akte",
+    "changes.RequestKey": "Schlüssel gegen doppelte Absendung, technische Kennung ohne Inhalt",
+    "devices.PairingCode": "Kopplungscode der App, nur wenige Minuten gültig, nur Prüfsumme",
+    "peering.LoginLink": "Anmeldelink über eine andere Instanz, kurzlebig, nur Prüfsumme",
+    "portal.LoginLink": "Anmeldelink, nur Prüfsumme; nach 30 Tagen gelöscht",
+    "todos.TodoShare": "Freigaben einer Aufgabe; in konto.json als „mit dir geteilt“",
+    "website.ImageUploadLink": "Hochladelink für Bilder der Webseite, kurzlebig, ohne Inhalt",
+    "admin.LogEntry": "Protokoll des Django-Admins (standardmäßig aus) über Plattformverwalter",
+}
+
+
+def _konto_modelle():
+    from django.contrib.auth import get_user_model
+
+    user = get_user_model()
+    for model in apps.get_models():
+        if model is user:
+            continue
+        for field in model._meta.concrete_fields:
+            if (
+                isinstance(field, models.ForeignKey)
+                and field.related_model is user
+                and field.remote_field.on_delete is models.CASCADE
+            ):
+                yield model._meta.label, model.__name__
+                break
+
+
+def test_jeder_bestand_zum_konto_ist_in_der_auskunft():
+    source = inspect.getsource(auskunft)
+    fehlend = [
+        label
+        for label, name in _konto_modelle()
+        if name not in source and label not in KONTO_AUSNAHMEN
+    ]
+    assert fehlend == []
+
+
+def test_konto_ausnahmen_sind_aktuell():
+    labels = {label for label, _ in _konto_modelle()}
+    assert set(KONTO_AUSNAHMEN) <= labels
+
+
 def _zip(content: bytes) -> dict:
     with zipfile.ZipFile(io.BytesIO(content)) as zf:
         return {n: zf.read(n) for n in zf.namelist()}
