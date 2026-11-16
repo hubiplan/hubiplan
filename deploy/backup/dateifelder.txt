@@ -24,6 +24,7 @@ competitions_certificatetemplate background private
 datatransfer_transferjob file private
 documents_documentversion file private
 events_eventattachment file private
+expenses_expensefile file private
 exchange_exportjob file private
 exchange_importjob error_file private
 exchange_importjob file private

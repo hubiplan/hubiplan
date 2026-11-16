@@ -60,6 +60,11 @@ FOOTER = {
     "social_media": "show_social",
 }
 SLOT_FIELDS = {"line_color", "table_line_color"}
+# Freitexte (Gesamtaudit 15.11., MCP-01; Fachfrage FF-12 (c)): Sie erscheinen ab sofort auf allen
+# neuen Rechnungen, Mahnungen und Spendenquittungen. Ein eingeschleuster Text („neue
+# Bankverbindung …“) könnte so über den Assistenten auf Belege gelangen. Der Assistent sieht sie,
+# ändert sie aber nicht; das macht die Person unter Einstellungen › Briefbogen.
+TEXT_FIELDS = {"name_im_kopf", "zusatzzeile", "anrede", "grussformel"}
 
 
 def _views():
@@ -117,9 +122,17 @@ def _read(args: dict, ctx: ClubContext) -> str:
 
 
 def _change(args: dict, ctx: ClubContext) -> str:
+    texts = sorted(key for key in TEXT_FIELDS if args.get(key) is not None)
+    if texts:
+        raise ToolError(
+            _(
+                "Die Texte des Briefbogens ({keys}) ändert die Person selbst in HUBIplan unter "
+                "Einstellungen › Briefbogen; über den Assistenten geht das nicht."
+            ).format(keys=", ".join(texts))
+        )
     body: dict = {}
     for key, field in FIELDS.items():
-        if key not in args or args[key] is None:
+        if key in TEXT_FIELDS or key not in args or args[key] is None:
             continue
         value = args[key]
         if field in SLOT_FIELDS or (field == "table_stripe" and isinstance(value, int)):
@@ -216,11 +229,13 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
     ),
     Tool(
         name="briefbogen_aendern",
-        title=gettext_lazy("Briefbogen ändern"),
+        title=gettext_lazy("Briefbogen ändern (wirkt sofort)"),
         description=gettext_lazy(
             "Ändert den Briefbogen für Word-Vorlage und PDF-Briefe (Rechnungen, Mahnungen, "
-            "Spendenquittungen, Rundschreiben). Gilt SOFORT, es gibt keinen Entwurf: vorher die "
-            "Person fragen. Nur angegebene Werte ändern sich. Braucht das Recht, die Einheit zu "
+            "Spendenquittungen, Rundschreiben): Aufbau, Logo, Schriften, Farben, Linien und "
+            "Fußzeile. Gilt SOFORT, es gibt keinen Entwurf: vorher die Person fragen. Nur "
+            "angegebene Werte ändern sich. Texte (Name im Briefkopf, Zusatzzeile, Anrede, "
+            "Grußformel) ändert die Person selbst in HUBIplan. Braucht das Recht, die Einheit zu "
             "bearbeiten."
         ),
         schema=_schema(
@@ -246,22 +261,12 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                         "Aus, wenn das Logo den Namen schon enthält (Bildmarke mit Schriftzug)."
                     ),
                 },
-                "name_im_kopf": {
-                    "type": "string",
-                    "maxLength": 200,
-                    "description": gettext_lazy(
-                        "Eigener Name im Briefkopf, höchstens zwei Zeilen (durch Zeilenumbruch "
-                        "getrennt), z. B. bei langen Namen. Leer: der Name der Einheit, dann "
-                        "bricht HUBIplan selbst ausgewogen um."
-                    ),
-                },
                 "zweite_zeile_kleiner": {
                     "type": "boolean",
                     "description": gettext_lazy(
                         "Zweite Zeile des eigenen Namens kleiner setzen, wie eine Unterzeile."
                     ),
                 },
-                "zusatzzeile": {"type": "string", "maxLength": 150},
                 "schrift": FONT,
                 "schrift_ueberschriften": {
                     "type": "string",
@@ -287,8 +292,6 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                         "„grey“ (hellgrau), „none“ (keine) oder ein Palettenplatz 0–5 (hell)."
                     ),
                 },
-                "anrede": {"type": "string", "maxLength": 100},
-                "grussformel": {"type": "string", "maxLength": 100},
                 "fusszeile": {
                     "type": "object",
                     "properties": {key: {"type": "boolean"} for key in FOOTER},
@@ -296,13 +299,14 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                 },
             }
         ),
+        destructive=True,
         run=_change,
         writes=True,
         scope=SCOPE_LETTERHEAD,
     ),
     Tool(
         name="briefbogen_logo_aus_bild",
-        title=gettext_lazy("Logo für den Briefbogen setzen"),
+        title=gettext_lazy("Logo für den Briefbogen setzen (wirkt sofort)"),
         description=gettext_lazy(
             "Setzt ein Bild aus der Bilderverwaltung der Webseite als eigenes Logo nur für den "
             "Briefbogen (z. B. eine querformatige Wort-Bild-Marke statt des Wappens), oder "
@@ -321,6 +325,7 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                 },
             }
         ),
+        destructive=True,
         run=_logo,
         writes=True,
         scope=SCOPE_LETTERHEAD,

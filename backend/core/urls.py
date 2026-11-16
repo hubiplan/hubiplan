@@ -34,6 +34,7 @@ from entries import urls as entry_urls
 from events import rsvp_link
 from events import views as event_views
 from exchange import views as exchange_views
+from expenses import urls as expense_urls
 from finance import (
     asset_views,
     bank_views,
@@ -779,6 +780,7 @@ org_patterns = [
     ),
     path("events/<int:pk>/ics/", event_views.OrgEventIcsView.as_view(), name="event-ics"),
     *circular_urls.org_patterns,
+    *expense_urls.org_patterns,
     *gate_names("social", website_urls.org_patterns, "website-social"),
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
@@ -824,6 +826,7 @@ dept_patterns = [
         transfer_views.DeptExportDownloadView.as_view(),
         name="dept-dt-export-download",
     ),
+    *expense_urls.dept_patterns,
     path("", portal_views.DepartmentInfoView.as_view(), name="dept-info"),
     path("members/", portal_views.DepartmentMemberListView.as_view(), name="dept-members"),
     path(
@@ -1014,6 +1017,7 @@ urlpatterns = [
         "portal/<int:access_id>/meetings/<int:pk>/polls/<int:poll>/vote/",
         meeting_portal.VoteView.as_view(),
     ),
+    path("portal/<int:access_id>/", include(expense_urls.portal_patterns)),
     path("portal/<int:access_id>/surveys/", survey_portal.ListView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
@@ -1076,6 +1080,7 @@ urlpatterns = [
     *mcp_urls.api_patterns,
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     *admission_urls.public_patterns,
+    *expense_urls.public_patterns,
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(
         "public/survey/<str:token>/", survey_link.PublicSurveyView.as_view(), name="public-survey"

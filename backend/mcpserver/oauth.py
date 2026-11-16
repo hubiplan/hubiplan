@@ -28,6 +28,7 @@ from urllib.parse import urlencode, urlsplit, urlunsplit
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
@@ -499,6 +500,8 @@ def _from_code(request) -> dict:
     data = cache.get(key) if code else None
     # Nur einmal einlösbar: Wer den Eintrag nicht selbst löscht, war zu spät
     if data is None or not cache.delete(key):
+        if code:
+            _code_reused(key)
         raise OAuthError("invalid_grant")
     if data["client_id"] != client.client_id or data["redirect_uri"] != _post(
         request, "redirect_uri"
@@ -523,6 +526,8 @@ def _from_code(request) -> dict:
         )
         access, refresh = grant.issue()
         grant.save()
+        # Für den Fall, dass derselbe Code noch einmal kommt (MCP-05)
+        cache.set(key + USED_SUFFIX, grant.pk, USED_SECONDS)
         McpClient.objects.filter(pk=client.pk).update(last_used_at=now)
         from audit.log import record
 
@@ -531,6 +536,50 @@ def _from_code(request) -> dict:
 
     notify.connected(grant)
     return _answer(grant, access, refresh)
+
+
+# Gesamtaudit 15.11., MCP-05 (OAuth 2.1, 4.1.3; RFC 9700, 4.2.4): Kommt ein schon eingelöster
+# Code noch einmal, hat ihn jemand abgefangen; die damit ausgestellten Schlüssel enden.
+USED_SUFFIX = ":eingeloest"
+USED_SECONDS = 10 * 60
+
+
+def _code_reused(key: str) -> None:
+    grant_id = cache.get(key + USED_SUFFIX)
+    if grant_id is None:
+        return
+    with tracking.suppress(), rls_bypass():
+        grant = McpGrant.objects.filter(pk=grant_id, revoked_at=None).first()
+        if grant is not None:
+            _revoke_logged(grant, "code_doppelt")
+
+
+def _revoke_logged(grant: McpGrant, reason: str) -> None:
+    """Verbindung beenden und im Änderungsprotokoll der Einheit vermerken."""
+    from audit.log import record
+
+    if grant.revoked_at is not None:
+        return
+    grant.revoke(reason)
+    record(
+        grant.organization,
+        None,
+        "update",
+        grant,
+        {
+            "KI-Assistent beendet": [
+                None,
+                f"{grant.client.name} ({REVOKE_REASONS.get(reason, reason)})",
+            ]
+        },
+    )
+
+
+REVOKE_REASONS = {
+    "wiederverwendet": "alter Erneuerungsschlüssel noch einmal benutzt",
+    "code_doppelt": "Code zweimal eingelöst",
+    "konto": "Konto geändert",
+}
 
 
 def _refresh(request) -> dict:
@@ -551,8 +600,15 @@ def _refresh(request) -> dict:
         )
         ended = ""
         if grant is None:
-            # Alter Schlüssel noch einmal benutzt: Es gibt eine Kopie, Verbindung beenden
-            grant = McpGrant.objects.filter(previous_refresh_hash=digest, revoked_at=None).first()
+            # Früherer Schlüssel noch einmal benutzt, auch mehrere Erneuerungen alt: Es gibt
+            # eine Kopie, Verbindung beenden (Gesamtaudit 15.11., MCP-04; RFC 9700, 4.14.2)
+            grant = (
+                McpGrant.objects.filter(revoked_at=None)
+                .filter(
+                    Q(previous_refresh_hash=digest) | Q(retired_refresh_hashes__contains=[digest])
+                )
+                .first()
+            )
             ended = "wiederverwendet" if grant is not None else "unbekannt"
         elif grant.client_id != client.pk or not grant.is_active:
             ended = "ungueltig"
@@ -567,13 +623,14 @@ def _refresh(request) -> dict:
                     "access_expires_at",
                     "refresh_hash",
                     "previous_refresh_hash",
+                    "retired_refresh_hashes",
                     "last_used_at",
                 ]
             )
     if ended:
         if ended in ("wiederverwendet", "konto"):
             with tracking.suppress(), rls_bypass():
-                grant.revoke(ended)
+                _revoke_logged(grant, ended)
         raise OAuthError("invalid_grant")
     return _answer(grant, access, new_refresh)
 

@@ -17,6 +17,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from access.modules import module_on
+from core.logobox import logo_size
 from core.tenancy import rls_bypass
 from members.models import DepartmentMembership, Membership, MembershipPeriod
 from members.photo_models import MemberPhoto
@@ -216,16 +217,17 @@ def _draw_card(c, x: float, y: float, entry: dict) -> None:
     text_x = x + 3 * mm
     logo = entry.get("logo")
     if logo is not None:
+        # #527: Höhe 8 mm, Breite nach dem Seitenverhältnis bis 24 mm (Schriftzüge)
+        lw, lh = logo_size(logo, 24 * mm, 8 * mm)
         c.drawImage(
             logo,
             x + 2.5 * mm,
-            y + CARD_H - band + 1.5 * mm,
-            8 * mm,
-            8 * mm,
-            preserveAspectRatio=True,
+            y + CARD_H - band + 1.5 * mm + (8 * mm - lh) / 2,
+            lw,
+            lh,
             mask="auto",
         )
-        text_x = x + 12 * mm
+        text_x = x + 2.5 * mm + lw + 1.5 * mm
     c.setFillColor(on_primary)
     head_w = x + CARD_W - 3 * mm - text_x
     size = _fit(c, entry["club"], "Helvetica-Bold", 9, head_w)

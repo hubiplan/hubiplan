@@ -21,6 +21,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
+from core.logobox import logo_size
 from organizations.theme import effective_theme
 
 from . import services
@@ -220,11 +221,10 @@ def certificates_pdf(
             c.drawImage(background, 0, 0, width, height, preserveAspectRatio=False, mask="auto")
         y = height - margin
         if logo is not None:
-            lw = 32 * mm
-            c.drawImage(
-                logo, (width - lw) / 2, y - lw, lw, lw, preserveAspectRatio=True, mask="auto"
-            )
-            y -= lw + 8 * mm
+            # #527: Höhe höchstens 32 mm, Breite nach dem Seitenverhältnis bis 90 mm
+            lw, lh = logo_size(logo, 90 * mm, 32 * mm)
+            c.drawImage(logo, (width - lw) / 2, y - lh, lw, lh, mask="auto")
+            y -= lh + 8 * mm
         else:
             y -= 12 * mm
         if heading:

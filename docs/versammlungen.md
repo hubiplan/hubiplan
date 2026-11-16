@@ -118,7 +118,15 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   (`represented_by`) und als Vertreter eines Organisationsmitglieds mit eigener Mitgliedschaft
   (`delegate_membership`). Jede Stimme einmal, nicht änderbar. Geheime Stimmzettel tragen keine
   Person, werden gemischt gespeichert und haben keinen Zeitpunkt; `VoteCast` hält nur fest, wer
-  schon abgestimmt hat. Das Ergebnis gibt es erst nach `close` (`entitled` = mögliche Stimmen beim
+  schon abgestimmt hat. Weil `VoteCast` und Stimmzettel in derselben Transaktion entstehen und so
+  in PostgreSQL dieselbe Transaktionsnummer (`xmin`) tragen, schreibt `live.mix_ballots` die
+  Stimmzettel einer geheimen Abstimmung unter Sperre der Versammlung neu (neue Kennungen,
+  zufällige Reihenfolge): sofort beim Schließen und für offene Abstimmungen stündlich (Job
+  `abstimmungen-mischen`; Gesamtaudit 15.11., GEH-1). Grenzen: Bis zum Schließen oder nächsten
+  Lauf kann jemand mit Datenbankzugang zuordnen; wer Datenbankstände vor und nach einem Lauf
+  vergleicht, sieht, welche Stimmzettel in welchem Zeitfenster dazukamen (bei nur einer Stimme im
+  Fenster eine Zuordnung); alte Zeilenfassungen liegen bis zum nächsten `VACUUM` noch in der
+  Tabelle. Das Ergebnis gibt es erst nach `close` (`entitled` = mögliche Stimmen beim
   Schließen), bei offenen Abstimmungen für die Leitung auch „wer wie“. `apply` schreibt es in
   einen Beschluss des TOP (Ja/Nein/Enthaltung, einfache Mehrheit; Wahl mit mehreren Personen:
   Stimmen der Gewählten als Ja, der anderen als Nein, Gleichstand abgelehnt) und hebt

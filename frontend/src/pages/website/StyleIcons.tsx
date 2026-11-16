@@ -269,6 +269,31 @@ const ICONS: Record<string, Record<string, () => ReactNode>> = {
         </>,
       ),
   },
+  // Webseite #148: Band der Untereinheiten
+  unit_title: {
+    primary: () =>
+      svg(
+        <>
+          <rect x="2" y="2" width="28" height="9" rx="1.5" fill="currentColor" opacity=".8" />
+          {bar(4, 14, 24, 2, 0.4)}
+        </>,
+      ),
+    box: () =>
+      svg(
+        <>
+          <rect x="2" y="2" width="28" height="9" rx="1.5" fill="currentColor" opacity=".5" />
+          {bar(4, 14, 24, 2, 0.4)}
+        </>,
+      ),
+    light: () =>
+      svg(
+        <>
+          <rect x="2" y="2" width="28" height="9" rx="1.5" fill="currentColor" opacity=".15" />
+          {[bar(4, 5, 14, 3), bar(2, 11, 28, 0.8, 0.6), bar(4, 14, 24, 2, 0.4)]}
+        </>,
+      ),
+    plain: () => svg(<>{[bar(4, 4, 14, 3), bar(2, 10, 28, 1.6), bar(4, 14, 24, 2, 0.4)]}</>),
+  },
 }
 
 /** Bildzeichen für eine Stufe, sonst null (dann nur das Wort). */
