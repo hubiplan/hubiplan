@@ -15,6 +15,8 @@ def hourly() -> dict:
 
     return {
         "closed": services.close_due(),
+        # Anonyme Antworten mischen (Gesamtaudit 15.11., GEH-1)
+        "mixed": services.mix_open(),
         "reminded": notify.send_reminders(),
         "purged": services.purge_due(),
     }
