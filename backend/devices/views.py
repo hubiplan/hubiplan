@@ -40,7 +40,14 @@ from portal.views import portal_summary
 
 from . import devicekey, notify, webpush
 from .auth import DeviceTokenAuthentication
-from .models import PAIRING_MINUTES, Device, PairingCode, hash_token
+from .models import (
+    CHALLENGE_PATTERN,
+    PAIRING_MINUTES,
+    VERIFIER_PATTERN,
+    Device,
+    PairingCode,
+    hash_token,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -190,13 +197,23 @@ class InstanceView(APIView):
         )
 
 
+class PairingCodeSerializer(serializers.Serializer):
+    # Prüfwert der App, die /app/anmelden geöffnet hat (APP-01); fehlt beim QR-Code
+    challenge = serializers.RegexField(
+        CHALLENGE_PATTERN, required=False, allow_blank=True, default=""
+    )
+
+
 class PairingCodeView(APIView):
-    """Im Browser (Mein Konto): QR-Code zum Verbinden der App erzeugen."""
+    """Im Browser (Mein Konto): QR-Code zum Verbinden der App erzeugen; auf /app/anmelden mit
+    dem Prüfwert der App, die die Seite geöffnet hat."""
 
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        data = PairingCodeSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
         step_up.require(request)
         key = f"app:pairing:{request.user.pk}"
         if too_many(key, RATE[0], RATE[1]):
@@ -216,6 +233,7 @@ class PairingCodeView(APIView):
             user=request.user,
             token_hash=hash_token(token),
             expires_at=now + datetime.timedelta(minutes=PAIRING_MINUTES),
+            challenge=data.validated_data["challenge"],
         )
         # Im Fragment (#), damit der Code in keinem Server-Protokoll landet
         url = f"{settings.FRONTEND_URL}/app/verbinden#code={token}"
@@ -244,6 +262,10 @@ class PairingStatusView(APIView):
 class PairSerializer(DeviceSerializer):
     code = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
     login_link = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
+    # Geheimnis der App zum Prüfwert des Codes (APP-01, PKCE-artig)
+    verifier = serializers.RegexField(
+        VERIFIER_PATTERN, required=False, allow_blank=True, default=""
+    )
 
 
 class PairView(APIView):
@@ -261,6 +283,7 @@ class PairView(APIView):
             raise ValidationError(
                 gettext("Bitte den QR-Code scannen oder einen Anmeldelink öffnen.")
             )
+        wrong_verifier = False
         with transaction.atomic():
             if v["code"]:
                 item = (
@@ -280,27 +303,39 @@ class PairView(APIView):
                 raise NotFound(
                     gettext("Der Code ist ungültig oder abgelaufen. Bitte einen neuen erzeugen.")
                 )
-            user = item.user
-            set_rls(None, user.pk)
-            # Anmeldelinks gelten wie im Browser nicht für Vorstände und Konten mit 2FA
-            if v["login_link"] and not portal_services.link_login_allowed(user):
-                raise PermissionDenied(
-                    gettext(
-                        "Für dieses Konto bitte mit Passwort oder QR-Code aus „Mein Konto“ "
-                        "anmelden."
+            if isinstance(item, PairingCode) and not item.verifier_ok(v["verifier"]):
+                # Fremde App mit abgefangenem Code: Code verbrauchen (kein zweiter Versuch);
+                # gemeldet wird nach dem Speichern, damit der Verbrauch bestehen bleibt
+                item.used_at = timezone.now()
+                item.save(update_fields=["used_at"])
+                wrong_verifier = True
+            else:
+                user = item.user
+                set_rls(None, user.pk)
+                # Anmeldelinks gelten wie im Browser nicht für Vorstände und Konten mit 2FA
+                if v["login_link"] and not portal_services.link_login_allowed(user):
+                    raise PermissionDenied(
+                        gettext(
+                            "Für dieses Konto bitte mit Passwort oder QR-Code aus „Mein Konto“ "
+                            "anmelden."
+                        )
                     )
-                )
-            if not portal_services.portal_accesses(user):
-                raise PermissionDenied(
-                    gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-                )
-            device, token = _create_device(user, v)
-            item.used_at = timezone.now()
-            fields = ["used_at"]
-            if isinstance(item, PairingCode):
-                item.device = device
-                fields.append("device")
-            item.save(update_fields=fields)
+                if not portal_services.portal_accesses(user):
+                    raise PermissionDenied(
+                        gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
+                    )
+                device, token = _create_device(user, v)
+                item.used_at = timezone.now()
+                fields = ["used_at"]
+                if isinstance(item, PairingCode):
+                    item.device = device
+                    fields.append("device")
+                item.save(update_fields=fields)
+        if wrong_verifier:
+            logger.warning("Verbindungscode %s mit falschem Prüfwert eingelöst", item.pk)
+            raise NotFound(
+                gettext("Der Code ist ungültig oder abgelaufen. Bitte einen neuen erzeugen.")
+            )
         return _paired(user, device, token)
 
 
