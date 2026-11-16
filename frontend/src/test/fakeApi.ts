@@ -52,6 +52,11 @@ const DEFAULTS: Record<string, Handler> = {
   }),
   // Hilfe: ohne eigene Angabe nichts abgehakt
   'GET /api/me/help/': () => ({ status: 200, body: { help_done: [] } }),
+  // Zweiter Faktor: ohne eigene Angabe kein Passkey für eine andere Adresse
+  'GET /api/public/passkey-elsewhere/': () => ({
+    status: 200,
+    body: { elsewhere: false, hosts: [] },
+  }),
   // Passkeys: ohne eigene Angabe keine eingerichtet
   'GET /api/me/passkeys/': () => ({
     status: 200,

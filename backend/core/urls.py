@@ -1160,6 +1160,11 @@ urlpatterns = [
     path("me/password/", self_service.PasswordView.as_view(), name="my-password"),
     path("me/confirm/", step_up.StepUpView.as_view(), name="my-step-up"),
     path("me/passkeys/", passkeys.PasskeyListView.as_view(), name="my-passkeys"),
+    path(
+        "public/passkey-elsewhere/",
+        passkeys.PasskeyElsewhereView.as_view(),
+        name="public-passkey-elsewhere",
+    ),
     path("me/email/", self_service.EmailChangeView.as_view(), name="my-email"),
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),

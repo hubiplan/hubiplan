@@ -204,6 +204,16 @@ export async function passkeyReauth(credential: Options): Promise<ChangeResult> 
   }
 }
 
+/** Im Schritt „zweiter Faktor“: Gilt der Passkey des Kontos nur für andere Adressen? */
+export async function passkeyElsewhere(): Promise<{ elsewhere: boolean; hosts: string[] }> {
+  const { status, body } = await request<{ elsewhere?: boolean; hosts?: string[] }>(
+    'GET',
+    '/api/public/passkey-elsewhere/',
+  )
+  if (status !== 200 || body?.elsewhere !== true) return { elsewhere: false, hosts: [] }
+  return { elsewhere: true, hosts: Array.isArray(body.hosts) ? body.hosts : [] }
+}
+
 export interface Passkey {
   id: number
   name: string

@@ -19,7 +19,8 @@ from __future__ import annotations
 import hashlib
 
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -119,6 +120,38 @@ class PasskeyListView(APIView):
                 }
             )
         return Response({"enabled": enabled(), "host": here, "passkeys": items})
+
+
+class PasskeyElsewhereView(APIView):
+    """GET, ohne Anmeldung: Gilt der Passkey des Kontos nur für andere Adressen?
+
+    Nur im Schritt „zweiter Faktor“ einer laufenden Anmeldung (Passwort stimmt schon): Hat
+    das Konto Passkeys, aber keinen für die aufgerufene Adresse, nennt die Antwort die
+    Adressen, für die sie gelten. Die Anmeldeseite sagt dann, warum hier kein Passkey
+    angeboten wird. Sonst immer ``{"elsewhere": false, "hosts": []}``.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    @extend_schema(responses=dict)
+    def get(self, request):
+        from allauth.account.internal.stagekit import get_pending_stage
+
+        nothing = Response({"elsewhere": False, "hosts": []})
+        if not enabled():
+            return nothing
+        stage = get_pending_stage(request._request)
+        user = getattr(getattr(stage, "login", None), "user", None)
+        if stage is None or stage.key != "mfa_authenticate" or user is None:
+            return nothing
+        here = current_host(request._request)
+        digests = {rp_hash(item) for item in passkeys(user)} - {b""}
+        if not digests or (here and _hash(here) in digests):
+            return nothing
+        by_hash = {_hash(host): host for host in known_hosts(request._request)}
+        hosts = sorted({by_hash[d] for d in digests if d in by_hash})
+        return Response({"elsewhere": True, "hosts": hosts})
 
 
 # --- Hinweis-Mails (Art „Sicherheit“) ---

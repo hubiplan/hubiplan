@@ -8224,6 +8224,8 @@
   "Der Passkey wurde entfernt.": "The passkey was removed.",
   "Der Passkey wurde umbenannt.": "The passkey was renamed.",
   "Die Anmeldung mit Passkey hat nicht geklappt.": "Signing in with a passkey did not work.",
+  "Dein Passkey gilt für {host}, nicht für diese Adresse. Hier geht es mit dem Code weiter.": "Your passkey is valid for {host}, not for this address. Here you continue with the code.",
+  "Dein Passkey gilt für eine andere Adresse, nicht für diese. Hier geht es mit dem Code weiter.": "Your passkey is valid for another address, not for this one. Here you continue with the code.",
   "Die Bestätigung ist abgelaufen. Bitte noch einmal versuchen.": "The confirmation has expired. Please try again.",
   "Die Bestätigung mit Passkey hat nicht geklappt.": "Confirming with a passkey did not work.",
   "Die Passkeys konnten nicht geladen werden.": "The passkeys could not be loaded.",

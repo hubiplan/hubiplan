@@ -29,7 +29,8 @@ für welche Adresse ein Passkey gilt.
 
 Klicke auf der Anmeldeseite auf **Mit Passkey anmelden**. Viele Browser schlagen den Passkey
 auch direkt im Feld für die E-Mail-Adresse vor. Meldest du dich mit Passwort an, kannst du statt
-des Codes **Mit Passkey bestätigen** wählen.
+des Codes **Mit Passkey bestätigen** wählen. Unter einer anderen Adresse wird der Passkey nicht
+angeboten; die Anmeldeseite nennt dann die Adresse, für die er gilt, und du gibst den Code ein.
 
 Für heikle Aktionen fragt HUBIplan ebenfalls nach dem Passkey. Mit **Code eingeben** nimmst du
 stattdessen einen Code aus der Authenticator-App oder einen Wiederherstellungscode.
