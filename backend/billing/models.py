@@ -504,6 +504,19 @@ class Rhythm(models.TextChoices):
     MONTHLY = "monthly", gettext_lazy("monatlich")
 
 
+class ProRata(models.TextChoices):
+    """Anteiliger Beitrag bei Eintritt oder Austritt im laufenden Zeitraum: je angefangenem
+    Monat, Quartal oder Halbjahr, gezählt vom Beginn des Geschäftsjahres."""
+
+    OFF = "off", gettext_lazy("nicht anteilig (voller Beitrag)")
+    MONTH = "month", gettext_lazy("je angefangenem Monat")
+    QUARTER = "quarter", gettext_lazy("je angefangenem Quartal")
+    HALFYEAR = "halfyear", gettext_lazy("je angefangenem Halbjahr")
+
+
+PRO_RATA_MONTHS = {ProRata.MONTH: 1, ProRata.QUARTER: 3, ProRata.HALFYEAR: 6}
+
+
 PERIODS_PER_YEAR = {
     Rhythm.YEARLY: 1,
     Rhythm.HALFYEARLY: 2,
@@ -520,9 +533,18 @@ class BillingSettings(models.Model):
         "Abrechnungsrhythmus", max_length=12, choices=Rhythm.choices, default=Rhythm.YEARLY
     )
     due_days = models.PositiveSmallIntegerField("Zahlungsziel in Tagen", default=14)
+    # Alt (bis v2026.11): an/aus für „je angefangenem Monat“. Bleibt eine Fassung lang als
+    # Spiegel von pro_rata_step erhalten, damit die vorige Fassung weiterläuft.
     pro_rata = models.BooleanField(
         "Eintritt im laufenden Zeitraum anteilig berechnen (je angefangenem Monat)",
         default=False,
+    )
+    pro_rata_step = models.CharField(
+        "Beitrag bei Eintritt im laufenden Zeitraum",
+        max_length=10,
+        choices=ProRata.choices,
+        default=ProRata.OFF,
+        db_default=ProRata.OFF,
     )
     account = models.ForeignKey(
         "finance.Account",
@@ -600,9 +622,22 @@ class BillingSettings(models.Model):
     def __str__(self) -> str:
         return f"Beitragseinstellungen {self.organization}"
 
+    def save(self, *args, **kwargs):
+        # Spiegel für die vorige Fassung (liest nur pro_rata)
+        self.pro_rata = self.pro_rata_step != ProRata.OFF
+        fields = kwargs.get("update_fields")
+        if fields is not None and "pro_rata_step" in fields and "pro_rata" not in fields:
+            kwargs["update_fields"] = [*fields, "pro_rata"]
+        super().save(*args, **kwargs)
+
     @property
     def periods(self) -> int:
         return PERIODS_PER_YEAR[self.rhythm]
+
+    @property
+    def pro_rata_months(self) -> int:
+        """Länge eines Anteils in Monaten, 0 = nicht anteilig."""
+        return PRO_RATA_MONTHS.get(self.pro_rata_step, 0)
 
 
 class FeeRate(models.Model):

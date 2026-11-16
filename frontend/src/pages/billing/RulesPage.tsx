@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
-import type { BillingSettings, FeeRateRow, Rhythm } from '../../api/billing.ts'
+import type { BillingSettings, FeeRateRow, ProRataStep, Rhythm } from '../../api/billing.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
@@ -499,7 +499,7 @@ function SettingsCard({
   const form = useForm({
     rhythm: settings.rhythm,
     due_days: String(settings.due_days),
-    pro_rata: settings.pro_rata,
+    pro_rata_step: settings.pro_rata_step,
     account: settings.account ? String(settings.account) : '',
     category: settings.category ? String(settings.category) : '',
     intro_text: settings.intro_text,
@@ -565,14 +565,17 @@ function SettingsCard({
             error={form.errors.due_days}
             onChange={(e) => form.set('due_days', e.target.value)}
           />
-          <div className="field">
-            <span>&nbsp;</span>
-            <Checkbox
-              label={t('Eintritt im laufenden Zeitraum anteilig je angefangenem Monat')}
-              checked={v.pro_rata}
-              onChange={(val) => form.set('pro_rata', val)}
-            />
-          </div>
+          <SelectField
+            label={t('Beitrag bei Eintritt im laufenden Zeitraum')}
+            value={v.pro_rata_step}
+            hint={t('Angefangene Abschnitte zählen voll, gerechnet ab Beginn des Geschäftsjahres')}
+            onChange={(e) => form.set('pro_rata_step', e.target.value as ProRataStep)}
+          >
+            <option value="off">{t('voller Beitrag (nicht anteilig)')}</option>
+            <option value="month">{t('anteilig je angefangenem Monat')}</option>
+            <option value="quarter">{t('anteilig je angefangenem Quartal')}</option>
+            <option value="halfyear">{t('anteilig je angefangenem Halbjahr')}</option>
+          </SelectField>
           <SelectField
             label={t('Konto für Überweisungen')}
             value={v.account}
