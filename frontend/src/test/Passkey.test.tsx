@@ -27,7 +27,7 @@ const requestOptions = {
   publicKey: { challenge: 'AQID', rpId: 'verein.example', allowCredentials: [], timeout: 60000 },
 }
 
-function fakeBrowser() {
+function fakeBrowser({ autofill = false } = {}) {
   const assertion = {
     type: 'public-key',
     id: 'Cg',
@@ -55,7 +55,14 @@ function fakeBrowser() {
   }
   const get = vi.fn(async (_options: CredentialRequestOptions) => assertion)
   const create = vi.fn(async (_options: CredentialCreationOptions) => attestation)
-  vi.stubGlobal('PublicKeyCredential', function PublicKeyCredential() {})
+  // ``autofill``: Der Browser schlägt Passkeys schon im E-Mail-Feld vor
+  vi.stubGlobal(
+    'PublicKeyCredential',
+    Object.assign(
+      function PublicKeyCredential() {},
+      autofill ? { isConditionalMediationAvailable: async () => true } : {},
+    ),
+  )
   Object.defineProperty(navigator, 'credentials', {
     configurable: true,
     value: { get, create },
@@ -184,6 +191,77 @@ describe('Anmeldeseite', () => {
         calls.some((c) => c.key === 'POST /_allauth/browser/v1/auth/webauthn/authenticate'),
       ).toBe(true),
     )
+  })
+
+  it('sind Passkeys abgeschaltet, meldet der Vorschlag nichts und der Knopf verschwindet', async () => {
+    fakeBrowser({ autofill: true })
+    const calls = renderAt(
+      {
+        'GET /_allauth/browser/v1/auth/session': anonymous,
+        'GET /_allauth/browser/v1/auth/webauthn/login': () => ({ status: 404, body: {} }),
+      },
+      <LoginPage />,
+    )
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'GET /_allauth/browser/v1/auth/webauthn/login')).toBe(
+        true,
+      ),
+    )
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Mit Passkey anmelden' })).toBeNull(),
+    )
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Anmelden' })).toBeInTheDocument()
+  })
+
+  it('zu viele Anfragen: der Vorschlag im E-Mail-Feld bleibt still', async () => {
+    fakeBrowser({ autofill: true })
+    const calls = renderAt(
+      {
+        'GET /_allauth/browser/v1/auth/session': anonymous,
+        'GET /_allauth/browser/v1/auth/webauthn/login': () => ({ status: 429, body: {} }),
+      },
+      <LoginPage />,
+    )
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'GET /_allauth/browser/v1/auth/webauthn/login')).toBe(
+        true,
+      ),
+    )
+    expect(screen.queryByRole('alert')).toBeNull()
+    // Der Knopf bleibt; erst wer ihn drückt, erfährt den Grund
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Mit Passkey anmelden' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Zu viele Versuche')
+  })
+
+  it('bietet den Vorschlag nach einer abgelehnten Anmeldung mit neuer Aufgabe wieder an', async () => {
+    const { get } = fakeBrowser({ autofill: true })
+    // Im Browser wartet der Vorschlag, bis jemand einen Passkey wählt: nur der erste antwortet
+    const choose = get.getMockImplementation()!
+    get.mockImplementation((options) =>
+      get.mock.calls.length > 1 ? new Promise<never>(() => {}) : choose(options),
+    )
+    const calls = renderAt(
+      {
+        'GET /_allauth/browser/v1/auth/session': anonymous,
+        'GET /_allauth/browser/v1/auth/webauthn/login': () => ({
+          status: 200,
+          body: { status: 200, data: { request_options: requestOptions } },
+        }),
+        'POST /_allauth/browser/v1/auth/webauthn/login': () => ({
+          status: 400,
+          body: { status: 400, errors: [{ message: 'Falscher Code.' }] },
+        }),
+      },
+      <LoginPage />,
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent('Falscher Code.')
+    await waitFor(() =>
+      expect(
+        calls.filter((c) => c.key === 'GET /_allauth/browser/v1/auth/webauthn/login').length,
+      ).toBe(2),
+    )
+    expect(get).toHaveBeenCalledTimes(2)
   })
 
   it('ohne Passkey-Unterstützung bleibt alles wie bisher', async () => {
