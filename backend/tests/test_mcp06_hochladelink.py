@@ -62,3 +62,19 @@ def test_link_aus_der_oberflaeche_ohne_verbindung_wie_bisher(club, site, editor)
     link, secret = ImageUploadLink.create(site, editor, "")
     assert link.grant_id is None
     assert HttpClient().get(f"/api/public/website-images/{secret}/").status_code == 200
+
+
+def test_verbindung_nur_aus_dem_internen_aufruf(club, site, editor, api):
+    """mcp_grant setzt nur der interne Aufruf der KI-Schnittstelle (ClubContext.call); eine
+    Anfrage von außen kann keine Verbindung vorgeben, weder im Inhalt noch im Kopf."""
+    _public, grant = _link(editor, club)
+    resp = api(editor).post(
+        f"/api/orgs/{club.pk}/website/images/upload-link/",
+        {"via": "", "grant": grant.pk, "mcp_grant": grant.pk},
+        content_type="application/json",
+        HTTP_MCP_GRANT=str(grant.pk),
+    )
+    assert resp.status_code == 201, resp.content
+    assert ImageUploadLink.objects.get(pk=resp.json()["id"]).grant_id is None
+    # Jeder Link über den Assistenten hängt an seiner Verbindung
+    assert not ImageUploadLink.objects.filter(via__startswith="KI-Assistent", grant=None).exists()
