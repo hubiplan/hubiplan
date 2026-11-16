@@ -215,7 +215,7 @@ def test_bilder_suchen_ansehen_beschreiben(club, site, editor):  # noqa: F811
     resp = rpc(token, "tools/call", {"name": "bild_ansehen", "arguments": {"nummer": image.pk}})
     result = resp.json()["result"]
     assert not result["isError"], result
-    shown, note = result["content"]
+    shown, note = result["content"][:2]
     assert shown["type"] == "image" and shown["mimeType"] == "image/jpeg"
     with Image.open(io.BytesIO(base64.b64decode(shown["data"]))) as img:
         assert max(img.size) <= 640

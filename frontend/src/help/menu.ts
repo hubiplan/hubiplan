@@ -76,6 +76,9 @@ const FINANCE_ALL: FinanceAccess = {
   reserves: true,
   tax: true,
   payouts: true,
+  expenses: true,
+  expensesEdit: true,
+  expensesPay: true,
 }
 
 /**

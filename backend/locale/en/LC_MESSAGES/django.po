@@ -13213,6 +13213,409 @@ msgstr "Unknown section. Possible: {areas}."
 msgid "Einleitung des Bereichs „{area}“ angelegt (Nummer {pk})."
 msgstr "Introduction of the section “{area}” created (number {pk})."
 
+msgid "Auslagen"
+msgstr "Expenses"
+
+msgid "Auslagen der Mitglieder und ihre Belege sehen"
+msgstr "See members' expense claims and their receipts"
+
+msgid "Auslagen prüfen und freigeben, in Untereinheiten sachlich bestätigen (auszahlen nur mit dem Recht, die Kasse zu führen)"
+msgstr "Review and approve expense claims, confirm them in departments (paying out also needs the right to keep the accounts)"
+
+#, python-brace-format
+msgid "Auslagen {gen}"
+msgstr "Expenses of {gen}"
+
+msgid "Auslagen erstatten"
+msgstr "Expense claims"
+
+msgid "Mitglieder melden selbst bezahlte Ausgaben mit Foto des Belegs, die Kasse prüft, gibt frei und zahlt aus"
+msgstr "Members claim expenses they paid themselves with a photo of the receipt; the treasurer reviews, approves and pays out"
+
+msgid "Links für Personen ohne Zugang sind nicht eingeschaltet."
+msgstr "Links for people without access are switched off."
+
+msgid "über persönlichen Link"
+msgstr "via personal link"
+
+msgid "alle aktiven Mitglieder mit Zugang"
+msgstr "all active members with access"
+
+msgid "nur Personen mit Amt oder Rolle"
+msgstr "only people with an office or role"
+
+msgid "Auslage mit Beleg"
+msgstr "Expense with receipt"
+
+msgid "Vorschuss"
+msgstr "Advance"
+
+msgid "sachlich bestätigt"
+msgstr "confirmed"
+
+msgid "ausgezahlt"
+msgstr "paid"
+
+msgid "verzichtet (Spende)"
+msgstr "waived (donation)"
+
+msgid "den Verein"
+msgstr "the club"
+
+msgid "mich"
+msgstr "me"
+
+msgid "ohne Namen (Kassenbon)"
+msgstr "no name (till receipt)"
+
+msgid "Verzicht (Spende)"
+msgstr "Waiver (donation)"
+
+msgid "von der Kasse erfasst"
+msgstr "entered by the treasurer"
+
+msgid "persönlicher Link"
+msgstr "personal link"
+
+msgid "zweite Freigabe"
+msgstr "second approval"
+
+msgid "selbst freigegeben"
+msgstr "self-approved"
+
+msgid "nachträglich gesichtet"
+msgstr "reviewed afterwards"
+
+msgid "Auszahlung storniert"
+msgstr "payout reversed"
+
+msgid "verzichtet"
+msgstr "waived"
+
+msgid "Beleg ergänzt"
+msgstr "receipt added"
+
+#, python-brace-format
+msgid "Rückfrage zu deiner Auslage {number}"
+msgstr "Query about your expense claim {number}"
+
+#, python-brace-format
+msgid "Die Kasse fragt nach: {text}"
+msgstr "The treasurer asks: {text}"
+
+#, python-brace-format
+msgid "Auslage {number} freigegeben"
+msgstr "Expense claim {number} approved"
+
+#, python-brace-format
+msgid "{amount} € werden dir erstattet."
+msgstr "€{amount} will be refunded to you."
+
+#, python-brace-format
+msgid "Auslage {number} abgelehnt"
+msgstr "Expense claim {number} rejected"
+
+#, python-brace-format
+msgid "Grund: {reason}"
+msgstr "Reason: {reason}"
+
+#, python-brace-format
+msgid "Auslage {number} ausgezahlt"
+msgstr "Expense claim {number} paid"
+
+#, python-brace-format
+msgid "{amount} € sind auf dem Weg zu dir."
+msgstr "€{amount} is on its way to you."
+
+#, python-brace-format
+msgid "{amount} € wurden bar ausgezahlt."
+msgstr "€{amount} was paid out in cash."
+
+#, python-brace-format
+msgid "Zweck: {purpose}"
+msgstr "Purpose: {purpose}"
+
+#, python-brace-format
+msgid "Zur Auslage: {url}"
+msgstr "View the expense claim: {url}"
+
+#, python-brace-format
+msgid "Auslage {number} bitte bestätigen"
+msgstr "Please confirm expense claim {number}"
+
+#, python-brace-format
+msgid "Neue Auslage {number} zu prüfen"
+msgstr "New expense claim {number} to review"
+
+msgid "Hallo,"
+msgstr "Hello,"
+
+#, python-brace-format
+msgid "{name} hat eine Auslage über {amount} € eingereicht:"
+msgstr "{name} has submitted an expense claim for €{amount}:"
+
+#, python-brace-format
+msgid "Zur Prüfung: {url}"
+msgstr "Review it here: {url}"
+
+msgid "Auslagen melden hier nur Personen mit Amt oder Rolle im Verein."
+msgstr "Only people with an office or role in the club can claim expenses here."
+
+msgid "Eingereichte Auslagen ändert nur eine Rückfrage der Kasse."
+msgstr "Submitted claims can only be changed after a query from the treasurer."
+
+msgid "Die Auslage wurde inzwischen geändert. Bitte neu laden."
+msgstr "The expense claim has been changed in the meantime. Please reload."
+
+msgid "Nur Entwürfe lassen sich löschen."
+msgstr "Only drafts can be deleted."
+
+msgid "Belege lassen sich nur bei Entwürfen und Rückfragen ergänzen."
+msgstr "Receipts can only be added to drafts and queries."
+
+msgid "Nach dem Einreichen lassen sich Belege nur noch ergänzen."
+msgstr "After submitting, receipts can only be added, not removed."
+
+msgid "Bitte einen gültigen Betrag angeben."
+msgstr "Please enter a valid amount."
+
+msgid "Fahrtkosten sind nicht eingeschaltet."
+msgstr "Mileage claims are switched off."
+
+msgid "Vorschüsse sind nicht eingeschaltet."
+msgstr "Advances are switched off."
+
+msgid "Bitte eine Auswahl treffen."
+msgstr "Please make a selection."
+
+msgid "Bitte Überweisung oder bar wählen."
+msgstr "Please choose bank transfer or cash."
+
+msgid "Bitte die Kilometer als Zahl angeben."
+msgstr "Please enter the kilometres as a number."
+
+msgid "Bitte zwischen 0,1 und 5000 km angeben."
+msgstr "Please enter between 0.1 and 5,000 km."
+
+#, python-brace-format
+msgid "{km} km × {rate} €"
+msgstr "{km} km × €{rate}"
+
+msgid "Unbekanntes Projekt."
+msgstr "Unknown project."
+
+msgid "Unbekannter Vorschuss."
+msgstr "Unknown advance."
+
+msgid "Dieser Vorschuss ist schon abgerechnet."
+msgstr "This advance has already been settled."
+
+msgid "Bitte höchstens 20 Positionen angeben."
+msgstr "Please enter at most 20 items."
+
+msgid "Ungültige Position."
+msgstr "Invalid item."
+
+msgid "Jede Position braucht einen Betrag größer als 0."
+msgstr "Each item needs an amount greater than 0."
+
+msgid "Höchstens 10 Belege je Auslage."
+msgstr "At most 10 receipts per expense claim."
+
+msgid "Bitte den Zweck angeben (wofür, für wen)."
+msgstr "Please state the purpose (what for, for whom)."
+
+msgid "Bitte das Datum des Kaufs bzw. der Fahrt angeben."
+msgstr "Please enter the date of the purchase or journey."
+
+msgid "Bitte Start, Ziel und Anlass der Fahrt angeben."
+msgstr "Please enter start, destination and reason for the journey."
+
+msgid "Bitte die gefahrenen Kilometer angeben."
+msgstr "Please enter the kilometres driven."
+
+msgid "Bitte den Betrag angeben."
+msgstr "Please enter the amount."
+
+msgid "Bitte ein Foto oder eine Datei des Belegs hinzufügen. Ohne Beleg nur von der Kasse mit einer Begründung (Eigenbeleg)."
+msgstr "Please add a photo or file of the receipt. Without a receipt only the treasurer can enter a claim, with a reason (self-issued receipt)."
+
+msgid "Bitte die Bankverbindung für die Überweisung angeben."
+msgstr "Please enter the bank details for the transfer."
+
+msgid "Die Auslage ist schon eingereicht."
+msgstr "The expense claim has already been submitted."
+
+msgid "Zu dieser Auslage gibt es keine offene Rückfrage."
+msgstr "There is no open query on this expense claim."
+
+msgid "Eine freigegebene Auslage lässt sich nicht zurückziehen."
+msgstr "An approved expense claim cannot be withdrawn."
+
+msgid "Die Auslage wurde inzwischen geändert. Bitte neu laden und erneut prüfen."
+msgstr "The expense claim has been changed in the meantime. Please reload and check again."
+
+msgid "Zu dieser Auslage ist keine Rückfrage möglich."
+msgstr "A query is not possible for this expense claim."
+
+msgid "Bitte schreiben, was fehlt."
+msgstr "Please write what is missing."
+
+msgid "Diese Auslage wartet nicht auf eine Bestätigung."
+msgstr "This expense claim is not waiting for confirmation."
+
+msgid "Diese Auslage bestätigt eine andere Untereinheit."
+msgstr "Another department confirms this expense claim."
+
+msgid "Die eigene Auslage bestätigt bitte eine andere Person."
+msgstr "Please have another person confirm your own expense claim."
+
+msgid "Diese Auslage wartet nicht auf eine Freigabe."
+msgstr "This expense claim is not waiting for approval."
+
+#, python-brace-format
+msgid "Die Untereinheit {name} muss die Auslage zuerst sachlich bestätigen."
+msgstr "The department {name} must confirm the expense claim first."
+
+msgid "Der freigegebene Betrag liegt zwischen 0 und der Summe."
+msgstr "The approved amount must be between 0 and the total."
+
+msgid "Bitte begründen, warum weniger freigegeben wird."
+msgstr "Please explain why less is approved."
+
+msgid "Die zweite Freigabe gibt bitte eine andere Person."
+msgstr "Please have another person give the second approval."
+
+msgid "Die zweite Freigabe ändert den Betrag nicht. Bitte Rückfrage stellen."
+msgstr "The second approval does not change the amount. Please send a query instead."
+
+#, python-brace-format
+msgid "Die eigene Auslage gibt bitte eine andere Person frei (über {limit} € oder Grenze ausgeschaltet)."
+msgstr "Please have another person approve your own expense claim (over €{limit} or limit switched off)."
+
+#, python-brace-format
+msgid "{amount} € statt {total} €: {reason}"
+msgstr "€{amount} instead of €{total}: {reason}"
+
+msgid "Diese Auslage lässt sich nicht mehr ablehnen."
+msgstr "This expense claim can no longer be rejected."
+
+msgid "Die Auslage steckt in einer Sammelüberweisung."
+msgstr "The expense claim is part of a batch transfer."
+
+msgid "Auslage"
+msgstr "Expense claim"
+
+msgid "Bitte für jede Position eine Kategorie für Ausgaben wählen."
+msgstr "Please choose an expense category for each item."
+
+msgid "Nur freigegebene Auslagen lassen sich auszahlen."
+msgstr "Only approved expense claims can be paid out."
+
+msgid "Bitte ein Konto wählen."
+msgstr "Please choose an account."
+
+#, python-brace-format
+msgid "Rückzahlung Vorschuss {number}"
+msgstr "Repayment of advance {number}"
+
+#, python-brace-format
+msgid "{amount} € von {account}"
+msgstr "€{amount} from {account}"
+
+msgid "Ein Verzicht ist für diese Auslage nicht möglich."
+msgstr "A waiver is not possible for this expense claim."
+
+#, python-brace-format
+msgid "Der Kauf liegt mehr als {n} Monate zurück."
+msgstr "The purchase was more than {n} months ago."
+
+#, python-brace-format
+msgid "Derselbe Beleg steckt schon in {number}."
+msgstr "The same receipt is already in {number}."
+
+msgid "einem Entwurf"
+msgstr "a draft"
+
+#, python-brace-format
+msgid "{number} hat denselben Betrag und dasselbe Datum."
+msgstr "{number} has the same amount and date."
+
+#, python-brace-format
+msgid "Die E-Rechnung nennt {x} €, beantragt sind {y} € ohne Hinweis."
+msgstr "The e-invoice states €{x}, €{y} is claimed without a note."
+
+msgid "Die Rechnung lautet auf das Mitglied: kein Vorsteuerabzug (über 250 €)."
+msgstr "The invoice is in the member's name: no input tax deduction (over €250)."
+
+msgid "Zum Auszahlen fehlt das Recht, die Kasse zu führen."
+msgstr "Paying out needs the right to keep the accounts."
+
+msgid "Bitte einen Ausführungstag angeben."
+msgstr "Please enter an execution date."
+
+msgid "Bitte Auslagen auswählen."
+msgstr "Please select expense claims."
+
+msgid "Unbekannte Auslage."
+msgstr "Unknown expense claim."
+
+#, python-brace-format
+msgid "{number} ist nicht freigegeben, ohne Bankverbindung oder schon in einer Sammelüberweisung."
+msgstr "{number} is not approved, has no bank details or is already in a batch transfer."
+
+#, python-brace-format
+msgid "{number}: Bitte zuerst für jede Position eine Kategorie wählen."
+msgstr "{number}: Please choose a category for each item first."
+
+msgid "Die Datei wurde schon heruntergeladen und gebucht. Bitte einzelne Buchungen stornieren."
+msgstr "The file has already been downloaded and booked. Please reverse individual bookings."
+
+msgid "Dieser Lauf lässt sich nicht exportieren."
+msgstr "This run cannot be exported."
+
+#, python-brace-format
+msgid "{number} hat sich geändert. Bitte den Lauf aufheben und neu anlegen."
+msgstr "{number} has changed. Please cancel the run and create a new one."
+
+msgid "Diese Auslage lässt sich nicht ändern."
+msgstr "This expense claim cannot be changed."
+
+msgid "Eigene Auslagen sichtet bitte eine andere Person."
+msgstr "Please have another person review your own expense claims."
+
+msgid "Belege ergänzt das Mitglied über eine Rückfrage."
+msgstr "The member adds receipts after a query."
+
+msgid "0 bis 36 Monate."
+msgstr "0 to 36 months."
+
+msgid "Für Spenden statt Erstattung bitte Grundlage und Datum angeben."
+msgstr "For donations instead of refunds, please enter the basis and its date."
+
+msgid "Auslage prüfen"
+msgstr "Review expense claim"
+
+msgid "Auslagen auszahlen"
+msgstr "Pay out expense claims"
+
+#, python-brace-format
+msgid "{n} freigegeben"
+msgstr "{n} approved"
+
+msgid "Freigegebene Auslagen warten auf die Auszahlung"
+msgstr "Approved expense claims are waiting to be paid out"
+
+msgid "Auslagen sichten"
+msgstr "Review expense claims"
+
+#, python-brace-format
+msgid "{n} selbst freigegeben"
+msgstr "{n} self-approved"
+
+msgid "Eigene Auslagen der Kasse nachträglich sichten"
+msgstr "Review the treasurer's own expense claims afterwards"
+
 msgid "nicht anteilig (voller Beitrag)"
 msgstr "not pro rata (full fee)"
 

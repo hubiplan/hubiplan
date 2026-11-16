@@ -38,6 +38,8 @@ import { AllowancesPage } from './AllowancesPage.tsx'
 import { VatPage } from './VatPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
 import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
+import { ExpensesArea } from '../expenses/ExpensesPage.tsx'
+import { expenseTabs } from '../expenses/format.ts'
 import { t } from '../../i18n/index.ts'
 
 /**
@@ -68,7 +70,7 @@ const home = <Navigate to="/finanzen" replace />
 export function FinanzenPage() {
   const org = useActiveOrg()
   const a = financeAccess(org)
-  if (!a.finance && !a.billing) return <Navigate to="/" replace />
+  if (!a.finance && !a.billing && !a.expenses) return <Navigate to="/" replace />
   return (
     <Routes>
       <Route
@@ -239,6 +241,18 @@ export function FinanzenPage() {
         }
       />
       <Route path="sammelauszahlungen" element={a.payouts ? <PayoutRunsPage /> : home} />
+      <Route
+        path="auslagen/*"
+        element={
+          a.expenses ? (
+            <Section readOnly={!a.expensesEdit} tabs={expenseTabs()}>
+              <ExpensesArea canPay={a.expensesPay} />
+            </Section>
+          ) : (
+            home
+          )
+        }
+      />
       <Route path="abschluss/*" element={a.finance ? <ClosingArea access={a} /> : home} />
       <Route path="einrichtung/*" element={<SettingsArea access={a} />} />
       {/* Frühere Adresse der Einrichtung leitet weiter (Menüprüfung M-01) */}

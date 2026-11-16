@@ -273,6 +273,8 @@ class EncryptedTextField(EncryptedCharField, models.TextField):
 
     def deconstruct(self):
         name, _path, args, kwargs = super().deconstruct()
+        kwargs.pop("strict", None)
+        kwargs.pop("plain_values", None)
         return name, "django.db.models.TextField", args, kwargs
 
 

@@ -36,7 +36,9 @@ export const devicesApi = {
   list: () => api.get<AppDevice[]>('/api/app/v1/devices/'),
   remove: (id: number) => api.del(`/api/app/v1/devices/${id}/`),
   lockAdmin: (id: number) => api.del(`/api/app/v1/devices/${id}/admin/`),
-  pairingCode: () => api.post<PairingCode>('/api/app/v1/pairing/'),
+  // challenge: Prüfwert der App, die /app/anmelden geöffnet hat (APP-01); beim QR-Code leer
+  pairingCode: (challenge?: string) =>
+    api.post<PairingCode>('/api/app/v1/pairing/', challenge ? { challenge } : {}),
   pairingStatus: (id: number) => api.get<PairingStatus>(`/api/app/v1/pairing/${id}/`),
   // Verwaltung der iPhone-App im Browser freischalten (devices/browser_unlock.py)
   browserUnlock: (ticket: string, confirm: boolean) =>

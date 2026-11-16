@@ -7,8 +7,10 @@ Datenbank steht nur dessen Prüfsumme, wie bei Anmeldelinks.
 
 from __future__ import annotations
 
+import base64
 import datetime
 import hashlib
+import hmac
 import secrets
 
 from django.conf import settings
@@ -158,6 +160,10 @@ class PairingCode(models.Model):
     device = models.ForeignKey(
         "Device", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Prüfwert der App (Gesamtaudit 15.11., APP-01): base64url(SHA-256(verifier)). Hat die App
+    # den Code über /app/anmelden selbst angefordert, löst nur sie ihn ein, auch wenn eine
+    # fremde App den Rückruf über hubiplan://… abfängt. Leer: QR-Code und ältere Apps.
+    challenge = models.CharField(max_length=43, blank=True, default="", db_default="")
 
     class Meta:
         verbose_name = "Code zum Verbinden der App"
@@ -174,3 +180,19 @@ class PairingCode(models.Model):
     @property
     def is_open(self) -> bool:
         return self.used_at is None and self.expires_at > timezone.now()
+
+    def verifier_ok(self, verifier: str) -> bool:
+        """Ohne Prüfwert gilt jeder Code (Übergang); sonst nur mit passendem verifier."""
+        if not self.challenge:
+            return True
+        return bool(verifier) and hmac.compare_digest(challenge_of(verifier), self.challenge)
+
+
+# PKCE-Zeichensatz (RFC 7636, 4.1): 43 bis 128 Zeichen
+VERIFIER_PATTERN = r"^[A-Za-z0-9._~-]{43,128}$"
+CHALLENGE_PATTERN = r"^[A-Za-z0-9_-]{43}$"
+
+
+def challenge_of(verifier: str) -> str:
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")

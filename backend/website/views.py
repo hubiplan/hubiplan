@@ -635,7 +635,15 @@ def home_choices(website: Website) -> dict:
     for o in sorted(found, key=lambda o: o.starts_at):
         if o.event.pk not in seen and len(events) < 100:
             seen.add(o.event.pk)
-            events.append({"id": o.event.pk, "title": o.event.title, "starts_at": o.starts_at})
+            # external: aus einem abonnierten fremden Kalender (Gesamtaudit 15.11., MCP-03)
+            events.append(
+                {
+                    "id": o.event.pk,
+                    "title": o.event.title,
+                    "starts_at": o.starts_at,
+                    "external": o.event.external_source_id is not None,
+                }
+            )
     return {
         "roles": [{"id": r.pk, "name": r.name} for r in site.own_roles().filter(on_website=True)],
         "albums": [
