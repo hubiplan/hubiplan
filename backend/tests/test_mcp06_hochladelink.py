@@ -46,7 +46,8 @@ def test_trennen_beendet_den_link(club, site, editor):
 def test_rechteentzug_beendet_den_link(club, site, editor):
     public, _grant = _link(editor, club)
     role = editor.role_assignments.get().role
-    role.permissions = [p for p in role.permissions if p != "website.content"]
+    # Nur noch verbinden, keine Inhalte (die Rollen speichern Rechte auch in neuer Form)
+    role.permissions = ["mcp.connect"]
     role.save()
     assert HttpClient().get(public).status_code == 404
 
