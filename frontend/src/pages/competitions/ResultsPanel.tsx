@@ -397,22 +397,23 @@ function ResultOwnership({ org, comp }: { org: number; comp: number }) {
   )
 }
 
-/** Gäste: „volljährig“ angeben oder nachtragen; sonst erscheinen sie auf der Webseite ohne
- * Namen (Fachfrage FF-24 (c), Gesamtaudit 15.11., PF-21). */
+/** Gäste und frei eingetragene Pfandgewinner: „volljährig“ angeben oder nachtragen; sonst
+ * erscheinen sie auf der Webseite ohne Namen (Fachfrage FF-24 (c), Gesamtaudit 15.11., PF-21).
+ * Geht auch bei abgeschlossenen Wettbewerben. */
 function GuestAdults({ org, comp }: { org: number; comp: number }) {
-  const starters = useLoad(() => competitionsApi.starters(org, comp), [org, comp])
+  const rows = useLoad(() => competitionsApi.guestsAdult(org, comp), [org, comp])
   const [error, setError] = useState<string | null>(null)
-  const guests = (starters.data ?? []).filter((s) => s.guest)
-  if (!guests.length) return null
-  async function toggle(id: number, adult: boolean) {
+  const list = rows.data ?? []
+  if (!list.length) return null
+  async function save(data: Parameters<typeof competitionsApi.setGuestsAdult>[2]) {
     setError(null)
     try {
-      await competitionsApi.updateStarter(org, comp, id, { adult })
-      await starters.reload()
+      rows.setData(await competitionsApi.setGuestsAdult(org, comp, data))
     } catch (err) {
       setError(errorMessage(err))
     }
   }
+  const open = list.filter((g) => !g.adult).length
   return (
     <div className="card card-wide">
       <h2>{t('Gäste auf der Webseite')}</h2>
@@ -423,21 +424,34 @@ function GuestAdults({ org, comp }: { org: number; comp: number }) {
       </p>
       {error && <Alert kind="error">{error}</Alert>}
       <ul className="plain-list">
-        {guests.map((g) => (
-          <li key={g.id}>
+        {list.map((g) => (
+          <li key={`${g.kind}-${g.id}`}>
             <label className="checkbox">
               <input
                 type="checkbox"
-                checked={!!g.adult}
-                onChange={(e) => void toggle(g.id, e.target.checked)}
+                checked={g.adult}
+                onChange={(e) =>
+                  void save(
+                    g.kind === 'starter'
+                      ? { starters: { [g.id]: e.target.checked } }
+                      : { prizes: { [g.id]: e.target.checked } },
+                  )
+                }
               />{' '}
-              {g.club
-                ? t('{name} ({club}) ist volljährig', { name: g.name, club: g.club })
-                : t('{name} ist volljährig', { name: g.name })}
+              {g.kind === 'prize'
+                ? t('{name} (Pfand {prize}) ist volljährig', { name: g.name, prize: g.club })
+                : g.club
+                  ? t('{name} ({club}) ist volljährig', { name: g.name, club: g.club })
+                  : t('{name} ist volljährig', { name: g.name })}
             </label>
           </li>
         ))}
       </ul>
+      {open > 0 && (
+        <button type="button" className="button" onClick={() => void save({ all: true })}>
+          {t('Alle als volljährig angeben')}
+        </button>
+      )}
     </div>
   )
 }

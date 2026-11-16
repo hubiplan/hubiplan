@@ -250,7 +250,9 @@ def detail(site, comp) -> dict:
                             adult=p.winner.guest_adult,
                         )
                 elif depth != Competition.WebsiteDepth.UNITS:
-                    entry["winner"] = names.of(None, p.winner_name, guest=True)
+                    entry["winner"] = names.of(
+                        None, p.winner_name, guest=True, adult=p.winner_adult
+                    )
                 if p.shot_number:
                     entry["shot"] = p.shot_number
             prizes.append(entry)

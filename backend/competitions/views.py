@@ -833,6 +833,10 @@ def delete_starter(org, user, s: Starter) -> None:
     den Namen."""
     _open_for_entries(s.competition)
     record(org, user, "delete", s, diff(snapshot(s), {}))
+    # Pfänder behalten den Namen als freien Gewinner; die Angabe „volljährig“ des Gastes geht
+    # mit (Mitglieder: nicht angegeben, der Verein trägt es bei Bedarf nach)
+    if s.is_guest and s.guest_adult:
+        Prize.objects.filter(winner=s).update(winner_adult=True)
     s.delete()
 
 
@@ -1845,3 +1849,75 @@ class ExportView(_Mixin, APIView):
         resp = HttpResponse(report.pdf(comp), content_type="application/pdf")
         resp["Content-Disposition"] = f'inline; filename="{name}.pdf"'
         return resp
+
+
+class GuestsAdultView(_Mixin, APIView):
+    """Gäste und frei eingetragene Gewinner: „volljährig“ angeben oder nachtragen.
+
+    GET: Liste · POST ``{"starters": {id: bool}, "prizes": {id: bool}}`` oder ``{"all": true}``
+    (alle Gäste und freien Gewinner dieses Wettbewerbs volljährig). Auch bei abgeschlossenen
+    Wettbewerben: Es ändert nur, ob der Name auf der Webseite erscheint (FF-24 (c), PF-21)."""
+
+    def _rows(self, comp):
+        starters = [
+            {"kind": "starter", "id": s.pk, "name": s.name, "club": s.club, "adult": s.guest_adult}
+            for s in Starter.objects.filter(
+                competition=comp, organization=self.org, membership__isnull=True
+            ).order_by("pk")
+        ]
+        prizes = [
+            {
+                "kind": "prize",
+                "id": p.pk,
+                "name": p.winner_name,
+                "club": p.name,
+                "adult": p.winner_adult,
+            }
+            for p in Prize.objects.filter(competition=comp, winner__isnull=True).order_by("pk")
+            if p.winner_name
+        ]
+        return starters + prizes
+
+    def get(self, request, org_id: int, competition_id: int):
+        return Response(self._rows(self.competition(competition_id)))
+
+    @transaction.atomic
+    def post(self, request, org_id: int, competition_id: int):
+        comp = self.competition(competition_id)
+        data = request.data or {}
+        if data.get("all"):
+            wanted_starters = {
+                s.pk: True
+                for s in Starter.objects.filter(
+                    competition=comp, organization=self.org, membership__isnull=True
+                )
+            }
+            wanted_prizes = {
+                p.pk: True
+                for p in Prize.objects.filter(competition=comp, winner__isnull=True)
+                if p.winner_name
+            }
+        else:
+            try:
+                wanted_starters = {int(k): bool(v) for k, v in (data.get("starters") or {}).items()}
+                wanted_prizes = {int(k): bool(v) for k, v in (data.get("prizes") or {}).items()}
+            except (TypeError, ValueError, AttributeError) as exc:
+                raise ValidationError(gettext("Ungültige Angabe.")) from exc
+        for s in Starter.objects.filter(
+            competition=comp,
+            organization=self.org,
+            membership__isnull=True,
+            pk__in=wanted_starters,
+        ):
+            if s.guest_adult != wanted_starters[s.pk]:
+                before = snapshot(s)
+                s.guest_adult = wanted_starters[s.pk]
+                s.save(update_fields=["guest_adult", "updated_at"])
+                record(self.org, request.user, "update", s, diff(before, snapshot(s)))
+        for p in Prize.objects.filter(competition=comp, winner__isnull=True, pk__in=wanted_prizes):
+            if p.winner_adult != wanted_prizes[p.pk]:
+                before = snapshot(p)
+                p.winner_adult = wanted_prizes[p.pk]
+                p.save(update_fields=["winner_adult"])
+                record(self.org, request.user, "update", p, diff(before, snapshot(p)))
+        return Response(self._rows(comp))

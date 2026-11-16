@@ -529,6 +529,9 @@ class Prize(models.Model):
         Starter, on_delete=models.SET_NULL, null=True, blank=True, related_name="prizes"
     )
     winner_name = EncryptedCharField("errungen von", max_length=200, blank=True, strict=True)
+    # Frei eingetragener Gewinner (ohne Starter, etwa nach Entfernen des Starters): auf der
+    # Webseite nur mit Namen, wenn der Verein „volljährig“ angibt (FF-24 (c), PF-21)
+    winner_adult = models.BooleanField("Gewinner volljährig", default=False, db_default=False)
     shot_number = models.PositiveIntegerField("Schuss Nr.", null=True, blank=True)
     shots_for = models.PositiveIntegerField("Schüsse für dieses Pfand", null=True, blank=True)
     shot = models.ForeignKey(

@@ -299,6 +299,16 @@ export const PRESENCE_LABELS: Record<Presence, string> = {
   },
 }
 
+/** Gast-Starter oder frei eingetragener Pfandgewinner (FF-24 (c)) */
+export interface GuestAdult {
+  kind: 'starter' | 'prize'
+  id: number
+  name: string
+  /** Verein des Gastes bzw. Name des Pfands */
+  club: string
+  adult: boolean
+}
+
 export interface Starter {
   id: number
   /** letzte Eingabe eines Werts (alle Geräte) */
@@ -690,6 +700,13 @@ export const competitionsApi = {
   ) => api.post<Starter>(`${c(org, id)}starters/`, data),
   updateStarter: (org: number, id: number, starter: number, data: Partial<Starter>) =>
     api.patch<Starter>(`${c(org, id)}starters/${starter}/`, data),
+  /** Gäste und freie Gewinner: „volljährig“ angeben oder nachtragen (auch abgeschlossen) */
+  guestsAdult: (org: number, id: number) => api.get<GuestAdult[]>(`${c(org, id)}guests-adult/`),
+  setGuestsAdult: (
+    org: number,
+    id: number,
+    data: { all?: boolean; starters?: Record<number, boolean>; prizes?: Record<number, boolean> },
+  ) => api.post<GuestAdult[]>(`${c(org, id)}guests-adult/`, data),
   removeStarter: (org: number, id: number, starter: number) =>
     api.del(`${c(org, id)}starters/${starter}/`),
   setScore: (org: number, id: number, starter: number, scoring: number, value: string | null) =>

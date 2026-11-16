@@ -25,7 +25,7 @@ Bei vorhandenen Ergebnissen müssen Änderungen an Bedingungen oder Berechnung b
 
 ## Namen auf der Webseite
 
-Mitglieder unter 18 und Mitglieder ohne Geburtsdatum erscheinen nur mit der Einwilligung „Wettbewerbsergebnisse unter 18“ mit Namen. Gäste haben kein Geburtsdatum: Kreuze beim Erfassen eines neuen Gastes „volljährig“ an, sonst steht auf der Webseite „ohne Namen“. Nachtragen kannst du das unter **Auswertung** im Abschnitt **Gäste auf der Webseite**.
+Mitglieder unter 18 und Mitglieder ohne Geburtsdatum erscheinen nur mit der Einwilligung „Wettbewerbsergebnisse unter 18“ mit Namen. Gäste haben kein Geburtsdatum: Kreuze beim Erfassen eines neuen Gastes „volljährig“ an, sonst steht auf der Webseite „ohne Namen“. Nachtragen kannst du das unter **Auswertung** im Abschnitt **Gäste auf der Webseite**, auch bei abgeschlossenen Wettbewerben; dort stehen auch frei eingetragene Pfandgewinner (etwa nach dem Entfernen eines Starters), und **Alle als volljährig angeben** erledigt einen ganzen Wettbewerb auf einmal.
 
 Unter **Einrichten** → **Ausgabe & Freigabe** → **Öffentlich sichtbar** veröffentlicht **Preisplätze mit Namen**
 die Einzelplatzierungen bis zur Anzahl der **Preisplätze** der jeweiligen Wertung.
