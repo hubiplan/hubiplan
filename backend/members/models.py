@@ -894,6 +894,9 @@ class HonoraryTitleAward(models.Model):
     valid_from = models.DateField("von")
     valid_until = models.DateField("bis", null=True, blank=True)
     note = models.CharField("Bemerkung", max_length=200, blank=True)
+    # Besonderer Titel dieses Trägers (#518), z. B. „Ehrenhauptmann“ bei der Ehrung
+    # „Ehrenmitglied“; die Webseite zeigt ihn statt des Namens der Ehrung
+    display_title = models.CharField("Titel", max_length=100, blank=True, default="", db_default="")
 
     class Meta:
         verbose_name = "Ehrung (Verleihung)"

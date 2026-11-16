@@ -57,6 +57,8 @@ export interface HonoraryAward {
   valid_from: string
   valid_until: string | null
   note: string
+  /** Besonderer Titel dieses Trägers, z. B. „Ehrenhauptmann“ (#518) */
+  display_title?: string
   /** Ehrung hat nur ein Jahr der Verleihung */
   year_only?: boolean
 }
@@ -512,7 +514,13 @@ export const memberApi = {
   addAward: (
     org: number,
     member: number,
-    data: { title: number; valid_from: string; valid_until?: string | null; note?: string },
+    data: {
+      title: number
+      valid_from: string
+      valid_until?: string | null
+      note?: string
+      display_title?: string
+    },
     federation = false,
   ) => api.post<HonoraryAward>(awardBase(org, member, federation), data),
   updateAward: (
