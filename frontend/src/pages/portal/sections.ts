@@ -58,7 +58,7 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           {
             to: '/mein-bereich/belegung',
             label: t('Belegung'),
-            tile: { title: t('Belegung'), text: t('Schützenhaus, Stand oder Material anfragen') },
+            tile: { title: t('Belegung'), text: t('Vereinsheim, Räume oder Material anfragen') },
           },
         ]
       : []),
@@ -84,6 +84,20 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
               text: entry.surveys_open
                 ? t('{n} offen, jetzt antworten', { n: entry.surveys_open })
                 : t('Termine finden, Essen wählen, Meinungen sagen'),
+            },
+          },
+        ]
+      : []),
+    ...(entry.expenses_enabled
+      ? [
+          {
+            to: '/mein-bereich/auslagen',
+            label: t('Auslagen'),
+            tile: {
+              title: t('Auslagen'),
+              text: entry.expenses_questions
+                ? t('Rückfrage der Kasse ({n}), jetzt antworten', { n: entry.expenses_questions })
+                : t('Selbst Bezahltes mit Foto des Belegs erstattet bekommen'),
             },
           },
         ]

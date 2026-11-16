@@ -76,8 +76,8 @@ export function LabelFields({
           onChange={(e) => set({ gender: e.target.value as Gender })}
         >
           <option value="f">{t('die (z. B. die Sparte)')}</option>
-          <option value="m">{t('der (z. B. der Zug)')}</option>
-          <option value="n">{t('das (z. B. das Korps)')}</option>
+          <option value="m">{t('der (z. B. der Chor)')}</option>
+          <option value="n">{t('das (z. B. das Team)')}</option>
         </SelectField>
         <Field
           label={t('Genitiv, nur falls abweichend')}

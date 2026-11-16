@@ -247,7 +247,7 @@ function NewRun({
               </p>
             </>
           )}
-          {!federation && settings.pro_rata && <HowTo k="calc_pro_rata" />}
+          {!federation && settings.pro_rata_step !== 'off' && <HowTo k="calc_pro_rata" />}
           {!federation && (
             <Checklist
               title={t('Vor dem Beitragslauf')}

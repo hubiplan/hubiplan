@@ -242,7 +242,7 @@ function CashCountForm({
           label={t('Fest bzw. Verkaufsstand')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder={t('z. B. Schützenfest Getränkezelt')}
+          placeholder={t('z. B. Sommerfest Getränkestand')}
           required
         />
       )}

@@ -11,7 +11,7 @@ stichworte: [fee, annual fee, fee rate, membership type]
 1. Open [Finance › Set up › Fee rates](/finanzen/einrichtung/beitraege).
 2. Under **Annual fee per membership type**, enter the annual amount for each membership type.
 3. Create age bands if needed, for example for young people.
-4. Under **Billing and invoice**, check the billing cycle and the payment term.
+4. Under **Billing and invoice**, check the billing cycle, the payment term and the **Fee when joining during the period**: full fee or pro rata per started month, quarter or half-year. Half-year means, for example: joining in the first half of the financial year pays the full annual fee, joining in the second half pays half.
 
 Entries are saved immediately. A fee run calculates with these rates.
 

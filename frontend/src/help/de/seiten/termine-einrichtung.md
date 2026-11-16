@@ -25,7 +25,7 @@ Zeigt Termine aus anderen Kalendern im eigenen an, etwa die eines Nachbarvereins
 
 ## Weitergabe
 
-Je Kategorie wählt ihr, ob ihre Termine auch woanders erscheinen: **Nach oben weitergeben (im Kalender der übergeordneten Einheit)** oder **Nach unten weitergeben (bei den Untereinheiten und ihren Mitgliedern)**. So steht das Schützenfest auch im Kalender jedes Zugs, die Vorstandssitzung aber nicht.
+Je Kategorie wählt ihr, ob ihre Termine auch woanders erscheinen: **Nach oben weitergeben (im Kalender der übergeordneten Einheit)** oder **Nach unten weitergeben (bei den Untereinheiten und ihren Mitgliedern)**. So steht das Sommerfest auch im Kalender jeder Untereinheit, die Vorstandssitzung aber nicht.
 
 ## Öffentlicher Link
 

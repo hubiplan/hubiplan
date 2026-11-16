@@ -36,7 +36,7 @@ darf.
 ## Voraussetzung
 
 Ist das Modul „Qualifikationen“ eingeschaltet, wählst du an einem Dienst unter
-**Voraussetzung** eine Qualifikation, etwa Standaufsicht für den Schießstand. Fehlt sie bei der
+**Voraussetzung** eine Qualifikation, etwa Erste Hilfe für den Sanitätsdienst. Fehlt sie bei der
 Person oder läuft sie vor dem Ende der Schicht ab, fragt HUBIplan beim Einteilen nach, und an der
 Person steht ein Hinweis. Mitglieder, die sich selbst eintragen, sehen die Voraussetzung und
 können sich ohne gültigen Nachweis nicht eintragen.
@@ -77,7 +77,7 @@ vergeben. Mit 0 Plätzen entfernst du ein Kontingent; schon Eingeteilte bleiben 
 ## Plan kopieren
 
 **Plan kopieren** legt einen neuen Plan in Vorbereitung an, etwa für das
-Schützenfest im nächsten Jahr. Die Kopie übernimmt Dienste, Schichten, Kontingente und
+Sommerfest im nächsten Jahr. Die Kopie übernimmt Dienste, Schichten, Kontingente und
 Einstellungen, aber keine Einteilungen. Gibst du den ersten Tag des neuen Plans an, verschiebt
 HUBIplan alle Schichten um denselben Abstand.
 

@@ -142,7 +142,7 @@ die Prüfungen des Teils eingehen:
 |---|---|---|
 | `backend` | alles außer `frontend/`, `docs/` und `*.md` im Hauptverzeichnis | ruff, Migrationen, Proxy-/Rückweg-Prüfungen, pytest |
 | `frontend` | `frontend/`, `scripts/test.sh` und Backend-Dateien, die der Frontend-Code beim Namen nennt (z. B. `backend/accounts/learning_keys.json`) | Typprüfung, Lint, Format, i18n, Vitest |
-| `migration` | Vorlagen-Schlüssel (s. u.), Tests mit `@pytest.mark.migration`, `conftest.py`, `factories.py` und die von diesen Tests eingebundenen Module | Tests, die hin- und zurückmigrieren |
+| `migration` (je Testdatei) | die Datei, `conftest.py`, `factories.py`, die von ihr eingebundenen Module, Abhängigkeiten, Datenbank-Image und die Migrationen der Apps, deren Stände die Datei nennt (ohne genannten Stand: der Vorlagen-Schlüssel, s. u.) | Tests mit `@pytest.mark.migration` |
 
 Ein Teil, dessen Inhalt schon grün war, läuft nicht noch einmal; sind alle Teile schon grün,
 braucht der Lauf keinen Testplatz. Danach wird der Git-Tree wie immer in `tested-trees`
@@ -224,8 +224,12 @@ installierte `testplatz`). Andere Projekte: Testbefehl mit `testplatz` starten u
 - **Schneller Passwort-Hasher in Tests** (`tests/conftest.py`): PBKDF2 kostet je Passwort
   ~0,2 s. Im Betrieb bleibt PBKDF2.
 - **Migrationstests nur bei Bedarf:** Tests mit `@pytest.mark.migration` migrieren über
-  den ganzen Baum hin und zurück und brauchen über ein Drittel der Rechenzeit. Sie laufen
-  nur, wenn ihr Schlüssel (siehe „Nur geänderte Teile“) noch nicht grün war.
+  den ganzen Baum hin und zurück und brauchen über ein Drittel der Rechenzeit, der längste
+  allein eine Viertelstunde. Jede Datei läuft nur, wenn ihr Schlüssel (siehe „Nur geänderte
+  Teile“) noch nicht grün war, also vor allem, wenn sich die Migrationen ihrer eigenen Apps
+  ändern. Eine neue Migration in einer anderen App lässt alte Migrationstests aus; die
+  schon grünen Dateien gibt `scripts/test.sh` in `MIG_AUSLASSEN` an pytest weiter. Vor einem
+  Release `TEST_ALLES=1`.
   `tests/test_migrations.py` prüft, dass jeder Test mit `MigrationExecutor` die Markierung trägt.
 - **Langsame Tests zuerst:** Tests mit `@pytest.mark.langsam` (Migrationstest, Demodaten)
   sammelt pytest zuerst; mit `--maxschedchunk=2` verteilt xdist sie auf verschiedene Worker,

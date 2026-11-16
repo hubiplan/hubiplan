@@ -7,7 +7,7 @@ routen: [/webseite/galerie]
 stichworte: [Galerie, Fotoalbum, Album, Unteralbum, Fotos, Titelbild, Sortierung]
 ---
 
-In der Galerie legt ihr Fotoalben für die Webseite an. Ein Album kann Unteralben haben, zum Beispiel „2024“ mit „Schützenfest“ und „Königsball“; tiefer geht es nicht.
+In der Galerie legt ihr Fotoalben für die Webseite an. Ein Album kann Unteralben haben, zum Beispiel „2024“ mit „Sommerfest“ und „Jahresausflug“; tiefer geht es nicht.
 
 Album anlegen: Titel eingeben und „Neues Album“ wählen. Die Adresse auf der Webseite (z. B. /galerie/schuetzenfest-2024/) entsteht aus dem Titel und lässt sich ändern. Mit einem Datum zeigt die Webseite das Jahr und kann die Alben danach sortieren. Für ein Unteralbum wählt ihr bei „Gehört zu Album“ das Oberalbum.
 

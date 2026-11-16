@@ -230,6 +230,17 @@ MODULES: tuple[Module, ...] = (
         default=True,
     ),
     Module(
+        "expenses",
+        gettext_noop("Auslagen erstatten"),
+        "admin",
+        gettext_noop(
+            "Mitglieder melden selbst bezahlte Ausgaben mit Foto des Belegs, die Kasse prüft, "
+            "gibt frei und zahlt aus"
+        ),
+        requires=("finance", "portal"),
+        org_types=("club",),
+    ),
+    Module(
         "billing",
         gettext_noop("Beiträge und Rechnungen"),
         "admin",

@@ -17,6 +17,13 @@ import { t } from '../i18n/index.ts'
 /** Adresse dieser Seite (in Tests ersetzbar). */
 export const here = {
   origin: () => window.location.origin,
+  search: () => window.location.search,
+}
+
+/** Prüfwert der App aus ?challenge= (base64url, 43 Zeichen); sonst leer. */
+export function appChallenge(search: string): string {
+  const value = new URLSearchParams(search).get('challenge') ?? ''
+  return /^[A-Za-z0-9_-]{43}$/.test(value) ? value : ''
 }
 
 export function AppLoginPage() {
@@ -29,7 +36,9 @@ export function AppLoginPage() {
     setBusy(true)
     setError(null)
     try {
-      const pairing = await devicesApi.pairingCode()
+      // Prüfwert der App (Gesamtaudit 15.11., APP-01): Den Code löst dann nur die App ein, die
+      // diese Seite geöffnet hat, auch wenn eine fremde App den Rückruf abfängt
+      const pairing = await devicesApi.pairingCode(appChallenge(here.search()) || undefined)
       // Mit der Adresse, die die App geöffnet hat (bei mehreren Adressen je Instanz zählt sie)
       const code = new URL(pairing.url).hash
       const link = appPairLink(`${here.origin()}/app/verbinden${code}`)

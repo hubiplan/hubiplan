@@ -30,6 +30,10 @@ export interface FinanceAccess {
   tax: boolean
   /** Sammelauszahlungen aus der Musikerabrechnung (Modul Musik, Termine lesen) */
   payouts: boolean
+  /** Auslagen erstatten: sehen, prüfen, auszahlen (Kasse) */
+  expenses: boolean
+  expensesEdit: boolean
+  expensesPay: boolean
 }
 
 export function financeAccess(org: OrgSummary | null): FinanceAccess {
@@ -47,11 +51,19 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     reserves: false,
     tax: false,
     payouts: false,
+    expenses: false,
+    expensesEdit: false,
+    expensesPay: false,
   }
   if (!org || org.type === 'platform') return none
   const has = (p: string) => org.permissions.includes(p)
   const finance = org.modules.includes('finance') && has(PERM.financeView)
   const billing = org.modules.includes('billing') && has(PERM.billingView)
+  const expenses =
+    org.type === 'club' &&
+    org.modules.includes('expenses') &&
+    org.modules.includes('finance') &&
+    has(PERM.expensesView)
   return {
     finance,
     financeEdit: finance && has(PERM.financeEdit),
@@ -68,6 +80,9 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     reserves: finance && !!org.reserves_enabled,
     tax: finance && org.modules.includes('tax'),
     payouts: finance && org.modules.includes('music') && has(PERM.eventsView),
+    expenses,
+    expensesEdit: expenses && has(PERM.expensesEdit),
+    expensesPay: expenses && has(PERM.expensesEdit) && has(PERM.financeEdit),
   }
 }
 
@@ -137,7 +152,7 @@ export function financeGroups(): Record<
  * ihrer Gruppe, die Adressen bleiben gleich.
  */
 export function financeSections(a: FinanceAccess): NavItem[] {
-  if (!a.finance && !a.billing) return []
+  if (!a.finance && !a.billing && !a.expenses) return []
   const g = financeGroups()
   const items = (group: NavGroup, list: (NavItem | false)[]): NavItem[] =>
     list.filter((i): i is NavItem => !!i).map((i) => ({ ...i, group }))
@@ -176,6 +191,11 @@ export function financeSections(a: FinanceAccess): NavItem[] {
       },
     ]),
     ...items(g.payments, [
+      a.expenses && {
+        to: '/finanzen/auslagen',
+        label: t('Auslagen'),
+        text: t('Selbst bezahlte Ausgaben der Mitglieder prüfen und erstatten'),
+      },
       a.sepa && {
         to: '/finanzen/lastschrift',
         label: t('Lastschriften'),

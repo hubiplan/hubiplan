@@ -260,7 +260,7 @@ function CashReceiptForm({
         error={errors.purpose}
         required
         maxLength={200}
-        hint={t('z. B. Auslagen Kranzniederlegung')}
+        hint={t('z. B. Auslagen Jahresfeier')}
       />
       {cash.length > 1 && (
         <SelectField

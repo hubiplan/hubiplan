@@ -185,7 +185,7 @@ function NewCall({
         {canIssue && (
           <Checkbox
             label={t('Wir schreiben selbst aus, unsere Untereinheiten melden')}
-            hint={t('z. B. ein Preisschießen, zu dem die Züge ihre Schützen melden')}
+            hint={t('z. B. ein Turnier, zu dem die Untereinheiten ihre Mannschaften melden')}
             checked={v.internal}
             onChange={(on) => set('internal', on)}
           />
@@ -203,7 +203,7 @@ function NewCall({
           <Field
             label={t('Titel')}
             required
-            placeholder={t('z. B. Vergleichsschießen 2027')}
+            placeholder={t('z. B. Kreismeisterschaft 2027')}
             value={v.title}
             error={errors.title}
             onChange={(e) => set('title', e.target.value)}
@@ -212,7 +212,7 @@ function NewCall({
             <Field
               label={t('Veranstalter')}
               required
-              placeholder={t('z. B. Bürger-Schützenverein')}
+              placeholder={t('z. B. Kreisverband Musterstadt')}
               value={v.organizer}
               error={errors.organizer}
               onChange={(e) => set('organizer', e.target.value)}
@@ -1833,7 +1833,7 @@ function BlocksEditor({
       </div>
       <p className="muted">
         {t(
-          'Bausteine des Meldeformulars: Mannschaften, eine Personenliste (z. B. Delegierte), eine Zahl (z. B. Teilnehmer am Umzug), eine Auswahl oder ein Text.',
+          'Bausteine des Meldeformulars: Mannschaften, eine Personenliste (z. B. Delegierte), eine Zahl (z. B. Teilnehmer am Ausflug), eine Auswahl oder ein Text.',
         )}
       </p>
       {call.blocks.map((b) => (
@@ -1969,7 +1969,7 @@ function BlockCard({
           <>
             {num('min', t('Personen mindestens'))}
             {num('max', t('Personen höchstens'))}
-            {list('positions', t('Aufgaben'), t('z. B. Delegierter, Fahnenträger'))}
+            {list('positions', t('Aufgaben'), t('z. B. Delegierter, Betreuer'))}
           </>
         )}
         {block.kind === 'zahl' && (

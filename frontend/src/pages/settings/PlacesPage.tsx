@@ -125,7 +125,7 @@ function PlaceForm({
           label={room ? t('Raum') : t('Name')}
           required
           maxLength={200}
-          placeholder={room ? t('z. B. Saal') : t('z. B. Schützenhaus')}
+          placeholder={room ? t('z. B. Saal') : t('z. B. Vereinsheim')}
           value={d.name}
           onChange={(e) => set('name', e.target.value)}
         />
@@ -154,7 +154,7 @@ function PlaceForm({
           <summary>{t('Genauer Kartenpunkt (optional)')}</summary>
           <p className="muted small">
             {t(
-              'Für Orte ohne passende Anschrift, etwa ein Festzelt oder einen Schießstand im Wald. Die Zahlen stehen z. B. in OpenStreetMap im Link zum Ort.',
+              'Für Orte ohne passende Anschrift, etwa eine Wiese oder eine Hütte im Wald. Die Zahlen stehen z. B. in OpenStreetMap im Link zum Ort.',
             )}
           </p>
           <div className="grid-2">
@@ -347,7 +347,7 @@ export function PlacesPage() {
         </p>
         <p className="muted small">
           {t(
-            'Hat ein Gebäude mehrere Räume (Saal, Schießstand …), lege die Räume unter dem Ort an. Die Anschrift pflegst du dann nur einmal; zur Auswahl steht „Ort, Raum“.',
+            'Hat ein Gebäude mehrere Räume (Saal, Küche …), lege die Räume unter dem Ort an. Die Anschrift pflegst du dann nur einmal; zur Auswahl steht „Ort, Raum“.',
           )}
         </p>
         {buildings.length === 0 ? (

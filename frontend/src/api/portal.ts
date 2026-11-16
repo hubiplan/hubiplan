@@ -28,6 +28,7 @@ export interface DeptSummary {
   helpers_enabled?: boolean
   surveys_enabled?: boolean
   bookings_enabled?: boolean
+  expenses_enabled?: boolean
   imprint_key?: string
 }
 
@@ -52,6 +53,9 @@ export interface PortalEntry {
   /** Umfragen (Modul) und wie viele davon noch auf eine Antwort warten */
   surveys_enabled?: boolean
   surveys_open?: number
+  /** Auslagen erstatten (Modul) und offene Rückfragen der Kasse */
+  expenses_enabled?: boolean
+  expenses_questions?: number
   /** Module Aufgaben, Dokumente, Rundschreiben, Ausweise (fehlt bei älteren Servern: an) */
   todos_enabled?: boolean
   docs_enabled?: boolean
