@@ -201,13 +201,40 @@ if [ "$#" -le 1 ] && [ "${TEST_ALLES:-0}" != 1 ] && [ "${BACKUP_TEST:-0}" != 1 ]
 fi
 
 if [ -z "${TESTPLATZ:-}" ]; then
-    # Schnelle Vorprüfung ohne Testplatz (Format, Lint, Typen, erzeugte Hilfe, Migrationen):
-    # was daran scheitert, muss nicht erst auf einen Platz warten. TEST_VORPRUEFUNG=0: aus.
-    if [ "${TEST_VORPRUEFUNG:-1}" = 1 ] && [ -x "$(dirname "$0")/vorpruefung.sh" ]; then
-        "$(dirname "$0")/vorpruefung.sh" "${1:-HEAD}" || exit $?
-    fi
     # Für das Messprotokoll: seit wann der Lauf auf einen Platz wartet
     export TEST_ANGEFRAGT="${TEST_ANGEFRAGT:-$(date +%s)}"
+    # Schnelle Vorprüfung ohne Testplatz (Format, Lint, Typen, erzeugte Hilfe): Sie läuft,
+    # während der Lauf auf seinen Platz wartet. Ist sie rot, endet der Lauf sofort, auch wenn er
+    # den Platz schon hat, und gibt ihn frei. TEST_VORPRUEFUNG=0: aus.
+    if [ "${TEST_VORPRUEFUNG:-1}" = 1 ] && [ -x "$(dirname "$0")/vorpruefung.sh" ]; then
+        vp_log=$(mktemp)
+        "$(dirname "$0")/vorpruefung.sh" "${1:-HEAD}" > "$vp_log" 2>&1 &
+        vp_pid=$!
+        "$(dirname "$0")/testplatz.sh" "$0" "$@" &
+        tp_pid=$!
+        trap 'kill -TERM "$tp_pid" "$vp_pid" 2> /dev/null; wait; rm -f "$vp_log"; exit 143' TERM INT HUP
+        vp_rc=""
+        while kill -0 "$tp_pid" 2> /dev/null; do
+            if [ -z "$vp_rc" ] && ! kill -0 "$vp_pid" 2> /dev/null; then
+                vp_rc=0
+                wait "$vp_pid" || vp_rc=$?
+                cat "$vp_log"
+                if [ "$vp_rc" != 0 ]; then
+                    kill -TERM "$tp_pid" 2> /dev/null || true
+                    wait "$tp_pid" 2> /dev/null || true
+                    rm -f "$vp_log"
+                    exit "$vp_rc"
+                fi
+            fi
+            sleep 2
+        done
+        tp_rc=0
+        wait "$tp_pid" || tp_rc=$?
+        # Lauf vor der Vorprüfung fertig (z. B. schon grüne Teile): Vorprüfung beenden
+        if [ -z "$vp_rc" ]; then kill -TERM "$vp_pid" 2> /dev/null || true; wait "$vp_pid" 2> /dev/null || true; fi
+        rm -f "$vp_log"
+        exit "$tp_rc"
+    fi
     exec "$(dirname "$0")/testplatz.sh" "$0" "$@"
 fi
 

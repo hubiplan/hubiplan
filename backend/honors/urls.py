@@ -16,6 +16,11 @@ org_patterns = [
         name="honors-reign-photo",
     ),
     path(
+        "honors/photo-consent/",
+        views.PhotoConsentView.as_view(),
+        name="honors-photo-consent",
+    ),
+    path(
         "honors/import/preview/",
         views.ImportPreviewView.as_view(),
         name="honors-import-preview",

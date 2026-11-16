@@ -27,7 +27,7 @@ In the **Contact persons** section you record who speaks for the organisation. C
 
 ## Guardians, household and company
 
-For members under 18 the section is called **Legal guardians**. There you enter parents or a legal guardian, freely or as a linked member. With **receives circulars** they also get circulars to the child by email. You set up their login on the **Roles and account** tab, as for contact persons; parents with several children choose after signing in whom they act for. Four weeks before the 18th birthday the guardians get an email; on the birthday their access and entry end automatically.
+For members under 18 the section is called **Legal guardians**. There you enter parents or a legal guardian, freely or as a linked member. With **receives circulars** they also get circulars to the child by email. You set up their login on the **Roles and account** tab, as for contact persons; parents with several children choose after signing in whom they act for. Four weeks before the 18th birthday the guardians get an email (once, even if a day was missed); on the birthday their access and entry end automatically. If only the year of birth is known, 31 December applies. If a member under 16 uploads a photo themselves (link or app), their tick does not count as consent: the photo waits until you record the guardians’ consent and approve it. Through a guardian’s login the consent counts.
 
 If the person belongs to a household or a company, the Master data tab shows a section with its name, their role and the other members. You assign and remove them under [Members › Households and companies](/mitglieder/haushalte).
 
