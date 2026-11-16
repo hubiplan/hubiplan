@@ -639,6 +639,9 @@ class ContactPerson(models.Model):
     # Erziehungsberechtigt für ein minderjähriges Mitglied (Konzept Familien, H4): endet
     # mit dem 18. Geburtstag samt Zugang und Zeile
     is_guardian = models.BooleanField("erziehungsberechtigt", default=False, db_default=False)
+    # Hinweis vier Wochen vor der Volljährigkeit verschickt (Gesamtaudit 15.11., PF-27):
+    # einmal je Erziehungsberechtigtem, auch wenn ein Tageslauf ausfiel
+    adult_notice_at = models.DateTimeField("Hinweis zur Volljährigkeit am", null=True, blank=True)
     since = models.DateField("Ansprechpartner seit", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
