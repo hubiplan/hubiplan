@@ -1838,7 +1838,7 @@
     "key": "pro_rata",
     "kind": "decision",
     "name": "Beitrag bei Eintritt im laufenden Zeitraum anteilig?",
-    "text": "Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre. Je Halbjahr heißt bei einem Geschäftsjahr wie dem Kalenderjahr: Eintritt bis 30. Juni voller Jahresbeitrag, ab 1. Juli die Hälfte. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).",
+    "text": "Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre; je Halbjahr heißt bei einem Geschäftsjahr wie dem Kalenderjahr: Eintritt bis 30. Juni voller Jahresbeitrag, ab 1. Juli die Hälfte. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).",
     "example": "",
     "section": "Beitragsregeln → Abrechnung und Rechnung"
    },
@@ -3560,7 +3560,7 @@
     "key": "pro_rata",
     "kind": "decision",
     "name": "Pro rata fee when joining during the period?",
-    "text": "Pro rata means: whoever joins or leaves during the period only pays for the started parts, as chosen months, quarters or half-years. Per half-year means, with a financial year equal to the calendar year: joining by 30 June pays the full annual fee, from 1 July half. Per month seems fairest but gives odd amounts; quarters and half-years give round amounts. If the constitution or fee regulations say nothing, the board should decide on a rule and apply it equally to all (§ 58 no. 2 BGB).",
+    "text": "Pro rata means: whoever joins or leaves during the period only pays for the started parts, as chosen months, quarters or half-years; per half-year means, with a financial year equal to the calendar year: joining by 30 June pays the full annual fee, from 1 July half. Per month seems fairest but gives odd amounts; quarters and half-years give round amounts. If the constitution or fee regulations say nothing, the board should decide on a rule and apply it equally to all (§ 58 no. 2 BGB).",
     "example": "",
     "section": "Fee rules → billing and invoice"
    },
