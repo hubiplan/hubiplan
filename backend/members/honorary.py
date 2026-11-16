@@ -275,6 +275,7 @@ class AwardSerializer(serializers.ModelSerializer):
             "valid_from",
             "valid_until",
             "note",
+            "display_title",
             "year_only",
         ]
 
@@ -284,6 +285,9 @@ class AwardSerializer(serializers.ModelSerializer):
         if org is not None:
             fields["title"].queryset = HonoraryTitle.objects.filter(organization=org)
         return fields
+
+    def validate_display_title(self, value: str) -> str:
+        return " ".join(value.split())
 
     def validate(self, attrs):
         start = attrs.get("valid_from", getattr(self.instance, "valid_from", None))
