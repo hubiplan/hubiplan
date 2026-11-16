@@ -564,6 +564,7 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     Household.objects.filter(pk__in=homes, members__isnull=True).exclude(
         mandates__debits__isnull=False
     ).delete()
+    _purge_household_payers(homes)
     from .photos import remove_all
 
     remove_all(membership)
@@ -657,6 +658,33 @@ def _purge_traces(membership: Membership) -> None:
     update_encrypted(
         ShiftAssignment.objects.filter(membership=membership), name=NAME_PURGED, phone=""
     )
+
+
+def _purge_household_payers(homes: list[int]) -> None:
+    """Zahler eines Haushalts leeren, wenn niemand darin mehr ungelöscht Mitglied ist
+    (Gesamtaudit 15.11., PF-16): Name, Anschrift und Mail eines externen Zahlers blieben
+    sonst unbefristet. Rechnungen haben eigene Kopien und bleiben; das Mandat am Haushalt
+    folgt den Büchern (finance/retention.py)."""
+    from billing.models import HouseholdPayer
+
+    for household_id in set(homes):
+        others = HouseholdMember.objects.filter(
+            household_id=household_id, membership__purged_at__isnull=True
+        ).exists()
+        if others:
+            continue
+        update_encrypted(
+            HouseholdPayer.objects.filter(household_id=household_id),
+            name="",
+            attention="",
+            street="",
+            postal_code="",
+            city="",
+            email="",
+        )
+        HouseholdPayer.objects.filter(household_id=household_id).update(
+            country="", order_reference="", leitweg_id="", membership=None, partner=None
+        )
 
 
 def _purge_related(membership: Membership, person, club) -> None:

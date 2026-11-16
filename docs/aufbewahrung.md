@@ -32,7 +32,8 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Rest nach der Löschfrist: Name, Geburtsjahr, Zeiträume | Vereinsgeschichte (Jubiläen, Ehrungen, Chronik), Art. 6 (1) f | – | bleibt, solange der Verein besteht; auf Widerspruch siehe „Chronik und Ehrungen“ |
 | Würden, Begleitungen, Ehrungen, Wettbewerbsergebnisse | Vereinsgeschichte und öffentliche Chronik, Art. 6 (1) f | – | bleiben; jährliche Prüfung und Entfernen auf Wunsch (unten) |
 | Mitgliederfoto | Ausweis und Akte, Art. 6 (1) a | Widerruf oder Löschfrist | beim Widerruf bzw. mit den Mitgliedsdaten gelöscht |
-| SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | letzte Lastschrift | 36 Monate nach der letzten Lastschrift ungültig (SEPA-Regel); Mandat bleibt als Beleg mit den Büchern |
+| SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | Ende des Mandats: Widerruf, sonst 36 Monate nach der letzten Lastschrift bzw. Unterschrift (SEPA-Regel) | Mandat bleibt als Beleg mit den Büchern; mit der Bücher-Bereinigung des Geschäftsjahres, in dem es endete (nach 10 Jahren), werden Kontoinhaber, IBAN und BIC anonymisiert, Referenz und Daten bleiben |
+| Zahler eines Haushalts (Name, Anschrift, Mail) | Beiträge, Art. 6 (1) b | letztes Haushaltsmitglied gelöscht | mit den Mitgliedsdaten des letzten Haushaltsmitglieds geleert; Rechnungen behalten ihre eigene Kopie |
 | Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der tatsächlichen Belegentstehung | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |
 | Bücher, Jahresabschlüsse | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der letzten Eintragung bzw. Aufstellung | nach 10 Jahren anonymisiert (Beträge bleiben) |
 | Zuwendungsbestätigungen | § 50 EStDV, Art. 6 (1) c | wie oben | wie Belege |
