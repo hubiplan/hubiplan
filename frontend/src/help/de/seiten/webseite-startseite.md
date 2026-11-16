@@ -51,7 +51,7 @@ Mit **Abschnitt hinzufügen** kommen eigene Abschnitte dazu, die ihr beliebig of
 - **Auszug aus der Chronik** (die neuesten Einträge der Zeitleiste mit Link zur Chronik)
 - **Zahlen auf einen Blick** (zwei bis sechs Zahlen mit kurzem Text)
 - **Trenner** (Linie oder Abstand)
-- **Countdown** (zählt Tage, Stunden, Minuten und Sekunden bis zum Beginn eines öffentlichen Termins oder bis zu einem frei gewählten Datum mit Uhrzeit herunter; unter **Nach Ablauf** wählt ihr, ob der Abschnitt danach verschwindet oder einen eigenen Text zeigt, etwa „Das Schützenfest hat begonnen!“)
+- **Countdown** (zählt Tage, Stunden, Minuten und Sekunden bis zum Beginn eines öffentlichen Termins oder bis zu einem frei gewählten Datum mit Uhrzeit herunter; unter **Nach Ablauf** wählt ihr, ob der Abschnitt danach verschwindet oder einen eigenen Text zeigt, etwa „Das Sommerfest hat begonnen!“)
 - **Mitglied werden** (Werbetext mit Knopf zur Seite „Mitglied werden“; erscheint nur mit eingeschaltetem Online-Antrag)
 - **Spendenaufruf** (Text, Bankverbindung, Verwendungszweck, auf Wunsch ein Spendenziel mit Fortschrittsbalken und ein Link zu einer Spendenseite)
 - **Öffnungs- und Trainingszeiten** (Tage mit Uhrzeit und Hinweis)

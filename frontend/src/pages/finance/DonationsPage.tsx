@@ -895,7 +895,7 @@ function EarmarksList({ canEdit }: { canEdit: boolean }) {
       <h2>{t('Zweckgebundene Spenden')}</h2>
       <p className="muted small">
         {t(
-          'Spenden für einen bestimmten Zweck, etwa eine neue Fahne, dürfen nur dafür verwendet werden. Ordnet die Spenden hier einem Zweck zu und im Kassenbuch die Ausgaben dafür; der Rest zeigt, was noch zweckgebunden zu verwenden ist. Gezählt werden Geldzuwendungen.',
+          'Spenden für einen bestimmten Zweck, etwa die Sanierung des Vereinsheims, dürfen nur dafür verwendet werden. Ordnet die Spenden hier einem Zweck zu und im Kassenbuch die Ausgaben dafür; der Rest zeigt, was noch zweckgebunden zu verwenden ist. Gezählt werden Geldzuwendungen.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
@@ -961,7 +961,7 @@ function EarmarksList({ canEdit }: { canEdit: boolean }) {
               value={name}
               maxLength={100}
               required
-              placeholder={t('z. B. Neue Fahne')}
+              placeholder={t('z. B. Sanierung Vereinsheim')}
               onChange={(e) => setName(e.target.value)}
             />
             <Field

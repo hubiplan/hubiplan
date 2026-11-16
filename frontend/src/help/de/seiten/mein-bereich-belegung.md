@@ -2,10 +2,10 @@
 key: page.portal_bookings
 titel: Mein Bereich › Belegung
 routen: [/mein-bereich/belegung]
-stichworte: [Buchung, Anfrage, Schützenhaus, Saal, Stand, Material, ausleihen]
+stichworte: [Buchung, Anfrage, Vereinsheim, Saal, Raum, Material, ausleihen]
 ---
 
-Hier siehst du, wann Schützenhaus, Stand oder Material belegt sind, die dein Verein für Anfragen
+Hier siehst du, wann Vereinsheim, Räume oder Material belegt sind, die dein Verein für Anfragen
 aus dem Mitgliederbereich freigegeben hat. Fremde Buchungen erscheinen nur als „Belegt“.
 
 Unter **Anfrage stellen** wählst du Objekt, Zweck und Zeit und schickst die Anfrage mit

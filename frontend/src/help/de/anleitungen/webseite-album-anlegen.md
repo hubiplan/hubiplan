@@ -5,7 +5,7 @@ modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/galerie]
 reihe: 35
-stichworte: [Galerie, Album, Fotos, Bilder, Schützenfest]
+stichworte: [Galerie, Album, Fotos, Bilder, Sommerfest]
 ---
 
 1. Öffne die [Galerie](/webseite/galerie).

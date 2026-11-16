@@ -237,7 +237,7 @@ function NewPlan({
           value={title}
           maxLength={200}
           required
-          placeholder={t('z. B. Schützenfest')}
+          placeholder={t('z. B. Sommerfest')}
           onChange={(e) => setTitle(e.target.value)}
         />
       </label>
@@ -547,7 +547,7 @@ function NewDuty({
             value={name}
             maxLength={100}
             required
-            placeholder={t('z. B. Theke Festzelt')}
+            placeholder={t('z. B. Getränkestand')}
             onChange={(e) => setName(e.target.value)}
           />
         </label>

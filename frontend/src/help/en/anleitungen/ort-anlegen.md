@@ -11,7 +11,7 @@ stichworte: [place, room, clubhouse, directions, address, map]
 2. Click **New place** and enter the name and address.
 3. Under **Directions and notes**, write where to park or how to get in.
 4. Click **Save place**.
-5. Use **Add room** to add the rooms of the building, for example hall and shooting range.
+5. Use **Add room** to add the rooms of the building, for example hall and kitchen.
 
 In events, competitions, helper duties and meetings you then pick the place in the **Place** field.
 

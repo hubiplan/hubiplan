@@ -195,7 +195,7 @@ function DeptCallList({ deptId }: { deptId: number }) {
     <>
       <p className="muted">
         {t(
-          'Ausschreibungen von oben, zu denen ihr eure Mitglieder meldet, etwa Schützen für ein Preisschießen.',
+          'Ausschreibungen von oben, zu denen ihr eure Mitglieder meldet, etwa Teilnehmer für ein Turnier.',
         )}
       </p>
       <DataTable<Call>

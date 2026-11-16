@@ -136,7 +136,7 @@ function kindHint(kind: HomeKind): string {
     countdown: t('Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt'),
     join: t('kurzer Werbetext mit Knopf zum Online-Mitgliedsantrag'),
     donation: t('Spendenzweck, Bankverbindung und auf Wunsch ein Fortschrittsbalken'),
-    hours: t('Wochentage mit Uhrzeiten, z. B. für Schießstand oder Probe'),
+    hours: t('Wochentage mit Uhrzeiten, z. B. für Training oder Probe'),
     columns: t('zwei Textblöcke nebeneinander'),
     table: t('eine einfache Tabelle mit Kopfzeile'),
     timeline: t('eigene Stationen mit Zeitangabe und Text'),
@@ -895,7 +895,7 @@ function SectionDialog({
             </div>
             <Field
               label={t('Oberzeile (optional)')}
-              hint={t('Kleine Zeile über dem Titel, z. B. „Schützenverein seit 1920“.')}
+              hint={t('Kleine Zeile über dem Titel, z. B. „Gegründet 1920“.')}
               value={s.kicker ?? ''}
               maxLength={60}
               onChange={(e) => setS({ ...s, kicker: e.target.value })}
@@ -1643,7 +1643,7 @@ function SectionContent({
               label={t('Text nach Ablauf')}
               value={d.after_text ?? ''}
               maxLength={500}
-              hint={t('z. B. „Das Schützenfest hat begonnen!“')}
+              hint={t('z. B. „Das Sommerfest hat begonnen!“')}
               onChange={(e) => setData({ after_text: e.target.value })}
             />
           )}

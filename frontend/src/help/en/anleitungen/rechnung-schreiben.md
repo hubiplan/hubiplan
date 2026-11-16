@@ -5,7 +5,7 @@ modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen]
 reihe: 30
-stichworte: [invoice, uniform, item, single]
+stichworte: [invoice, club clothing, item, single]
 ---
 
 1. Open [Finance › Invoices](/finanzen/rechnungen) and click **New invoice**.

@@ -418,7 +418,7 @@ function DraftEditor({
                 ? t('Mitglieder können sich von Informationen abmelden.')
                 : v.kind === 'short'
                   ? t(
-                      'Kurz und ohne Anhang (bis {shortMax} Zeichen), z. B. „Antreten heute 18 Uhr am Zelt“. Nie als Brief.',
+                      'Kurz und ohne Anhang (bis {shortMax} Zeichen), z. B. „Treffen heute 18 Uhr am Vereinsheim“. Nie als Brief.',
                       { shortMax },
                     )
                   : t('Geht an alle, auch an Abgemeldete (z. B. Einladung zur Versammlung).')
