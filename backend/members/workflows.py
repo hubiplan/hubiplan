@@ -7,6 +7,8 @@ jeden Schritt ins Änderungsprotokoll.
 from __future__ import annotations
 
 import datetime
+import logging
+from contextlib import contextmanager
 
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
@@ -40,6 +42,8 @@ from .models import (
     overlaps,
     today,
 )
+
+logger = logging.getLogger(__name__)
 
 ONE_DAY = datetime.timedelta(days=1)
 
@@ -644,22 +648,94 @@ def _purge_related(membership: Membership, person, club) -> None:
         access.delete()
 
 
+# Sitzungssperre der Datenbank für den täglichen Löschlauf (Löschliste und Löschfrist):
+# Ein zweiter Lauf (Nachholen nach Neustart, Befehl von Hand) wartet nicht, er endet sofort.
+PURGE_LOCK = 0x4855424C4F455343  # "HUBLOESC"
+
+
+@contextmanager
+def purge_lock():
+    """True, wenn diese Verbindung den Löschlauf ausführen darf (Gesamtaudit 15.11., PF-10)."""
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_try_advisory_lock(%s)", [PURGE_LOCK])
+        locked = cursor.fetchone()[0]
+    try:
+        yield locked
+    finally:
+        if locked:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_unlock(%s)", [PURGE_LOCK])
+
+
+def due_for_purge(cutoff: datetime.date) -> list[int]:
+    """Mitgliedschaften, deren letzter Austritt vor ``cutoff`` liegt, ohne offenen Zeitraum.
+
+    Eine Abfrage mit Gruppierung statt einer je ehemaliger Mitgliedschaft: Bei 10.000
+    ehemaligen Mitgliedern lief der Lauf vorher über 70 Minuten (Gesamtaudit 15.11., PF-10).
+    """
+    from django.db.models import Count, Max
+
+    with rls_bypass():
+        return list(
+            Membership.objects.filter(purged_at__isnull=True)
+            .annotate(
+                last_exit=Max("periods__exit_date"),
+                open_periods=Count("periods", filter=Q(periods__exit_date__isnull=True)),
+            )
+            .filter(open_periods=0, last_exit__lt=cutoff)
+            .order_by("pk")
+            .values_list("pk", flat=True)
+        )
+
+
 def purge_expired(on: datetime.date | None = None) -> int:
-    """Hintergrund-Job: alle Mitgliedschaften nach Ablauf der Löschfrist bereinigen."""
+    """Hintergrund-Job: alle Mitgliedschaften nach Ablauf der Löschfrist bereinigen.
+
+    Jede Mitgliedschaft in eigener Transaktion: Scheitert eine, laufen die übrigen weiter;
+    die gescheiterten meldet eine Alarm-Mail (höchstens einmal am Tag je Stand) und der
+    nächste Lauf versucht sie erneut."""
     on = on or today()
     months = PlatformSettings.load().effective_deletion_months()
     cutoff = on - relativedelta(months=months)
     count = 0
-    with rls_bypass():
-        candidates = Membership.objects.filter(purged_at__isnull=True).exclude(
-            periods__exit_date__isnull=True
-        )
-        for membership in candidates.select_related("person", "organization"):
-            last = membership.periods.order_by("-exit_date").first()
-            if last and last.exit_date and last.exit_date < cutoff:
+    failed: list[int] = []
+    for pk in due_for_purge(cutoff):
+        try:
+            with rls_bypass():
+                membership = Membership.objects.select_related("person", "organization").get(pk=pk)
                 purge_membership(membership, after_deadline=True)
-                count += 1
+        except Exception:  # noqa: BLE001 – ein Fehler darf die übrigen Löschungen nicht aufhalten
+            logger.exception("Löschfrist: Mitgliedschaft %s nicht bereinigt", pk)
+            failed.append(pk)
+            continue
+        count += 1
+    if failed:
+        report_failures("Löschfrist", failed)
     return count
+
+
+def report_failures(what: str, pks: list[int]) -> None:
+    """Alarm-Mail zu gescheiterten Löschungen, höchstens einmal am Tag je Stand."""
+    import hashlib
+
+    from django.core.cache import cache
+
+    from core.alarm import send_alert
+
+    key = hashlib.sha256(f"{what}:{sorted(pks)}".encode()).hexdigest()[:32]
+    if not cache.add(f"loeschlauf-fehler:{key}", 1, 24 * 60 * 60):
+        return
+    shown = ", ".join(str(pk) for pk in pks[:20]) + (" …" if len(pks) > 20 else "")
+    send_alert(
+        f"{what}: Löschungen gescheitert",
+        [
+            f"{len(pks)} Mitgliedschaften ließen sich nicht bereinigen (Kennungen: {shown}).",
+            "Die übrigen wurden bereinigt; der nächste Lauf versucht diese erneut.",
+            "Einzelheiten im Protokoll des Workers.",
+        ],
+    )
 
 
 # --- Namen in Chronik und Ehrungen (Fachfrage FQ12) ---
