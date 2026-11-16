@@ -492,7 +492,9 @@ function ReserveCard({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={
-                direction === 'add' ? t('z. B. Vorstandsbeschluss vom …') : t('z. B. Anschaffung bezahlt')
+                direction === 'add'
+                  ? t('z. B. Vorstandsbeschluss vom …')
+                  : t('z. B. Anschaffung bezahlt')
               }
             />
           </div>
