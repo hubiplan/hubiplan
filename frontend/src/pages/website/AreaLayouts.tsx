@@ -1,10 +1,7 @@
-// Webseite › Gestaltung › Darstellung der Bereiche (Konzept webseite-baukasten G5, Ralf
-// 10.11.2026): je fester Bereich zwei bis drei Darstellungen mit Skizze. Die erste ist der
-// bisherige Stand; gespeichert werden nur Abweichungen, alles geht in den Entwurf (G2).
+// Skizzen der Darstellungen fester Bereiche (Konzept webseite-baukasten G5, Ralf 10.11.2026).
+// Gewählt werden sie seit 16.11.2026 in der Feinabstimmung unter „Bereiche der Webseite“;
+// die erste Darstellung ist der bisherige Stand, gespeichert werden nur Abweichungen.
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
-import type { LayoutArea } from '../../api/website.ts'
-import { t } from '../../i18n/index.ts'
 
 const box = (x: number, y: number, w: number, h: number, o = 0.25) => (
   <rect key={`${x}-${y}-${w}-${h}`} x={x} y={y} width={w} height={h} rx="1.5" opacity={o} />
@@ -60,69 +57,12 @@ const SKETCHES: Record<string, () => ReactNode[]> = {
   ],
 }
 
-function Sketch({ id }: { id: string }) {
+export function Sketch({ id }: { id: string }) {
   const shapes = SKETCHES[id]
   if (!shapes) return null
   return (
     <svg viewBox="0 0 80 44" width="80" height="44" aria-hidden="true" fill="currentColor">
       {shapes()}
     </svg>
-  )
-}
-
-export function AreaLayouts({
-  catalog,
-  labels,
-  blocks,
-  value,
-  onChange,
-}: {
-  catalog: LayoutArea[]
-  labels: Record<string, string>
-  blocks: Record<string, boolean>
-  value: Record<string, string>
-  onChange: (next: Record<string, string>) => void
-}) {
-  function choose(area: LayoutArea, key: string) {
-    const next = { ...value }
-    // Standard (erste Darstellung) wird nicht gespeichert
-    if (key === area.variants[0]?.key) delete next[area.area]
-    else next[area.area] = key
-    onChange(next)
-  }
-
-  return (
-    <div className="area-layouts">
-      <p className="muted small">
-        {t('Eine Einleitung über einem Bereich schreibst du unter')}{' '}
-        <Link to="../inhalte">{t('Webseite › Texte')}</Link>.
-      </p>
-      {catalog.map((area) => {
-        const current = value[area.area] ?? area.variants[0]?.key
-        const label = labels[area.area] ?? area.area
-        return (
-          <fieldset key={area.area} className="area-layout">
-            <legend>{label}</legend>
-            {blocks[area.area] === false && (
-              <p className="muted small">{t('Der Bereich ist zurzeit ausgeschaltet.')}</p>
-            )}
-            <div className="area-layout-choices">
-              {area.variants.map((variant) => (
-                <button
-                  key={variant.key}
-                  type="button"
-                  className="home-kind"
-                  aria-pressed={current === variant.key}
-                  onClick={() => choose(area, variant.key)}
-                >
-                  <Sketch id={`${area.area}:${variant.key}`} />
-                  <span>{variant.label}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        )
-      })}
-    </div>
   )
 }
