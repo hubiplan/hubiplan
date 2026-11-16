@@ -16,6 +16,7 @@ November 2026:
 
 #### Website
 
+- Website: **Eye-catching notice bar.** The notice bar under Website › Overview now appears in the accent colour below the header, with an icon, a button to its target and an optional countdown (“5 days to go”). Style (accent, attention, festive, plain), place (above or below the header, floating at the bottom) and icon can be chosen.
 - Website: **Readable addresses** for dignities, competitions and series, such as `/majestaeten/hubertuskoenige/` instead of a long identifier. You can choose the address yourself; old addresses and links redirect.
 - Website: **House font from the style guide.** Under Design › Fine-tuning › Font, **Own font stack** uses fonts installed on the device, such as “Lucida Sans, Segoe UI, Arial”. No font file is delivered; anyone without the font sees the next one. Also for AI assistants.
 - Website: **Set off the band of sub-units.** Under Design › Fine-tuning › **Band of sub-units** the band on the pages of sub-units can use the box colour, a light tone or plain with a line, so it does not look like a second page header.

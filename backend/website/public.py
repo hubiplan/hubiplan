@@ -154,6 +154,8 @@ class _Consents:
 
 # Bildnachweis im Impressum: so viele Bilder mit Urheber/in werden höchstens geprüft
 CREDITS_MAX = 300
+# Symbol der Hinweisleiste bei „passend zum Stil“ (Ralf 16.11.2026); schlicht ohne Symbol
+NOTICE_ICON_FOR_STYLE = {"accent": "megaphone", "alert": "alert", "festive": "star", "quiet": ""}
 
 DRAFT_TEXT_FIELDS = (
     "title",
@@ -1450,10 +1452,35 @@ class SiteView:
 
         target = self.site.notice_target or None
         known = menu.items(self.site, public_site=self) if target else None
+        style = self.site.notice_style or Website.NoticeStyle.ACCENT
+        icon = self.site.notice_icon or Website.NoticeIcon.AUTO
+        if icon == Website.NoticeIcon.AUTO:
+            icon = NOTICE_ICON_FOR_STYLE.get(style, "")
+        elif icon == Website.NoticeIcon.NONE:
+            icon = ""
+        public_target = _public_target(self, target, known, None) if target else None
         return {
             "text": self.site.notice_text.strip(),
-            "target": _public_target(self, target, known, None) if target else None,
+            "target": public_target,
+            # Aussehen (Ralf 16.11.2026); ältere Webseiten lesen nur text und target
+            "style": style,
+            "place": self.site.notice_place or Website.NoticePlace.BELOW,
+            "icon": icon,
+            "button": self.site.notice_button.strip() if public_target else "",
+            "date": self._notice_date(target),
         }
+
+    def _notice_date(self, target) -> str | None:
+        """Tag für den Countdown: eingetragen, sonst der nächste Einzeltermin des Ziels."""
+        if self.site.notice_date:
+            return self.site.notice_date.isoformat()
+        if isinstance(target, dict) and target.get("event") and self.site.block_on("events"):
+            from .home import next_occurrence
+
+            occurrence = next_occurrence(self, target["event"])
+            if occurrence is not None and not occurrence.is_cancelled:
+                return timezone.localdate(occurrence.starts_at).isoformat()
+        return None
 
     def intros(self) -> dict[str, dict]:
         """Einleitungen der festen Bereiche (G5): Bereich → Text und Bild, nur veröffentlichte."""

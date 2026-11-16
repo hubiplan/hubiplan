@@ -281,6 +281,27 @@ class Website(models.Model):
         SELECTED = "selected", gettext_lazy("ausgewählte")
         NONE = "none", gettext_lazy("keine")
 
+    class NoticeStyle(models.TextChoices):
+        # Hinweisleiste auffälliger (Ralf 16.11.2026): eigene Farbe statt Kopffarbe
+        ACCENT = "accent", gettext_lazy("Akzentfarbe")
+        ALERT = "alert", gettext_lazy("Achtung")
+        FESTIVE = "festive", gettext_lazy("Festlich")
+        QUIET = "quiet", gettext_lazy("Schlicht in Kopffarbe")
+
+    class NoticePlace(models.TextChoices):
+        TOP = "top", gettext_lazy("über dem Kopf")
+        BELOW = "below", gettext_lazy("unter dem Kopf")
+        FLOAT = "float", gettext_lazy("schwebend unten")
+
+    class NoticeIcon(models.TextChoices):
+        AUTO = "auto", gettext_lazy("passend zum Stil")
+        MEGAPHONE = "megaphone", gettext_lazy("Lautsprecher")
+        CALENDAR = "calendar", gettext_lazy("Kalender")
+        STAR = "star", gettext_lazy("Stern")
+        INFO = "info", gettext_lazy("Info")
+        ALERT = "alert", gettext_lazy("Ausrufezeichen")
+        NONE = "none", gettext_lazy("kein Symbol")
+
     organization = models.OneToOneField(
         "organizations.Organization", on_delete=models.CASCADE, related_name="site"
     )
@@ -325,6 +346,33 @@ class Website(models.Model):
     )
     notice_from = models.DateField("Hinweisleiste ab", null=True, blank=True)
     notice_until = models.DateField("Hinweisleiste bis", null=True, blank=True)
+    # Aussehen der Hinweisleiste (Ralf 16.11.2026): Stil, Symbol, Knopf und Countdown
+    notice_style = models.CharField(
+        "Stil der Hinweisleiste",
+        max_length=10,
+        choices=NoticeStyle.choices,
+        default=NoticeStyle.ACCENT,
+        db_default=NoticeStyle.ACCENT,
+    )
+    notice_place = models.CharField(
+        "Platz der Hinweisleiste",
+        max_length=10,
+        choices=NoticePlace.choices,
+        default=NoticePlace.BELOW,
+        db_default=NoticePlace.BELOW,
+    )
+    notice_icon = models.CharField(
+        "Symbol der Hinweisleiste",
+        max_length=10,
+        choices=NoticeIcon.choices,
+        default=NoticeIcon.AUTO,
+        db_default=NoticeIcon.AUTO,
+    )
+    notice_button = models.CharField(
+        "Knopf der Hinweisleiste", max_length=40, blank=True, default="", db_default=""
+    )
+    # Tag des Ereignisses für „noch 5 Tage“; leer und Ziel ein Termin = dessen Datum
+    notice_date = models.DateField("Countdown bis", null=True, blank=True)
     # Entwurf der Gestaltung (Konzept webseite-baukasten G2): nur geänderte Felder aus
     # DRAFT_FIELDS; sichtbar nur in der Vorschau, bis jemand „Veröffentlichen“ wählt
     draft = models.JSONField("Entwurf der Gestaltung", default=dict, db_default={}, blank=True)

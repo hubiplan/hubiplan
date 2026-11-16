@@ -61,6 +61,14 @@ export interface WebsiteSettings {
   /** Zeitraum (JJJJ-MM-TT, Grenzen eingeschlossen); null = offen */
   notice_from?: string | null
   notice_until?: string | null
+  /** Aussehen der Hinweisleiste (Ralf 16.11.2026) */
+  notice_style?: 'accent' | 'alert' | 'festive' | 'quiet'
+  notice_place?: 'top' | 'below' | 'float'
+  notice_icon?: 'auto' | 'megaphone' | 'calendar' | 'star' | 'info' | 'alert' | 'none'
+  /** Beschriftung des Knopfs, nur mit Ziel; leer = „Mehr erfahren“ */
+  notice_button?: string
+  /** Countdown bis zu diesem Tag (JJJJ-MM-TT); null = Datum des Termins als Ziel oder keiner */
+  notice_date?: string | null
   /** Server, von denen ein KI-Assistent Bilder per Adresse holen darf (W3); fehlt = keine */
   image_hosts?: string[]
 }
