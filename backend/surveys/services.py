@@ -376,9 +376,13 @@ def participants(survey: Survey) -> int:
     return survey.participations.count()
 
 
-def results_hidden(survey: Survey, count: int) -> bool:
-    """Anonym und zu wenige Antworten: niemand sieht ein Ergebnis (UM-7)."""
-    return survey.anonymous and count < ANONYMOUS_MIN
+def results_hidden(survey: Survey, count: int, now=None) -> bool:
+    """Anonym und zu wenige Antworten: niemand sieht ein Ergebnis (UM-7). Anonym und noch nicht
+    beendet: auch die Verwaltung nicht (Gesamtaudit 15.11., FF-22 (a)); wer zusieht, wie sich das
+    Ergebnis nach jeder Antwort ändert, könnte sonst auf einzelne Personen schließen."""
+    if not survey.anonymous:
+        return False
+    return count < ANONYMOUS_MIN or status_of(survey, now) != Survey.Status.CLOSED
 
 
 def result_data(survey: Survey, *, with_names: bool) -> dict:
@@ -386,7 +390,9 @@ def result_data(survey: Survey, *, with_names: bool) -> dict:
         return {**survey.archived, "archived": True}
     count = participants(survey)
     if results_hidden(survey, count):
-        return {"participants": count, "hidden": True, "questions": []}
+        # until_close: anonym und noch nicht beendet (FF-22); sonst zu wenige Antworten
+        until_close = status_of(survey) != Survey.Status.CLOSED
+        return {"participants": count, "hidden": True, "until_close": until_close, "questions": []}
     names_on = with_names and not survey.anonymous
     name_of: dict[int, str] = {}
     if names_on:
@@ -484,6 +490,10 @@ def member_sees_results(survey: Survey, answered: bool, now=None) -> bool:
     if mode == Survey.Results.AFTER_CLOSE:
         return closed
     return False
+
+
+# Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende (Gesamtaudit 15.11., FF-22 (a))
+ANONYMOUS_RESULTS = (Survey.Results.AFTER_CLOSE, Survey.Results.MANAGERS)
 
 
 # --- Ablauf ---

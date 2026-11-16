@@ -6927,6 +6927,32 @@ msgstr "Please enter the legal notice address."
 msgid "Bitte die Adresse der Datenschutzhinweise angeben."
 msgstr "Please enter the privacy notice address."
 
+msgid ""
+"Stilregler → Stufe, ja/nein oder null; font_family und heading_font_family: "
+"Namen installierter Schriften mit Komma."
+msgstr ""
+"Style control → level, yes/no or null; font_family and heading_font_family: "
+"names of installed fonts separated by commas."
+
+msgid "Bitte die Schriftfolge als Text mit Komma angeben."
+msgstr "Please give the font stack as text separated by commas."
+
+msgid ""
+"Schriftnamen bitte nur aus Buchstaben, Ziffern, Leerzeichen und Bindestrich "
+"(höchstens 40 Zeichen): {name}"
+msgstr ""
+"Font names may only contain letters, digits, spaces and hyphens (at most 40 "
+"characters): {name}"
+
+msgid "Höchstens {n} Schriften in der Schriftfolge."
+msgstr "At most {n} fonts in the font stack."
+
+msgid "Bitte eine Adresse aus Buchstaben und Ziffern angeben."
+msgstr "Please enter an address made of letters and digits."
+
+msgid "Diese Adresse ist schon vergeben: {slug}"
+msgstr "This address is already taken: {slug}"
+
 msgid "Die Plattform hat keine übergeordnete Organisation."
 msgstr "The platform has no parent organisation."
 
@@ -11906,13 +11932,6 @@ msgid "Social-Media-Entwürfe"
 msgstr "Social media drafts"
 
 msgid ""
-"Stilregler → Stufe, ja/nein oder null; font_family und heading_font_family: "
-"Namen installierter Schriften mit Komma."
-msgstr ""
-"Style control → level, yes/no or null; font_family and heading_font_family: "
-"names of installed fonts separated by commas."
-
-msgid ""
 "Sucht Bilder der Webseite nach Bildunterschrift, Alternativtext, Dateiname "
 "und Untereinheit; ohne Suchwort alle."
 msgstr ""
@@ -13683,21 +13702,8 @@ msgstr "Exclamation mark"
 msgid "kein Symbol"
 msgstr "no icon"
 
-msgid "Bitte die Schriftfolge als Text mit Komma angeben."
-msgstr "Please give the font stack as text separated by commas."
+msgid "Nach dem Start lässt sich das Ergebnis nur noch strenger schützen."
+msgstr "After the start, the result can only be protected more strictly."
 
-msgid ""
-"Schriftnamen bitte nur aus Buchstaben, Ziffern, Leerzeichen und Bindestrich "
-"(höchstens 40 Zeichen): {name}"
-msgstr ""
-"Font names may only contain letters, digits, spaces and hyphens (at most 40 "
-"characters): {name}"
-
-msgid "Höchstens {n} Schriften in der Schriftfolge."
-msgstr "At most {n} fonts in the font stack."
-
-msgid "Bitte eine Adresse aus Buchstaben und Ziffern angeben."
-msgstr "Please enter an address made of letters and digits."
-
-msgid "Diese Adresse ist schon vergeben: {slug}"
-msgstr "This address is already taken: {slug}"
+msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
+msgstr "Anonymous surveys show their result only after the end."

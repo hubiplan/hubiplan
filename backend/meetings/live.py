@@ -259,12 +259,60 @@ def set_poll_status(poll: Poll, status: str) -> None:
         if poll.status != Poll.Status.OPEN:
             raise ValidationError({"detail": _("Die Abstimmung läuft nicht.")})
         voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
+        # Geheim: Stimmzettel vor dem Ergebnis mischen (Gesamtaudit 15.11., GEH-1)
+        mix_ballots(poll)
         poll.status = Poll.Status.CLOSED
         poll.closed_at = timezone.now()
         poll.entitled = entitled_count(meeting, voter_ids)
     else:
         raise ValidationError({"status": _("Unbekannter Stand.")})
     poll.save(update_fields=["status", "opened_at", "closed_at", "entitled"])
+
+
+def mix_ballots(poll: Poll) -> int:
+    """Stimmzettel einer geheimen Abstimmung in zufälliger Reihenfolge neu schreiben (Gesamtaudit
+    15.11., GEH-1). „Hat abgestimmt“ (VoteCast, mit Teilnahme) und Stimmzettel entstehen in
+    derselben Transaktion; über die Transaktionsnummer (xmin) und die Lage in der Tabelle ließe
+    sich so jeder Stimmzettel seiner Person zuordnen. Danach tragen alle Stimmzettel dieselbe
+    neue Transaktionsnummer, neue Kennungen und eine zufällige Reihenfolge. Die Versammlung muss
+    gesperrt sein (select_for_update, wie bei der Stimmabgabe). Neu geschrieben wird nur, was
+    gelesen wurde; die Zählung ändert sich nicht."""
+    if not poll.secret:
+        return 0
+    found = list(Ballot.objects.filter(poll=poll))
+    if not found:
+        return 0
+    fields = [f.attname for f in Ballot._meta.concrete_fields if not f.primary_key]
+    rows = [{k: getattr(b, k) for k in fields} for b in found]
+    secrets.SystemRandom().shuffle(rows)
+    Ballot.objects.filter(pk__in=[b.pk for b in found]).delete()
+    Ballot.objects.bulk_create([Ballot(**r) for r in rows])
+    return len(rows)
+
+
+def mix_open_polls() -> int:
+    """Stündlich: offene geheime Abstimmungen mischen. Gerade gesperrte Versammlungen (jemand
+    stimmt ab) kommen beim nächsten Lauf dran; beim Schließen wird ohnehin gemischt."""
+    from core.tenancy import rls_bypass
+
+    done = 0
+    with rls_bypass():
+        polls = list(
+            Poll.objects.filter(status=Poll.Status.OPEN, secret=True).values_list(
+                "pk", "meeting_id"
+            )
+        )
+        for poll_id, meeting_id in polls:
+            with transaction.atomic():
+                meeting = (
+                    Meeting.objects.select_for_update(skip_locked=True)
+                    .filter(pk=meeting_id)
+                    .first()
+                )
+                poll = Poll.objects.filter(pk=poll_id, status=Poll.Status.OPEN).first()
+                if meeting is not None and poll is not None and mix_ballots(poll):
+                    done += 1
+    return done
 
 
 def cast(poll: Poll, membership_id: int, votes: list[dict]) -> None:

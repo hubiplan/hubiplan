@@ -282,6 +282,14 @@ function Bar({ count, total }: { count: number; total: number }) {
 }
 
 export function SurveyResults({ result }: { result: SurveyResult }) {
+  if (result.hidden && result.until_close) {
+    return (
+      <p className="muted">
+        {t('Das Ergebnis erscheint nach dem Ende der Umfrage, damit niemand zurückrechnen kann.')}{' '}
+        {tn('Bisher {n} Antwort.', 'Bisher {n} Antworten.', result.participants)}
+      </p>
+    )
+  }
   if (result.hidden) {
     return (
       <p className="muted">
