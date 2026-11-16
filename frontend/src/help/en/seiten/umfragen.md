@@ -11,6 +11,8 @@ Under **Surveys** you quickly ask members something: find a date, ask for meal c
 festive dinner, who is taking the bus, or get an opinion poll. Surveys are polls, not
 resolutions; formal votes belong in meetings.
 
+## Creating
+
 New survey: **New survey** offers templates: **Find a date**, **Meal choice**,
 **Who is coming along?**, **Opinion poll (yes/no/abstain)** and **Free survey**. A survey has up
 to 10 questions. Question types are single and multiple choice, yes / no / abstain, date finder
@@ -24,12 +26,17 @@ accepted. For a meal choice at an event, guests count too: anyone coming with on
 up to two meals. If someone declines the event, their answer is removed from the survey.
 **How many are asked?** shows the number before starting.
 
+## Names and result
+
 Names and result: **open** (everyone asked sees names), **only the administrators see names** or
 **anonymous**. Anonymous means nobody sees who answered what, not even the administrators.
 HUBIplan only stores that someone took part, separately from the answer. Anonymous answers cannot
-be changed, and the result only appears from three answers on. After starting, settings can only
-become stricter, never more open. People asked see the result after answering, always, only after
-closing or not at all (administrators only).
+be changed, and the result only appears from three answers on and only after the end, also for
+the administrators. After starting, names and result can only become stricter, never more open.
+People asked see the result after answering, always, only after closing or not at all
+(administrators only); for anonymous surveys only “only after the end” or “administrators only”.
+
+## Start, evaluate, keep
 
 Start and close: **Start** notifies everyone asked, by app or by email with a personal link they
 can use to answer without signing in. Questions and audience can no longer be changed afterwards;

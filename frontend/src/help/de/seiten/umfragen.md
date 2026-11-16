@@ -12,6 +12,8 @@ Unter **Umfragen** fragst du Mitglieder schnell etwas: einen Termin finden, das 
 Festabend abfragen, wer mit dem Bus fährt, oder ein Meinungsbild einholen. Umfragen sind
 Meinungsbilder, keine Beschlüsse; förmliche Abstimmungen gehören in die Versammlungen.
 
+## Anlegen
+
 Neue Umfrage: **Neue Umfrage** bietet Vorlagen an: **Termin finden**, **Essenswahl**,
 **Wer fährt mit?**, **Meinungsbild (Ja/Nein/Enthaltung)** und **Freie Umfrage**. Eine Umfrage hat
 bis zu 10 Fragen. Fragearten sind Einfach- und Mehrfachauswahl, Ja / Nein / Enthaltung,
@@ -26,12 +28,18 @@ zählen Begleitpersonen mit: Wer mit einer Person kommt, wählt bis zu zwei Esse
 Termin ab, verschwindet seine Antwort aus der Umfrage.
 **Wie viele werden gefragt?** zeigt die Zahl vor dem Start.
 
+## Namen und Ergebnis
+
 Namen und Ergebnis: **offen** (alle Befragten sehen Namen), **nur die Verwaltung sieht Namen**
 oder **anonym**. Anonym heißt: Niemand sieht, wer was geantwortet hat, auch die Verwaltung
 nicht. HUBIplan speichert nur, dass jemand teilgenommen hat, getrennt von der Antwort. Anonyme
-Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab drei Antworten. Nach dem
-Start lässt sich nur noch strenger einstellen, nie offener. Das Ergebnis sehen Befragte nach
-der eigenen Antwort, immer, erst nach dem Ende oder gar nicht (nur die Verwaltung).
+Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab drei Antworten und erst
+nach dem Ende, auch für die Verwaltung. Nach dem Start lassen sich Namen und Ergebnis nur noch
+strenger einstellen, nie offener. Das Ergebnis sehen Befragte nach der eigenen Antwort, immer,
+erst nach dem Ende oder gar nicht (nur die Verwaltung); bei anonymen Umfragen nur „erst nach dem
+Ende“ oder „nur die Verwaltung“.
+
+## Starten, auswerten, aufbewahren
 
 Starten und Ende: **Starten** schickt allen Befragten Bescheid, per App oder per E-Mail mit
 einem persönlichen Link, über den sie ohne Anmeldung antworten. Fragen und Zielgruppe lassen

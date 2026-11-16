@@ -68,6 +68,8 @@ export interface ResultQuestion {
 export interface SurveyResult {
   participants: number
   hidden: boolean
+  // Anonym und noch nicht beendet: Ergebnis erst nach dem Ende (Gesamtaudit 15.11., FF-22)
+  until_close?: boolean
   archived?: boolean
   questions: ResultQuestion[]
 }

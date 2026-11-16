@@ -13678,3 +13678,9 @@ msgstr "Exclamation mark"
 
 msgid "kein Symbol"
 msgstr "no icon"
+
+msgid "Nach dem Start lässt sich das Ergebnis nur noch strenger schützen."
+msgstr "After the start, the result can only be protected more strictly."
+
+msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
+msgstr "Anonymous surveys show their result only after the end."
