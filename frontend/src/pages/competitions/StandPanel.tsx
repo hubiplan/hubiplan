@@ -78,6 +78,7 @@ export function StandPanel({
   const [chosen, setChosen] = useState<Hit | null>(null)
   const [points, setPoints] = useState('')
   const [guestClub, setGuestClub] = useState('')
+  const [guestAdult, setGuestAdult] = useState(false)
   // Antippen auf dem Scheibenbild (Schießscheiben Schritt 2); „nur Summe“ schaltet zurück
   const [padHits, setPadHits] = useState<PadHit[]>([])
   const [sumOnly, setSumOnly] = useState(false)
@@ -142,6 +143,7 @@ export function StandPanel({
     setChosen(hit)
     setPoints('')
     setGuestClub('')
+    setGuestAdult(false)
     setPadHits(storedHits(hit.kind === 'starter' ? hit.starter : null))
     setPhotoNote(null)
     setTimeout(() => pointsRef.current?.focus(), 0)
@@ -257,6 +259,7 @@ export function StandPanel({
       name,
       club: c.kind === 'guest' ? origin.club : '',
       guest: c.kind === 'guest',
+      adult: c.kind === 'guest' && guestAdult,
       membership: c.kind === 'member' ? c.member.membership : null,
       unit: c.kind === 'member' ? c.member.unit : origin.unit,
       unit_name: c.kind === 'member' ? c.member.unit_name : origin.unit_name,
@@ -269,7 +272,14 @@ export function StandPanel({
     const op: SyncOp =
       c.kind === 'member'
         ? { op: 'starter', client_key: key, membership: c.member.membership }
-        : { op: 'starter', client_key: key, name, club: origin.club, unit: origin.unit }
+        : {
+            op: 'starter',
+            client_key: key,
+            name,
+            club: origin.club,
+            adult: guestAdult,
+            unit: origin.unit,
+          }
     setLocal((l) => ({ ...l, ops: [...l.ops, op], starters: [...l.starters, starter] }))
     return { ref: key, name }
   }
@@ -522,6 +532,14 @@ export function StandPanel({
                         <option key={u.id} value={u.name} />
                       ))}
                     </datalist>
+                    <label className="checkbox">
+                      <input
+                        type="checkbox"
+                        checked={guestAdult}
+                        onChange={(e) => setGuestAdult(e.target.checked)}
+                      />{' '}
+                      {t('volljährig (sonst ohne Namen auf der Webseite)')}
+                    </label>
                   </>
                 )}
                 {tapping && target ? (

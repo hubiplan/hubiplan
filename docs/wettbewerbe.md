@@ -374,8 +374,10 @@ Zusage, die noch nicht Starter sind. Wird der Termin gelöscht, bleibt der Wettb
   (Widerspruch, wie Würden) und „Wettbewerbsergebnisse unter 18“ (Einwilligung; maßgeblich ist
   das Alter am Wettbewerbstag; ohne Geburtsdatum gilt das Mitglied als minderjährig, ist nur
   das Geburtsjahr bekannt, zählt der 31.12., Fachfrage FF-24). Ohne Erlaubnis steht „ohne
-  Namen“, der Platz bleibt. Gäste
-  erscheinen mit Namen und Verein. Der Datenschutztext der Webseite nennt Ergebnisse, sobald der
+  Namen“, der Platz bleibt. Gäste erscheinen mit Namen und Verein nur, wenn der Verein sie als
+  volljährig angegeben hat (Häkchen beim Erfassen, nachzutragen unter „Auswertung“ ›
+  „Gäste auf der Webseite“; `Starter.guest_adult`, FF-24 (c)); sonst „ohne Namen“. Gleiches
+  gilt für frei eingetragene Pfandgewinner ohne Starter und freie Namen bei Titeln. Der Datenschutztext der Webseite nennt Ergebnisse, sobald der
   Baustein an ist.
 - **Mitgliederbereich** „Meine Ergebnisse“ (`/api/portal/<Zugang>/results/`, auch für die
   App): eigene Starts (ohne Vorbereitung) mit Platz und Wert, Titel und Auszeichnungen.

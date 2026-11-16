@@ -102,3 +102,44 @@ def test_ohne_geburtsdatum_wie_minderjaehrig():
         # Mit Einwilligung „Wettbewerbsergebnisse unter 18“ erscheint der Name
         services.set_entry(members[0], Category.RESULTS_MINOR, True, "board", None)
         assert _names(comp, members).of(members[0], "") == "Max Ohnedatum"
+
+
+def test_gaeste_nur_volljaehrig_mit_namen():
+    """FF-24 (c): Gäste erscheinen nur mit Namen, wenn der Verein „volljährig“ angibt."""
+    from competitions.views import create_starter, update_starter
+
+    club = make_org("Verein Gäste")
+    user = None
+    with tenant_context(club.pk):
+        comp = _comp(club)
+        unknown = create_starter(club, user, comp, {"name": "Gerd Gast", "club": "Nachbarn"})
+        adult = create_starter(
+            club, user, comp, {"name": "Grete Gast", "club": "Nachbarn", "adult": True}
+        )
+        assert (unknown.guest_adult, adult.guest_adult) == (False, True)
+        names = _names(comp, [])
+        assert names.of_starter(unknown.pk) == WITHOUT_NAME
+        assert names.of_starter(adult.pk) == "Grete Gast"
+        # Frei eingetragener Pfandgewinner ohne Starter: ohne Angabe ohne Namen
+        assert names.of(None, "Freie Eintragung") == WITHOUT_NAME
+        # Nachtragen
+        update_starter(club, user, Starter.objects.get(pk=unknown.pk), {"adult": True})
+        assert _names(comp, []).of_starter(unknown.pk) == "Gerd Gast"
+
+
+def test_bestehende_gaeste_starten_als_nicht_angegeben():
+    """Migration mit db_default: Ältere Fassungen legen Gäste ohne das Feld an."""
+    from django.db import connection
+
+    club = make_org("Verein Alt")
+    with tenant_context(club.pk):
+        comp = _comp(club)
+        starter = Starter.objects.create(organization=club, competition=comp, name="Alt Gast")
+        with connection.cursor() as cur:
+            cur.execute(
+                "SELECT column_default FROM information_schema.columns "
+                "WHERE table_name = 'competitions_starter' AND column_name = 'guest_adult'"
+            )
+            assert "false" in (cur.fetchone()[0] or "").lower()
+        starter.refresh_from_db()
+    assert starter.guest_adult is False

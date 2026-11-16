@@ -9377,5 +9377,10 @@
   "Anhänge geprüft: keine Listen mit Daten anderer Mitglieder.": "Attachments checked: no lists with other members’ data.",
   "Vor dem Kopieren und Aufführen die Rechte klären:": "Clear the rights before copying and performing:",
   "Schutzfrist": "Term of protection",
-  "GEMA": "GEMA"
+  "GEMA": "GEMA",
+  "volljährig (sonst ohne Namen auf der Webseite)": "of age (otherwise without name on the website)",
+  "Gäste auf der Webseite": "Guests on the website",
+  "Gäste erscheinen in Ergebnislisten und Preisen der Webseite nur mit Namen, wenn sie volljährig sind; sonst steht dort „ohne Namen“.": "Guests appear by name in result lists and prizes on the website only if they are of age; otherwise “without name” is shown.",
+  "{name} ({club}) ist volljährig": "{name} ({club}) is of age",
+  "{name} ist volljährig": "{name} is of age"
 }

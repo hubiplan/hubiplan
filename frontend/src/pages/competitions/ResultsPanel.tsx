@@ -53,6 +53,7 @@ export function ResultsPanel({
       </div>
       {data.bird && <BirdResults bird={data.bird} />}
       {comp.own && comp.can_manage && <ResultOwnership org={org} comp={comp.id} />}
+      {comp.own && comp.can_manage && <GuestAdults org={org} comp={comp.id} />}
       {data.open_shootoffs > 0 && (
         <Alert kind="info">
           <Term k="comp_tie">{t('Gleichstand')}</Term> {t('auf')}{' '}
@@ -392,6 +393,51 @@ function ResultOwnership({ org, comp }: { org: number; comp: number }) {
           </select>
         </label>
       ))}
+    </div>
+  )
+}
+
+/** Gäste: „volljährig“ angeben oder nachtragen; sonst erscheinen sie auf der Webseite ohne
+ * Namen (Fachfrage FF-24 (c), Gesamtaudit 15.11., PF-21). */
+function GuestAdults({ org, comp }: { org: number; comp: number }) {
+  const starters = useLoad(() => competitionsApi.starters(org, comp), [org, comp])
+  const [error, setError] = useState<string | null>(null)
+  const guests = (starters.data ?? []).filter((s) => s.guest)
+  if (!guests.length) return null
+  async function toggle(id: number, adult: boolean) {
+    setError(null)
+    try {
+      await competitionsApi.updateStarter(org, comp, id, { adult })
+      await starters.reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+  return (
+    <div className="card card-wide">
+      <h2>{t('Gäste auf der Webseite')}</h2>
+      <p className="muted small">
+        {t(
+          'Gäste erscheinen in Ergebnislisten und Preisen der Webseite nur mit Namen, wenn sie volljährig sind; sonst steht dort „ohne Namen“.',
+        )}
+      </p>
+      {error && <Alert kind="error">{error}</Alert>}
+      <ul className="plain-list">
+        {guests.map((g) => (
+          <li key={g.id}>
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={!!g.adult}
+                onChange={(e) => void toggle(g.id, e.target.checked)}
+              />{' '}
+              {g.club
+                ? t('{name} ({club}) ist volljährig', { name: g.name, club: g.club })
+                : t('{name} ist volljährig', { name: g.name })}
+            </label>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

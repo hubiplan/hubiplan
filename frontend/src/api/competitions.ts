@@ -306,6 +306,8 @@ export interface Starter {
   name: string
   club: string
   guest: boolean
+  /** Gast als volljährig angegeben: nur dann mit Namen auf der Webseite (FF-24) */
+  adult?: boolean
   membership: number | null
   unit: number | null
   unit_name: string
@@ -504,6 +506,7 @@ export type SyncOp =
       membership?: number
       name?: string
       club?: string
+      adult?: boolean
       unit?: number | null
     }
   | {
@@ -677,7 +680,13 @@ export const competitionsApi = {
   addStarter: (
     org: number,
     id: number,
-    data: { membership?: number; name?: string; club?: string; unit?: number | null },
+    data: {
+      membership?: number
+      name?: string
+      club?: string
+      adult?: boolean
+      unit?: number | null
+    },
   ) => api.post<Starter>(`${c(org, id)}starters/`, data),
   updateStarter: (org: number, id: number, starter: number, data: Partial<Starter>) =>
     api.patch<Starter>(`${c(org, id)}starters/${starter}/`, data),

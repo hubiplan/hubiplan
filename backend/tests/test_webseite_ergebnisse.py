@@ -75,7 +75,11 @@ def setup(orgs):
         Score.objects.create(organization=org, scoring=einzel, starter=s, value=Decimal(v))
         st[m.person.first_name] = s
     gast = Starter.objects.create(
-        organization=org, competition=comp, name="Gerd Gast", club="Nachbarverein"
+        organization=org,
+        competition=comp,
+        name="Gerd Gast",
+        club="Nachbarverein",
+        guest_adult=True,  # sonst ohne Namen (FF-24 (c))
     )
     Score.objects.create(organization=org, scoring=einzel, starter=gast, value=Decimal(20))
     return {

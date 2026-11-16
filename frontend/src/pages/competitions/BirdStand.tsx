@@ -587,6 +587,7 @@ function AddShooter({
   const [query, setQuery] = useState('')
   const [chosen, setChosen] = useState<Pick | null>(null)
   const [club, setClub] = useState('')
+  const [adult, setAdult] = useState(false)
   const [hat, setHat] = useState('')
   const [error, setError] = useState<string | null>(null)
   const hits: Pick[] = useMemo(() => {
@@ -630,6 +631,7 @@ function AddShooter({
       name,
       club: chosen.kind === 'guest' ? origin.club : '',
       guest: chosen.kind === 'guest',
+      adult: chosen.kind === 'guest' && adult,
       membership: chosen.kind === 'member' ? chosen.member.membership : null,
       unit: chosen.kind === 'member' ? chosen.member.unit : origin.unit,
       unit_name: chosen.kind === 'member' ? chosen.member.unit_name : origin.unit_name,
@@ -647,6 +649,7 @@ function AddShooter({
             client_key: key,
             name,
             club: origin.club,
+            adult,
             unit: origin.unit,
           }
     if (how === 'digital') number = drawFree([...starters, s], undefined, Math.random, lots)
@@ -655,6 +658,7 @@ function AddShooter({
     setQuery('')
     setHat('')
     setClub('')
+    setAdult(false)
     setError(null)
   }
 
@@ -683,6 +687,12 @@ function AddShooter({
                 <option key={u.id} value={u.name} />
               ))}
             </datalist>
+          </label>
+        )}
+        {chosen.kind === 'guest' && (
+          <label className="checkbox">
+            <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} />{' '}
+            {t('volljährig (sonst ohne Namen auf der Webseite)')}
           </label>
         )}
         <label className="field">

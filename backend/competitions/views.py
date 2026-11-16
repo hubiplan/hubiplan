@@ -684,6 +684,7 @@ def _starter_data(s: Starter, value_by_scoring: dict | None = None) -> dict:
         "name": s.name,
         "club": s.club,
         "guest": s.is_guest,
+        "adult": s.guest_adult,
         "membership": s.membership_id,
         "unit": s.unit_id,
         "unit_name": s.unit.name if s.unit_id else "",
@@ -768,6 +769,7 @@ def create_starter(org, user, comp: Competition, data, merged: list | None = Non
             competition=comp,
             name=name,
             club=str(data.get("club", "")).strip()[:200],
+            guest_adult=bool(data.get("adult", False)),
             unit_id=unit.pk if unit else None,
         )
     s.number = str(data.get("number", "") or "").strip()[:20]
@@ -868,6 +870,8 @@ def update_starter(org, user, s: Starter, data) -> None:
             s.name = name
         if "club" in data:
             s.club = str(data["club"] or "").strip()[:200]
+        if "adult" in data:
+            s.guest_adult = bool(data["adult"])
     s.save()
     changes = diff(before, snapshot(s))
     if changes:
