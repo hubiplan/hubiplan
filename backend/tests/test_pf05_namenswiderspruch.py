@@ -102,3 +102,92 @@ def test_ohne_geburtsdatum_wie_minderjaehrig():
         # Mit Einwilligung „Wettbewerbsergebnisse unter 18“ erscheint der Name
         services.set_entry(members[0], Category.RESULTS_MINOR, True, "board", None)
         assert _names(comp, members).of(members[0], "") == "Max Ohnedatum"
+
+
+def test_gaeste_nur_volljaehrig_mit_namen():
+    """FF-24 (c): Gäste erscheinen nur mit Namen, wenn der Verein „volljährig“ angibt."""
+    from competitions.views import create_starter, update_starter
+
+    club = make_org("Verein Gäste")
+    user = None
+    with tenant_context(club.pk):
+        comp = _comp(club)
+        unknown = create_starter(club, user, comp, {"name": "Gerd Gast", "club": "Nachbarn"})
+        adult = create_starter(
+            club, user, comp, {"name": "Grete Gast", "club": "Nachbarn", "adult": True}
+        )
+        assert (unknown.guest_adult, adult.guest_adult) == (False, True)
+        names = _names(comp, [])
+        assert names.of_starter(unknown.pk) == WITHOUT_NAME
+        assert names.of_starter(adult.pk) == "Grete Gast"
+        # Frei eingetragener Pfandgewinner ohne Starter: ohne Angabe ohne Namen
+        assert names.of(None, "Freie Eintragung", guest=True) == WITHOUT_NAME
+        assert names.of(None, "Karl Frei") == "Karl Frei"  # z. B. Titel aus der Chronik
+        # Nachtragen
+        update_starter(club, user, Starter.objects.get(pk=unknown.pk), {"adult": True})
+        assert _names(comp, []).of_starter(unknown.pk) == "Gerd Gast"
+
+
+def test_bestehende_gaeste_starten_als_nicht_angegeben():
+    """Migration mit db_default: Ältere Fassungen legen Gäste ohne das Feld an."""
+    from django.db import connection
+
+    club = make_org("Verein Alt")
+    with tenant_context(club.pk):
+        comp = _comp(club)
+        starter = Starter.objects.create(organization=club, competition=comp, name="Alt Gast")
+        with connection.cursor() as cur:
+            cur.execute(
+                "SELECT column_default FROM information_schema.columns "
+                "WHERE table_name = 'competitions_starter' AND column_name = 'guest_adult'"
+            )
+            assert "false" in (cur.fetchone()[0] or "").lower()
+        starter.refresh_from_db()
+    assert starter.guest_adult is False
+
+
+def test_nachtragen_auch_abgeschlossen_einzeln_und_gesammelt(api):
+    """Gäste und freie Pfandgewinner: Liste, einzeln, „alle“; auch nach dem Abschluss."""
+    from competitions.views import delete_starter
+
+    from .factories import give_role, make_user
+
+    club = make_org("Verein Nachtrag")
+    club.enabled_modules = sorted({*(club.enabled_modules or []), "competitions"})
+    club.save()
+    board = make_user("wettbewerbe-nachtrag@example.org")
+    give_role(board, club)
+    with tenant_context(club.pk):
+        comp = _comp(club)
+        guest = Starter.objects.create(organization=club, competition=comp, name="Gerd Gast")
+        leaving = Starter.objects.create(
+            organization=club, competition=comp, name="Lena Gast", guest_adult=True
+        )
+        prize = Prize.objects.create(
+            organization=club,
+            competition=comp,
+            name="Krone",
+            winner=leaving,
+            winner_name="Lena Gast",
+        )
+        delete_starter(club, None, leaving)  # Pfand behält den Namen und die Angabe
+        prize.refresh_from_db()
+        assert prize.winner_id is None and prize.winner_adult is True
+        Prize.objects.create(
+            organization=club, competition=comp, name="Zepter", winner_name="Frei Eingetragen"
+        )
+        Competition.objects.filter(pk=comp.pk).update(status=Competition.Status.FINAL)
+    c = api(board)
+    url = f"/api/orgs/{club.pk}/competitions/{comp.pk}/guests-adult/"
+    rows = c.get(url).json()
+    assert {(r["kind"], r["name"], r["adult"]) for r in rows} == {
+        ("starter", "Gerd Gast", False),
+        ("prize", "Lena Gast", True),
+        ("prize", "Frei Eingetragen", False),
+    }
+    resp = c.post(url, {"starters": {guest.pk: True}}, content_type="application/json")
+    assert resp.status_code == 200, resp.content
+    resp = c.post(url, {"all": True}, content_type="application/json")
+    assert resp.status_code == 200 and all(r["adult"] for r in resp.json())
+    with tenant_context(club.pk):
+        assert _names(comp, []).of_starter(guest.pk) == "Gerd Gast"

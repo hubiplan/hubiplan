@@ -145,6 +145,7 @@ def _starter_row(s: Starter, p: ranking.Placed | None, scoring: Scoring) -> dict
         "unit": s.unit_id,
         "unit_name": s.unit.name if s.unit_id else "",
         "guest": s.is_guest,
+        "adult": s.guest_adult,
         "out_of_competition": s.out_of_competition,
         "value": p.value if p else None,
         "value_text": fmt(p.value, scoring.decimals) if p else "",

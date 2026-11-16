@@ -75,7 +75,11 @@ def setup(orgs):
         Score.objects.create(organization=org, scoring=einzel, starter=s, value=Decimal(v))
         st[m.person.first_name] = s
     gast = Starter.objects.create(
-        organization=org, competition=comp, name="Gerd Gast", club="Nachbarverein"
+        organization=org,
+        competition=comp,
+        name="Gerd Gast",
+        club="Nachbarverein",
+        guest_adult=True,  # sonst ohne Namen (FF-24 (c))
     )
     Score.objects.create(organization=org, scoring=einzel, starter=gast, value=Decimal(20))
     return {
@@ -162,7 +166,9 @@ class TestErgebnisse:
             organization=org, competition=comp, name="Zweite Wertung", prize_places=2
         )
         for name, value in (("Anna Probe", 19), ("Otto Test", 18)):
-            starter = Starter.objects.create(organization=org, competition=comp, name=name)
+            starter = Starter.objects.create(
+                organization=org, competition=comp, name=name, guest_adult=True
+            )
             Score.objects.create(organization=org, scoring=first, starter=starter, value=value)
         starters = list(comp.starters.order_by("pk"))
         for place, starter in enumerate(starters, 1):
