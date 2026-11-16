@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("mcpserver", "0002_rls"),
-        ("website", "0051_db_default_rueckweg"),
+        ("website", "0052_hinweisleiste_aussehen"),
     ]
 
     operations = [
