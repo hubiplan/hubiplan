@@ -613,48 +613,6 @@ def _reduce_identity(person) -> None:
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 
-def _purge_related(membership: Membership, person, club) -> None:
-    """Zusatzfelder, Datenänderungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
-
-    Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht unverändert."""
-    from customfields.models import FieldValue
-    from portal.models import CancellationRequest, ChangeRequest, LoginLink, PortalAccess
-
-    # Zusatzfeldwerte des Vereins und seiner Untereinheiten; Felder übergeordneter
-    # Ebenen (z. B. Dachverband) gehören nicht dem Verein und bleiben
-    values = FieldValue.objects.filter(person=person).select_related("organization")
-    own = [v.pk for v in values if club in v.organization.ancestors()]
-    FieldValue.objects.filter(pk__in=own).delete()
-    # Qualifikationen und Einsichtsvermerke (z. B. Führungszeugnis) braucht nach dem Austritt
-    # niemand mehr
-    from qualifications.models import Qualification
-
-    from .auskunft import _org_ids
-
-    org_ids = _org_ids(club)
-    Qualification.objects.filter(organization_id__in=org_ids, person=person).delete()
-    # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
-    # gelöschte Daten zurückschreibt
-    ChangeRequest.objects.filter(membership=membership).update(
-        data={}, previous={}, message="", response=""
-    )
-    ChangeRequest.objects.filter(membership=membership, status=ChangeRequest.Status.PENDING).update(
-        status=ChangeRequest.Status.REJECTED, decided_at=timezone.now()
-    )
-    CancellationRequest.objects.filter(membership=membership).update(message="", response="")
-    CancellationRequest.objects.filter(
-        membership=membership, status=CancellationRequest.Status.PENDING
-    ).update(status=CancellationRequest.Status.REJECTED, decided_at=timezone.now())
-    _purge_traces(membership)
-    # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
-    # (bei Organisationen die Zugänge aller Ansprechpartner)
-    for access in PortalAccess.objects.filter(membership=membership):
-        LoginLink.objects.filter(
-            user_id=access.user_id, organization=club, used_at__isnull=True
-        ).update(used_at=timezone.now())
-        access.delete()
-
-
 # Steht statt des Namens bei Helferdiensten gelöschter Mitglieder
 NAME_PURGED = "–"
 
@@ -695,6 +653,48 @@ def _purge_traces(membership: Membership) -> None:
     update_encrypted(
         ShiftAssignment.objects.filter(membership=membership), name=NAME_PURGED, phone=""
     )
+
+
+def _purge_related(membership: Membership, person, club) -> None:
+    """Zusatzfelder, Datenänderungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
+
+    Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht unverändert."""
+    from customfields.models import FieldValue
+    from portal.models import CancellationRequest, ChangeRequest, LoginLink, PortalAccess
+
+    # Zusatzfeldwerte des Vereins und seiner Untereinheiten; Felder übergeordneter
+    # Ebenen (z. B. Dachverband) gehören nicht dem Verein und bleiben
+    values = FieldValue.objects.filter(person=person).select_related("organization")
+    own = [v.pk for v in values if club in v.organization.ancestors()]
+    FieldValue.objects.filter(pk__in=own).delete()
+    # Qualifikationen und Einsichtsvermerke (z. B. Führungszeugnis) braucht nach dem Austritt
+    # niemand mehr
+    from qualifications.models import Qualification
+
+    from .auskunft import _org_ids
+
+    org_ids = _org_ids(club)
+    Qualification.objects.filter(organization_id__in=org_ids, person=person).delete()
+    # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
+    # gelöschte Daten zurückschreibt
+    ChangeRequest.objects.filter(membership=membership).update(
+        data={}, previous={}, message="", response=""
+    )
+    ChangeRequest.objects.filter(membership=membership, status=ChangeRequest.Status.PENDING).update(
+        status=ChangeRequest.Status.REJECTED, decided_at=timezone.now()
+    )
+    CancellationRequest.objects.filter(membership=membership).update(message="", response="")
+    CancellationRequest.objects.filter(
+        membership=membership, status=CancellationRequest.Status.PENDING
+    ).update(status=CancellationRequest.Status.REJECTED, decided_at=timezone.now())
+    _purge_traces(membership)
+    # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
+    # (bei Organisationen die Zugänge aller Ansprechpartner)
+    for access in PortalAccess.objects.filter(membership=membership):
+        LoginLink.objects.filter(
+            user_id=access.user_id, organization=club, used_at__isnull=True
+        ).update(used_at=timezone.now())
+        access.delete()
 
 
 def purge_expired(on: datetime.date | None = None) -> int:
