@@ -28,7 +28,8 @@ works for.
 
 On the sign-in page, click **Sign in with passkey**. Many browsers also suggest the passkey
 directly in the email address field. If you sign in with your password, you can choose
-**Confirm with passkey** instead of entering the code.
+**Confirm with passkey** instead of entering the code. Under a different address the passkey is
+not offered; the sign-in page then names the address it is valid for, and you enter the code.
 
 HUBIplan also asks for the passkey for sensitive actions. With **Enter code** you use a code
 from your authenticator app or a recovery code instead.

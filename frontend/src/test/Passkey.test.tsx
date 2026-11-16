@@ -264,6 +264,38 @@ describe('Anmeldeseite', () => {
     expect(get).toHaveBeenCalledTimes(2)
   })
 
+  it('nennt im zweiten Faktor die Adresse, für die der Passkey gilt', async () => {
+    fakeBrowser()
+    renderAt(
+      {
+        'GET /_allauth/browser/v1/auth/session': anonymous,
+        'POST /_allauth/browser/v1/auth/login': () => ({
+          status: 401,
+          body: {
+            status: 401,
+            data: {
+              flows: [{ id: 'mfa_authenticate', is_pending: true, types: ['recovery_codes'] }],
+            },
+          },
+        }),
+        'GET /api/public/passkey-elsewhere/': () => ({
+          status: 200,
+          body: { elsewhere: true, hosts: ['verband.example'] },
+        }),
+      },
+      <LoginPage />,
+    )
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('E-Mail-Adresse'), 'karla@example.org')
+    await user.type(screen.getByLabelText('Passwort'), 'geheim-und-lang')
+    await user.click(screen.getByRole('button', { name: 'Anmelden' }))
+    expect(
+      await screen.findByText(/Dein Passkey gilt für verband\.example, nicht für diese Adresse/),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mit Passkey bestätigen' })).toBeNull()
+    expect(screen.getByLabelText('Code')).toBeInTheDocument()
+  })
+
   it('ohne Passkey-Unterstützung bleibt alles wie bisher', async () => {
     renderAt({ 'GET /_allauth/browser/v1/auth/session': anonymous }, <LoginPage />)
     expect(await screen.findByRole('button', { name: 'Anmelden' })).toBeInTheDocument()

@@ -35,6 +35,8 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
   // Zweiter Faktor auch mit Passkey möglich (allauth nennt dann „webauthn“)
   const [mfaPasskey, setMfaPasskey] = useState(false)
+  // Das Konto hat Passkeys, aber keinen für diese Adresse: sagen, wofür sie gelten
+  const [elsewhere, setElsewhere] = useState<string[] | null>(null)
   // Passkeys auf dieser Instanz abgeschaltet (HUBIPLAN_PASSKEYS=0): Knopf und Vorschlag weg
   const [passkeyOff, setPasskeyOff] = useState(false)
   const passkeys = passkeysSupported() && !passkeyOff
@@ -100,8 +102,15 @@ export function LoginPage() {
       navigate(target, { replace: true })
     } else if (result.kind === 'mfa') {
       setMfaPasskey(result.passkey && passkeys)
+      setElsewhere(null)
       setStep('mfa')
       setError(null)
+      // Nur ein Hinweis: Kommt keine Antwort, bleibt es beim Code
+      if (!result.passkey)
+        void api
+          .passkeyElsewhere()
+          .then((info) => setElsewhere(info.elsewhere ? info.hosts : null))
+          .catch(() => undefined)
     } else {
       setError(result.message)
       focusAfterError()
@@ -252,6 +261,18 @@ export function LoginPage() {
                     'Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner Wiederherstellungscodes.',
                   )}
             </p>
+            {elsewhere && (
+              <p className="muted small">
+                {elsewhere.length === 1
+                  ? t(
+                      'Dein Passkey gilt für {host}, nicht für diese Adresse. Hier geht es mit dem Code weiter.',
+                      { host: elsewhere[0] },
+                    )
+                  : t(
+                      'Dein Passkey gilt für eine andere Adresse, nicht für diese. Hier geht es mit dem Code weiter.',
+                    )}
+              </p>
+            )}
             {mfaPasskey && (
               <button
                 type="button"

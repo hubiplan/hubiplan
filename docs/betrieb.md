@@ -976,7 +976,17 @@ für die aufgerufene Adresse einen Passkey, steht in der 403-Antwort zusätzlich
 
 Ein Passkey gilt nur für die Adresse, unter der er entstand (Relying Party ID = aufgerufener
 Host). Bei mehreren Adressen je Instanz braucht jede Adresse eigene Passkeys. Gespeichert wird
-nur der öffentliche Schlüssel. Anmelden mit Passkey geht nur über https.
+nur der öffentliche Schlüssel. Anmelden mit Passkey geht nur über https. Unter einer anderen
+Adresse wird der Passkey als zweiter Faktor nicht angeboten; die Anmeldeseite nennt dann die
+Adresse, für die er gilt (`GET /api/public/passkey-elsewhere/`, nur im Schritt „zweiter
+Faktor“ einer laufenden Anmeldung).
+
+**Vor dem Abschalten prüfen:** Mit `HUBIPLAN_PASSKEYS=0` gelten Konten, deren einziger zweiter
+Faktor ein Passkey ist, weiter als zwei-Faktor-geschützt, können den Passkey aber nicht mehr
+benutzen. Ihnen bleibt nur ein Wiederherstellungscode; sonst setzt jemand mit dem Recht dazu
+die Zwei-Faktor-Anmeldung des Kontos zurück. Vor dem Abschalten deshalb die Betroffenen bitten,
+zusätzlich eine Authenticator-App einzurichten. Eingerichtete Passkeys bleiben gespeichert und
+gelten nach dem Wiedereinschalten weiter.
 
 Die Apps nutzen dieselben Passkeys (docs/app.md, „Passkeys: Android und iOS“). Für Android
 liefert HUBIplan unter `/.well-known/assetlinks.json` aus, welche Apps Passkeys dieser Adresse

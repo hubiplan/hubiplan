@@ -195,6 +195,45 @@ def test_passkey_als_zweiter_faktor_nach_dem_passwort(user):
     assert client.get("/api/me/confirm/").json()["fresh"] is True
 
 
+def test_passkey_einer_anderen_adresse_wird_als_zweiter_faktor_nicht_angeboten(user, settings):
+    settings.FIXED_ALLOWED_HOSTS = [*settings.FIXED_ALLOWED_HOSTS, "verband.example"]
+    settings.ALLOWED_HOSTS = [*settings.ALLOWED_HOSTS, "verband.example"]
+    with_passkey(user, rp_id="verband.example")
+    client = Client()
+    # Ohne laufende Anmeldung verrät die Auskunft nichts
+    assert client.get("/api/public/passkey-elsewhere/").json() == {"elsewhere": False, "hosts": []}
+    resp = client.post(
+        f"{AUTH}/auth/login", {"email": user.email, "password": PASSWORD}, content_type=JSON
+    )
+    assert resp.status_code == 401
+    flow = next(f for f in resp.json()["data"]["flows"] if f.get("is_pending"))
+    # Der zweite Faktor bleibt Pflicht, aber der Passkey gilt hier nicht
+    assert flow["id"] == "mfa_authenticate"
+    assert "webauthn" not in flow["types"]
+    assert "recovery_codes" in flow["types"]
+    assert client.get("/api/public/passkey-elsewhere/").json() == {
+        "elsewhere": True,
+        "hosts": ["verband.example"],
+    }
+    # Unter der eigenen Adresse des Passkeys: angeboten, kein Hinweis
+    there = Client(HTTP_HOST="verband.example")
+    resp = there.post(
+        f"{AUTH}/auth/login", {"email": user.email, "password": PASSWORD}, content_type=JSON
+    )
+    flow = next(f for f in resp.json()["data"]["flows"] if f.get("is_pending"))
+    assert "webauthn" in flow["types"]
+    assert there.get("/api/public/passkey-elsewhere/").json() == {"elsewhere": False, "hosts": []}
+
+
+def test_auskunft_zur_anderen_adresse_nur_im_zweiten_faktor(user, api):
+    with_passkey(user, rp_id="verband.example")
+    # Angemeldet (keine laufende Anmeldung): keine Auskunft
+    assert api(user).get("/api/public/passkey-elsewhere/").json() == {
+        "elsewhere": False,
+        "hosts": [],
+    }
+
+
 def test_heikle_aktion_mit_passkey_bestaetigen(user, api):
     key = with_passkey(user)
     client = api(user)

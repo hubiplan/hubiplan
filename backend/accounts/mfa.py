@@ -106,6 +106,23 @@ class MFAAdapter(DefaultMFAAdapter):
             url += "&image=" + quote(image, safe="")
         return url
 
+    def is_mfa_enabled(self, user, types=None) -> bool:
+        """Fragt allauth nur nach Passkeys, zählen die der aufgerufenen Adresse.
+
+        Daraus entsteht die Liste, womit sich der zweite Faktor oder eine Bestätigung
+        erledigen lässt. Ein Passkey gilt für genau eine Adresse; unter einer anderen wird
+        er nicht angeboten (``accounts/passkeys.py``, ``PasskeyElsewhereView``). Ob das Konto
+        überhaupt eine Zwei-Faktor-Anmeldung hat, bleibt davon unberührt.
+        """
+        from allauth.core import context
+        from allauth.mfa.models import Authenticator
+
+        from .passkeys import usable_here
+
+        if types is not None and list(types) == [Authenticator.Type.WEBAUTHN]:
+            return usable_here(user, context.request)
+        return super().is_mfa_enabled(user, types=types)
+
     def get_public_key_credential_rp_entity(self) -> dict[str, str]:
         """Passkeys gelten für die aufgerufene Adresse; Name der Einheit dieser Adresse."""
         from allauth.core import context
