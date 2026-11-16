@@ -8,9 +8,10 @@ from . import notify
 
 
 @shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
-def send_event_mails(event_id: int, kind: str) -> int:
-    """Einladung, Änderung oder Absage an die Eingeladenen."""
-    return notify.send(event_id, kind)
+def send_event_mails(event_id: int, kind: str, remaining: list[int] | None = None) -> int:
+    """Einladung, Änderung oder Absage an die Eingeladenen; ``remaining``: Fortsetzung nach
+    der Stundengrenze (nur die noch offenen Mitgliedschaften)."""
+    return notify.send(event_id, kind, remaining)
 
 
 @shared_task
