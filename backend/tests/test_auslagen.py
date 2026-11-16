@@ -321,3 +321,17 @@ def test_modul_aus_keine_auslagen(s):
     s["org"].enabled_modules = [m for m in s["org"].enabled_modules if m != "expenses"]
     s["org"].save()
     assert s["anna"].get(s["portal"]).status_code == 404
+
+
+def test_freigegebene_auslage_ist_verbindlichkeit(s):
+    from finance import net_assets
+
+    claim = einreichen(s, amount="30.00")
+    ok(s["kasse"].post(f"{s['url']}{claim['id']}/approve/", {}, content_type=JSON))
+    year = timezone.localdate().year
+    with tenant_context(s["org"].pk):
+        s["org"].refresh_from_db()
+        data = net_assets.report(s["org"], year)
+    rows = [r for r in data["liabilities"]["items"] if r["number"] == claim["number"]]
+    assert len(rows) == 1 and rows[0]["amount"] == Decimal("30.00")
+    assert rows[0]["seller"] == "Anna Muster"

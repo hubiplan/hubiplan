@@ -453,6 +453,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
         "surveys_enabled": "surveys" in (club.enabled_modules or []),
         "bookings_enabled": "bookings" in (club.enabled_modules or []),
+        "expenses_enabled": _club_expenses(club),
         # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
         "modules": [m for m in MODULE_IDS if module_on(ctx.department, m)],
         "imprint_key": ensure_imprint(ctx.department).public_key,
@@ -850,6 +851,12 @@ def _open_surveys(club, membership_id) -> int:
     from surveys.services import has_open
 
     return has_open(membership_id, club)
+
+
+def _club_expenses(club) -> bool:
+    from expenses.services import enabled
+
+    return enabled(club)
 
 
 def _expenses_enabled(access) -> bool:

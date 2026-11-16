@@ -88,6 +88,20 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    ...(entry.expenses_enabled
+      ? [
+          {
+            to: '/mein-bereich/auslagen',
+            label: t('Auslagen'),
+            tile: {
+              title: t('Auslagen'),
+              text: entry.expenses_questions
+                ? t('Rückfrage der Kasse ({n}), jetzt antworten', { n: entry.expenses_questions })
+                : t('Selbst Bezahltes mit Foto des Belegs erstattet bekommen'),
+            },
+          },
+        ]
+      : []),
     ...(entry.meetings_enabled
       ? [
           {

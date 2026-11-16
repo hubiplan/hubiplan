@@ -407,6 +407,13 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `DELETE …/surveys/<id>/answer/` (zurückziehen, nicht bei anonymen Umfragen) und
   `POST …/surveys/<id>/follow/` (Zusage zum Termin aus der Terminfindung übernehmen).
   `surveys_enabled` und `surveys_open` (Zahl unbeantworteter Umfragen) stehen in `portal`.
+- Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
+  dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
+  vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,
+  `lines` und `payee` als JSON-Text, Fotos als `file`, `source=app`), `GET/DELETE
+  …/expenses/<id>/`, `POST …/expenses/<id>/files/` (Foto ergänzen) und
+  `POST …/expenses/<id>/<submit|answer|withdraw>/`. `expenses_enabled` und
+  `expenses_questions` (offene Rückfragen der Kasse) stehen in `portal`.
 - Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.

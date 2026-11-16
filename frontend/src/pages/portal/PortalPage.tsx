@@ -4,6 +4,7 @@ import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalSurveys } from './PortalSurveys.tsx'
+import { PortalExpenses } from './PortalExpenses.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
 import { PortalMeetingLive } from './PortalMeetingLive.tsx'
 import { PortalCompany } from './PortalCompany.tsx'
@@ -193,6 +194,16 @@ function PortalRoutes() {
           </PortalSection>
         }
       />
+      {activePortal.expenses_enabled && (
+        <Route
+          path="auslagen"
+          element={
+            <PortalSection title={t('Auslagen')}>
+              <PortalExpenses key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
       <Route
         path="versammlungen"
         element={
