@@ -35,7 +35,9 @@ Inhalt
   Sammelrechnungen an andere nur die eigenen Posten mit Nummer, Datum und Empfänger
 - mandate.json: SEPA-Lastschriftmandate
 - zuwendungen.json: Spenden und Zuwendungen
-- mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat
+- mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat; Mails an
+  Erziehungsberechtigte nur, wenn deren Adresse im Verein sonst niemandem gehört (etwa nicht,
+  wenn der Elternteil selbst Mitglied ist oder mehrere Kinder im Verein hat)
 - zugang.json: Mitgliederzugang, Anmeldekonto und verbundene Geräte der App
 - konto.json: Anmeldekonten der Person: E-Mail-Adressen, Sprache, Zwei-Faktor-Verfahren und
   Passkeys (nur Art, Name und Zeiten, nie Schlüssel), Geräte mit Benachrichtigungsdienst,
@@ -56,7 +58,10 @@ Inhalt
 - musik.json, material.json: Besetzung in der Musik, überlassenes Material
 - wechsel.json: Vereinswechsel
 - protokoll.json: Änderungen an den Daten der Person (ohne Namen der Bearbeitenden)
-- foto.*: hinterlegtes Mitgliederfoto (falls vorhanden)
+- foto.*: hinterlegtes Mitgliederfoto (falls vorhanden); foto-wartet-*: noch nicht
+  freigegebene Fotos; wuerde-*: Fotos von Würden, auf denen die Person genannt ist
+- persönliche Aufgaben: nur Stand und Daten (konto.json); den Inhalt exportiert die Person
+  selbst unter „Mein Konto“ › Profil (eigene Aufgaben)
 
 Zwecke: Mitgliederverwaltung, Beiträge und Kasse, Information der Mitglieder, Termine.
 Empfänger: Vorstand und berechtigte Personen des Vereins; Meldungen an den Dachverband nur,
@@ -150,14 +155,84 @@ def _emails(membership: Membership, org) -> set[str]:
     for access in PortalAccess.objects.filter(membership=membership).select_related("user"):
         if access.user and access.user.email:
             found.add(access.user.email.lower())
-    return found
+    # Mails, die für das Kind an die Erziehungsberechtigten gingen (Gesamtaudit 15.11., PF-20).
+    # Eine Mail kennt nur ihre Empfänger, nicht die Person, um die es geht. Die Adresse eines
+    # Erziehungsberechtigten zählt daher nur, wenn sie im Verein samt Untereinheiten sonst
+    # niemandem gehört; sonst kämen eigene Mails des Elternteils oder Mails zu Geschwistern in
+    # die Auskunft des Kindes.
+    from members.models import ContactPerson
+
+    guardians = {
+        c.email.lower()
+        for c in ContactPerson.objects.filter(membership=membership, is_guardian=True)
+        if c.email
+    }
+    guardians -= found
+    if guardians:
+        guardians -= _addresses_of_others(membership, _org_ids(org))
+    return found | guardians
+
+
+def _addresses_of_others(membership: Membership, org_ids: list[int]) -> set[str]:
+    """E-Mail-Adressen anderer Personen, Zugänge und Ansprechpartner im Verein (samt
+    Untereinheiten). Die Adressen sind verschlüsselt und lassen sich nicht abfragen; daher
+    werden sie gelesen und verglichen."""
+    from access.models import RoleAssignment
+    from members.models import ContactDetails, ContactPerson
+    from portal.models import PortalAccess
+
+    others = set()
+    for c in ContactDetails.objects.filter(
+        person__memberships__organization_id__in=org_ids
+    ).exclude(person_id=membership.person_id):
+        if c.email:
+            others.add(c.email.lower())
+    for c in ContactPerson.objects.filter(organization_id__in=org_ids).exclude(
+        membership=membership
+    ):
+        if c.email:
+            others.add(c.email.lower())
+    for access in (
+        PortalAccess.objects.filter(membership__organization_id__in=org_ids)
+        .exclude(membership=membership)
+        .select_related("user")
+    ):
+        if access.user and access.user.email:
+            others.add(access.user.email.lower())
+    for role in RoleAssignment.objects.filter(
+        organization_id__in=org_ids, user__isnull=False
+    ).select_related("user"):
+        if role.user.email:
+            others.add(role.user.email.lower())
+    return others
+
+
+def _paid_households(membership: Membership) -> list[int]:
+    """Haushalte und Firmen, für die die Person zahlt (Gesamtaudit 15.11., PF-20)."""
+    from billing.models import HouseholdPayer
+
+    return list(
+        HouseholdPayer.objects.filter(membership=membership).values_list("household_id", flat=True)
+    )
+
+
+def _own(inv, membership: Membership, households: list[int]) -> bool:
+    """Rechnung an die Person selbst: an sie oder an einen Haushalt, für den sie zahlt."""
+    return inv.membership_id == membership.pk or (
+        inv.household_id is not None and inv.household_id in households
+    )
 
 
 def _invoices(membership: Membership):
     from billing.models import Invoice
 
+    households = _paid_households(membership)
     return list(
-        Invoice.objects.filter(Q(membership=membership) | Q(lines__membership=membership))
+        Invoice.objects.filter(
+            Q(membership=membership)
+            | Q(lines__membership=membership)
+            | Q(household_id__in=households)
+        )
         .distinct()
         .prefetch_related("lines", "payments")
         .order_by("date", "pk")
@@ -183,8 +258,9 @@ def _invoice_rows(invoices, membership: Membership | None = None) -> list[dict]:
     Nummer, Datum und Rechnungsempfänger als Zusammenhang; Posten, Anschrift und Zahlungen
     der anderen bleiben draußen (Fachfrage FQ13)."""
     rows = []
+    households = _paid_households(membership) if membership is not None else []
     for inv in invoices:
-        if membership is not None and inv.membership_id != membership.pk:
+        if membership is not None and not _own(inv, membership, households):
             own = [line for line in inv.lines.all() if line.membership_id == membership.pk]
             row = {name: getattr(inv, name) for name in SHARED_INVOICE_FIELDS}
             row["sammelrechnung"] = True
@@ -519,12 +595,21 @@ def build(membership: Membership, org) -> bytes:
     invoices = _invoices(membership)
     files["rechnungen.json"] = _dump(_invoice_rows(invoices, membership))
     # Als PDF nur Rechnungen an die Person selbst; eine Sammelrechnung zeigt alle Posten
-    issued = [i for i in invoices if i.number and i.membership_id == membership.pk]
+    households = _paid_households(membership)
+    issued = [i for i in invoices if i.number and _own(i, membership, households)]
     if issued:
         from billing import pdf
 
         files["rechnungen.pdf"] = pdf.render(issued)
-    files["mandate.json"] = _dump([_row(m) for m in Mandate.objects.filter(membership=membership)])
+    # Auch Mandate eines Haushalts, für den die Person zahlt (PF-20)
+    files["mandate.json"] = _dump(
+        [
+            _row(m)
+            for m in Mandate.objects.filter(
+                Q(membership=membership) | Q(household_id__in=households)
+            )
+        ]
+    )
     files["zuwendungen.json"] = _dump(
         [_row(d, {"created_by"}) for d in Donation.objects.filter(membership=membership)]
     )
@@ -762,8 +847,9 @@ def build(membership: Membership, org) -> bytes:
                 "qualifikation": q.kind.name,
                 **_row(q, {"kind", "person", "organization", "created_by", "reminded_at"}),
             }
+            # Verein und Untereinheiten (Gesamtaudit 15.11., PF-20)
             for q in Qualification.objects.filter(
-                organization=membership.organization, person_id=membership.person_id
+                organization_id__in=org_ids, person_id=membership.person_id
             ).select_related("kind")
         ]
     )
@@ -798,14 +884,32 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
-    photo = membership.photos.filter(status="approved").first()
-    if photo is not None and photo.image:
+    # Alle Fotos: das freigegebene, wartende und Fotos von Würden (Gesamtaudit 15.11., PF-20)
+    def add_file(name, field):
+        if not field:
+            return
         try:
-            with photo.image.open("rb") as fh:
-                suffix = photo.image.name.rsplit(".", 1)[-1] if "." in photo.image.name else "jpg"
-                files[f"foto.{suffix}"] = fh.read()
+            with field.open("rb") as fh:
+                suffix = field.name.rsplit(".", 1)[-1] if "." in field.name else "jpg"
+                files[f"{name}.{suffix}"] = fh.read()
         except OSError:
             pass
+
+    photos = list(membership.photos.order_by("-status", "pk"))
+    approved = [p for p in photos if p.status == "approved"]
+    if approved:
+        add_file("foto", approved[0].image)
+    for p in photos:
+        if p.status != "approved":
+            add_file(f"foto-{p.get_status_display()}-{p.pk}".replace(" ", "-"), p.image)
+    from honors.models import ReignPhoto
+
+    for rp in ReignPhoto.objects.filter(
+        Q(reign__person_id=membership.person_id)
+        | Q(reign__companions__person_id=membership.person_id),
+        organization_id__in=org_ids,
+    ).distinct():
+        add_file(f"wuerde-{rp.reign_id}", rp.file)
 
     files["LIESMICH.txt"] = README.format(
         name=f"{person.first_name} {person.last_name}".strip(),

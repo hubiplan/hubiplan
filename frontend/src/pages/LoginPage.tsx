@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import * as api from '../api/auth.ts'
 import type { LoginResult } from '../api/auth.ts'
+import { ApiError } from '../api/client.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { loginTarget, rememberedTarget } from '../auth/loginTarget.ts'
 import { autofillSupported, cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
@@ -13,6 +14,11 @@ import { RemoteLoginChoices } from './VerbundLoginPages.tsx'
 import { t } from '../i18n/index.ts'
 
 type Step = 'password' | 'mfa'
+
+/** Die Instanz kennt die Anmeldung mit Passkey nicht (abgeschaltet). */
+function passkeysDisabled(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
 
 export function LoginPage() {
   const { user, setUser } = useAuth()
@@ -29,7 +35,11 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
   // Zweiter Faktor auch mit Passkey möglich (allauth nennt dann „webauthn“)
   const [mfaPasskey, setMfaPasskey] = useState(false)
-  const passkeys = passkeysSupported()
+  // Passkeys auf dieser Instanz abgeschaltet (HUBIPLAN_PASSKEYS=0): Knopf und Vorschlag weg
+  const [passkeyOff, setPasskeyOff] = useState(false)
+  const passkeys = passkeysSupported() && !passkeyOff
+  // Zählt hoch, wenn der Vorschlag im E-Mail-Feld neu angeboten werden soll
+  const [autofillRound, setAutofillRound] = useState(0)
   // Vorschlag gespeicherter Passkeys im E-Mail-Feld; wird abgebrochen, sobald die Person
   // selbst „Mit Passkey anmelden“ wählt oder die Seite verlässt
   const autofill = useRef<AbortController | null>(null)
@@ -39,28 +49,37 @@ export function LoginPage() {
   const codeRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (step !== 'password' || user) return
+    if (step !== 'password' || user || passkeyOff) return
     let active = true
     const controller = new AbortController()
     autofill.current = controller
     void (async () => {
       if (!(await autofillSupported()) || !active) return
+      let credential: Record<string, unknown>
       try {
-        const options = await api.passkeyLoginOptions()
-        if (!active) return
-        const credential = await getPasskey(options, {
+        credential = await getPasskey(await api.passkeyLoginOptions(), {
           conditional: true,
           signal: controller.signal,
         })
-        if (!active) return
-        setBusy(true)
-        handle(await api.passkeyLogin(credential))
       } catch (e) {
-        // Abbruch oder kein Passkey gewählt: still weiter mit Passwort
-        if (active && !cancelled(e) && !(e instanceof DOMException))
-          setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
+        // Der Vorschlag ist nur ein Angebot: Abbruch, keine Verbindung, zu viele Anfragen
+        // oder abgeschaltete Passkeys melden nichts, es geht still weiter mit Passwort
+        if (active && passkeysDisabled(e)) setPasskeyOff(true)
+        return
+      }
+      if (!active) return
+      setBusy(true)
+      try {
+        const result = await api.passkeyLogin(credential)
+        if (!active) return
+        handle(result)
+        // Abgelehnt (etwa weil die Seite lange offen stand): Vorschlag mit neuer Aufgabe
+        // wieder anbieten, die alte gilt nur einmal
+        if (result.kind === 'error') setAutofillRound((n) => n + 1)
+      } catch {
+        if (active) setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
       } finally {
-        if (active) setBusy(false)
+        setBusy(false)
       }
     })()
     return () => {
@@ -70,7 +89,7 @@ export function LoginPage() {
     }
     // handle hängt nur von stabilen Werten ab; neu starten nur beim Wechsel des Schritts
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, user])
+  }, [step, user, passkeyOff, autofillRound])
 
   if (user) return <Navigate to={target} replace />
 
@@ -141,9 +160,14 @@ export function LoginPage() {
       const credential = await getPasskey(await loadOptions())
       handle(await finish(credential))
     } catch (e) {
-      if (!cancelled(e)) setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
+      if (passkeysDisabled(e)) setPasskeyOff(true)
+      if (e instanceof ApiError && e.status === 429)
+        setError(t('Zu viele Versuche. Bitte später erneut.'))
+      else if (!cancelled(e)) setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
     } finally {
       setBusy(false)
+      // Der Knopf hat den Vorschlag im E-Mail-Feld abgebrochen: wieder anbieten
+      setAutofillRound((n) => n + 1)
     }
   }
 

@@ -32,7 +32,8 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Rest nach der Löschfrist: Name, Geburtsjahr, Zeiträume | Vereinsgeschichte (Jubiläen, Ehrungen, Chronik), Art. 6 (1) f | – | bleibt, solange der Verein besteht; auf Widerspruch siehe „Chronik und Ehrungen“ |
 | Würden, Begleitungen, Ehrungen, Wettbewerbsergebnisse | Vereinsgeschichte und öffentliche Chronik, Art. 6 (1) f | – | bleiben; jährliche Prüfung und Entfernen auf Wunsch (unten) |
 | Mitgliederfoto | Ausweis und Akte, Art. 6 (1) a | Widerruf oder Löschfrist | beim Widerruf bzw. mit den Mitgliedsdaten gelöscht |
-| SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | letzte Lastschrift | 36 Monate nach der letzten Lastschrift ungültig (SEPA-Regel); Mandat bleibt als Beleg mit den Büchern |
+| SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | Ende des Mandats: Widerruf, sonst 36 Monate nach der letzten Lastschrift bzw. Unterschrift (SEPA-Regel) | Mandat bleibt als Beleg mit den Büchern; mit der Bücher-Bereinigung des Geschäftsjahres, in dem es endete (nach 10 Jahren), werden Kontoinhaber, IBAN und BIC anonymisiert, Referenz und Daten bleiben |
+| Zahler eines Haushalts (Name, Anschrift, Mail) | Beiträge, Art. 6 (1) b | letztes Haushaltsmitglied gelöscht | mit den Mitgliedsdaten des letzten Haushaltsmitglieds geleert; Rechnungen behalten ihre eigene Kopie |
 | Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der tatsächlichen Belegentstehung | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |
 | Bücher, Jahresabschlüsse | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der letzten Eintragung bzw. Aufstellung | nach 10 Jahren anonymisiert (Beträge bleiben) |
 | Auslagen (Antrag, Positionen, Belege, Bankverbindung, Verlauf) | Erstattung und Buchführung, Art. 6 (1) b, c, § 147 AO | ausgezahlt: wie Belege und Bücher; abgelehnt/zurückgezogen: Entscheidung; Entwurf: letzte Änderung | ausgezahlt: Belege nach 8 Jahren gelöscht, Antrag und Verlauf nach 10 Jahren anonymisiert; abgelehnt/zurückgezogen: Belege und Bankverbindung nach 6 Monaten gelöscht, Eckdaten Ende des Folgejahres; Entwürfe nach 90 Tagen gelöscht (siehe [auslagen.md](auslagen.md)) |
@@ -46,7 +47,7 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Änderungen zum Rückgängigmachen | Fehlerkorrektur, Art. 6 (1) f | Änderung | nach 30 Tagen gelöscht |
 | Änderungsprotokoll | Nachvollziehbarkeit, GoBD, Art. 6 (1) c, f | – | Inhalte zu einer Person werden mit deren Löschung geleert (Kette bleibt prüfbar) |
 | Exporte, Importe, Datenübernahmen | Arbeitsdateien, Art. 6 (1) f | Erstellung | nach 7 bzw. 30 Tagen gelöscht |
-| Benutzerkonto (Anmelde-E-Mail, Passkeys, Zwei-Faktor, Geräte, Nextcloud- und KI-Freigaben, Anmeldungen über andere Instanzen, Unterschrift, persönliche Aufgaben) | Anmeldung, Art. 6 (1) b | letzter Zugang (Mitgliederzugang oder Rolle) endet | nach 90 Tagen ohne Zugang gelöscht, zwei Wochen vorher Hinweismail; jederzeit selbst löschbar unter Mein Konto › Anmeldung & Sicherheit (ohne laufende Ämter) |
+| Benutzerkonto (Anmelde-E-Mail, Passkeys, Zwei-Faktor, Geräte, Nextcloud- und KI-Freigaben, Anmeldungen über andere Instanzen, Unterschrift, persönliche Aufgaben) | Anmeldung, Art. 6 (1) b | letzter Zugang (Mitgliederzugang oder Rolle) endet | nach 90 Tagen ohne Zugang gelöscht, zwei Wochen vorher Hinweismail; jederzeit selbst löschbar unter Mein Konto › Anmeldung & Sicherheit (ohne laufende Ämter); ein verknüpftes Nextcloud-Konto wird dabei deaktiviert, wenn der Dienst Konten verwaltet („Konten automatisch deaktivieren“), sonst bleibt es Sache der Nextcloud-Verwaltung |
 | App-Geräte | Anmeldung, Art. 6 (1) b | letzte Nutzung | nach 180 Tagen ohne Nutzung abgemeldet, Push-Adresse gelöscht (täglicher Job `konten-aufraeumen`) |
 | Entwürfe in der App (nicht gesendet, nach dem Abmelden) | Kasse unterwegs, Art. 6 (1) b, c | Abmelden | nach 90 Tagen Rückfrage mit Export, nach 120 Tagen gelöscht; unlesbare sofort (FQ24) |
 | Backups | Wiederherstellung, Art. 6 (1) f, Art. 32 | Erstellung | nach `BACKUP_KEEP_DAYS` Tagen |
@@ -72,6 +73,12 @@ Stufen (`organizations/deletion.py`):
 Gelöschte Einheiten stehen auf der Löschliste (Kennung und Anlagezeitpunkt, keine Namen).
 Taucht eine davon nach dem Einspielen eines älteren Backups wieder auf, wird sie beim Start
 und täglich erneut gelöscht; lässt sie sich nicht automatisch löschen, kommt eine Alarm-Mail.
+
+Personen eines Vereins im Dachverband liegen im Bereich des Dachverbands. Waren sie nur in der
+gelöschten Einheit (und ihren Untereinheiten) Mitglied, gehen Person, gemeinsame Kontaktdaten
+und Verbandsmeldung mit (Gesamtaudit 15.11., PF-15); wer noch anderswo Mitglied ist, bleibt.
+Verweist außer Kontaktdaten und Verbandsmeldung noch etwas auf eine Person (etwa ein Amt, eine Ehrung,
+eine Würde oder eine Qualifikation im Dachverband), bleibt sie stehen (Protokoll des Workers).
 
 English: Units are deleted in two stages. Stage 1 deactivates the unit and its subunits and
 schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
