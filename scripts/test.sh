@@ -420,6 +420,7 @@ frontend_teil2() {
 
 # --- Backend ---
 MIG_SKIP=0
+MIG_TEIL=0
 if [ "$RUN_BACKEND" = 1 ]; then
     # Die Schichten mit den Abhängigkeiten nutzt Docker über die Läufe hinweg wieder
     docker build -q --build-arg REQUIREMENTS=requirements-dev.txt -t "$BACKEND_IMG" "$WORK/backend" > /dev/null
@@ -551,39 +552,62 @@ if [ "$RUN_BACKEND" = 1 ]; then
     done
 
     # Migrationstests (@pytest.mark.migration) migrieren hin und zurück und brauchen über ein
-    # Drittel der Rechenzeit. Sie laufen nur, wenn ihr Schlüssel noch nicht grün war: der
-    # Vorlagen-Schlüssel (Migrationen, Modelle, …), die markierten Testdateien, conftest.py,
-    # factories.py und die Module, die diese Tests einbinden.
+    # Drittel der Rechenzeit, der längste allein eine Viertelstunde. Jede Testdatei hat einen
+    # eigenen Schlüssel und läuft nur, wenn er noch nicht grün war: die Datei, conftest.py,
+    # factories.py, die von ihr eingebundenen Module, Datenbank-Image und Abhängigkeiten und
+    # die Migrationen der Apps, deren Stände sie nennt („("members", "0022_…")“). Nennt sie
+    # keinen Stand, gilt der ganze Vorlagen-Schlüssel. Neue Migrationen anderer Apps lassen
+    # alte Migrationstests so aus; vor einem Release prüft TEST_ALLES=1 alles.
     mig_schluessel() {
-        local tests mods
-        tests=$(git grep -l 'mark\.migration' "$REF" -- 'backend/tests/test_*.py' | sed "s#^$REF:##" || true)
-        mods=""
-        if [ -n "$tests" ]; then
-            # shellcheck disable=SC2086
-            # „from a.b import c, d“ → a/b.py, a/b/__init__.py, a/b/c.py, a/b/c (Paket) …;
-            # eingeklammerte Importlisten nehmen vorsichtshalber das ganze Paket a/b.
-            mods=$(git grep -h -E '^(from|import) [a-z_]+' "$REF" -- $tests | awk '
-                { m = $2; gsub(/\./, "/", m); print m ".py"; print m "/__init__.py" }
-                $1 == "import" { print m }
-                $1 == "from" && $4 ~ /^\(/ { print m }
-                $1 == "from" && $4 !~ /^\(/ {
-                    sub(/^from [^ ]+ import /, ""); n = split($0, teile, ",")
-                    for (i = 1; i <= n; i++) {
-                        split(teile[i], w, " "); if (w[1] == "") continue
-                        print m "/" w[1] ".py"; print m "/" w[1]
-                    }
-                }' | sed 's#^#backend/#' | sort -u || true)
-        fi
+        local datei="$1" mods apps
+        # „from a.b import c, d“ → a/b.py, a/b/__init__.py, a/b/c.py, a/b/c (Paket) …;
+        # eingeklammerte Importlisten nehmen vorsichtshalber das ganze Paket a/b.
+        mods=$(git show "$REF:$datei" | grep -E '^(from|import) [a-z_]+' | awk '
+            { m = $2; gsub(/\./, "/", m); print m ".py"; print m "/__init__.py" }
+            $1 == "import" { print m }
+            $1 == "from" && $4 ~ /^\(/ { print m }
+            $1 == "from" && $4 !~ /^\(/ {
+                sub(/^from [^ ]+ import /, ""); n = split($0, teile, ",")
+                for (i = 1; i <= n; i++) {
+                    split(teile[i], w, " "); if (w[1] == "") continue
+                    print m "/" w[1] ".py"; print m "/" w[1]
+                }
+            }' | sed 's#^#backend/#' | sort -u || true)
+        apps=$(git show "$REF:$datei" | grep -oE '\("[a-z_]+", *"[0-9]{4}_[A-Za-z0-9_]*"\)' \
+            | sed -E 's/^\("([a-z_]+)".*/backend\/\1\/migrations/' | sort -u || true)
         # shellcheck disable=SC2086
-        { db_key; printf '%s\n' $tests backend/tests/conftest.py backend/tests/factories.py $mods \
-            | sort -u | xargs git ls-tree "$REF" -- 2> /dev/null; } | sha256sum | cut -c1-16
+        {
+            printf '%s\n' "$PG_IMAGE"
+            if [ -n "$apps" ]; then
+                git ls-tree "$REF" -- backend/requirements.txt backend/requirements-dev.txt \
+                    backend/config/settings.py 2> /dev/null
+                git ls-tree -r "$REF" -- $apps 2> /dev/null
+            else
+                db_key
+            fi
+            printf '%s\n' "$datei" backend/tests/conftest.py backend/tests/factories.py $mods \
+                | sort -u | xargs git ls-tree "$REF" -- 2> /dev/null
+        } | sha256sum | cut -c1-16
     }
-    MIG_KEY=$(mig_schluessel)
+    MIG_DATEIEN=()   # Schlüssel der Dateien, die laufen
+    MIG_AUS=()       # schon grün, werden ausgelassen (Pfade relativ zu backend/)
+    while read -r datei; do
+        [ -n "$datei" ] || continue
+        k=$(mig_schluessel "$datei")
+        if [ "$#" -eq 0 ] && [ "${TEST_ALLES:-0}" != 1 ] && teil_gruen migration "$k"; then
+            MIG_AUS+=("${datei#backend/}")
+        else
+            MIG_DATEIEN+=("$k")
+        fi
+    done < <(git grep -l 'mark\.migration' "$REF" -- 'backend/tests/test_*.py' | sed "s#^$REF:##" || true)
     MIG_MARK=()
-    if [ "$#" -eq 0 ] && [ "${TEST_ALLES:-0}" != 1 ] && teil_gruen migration "$MIG_KEY"; then
+    if [ "${#MIG_DATEIEN[@]}" = 0 ]; then
         MIG_SKIP=1
         MIG_MARK=(-m "not migration")
         echo "Backend: Migrationstests mit diesem Stand schon grün, werden ausgelassen"
+    elif [ "${#MIG_AUS[@]}" -gt 0 ]; then
+        MIG_TEIL=1
+        echo "Backend: ${#MIG_DATEIEN[@]} Migrationstest-Dateien laufen, ${#MIG_AUS[@]} schon grün (ausgelassen)"
     fi
 
     # Frontend zuerst fertig (Vitest allein, ~1,5 min), damit ein roter Frontend-Test nach
@@ -649,7 +673,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
         -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
         -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
         -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
-        -v "$WORK/berichte:/berichte" \
+        -v "$WORK/berichte:/berichte" -e MIG_AUSLASSEN="${MIG_AUS[*]}" \
         --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
         --junitxml=/berichte/pytest.xml --durations="${TEST_DURATIONS:-30}" \
         "${MIG_MARK[@]}" "${IGNORE[@]}" $PYTEST_ARGS || rc=$?
@@ -691,7 +715,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
     echo "Backend: Tests ok ($(($(date +%s) - start)) s)"
     # Gleich vermerken: scheitert danach etwas anderes, läuft das Backend nicht noch einmal
     teil_vermerken backend "$B_KEY"
-    [ "$MIG_SKIP" = 1 ] || teil_vermerken migration "$MIG_KEY"
+    for k in "${MIG_DATEIEN[@]}"; do teil_vermerken migration "$k"; done
 else
     frontend_teil2
     [ "$FE_FEHLER" = 0 ] || exit "$FE_FEHLER"
@@ -893,7 +917,7 @@ fi
 mkdir -p "$(dirname "$STATE")"
 jetzt=$(date -Iseconds)
 vermerk=""
-if [ "$RUN_BACKEND" = 0 ] || [ "$RUN_FRONTEND" = 0 ] || [ "$MIG_SKIP" = 1 ]; then vermerk=" teilweise"; fi
+if [ "$RUN_BACKEND" = 0 ] || [ "$RUN_FRONTEND" = 0 ] || [ "$MIG_SKIP" = 1 ] || [ "$MIG_TEIL" = 1 ]; then vermerk=" teilweise"; fi
 echo "$TREE $SHA $jetzt$vermerk" >> "$STATE"
 echo "Alles grün: $SHA ist als getestet vermerkt ($(($(date +%s) - start)) s gesamt)."
 RESULT_OK=1
