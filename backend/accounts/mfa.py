@@ -44,9 +44,19 @@ def is_encrypted(value: str) -> bool:
 
 
 def encrypt(text: str) -> str:
-    if is_encrypted(text):
-        return text
+    """Immer neu verschlüsseln, auch wenn die Eingabe schon wie ein Chiffrat aussieht.
+
+    Früher kam ein Wert mit ``enc1:`` unverändert durch. Über Eingaben wie das App-Passwort der
+    Nextcloud-Anbindung ließ sich so ein Chiffrat aus einem Datenbank-Dump (etwa ein
+    TOTP-Geheimnis) einschleusen und von HUBIplan entschlüsselt an einen fremden Server
+    schicken (Gesamtaudit 15.11., OPS-02). Für Bestandsläufe gibt es ``ensure_encrypted``.
+    """
     return PREFIX + fernet().encrypt(text.encode()).decode()
+
+
+def ensure_encrypted(value: str) -> str:
+    """Nur für Bestandsläufe über gespeicherte Daten: schon Verschlüsseltes bleibt, wie es ist."""
+    return value if is_encrypted(value) else encrypt(value)
 
 
 def decrypt(value: str) -> str:

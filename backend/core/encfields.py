@@ -152,9 +152,11 @@ class EncryptedMixin:
             if self._stays_plain(self.db_default):
                 return value
             raise FieldError("Verschlüsselte Felder erlauben nur leere Datenbank-Standardwerte.")
-        # Strenge Identitätsfelder erhalten stets Klartexteingaben. Ein vom Nutzer
-        # eingegebener Name mit „enc1:“ darf kein gespeichertes Chiffrat einschleusen.
-        if self._stays_plain(value) or (is_encrypted(value) and not self.strict):
+        # Eingaben sind immer Klartext, auch wenn sie mit „enc1:“ beginnen: Sonst ließe sich ein
+        # Chiffrat aus einem Datenbank-Dump einschleusen und über die API entschlüsselt lesen
+        # (Gesamtaudit 15.11., OPS-01; früher nur für strenge Felder). Gespeicherte Werte kommen
+        # beim Laden entschlüsselt an; Bestandsläufe schreiben direkt in die Datenbank.
+        if self._stays_plain(value):
             return value
         text = self._plain_to_text(value)
         return encrypt_text(text, _owner_or_fail(model_instance, self), self)
@@ -298,7 +300,8 @@ class EncryptedJSONField(EncryptedMixin, models.JSONField):
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
-        if self._stays_plain(value) or self._wrapped(value):
+        # Wie oben: auch ein eingegebenes {"…": "enc1:…"} wird als Klartext verschlüsselt (OPS-01)
+        if self._stays_plain(value):
             return value
         text = self._plain_to_text(value)
         return {self.KEY: encrypt_text(text, _owner_or_fail(model_instance, self), self)}
