@@ -138,6 +138,7 @@ function ReignsPanel() {
 
   return (
     <div className="card card-wide">
+      {canEdit && <PhotoConsentHint org={org.id} />}
       <div className="card-head">
         <h2>{t('Regentschaften')}</h2>
         {canEdit && editing === null && usable.length > 0 && (
@@ -400,6 +401,7 @@ function ReignForm({
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoConsent, setPhotoConsent] = useState(!!reign?.photo?.consent)
   const [preview, setPreview] = useState<string | null>(null)
   const previewRef = useRef<string | null>(null)
   const shownPhoto = reign ? (photo?.small_url ?? null) : preview
@@ -429,7 +431,7 @@ function ReignForm({
     setPhotoBusy(true)
     setPhotoError(null)
     try {
-      if (file) setPhoto(await honorsApi.uploadPhoto(org.id, reign.id, file))
+      if (file) setPhoto(await honorsApi.uploadPhoto(org.id, reign.id, file, photoConsent))
       else {
         await honorsApi.deletePhoto(org.id, reign.id)
         setPhoto(null)
@@ -498,7 +500,7 @@ function ReignForm({
   async function create() {
     const saved = await honorsApi.createReign(org.id, v)
     try {
-      if (photoFile) await honorsApi.uploadPhoto(org.id, saved.id, photoFile)
+      if (photoFile) await honorsApi.uploadPhoto(org.id, saved.id, photoFile, photoConsent)
     } catch (err) {
       throw new Error(
         t('Die Regentschaft ist angelegt, das Foto aber nicht: {x}', { x: errorMessage(err) }),
@@ -695,6 +697,25 @@ function ReignForm({
             {t('Foto entfernen')}
           </button>
         )}
+        {shownPhoto && (
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={photoConsent}
+              disabled={photoBusy}
+              onChange={(e) => {
+                const on = e.target.checked
+                setPhotoConsent(on)
+                if (reign && photo)
+                  void honorsApi
+                    .setPhotoConsent(org.id, reign.id, on)
+                    .then(setPhoto)
+                    .catch((err) => setPhotoError(errorMessage(err)))
+              }}
+            />{' '}
+            {t('Einwilligung der nur mit Namen Abgebildeten liegt vor')}
+          </label>
+        )}
         {photoBusy && <p className="muted small">{t('Foto wird gespeichert …')}</p>}
         {photoError && <Alert kind="error">{photoError}</Alert>}
         <small className="muted">
@@ -702,7 +723,7 @@ function ReignForm({
             ? t('Wird sofort übernommen, verkleinert und ohne Metadaten gespeichert.')
             : t('Wird mit „Anlegen“ übernommen, verkleinert und ohne Metadaten gespeichert.')}{' '}
           {t(
-            'Auf der Webseite erscheint es nur, wenn alle verknüpften Mitglieder in Fotos eingewilligt haben.',
+            'Auf der Webseite erscheint es nur, wenn alle verknüpften Mitglieder in Fotos eingewilligt haben und für nur mit Namen Abgebildete die Einwilligung bestätigt ist.',
           )}
         </small>
       </div>
@@ -1292,5 +1313,46 @@ export function CandidateSelect({
         </option>
       ))}
     </select>
+  )
+}
+
+/** Würden-Fotos mit frei eingetragenen Namen ohne bestätigte Einwilligung: Hinweis und
+ * Sammelaktion zum Nachtragen (Gesamtaudit 15.11., PF-21). */
+function PhotoConsentHint({ org }: { org: number }) {
+  const state = useLoad(() => honorsApi.photoConsentOpen(org), [org])
+  const [error, setError] = useState<string | null>(null)
+  const open = state.data?.open ?? 0
+  if (!open) return null
+  async function confirmAll() {
+    if (
+      !(await confirmDialog({
+        title: t('Einwilligungen bestätigen?'),
+        message: t(
+          'Du bestätigst für {n} Fotos, dass die nur mit Namen eingetragenen Abgebildeten in die Veröffentlichung eingewilligt haben.',
+          { n: open },
+        ),
+        confirmLabel: t('Bestätigen'),
+      }))
+    )
+      return
+    setError(null)
+    try {
+      state.setData(await honorsApi.confirmAllPhotos(org))
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+  return (
+    <Alert kind="info">
+      {tn(
+        '{n} Foto mit nur namentlich eingetragenen Personen erscheint nicht auf der Webseite, bis die Einwilligung der Abgebildeten bestätigt ist.',
+        '{n} Fotos mit nur namentlich eingetragenen Personen erscheinen nicht auf der Webseite, bis die Einwilligung der Abgebildeten bestätigt ist.',
+        open,
+      )}{' '}
+      <button type="button" className="link-button" onClick={() => void confirmAll()}>
+        {t('Für alle bestätigen …')}
+      </button>
+      {error && <span className="error"> {error}</span>}
+    </Alert>
   )
 }

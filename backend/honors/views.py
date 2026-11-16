@@ -187,12 +187,26 @@ class CompanionSerializer(serializers.ModelSerializer):
         extra_kwargs = {"id": {"read_only": True}, "sort_order": {"required": False}}
 
 
+def free_names(reign: Reign) -> bool:
+    """Steht auf der Regentschaft jemand nur mit Namen (nicht als Mitglied verknüpft)?"""
+    if reign.person_id is None and (reign.name or "").strip():
+        return True
+    return any(c.person_id is None and (c.name or "").strip() for c in reign.companions.all())
+
+
 def photo_data(org_id: int, reign: Reign) -> dict | None:
     photo = getattr(reign, "photo", None)
     if photo is None:
         return None
     base = f"/api/orgs/{org_id}/honors/reigns/{reign.pk}/photo/"
-    return {"url": base, "small_url": f"{base}?size=small", "width": photo.width}
+    return {
+        "url": base,
+        "small_url": f"{base}?size=small",
+        "width": photo.width,
+        # Gesamtaudit 15.11., PF-21: freie Namen brauchen die bestätigte Einwilligung
+        "consent": photo.consent_confirmed,
+        "free_names": free_names(reign),
+    }
 
 
 class ReignSerializer(serializers.ModelSerializer):
@@ -494,12 +508,38 @@ class ReignPhotoView(_HonorsMixin, APIView):
             height=height,
             uploaded_by=request.user,
         )
+        photo.consent_confirmed = str(request.data.get("consent", "")).lower() in (
+            "1",
+            "true",
+            "on",
+        )
         photo.file.save(f"foto.{ext}", ContentFile(full), save=False)
         photo.small.save(f"foto-klein.{ext_small}", ContentFile(small), save=False)
         photo.save()
         record(self.org, request.user, "update", reign, {"Foto": [None, "hochgeladen"]})
         reign.photo = photo
         return Response(photo_data(self.org.pk, reign), status=status.HTTP_201_CREATED)
+
+    @transaction.atomic
+    def patch(self, request, org_id: int, pk: int):
+        """``{"consent": bool}``: Einwilligung der nur mit Namen Abgebildeten bestätigen."""
+        reign = self.reign(pk)
+        photo = get_object_or_404(ReignPhoto, reign=reign)
+        if "consent" not in request.data:
+            raise ValidationError({"consent": gettext("Ungültige Angabe.")})
+        consent = bool(request.data.get("consent"))
+        if photo.consent_confirmed != consent:
+            photo.consent_confirmed = consent
+            photo.save(update_fields=["consent_confirmed"])
+            record(
+                self.org,
+                request.user,
+                "update",
+                reign,
+                {"Einwilligung zum Foto": [not consent, consent]},
+            )
+        reign.photo = photo
+        return Response(photo_data(self.org.pk, reign))
 
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
@@ -756,3 +796,37 @@ class ImportView(_HonorsMixin, APIView):
         result = {"created": created, "dignities_created": created_dignities}
         claim.remember(result)
         return Response(result, status=status.HTTP_201_CREATED)
+
+
+class PhotoConsentView(_HonorsMixin, APIView):
+    """Würden-Fotos mit frei eingetragenen Namen ohne bestätigte Einwilligung (PF-21).
+
+    GET: Anzahl · POST ``{"all": true}``: für alle diese Fotos der Einheit bestätigen, dass die
+    Einwilligung der Abgebildeten vorliegt (Nachtragen für ältere Jahre und die Chronik)."""
+
+    def _open(self):
+        photos = ReignPhoto.objects.filter(
+            organization=self.org, consent_confirmed=False
+        ).select_related("reign")
+        return [p for p in photos if free_names(p.reign)]
+
+    def get(self, request, org_id: int):
+        return Response({"open": len(self._open())})
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        if not request.data.get("all"):
+            raise ValidationError(gettext("Ungültige Angabe."))
+        done = 0
+        for photo in self._open():
+            photo.consent_confirmed = True
+            photo.save(update_fields=["consent_confirmed"])
+            record(
+                self.org,
+                request.user,
+                "update",
+                photo.reign,
+                {"Einwilligung zum Foto": [False, True]},
+            )
+            done += 1
+        return Response({"open": 0, "confirmed": done})

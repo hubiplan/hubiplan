@@ -31,6 +31,7 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Stammdaten, Kontakt, Zusatzfelder, Zugehörigkeit, Ämter | Mitgliederverwaltung, Art. 6 (1) b | mit dem Ende der letzten Mitgliedschaft im Verein | nach der Löschfrist (Plattform, Standard 24 Monate) gelöscht; es bleiben Name, Geburtsjahr und Mitgliedszeiten |
 | Rest nach der Löschfrist: Name, Geburtsjahr, Zeiträume | Vereinsgeschichte (Jubiläen, Ehrungen, Chronik), Art. 6 (1) f | – | bleibt, solange der Verein besteht; auf Widerspruch siehe „Chronik und Ehrungen“ |
 | Würden, Begleitungen, Ehrungen, Wettbewerbsergebnisse | Vereinsgeschichte und öffentliche Chronik, Art. 6 (1) f | – | bleiben; jährliche Prüfung und Entfernen auf Wunsch (unten) |
+| Fotos von Würden | Vereinsgeschichte, Art. 6 (1) a (Einwilligung) | – | auf der Webseite nur mit Einwilligung aller verknüpften Mitglieder; stehen Abgebildete nur mit Namen darauf, zusätzlich mit bestätigter Einwilligung am Foto (Gesamtaudit 15.11., PF-21) |
 | Mitgliederfoto | Ausweis und Akte, Art. 6 (1) a | Widerruf oder Löschfrist | beim Widerruf bzw. mit den Mitgliedsdaten gelöscht |
 | SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | letzte Lastschrift | 36 Monate nach der letzten Lastschrift ungültig (SEPA-Regel); Mandat bleibt als Beleg mit den Büchern |
 | Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der tatsächlichen Belegentstehung | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |

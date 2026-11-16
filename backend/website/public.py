@@ -742,8 +742,16 @@ class SiteView:
     # --- Würden und Chronik ---
 
     def _photo_ok(self, reign) -> bool:
-        """Foto einer Regentschaft: alle verknüpften Mitglieder haben eingewilligt."""
-        people = [reign.person] + [c.person for c in reign.companions.all()]
+        """Foto einer Regentschaft: alle verknüpften Mitglieder haben eingewilligt, und für
+        nur mit Namen Abgebildete ist die Einwilligung bestätigt (Gesamtaudit 15.11., PF-21)."""
+        companions = list(reign.companions.all())
+        unlinked = (reign.person is None and (reign.name or "").strip()) or any(
+            c.person is None and (c.name or "").strip() for c in companions
+        )
+        photo = getattr(reign, "photo", None)
+        if unlinked and not (photo is not None and photo.consent_confirmed):
+            return False
+        people = [reign.person] + [c.person for c in companions]
         for person in people:
             if person is None:
                 continue
