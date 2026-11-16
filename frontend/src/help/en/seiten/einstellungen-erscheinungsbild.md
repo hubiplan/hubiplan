@@ -8,6 +8,8 @@ stichworte: [colour, logo, coat of arms, look, dark mode, gradient, colour sheet
 
 Here you set the club colours and logo. They appear in HUBIplan, on cards, letters and the website. Sub-units inherit them unless they set their own.
 
+A landscape logo, such as a wordmark, keeps its aspect ratio: in the header of HUBIplan and the website, on cards, certificates, the annual programme and lists as PDF the height is fixed and the width follows the image up to a limit. Square coats of arms look as before.
+
 ## Colours and their use
 
 Besides the main and second colour there are up to four further colours under **Further colours**, six in total. Each colour gets a name and, if you like, a use, such as “lead colour”, “body text” or “surfaces, table rows”. This lets you take over the colour sheet of a corporate design. Under **Gradients** you create up to two named gradients from two palette colours, for example a blue gradient from blue to dark blue, from left to right or from top to bottom. The website uses them for the header, footer, colour bands, decorative lines and sections; where exactly is set under Website › Design and colours. Next to each gradient you see how readable text on it is. Further colours and gradients only apply together with an own main colour.

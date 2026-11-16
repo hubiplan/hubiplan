@@ -77,7 +77,7 @@ Art des Menüs (Leiste, Knöpfe, Text), der aktive Menüpunkt, **Schreibweise** 
 
 ## Unterseiten und Termine
 
-**Überschrift der Unterseiten** „schlicht“, als **farbiges Band** oder **mit Titelbild** (das Bild der Startseite hinter der Überschrift, abgedunkelt wie dort eingestellt), das **Datumsfeld** als Kachel, Streifen oder **Karten** (die nächsten Termine auf der Startseite und den Seiten der Untereinheiten als Karten nebeneinander mit großem Datum, der nächste in der Vereinsfarbe) und **Datum daneben**: nur der Wochentag, kurz („Sa., 14.11.2026“) oder lang („Samstag, 14. November 2026“).
+**Überschrift der Unterseiten** „schlicht“, als **farbiges Band** oder **mit Titelbild** (das Bild der Startseite hinter der Überschrift, abgedunkelt wie dort eingestellt), das **Band der Untereinheiten** auf deren Seiten (in der „Vereinsfarbe“ wie die übrigen Bänder, in der „Kastenfarbe“ der Farbrolle „Datumsfeld“, „hell“ im Ton der hellen Abschnitte mit feiner Linie oder „schlicht mit Linie“ auf dem Seitenhintergrund; hell und schlicht zeigen den Namen in der dunklen Vereinsfarbe, damit das Band nicht wie ein zweiter Seitenkopf wirkt; es gilt nur, wenn die Überschrift als Band steht), das **Datumsfeld** als Kachel, Streifen oder **Karten** (die nächsten Termine auf der Startseite und den Seiten der Untereinheiten als Karten nebeneinander mit großem Datum, der nächste in der Vereinsfarbe) und **Datum daneben**: nur der Wochentag, kurz („Sa., 14.11.2026“) oder lang („Samstag, 14. November 2026“).
 
 Dazu kommen Regler für einzelne Seiten; ohne eigene Wahl bleibt jede Seite, wie sie war:
 

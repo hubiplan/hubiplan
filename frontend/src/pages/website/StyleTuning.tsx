@@ -366,6 +366,20 @@ function GROUPS(): Group[] {
           options: { plain: t('schlicht'), band: t('farbiges Band'), image: t('mit Titelbild') },
           hint: t('Mit Titelbild: das Bild der Startseite hinter der Überschrift.'),
         },
+        // Webseite #148
+        {
+          key: 'unit_title',
+          label: t('Band der Untereinheiten'),
+          options: {
+            primary: t('Vereinsfarbe'),
+            box: t('Kastenfarbe'),
+            light: t('hell'),
+            plain: t('schlicht mit Linie'),
+          },
+          hint: t(
+            'Nur auf den Seiten der Untereinheiten und nur bei Überschrift als Band: hell oder schlicht, damit das Band nicht wie ein zweiter Seitenkopf wirkt. Kastenfarbe ist die Farbrolle „Datumsfeld“.',
+          ),
+        },
         {
           key: 'date',
           label: t('Datumsfeld'),
@@ -537,6 +551,7 @@ export type PreviewFocus = {
 export function previewFocus(key: string, eventsOn: boolean): PreviewFocus {
   if (key === 'nav_mobile') return { target: 'kopf', device: 'phone' }
   if (key === 'page_title' || key === 'title_size') return { target: 'unterseite' }
+  if (key === 'unit_title') return { target: 'unterseite' }
   if (key === 'date' || key === 'date_text') return eventsOn ? { target: 'termine' } : {}
   if (key.startsWith('footer')) return { target: 'fuss' }
   if (key === 'search') return { target: 'kopf' }
