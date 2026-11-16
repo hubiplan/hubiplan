@@ -10,11 +10,12 @@ from __future__ import annotations
 import datetime
 import logging
 
+from django.conf import settings
 from django.utils import timezone
 
 from core.tenancy import rls_bypass
 from organizations.addresses import base_url
-from outbox import mail
+from outbox import mail, rate
 
 from . import maps, rsvp, rsvp_link
 from .models import Event, EventResponse
@@ -116,42 +117,74 @@ def recipients(event: Event, kind: str):
     return members
 
 
-def send(event_id: int, kind: str) -> int:
-    """Verschickt die Mails. Gibt die Zahl der verschickten Mails zurück."""
+# Stundengrenze erreicht: Rest so viel später (wie bei Rundschreiben)
+RATE_RETRY_SECONDS = 10 * 60
+
+
+def send(event_id: int, kind: str, remaining: list[int] | None = None) -> int:
+    """Verschickt die Mails. Gibt die Zahl der verschickten Mails zurück.
+
+    Mit Stundengrenze (``MAIL_RATE_PER_HOUR``, Gesamtaudit 15.11., PF-09) geht nur so viel
+    hinaus, wie die Grenze erlaubt; der Rest folgt später mit der Liste der noch offenen
+    Mitgliedschaften (``remaining``). Wer schon eine Mail bekam, steht nicht mehr darin."""
     with rls_bypass():
         event = (
             Event.objects.select_related("organization", "department").filter(pk=event_id).first()
         )
         if event is None or kind not in KINDS:
             return 0
+        first = remaining is None
+        if first:
+            remaining = list(
+                dict.fromkeys(recipients(event, kind).order_by("pk").values_list("pk", flat=True))
+            )
         responses = {r.membership_id: r for r in event.responses.all()}
         with_link = rsvp_link.offers_link(event) and kind != CANCEL
         # Anhänge gehen mit der Einladung mit (wie bei Rundschreiben)
         stored, skipped = rsvp_link.mail_attachments(event) if kind == INVITE else ([], [])
+        members = {
+            m.pk: m
+            for m in rsvp.invited(event)
+            .filter(pk__in=remaining)
+            .select_related("person")
+            .prefetch_related("person__contacts")
+        }
         sent = 0
-        for membership in recipients(event, kind):
-            address = rsvp.email_of(membership)
-            if not address:
-                continue
-            ok = mail.send(
-                address,
-                subject(event, kind),
-                body(
-                    event,
-                    kind,
-                    membership.person.first_name,
-                    responses.get(membership.pk),
-                    link=rsvp_link.url(event, membership.pk) if with_link else "",
-                    attached=[a["name"] for a in stored],
-                    skipped=skipped,
-                ),
-                organization=event.organization,
-                kind="termin",
-                stored_attachments=stored or None,
-                fail_silently=True,
-            )
-            sent += int(ok)
-        if kind in (INVITE, REMIND):
+        left = list(remaining)
+        with mail.connection():
+            while left:
+                membership = members.get(left[0])
+                address = rsvp.email_of(membership) if membership else ""
+                if not address:
+                    left.pop(0)
+                    continue
+                if not rate.take():
+                    break
+                left.pop(0)
+                ok = mail.send(
+                    address,
+                    subject(event, kind),
+                    body(
+                        event,
+                        kind,
+                        membership.person.first_name,
+                        responses.get(membership.pk),
+                        link=rsvp_link.url(event, membership.pk) if with_link else "",
+                        attached=[a["name"] for a in stored],
+                        skipped=skipped,
+                    ),
+                    organization=event.organization,
+                    kind="termin",
+                    stored_attachments=stored or None,
+                    fail_silently=True,
+                )
+                sent += int(ok)
+        if left and not settings.CELERY_TASK_ALWAYS_EAGER:
+            logger.info("Termin %s: Stundengrenze, %s Mails folgen später", event_id, len(left))
+            from .tasks import send_event_mails
+
+            send_event_mails.apply_async((event_id, kind, left), countdown=RATE_RETRY_SECONDS)
+        if first and kind in (INVITE, REMIND):
             try:
                 push_app(event, kind, [m.pk for m in recipients(event, kind)])
             except Exception:  # Push ist Zugabe: Mails sind schon unterwegs

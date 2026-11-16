@@ -35,7 +35,6 @@ from html.parser import HTMLParser
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import signing
-from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Q
@@ -941,10 +940,22 @@ def fetch_inbound() -> int:
     """Neue Mails aus dem Sammelpostfach abholen und verarbeiten. Gibt die Anzahl zurück."""
     if not settings.INBOUND_IMAP_HOST:
         return 0
+
+    from core.einzeln import lock
+
+    # Sitzungssperre der Datenbank statt Cache-Sperre mit 10 Minuten (Gesamtaudit 15.11., PF-13):
+    # Sie gilt, solange der Abruf läuft, und niemand löscht eine fremde Sperre.
+    with lock(LOCK) as locked:
+        if not locked:
+            return 0  # läuft schon
+        return _fetch_inbound_locked()
+
+
+def _fetch_inbound_locked() -> int:
+    from celery.exceptions import SoftTimeLimitExceeded
+
     from billing import incoming_mail as invoice_mail
 
-    if not cache.add(LOCK, 1, timeout=10 * 60):
-        return 0  # läuft schon
     done = 0
     try:
         context = ssl.create_default_context()
@@ -994,6 +1005,9 @@ def fetch_inbound() -> int:
                     # Postfach), bis der Scanner wieder antwortet. Weitere Mails später.
                     logger.warning("Verteiler: Virenprüfung aus, Mail %s bleibt liegen", uid)
                     break
+                except SoftTimeLimitExceeded:
+                    # Zeitgrenze: Mail nicht als gelesen markieren, der nächste Lauf holt sie
+                    raise
                 except Exception:  # noqa: BLE001
                     # Bleibt (gelesen) im Postfach, damit man sie sich ansehen kann
                     logger.exception("Verteiler: Mail %s nicht verarbeitet", uid)
@@ -1002,6 +1016,4 @@ def fetch_inbound() -> int:
             imap.expunge()
     except (OSError, imaplib.IMAP4.error):
         logger.exception("Verteiler: Sammelpostfach nicht erreichbar")
-    finally:
-        cache.delete(LOCK)
     return done
