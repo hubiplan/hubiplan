@@ -477,9 +477,7 @@ function WebsiteAdmin({
               value={v.notice_place ?? 'below'}
               error={errors.notice_place}
               hint={
-                v.notice_place === 'float'
-                  ? t('Besucher können den Kasten schließen.')
-                  : undefined
+                v.notice_place === 'float' ? t('Besucher können den Kasten schließen.') : undefined
               }
               onChange={(e) =>
                 set('notice_place', e.target.value as WebsiteSettings['notice_place'])
@@ -508,7 +506,9 @@ function WebsiteAdmin({
               type="date"
               value={v.notice_date ?? ''}
               error={errors.notice_date}
-              hint={t('zeigt „noch 5 Tage“; leer = Datum des Termins, wenn das Ziel ein Termin ist')}
+              hint={t(
+                'zeigt „noch 5 Tage“; leer = Datum des Termins, wenn das Ziel ein Termin ist',
+              )}
               onChange={(e) => set('notice_date', e.target.value || null)}
             />
           </div>
