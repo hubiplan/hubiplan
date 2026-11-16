@@ -334,4 +334,4 @@ def test_freigegebene_auslage_ist_verbindlichkeit(s):
         data = net_assets.report(s["org"], year)
     rows = [r for r in data["liabilities"]["items"] if r["number"] == claim["number"]]
     assert len(rows) == 1 and rows[0]["amount"] == Decimal("30.00")
-    assert rows[0]["seller"] == "Anna Muster"
+    assert rows[0]["seller"] == "Muster, Anna"
