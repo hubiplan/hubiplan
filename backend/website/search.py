@@ -156,7 +156,7 @@ def _timeline_text(site, t) -> str:
     return plain(" ".join(f"{e['year']} {e['title']} {e['text']}" for e in site.timeline(t)))
 
 
-INTRO_BLOCK = {"board": "board", "events": "events", "gallery": "gallery"}
+INTRO_BLOCK = {"board": "board", "events": "events", "gallery": "gallery", "contact": "contact"}
 
 
 def search(site, query: str, events) -> list[dict]:

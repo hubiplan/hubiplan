@@ -29,8 +29,9 @@ VARIANT_LABELS = {
     "gallery": {"tiles": _("Kacheln"), "masonry": _("Mauerwerk")},
 }
 
-# Bereiche mit Einleitungstext (Art „intro“, Adresse = Schlüssel des Bereichs)
-INTRO_AREAS = tuple(VARIANTS)
+# Bereiche mit Einleitungstext (Art „intro“, Adresse = Schlüssel des Bereichs). „contact“ hat
+# keine Varianten: seine Einleitung steht als Kasten neben dem Kontaktformular (Webseite #137).
+INTRO_AREAS = (*VARIANTS, "contact")
 
 
 def normalize(value) -> dict[str, str]:
