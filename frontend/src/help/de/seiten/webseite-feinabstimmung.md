@@ -84,7 +84,7 @@ Dazu kommen Regler für einzelne Seiten; ohne eigene Wahl bleibt jede Seite, wie
 - **Epochen der Chronik** „als Band“: jede Epoche randlos in der dunklen Vereinsfarbe, darin groß der Zeitraum in der Zweitfarbe, der Titel und der Text der Epoche; die Zeitleiste läuft darunter weiter. Die Sprungmarken oben werden zu unterstrichenen Links, die Jahreszahlen stehen in der Schrift der Überschriften.
 - **Ranglisten der Ergebnisse** „Plätze 1 bis 3 als Karten“: Über jeder Rangliste stehen die ersten drei Plätze als Karten mit großer Platzziffer (Platz 1 in der Vereinsfarbe), Name, Untereinheit und Ergebnis mit Einheit, etwa „48 Ringe“. Bei Gleichstand bekommt jeder Gleichplatzierte eine Karte; die Tabelle darunter beginnt mit Platz 4 und entfällt, wenn es nicht mehr Plätze gibt.
 
-Etiketten, die Ziffern der Plätze 2 und 3 und der Kasten neben dem Kontaktformular stehen in der Farbe des **Datumsfelds** (Webseite › Gestaltung › Farben).
+Etiketten, die Ziffern der Plätze 2 und 3 und der Kasten neben dem Kontaktformular stehen in der Farbe, die ihr bei den Farben des Designs für das Datumsfeld gewählt habt.
 
 ## Fuß
 

@@ -83,7 +83,7 @@ There are also controls for individual pages; without your own choice every page
 - **Chronicle eras** “as a band”: each era edge to edge in the dark club colour, with the period in large type in the second colour, the title and the text of the era; the timeline continues below. The jump links at the top become underlined links, and the years use the heading font.
 - **Result rankings** “Places 1 to 3 as cards”: above each ranking the first three places appear as cards with a large place number (place 1 in the club colour), name, sub-unit and result with its unit, such as “48 Ringe”. In a tie everyone sharing a place gets a card; the table below starts at place 4 and is left out when there are no further places.
 
-Labels, the numbers of places 2 and 3 and the box next to the contact form use the colour of the **Date field** (Website › Design › Colours).
+Labels, the numbers of places 2 and 3 and the box next to the contact form use the colour you chose for the date field among the design colours.
 
 ## Footer
 
