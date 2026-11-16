@@ -455,6 +455,51 @@ CELERY_BEAT_SCHEDULE = {
     "release-pruefen": {"task": "core.update_check.check_latest", "schedule": taeglich(5, 10)},
 }
 
+# Warteschlangen und Grenzen (Gesamtaudit 15.11., PF-08): Ein Worker mit zwei Plätzen erledigte
+# alles; stundenlange Zeitplan-Jobs (E-Rechnungsprüfung) hielten Anmeldelinks, Mails, Importe und
+# Exporte auf. Jobs aus dem Zeitplan laufen jetzt in der Warteschlange „zeitplan“ im Dienst
+# worker-zeitplan, alles, was Benutzer auslösen, in „celery“ im Dienst worker. Jeder Zeitplan-
+# Auftrag verfällt, wenn er nicht rechtzeitig startet (der nächste kommt ohnehin), damit sich
+# nichts aufstaut und eine ältere Fassung beim Rückweg keine Aufträge vorfindet, die sie nicht
+# erwartet. Leer gesetzt (HUBIPLAN_ZEITPLAN_QUEUE=) läuft alles wie früher in „celery“.
+CELERY_TASK_DEFAULT_QUEUE = "celery"
+ZEITPLAN_QUEUE = os.environ.get("HUBIPLAN_ZEITPLAN_QUEUE", "zeitplan")
+# Anmeldelinks und Sicherheitsmails warten nicht hinter Importen, Exporten oder Rundschreiben:
+# eigene Warteschlange „eilig“, die beide Worker zuerst bedienen. Solche Aufträge verfallen
+# nach einer Stunde (ein Anmeldelink danach nützt nichts mehr; man fordert einen neuen an).
+EILIG_QUEUE = os.environ.get("HUBIPLAN_EILIG_QUEUE", "eilig")
+EILIG_EXPIRES = 60 * 60
+CELERY_TASK_ROUTES = (
+    {
+        "outbox.tasks.send_message": {"queue": EILIG_QUEUE},
+        "portal.tasks.send_requested_link": {"queue": EILIG_QUEUE},
+    }
+    if EILIG_QUEUE
+    else {}
+)
+# Grenzen für Aufgaben ohne eigene: drei Stunden wie die längste bisherige (E-Rechnungen)
+CELERY_TASK_SOFT_TIME_LIMIT = 3 * 60 * 60
+CELERY_TASK_TIME_LIMIT = 3 * 60 * 60 + 60
+# Nur so viele Aufträge abholen, wie Plätze frei sind; Prozesse nach 200 Aufträgen erneuern
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 200
+
+
+def _expires(schedule) -> int:
+    """Wie lange ein Zeitplan-Auftrag auf seinen Start warten darf: einmal sein Abstand,
+    bei festen Uhrzeiten sechs Stunden (dann kommt der Lauf am nächsten Tag)."""
+    if isinstance(schedule, crontab):
+        return 6 * 60 * 60
+    seconds = schedule.total_seconds() if hasattr(schedule, "total_seconds") else schedule
+    return max(int(seconds), 60)
+
+
+for _entry in CELERY_BEAT_SCHEDULE.values():
+    _options = _entry.setdefault("options", {})
+    if ZEITPLAN_QUEUE:
+        _options.setdefault("queue", ZEITPLAN_QUEUE)
+    _options.setdefault("expires", _expires(_entry["schedule"]))
+
 # Update-Hinweis für Betreiber (core/update_check.py): einmal am Tag den Releases-Feed abfragen.
 # GitHub sieht dabei nur die IP-Adresse des Servers. Wer HUBIplan verändert betreibt, trägt
 # hier den Feed des eigenen Repositorys ein.

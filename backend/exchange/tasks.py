@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from core import alarm
+from core.einzeln import LONG_HARD, LONG_SOFT
 from core.files import delete_on_commit
 from core.tenancy import rls_bypass, tenant_context
 
@@ -27,7 +28,7 @@ def _load(model, pk):
         return model.objects.select_related("organization", "created_by").get(pk=pk)
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def run_export(job_id: int) -> None:
     job = _load(ExportJob, job_id)
     with tenant_context(job.organization_id, job.created_by_id):
@@ -48,7 +49,7 @@ def run_export(job_id: int) -> None:
         job.save()
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def validate_import(job_id: int) -> None:
     job = _load(ImportJob, job_id)
     with tenant_context(job.organization_id, job.created_by_id):
@@ -73,7 +74,7 @@ def validate_import(job_id: int) -> None:
             locked.save(update_fields=list(fields))
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def run_import(job_id: int) -> None:
     job = _load(ImportJob, job_id)
     with tenant_context(job.organization_id, job.created_by_id):

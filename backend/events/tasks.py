@@ -2,10 +2,12 @@
 
 from celery import shared_task
 
+from core.einzeln import LONG_HARD, LONG_SOFT, einzeln
+
 from . import notify
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def send_event_mails(event_id: int, kind: str, remaining: list[int] | None = None) -> int:
     """Einladung, Änderung oder Absage an die Eingeladenen; ``remaining``: Fortsetzung nach
     der Stundengrenze (nur die noch offenen Mitgliedschaften)."""
@@ -20,6 +22,7 @@ def send_event_reminders() -> int:
 
 # Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
 @shared_task(soft_time_limit=2700, time_limit=2760)
+@einzeln
 def sync_external_calendars() -> int:
     """Stündlich: Termine der fremden Kalender (Vereinsplaner, iCal) abholen."""
     from core.tenancy import rls_bypass
