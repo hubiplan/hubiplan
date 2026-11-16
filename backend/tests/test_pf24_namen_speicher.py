@@ -130,3 +130,16 @@ def test_beziehung_ohne_person_liefert_none(verein):
             )
         )
     assert rows == [(contact.pk, None, "Frei")]
+
+
+def test_abgelaufener_klartext_verlaesst_den_speicher(monkeypatch):
+    """Nie mehr abgefragte Einträge (etwa anonymisierte Namen) bleiben nicht bis zur
+    Obergrenze liegen: Nach Ablauf entfernt sie der nächste Zugriff."""
+    cache = personsearch._PlainCache(size=1000, ttl=10)
+    now = [100.0]
+    monkeypatch.setattr(personsearch.time, "monotonic", lambda: now[0])
+    cache.put(("m", "last_name", "enc1:alt"), "Erika Geheim")
+    now[0] += 11
+    cache.put(("m", "last_name", "enc1:neu"), "Anonym")
+    assert all(value != "Erika Geheim" for _expires, value in cache.items.values())
+    assert len(cache.items) == 1

@@ -38,9 +38,21 @@ class _PlainCache:
         self.items: OrderedDict = OrderedDict()
         self.lock = threading.Lock()
 
+    def _prune(self, now: float) -> None:
+        """Abgelaufene Einträge vorn entfernen. Die Reihenfolge entspricht der letzten Nutzung,
+        die Ablaufzeiten steigen also von vorn nach hinten: Nie mehr getroffene Namen
+        (gelöscht, anonymisiert) verlassen den Speicher spätestens beim nächsten Zugriff nach
+        ihrem Ablauf, nicht erst, wenn die Obergrenze sie verdrängt."""
+        while self.items:
+            first = next(iter(self.items.values()))
+            if first[0] >= now:
+                break
+            self.items.popitem(last=False)
+
     def get(self, key):
         now = time.monotonic()
         with self.lock:
+            self._prune(now)
             hit = self.items.get(key)
             if hit is None:
                 return None
@@ -54,8 +66,10 @@ class _PlainCache:
             return hit[1]
 
     def put(self, key, value) -> None:
+        now = time.monotonic()
         with self.lock:
-            self.items[key] = (time.monotonic() + self.ttl, value)
+            self._prune(now)
+            self.items[key] = (now + self.ttl, value)
             self.items.move_to_end(key)
             while len(self.items) > self.size:
                 self.items.popitem(last=False)
