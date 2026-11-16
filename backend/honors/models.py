@@ -236,6 +236,12 @@ class ReignPhoto(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    # Abgebildete, die nur mit Namen eingetragen sind (nicht als Mitglied verknüpft), haben
+    # eingewilligt: Ohne diese Angabe zeigt die Webseite das Foto nicht (Gesamtaudit 15.11.,
+    # PF-21). Verknüpfte Mitglieder brauchen weiter ihre eigene Foto-Einwilligung.
+    consent_confirmed = models.BooleanField(
+        "Einwilligung der Abgebildeten liegt vor", default=False, db_default=False
+    )
 
     class Meta:
         verbose_name = "Foto einer Regentschaft"

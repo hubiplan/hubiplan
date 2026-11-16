@@ -93,6 +93,22 @@ def _set_enabled(client: Client, nc_user: str, enabled: bool) -> None:
     _ocs(client, "PUT", f"cloud/users/{quote(nc_user, safe='')}/{verb}")
 
 
+def disable_deleted(client_id: int, nc_user: str) -> bool:
+    """Das HUBIplan-Konto wurde gelöscht: Nextcloud-Konto deaktivieren (nicht löschen;
+    Dateien und Freigaben bleiben, bis die Nextcloud-Verwaltung entscheidet). Nur bei Diensten
+    mit „Konten automatisch deaktivieren“ (Gesamtaudit 15.11., PF-02)."""
+    with rls_bypass():
+        client = Client.objects.filter(pk=client_id, manage_accounts=True, is_active=True).first()
+    if client is None or not nc_user:
+        return False
+    try:
+        _set_enabled(client, nc_user, False)
+    except NextcloudError:
+        log.exception("Nextcloud-Konto nach Kontolöschung nicht deaktiviert (Dienst %s)", client_id)
+        return False
+    return True
+
+
 # --- Anmeldung merken ---
 
 

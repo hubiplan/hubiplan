@@ -34,7 +34,7 @@ Anmelde-E-Mail ein; wie bei anderen heiklen Aktionen fragt HUBIplan zusätzlich 
 oder Passwort. Meldest du dich nur über Links an, lösche das Konto innerhalb von 10 Minuten nach
 der Anmeldung. Solange du Ämter hast, geht das nicht: Lass sie zuerst im Verein beenden. Was dein
 Verein über dich als Mitglied führt, bleibt; austreten oder die Löschung deiner Mitgliedsdaten
-verlangen kannst du nur beim Verein.
+verlangen kannst du nur beim Verein. Ein Nextcloud-Konto, mit dem du dich über HUBIplan anmeldest, wird deaktiviert, wenn der Verein „Konten automatisch deaktivieren“ eingeschaltet hat; sonst entfernt es die Nextcloud-Verwaltung.
 
 Hat dein Konto 90 Tage lang keinen Zugang mehr (kein Mitgliederzugang, keine Rolle), löscht
 HUBIplan es von selbst. Zwei Wochen vorher bekommst du eine Mail. Bekommst du vorher wieder einen

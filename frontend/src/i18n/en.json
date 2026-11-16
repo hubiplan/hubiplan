@@ -9427,6 +9427,15 @@
   "untereinander": "one below the other",
   "zweispaltig": "in two columns",
   "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column.",
+  "Einwilligung der nur mit Namen Abgebildeten liegt vor": "Consent of the people shown by name only has been given",
+  "Auf der Webseite erscheint es nur, wenn alle verknüpften Mitglieder in Fotos eingewilligt haben und für nur mit Namen Abgebildete die Einwilligung bestätigt ist.": "It appears on the website only if all linked members have consented to photos and consent has been confirmed for people shown by name only.",
+  "Einwilligungen bestätigen?": "Confirm consents?",
+  "Du bestätigst für {n} Fotos, dass die nur mit Namen eingetragenen Abgebildeten in die Veröffentlichung eingewilligt haben.": "You confirm for {n} photos that the people entered by name only have consented to publication.",
+  "{n} Foto mit nur namentlich eingetragenen Personen erscheint nicht auf der Webseite, bis die Einwilligung der Abgebildeten bestätigt ist.": {
+    "one": "{n} photo showing people entered by name only does not appear on the website until the consent of the people shown is confirmed.",
+    "other": "{n} photos showing people entered by name only do not appear on the website until the consent of the people shown is confirmed."
+  },
+  "Für alle bestätigen …": "Confirm for all …",
   "Band der Untereinheiten": "Band of sub-units",
   "Kastenfarbe": "box colour",
   "schlicht mit Linie": "plain with line",

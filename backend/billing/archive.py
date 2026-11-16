@@ -99,24 +99,69 @@ def archived_cancellation(invoice: Invoice) -> bytes | None:
     return data
 
 
+# Rechnungen, deren Ablage scheiterte, ruhen so lange; dann neuer Versuch (Gesamtaudit 15.11.,
+# PF-10). Vorher stand eine scheiternde Rechnung immer vorn, und keine weitere wurde je abgelegt.
+FAILED_PAUSE = 24 * 60 * 60
+FAILED_KEY = "rechnungen-ablage-fehlerhaft"
+
+
 def archive_missing(limit: int = 200) -> int:
     """Noch nicht abgelegte festgeschriebene Rechnungen nachträglich ablegen
-    (z. B. Postversand über den Sammel-PDF eines Beitragslaufs)."""
+    (z. B. Postversand über den Sammel-PDF eines Beitragslaufs).
+
+    Jede Rechnung für sich: Scheitert eine, ruht sie einen Tag, die übrigen werden abgelegt;
+    eine Alarm-Mail nennt die gescheiterten (höchstens einmal am Tag je Stand)."""
+    import logging
+
+    from django.core.cache import cache
+
     from core.tenancy import rls_bypass
 
+    logger = logging.getLogger(__name__)
+    paused = set(cache.get(FAILED_KEY) or [])
+    failed: list[int] = []
     done = 0
     with rls_bypass():
         ids = list(
             Invoice.objects.filter(status__in=ARCHIVED, number__isnull=False, issued_pdf="")
             .exclude(Exists(_purged_years()))
+            .exclude(pk__in=paused)
             .order_by("pk")
             .values_list("pk", flat=True)[:limit]
         )
         for pk in ids:
-            invoice = Invoice.objects.select_related("organization").get(pk=pk)
-            archived_pdf(invoice)
+            try:
+                invoice = Invoice.objects.select_related("organization").get(pk=pk)
+                archived_pdf(invoice)
+            except Exception:  # noqa: BLE001 – eine Rechnung darf die übrigen nicht aufhalten
+                logger.exception("Rechnung %s ließ sich nicht ablegen", pk)
+                failed.append(pk)
+                continue
             done += 1
+    if failed:
+        cache.set(FAILED_KEY, sorted(paused | set(failed)), FAILED_PAUSE)
+        _alert_failed(failed)
     return done
+
+
+def _alert_failed(pks: list[int]) -> None:
+    import hashlib
+
+    from django.core.cache import cache
+
+    from core.alarm import send_alert
+
+    key = hashlib.sha256(str(sorted(pks)).encode()).hexdigest()[:32]
+    if cache.add(f"rechnungen-ablage-alarm:{key}", 1, 24 * 60 * 60):
+        send_alert(
+            "Rechnungen ließen sich nicht ablegen",
+            [
+                f"{len(pks)} festgeschriebene Rechnungen ließen sich nicht als PDF ablegen "
+                f"(Kennungen: {', '.join(str(pk) for pk in pks[:20])}).",
+                "Die übrigen wurden abgelegt; diese werden in 24 Stunden erneut versucht.",
+                "Einzelheiten im Protokoll des Workers.",
+            ],
+        )
 
 
 def archived_dunning(dunning) -> bytes:

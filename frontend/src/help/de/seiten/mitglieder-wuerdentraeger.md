@@ -13,6 +13,8 @@ Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode
 
 Ordnungszahlen („Hans II.“) zählen je Vorname, ohne Groß- und Kleinschreibung; Bindestrich und Leerzeichen gelten gleich („Hans-Peter“ = „Hans Peter“, aber nicht „Hans“). Abweichungen setzt ihr als Ordnungszahl von Hand. Verknüpfst du einen als Text erfassten Namen mit einem Mitglied, fragt HUBIplan, ob weitere Einträge mit demselben Namen ebenfalls verknüpft werden sollen; sonst zählt dieselbe Person doppelt. Die Liste ist nach Jahr bzw. Beginn sortiert.
 
+Ein Foto einer Regentschaft erscheint auf der Webseite nur, wenn alle verknüpften Mitglieder in Fotos eingewilligt haben. Steht jemand nur mit Namen auf der Regentschaft (nicht als Mitglied verknüpft, etwa in alten Jahren), kreuze beim Foto **Einwilligung der nur mit Namen Abgebildeten liegt vor** an, sobald sie vorliegt; sonst zeigt die Webseite das Foto nicht. Fehlt die Angabe noch bei mehreren Fotos, zeigt die Liste oben einen Hinweis; mit **Für alle bestätigen …** trägst du sie für alle auf einmal nach.
+
 ## Adresse auf der Webseite
 
 Jede Würde hat auf der Webseite eine lesbare Adresse aus der Mehrzahl, etwa `/majestaeten/hubertuskoenige/`. Im Dialog der Würde lässt sie sich unter **Adresse auf der Webseite** selbst wählen; leer folgt sie wieder dem Namen. Benennt ihr eine Würde um, leiten frühere Adressen weiter, Links und Lesezeichen bleiben also gültig.

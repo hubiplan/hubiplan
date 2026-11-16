@@ -32,7 +32,7 @@ login email; as with other sensitive actions, HUBIplan also asks for your passke
 password. If you only sign in with links, delete the account within 10 minutes of signing in.
 This is not possible while you hold roles: have them ended in the club first. What your club keeps
 about you as a member remains; you can only leave or request deletion of your member data with
-the club.
+the club. A Nextcloud account you sign in to through HUBIplan is deactivated if the club has switched on “Disable accounts automatically”; otherwise the Nextcloud administration removes it.
 
 If your account has had no access for 90 days (no member access, no role), HUBIplan deletes it
 automatically. You receive an email two weeks before. If you get access again before then, the
