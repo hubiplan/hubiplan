@@ -4,6 +4,8 @@ import type { Page, PickedMember } from './members.ts'
 import type { DeptTerms } from '../org/terms.ts'
 
 export type Rhythm = 'yearly' | 'halfyearly' | 'quarterly' | 'monthly'
+/** Anteiliger Beitrag bei Eintritt oder Austritt im laufenden Zeitraum */
+export type ProRataStep = 'off' | 'month' | 'quarter' | 'halfyear'
 export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'settled' | 'cancelled'
 
 export interface PeriodInfo {
@@ -16,7 +18,9 @@ export interface PeriodInfo {
 export interface BillingSettings {
   rhythm: Rhythm
   due_days: number
+  /** Spiegel von pro_rata_step (an = nicht „off“), nur noch lesend */
   pro_rata: boolean
+  pro_rata_step: ProRataStep
   account: number | null
   category: number | null
   intro_text: string
