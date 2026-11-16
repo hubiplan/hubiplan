@@ -198,7 +198,11 @@ def test_passkey_als_zweiter_faktor_nach_dem_passwort(user):
 def test_passkey_einer_anderen_adresse_wird_als_zweiter_faktor_nicht_angeboten(user, settings):
     settings.FIXED_ALLOWED_HOSTS = [*settings.FIXED_ALLOWED_HOSTS, "verband.example"]
     settings.ALLOWED_HOSTS = [*settings.ALLOWED_HOSTS, "verband.example"]
+    from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
+
     with_passkey(user, rp_id="verband.example")
+    # Beim Einrichten im Browser legt allauth Wiederherstellungscodes dazu an
+    RecoveryCodes.activate(user)
     client = Client()
     # Ohne laufende Anmeldung verrät die Auskunft nichts
     assert client.get("/api/public/passkey-elsewhere/").json() == {"elsewhere": False, "hosts": []}
