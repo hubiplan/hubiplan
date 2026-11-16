@@ -8,7 +8,7 @@ daten_rueckweg() {
         return 1
     fi
     echo "Halte Schreiber an und prüfe den gezielten Daten-Rückweg …"
-    $COMPOSE stop -t 60 backend worker beat backup || return 1
+    $COMPOSE stop -t 60 backend worker worker-zeitplan beat backup || return 1
     # Kein Entrypoint mit Migrationen; vor dem Image-/Ordnertausch mit neuem Code.
     # Der Zielquellcode wird nur gelesen, weder importiert noch ausgeführt.
     $COMPOSE run -T --rm --no-deps --entrypoint python \

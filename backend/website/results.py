@@ -103,11 +103,15 @@ class Names:
         s = self.starters.get(pk)
         if s is None:
             return WITHOUT_NAME
-        return self.of(s.membership, s.name)
+        return self.of(s.membership, s.name, guest=s.is_guest, adult=s.guest_adult)
 
-    def of(self, membership, fallback: str) -> str:
+    def of(self, membership, fallback: str, *, guest: bool = False, adult: bool = False) -> str:
+        """``guest``: Gast-Starter oder frei eingetragener Pfandgewinner; erscheint nur mit
+        Namen, wenn der Verein ihn als volljährig angegeben hat (``adult``, FF-24 (c), PF-21)."""
         fmt = self.site.site.name_format
         if membership is None:
+            if guest and not adult:
+                return WITHOUT_NAME
             first, last = _split(fallback)
             return self._format(first, last, fmt) or WITHOUT_NAME
         person = membership.person
@@ -239,9 +243,16 @@ def detail(site, comp) -> dict:
                     if names.unit_slug(p.winner.unit_id):
                         entry["unit_slug"] = names.unit_slug(p.winner.unit_id)
                     if depth != Competition.WebsiteDepth.UNITS:
-                        entry["winner"] = names.of(p.winner.membership, p.winner.name)
+                        entry["winner"] = names.of(
+                            p.winner.membership,
+                            p.winner.name,
+                            guest=p.winner.is_guest,
+                            adult=p.winner.guest_adult,
+                        )
                 elif depth != Competition.WebsiteDepth.UNITS:
-                    entry["winner"] = names.of(None, p.winner_name)
+                    entry["winner"] = names.of(
+                        None, p.winner_name, guest=True, adult=p.winner_adult
+                    )
                 if p.shot_number:
                     entry["shot"] = p.shot_number
             prizes.append(entry)

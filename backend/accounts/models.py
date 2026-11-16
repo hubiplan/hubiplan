@@ -169,7 +169,9 @@ class EmailChange(models.Model):
     token_hash = models.CharField(max_length=64, unique=True)
     # Konten ohne Passwort bestätigen den Wechsel auch über die bisherige Adresse
     # (Gesamtaudit 05.11. GA-10); leer: nicht nötig.
-    old_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    old_token_hash = models.CharField(
+        max_length=64, blank=True, default="", db_default="", db_index=True
+    )
     new_confirmed_at = models.DateTimeField(null=True, blank=True)
     old_confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

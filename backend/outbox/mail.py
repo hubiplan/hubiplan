@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import threading
+from contextlib import contextmanager
 from email.utils import parseaddr
 
 from django.conf import settings
@@ -84,6 +86,30 @@ def from_address(name: str = "") -> str:
     return f'"{name}" <{parseaddr(settings.DEFAULT_FROM_EMAIL)[1]}>'
 
 
+_current = threading.local()
+
+
+@contextmanager
+def connection():
+    """Eine SMTP-Verbindung für viele Mails (Gesamtaudit 15.11., PF-09).
+
+    Massenversand (Rundschreiben, Termin-Mails) öffnete je Mail eine neue Verbindung. Innerhalb
+    dieses Blocks nutzt ``send`` eine gemeinsame Verbindung; verschachtelt bleibt es dieselbe."""
+    from django.core.mail import get_connection
+
+    if getattr(_current, "connection", None) is not None:
+        yield _current.connection
+        return
+    conn = get_connection()
+    conn.open()
+    _current.connection = conn
+    try:
+        yield conn
+    finally:
+        _current.connection = None
+        conn.close()
+
+
 def send(
     to: list[str] | str,
     subject: str,
@@ -140,6 +166,7 @@ def send(
         to=recipients,
         reply_to=reply_to,
         headers=headers,
+        connection=getattr(_current, "connection", None),
     )
     if html:
         message.attach_alternative(html_document(html, subject, language), "text/html")

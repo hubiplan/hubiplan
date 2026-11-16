@@ -96,7 +96,7 @@ for fault in ok stop active ps_error status_after backup_before probe rotation v
     [ "$(grep -c -- ' --starten ' "$CASE/log")" = 1 ]
     grep -q 'BACKUP_REQUIRE_COMPLETE=1' "$CASE/log"
     grep -q 'BACKUP_PRESERVE_EXISTING=1' "$CASE/log"
-    grep -q 'up -d --no-deps --wait --wait-timeout 300 worker beat backup' "$CASE/log"
+    grep -q 'up -d --no-deps --wait --wait-timeout 300 worker worker-zeitplan beat backup' "$CASE/log"
 done
 # Konkurrierendes Deploy: keine Dienste verändern, vorhandene Sperre erhalten.
 mkdir "$CASE/app.sperre"

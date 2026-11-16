@@ -1106,7 +1106,10 @@ class LoginLinkRequestView(APIView):
         from .tasks import send_requested_link
 
         if getattr(settings, "MAIL_IN_BACKGROUND", False):
-            transaction.on_commit(lambda: send_requested_link.delay(email), robust=True)
+            transaction.on_commit(
+                lambda: send_requested_link.apply_async((email,), expires=settings.EILIG_EXPIRES),
+                robust=True,
+            )
         else:
             send_requested_link(email)
         return Response(
