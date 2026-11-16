@@ -111,8 +111,12 @@ Regeln:
   vorangekreuzt), auch wenn der Assistent danach fragt; die Seite schickt den Haken als `extra` mit.
 - Zugriffsschlüssel `hpm_…` 1 Stunde, Erneuerung `hpmr_…` dreht sich bei jeder Nutzung; die
   Verbindung (`McpGrant`) gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung. Wer
-  einen alten Erneuerungsschlüssel noch einmal benutzt, beendet die Verbindung (Kopie). In der
-  Datenbank stehen nur SHA-256-Prüfsummen.
+  einen früheren Erneuerungsschlüssel noch einmal benutzt, auch einen mehrere Erneuerungen alten,
+  beendet die Verbindung (Kopie; Gesamtaudit 15.11., MCP-04). Kommt ein schon eingelöster Code
+  ein zweites Mal, endet die damit ausgestellte Verbindung (MCP-05). Beides steht im
+  Änderungsprotokoll der Einheit. In der Datenbank stehen nur SHA-256-Prüfsummen; die Liste
+  früherer Erneuerungsschlüssel beendeter Verbindungen leert der Job `ki-erneuerungen-aufraeumen`
+  täglich, laufende Verbindungen gelten ohnehin höchstens 30 Tage.
 - Bei **jeder Anfrage** gilt live: Konto aktiv, `auth_version` unverändert (Passwort geändert,
   überall abgemeldet: Verbindung endet), zweiter Faktor eingerichtet, Modul an, `mcp.connect` in
   der Einheit. Höchstens 300 Anfragen je Stunde und Verbindung.
