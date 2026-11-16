@@ -43,9 +43,47 @@ describe('Ehrung nachträglich bearbeiten (Ralf 31.10.)', () => {
       title: 1,
       valid_from: '1998-05-01',
       valid_until: null,
+      display_title: '',
       note: 'Generalversammlung',
     })
     expect(screen.queryByRole('form', { name: 'Ehrenmitglied bearbeiten' })).toBeNull()
+  })
+
+  it('setzt einen eigenen Titel des Trägers und zeigt ihn an (#518)', async () => {
+    const calls = fakeApi({
+      'GET /api/orgs/7/honorary-titles/': () => ({
+        status: 200,
+        body: [{ id: 1, name: 'Ehrenmitglied', is_archived: false }],
+      }),
+      'PATCH /api/orgs/7/members/9/honorary-titles/3/': () => ({
+        status: 200,
+        body: { ...award, display_title: 'Ehrenhauptmann' },
+      }),
+    })
+    const changed = vi.fn()
+    const { rerender } = render(
+      <HonoraryAwards orgId={7} memberId={9} awards={[award]} canEdit onChanged={changed} />,
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Ehrenmitglied bearbeiten' }))
+    const form = screen.getByRole('form', { name: 'Ehrenmitglied bearbeiten' })
+    await user.type(within(form).getByLabelText('Titel'), 'Ehrenhauptmann')
+    await user.click(within(form).getByRole('button', { name: 'Speichern' }))
+    await vi.waitFor(() => expect(changed).toHaveBeenCalled())
+    const patch = calls.find((c) => c.key.startsWith('PATCH'))!
+    expect(JSON.parse(String(patch.init?.body))).toMatchObject({
+      display_title: 'Ehrenhauptmann',
+    })
+    rerender(
+      <HonoraryAwards
+        orgId={7}
+        memberId={9}
+        awards={[{ ...award, display_title: 'Ehrenhauptmann' }]}
+        canEdit
+        onChanged={changed}
+      />,
+    )
+    expect(screen.getByText(/\(Ehrenhauptmann\)/)).toBeTruthy()
   })
 
   it('zeigt bei „nur Jahr der Verleihung“ nur das Jahr', async () => {

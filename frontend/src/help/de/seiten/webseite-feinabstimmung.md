@@ -28,6 +28,8 @@ stichworte:
     Würdenträger,
     Platzhalter,
     Personenkarten,
+    Ehrungen,
+    Ehrenmitglieder,
     Anrede,
     Duzen,
     Chronik,
@@ -82,6 +84,7 @@ Dazu kommen Regler für einzelne Seiten; ohne eigene Wahl bleibt jede Seite, wie
 - **Würdenträger** „Band und Karten“: Die amtierenden Würdenträger stehen groß als Band in der dunklen Vereinsfarbe direkt unter dem Seitentitel, links das Foto, rechts die Würde als Oberzeile mit kurzer Linie in der Zweitfarbe, der Name groß und die Amtszeit. Darunter stehen die letzten acht Vorgänger als Karten (auf dem Handy zwei nebeneinander) und ein Knopf „Alle … Einträge“, der die ganze Liste aufklappt. Ohne Foto bleibt das Band, nur mit Text.
 - **Personen ohne Foto** „ohne Platzhalter“: Vorstand, Ehrungen und Ansprechpartner der Untereinheiten zeigen ohne Foto keinen Anfangsbuchstaben mehr, der Name rückt nach links. Fotos bleiben.
 - **Karten der Personen** „Amt als Etikett“: das Amt klein in Großbuchstaben über dem Namen, der Name groß in der Schrift der Überschriften, „Nachricht schreiben“ als unterstrichener Textlink, oben eine Kante in der Vereinsfarbe; mehrere Personen eines Amts stehen untereinander, Ehrenmitglieder im Raster mit drei Spalten.
+- **Ehrungen** „eine Karte je Person“: Alle Geehrten stehen in einem gemeinsamen Raster mit drei Spalten (am Handy eine) wie der Vorstand, ohne Zwischenüberschriften. Oben auf jeder Karte steht klein die Ehrung, darunter groß der Name. Hat jemand bei der Verleihung einen eigenen **Titel** bekommen (z. B. „Ehrenhauptmann“ bei der Ehrung „Ehrenmitglied“), steht dieser Titel auf der Karte. Den Titel tragt ihr in der Mitgliederakte bei der Ehrung ein.
 - **Anrede im Kontaktformular** „Sie“ oder „du“: gilt für Beschriftungen, Einleitung, Fehlermeldungen und die Bestätigung. Den Kasten rechts neben dem Formular (z. B. „Du möchtest mitmachen?“ mit Knopf) schreibt ihr unter Webseite › Texte als Einleitung des Bereichs **Kontakt**.
 - **Epochen der Chronik** „als Band“: jede Epoche randlos in der dunklen Vereinsfarbe, darin groß der Zeitraum in der Zweitfarbe, der Titel und der Text der Epoche; die Zeitleiste läuft darunter weiter. Die Sprungmarken oben werden zu unterstrichenen Links, die Jahreszahlen stehen in der Schrift der Überschriften. „als flaches Band“ zeigt dasselbe Band deutlich niedriger: Zeitraum (in der Zweitfarbe) und Titel stehen in einer Zeile, der Text der Epoche klein darunter; auf dem Handy rückt der Titel unter den Zeitraum.
 - **Ranglisten der Ergebnisse** „Plätze 1 bis 3 als Karten“: Über jeder Rangliste stehen die ersten drei Plätze als Karten mit großer Platzziffer (Platz 1 in der Vereinsfarbe), Name, Untereinheit und Ergebnis mit Einheit, etwa „48 Ringe“. Bei Gleichstand bekommt jeder Gleichplatzierte eine Karte; die Tabelle darunter beginnt mit Platz 4 und entfällt, wenn es nicht mehr Plätze gibt.

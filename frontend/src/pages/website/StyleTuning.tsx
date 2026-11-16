@@ -408,6 +408,15 @@ function GROUPS(): Group[] {
             'Amt als Etikett: Amt klein in Großbuchstaben über dem Namen, Name in der Schrift der Überschriften, „Nachricht schreiben“ als Textlink, Kante oben in der Vereinsfarbe. Ehrenmitglieder stehen im Raster mit drei Spalten.',
           ),
         },
+        // Webseite #143 (Ralf 16.11.2026)
+        {
+          key: 'honorary_layout',
+          label: t('Ehrungen'),
+          options: { list: t('Liste je Ehrung'), cards: t('eine Karte je Person') },
+          hint: t(
+            'Eine Karte je Person: Alle Geehrten stehen in einem gemeinsamen Raster wie der Vorstand, oben auf jeder Karte die Ehrung als Etikett. Hat jemand bei der Verleihung einen eigenen Titel (z. B. Ehrenhauptmann), steht dieser Titel auf der Karte.',
+          ),
+        },
         {
           key: 'address',
           label: t('Anrede im Kontaktformular'),

@@ -115,6 +115,8 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "address": ("formal", "informal"),
     "timeline_chapter": ("plain", "band", "slim"),  # #141 flaches Band
     "ranking": ("table", "podium"),
+    # Webseite #143: Ehrungen als eigene Karte je Person, Ehrung oder Titel als Etikett
+    "honorary_layout": ("list", "cards"),
     # Webseite #145 (Ralf 16.11.2026): lange, schmale Tabellen am Bildschirm in zwei Spalten
     "long_tables": ("rows", "columns"),
 }
@@ -210,6 +212,7 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "address": "formal",
     "timeline_chapter": "plain",
     "ranking": "table",
+    "honorary_layout": "list",
     "long_tables": "rows",
 }
 _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
