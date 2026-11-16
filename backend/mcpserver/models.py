@@ -15,6 +15,7 @@ import hashlib
 import secrets
 
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.utils import timezone
 
@@ -26,6 +27,10 @@ ACCESS_LIFETIME = datetime.timedelta(hours=1)
 # Höchstens 30 Tage ab der Zustimmung, verfällt nach 14 Tagen ohne Nutzung (Konzept 1a)
 GRANT_LIFETIME = datetime.timedelta(days=30)
 IDLE_LIFETIME = datetime.timedelta(days=14)
+# Alle früheren Erneuerungsschlüssel einer Verbindung (nur SHA-256), damit jede Wiederverwendung
+# als Kopie auffällt, nicht nur die des unmittelbaren Vorgängers (Gesamtaudit 15.11., MCP-04).
+# Eine Verbindung gilt höchstens 30 Tage; bei stündlicher Erneuerung reichen 30 × 24 Einträge.
+RETIRED_KEEP = 30 * 24
 
 
 def hash_token(token: str) -> str:
@@ -65,6 +70,7 @@ class McpGrant(models.Model):
     refresh_hash = models.CharField(max_length=64, unique=True)
     # Vorgänger nach dem Erneuern: Wer ihn noch einmal benutzt, hat eine Kopie (Grant endet)
     previous_refresh_hash = models.CharField(max_length=64, blank=True, db_index=True)
+    retired_refresh_hashes = models.JSONField(default=list, blank=True, db_default=[])
     auth_version = models.PositiveBigIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
@@ -76,6 +82,7 @@ class McpGrant(models.Model):
         verbose_name = "Verbindung eines KI-Assistenten"
         verbose_name_plural = "Verbindungen von KI-Assistenten"
         ordering = ["-created_at"]
+        indexes = [GinIndex(fields=["retired_refresh_hashes"], name="mcpgrant_retired_gin")]
 
     def __str__(self) -> str:
         return f"{self.client} → {self.organization}"
@@ -95,6 +102,8 @@ class McpGrant(models.Model):
         refresh = REFRESH_PREFIX + secrets.token_urlsafe(32)
         if self.refresh_hash:
             self.previous_refresh_hash = self.refresh_hash
+            retired = [self.refresh_hash, *(self.retired_refresh_hashes or [])]
+            self.retired_refresh_hashes = retired[:RETIRED_KEEP]
         self.access_hash = hash_token(access)
         self.refresh_hash = hash_token(refresh)
         self.access_expires_at = timezone.now() + ACCESS_LIFETIME
