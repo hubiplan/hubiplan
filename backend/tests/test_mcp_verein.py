@@ -515,3 +515,68 @@ def test_nie_genutzte_anmeldungen_nach_einem_tag_weg():
     with rls_bypass():
         ids = set(McpClient.objects.values_list("client_id", flat=True))
     assert old not in ids and fresh in ids
+
+
+def test_einleitung_eines_bereichs_anlegen(club, site, editor):
+    # #515: Einleitung, die es noch nicht gibt, über die Schnittstelle als Entwurf anlegen
+    from website.variants import INTRO_AREAS
+
+    token = connect(editor, club)["access_token"]
+    text, failed = call(token, "webseite_texte")
+    assert not failed
+    rows = json.loads(text.split("\n\n", 1)[1])
+    missing = {r["bereich"] for r in rows if r["art"] == "intro" and r["nummer"] is None}
+    assert missing == set(INTRO_AREAS)
+    # Das Schema nennt genau die Bereiche mit Einleitung
+    tools = rpc(token, "tools/list").json()["result"]["tools"]
+    schema = next(t for t in tools if t["name"] == "webseite_text_aendern")["inputSchema"]
+    assert set(schema["properties"]["bereich"]["enum"]) == set(INTRO_AREAS)
+
+    text, failed = call(
+        token,
+        "webseite_text_aendern",
+        bereich="contact",
+        titel="Lust mitzumachen?",
+        text="Komm vorbei!",
+    )
+    assert not failed, text
+    intro = WebsiteText.objects.get(website=site, kind="intro", slug="contact")
+    assert intro.body == "Komm vorbei!" and intro.title == "Lust mitzumachen?"
+    assert not intro.is_published
+    entry = AuditEntry.objects.filter(organization=club, object_id=str(intro.pk)).latest("id")
+    assert entry.via == "KI-Assistent (Testassistent)"
+
+    # Zweiter Aufruf ändert die vorhandene Einleitung, statt eine neue anzulegen
+    text, failed = call(token, "webseite_text_aendern", bereich="contact", text="Schreib uns!")
+    assert not failed, text
+    assert WebsiteText.objects.filter(website=site, kind="intro", slug="contact").count() == 1
+    intro.refresh_from_db()
+    assert intro.body == "Schreib uns!" and intro.title == "Lust mitzumachen?"
+    text, _failed = call(token, "webseite_texte")
+    rows = json.loads(text.split("\n\n", 1)[1])
+    contact = [r for r in rows if r.get("bereich") == "contact"]
+    assert [r["nummer"] for r in contact] == [intro.pk]
+
+    # Fehler: unbekannter Bereich, beides oder nichts, Karussell bei Einleitungen
+    for args in (
+        {"bereich": "impressum", "text": "x"},
+        {"bereich": "board", "nummer": intro.pk, "text": "x"},
+        {"text": "x"},
+        {"bereich": "board"},
+    ):
+        _text, failed = call(token, "webseite_text_aendern", **args)
+        assert failed, args
+    _text, failed = call(token, "webseite_text_aendern", bereich="gallery", bilder=[1])
+    assert failed
+    assert not WebsiteText.objects.filter(website=site, kind="intro", slug="gallery").exists()
+
+
+def test_einleitung_anlegen_nur_mit_entwurfsrecht(club, site, editor):
+    token = connect(editor, club, scope="webseite.lesen")["access_token"]
+    resp = rpc(
+        token,
+        "tools/call",
+        {"name": "webseite_text_aendern", "arguments": {"bereich": "contact", "text": "x"}},
+    )
+    assert resp.json()["error"]["code"] == -32602
+    assert not WebsiteText.objects.filter(website=site, kind="intro").exists()
