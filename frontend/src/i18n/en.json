@@ -9377,5 +9377,9 @@
   "Anhänge geprüft: keine Listen mit Daten anderer Mitglieder.": "Attachments checked: no lists with other members’ data.",
   "Vor dem Kopieren und Aufführen die Rechte klären:": "Clear the rights before copying and performing:",
   "Schutzfrist": "Term of protection",
-  "GEMA": "GEMA"
+  "GEMA": "GEMA",
+  "Knöpfe am Bilderkarussell": "Image carousel buttons",
+  "immer sichtbar": "always visible",
+  "bei Mauszeiger": "on mouse-over",
+  "Anhalten, Zurück, Weiter und Zähler. „bei Mauszeiger“: erst wenn die Maus über dem Bild steht oder die Tastatur darauf; auf Handys und Tablets bleiben sie sichtbar.": "Pause, back, next and counter. “On mouse-over”: only when the mouse is over the image or the keyboard is on it; on phones and tablets they stay visible."
 }
