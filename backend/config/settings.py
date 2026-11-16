@@ -398,6 +398,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "outbox.tasks.purge_sent_mails",
         "schedule": taeglich(4, 0),
     },
+    # Frühere Erneuerungsschlüssel beendeter KI-Verbindungen (Gesamtaudit 15.11., MCP-04)
+    "ki-erneuerungen-aufraeumen": {
+        "task": "mcpserver.tasks.purge_retired_refresh",
+        "schedule": taeglich(4, 40),
+    },
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {
         "task": "events.tasks.sync_external_calendars",
