@@ -33,6 +33,8 @@ stichworte:
     eras,
     podium,
     ranking,
+    lists,
+    two columns,
   ]
 ---
 
@@ -82,6 +84,7 @@ There are also controls for individual pages; without your own choice every page
 - **Form of address in the contact form** “formal (Sie)” or “informal (du)”: applies to the labels, the introduction, error messages and the confirmation on German pages. You write the box to the right of the form (e.g. “Want to join in?” with a button) under Website › Texts as the introduction of the **Contact** area.
 - **Chronicle eras** “as a band”: each era edge to edge in the dark club colour, with the period in large type in the second colour, the title and the text of the era; the timeline continues below. The jump links at the top become underlined links, and the years use the heading font. “as a slim band” shows the same band much lower: the period (in the second colour) and the title on one line, the text of the era small below; on phones the title moves below the period.
 - **Result rankings** “Places 1 to 3 as cards”: above each ranking the first three places appear as cards with a large place number (place 1 in the club colour), name, sub-unit and result with its unit, such as “48 Ringe”. In a tie everyone sharing a place gets a card; the table below starts at place 4 and is left out when there are no further places.
+- **Long lists** “in two columns”: long, narrow tables such as the list of all kings, the winners of a challenge trophy or the winners of a competition over the years appear side by side in two columns on a computer screen, so the page is only half as long. You read the left column from top to bottom first, then the right one; with an odd number of rows the left column has one more, and both show the header row. This only applies to tables with no more than two columns and at least 20 rows, and only from about 800 pixels wide; on a phone and in narrow windows it stays a single column. Screen readers still read one table in the right order.
 
 Labels, the numbers of places 2 and 3 and the box next to the contact form use the colour you chose for the date field among the design colours.
 
