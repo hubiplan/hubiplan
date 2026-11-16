@@ -21,7 +21,7 @@ from members.photo_models import MemberPhoto
 from outbox.models import OutgoingMail
 from qualifications.models import Qualification, QualificationType
 
-from .factories import make_org
+from .factories import make_member, make_org
 from .test_m3_workflows import member, types, url  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -96,3 +96,31 @@ def test_auskunft_rest(api, orgs, member, board_a):
     quals = json.loads(zf.read("qualifikationen.json"))
     assert [q["qualifikation"] for q in quals] == ["Jugendleiter"]
     assert any(name.startswith("foto-") for name in zf.namelist())
+
+
+def test_auskunft_ohne_mails_eines_elternteils_der_selbst_mitglied_ist(api, orgs, member, board_a):
+    """Elternteil ist selbst Mitglied mit derselben Adresse: Dessen eigene Mails (Rechnung,
+    Mahnung) gehören nicht in die Auskunft des Kindes."""
+    club = orgs["a"]
+    make_member(club, "Hans", "Elternmitglied", email="hans.eltern@example.org")
+    with rls_bypass():
+        m = Membership.objects.get(pk=member["id"])
+    with tenant_context(club.pk):
+        ContactPerson.objects.create(
+            organization=club,
+            membership=m,
+            last_name="Elternmitglied",
+            first_name="Hans",
+            email="hans.eltern@example.org",
+            is_guardian=True,
+        )
+    with rls_bypass():
+        OutgoingMail.objects.create(
+            organization=club, to="hans.eltern@example.org", subject="Mahnung Hans", body="Text"
+        )
+    resp = api(board_a).get(url(orgs, member, "auskunft/"))
+    assert resp.status_code == 200, resp.content[:300]
+    zf = zipfile.ZipFile(io.BytesIO(resp.content))
+    names = zf.namelist()
+    mails = json.loads(zf.read("mails.json")) if "mails.json" in names else []
+    assert not any(x["betreff"] == "Mahnung Hans" for x in mails)

@@ -35,7 +35,9 @@ Inhalt
   Sammelrechnungen an andere nur die eigenen Posten mit Nummer, Datum und Empfänger
 - mandate.json: SEPA-Lastschriftmandate
 - zuwendungen.json: Spenden und Zuwendungen
-- mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat
+- mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat; Mails an
+  Erziehungsberechtigte nur, wenn deren Adresse im Verein sonst niemandem gehört (etwa nicht,
+  wenn der Elternteil selbst Mitglied ist oder mehrere Kinder im Verein hat)
 - zugang.json: Mitgliederzugang, Anmeldekonto und verbundene Geräte der App
 - konto.json: Anmeldekonten der Person: E-Mail-Adressen, Sprache, Zwei-Faktor-Verfahren und
   Passkeys (nur Art, Name und Zeiten, nie Schlüssel), Geräte mit Benachrichtigungsdienst,
@@ -153,13 +155,56 @@ def _emails(membership: Membership, org) -> set[str]:
     for access in PortalAccess.objects.filter(membership=membership).select_related("user"):
         if access.user and access.user.email:
             found.add(access.user.email.lower())
-    # Mails, die für das Kind an die Erziehungsberechtigten gingen (Gesamtaudit 15.11., PF-20)
+    # Mails, die für das Kind an die Erziehungsberechtigten gingen (Gesamtaudit 15.11., PF-20).
+    # Eine Mail kennt nur ihre Empfänger, nicht die Person, um die es geht. Die Adresse eines
+    # Erziehungsberechtigten zählt daher nur, wenn sie im Verein samt Untereinheiten sonst
+    # niemandem gehört; sonst kämen eigene Mails des Elternteils oder Mails zu Geschwistern in
+    # die Auskunft des Kindes.
     from members.models import ContactPerson
 
-    for contact in ContactPerson.objects.filter(membership=membership, is_guardian=True):
-        if contact.email:
-            found.add(contact.email.lower())
-    return found
+    guardians = {
+        c.email.lower()
+        for c in ContactPerson.objects.filter(membership=membership, is_guardian=True)
+        if c.email
+    }
+    guardians -= found
+    if guardians:
+        guardians -= _addresses_of_others(membership, _org_ids(org))
+    return found | guardians
+
+
+def _addresses_of_others(membership: Membership, org_ids: list[int]) -> set[str]:
+    """E-Mail-Adressen anderer Personen, Zugänge und Ansprechpartner im Verein (samt
+    Untereinheiten). Die Adressen sind verschlüsselt und lassen sich nicht abfragen; daher
+    werden sie gelesen und verglichen."""
+    from access.models import RoleAssignment
+    from members.models import ContactDetails, ContactPerson
+    from portal.models import PortalAccess
+
+    others = set()
+    for c in ContactDetails.objects.filter(
+        person__memberships__organization_id__in=org_ids
+    ).exclude(person_id=membership.person_id):
+        if c.email:
+            others.add(c.email.lower())
+    for c in ContactPerson.objects.filter(organization_id__in=org_ids).exclude(
+        membership=membership
+    ):
+        if c.email:
+            others.add(c.email.lower())
+    for access in (
+        PortalAccess.objects.filter(membership__organization_id__in=org_ids)
+        .exclude(membership=membership)
+        .select_related("user")
+    ):
+        if access.user and access.user.email:
+            others.add(access.user.email.lower())
+    for role in RoleAssignment.objects.filter(
+        organization_id__in=org_ids, user__isnull=False
+    ).select_related("user"):
+        if role.user.email:
+            others.add(role.user.email.lower())
+    return others
 
 
 def _paid_households(membership: Membership) -> list[int]:
