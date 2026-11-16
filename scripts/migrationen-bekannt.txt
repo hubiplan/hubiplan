@@ -4,28 +4,5 @@
 # einfügen. Auf dem Stand v2026.11.0 kein Rückweg ohne Sicherung; eine Folgemigration mit
 # db_default behebt es (danach Zeile entfernen). Nicht erweitern, neue Fälle richtig anlegen.
 
-backend/accounts/migrations/0011_email_alte_adresse.py:AddField emailchange.old_token_hash: NOT NULL ohne db_default
 backend/billing/migrations/0014_erechnungen.py:AddField invoice.electronic_data: NOT NULL ohne db_default
 backend/billing/migrations/0014_erechnungen.py:AddField invoiceline.electronic_data: NOT NULL ohne db_default
-backend/billing/migrations/0023_stornorechnung.py:AddField invoice.cancellation_pdf: NOT NULL ohne db_default
-backend/competitions/migrations/0019_schiessdurchgaenge.py:AddField score.from_hits: NOT NULL ohne db_default
-backend/events/migrations/0011_rueckmeldung_vielleicht_bemerkung.py:AddField event.rsvp_maybe: NOT NULL ohne db_default
-backend/events/migrations/0011_rueckmeldung_vielleicht_bemerkung.py:AddField event.rsvp_note: NOT NULL ohne db_default
-backend/events/migrations/0011_rueckmeldung_vielleicht_bemerkung.py:AddField event.rsvp_note_question: NOT NULL ohne db_default
-backend/events/migrations/0012_anfahrt.py:AddField event.directions: NOT NULL ohne db_default
-backend/organizations/migrations/0050_symbol_der_instanz.py:AddField platformsettings.brand_icon: NOT NULL ohne db_default
-backend/organizations/migrations/0051_adressen_je_einheit.py:AddField organization.brand_icon: NOT NULL ohne db_default
-backend/website/migrations/0035_galerie.py:AddField website.gallery_order: NOT NULL ohne db_default
-backend/website/migrations/0035_galerie.py:AddField websiteimage.file_name: NOT NULL ohne db_default
-backend/website/migrations/0036_kopfbild.py:AddField websiteimage.header: NOT NULL ohne db_default
-backend/website/migrations/0039_menue_links_knopf.py:AddField website.menu_links: NOT NULL ohne db_default
-backend/website/migrations/0039_menue_links_knopf.py:AddField website.menu_button: NOT NULL ohne db_default
-backend/website/migrations/0040_stilregler.py:AddField website.style: NOT NULL ohne db_default
-backend/website/migrations/0041_entwurf_gestaltung.py:AddField website.draft: NOT NULL ohne db_default
-backend/website/migrations/0042_textseiten_abschnitte.py:AddField websitetext.sections: NOT NULL ohne db_default
-backend/website/migrations/0042_textseiten_abschnitte.py:AddField websitetext.published_sections: NOT NULL ohne db_default
-backend/website/migrations/0042_textseiten_abschnitte.py:AddField websiterevision.sections: NOT NULL ohne db_default
-backend/website/migrations/0043_darstellung_bereiche.py:AddField website.layouts: NOT NULL ohne db_default
-backend/website/migrations/0047_kopfbild_schmal.py:AddField websiteimage.header_narrow: NOT NULL ohne db_default
-backend/website/migrations/0048_menue_platz.py:AddField website.menu_places: NOT NULL ohne db_default
-backend/website/migrations/0050_bild_urheber.py:AddField websiteimage.credit: NOT NULL ohne db_default

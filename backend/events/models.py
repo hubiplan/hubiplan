@@ -91,7 +91,9 @@ class Event(models.Model):
     location = models.CharField("Ort", max_length=200, blank=True)
     address = models.CharField("Anschrift", max_length=300, blank=True)
     # Anfahrt (T5): Hinweise und auf Wunsch genauer Punkt, wenn die Anschrift nicht reicht
-    directions = models.TextField("Anfahrt und Hinweise", max_length=1000, blank=True)
+    directions = models.TextField(
+        "Anfahrt und Hinweise", max_length=1000, blank=True, db_default=""
+    )
     latitude = models.DecimalField(
         "Breite",
         max_digits=8,
@@ -168,10 +170,14 @@ class Event(models.Model):
     )
     rsvp_guests = models.BooleanField("Begleitpersonen erlaubt", default=False)
     # Antwort „Vielleicht“ (zählt nicht gegen die Höchstzahl)
-    rsvp_maybe = models.BooleanField("Antwort „Vielleicht“ erlaubt", default=False)
+    rsvp_maybe = models.BooleanField(
+        "Antwort „Vielleicht“ erlaubt", default=False, db_default=False
+    )
     # Bemerkung der Mitglieder (wie bisher an), auf Wunsch mit eigener Frage („Essenswunsch?“)
-    rsvp_note = models.BooleanField("Bemerkung erlaubt", default=True)
-    rsvp_note_question = models.CharField("Frage zur Bemerkung", max_length=200, blank=True)
+    rsvp_note = models.BooleanField("Bemerkung erlaubt", default=True, db_default=True)
+    rsvp_note_question = models.CharField(
+        "Frage zur Bemerkung", max_length=200, blank=True, db_default=""
+    )
     # Erinnerung per E-Mail: so viele Tage vor Beginn
     remind_days = models.PositiveSmallIntegerField(
         "Erinnerung Tage vorher",

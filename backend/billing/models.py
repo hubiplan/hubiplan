@@ -903,7 +903,11 @@ class Invoice(models.Model):
     )
     cancellation_date = models.DateField("Datum der Stornorechnung", null=True, blank=True)
     cancellation_pdf = PrivateFileField(
-        "Stornorechnung", storage=private_storage, upload_to=invoice_pdf_path, blank=True
+        "Stornorechnung",
+        storage=private_storage,
+        upload_to=invoice_pdf_path,
+        blank=True,
+        db_default="",
     )
     cancellation_pdf_sha256 = models.CharField(max_length=64, blank=True, default="", db_default="")
     cancellation_sent_at = models.DateTimeField("Stornorechnung verschickt", null=True, blank=True)
