@@ -852,6 +852,20 @@ def _open_surveys(club, membership_id) -> int:
     return has_open(membership_id, club)
 
 
+def _expenses_enabled(access) -> bool:
+    from expenses.services import enabled
+
+    return access.contact_person_id is None and enabled(access.organization)
+
+
+def _expense_questions(access) -> int:
+    if not _expenses_enabled(access):
+        return 0
+    from expenses.portal import has_open
+
+    return has_open(access)
+
+
 def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
@@ -880,6 +894,9 @@ def portal_summary(access: PortalAccess) -> dict:
             # Offene, noch nicht beantwortete Umfragen (Hinweis im Mitgliederbereich und in der App)
             "surveys_open": _open_surveys(club, access.membership_id),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
+            # Auslagen erstatten: Menüpunkt und offene Rückfragen der Kasse
+            "expenses_enabled": _expenses_enabled(access),
+            "expenses_questions": _expense_questions(access),
             "todos_enabled": "todos" in (club.enabled_modules or []),
             "docs_enabled": "docs" in (club.enabled_modules or []),
             "circulars_enabled": "circulars" in (club.enabled_modules or []),

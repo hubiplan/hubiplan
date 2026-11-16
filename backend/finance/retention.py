@@ -259,6 +259,9 @@ def _purge_documents(org, year, start, end) -> dict[str, int]:
     for r in receipts:
         _delete_file(r.file)
         n += 1
+    from expenses.retention import purge_documents as expense_documents
+
+    counts["Auslagenbelege"] = expense_documents(org, bookings, _delete_file)
     # Aufbewahrungsfrist abgelaufen: Freigabe prüft die Datenbank (finance/0032)
     from . import gobd
 
@@ -408,6 +411,9 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         membership=None,
         electronic_data={},
     )
+    from expenses.retention import anonymize as anonymize_expenses
+
+    counts["Auslagen"] = anonymize_expenses(org, bookings)
     from billing.einvoice_retention import anonymize, incoming_for_period
 
     ids(incoming_for_period(org, start, end), "incominginvoice")

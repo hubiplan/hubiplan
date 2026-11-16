@@ -612,6 +612,10 @@ def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = T
         counter.account = booking.account
     # Ohne full_clean: Die Kategorie passt evtl. nur zur Richtung der ursprünglichen Buchung
     counter.save()
+    # Ausgezahlte Auslage: wieder freigegeben (docs/auslagen.md)
+    from expenses.services import booking_cancelled
+
+    booking_cancelled(booking)
     # Zugeordneter Kontoumsatz: im offenen Jahr wieder offen, damit er richtig gebucht wird
     from .models import BankLine
 
