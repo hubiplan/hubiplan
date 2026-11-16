@@ -158,7 +158,7 @@ class ThemeFields(models.Model):
     )
     # Quadratisches Symbol für Browser-Tab und Handy, wenn die Einheit eine eigene Adresse
     # hat (White Label W7). Leer: Wappen quadratisch, sonst Symbol der Instanz
-    brand_icon = models.ImageField("Symbol", upload_to=brand_icon_path, blank=True)
+    brand_icon = models.ImageField("Symbol", upload_to=brand_icon_path, blank=True, db_default="")
 
     class Meta:
         abstract = True
@@ -884,7 +884,9 @@ class PlatformSettings(models.Model):
     peering_login = models.BooleanField("Anmeldung über gekoppelte Instanzen", default=False)
     # White Label W2: quadratisches Symbol der Instanz für Browser-Tab und Handy (PWA).
     # Leer: das H-Zeichen von HUBIplan (konzepte/white-label.md)
-    brand_icon = models.ImageField("Symbol der Instanz", upload_to=brand_icon_path, blank=True)
+    brand_icon = models.ImageField(
+        "Symbol der Instanz", upload_to=brand_icon_path, blank=True, db_default=""
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

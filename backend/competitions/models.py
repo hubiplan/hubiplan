@@ -307,6 +307,9 @@ class Starter(models.Model):
     # Name als Text: für Gäste die Eingabe, für Mitglieder eine Kopie (bleibt nach Austritt)
     name = EncryptedCharField("Name", max_length=200, strict=True)
     club = models.CharField("Verein", max_length=200, blank=True)
+    # Gäste haben kein Geburtsdatum: Auf der Webseite erscheinen sie nur mit Namen, wenn der
+    # Verein „volljährig“ angibt (Fachfrage FF-24 (c), Gesamtaudit 15.11., PF-21)
+    guest_adult = models.BooleanField("Gast volljährig", default=False, db_default=False)
     result_coupling = models.ForeignKey(
         "peering.Coupling", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
@@ -369,7 +372,7 @@ class Score(models.Model):
     scoring = models.ForeignKey(Scoring, on_delete=models.CASCADE, related_name="scores")
     starter = models.ForeignKey(Starter, on_delete=models.CASCADE, related_name="scores")
     value = models.DecimalField("Wert", max_digits=10, decimal_places=3)
-    from_hits = models.BooleanField("aus Treffern berechnet", default=False)
+    from_hits = models.BooleanField("aus Treffern berechnet", default=False, db_default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -526,6 +529,9 @@ class Prize(models.Model):
         Starter, on_delete=models.SET_NULL, null=True, blank=True, related_name="prizes"
     )
     winner_name = EncryptedCharField("errungen von", max_length=200, blank=True, strict=True)
+    # Frei eingetragener Gewinner (ohne Starter, etwa nach Entfernen des Starters): auf der
+    # Webseite nur mit Namen, wenn der Verein „volljährig“ angibt (FF-24 (c), PF-21)
+    winner_adult = models.BooleanField("Gewinner volljährig", default=False, db_default=False)
     shot_number = models.PositiveIntegerField("Schuss Nr.", null=True, blank=True)
     shots_for = models.PositiveIntegerField("Schüsse für dieses Pfand", null=True, blank=True)
     shot = models.ForeignKey(

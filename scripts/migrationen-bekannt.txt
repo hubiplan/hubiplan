@@ -1,0 +1,8 @@
+# Bekannte Verstöße gegen die Rückweg-Regel seit v2026.11.0 (Gesamtaudit 15.11., PF-06).
+# scripts/pruefe-migrationen.py meldet sie nicht erneut. Je Zeile: Datei:Meldung.
+# Neue Spalten ohne db_default: Die vorige Fassung kann in diese Tabellen keine Zeilen
+# einfügen. Auf dem Stand v2026.11.0 kein Rückweg ohne Sicherung; eine Folgemigration mit
+# db_default behebt es (danach Zeile entfernen). Nicht erweitern, neue Fälle richtig anlegen.
+
+backend/billing/migrations/0014_erechnungen.py:AddField invoice.electronic_data: NOT NULL ohne db_default
+backend/billing/migrations/0014_erechnungen.py:AddField invoiceline.electronic_data: NOT NULL ohne db_default
