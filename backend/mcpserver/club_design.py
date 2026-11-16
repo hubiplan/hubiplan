@@ -847,7 +847,10 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                 "design": {"type": "string", "maxLength": 40},
                 "stil": {
                     "type": "object",
-                    "description": gettext_lazy("Stilregler → Stufe, ja/nein oder null."),
+                    "description": gettext_lazy(
+                        "Stilregler → Stufe, ja/nein oder null; font_family und "
+                        "heading_font_family: Namen installierter Schriften mit Komma."
+                    ),
                 },
                 "farben": {
                     "type": "object",

@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from access.catalog import COMPETITIONS_MANAGE, COMPETITIONS_RESULTS, MEMBERS_EDIT, MEMBERS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
+from core.webslug import take_from_attrs
 from members.models import Membership
 from organizations.models import Organization
 
@@ -162,7 +163,18 @@ class SeriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Series
-        fields = ["id", "name", "description", "on_website", "competition_count"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "on_website",
+            "competition_count",
+            # Webseite #149: Adresse auf der Webseite; leer = aus dem Namen
+            "web_slug",
+            "web_slug_auto",
+        ]
+        read_only_fields = ["web_slug_auto"]
+        extra_kwargs = {"web_slug": {"required": False, "allow_blank": True, "max_length": 80}}
 
     def get_competition_count(self, obj) -> int:
         return obj.competitions.count()
@@ -173,12 +185,20 @@ class SeriesSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(gettext("Bitte eine Bezeichnung angeben."))
         return value
 
+    def validate(self, attrs):
+        org = self.context.get("org") or getattr(self.instance, "organization", None)
+        take_from_attrs(attrs, self.instance, Series.objects.filter(organization=org))
+        return attrs
+
 
 class SeriesViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = SeriesSerializer
 
     def get_queryset(self):
         return Series.objects.filter(organization=self.org)
+
+    def get_serializer_context(self):
+        return {**super().get_serializer_context(), "org": getattr(self, "org", None)}
 
     def get_create_kwargs(self) -> dict:
         return {"organization": self.org}

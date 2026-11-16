@@ -17,6 +17,8 @@ November 2026:
 #### Website
 
 - Website: **Eye-catching notice bar.** The notice bar under Website › Overview now appears in the accent colour below the header, with an icon, a button to its target and an optional countdown (“5 days to go”). Style (accent, attention, festive, plain), place (above or below the header, floating at the bottom) and icon can be chosen.
+- Website: **Readable addresses** for dignities, competitions and series, such as `/majestaeten/hubertuskoenige/` instead of a long identifier. You can choose the address yourself; old addresses and links redirect.
+- Website: **House font from the style guide.** Under Design › Fine-tuning › Font, **Own font stack** uses fonts installed on the device, such as “Lucida Sans, Segoe UI, Arial”. No font file is delivered; anyone without the font sees the next one. Also for AI assistants.
 - Website: **Set off the band of sub-units.** Under Design › Fine-tuning › **Band of sub-units** the band on the pages of sub-units can use the box colour, a light tone or plain with a line, so it does not look like a second page header.
 - **Wide logos** (landscape wordmarks) are no longer tiny in the header of HUBIplan and the website, on cards, certificates and in PDFs: the height is fixed and the width follows the image.
 - Website: **Long lists in two columns.** Under Design › Fine-tuning › **Long lists** › “in two columns”, long, narrow tables such as all kings or the winners over the years appear side by side in two columns on a computer screen; on a phone it stays a single column.
@@ -144,6 +146,7 @@ November 2026:
 
 #### Look and feel
 
+- **Fields stand out:** With the colour role “Surfaces” in HUBIplan, input and selection fields and buttons stay white instead of taking on the tinted colour of the card. The same goes for the search and form fields on the website.
 - **Main menu reorganised**: the new group **Club life** brings together competitions, entries and music; **Club** keeps members, sub-units and the chronicle. **Surveys** are now under Communication, **Business partners** under Administration right after Finances. The apps list their admin areas in the same order.
 - **Dark mode everywhere**: The dark appearance now applies to all pages, including administration. It is off to begin with: HUBIplan stays light until you choose “Dark” or “Same as device” under My account › Profile › **Appearance**. Accounts that used to follow the device are now set to “Light”.
 - **Quick search**: At the top (or with Ctrl+K) a few letters take you to any page; if you may see members, you find members there too.

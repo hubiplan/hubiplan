@@ -55,6 +55,19 @@ function GROUPS(): Group[] {
           },
           hint: t('Fraktur: UnifrakturMaguntia. Kräftig: Oswald, schmal und fett.'),
         },
+        // #526: Hausschrift aus dem Styleguide, nur lokal installierte Schriften
+        {
+          key: 'font_family',
+          label: t('Eigene Schriftfolge'),
+          hint: t(
+            'Namen von Schriften, die auf dem Gerät installiert sind, durch Komma getrennt, höchstens sechs. Wer die erste nicht hat, sieht die nächste; am Ende steht immer eine Ersatzschrift (mit „serif“ am Schluss eine mit Serifen). Auf Handys und unter Linux erscheint meist die Ersatzschrift. Geht der Schriftart vor und gilt auch für Überschriften, solange dort nichts anderes gewählt ist.',
+          ),
+        },
+        {
+          key: 'heading_font_family',
+          label: t('Eigene Schriftfolge der Überschriften'),
+          hint: t('Leer: wie oben eingestellt.'),
+        },
         {
           key: 'headings',
           label: t('Überschriften'),
@@ -562,6 +575,48 @@ export function previewFocus(key: string, eventsOn: boolean): PreviewFocus {
   return {}
 }
 
+/** Eigene Schriftfolge (#526): Text mit Komma, übernommen beim Verlassen oder mit Enter. */
+function FontStackInput({
+  labelledBy,
+  value,
+  onCommit,
+}: {
+  labelledBy: string
+  value: string
+  onCommit: (next: string) => void
+}) {
+  // Der Aufrufer setzt key={value}: ein neuer Wert von außen beginnt mit frischem Text
+  const [text, setText] = useState(value)
+  function commit() {
+    const next = text
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .join(', ')
+    if (next !== value) onCommit(next)
+    else setText(value)
+  }
+  return (
+    <input
+      type="text"
+      className="style-fonts"
+      aria-labelledby={labelledBy}
+      value={text}
+      maxLength={300}
+      placeholder={t('z. B. Lucida Sans, Segoe UI, Arial')}
+      spellCheck={false}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          commit()
+        }
+      }}
+    />
+  )
+}
+
 export function StyleTuning({
   catalog,
   design,
@@ -848,7 +903,14 @@ export function StyleTuning({
                     {row.hint && <small className="muted">{row.hint}</small>}
                   </span>
                   <div className="style-control">
-                    {options === 'switch' ? (
+                    {options === 'fonts' ? (
+                      <FontStackInput
+                        key={String(value[row.key] ?? '')}
+                        labelledBy={id}
+                        value={typeof value[row.key] === 'string' ? String(value[row.key]) : ''}
+                        onCommit={(next) => setKey(row.key, next || null)}
+                      />
+                    ) : options === 'switch' ? (
                       <label className="style-switch">
                         <input
                           type="checkbox"

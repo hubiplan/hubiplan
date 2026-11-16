@@ -33,6 +33,7 @@ from access.catalog import (
 from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
+from core.webslug import take_from_attrs
 from members.models import Membership
 from members.personsearch import filter_names, ordered
 from organizations.models import Department, Organization
@@ -133,10 +134,19 @@ class CompetitionSerializer(serializers.ModelSerializer):
             "lots",
             "event",
             "starter_count",
+            # Webseite #149: Adresse auf der Webseite; leer = aus dem Titel und Jahr
+            "web_slug",
+            "web_slug_auto",
         ]
-        read_only_fields = ["status", "generation"]
+        read_only_fields = ["status", "generation", "web_slug_auto"]
+        extra_kwargs = {"web_slug": {"required": False, "allow_blank": True, "max_length": 80}}
 
     def validate(self, attrs):
+        take_from_attrs(
+            attrs,
+            self.instance,
+            Competition.objects.filter(organization=self.context.get("org")),
+        )
         if self.instance is not None:
             for field in ("form", "own"):
                 if field in attrs and attrs[field] != getattr(self.instance, field):

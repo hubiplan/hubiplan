@@ -22,7 +22,8 @@ body {
 .stand-page .live-camera,
 .stand-page .stand-block {
   /* Design „Frisch“: Nebenknöpfe weiß mit Rand (3 : 1), beim Darüberfahren leicht getönt */
-  --color-button-bg: var(--color-surface);
+  /* Issue 539: Knöpfe wie Eingabefelder, damit sie sich von getönten Flächen abheben */
+  --color-button-bg: var(--color-input-bg);
   --color-button-hover: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
   --color-button-disabled: color-mix(in srgb, var(--color-text) 10%, var(--color-surface));
   --color-button-primary: var(--button-brand-primary);
@@ -125,7 +126,7 @@ a:focus-visible,
   padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
-  background-color: var(--color-surface);
+  background-color: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
 }
@@ -266,7 +267,7 @@ code {
   padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
 }
@@ -1228,7 +1229,7 @@ fieldset {
   padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
 }
@@ -1957,7 +1958,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
 }
@@ -2004,7 +2005,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 .member-page-size select {
   font: inherit;
   color: inherit;
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
   padding: 0.55rem;
@@ -2256,7 +2257,7 @@ button.tab.active {
   padding: 0.5rem 0.7rem;
   font: inherit;
   color: inherit;
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
 }
@@ -4254,7 +4255,7 @@ label:has(> .file-input:focus-visible) {
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
-  background: var(--color-surface);
+  background: var(--color-input-bg);
   color: var(--color-text);
   width: 100%;
 }
@@ -5033,6 +5034,8 @@ label:has(> .file-input:focus-visible) {
   --color-button-primary-hover: color-mix(in srgb, var(--color-focus) 85%, #ffffff);
   --color-bg: color-mix(in srgb, var(--color-primary) 22%, #0c0e0d);
   --color-surface: color-mix(in srgb, var(--color-primary) 18%, #1c201e);
+  /* Issue 539: Knöpfe bleiben in der dunklen Fläche; die Felder sind unten eigens hell */
+  --color-input-bg: var(--color-surface);
   --color-text: #f2f5f3;
   --color-text-muted: #b9c3bf;
   --color-border: rgba(255, 255, 255, 0.2);
@@ -6109,6 +6112,11 @@ label:has(> .file-input:focus-visible) {
 }
 .style-select {
   width: 18rem;
+  max-width: 100%;
+}
+/* Issue 526: eigene Schriftfolge */
+.style-fonts {
+  width: 24rem;
   max-width: 100%;
 }
 .style-segments button {

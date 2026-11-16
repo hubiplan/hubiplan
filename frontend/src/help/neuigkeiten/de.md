@@ -17,6 +17,8 @@ November 2026:
 #### Webseite
 
 - Webseite: **Auffällige Hinweisleiste.** Die Hinweisleiste unter Webseite › Übersicht steht jetzt in der Akzentfarbe unter dem Kopf, mit Symbol, Knopf zum Ziel und auf Wunsch Countdown („noch 5 Tage“). Stil (Akzent, Achtung, Festlich, Schlicht), Platz (über oder unter dem Kopf, schwebend unten) und Symbol sind wählbar.
+- Webseite: **Lesbare Adressen** für Würden, Wettbewerbe und Reihen, etwa `/majestaeten/hubertuskoenige/` statt einer langen Kennung. Die Adresse lässt sich selbst wählen; alte Adressen und Links leiten weiter.
+- Webseite: **Hausschrift aus dem Styleguide.** Unter Gestaltung › Feinabstimmung › Schrift nimmt **Eigene Schriftfolge** Schriften, die auf dem Gerät installiert sind, etwa „Lucida Sans, Segoe UI, Arial“. Es wird keine Schriftdatei ausgeliefert; wer die Schrift nicht hat, sieht die nächste. Auch für KI-Assistenten.
 - Webseite: **Band der Untereinheiten absetzen.** Unter Gestaltung › Feinabstimmung › **Band der Untereinheiten** steht das Band auf den Seiten der Untereinheiten wahlweise in der Kastenfarbe, hell oder schlicht mit Linie, damit es nicht wie ein zweiter Seitenkopf wirkt.
 - **Breite Logos** (Schriftzüge im Querformat) erscheinen im Kopf von HUBIplan und der Webseite, auf Ausweisen, Urkunden und in PDFs nicht mehr winzig: Die Höhe ist fest, die Breite folgt dem Bild.
 - Webseite: **Lange Listen zweispaltig.** Unter Gestaltung › Feinabstimmung › **Lange Listen** › „zweispaltig“ stehen lange, schmale Tabellen wie alle Könige oder die Sieger über die Jahre am Bildschirm in zwei Spalten nebeneinander; auf dem Handy bleibt es eine Spalte.
@@ -144,6 +146,7 @@ November 2026:
 
 #### Aussehen und Bedienung
 
+- **Felder heben sich ab:** Mit der Farbrolle „Flächen“ in HUBIplan bleiben Eingabe- und Auswahlfelder und Knöpfe weiß, statt die getönte Farbe der Karte zu übernehmen. Ebenso die Such- und Formularfelder der Webseite.
 - **Hauptmenü neu gegliedert**: Die neue Gruppe **Vereinsleben** fasst Wettbewerbe, Meldungen und Musik zusammen; unter **Verein** bleiben Mitglieder, Untereinheiten und Chronik. **Umfragen** stehen jetzt unter Kommunikation, **Geschäftspartner** unter Verwaltung direkt nach Finanzen. In den Apps stehen die Verwaltungsbereiche in derselben Reihenfolge.
 - **Dunkelmodus überall**: Die dunkle Darstellung gilt jetzt für alle Seiten, auch für die Verwaltung. Sie ist zunächst aus: HUBIplan bleibt hell, bis du unter Mein Konto › Profil › **Darstellung** „Dunkel“ oder „Wie Gerät“ wählst. Konten, die bisher dem Gerät folgten, stehen jetzt auf „Hell“.
 - **Schnellsuche**: Oben im Kopf (oder mit Strg+K) springst du mit ein paar Buchstaben zu jeder Seite; wer Mitglieder sehen darf, findet dort auch Mitglieder.

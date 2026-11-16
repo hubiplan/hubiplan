@@ -27,6 +27,7 @@ from audit.log import diff, record, snapshot
 from changes import idempotency
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
+from core.webslug import take_from_attrs
 from members.models import Membership
 from members.personsearch import filter_names, name_ids, ordered
 from organizations.models import Department, Organization
@@ -100,7 +101,12 @@ class DignitySerializer(serializers.ModelSerializer):
             "name_plural",
             "plural",
             "reign_count",
+            # Webseite #149: Adresse auf der Webseite; leer = aus dem Namen
+            "web_slug",
+            "web_slug_auto",
         ]
+        read_only_fields = ["web_slug_auto"]
+        extra_kwargs = {"web_slug": {"required": False, "allow_blank": True, "max_length": 80}}
 
     def validate_unit(self, value):
         if value is None:
@@ -121,6 +127,7 @@ class DignitySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"name": gettext("Diese Würde gibt es schon.")})
         if "name" in attrs:
             attrs["name"] = name
+        take_from_attrs(attrs, self.instance, Dignity.objects.filter(organization=org))
         return attrs
 
 

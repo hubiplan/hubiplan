@@ -58,6 +58,10 @@
 
   --color-bg: #eef0ed;
   --color-surface: #ffffff;
+  /* #539: Hintergrund von Eingabe- und Auswahlfeldern, eigens statt der Fläche: Mit der
+     Farbrolle „Flächen“ (getönte Karten) bleiben Felder weiß und heben sich ab. themeVars nimmt
+     die Fläche, wenn Text auf Weiß schlechter lesbar wäre als 4,5 : 1. */
+  --color-input-bg: #ffffff;
   /* Zweite Fläche: Tabellenkopf, Segmentschalter, gesperrte Felder (Design „Frisch“) */
   --color-surface-2: color-mix(in srgb, var(--color-text) 3%, var(--color-surface));
   /* Fließtext; Links halten dazu 3 : 1 (linkColor in theme.ts, W-16) */
@@ -137,6 +141,7 @@
   --color-focus: #13ab8d;
   --color-bg: #111614;
   --color-surface: #1a201d;
+  --color-input-bg: var(--color-surface);
   --color-text: #dfe5e2;
   --color-text-muted: #a3ada8;
   --color-border: #2f3833;

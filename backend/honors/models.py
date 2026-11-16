@@ -19,10 +19,11 @@ from django.utils.translation import gettext
 from core.encfields import EncryptedCharField
 from core.plural import guess_plural  # noqa: F401  (hier weiter importierbar)
 from core.privatefiles import PrivateFileField
+from core.webslug import WebSlugMixin
 from exchange.models import private_storage
 
 
-class Dignity(models.Model):
+class Dignity(WebSlugMixin, models.Model):
     """Würde einer Einheit; ``unit`` ist die Untereinheit (leer: die Einheit selbst)."""
 
     organization = models.ForeignKey(
@@ -71,6 +72,15 @@ class Dignity(models.Model):
     @property
     def plural(self) -> str:
         return self.name_plural.strip() or guess_plural(self.name)
+
+    # Webseite #149: /majestaeten/hubertuskoenige/ aus der Mehrzahl wie im Menü
+    WEB_SLUG_FALLBACK = "wuerde"
+
+    def web_slug_source(self) -> str:
+        return self.plural or self.name
+
+    def web_slug_siblings(self):
+        return Dignity.objects.filter(organization_id=self.organization_id)
 
 
 class Reign(models.Model):

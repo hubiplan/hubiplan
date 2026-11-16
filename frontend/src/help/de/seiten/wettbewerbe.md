@@ -39,6 +39,10 @@ Auch Zug- und Mannschaftswertungen zeigen nur ihre Preisplätze, ebenso bei
 **nur Wertung der Untereinheiten und Mannschaften**. Alle Plätze erscheinen nur mit
 **ganze Rangliste**.
 
+## Adresse auf der Webseite
+
+Ergebnisse stehen unter einer lesbaren Adresse aus Titel und Jahr, etwa `/ergebnisse/vereinsmeisterschaft-2027/`. Unter **Adresse auf der Webseite** lässt sie sich selbst wählen; leer folgt sie wieder dem Titel. Frühere Adressen leiten weiter.
+
 ## Persönliche Ergebnisse an gekoppelte Vereine
 
 Unter **Auswertung** → **Ergebnisfreigabe an gekoppelte Vereine** können Verwalter
