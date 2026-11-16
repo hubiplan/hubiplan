@@ -44,33 +44,80 @@ DEPLOY_HOST=deploy@test.example.org DEPLOY_SUDO=1 deploy/deploy.sh  # erst nach 
 `~/.local/state/hubiplan/tested-trees`. `deploy/deploy.sh` bricht ab, wenn der Stand dort
 fehlt. Ein Merge-Commit mit unverändertem Inhalt gilt als getestet.
 
-### Merge und main (Regel für alle Threads)
+### Merge-Zug (Regel für alle Threads in hubiplan)
 
-Ein Zweig wird **einmal** grün getestet. Ist main danach weitergegangen, wird nicht
-automatisch neu getestet:
-
-```bash
-scripts/nachtest-noetig.sh <getesteter-commit> origin/main
-```
-
-- **Exit 0 („Kein Nachtest nötig“):** direkt mergen, sofern GitHub keinen Konflikt meldet.
-- **Exit 1 („Nachtest nötig“):** main einmischen und `scripts/test.sh` erneut. Das ist der Fall
-  bei derselben geänderten Datei (außer Übersetzungskatalogen, Hilfe und Doku), bei Migrationen
-  derselben App und bei Dateien, von denen ein ganzer Teil abhängt (Abhängigkeiten,
-  `conftest.py`/`factories.py`, `core/rls.py`, `scripts/test.sh`, Docker, Frontend-Konfiguration),
-  wenn die andere Seite in demselben Teil etwas ändert.
-
-Nach dem Merge wird main gebündelt getestet:
+hubiplan-PRs werden **nacheinander** gegen den aktuellen main getestet und gleich danach gemergt.
+So bewegt sich main während eines Laufs nicht, es gibt keine Nachtests, und der neue main ist ohne
+eigenen Lauf ausrollbar.
 
 ```bash
-scripts/test.sh --main      # holt den neuesten main und testet ihn
+scripts/zug.sh <PR-Nummer>   # vorprüfen, einreihen, auf main mischen, testen
+scripts/zug.sh --status      # Warteschlange und worauf der Zug wartet
+scripts/zug.sh --fertig      # warten, bis der grüne Stand in main ist
 ```
 
-Es läuft immer nur ein main-Lauf. Wer währenddessen `--main` startet, wartet ohne Testplatz,
-holt main danach neu und ist fertig, wenn dieser neueste main schon getestet ist (er enthält
-den eigenen Merge). Ausgerollt wird der neueste grüne main; `deploy/deploy.sh` nimmt
-weiterhin nur getestete Stände. Ist der main-Lauf rot, prüft der Thread, der ihn gestartet
-hat, ob sein Merge die Ursache ist, und meldet es sonst dem Koordinator.
+1. Der Zug prüft den PR vor (siehe „Vorprüfung“) und reiht ihn für den Zug-Platz ein.
+2. Ist der PR dran, mischt der Zug ihn lokal auf den neuesten main und testet genau diesen Stand
+   mit `scripts/test.sh` (Vorlauf der geänderten Testdateien zuerst). Warten weitere PRs, fahren
+   bis zu drei zusammen (`ZUG_BUENDEL`); ein PR mit Migrationen fährt allein. Ist ein Bündel rot,
+   fährt der erste PR allein weiter, die anderen danach.
+3. **Grün:** Der Zug nennt die PRs in ihrer Reihenfolge. Der Thread, der den Lauf gestartet hat,
+   mergt sie **sofort** auf GitHub, genau in dieser Reihenfolge und je mit „Create a merge commit“.
+   Der Zug hält seinen Platz so lange (höchstens 30 Minuten, `ZUG_WARTEN`), damit niemand
+   dazwischen mergt. Danach hat main genau den getesteten Tree; `deploy/deploy.sh` rollt ihn ohne
+   neuen Lauf aus. Wer im Bündel mitfuhr, bekommt das Ergebnis gemeldet und ist fertig.
+4. **Rot oder Mischkonflikt:** Der PR fliegt raus; beheben (bei Konflikt main einmischen) und neu
+   einreihen. Die anderen fahren weiter.
+
+In hubiplan mergt niemand am Zug vorbei. Ausnahme Notfall: dann `scripts/test.sh --main` vor dem
+Ausrollen. Andere Repos (Webseite, Apps) haben kurze Läufe und testen wie bisher mit ihrem
+`scripts/test.sh`.
+
+Zum Entwickeln bleibt `scripts/test.sh <ref>` (Zweig-Lauf auf einem normalen Platz). Für Zweige,
+die nicht über den Zug kommen, gilt weiter: `scripts/nachtest-noetig.sh <getesteter-commit> origin/main`
+(Exit 0: direkt mergen; Exit 1: main einmischen und neu testen), danach `scripts/test.sh --main`.
+Es läuft immer nur ein main-Lauf; wer währenddessen `--main` startet, wartet ohne Testplatz.
+
+### Vorprüfung
+
+`scripts/vorpruefung.sh [ref]` prüft in Sekunden bis etwa zwei Minuten, woran volle Läufe am
+häufigsten scheitern: ruff, Typprüfung, Lint, Prettier, i18n, die Hilfe-Tests (erzeugte
+`backend/mcpserver/hilfe.json`, Fettschrift-Namen) und die Vitest-Dateien, die der Stand gegenüber
+main ändert. Sie belegt keinen Testplatz, nutzt höchstens zwei Kerne mit niedriger Priorität und ist
+nie eine Freigabe. `scripts/test.sh` und `scripts/zug.sh` rufen sie vor der Warteschlange auf
+(`TEST_VORPRUEFUNG=0`: aus); ein grüner Tree wird vermerkt. Ohne Docker, z. B. in einer
+Cloud-Sitzung vor dem Lauf auf dem Testrechner, läuft sie mit dem installierten node/npm
+(`VORPRUEFUNG_OHNE_DOCKER=1`) und holt sich ruff in der festgeschriebenen Fassung.
+
+### Läufe abbrechen
+
+Jeder Lauf meldet oben seine **Lauf-ID** (`hubiplan-test-<Zeit>-<PID>`), und alle seine Container
+und Netze tragen das Docker-Label `hubiplan.lauf=<ID>`.
+
+```bash
+scripts/test.sh --laeufe                 # laufende Läufe mit ID, Commit, Start, Platz
+scripts/test.sh --abbrechen <Lauf-ID>    # nur diesen Lauf beenden und aufräumen
+```
+
+**Nie** über eine Mustersuche abbrechen (`pkill -f …`, `docker rm $(docker ps -q …)`): Das trifft
+die Läufe anderer Threads. Ein Lauf, der noch auf einen Platz wartet, hat noch keine Container;
+er steht in `testplatz --liste` mit seiner PID und lässt sich mit `kill <PID>` beenden.
+
+### Messprotokoll
+
+Jeder Lauf hängt eine Zeile an `laeufe.csv` (im selben Ordner wie die Datenbank-Vorlagen, sonst
+neben `tested-trees`; `TEST_PROTOKOLL=<datei>` oder `0` für keines):
+Lauf-ID, Commit, Platz, Kerne, Wartezeit, Rüsten, Frontend, Vorlauf, pytest, gesamt, Ergebnis
+(grün, rot, abgebrochen, teil-grün), erster roter Test und Last. pytest gibt die 30 langsamsten
+Tests aus (`TEST_DURATIONS`). Wackelige und langsame Tests werden nach diesem Protokoll angegangen.
+
+### Wackelige Tests
+
+`backend/tests/wackelig.txt` führt Tests, die bekanntermaßen ab und zu ohne Grund scheitern (eine
+Zeile je Test, wie pytest ihn nennt). Sind in einem Lauf **nur** solche Tests rot (höchstens fünf),
+wiederholt `scripts/test.sh` sie einmal allein; sind sie dann grün, gilt der Lauf als grün, und das
+Messprotokoll vermerkt `gruen-wackelig`. Jeder andere rote Test bleibt rot. Die Liste soll
+schrumpfen: Wer einen Eintrag repariert, streicht ihn.
 
 ### Reihenfolge eines Laufs
 
@@ -132,6 +179,10 @@ testplatz [--kerne N] <befehl …>   # wartet auf einen freien Platz, dann läuf
 - Ohne Einstellung gibt es einen Platz mit allen Kernen. Mehr Plätze oder weniger Kerne
   stellt jeder Rechner lokal in `~/.config/testplatz` ein (nicht im Repo), zum Beispiel
   `PLAETZE=2` und `KERNE=4`, oder über `TESTPLATZ_PLAETZE` und `TESTPLATZ_KERNE`.
+- Plätze verschiedener Größe: `PLATZ_KERNE="12 6"` (Kerne je Platz). `ZUG_PLATZ=1` behält
+  Platz 1 dem Merge-Zug vor (`testplatz --zug`, nur `scripts/zug.sh`); alle anderen Läufe nehmen
+  die übrigen Plätze und haben ihre eigene Warteschlange. Ohne `ZUG_PLATZ` nimmt der Zug einen
+  beliebigen Platz wie jeder andere Lauf.
 - Sperren liegen in `~/.testplaetze/platz-N.lock`. Wer keinen freien Platz findet, stellt
   sich in die Warteschlange `~/.testplaetze/warteschlange/`: Die Plätze werden in der
   Reihenfolge der Anfragen vergeben. Bricht ein Lauf ab, gibt das System den Platz und

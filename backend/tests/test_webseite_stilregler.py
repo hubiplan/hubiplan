@@ -123,8 +123,10 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 
 def test_gleiche_liste_wie_die_webseite():
-    # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 66
+    # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form. Keine feste
+    # Anzahl: Zwei Zweige mit je einem neuen Regler wären sonst einzeln grün und zusammen rot.
+    # Dass die Oberfläche jeden Regler zeigt, prüft frontend/src/test/StilreglerKatalog.test.ts.
+    assert len(style.OPTIONS) > 50
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)

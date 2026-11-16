@@ -37,8 +37,9 @@ neu=$(git diff --name-only "$BASIS" "$MAIN")
 gruende=()
 
 # Übersetzungskataloge, Hilfe und Doku zählen nicht: Ohne Git-Konflikt ergänzen sich dort nur
-# Einträge, und i18n:check / uebersetzung_pruefen laufen im main-Lauf ohnehin.
-OHNE='^(frontend/src/i18n/[^/]+\.json|backend/locale/.*\.po|docs/.*|frontend/src/help/.*\.md|[^/]+\.md)$'
+# Einträge, und i18n:check / uebersetzung_pruefen laufen im main-Lauf ohnehin. Ebenso die aus
+# der Hilfe erzeugte backend/mcpserver/hilfe.json (der Lauf prüft, dass sie aktuell ist).
+OHNE='^(frontend/src/i18n/[^/]+\.json|backend/locale/.*\.po|docs/.*|frontend/src/help/.*\.md|backend/mcpserver/hilfe\.json|[^/]+\.md)$'
 gleich=$(comm -12 <(sort -u <<< "$zweig") <(sort -u <<< "$neu") | grep -vE "$OHNE" | sed '/^$/d' || true)
 [ -z "$gleich" ] || gruende+=("dieselben Dateien geändert:" "$(sed 's/^/    /' <<< "$gleich")")
 

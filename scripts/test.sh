@@ -71,6 +71,54 @@ schon_gruen_vermerken() {
 }
 LAUFEND="$(dirname "$STATE")/laufend"
 
+# Laufende Läufe (docs/testserver.md, „Läufe abbrechen“): Jeder Lauf hat eine ID
+# hubiplan-test-<Zeit>-<PID>, steht mit ihr in laufend/lauf-<ID> und versieht alle seine
+# Docker-Objekte mit dem Label hubiplan.lauf=<ID>. Abgebrochen wird nur über diese ID, nie
+# über eine Mustersuche (pkill -f, docker ps | grep …), die fremde Läufe trifft.
+if [ "${1:-}" = "--laeufe" ]; then
+    n=0
+    for f in "$LAUFEND"/lauf-*; do
+        [ -e "$f" ] || continue
+        pid=$(sed -n 's/^pid=//p' "$f")
+        if ! kill -0 "$pid" 2> /dev/null; then rm -f "$f"; continue; fi
+        n=$((n + 1))
+        echo "${f##*/lauf-}  $(sed -n 's/^\(ref\|start\|platz\|ordner\)=//p' "$f" | tr '\n' ' ')"
+    done
+    [ "$n" -gt 0 ] || echo "Keine hubiplan-Testläufe."
+    exit 0
+fi
+if [ "${1:-}" = "--abbrechen" ]; then
+    lauf="${2:-}"
+    [[ "$lauf" =~ ^hubiplan-test-[0-9]+-[0-9]+$ ]] \
+        || { echo "Aufruf: scripts/test.sh --abbrechen hubiplan-test-<Zeit>-<PID> (siehe --laeufe)" >&2; exit 2; }
+    pid=$(sed -n 's/^pid=//p' "$LAUFEND/lauf-$lauf" 2> /dev/null || true)
+    [ -n "$pid" ] || pid=${lauf##*-}
+    # Nur abbrechen, was wirklich dieser Lauf ist: die PID muss test.sh mit dieser ID sein
+    if kill -0 "$pid" 2> /dev/null && [ -e "$LAUFEND/lauf-$lauf" ]; then
+        kill -TERM "$pid" 2> /dev/null || true
+    fi
+    # Container dieses Laufs entfernen; dann kehrt der wartende docker-Aufruf zurück und der
+    # Lauf räumt den Rest selbst auf
+    ids=$(docker ps -aq --filter "label=hubiplan.lauf=$lauf")
+    [ -z "$ids" ] || docker rm -f $ids > /dev/null
+    for _ in $(seq 1 30); do kill -0 "$pid" 2> /dev/null || break; sleep 1; done
+    # Was übrig ist (Lauf schon tot oder hängt): nur Objekte mit genau dieser ID
+    ids=$(docker ps -aq --filter "label=hubiplan.lauf=$lauf")
+    [ -z "$ids" ] || docker rm -f $ids > /dev/null
+    docker network rm "$lauf" > /dev/null 2>&1 || true
+    docker volume ls -q --filter "label=hubiplan.lauf=$lauf" | xargs -r docker volume rm > /dev/null 2>&1 || true
+    for v in data backups seed-data rotation-data rotation-restore rotation-backups; do
+        docker volume rm "$lauf-$v" > /dev/null 2>&1 || true
+    done
+    docker image rm "hubiplan-test-backend:$lauf" "hubiplan-test-backup:$lauf" > /dev/null 2>&1 || true
+    if [ -e "$LAUFEND/lauf-$lauf" ] && kill -0 "$pid" 2> /dev/null; then
+        echo "Lauf $lauf (PID $pid) läuft noch." >&2; exit 1
+    fi
+    rm -f "$LAUFEND/lauf-$lauf"
+    echo "Lauf $lauf abgebrochen und aufgeräumt."
+    exit 0
+fi
+
 # --main (docs/testserver.md, „Merge und main“): den neuesten main testen, gebündelt. Es läuft
 # immer nur ein main-Lauf; wer danach kommt, holt main neu. Ist der neueste main dann schon
 # getestet (er enthält den eigenen Merge), ist nichts mehr zu tun.
@@ -153,6 +201,13 @@ if [ "$#" -le 1 ] && [ "${TEST_ALLES:-0}" != 1 ] && [ "${BACKUP_TEST:-0}" != 1 ]
 fi
 
 if [ -z "${TESTPLATZ:-}" ]; then
+    # Schnelle Vorprüfung ohne Testplatz (Format, Lint, Typen, erzeugte Hilfe, Migrationen):
+    # was daran scheitert, muss nicht erst auf einen Platz warten. TEST_VORPRUEFUNG=0: aus.
+    if [ "${TEST_VORPRUEFUNG:-1}" = 1 ] && [ -x "$(dirname "$0")/vorpruefung.sh" ]; then
+        "$(dirname "$0")/vorpruefung.sh" "${1:-HEAD}" || exit $?
+    fi
+    # Für das Messprotokoll: seit wann der Lauf auf einen Platz wartet
+    export TEST_ANGEFRAGT="${TEST_ANGEFRAGT:-$(date +%s)}"
     exec "$(dirname "$0")/testplatz.sh" "$0" "$@"
 fi
 
@@ -163,9 +218,14 @@ EIGENE_ARGS=$#
 # Ergebnis immer eindeutig melden, auch wenn ein Aufrufer den Exit-Code nicht sieht
 RESULT_OK=0
 WORK=""
+ID=""
+T_PLATZ=$(date +%s)
+T_FE=""; T_VORLAUF=""; T_PYTEST=""; ERGEBNIS=""
 on_exit() {
     local rc=$?
+    [ -n "$WORK" ] && protokoll "$rc"
     [ -n "$WORK" ] && cleanup
+    [ -n "$ID" ] && rm -f "$LAUFEND/lauf-$ID"
     if [ "$RESULT_OK" != 1 ]; then
         [ "$rc" -eq 0 ] && rc=1
         echo "FEHLGESCHLAGEN (Exit $rc): ${SHA:-$REF} ist nicht getestet." >&2
@@ -173,6 +233,35 @@ on_exit() {
     fi
 }
 trap on_exit EXIT
+# Abbruch von außen (scripts/test.sh --abbrechen): aufräumen wie bei jedem Ende
+trap 'exit 143' TERM INT HUP
+
+# Messprotokoll (docs/testserver.md): eine Zeile je Lauf, auch für rote und abgebrochene
+if [ -d /mnt/e/tmp ]; then PROTOKOLL_DEFAULT=/mnt/e/tmp/hubiplan-tests/laeufe.csv
+else PROTOKOLL_DEFAULT="$(dirname "$STATE")/laeufe.csv"; fi
+PROTOKOLL="${TEST_PROTOKOLL:-$PROTOKOLL_DEFAULT}"
+protokoll() {
+    [ "$PROTOKOLL" != 0 ] || return 0
+    local rc=$1 jetzt erg rot=""
+    jetzt=$(date +%s)
+    if [ "$RESULT_OK" = 1 ]; then erg=${ERGEBNIS:-gruen}
+    elif [ "$rc" = 143 ] || [ "$rc" = 130 ] || [ "$rc" = 129 ]; then erg=abgebrochen
+    else erg=rot; fi
+    if [ "$erg" != gruen-wackelig ] && [ -s "$WORK/berichte/pytest.xml" ]; then
+        rot=$(grep -oE '<testcase [^>]*classname="[^"]*" name="[^"]*"[^/]*>[[:space:]]*<(failure|error)' \
+            "$WORK/berichte/pytest.xml" 2> /dev/null | head -1 \
+            | sed -E 's/.*classname="([^"]*)" name="([^"]*)".*/\1::\2/' || true)
+    fi
+    [ -n "$rot" ] || rot=${ROT_TEIL:-}
+    (
+        mkdir -p "$(dirname "$PROTOKOLL")"
+        [ -s "$PROTOKOLL" ] || echo "ende,lauf,commit,platz,kerne,warten_s,ruesten_s,frontend_s,vorlauf_s,pytest_s,gesamt_s,ergebnis,erster_fehler,last" > "$PROTOKOLL"
+        printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s\n' "$(date -Iseconds)" "$ID" "${SHA:-}" \
+            "${TESTPLATZ:-}" "${TEST_KERNE:-}" "$((T_PLATZ - ${TEST_ANGEFRAGT:-$T_PLATZ}))" \
+            "${T_RUESTEN:-}" "$T_FE" "$T_VORLAUF" "$T_PYTEST" "$((jetzt - T_PLATZ))" "$erg" \
+            "${rot//\"/}" "$(cut -d' ' -f1 /proc/loadavg 2> /dev/null)" >> "$PROTOKOLL"
+    ) 2> /dev/null || true
+}
 
 # Den Commit sicher auflösen. Eine volle SHA löst git rev-parse auch dann auf,
 # wenn der Commit im Klon fehlt; deshalb mit --verify gegen ^{commit} prüfen.
@@ -198,6 +287,21 @@ CPUS="--cpuset-cpus=$TESTPLATZ_CPUS"
 PYTEST_ARGS="${*:--q}"
 
 ID="hubiplan-test-$(date +%s)-$$"
+mkdir -p "$LAUFEND"
+printf '%s\n' "pid=$$" "ref=$SHA" "start=$(date -Iseconds)" "platz=${TESTPLATZ:-}" "ordner=$(pwd)" \
+    > "$LAUFEND/lauf-$ID"
+echo "Lauf-ID: $ID (abbrechen nur mit: scripts/test.sh --abbrechen $ID)"
+# Jeder Container und jedes Netz dieses Laufs trägt das Label hubiplan.lauf=<ID>
+docker() {
+    case "${1:-} ${2:-}" in
+        "run "*) shift; command docker run --label "hubiplan.lauf=$ID" "$@" ;;
+        "network create") shift 2; command docker network create --label "hubiplan.lauf=$ID" "$@" ;;
+        "volume create") shift 2; command docker volume create --label "hubiplan.lauf=$ID" "$@" ;;
+        *) command docker "$@" ;;
+    esac
+}
+export -f docker
+export ID
 # Eigene Image-Namen je Lauf: zwei gleichzeitige Läufe dürfen sich nicht überschreiben
 BACKEND_IMG="hubiplan-test-backend:$ID"
 BACKUP_IMG="hubiplan-test-backup:$ID"
@@ -215,7 +319,7 @@ cleanup() {
         docker volume rm "$ID-$suffix" > /dev/null 2>&1 || true
     done
     # Dateien aus Containern ggf. mit deren Rechten entfernen
-    rm -rf "$WORK" 2> /dev/null         || docker run --rm -v "$WORK:/w" node:24-alpine rm -rf /w/backend /w/frontend /w/deploy /w/scripts
+    rm -rf "$WORK" 2> /dev/null         || docker run --rm -v "$WORK:/w" node:24-alpine rm -rf /w/backend /w/frontend /w/deploy /w/scripts /w/berichte
     rm -rf "$WORK"
     docker image rm "$BACKEND_IMG" "$BACKUP_IMG" > /dev/null 2>&1 || true
 }
@@ -276,7 +380,9 @@ frontend_teil2() {
     if [ "$rc" = 0 ]; then
         fe_run "npx vitest run --maxWorkers=$WORKERS --reporter=dot" || rc=$?
     fi
+    T_FE=$(($(date +%s) - fstart))
     if [ "$rc" != 0 ]; then
+        ROT_TEIL=frontend
         echo "Frontend: FEHLGESCHLAGEN" >&2
         FE_FEHLER=$rc
         return 0
@@ -477,10 +583,12 @@ if [ "$RUN_BACKEND" = 1 ]; then
             -m "not migration" -q "${VORLAUF[@]}" || rc=$?
         # 5: alle Tests der Dateien sind Migrationstests, sie laufen im Hauptlauf
         if [ "$rc" != 0 ] && [ "$rc" != 5 ]; then
+            T_VORLAUF=$(($(date +%s) - vstart)); ROT_TEIL="vorlauf: ${VORLAUF[*]}"
             echo "Backend: Vorlauf rot, Abbruch ohne Hauptlauf" >&2
             exit "$rc"
         fi
-        echo "Backend: Vorlauf ok ($(($(date +%s) - vstart)) s)"
+        T_VORLAUF=$(($(date +%s) - vstart))
+        echo "Backend: Vorlauf ok ($T_VORLAUF s)"
         # Frische Kopien für den Hauptlauf
         for i in $(seq 0 $((WORKERS - 1))); do
             docker exec "$ID-db" psql -q -U test -d test -c "DROP DATABASE IF EXISTS ${TEST_DB}_gw$i" \
@@ -496,12 +604,56 @@ if [ "$RUN_BACKEND" = 1 ]; then
     # --reuse-db: die Kopien nehmen (migrate prüft nur noch, dass nichts fehlt).
     # --maxschedchunk=2: kleine Pakete, damit die langsamen Tests (zuerst gesammelt, siehe
     # tests/conftest.py) auf verschiedene Worker verteilt werden.
+    # --durations: die langsamsten Tests stehen im Protokoll; der JUnit-Bericht liefert dem
+    # Messprotokoll den ersten roten Test.
+    mkdir -p "$WORK/berichte"
+    chmod 777 "$WORK/berichte"
+    T_RUESTEN=$(($(date +%s) - T_PLATZ))
+    pstart=$(date +%s)
+    rc=0
     docker run --rm --network "$ID" "$CPUS" \
         -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
         -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
         -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+        -v "$WORK/berichte:/berichte" \
         --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
-        "${MIG_MARK[@]}" "${IGNORE[@]}" $PYTEST_ARGS
+        --junitxml=/berichte/pytest.xml --durations="${TEST_DURATIONS:-30}" \
+        "${MIG_MARK[@]}" "${IGNORE[@]}" $PYTEST_ARGS || rc=$?
+    T_PYTEST=$(($(date +%s) - pstart))
+    # Wackelige Tests (backend/tests/wackelig.txt, docs/testserver.md): Sind alle roten Tests
+    # dort eingetragen, laufen genau sie einmal allein. Grün → der Lauf gilt als grün, das
+    # Messprotokoll vermerkt „gruen-wackelig“. Jeder andere rote Test bleibt rot.
+    if [ "$rc" != 0 ] && [ "$EIGENE_ARGS" -eq 0 ] && [ -s "$WORK/backend/tests/wackelig.txt" ] \
+        && [ -s "$WORK/berichte/pytest.xml" ]; then
+        mapfile -t ROTE < <(grep -oE '<testcase [^>]*classname="[^"]*" name="[^"]*"[^/]*>[[:space:]]*<(failure|error)' \
+            "$WORK/berichte/pytest.xml" | sed -E 's/.*classname="([^"]*)" name="([^"]*)".*/\1 \2/' \
+            | awk '{ n = split($1, t, "."); p = ""; i = 1
+                     for (; i <= n; i++) { p = p (p == "" ? "" : "/") t[i]; if (t[i] ~ /^test_/) break }
+                     id = p ".py"; for (i++; i <= n; i++) id = id "::" t[i]; print id "::" $2 }' | sort -u)
+        bekannt=1
+        for t in "${ROTE[@]}"; do
+            grep -qxF "${t%%\[*}" <(grep -vE '^[[:space:]]*(#|$)' "$WORK/backend/tests/wackelig.txt" | sed 's/[[:space:]]*#.*//') \
+                || bekannt=0
+        done
+        if [ "${#ROTE[@]}" -gt 0 ] && [ "${#ROTE[@]}" -le 5 ] && [ "$bekannt" = 1 ]; then
+            echo "Backend: nur wackelige Tests rot (${ROTE[*]}), wiederhole sie einmal allein …"
+            for i in 0; do
+                docker exec "$ID-db" psql -q -U test -d test -c "DROP DATABASE IF EXISTS ${TEST_DB}_gw$i" \
+                    -c "CREATE DATABASE ${TEST_DB}_gw$i TEMPLATE $TEST_DB" > /dev/null
+            done
+            if docker run --rm --network "$ID" "$CPUS" \
+                -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
+                -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
+                -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+                --entrypoint pytest "$BACKEND_IMG" -n 1 --reuse-db -q "${ROTE[@]}"; then
+                echo "Backend: wackelige Tests allein grün; bitte reparieren (Messprotokoll)."
+                ERGEBNIS=gruen-wackelig
+                ROT_TEIL="wackelig: ${ROTE[*]}"
+                rc=0
+            fi
+        fi
+    fi
+    [ "$rc" = 0 ] || exit "$rc"
     echo "Backend: Tests ok ($(($(date +%s) - start)) s)"
     # Gleich vermerken: scheitert danach etwas anderes, läuft das Backend nicht noch einmal
     teil_vermerken backend "$B_KEY"
@@ -700,6 +852,7 @@ fi
 if [ "$#" -gt 0 ]; then
     # Teil-Läufe (eigene pytest-Argumente) zählen nicht als Freigabe zum Ausrollen
     echo "Grün (Teil-Lauf, nicht als getestet vermerkt): $SHA"
+    ERGEBNIS=teil-gruen
     RESULT_OK=1
     exit 0
 fi
