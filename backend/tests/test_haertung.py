@@ -97,7 +97,7 @@ def reload_urls(settings):
         importlib.reload(config.urls)
 
     yield _reload
-    settings.ADMIN_ENABLED = True
+    settings.ADMIN_ENABLED = False
     _reload()
 
 
@@ -108,6 +108,43 @@ def test_admin_im_serverbetrieb_aus(client, settings, reload_urls):
     settings.ADMIN_ENABLED = True
     reload_urls()
     assert client.get("/admin/").status_code == 302
+
+
+def test_admin_standardmaessig_aus(monkeypatch):
+    """Ohne DJANGO_ADMIN_ENABLED ist der Admin aus, auch ohne docker-compose.server.yml."""
+    import importlib
+
+    import config.settings
+
+    monkeypatch.delenv("DJANGO_ADMIN_ENABLED", raising=False)
+    try:
+        assert importlib.reload(config.settings).ADMIN_ENABLED is False
+    finally:
+        importlib.reload(config.settings)
+
+
+def test_admin_nur_mit_zwei_faktor(settings, reload_urls):
+    """Superuser ohne zweiten Faktor kommt nicht in den Admin (Gesamtaudit 15.11., AUTH-04)."""
+    from allauth.mfa.models import Authenticator
+    from django.test import Client
+
+    from accounts.models import User
+    from core.tenancy import rls_bypass
+
+    settings.MFA_PLATFORM_GRACE = False
+    settings.ADMIN_ENABLED = True
+    reload_urls()
+    admin = User.objects.create_superuser("betreiber@example.org", "Sicheres-Passwort-123")
+    opfer = User.objects.create_user("vorstand@example.org", "Anderes-Passwort-456")
+    c = Client()
+    c.force_login(admin)  # Passwortsitzung, kein zweiter Faktor eingerichtet
+    assert c.get("/admin/").status_code == 302
+    assert c.get(f"/admin/accounts/user/{opfer.pk}/change/").status_code == 302
+    with rls_bypass():
+        Authenticator.objects.create(user=admin, type=Authenticator.Type.TOTP, data={})
+    c = Client()
+    c.force_login(admin)
+    assert c.get("/admin/").status_code == 200
 
 
 # --- Alarm-Mails ---

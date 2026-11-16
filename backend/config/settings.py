@@ -448,9 +448,10 @@ OUTBOX_FAILED_RETENTION_DAYS = int(os.environ.get("OUTBOX_FAILED_RETENTION_DAYS"
 MAILING_OPEN_PER_DAY_TOTAL = int(os.environ.get("MAILING_OPEN_PER_DAY_TOTAL", "20"))
 
 # --- Sicherheit ---
-# Django-Admin unter /admin/: im Server-Betrieb standardmäßig aus (weniger
-# Angriffsfläche); bei Bedarf mit DJANGO_ADMIN_ENABLED=true in der .env einschalten
-ADMIN_ENABLED = env_bool("DJANGO_ADMIN_ENABLED", True)
+# Django-Admin unter /admin/: standardmäßig aus, auch ohne docker-compose.server.yml (weniger
+# Angriffsfläche; er umgeht den Zeilenschutz). Bei Bedarf DJANGO_ADMIN_ENABLED=true in der
+# .env; dann nur für Superuser mit Zwei-Faktor-Anmeldung (Gesamtaudit 15.11., AUTH-04)
+ADMIN_ENABLED = env_bool("DJANGO_ADMIN_ENABLED", False)
 # Swagger-Oberfläche unter /api/docs/ lädt Code von einem fremden Server (CDN);
 # im Server-Betrieb aus (docker-compose.server.yml), Schema unter /api/schema/ bleibt
 API_DOCS_ENABLED = env_bool("DJANGO_API_DOCS_ENABLED", True)

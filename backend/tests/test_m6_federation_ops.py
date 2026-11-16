@@ -230,7 +230,16 @@ def test_mitgliedschaften_unveraendert(members):
 
 
 class TestSicherheit:
-    def test_admin_anmeldung_fuehrt_zur_2fa_anmeldung(self, client, db):
+    def test_admin_anmeldung_fuehrt_zur_2fa_anmeldung(self, client, db, settings):
+        import importlib
+
+        from django.urls import clear_url_caches
+
+        import config.urls
+
+        settings.ADMIN_ENABLED = True  # Vorgabe ist aus (AUTH-04); hier eingeschaltet prüfen
+        clear_url_caches()
+        importlib.reload(config.urls)
         resp = client.get("/admin/login/")
         assert resp.status_code in (301, 302)
         assert resp["Location"] == "/anmelden"
@@ -241,6 +250,9 @@ class TestSicherheit:
             403,
             405,
         )
+        settings.ADMIN_ENABLED = False
+        clear_url_caches()
+        importlib.reload(config.urls)
 
     def test_excel_formeln_werden_entschaerft(self):
         from exchange.export import safe_cell

@@ -1085,8 +1085,10 @@ Säubern des Servers (oben, Schritt 3) und vor dem Wiederanschalten:
 5. Wer sich über eine andere Instanz anmeldet, braucht danach keine neue Verknüpfung; die
    Anmeldebestätigungen gelten mit dem neuen Schlüssel, sobald der Partner ihn bestätigt hat.
 
-**Django-Admin** (`/admin/`) ist im Server-Betrieb aus. Bei Bedarf in der `.env`
-`DJANGO_ADMIN_ENABLED=true` setzen und neu ausrollen, danach wieder entfernen.
+**Django-Admin** (`/admin/`) ist standardmäßig aus, auch ohne `docker-compose.server.yml`. Bei
+Bedarf in der `.env` `DJANGO_ADMIN_ENABLED=true` setzen und neu ausrollen, danach wieder
+entfernen. Eingeschaltet lässt er nur Superuser mit eingerichteter Zwei-Faktor-Anmeldung hinein;
+er umgeht Rechte und Zeilenschutz.
 
 Mails gibt es für:
 
