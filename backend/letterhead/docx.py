@@ -268,7 +268,12 @@ def load_picture(source, name: str, max_px: int = 800) -> Picture | None:
     from PIL import Image, UnidentifiedImageError
 
     try:
-        image = Image.open(source if isinstance(source, str) else io.BytesIO(source))
+        from core.bildsicher import IMAGE_FORMATS
+
+        # Nur übliche Bildformate (nie EPS/PostScript, PUB-01)
+        image = Image.open(
+            source if isinstance(source, str) else io.BytesIO(source), formats=IMAGE_FORMATS
+        )
         # Riesige Bilder gar nicht erst entpacken (Audit 29.10. R-V01)
         if image.width * image.height > MAX_PICTURE_PIXELS:
             return None

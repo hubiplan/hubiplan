@@ -358,27 +358,42 @@ def parse_xml(data: bytes) -> dict:
     return result
 
 
-def xml_from_pdf(data: bytes) -> bytes | None:
-    """Eingebettetes XML einer ZUGFeRD/Factur-X-PDF (oder None)."""
-    import pypdfium2 as pdfium
+# Fremde PDF (Rechnungspostfach, Upload): eingebettete Dateien in einem eigenen Prozess mit
+# Speicher- und Zeitgrenze auspacken. Eine kleine PDF kann sonst Gigabytes entpacken und den
+# Worker beenden; die Mail bliebe ungelesen und käme alle paar Minuten wieder
+# (Gesamtaudit 15.11., PUB-02).
+PDF_PROZESS_SPEICHER = 768 * 1024 * 1024
+PDF_PROZESS_SEKUNDEN = 30
+
+
+def xml_from_pdf(data: bytes, *, vertraut: bool = False) -> bytes | None:
+    """Eingebettetes XML einer ZUGFeRD/Factur-X-PDF (oder None).
+
+    ``vertraut=True`` nur für selbst erzeugte PDFs (billing/hybrid.py): dann im eigenen Prozess.
+    """
+    if vertraut:
+        from .pdf_anhang import xml_aus_pdf
+
+        return xml_aus_pdf(data)
+    import subprocess
+    import sys
+    from pathlib import Path
 
     try:
-        pdf = pdfium.PdfDocument(data)
-    except Exception:  # noqa: BLE001 - kaputte PDF: einfach keine E-Rechnung
+        # Der Kindprozess setzt seine Speichergrenze selbst (kein preexec_fn in Threads)
+        lauf = subprocess.run(  # noqa: S603 - festes Modul, keine Shell, PDF über stdin
+            [sys.executable, "-m", "finance.pdf_anhang", str(PDF_PROZESS_SPEICHER)],
+            input=data,
+            capture_output=True,
+            timeout=PDF_PROZESS_SEKUNDEN,
+            cwd=Path(__file__).resolve().parent.parent,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
         return None
-    try:
-        found = None
-        for i in range(pdf.count_attachments()):
-            attachment = pdf.get_attachment(i)
-            name = (attachment.get_name() or "").lower()
-            if name.endswith(".xml"):
-                content = bytes(attachment.get_data())
-                if name in ("factur-x.xml", "zugferd-invoice.xml", "xrechnung.xml"):
-                    return content
-                found = found or content
-        return found
-    finally:
-        pdf.close()
+    if lauf.returncode != 0 or not lauf.stdout or len(lauf.stdout) > MAX_XML:
+        return None
+    return lauf.stdout
 
 
 def read(data: bytes, content_type: str) -> dict | None:

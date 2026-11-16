@@ -19,6 +19,11 @@ class CoreConfig(AppConfig):
 
         pdf_haerten()
 
+        # Bilder: PostScript (EPS) nie öffnen, sonst ruft Pillow Ghostscript auf
+        from .bildsicher import install as bilder_haerten
+
+        bilder_haerten()
+
         # Alarm-Mails bei neuen Plattformzugängen und Superusern
         from .alarm import connect
 

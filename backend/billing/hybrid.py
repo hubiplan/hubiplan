@@ -126,7 +126,7 @@ def convert(source, seller):
             check_schematron=False,
             pdf_metadata={"title": original["number"], "author": seller},
         )
-        if xml_from_pdf(pdf) != cii:
+        if xml_from_pdf(pdf, vertraut=True) != cii:
             raise ValueError("Embedded XML differs")
         (path / "final.pdf").write_bytes(pdf)
         env = {**os.environ, "JAVA_OPTS": "-Xmx256m"}
