@@ -234,7 +234,7 @@ sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Ha
 | Werkzeug | Bereich | Was |
 |---|---|---|
 | `briefbogen_ansehen` | lesen | Einstellungen, Palette mit Kontrast auf Weiß, Hinweise, `eigenes_logo`; `untereinheit` optional |
-| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `name_im_kopf` (höchstens zwei Zeilen, #487), `zweite_zeile_kleiner`, `zusatzzeile`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `anrede`, `grussformel`, `fusszeile` {…}; nur Angegebenes ändert sich |
+| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `zweite_zeile_kleiner`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `fusszeile` {…}; nur Angegebenes ändert sich. Keine Freitexte (Gesamtaudit 15.11., MCP-01): `name_im_kopf`, `zusatzzeile`, `anrede`, `grussformel` liefert `briefbogen_ansehen`, ändern geht nur in HUBIplan |
 | `briefbogen_logo_aus_bild` | briefbogen | Issue #488: Bild der Bilderverwaltung als eigenes Logo nur für den Briefbogen (`LetterheadLogoView`, `letterhead/logo/` bzw. `letterhead/units/<id>/logo/`), `entfernen` setzt zurück aufs Erscheinungsbild; Untereinheiten nur mit eigenem Briefbogen |
 
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
