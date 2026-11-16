@@ -37,6 +37,23 @@ der Webseite an, auf Wunsch mit Passkey, und tippt auf „Verbinden“. Die Seit
 Einmalcode (`POST /api/app/v1/pairing/`) und ruft `hubiplan://verbinden?server=…&code=…` auf;
 die App verbindet sich damit wie beim QR-Code.
 
+**Code an die App gebunden (Gesamtaudit 15.11., APP-01):** Eigene URL-Schemata wie `hubiplan`
+gehören keiner App allein; eine fremde App mit demselben Schema könnte den Rückruf abfangen.
+Deshalb erzeugt die App vor dem Öffnen ein Zufallsgeheimnis `verifier` (43–128 Zeichen aus
+`A–Z a–z 0–9 - . _ ~`, wie PKCE, RFC 7636) und öffnet
+`/app/anmelden?challenge=<base64url(SHA-256(verifier))>`. Die Seite gibt den Prüfwert beim
+Erzeugen des Codes mit (`POST pairing/` `{"challenge"}`); die App löst mit
+`POST pair/` `{"code", "verifier", …}` ein. Fehlt der `verifier` oder passt er nicht, antwortet
+der Server 404 wie bei einem ungültigen Code; ein falscher Wert verbraucht den Code. Der
+Vergleich ist zeitkonstant, die Ratenbegrenzung der Kopplung gilt weiter.
+
+**Übergang:** Codes ohne Prüfwert (QR-Code aus „Mein Konto“, der Knopf „In der HUBIplan-App
+öffnen“ und ältere Apps) gelten vorerst weiter. Solange das so ist, schützt der Prüfwert nur
+Verbindungen, die eine neue App selbst über `/app/anmelden` anfordert. Später folgen: der Knopf
+öffnet die App ohne Code (`hubiplan://anmelden?server=…`, die App fordert dann selbst an), und
+Codes ohne Prüfwert gelten nur noch für den QR-Weg; ältere Apps werden über `min_app_version`
+ausgeschlossen. Die Instanz meldet die Funktion als `app-pruefwert` in `features`.
+
 `GET /api/app/v1/instance/` nennt in `passkey` die Wege: `android` (App bestätigt) und
 `browser` (Anmeldung im eingebetteten Browser, solange Passkeys eingeschaltet sind).
 
