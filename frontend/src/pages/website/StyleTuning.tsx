@@ -342,6 +342,14 @@ function GROUPS(): Group[] {
           ),
         },
         {
+          key: 'carousel_controls',
+          label: t('Knöpfe am Bilderkarussell'),
+          options: { always: t('immer sichtbar'), hover: t('bei Mauszeiger') },
+          hint: t(
+            'Anhalten, Zurück, Weiter und Zähler. „bei Mauszeiger“: erst wenn die Maus über dem Bild steht oder die Tastatur darauf; auf Handys und Tablets bleiben sie sichtbar.',
+          ),
+        },
+        {
           key: 'sections',
           label: t('Abschnitte trennen'),
           options: { none: t('nicht'), line: t('mit Linie'), alternate: t('abwechselnd getönt') },
@@ -549,7 +557,16 @@ export function StyleTuning({
   const groups = useMemo(() => GROUPS(), [])
   const presets = PRESET_LABELS()
   const locks = catalog.locks[design] ?? {}
-  const defaults = catalog.defaults?.[design] ?? {}
+  // Knöpfe am Karussell ohne Regler: auf der Bühne immer sichtbar, sonst bei Mauszeiger
+  const designDefaults = catalog.defaults?.[design]
+  const stageWidth =
+    'hero_width' in locks ? undefined : (value.hero_width ?? designDefaults?.hero_width)
+  const defaults: StyleValues = designDefaults
+    ? {
+        ...designDefaults,
+        carousel_controls: stageWidth === 'stage' || stageWidth === 'full' ? 'always' : 'hover',
+      }
+    : {}
   const changed = Object.keys(value).length
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState<Record<string, boolean>>({ [groups[0].id]: true })

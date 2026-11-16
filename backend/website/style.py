@@ -68,6 +68,11 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Karussell: nicht von selbst, langsam (doppelte Zeit je Bild) oder wie eingestellt;
     # #477: „zufällig“ zeigt bei jedem Aufruf ein Bild des Karussells, das fest stehen bleibt
     "carousel": ("off", "slow", "normal", "random"),
+    # Ralf 16.11.2026: Knöpfe am Karussell (Anhalten, zurück, weiter, Zähler) immer sichtbar oder
+    # nur bei Mauszeiger/Tastaturfokus (auf Touch-Geräten immer). Ohne Regler: auf der Bühne
+    # immer (Webseite #130), sonst bei Mauszeiger; die Oberfläche leitet die Markierung daher
+    # aus ``hero_width`` ab, ``_BASE_DEFAULTS`` nennt den Regler nicht.
+    "carousel_controls": ("always", "hover"),
     # Ralf 14.11.2026: Titelbild abdunkeln oder halb durchsichtig in Vereinsfarbe färben,
     # Bildausschnitt und Lage des Namens auf dem Bild
     "hero_shade": ("none", "light", "strong"),
