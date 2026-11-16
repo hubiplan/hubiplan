@@ -14,7 +14,7 @@ from accounts import deletion
 from core.tenancy import rls_bypass
 
 from .factories import make_user
-from .test_nextcloud_anmeldung import make_client  # noqa: F401
+from .test_nextcloud_anmeldung import _key, make_client  # noqa: F401  (Schlüssel, Adresse)
 from .test_nextcloud_konten import cloud, login, managed  # noqa: F401
 
 pytestmark = pytest.mark.django_db
