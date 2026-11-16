@@ -90,13 +90,7 @@ function AwardDates({
 }
 
 /** Eigener Titel des Trägers, z. B. „Ehrenhauptmann“ (optional). */
-function DisplayTitleInput({
-  value,
-  onChange,
-}: {
-  value: string
-  onChange: (v: string) => void
-}) {
+function DisplayTitleInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <input
       type="text"
