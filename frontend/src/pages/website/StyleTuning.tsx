@@ -603,7 +603,7 @@ function FontStackInput({
       aria-labelledby={labelledBy}
       value={text}
       maxLength={300}
-      placeholder="Lucida Sans, Segoe UI, Arial"
+      placeholder={t('z. B. Lucida Sans, Segoe UI, Arial')}
       spellCheck={false}
       onChange={(e) => setText(e.target.value)}
       onBlur={commit}
