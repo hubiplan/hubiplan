@@ -114,6 +114,8 @@ class TestErgebnisse:
         assert resp.status_code == 200 and "max-age=5" in resp["Cache-Control"]
         body = resp.json()
         assert body["poll_seconds"] == 15
+        # Webseite #139: Einheit des Werts für die Podiumskarten
+        assert all(s["unit_label"] for s in body["scorings"]) and body["scorings"]
         v1 = get(f"results/{url}/version/").json()["version"]
         score = Score.objects.get(starter=setup["st"]["Erika"])
         score.value = Decimal(29)

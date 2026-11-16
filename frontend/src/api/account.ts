@@ -7,6 +7,8 @@ export interface AccountData {
   last_name: string
   has_password: boolean
   pending_email: string | null
+  /** Einheiten mit laufenden Ämtern; solange es welche gibt, lässt sich das Konto nicht löschen */
+  delete_blockers?: string[]
 }
 
 export const accountApi = {
@@ -18,6 +20,7 @@ export const accountApi = {
   changeEmail: (data: { email: string; password?: string }) =>
     api.post<AccountData>('/api/me/email/', data),
   cancelEmail: () => api.del('/api/me/email/'),
+  deleteAccount: (data: { email: string }) => api.post<unknown>('/api/me/account/delete/', data),
 }
 
 export async function confirmEmail(

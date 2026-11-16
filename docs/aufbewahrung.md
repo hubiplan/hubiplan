@@ -36,14 +36,17 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der tatsächlichen Belegentstehung | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |
 | Bücher, Jahresabschlüsse | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der letzten Eintragung bzw. Aufstellung | nach 10 Jahren anonymisiert (Beträge bleiben) |
 | Zuwendungsbestätigungen | § 50 EStDV, Art. 6 (1) c | wie oben | wie Belege |
-| Postausgang (Mailtexte und Anhänge) | Nachweis des Versands, Art. 6 (1) b, f | Versand bzw. Anlage | zugestellt: Text und Anhänge nach 30 Tagen geleert, Kontaktformular nach 7; nicht zugestellt nach 90 Tagen (FQ14); Empfänger, Betreff und Art bleiben |
-| Rundschreiben (versandt) | Information der Mitglieder, Art. 6 (1) b | – | bleiben nachlesbar; Empfängerliste wird mit den Mitgliedsdaten gelöscht |
-| Eingänge an Mailverteiler | Versand und Missbrauchsschutz, Art. 6 (1) f | Eingang | mit dem Postausgang |
+| Postausgang (Mailtexte und Anhänge) | Nachweis des Versands, Art. 6 (1) b, f | Versand bzw. Anlage | zugestellt: Text und Anhänge nach 30 Tagen geleert, Kontaktformular nach 7 (dann auch Absender und Betreff); nicht zugestellt nach 90 Tagen (FQ14); Empfänger, Betreff und Art bleiben |
+| Rundschreiben (versandt) | Information der Mitglieder, Art. 6 (1) b | – | bleiben nachlesbar; Name, Mail, Anschrift und Platzhalterwerte in der Empfängerliste werden mit den Mitgliedsdaten geleert, der Zustellstand bleibt |
+| Eingänge an Mailverteiler | Versand und Missbrauchsschutz, Art. 6 (1) f | Eingang | nach 90 Tagen gelöscht (längere Frist des Postausgangs) |
+| Online-Mitgliedsantrag (Angaben, PDF mit Unterschrift, Erziehungsberechtigten, Mandat) | Aufnahme, Art. 6 (1) b | Annahme bzw. Löschung der Mitgliedsdaten | Angaben nach der Antragsfrist entfernt; das PDF mit den Mitgliedsdaten gelöscht (FF-28); Nummer, Daten und Entscheidung bleiben |
+| Termin-Rückmeldungen, Helferdienste | Organisation, Art. 6 (1) b | – | Bemerkungen bzw. Name und Telefon mit den Mitgliedsdaten gelöscht |
 | Meldungen (Mannschaften, Aufgaben) | Organisation von Anlässen, Art. 6 (1) b | Datum des Anlasses | nach einem Jahr auf Name, Mannschaft und Aufgabe gekürzt |
 | Änderungen zum Rückgängigmachen | Fehlerkorrektur, Art. 6 (1) f | Änderung | nach 30 Tagen gelöscht |
 | Änderungsprotokoll | Nachvollziehbarkeit, GoBD, Art. 6 (1) c, f | – | Inhalte zu einer Person werden mit deren Löschung geleert (Kette bleibt prüfbar) |
 | Exporte, Importe, Datenübernahmen | Arbeitsdateien, Art. 6 (1) f | Erstellung | nach 7 bzw. 30 Tagen gelöscht |
-| App-Geräte | Anmeldung, Art. 6 (1) b | letzte Nutzung | nach 180 Tagen ohne Nutzung abgemeldet |
+| Benutzerkonto (Anmelde-E-Mail, Passkeys, Zwei-Faktor, Geräte, Nextcloud- und KI-Freigaben, Anmeldungen über andere Instanzen, Unterschrift, persönliche Aufgaben) | Anmeldung, Art. 6 (1) b | letzter Zugang (Mitgliederzugang oder Rolle) endet | nach 90 Tagen ohne Zugang gelöscht, zwei Wochen vorher Hinweismail; jederzeit selbst löschbar unter Mein Konto › Anmeldung & Sicherheit (ohne laufende Ämter) |
+| App-Geräte | Anmeldung, Art. 6 (1) b | letzte Nutzung | nach 180 Tagen ohne Nutzung abgemeldet, Push-Adresse gelöscht (täglicher Job `konten-aufraeumen`) |
 | Entwürfe in der App (nicht gesendet, nach dem Abmelden) | Kasse unterwegs, Art. 6 (1) b, c | Abmelden | nach 90 Tagen Rückfrage mit Export, nach 120 Tagen gelöscht; unlesbare sofort (FQ24) |
 | Backups | Wiederherstellung, Art. 6 (1) f, Art. 32 | Erstellung | nach `BACKUP_KEEP_DAYS` Tagen |
 

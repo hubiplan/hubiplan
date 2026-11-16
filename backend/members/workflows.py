@@ -7,6 +7,8 @@ jeden Schritt ins Änderungsprotokoll.
 from __future__ import annotations
 
 import datetime
+import logging
+from contextlib import contextmanager
 
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
@@ -40,6 +42,8 @@ from .models import (
     overlaps,
     today,
 )
+
+logger = logging.getLogger(__name__)
 
 ONE_DAY = datetime.timedelta(days=1)
 
@@ -525,9 +529,13 @@ def purge_membership(
     from changes.purge import forget_person
     from changes.tracking import suppress
 
+    from .auskunft import _org_ids
+
     with suppress():
         _purge_membership(membership, after_deadline)
-        forget_person(membership.organization_id, membership.person_id)
+        # Auch in den Untereinheiten (Gesamtaudit 15.11., PF-17)
+        for org_id in _org_ids(membership.organization):
+            forget_person(org_id, membership.person_id)
     if not listed:
         # Fachfrage 7 (31.10.b): gilt auch nach dem Einspielen eines älteren Backups
         from . import loeschliste
@@ -583,8 +591,11 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
         if after_deadline:
             # Nur nach Ablauf der Löschfrist; ein Verbund-Widerruf kürzt nur die Kopie hier
             _reduce_identity(person)
-    # Personenbezogene Inhalte aus dem Protokoll dieses Vereins entfernen
-    AuditEntry.objects.filter(organization=club, person_id=person.pk).update(
+    # Personenbezogene Inhalte aus dem Protokoll dieses Vereins und seiner Untereinheiten
+    # entfernen (Gesamtaudit 15.11., PF-17)
+    from .auskunft import _org_ids
+
+    AuditEntry.objects.filter(organization_id__in=_org_ids(club), person_id=person.pk).update(
         changes={}, cleared=True
     )
     MembershipPeriod.objects.filter(membership=membership).update(note="")
@@ -606,6 +617,48 @@ def _reduce_identity(person) -> None:
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 
+# Steht statt des Namens bei Helferdiensten gelöschter Mitglieder
+NAME_PURGED = "–"
+
+
+def _purge_traces(membership: Membership) -> None:
+    """Weitere Spuren der Mitgliedschaft (Gesamtaudit 15.11., PF-03, PF-04, PF-18).
+
+    - Online-Antrag: PDF (mit Unterschrift, Erziehungsberechtigten, Mandat) und Angaben
+      löschen; Nummer, Daten und Entscheidung bleiben (Fachfrage FF-28 (a)).
+    - Rundschreiben: Name, Mail, Anschrift und Platzhalterwerte der Empfängerzeilen leeren;
+      Zustellstand bleibt (Zahlen des Rundschreibens).
+    - Termine: Bemerkungen der Rückmeldungen leeren; Helferdienste: Name und Telefon.
+    """
+    from admission.models import Application
+    from circulars.models import CircularRecipient
+    from events.models import EventResponse
+    from helpers.models import ShiftAssignment
+
+    for app in Application.objects.filter(membership=membership):
+        if app.pdf:
+            app.pdf.delete(save=False)
+        data = app.data or {}
+        app.data = {k: data[k] for k in ("first_name", "last_name") if data.get(k)}
+        app.mandate = {}
+        app.guardians = []
+        app.signature = {}
+        app.data_purged_at = app.data_purged_at or timezone.now()
+        app.save()
+    update_encrypted(
+        CircularRecipient.objects.filter(membership=membership),
+        first_name="",
+        last_name="",
+        email="",
+        address="",
+        values={},
+    )
+    EventResponse.objects.filter(membership=membership).update(note="")
+    update_encrypted(
+        ShiftAssignment.objects.filter(membership=membership), name=NAME_PURGED, phone=""
+    )
+
+
 def _purge_related(membership: Membership, person, club) -> None:
     """Zusatzfelder, Datenänderungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
 
@@ -622,7 +675,10 @@ def _purge_related(membership: Membership, person, club) -> None:
     # niemand mehr
     from qualifications.models import Qualification
 
-    Qualification.objects.filter(organization=club, person=person).delete()
+    from .auskunft import _org_ids
+
+    org_ids = _org_ids(club)
+    Qualification.objects.filter(organization_id__in=org_ids, person=person).delete()
     # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
     # gelöschte Daten zurückschreibt
     ChangeRequest.objects.filter(membership=membership).update(
@@ -635,6 +691,7 @@ def _purge_related(membership: Membership, person, club) -> None:
     CancellationRequest.objects.filter(
         membership=membership, status=CancellationRequest.Status.PENDING
     ).update(status=CancellationRequest.Status.REJECTED, decided_at=timezone.now())
+    _purge_traces(membership)
     # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
     # (bei Organisationen die Zugänge aller Ansprechpartner)
     for access in PortalAccess.objects.filter(membership=membership):
@@ -644,22 +701,94 @@ def _purge_related(membership: Membership, person, club) -> None:
         access.delete()
 
 
+# Sitzungssperre der Datenbank für den täglichen Löschlauf (Löschliste und Löschfrist):
+# Ein zweiter Lauf (Nachholen nach Neustart, Befehl von Hand) wartet nicht, er endet sofort.
+PURGE_LOCK = 0x4855424C4F455343  # "HUBLOESC"
+
+
+@contextmanager
+def purge_lock():
+    """True, wenn diese Verbindung den Löschlauf ausführen darf (Gesamtaudit 15.11., PF-10)."""
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_try_advisory_lock(%s)", [PURGE_LOCK])
+        locked = cursor.fetchone()[0]
+    try:
+        yield locked
+    finally:
+        if locked:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_unlock(%s)", [PURGE_LOCK])
+
+
+def due_for_purge(cutoff: datetime.date) -> list[int]:
+    """Mitgliedschaften, deren letzter Austritt vor ``cutoff`` liegt, ohne offenen Zeitraum.
+
+    Eine Abfrage mit Gruppierung statt einer je ehemaliger Mitgliedschaft: Bei 10.000
+    ehemaligen Mitgliedern lief der Lauf vorher über 70 Minuten (Gesamtaudit 15.11., PF-10).
+    """
+    from django.db.models import Count, Max
+
+    with rls_bypass():
+        return list(
+            Membership.objects.filter(purged_at__isnull=True)
+            .annotate(
+                last_exit=Max("periods__exit_date"),
+                open_periods=Count("periods", filter=Q(periods__exit_date__isnull=True)),
+            )
+            .filter(open_periods=0, last_exit__lt=cutoff)
+            .order_by("pk")
+            .values_list("pk", flat=True)
+        )
+
+
 def purge_expired(on: datetime.date | None = None) -> int:
-    """Hintergrund-Job: alle Mitgliedschaften nach Ablauf der Löschfrist bereinigen."""
+    """Hintergrund-Job: alle Mitgliedschaften nach Ablauf der Löschfrist bereinigen.
+
+    Jede Mitgliedschaft in eigener Transaktion: Scheitert eine, laufen die übrigen weiter;
+    die gescheiterten meldet eine Alarm-Mail (höchstens einmal am Tag je Stand) und der
+    nächste Lauf versucht sie erneut."""
     on = on or today()
     months = PlatformSettings.load().effective_deletion_months()
     cutoff = on - relativedelta(months=months)
     count = 0
-    with rls_bypass():
-        candidates = Membership.objects.filter(purged_at__isnull=True).exclude(
-            periods__exit_date__isnull=True
-        )
-        for membership in candidates.select_related("person", "organization"):
-            last = membership.periods.order_by("-exit_date").first()
-            if last and last.exit_date and last.exit_date < cutoff:
+    failed: list[int] = []
+    for pk in due_for_purge(cutoff):
+        try:
+            with rls_bypass():
+                membership = Membership.objects.select_related("person", "organization").get(pk=pk)
                 purge_membership(membership, after_deadline=True)
-                count += 1
+        except Exception:  # noqa: BLE001 – ein Fehler darf die übrigen Löschungen nicht aufhalten
+            logger.exception("Löschfrist: Mitgliedschaft %s nicht bereinigt", pk)
+            failed.append(pk)
+            continue
+        count += 1
+    if failed:
+        report_failures("Löschfrist", failed)
     return count
+
+
+def report_failures(what: str, pks: list[int]) -> None:
+    """Alarm-Mail zu gescheiterten Löschungen, höchstens einmal am Tag je Stand."""
+    import hashlib
+
+    from django.core.cache import cache
+
+    from core.alarm import send_alert
+
+    key = hashlib.sha256(f"{what}:{sorted(pks)}".encode()).hexdigest()[:32]
+    if not cache.add(f"loeschlauf-fehler:{key}", 1, 24 * 60 * 60):
+        return
+    shown = ", ".join(str(pk) for pk in pks[:20]) + (" …" if len(pks) > 20 else "")
+    send_alert(
+        f"{what}: Löschungen gescheitert",
+        [
+            f"{len(pks)} Mitgliedschaften ließen sich nicht bereinigen (Kennungen: {shown}).",
+            "Die übrigen wurden bereinigt; der nächste Lauf versucht diese erneut.",
+            "Einzelheiten im Protokoll des Workers.",
+        ],
+    )
 
 
 # --- Namen in Chronik und Ehrungen (Fachfrage FQ12) ---

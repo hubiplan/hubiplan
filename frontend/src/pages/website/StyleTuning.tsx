@@ -342,6 +342,14 @@ function GROUPS(): Group[] {
           ),
         },
         {
+          key: 'carousel_controls',
+          label: t('Knöpfe am Bilderkarussell'),
+          options: { always: t('immer sichtbar'), hover: t('bei Mauszeiger') },
+          hint: t(
+            'Anhalten, Zurück, Weiter und Zähler. „bei Mauszeiger“: erst wenn die Maus über dem Bild steht oder die Tastatur darauf; auf Handys und Tablets bleiben sie sichtbar.',
+          ),
+        },
+        {
           key: 'sections',
           label: t('Abschnitte trennen'),
           options: { none: t('nicht'), line: t('mit Linie'), alternate: t('abwechselnd getönt') },
@@ -374,6 +382,55 @@ function GROUPS(): Group[] {
             short: t('Sa., 14.11.'),
             long: t('Samstag, 14. November'),
           },
+        },
+        // Webseite #135–#139 (Ralf 16.11.2026)
+        {
+          key: 'honors_layout',
+          label: t('Würdenträger'),
+          options: { list: t('Foto und Liste'), band: t('Band und Karten') },
+          hint: t(
+            'Band und Karten: Die amtierenden Würdenträger stehen groß als Band in der dunklen Vereinsfarbe unter dem Seitentitel, die letzten acht Vorgänger als Karten darunter; die ganze Liste lässt sich aufklappen.',
+          ),
+        },
+        {
+          key: 'portrait_placeholder',
+          label: t('Personen ohne Foto'),
+          options: { initial: t('Anfangsbuchstabe'), none: t('ohne Platzhalter') },
+          hint: t(
+            'Gilt für Vorstand, Ehrungen und Ansprechpartner der Untereinheiten. Fotos bleiben, wie sie sind.',
+          ),
+        },
+        {
+          key: 'person_cards',
+          label: t('Karten der Personen'),
+          options: { normal: t('schlicht'), label: t('Amt als Etikett') },
+          hint: t(
+            'Amt als Etikett: Amt klein in Großbuchstaben über dem Namen, Name in der Schrift der Überschriften, „Nachricht schreiben“ als Textlink, Kante oben in der Vereinsfarbe. Ehrenmitglieder stehen im Raster mit drei Spalten.',
+          ),
+        },
+        {
+          key: 'address',
+          label: t('Anrede im Kontaktformular'),
+          options: { formal: t('Sie'), informal: t('du') },
+          hint: t(
+            'Den Kasten neben dem Formular (z. B. „Du möchtest mitmachen?“) schreibst du unter Webseite › Texte › Einleitungen der Bereiche › Kontakt: Titel, Text und als letzten Absatz einen Link, der als Knopf erscheint.',
+          ),
+        },
+        {
+          key: 'timeline_chapter',
+          label: t('Epochen der Chronik'),
+          options: { plain: t('Zwischentitel'), band: t('als Band') },
+          hint: t(
+            'Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe; die Sprungmarken oben werden zu unterstrichenen Links.',
+          ),
+        },
+        {
+          key: 'ranking',
+          label: t('Ranglisten der Ergebnisse'),
+          options: { table: t('Tabelle'), podium: t('Plätze 1 bis 3 als Karten') },
+          hint: t(
+            'Die ersten drei Plätze jeder Wertung stehen als Karten mit großer Platzziffer über der Tabelle; bei Gleichstand bekommen alle Gleichplatzierten eine Karte.',
+          ),
         },
       ],
     },
@@ -500,7 +557,16 @@ export function StyleTuning({
   const groups = useMemo(() => GROUPS(), [])
   const presets = PRESET_LABELS()
   const locks = catalog.locks[design] ?? {}
-  const defaults = catalog.defaults?.[design] ?? {}
+  // Knöpfe am Karussell ohne Regler: auf der Bühne immer sichtbar, sonst bei Mauszeiger
+  const designDefaults = catalog.defaults?.[design]
+  const stageWidth =
+    'hero_width' in locks ? undefined : (value.hero_width ?? designDefaults?.hero_width)
+  const defaults: StyleValues = designDefaults
+    ? {
+        ...designDefaults,
+        carousel_controls: stageWidth === 'stage' || stageWidth === 'full' ? 'always' : 'hover',
+      }
+    : {}
   const changed = Object.keys(value).length
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState<Record<string, boolean>>({ [groups[0].id]: true })

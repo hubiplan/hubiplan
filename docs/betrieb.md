@@ -11,7 +11,7 @@ Echtserver gehört zu jedem `docker compose`-Befehl zusätzlich `-f docker-compo
 | `web` | Caddy: HTTPS (Let's Encrypt), Oberfläche, Weiterleitung an das Backend, Sicherheits-Header |
 | `backend` | Django mit gunicorn (3 Prozesse × 4 Threads), führt beim Start die Migrationen aus |
 | `worker` | Celery: Import, Export und andere Hintergrund-Jobs |
-| `beat` | Zeitplan für wiederkehrende Jobs (Löschfrist täglich) |
+| `beat` | Zeitplan für wiederkehrende Jobs (Löschfrist täglich), siehe [Hintergrundjobs](#hintergrundjobs) |
 | `backup` | tägliches verschlüsseltes Backup mit Rücksicherungstest |
 | `postgres`, `redis` | Datenbank und Warteschlange, von außen nicht erreichbar |
 
@@ -1051,6 +1051,8 @@ HUBIplan schickt sofort eine Mail „[HUBIplan-Sicherheit] …“ bei:
   gehäuft ungültige Unterschriften, eine Gegenstelle mit unerwartetem Schlüssel,
 - in der App: ab 3 fehlgeschlagenen Freischaltungen der Verwaltung in einer Stunde.
 - Backup fehlgeschlagen, unvollständig oder zu alt (siehe Backups; einmal am Tag).
+- Hintergrundjobs, die länger nicht erfolgreich liefen, als ihr Zeitplan erwarten lässt
+  (siehe Hintergrundjobs; einmal am Tag je Stand).
 
 Empfänger: `SECURITY_ALERT_EMAIL` in der `.env` (Komma-Liste), sonst alle Superuser.
 
@@ -1097,9 +1099,43 @@ Mails gibt es für:
 - Zugänge für Mitglieder: Anmeldelink (7 Tage gültig, nur einmal nutzbar). Konten mit
   Vorstandsrollen oder 2FA bekommen statt dessen einen Link zum Festlegen des Passworts.
 
+## Hintergrundjobs
+
+Der Dienst `beat` stößt wiederkehrende Jobs an (`CELERY_BEAT_SCHEDULE` in
+`backend/config/settings.py`), der `worker` führt sie aus.
+
+- **Tägliche und wöchentliche Jobs laufen zu festen Uhrzeiten** (Zeitzone Europe/Berlin),
+  nachts zwischen 2:10 und 5:10 Uhr gestaffelt; die Löschfrist um 3:00 Uhr, der
+  Volljährigkeitshinweis um 6:30 Uhr, der Kettenkopf an die Kassenprüfer montags um 7:00 Uhr.
+  Kurze Abstände (jede Minute bis stündlich) bleiben Intervalle. Früher waren auch die
+  täglichen Jobs Intervalle; sie begannen mit jedem Neustart von `beat` neu und liefen bei
+  mehr als einem Ausrollen am Tag nie (Gesamtaudit 15.11., PF-01).
+- **Die Zeitplan-Datei liegt im Volume `beat-zeitplan`** (`/app/beat/celerybeat-schedule`).
+  Darin steht, wann jeder Job zuletzt lief. Lief `beat` zur geplanten Uhrzeit nicht (z. B.
+  Ausrollen um 3:00 Uhr), holt es den Lauf beim Start einmal nach. Das Volume ist nicht im
+  Backup und darf gelöscht werden; dann laufen die Jobs ab der nächsten Uhrzeit.
+- **Wann lief welcher Job zuletzt?** Der Worker vermerkt Beginn, Erfolg und Fehler jedes
+  Jobs aus dem Zeitplan in der Datenbank (`core.JobRun`):
+
+  ```bash
+  docker compose -f docker-compose.server.yml exec backend python manage.py jobs_status
+  docker compose -f docker-compose.server.yml exec backend python manage.py jobs_status --pruefen
+  ```
+
+  Die erste Form zeigt je Job „zuletzt erfolgreich“, „letzter Fehler“ und „ok“ bzw.
+  „ÜBERFÄLLIG“; `--pruefen` nennt nur überfällige Jobs (mit letzter Fehlermeldung) und endet
+  dann mit Rückgabewert 1, für eigene Überwachung. Überfällig ist ein Job, wenn er länger
+  nicht erfolgreich lief als sein Abstand im Zeitplan plus Spielraum: tägliche Jobs nach
+  26 Stunden, wöchentliche nach 7 Tagen und 2 Stunden, Intervalle nach dem doppelten
+  Abstand (mindestens Abstand plus eine Stunde). Nach einer Neuinstallation zählt der
+  Abstand ab der ersten Prüfung.
+- **Alarm:** Der Job `jobs-pruefen` (stündlich) schickt bei überfälligen Jobs eine Alarm-Mail
+  (siehe Alarm-Mails), höchstens einmal am Tag je Stand. Erste Schritte: `docker compose …
+  ps` (laufen `worker` und `beat`?), `docker compose … logs --since 24h beat worker`.
+
 ## Löschfrist
 
-Der Job `members.tasks.purge_expired_members` läuft täglich. Nach Ablauf der in der
+Der Job `members.tasks.purge_expired_members` läuft täglich um 3:00 Uhr. Nach Ablauf der in der
 Plattform eingestellten Löschfrist bleiben von ehemaligen Mitgliedern nur Name, Vorname,
 Geburtsjahr und die Mitgliedszeiträume; die Verbandsnummer wird gelöscht, sobald die Person
 nirgends mehr Mitglied ist. Verlangt ein ehemaliges Mitglied die Löschung vorher, gibt es in
@@ -1111,7 +1147,13 @@ Alle Datenarten mit Rechtsgrundlage und Frist: [aufbewahrung.md](aufbewahrung.md
 **Auskunft (Art. 15 DSGVO):** In der Akte unter „Abläufe“ › „Auskunft für dieses Mitglied
 (ZIP)“ (Recht „Vollständigen Datenexport erstellen“): Akte, Zusatzfelder, Rechnungen mit PDF,
 Mandate, Zuwendungen, versandte Mails, Zugang und Geräte der App, Termin-Rückmeldungen,
-Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
+Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen. `konto.json` enthält je
+Anmeldekonto der Person (Mitgliederzugang, Ämter) E-Mail-Adressen, Zwei-Faktor-Verfahren und
+Passkeys (Art, Name, Zeiten), Geräte mit Benachrichtigungsdienst, Nextcloud-Konten, verbundene
+KI-Assistenten, Anmeldungen über andere Instanzen, ob eine Unterschrift gespeichert ist, die
+Briefbogen-Auswahl und eigene Aufgaben. Einheitsbezogenes nur aus diesem Verein und seinen
+Untereinheiten; Schlüssel, Prüfsummen und die Push-Adresse nie, von persönlichen (nicht
+geteilten) Aufgaben nur Status und Daten.
 
 **Entfernen wirkt nach höchstens 15 Minuten** (Fachfrage 10 zum Gesamtaudit 10.11.): Die
 öffentliche Schnittstelle und das Kalender-Abo (ICS) erlauben Zwischenspeichern höchstens

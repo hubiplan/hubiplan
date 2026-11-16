@@ -225,6 +225,8 @@ def detail(site, comp) -> dict:
             {
                 "name": s["name"],
                 "kind": kind,
+                # Webseite #139: Einheit des Werts (z. B. „Ringe“) an den Podiumskarten
+                "unit_label": s.get("unit_label", ""),
                 "field": len([r for r in s["rows"] if r.get("place") is not None])
                 or s.get("field_size"),
                 "rows": [_row(names, r, kind, depth) for r in rows],

@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -305,6 +306,19 @@ CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 MAIL_IN_BACKGROUND = env_bool("MAIL_IN_BACKGROUND", True)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
+#
+# Tägliche und wöchentliche Jobs laufen zu festen Uhrzeiten (crontab), nicht in Intervallen:
+# Ein Intervall beginnt bei jedem Neustart von "beat" neu, ein 24-Stunden-Job liefe bei mehr
+# als einem Ausrollen am Tag nie (Gesamtaudit 15.11., PF-01). Nachts gestaffelt, damit sie
+# sich nicht gegenseitig und nicht die Benutzer bremsen. Wann jeder Job zuletzt lief, zeigt
+# ``manage.py jobs_status`` (core/joblauf.py).
+
+
+def taeglich(hour: int, minute: int) -> crontab:
+    """Täglich um hour:minute (Zeitzone CELERY_TIMEZONE)."""
+    return crontab(minute=minute, hour=hour)
+
+
 CELERY_BEAT_SCHEDULE = {
     "music-custody-reminders": {
         "task": "music.custody_reminders.custody_reminders",
@@ -318,12 +332,15 @@ CELERY_BEAT_SCHEDULE = {
         "task": "music.practice_tasks.rehearsal_reminders",
         "schedule": 3600.0,
     },
-    "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": taeglich(2, 10)},
     # Benutzte und abgelaufene Anmeldelinks nach 30 Tagen löschen (Gesamtaudit 11.11., H-07)
-    "anmeldelinks-aufraeumen": {"task": "portal.tasks.purge_login_links", "schedule": 86400.0},
+    "anmeldelinks-aufraeumen": {
+        "task": "portal.tasks.purge_login_links",
+        "schedule": taeglich(2, 15),
+    },
     # Eingehende Dateien in Quarantäne nachprüfen (Gesamtaudit 10.11., Fachfrage 2)
     "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
-    "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
+    "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": taeglich(2, 20)},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
     "umfragen-stuendlich": {"task": "surveys.tasks.hourly", "schedule": 900.0},
     "fristenkalender-erinnerungen": {
@@ -332,27 +349,27 @@ CELERY_BEAT_SCHEDULE = {
     },
     "qualifikationen-erinnerungen": {
         "task": "qualifications.tasks.send_reminders",
-        "schedule": 6 * 3600.0,
+        "schedule": crontab(minute=20, hour="1,7,13,19"),
     },
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
-    "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
-    "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
+    "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": taeglich(2, 25)},
+    "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": taeglich(2, 30)},
     "mitgliedsausweise-wallet": {"task": "cards.tasks.sync_wallets", "schedule": 5 * 60},
     "datenuebernahme-aufraeumen": {
         "task": "datatransfer.tasks.purge_expired",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(2, 35),
     },
     "listen-import-export-aufraeumen": {
         "task": "exchange.tasks.purge_expired",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(2, 40),
     },
     "loeschfrist": {
         "task": "members.tasks.purge_expired_members",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(3, 0),
     },
     "erziehungsberechtigte-volljaehrig": {
         "task": "members.tasks.end_guardianships",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(6, 30),
     },
     "termin-erinnerungen": {
         "task": "events.tasks.send_event_reminders",
@@ -360,11 +377,11 @@ CELERY_BEAT_SCHEDULE = {
     },
     "rueckgaengig-aufraeumen": {
         "task": "changes.tasks.purge_old_changes",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(3, 30),
     },
     "dokumente-aufraeumen": {
         "task": "documents.tasks.purge_documents",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(3, 40),
     },
     # Rundschreiben, deren Versandauftrag verloren ging, weiterversenden
     "rundschreiben-wiederanlauf": {"task": "circulars.tasks.resume_stalled", "schedule": 15 * 60},
@@ -375,11 +392,11 @@ CELERY_BEAT_SCHEDULE = {
     "erechnungen-postfach": {"task": "billing.tasks.fetch_incoming_mail", "schedule": 60},
     "erechnungen-abgelehnte-loeschen": {
         "task": "billing.tasks.purge_rejected_incoming",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(3, 50),
     },
     "postausgang-aufraeumen": {
         "task": "outbox.tasks.purge_sent_mails",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(4, 0),
     },
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {
@@ -390,7 +407,7 @@ CELERY_BEAT_SCHEDULE = {
     "webseite-beitraege-abrufen": {"task": "website.tasks.sync_social_feeds", "schedule": 30 * 60},
     "webseite-beitraege-zugang": {
         "task": "website.tasks.maintain_social_feeds",
-        "schedule": 24 * 60 * 60,
+        "schedule": taeglich(4, 10),
     },
     "mitgliedsantraege-aufraeumen": {
         "task": "admission.tasks.purge_applications",
@@ -398,30 +415,44 @@ CELERY_BEAT_SCHEDULE = {
     },
     "webseite-nachrichten-aufraeumen": {
         "task": "website.tasks.purge_held_messages",
-        "schedule": 24 * 60 * 60,  # täglich
+        "schedule": taeglich(4, 15),
     },
     # Verbund: Stände prüfen und fällige Pakete zustellen (ohne Kopplung: nichts zu tun)
     "verbund-staende": {"task": "peering.tasks.sync_all", "schedule": 5 * 60},
     "verbund-zustellen": {"task": "peering.tasks.deliver_due", "schedule": 60},
-    "verbund-abgleich": {"task": "peering.tasks.reconcile_all", "schedule": 24 * 60 * 60},
-    "verbund-schluessel": {"task": "peering.tasks.keys_daily", "schedule": 24 * 60 * 60},
+    "verbund-abgleich": {"task": "peering.tasks.reconcile_all", "schedule": taeglich(4, 20)},
+    "verbund-schluessel": {"task": "peering.tasks.keys_daily", "schedule": taeglich(4, 25)},
     "startpasswoerter-ablaufen": {
         "task": "accounts.tasks.expire_initial_passwords",
         "schedule": 60 * 60,  # stündlich
+    },
+    # Konten ohne Zugang nach 90 Tagen löschen (vorher Hinweismail), App-Geräte nach 180 Tagen
+    # ohne Nutzung abmelden (Gesamtaudit 15.11., PF-02)
+    "konten-aufraeumen": {
+        "task": "accounts.tasks.purge_orphaned_accounts",
+        "schedule": crontab(minute=55, hour=4),
     },
     # Mailverteiler: Sammelpostfach abholen (ohne IMAP-Zugang: nichts zu tun)
     "verteiler-abholen": {"task": "circulars.tasks.fetch_inbound", "schedule": 60},
     # Backup-Stand prüfen, Alarm-Mail bei Fehler oder Lücke (ohne Statusordner: nichts)
     # Änderungsprotokoll versiegeln und Kette prüfen (Finanzamt-Prüfung C3)
-    "protokoll-pruefen": {"task": "audit.tasks.check_chains", "schedule": 24 * 60 * 60},
+    "protokoll-pruefen": {"task": "audit.tasks.check_chains", "schedule": taeglich(4, 40)},
     # Kettenkopf wöchentlich an die Kassenprüfer (Gesamtaudit 05.11. GA-08)
-    "protokoll-kassenpruefer": {"task": "audit.tasks.mail_heads", "schedule": 7 * 24 * 60 * 60},
+    "protokoll-kassenpruefer": {
+        "task": "audit.tasks.mail_heads",
+        "schedule": crontab(minute=0, hour=7, day_of_week="mon"),
+    },
     # Nextcloud-Konten mit den Rollen abgleichen (ohne „Konten automatisch deaktivieren“: nichts)
-    "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": 24 * 60 * 60},
-    "meldungen-kuerzen": {"task": "entries.tasks.shorten_old_entries", "schedule": 24 * 60 * 60},
+    "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": taeglich(4, 50)},
+    "meldungen-kuerzen": {
+        "task": "entries.tasks.shorten_old_entries",
+        "schedule": taeglich(5, 0),
+    },
     "backup-pruefen": {"task": "core.backup_status.check_backup", "schedule": 60 * 60},
+    # Liefen die Jobs dieses Zeitplans? Alarm-Mail bei überfälligen Jobs (core/joblauf.py)
+    "jobs-pruefen": {"task": "core.joblauf.check_jobs", "schedule": crontab(minute=45)},
     # Neueres Release auf GitHub? (abschaltbar mit HUBIPLAN_UPDATE_CHECK=0)
-    "release-pruefen": {"task": "core.update_check.check_latest", "schedule": 24 * 60 * 60},
+    "release-pruefen": {"task": "core.update_check.check_latest", "schedule": taeglich(5, 10)},
 }
 
 # Update-Hinweis für Betreiber (core/update_check.py): einmal am Tag den Releases-Feed abfragen.

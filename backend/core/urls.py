@@ -1134,6 +1134,7 @@ urlpatterns = [
     path("csrf/", views.csrf, name="csrf"),
     path("me/", views.me, name="me"),
     path("me/account/", self_service.AccountView.as_view(), name="my-account"),
+    path("me/account/delete/", self_service.DeleteAccountView.as_view(), name="my-account-delete"),
     path("me/signature/", quittung_views.MySignatureView.as_view(), name="my-signature"),
     path("me/letterheads/", letterhead_views.MyLetterheadsView.as_view(), name="my-letterheads"),
     path(

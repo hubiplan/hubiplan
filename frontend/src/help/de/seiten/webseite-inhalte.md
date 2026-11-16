@@ -24,7 +24,7 @@ Fehlt das Foto noch, lass bei **Text mit Bild** oder bei **Bilder** das Bild lee
 
 ## Einleitungen der Bereiche
 
-Mit **Einleitung für einen Bereich** schreibt ihr einen kurzen Text, auf Wunsch mit Bild, der oben über Vorstand, Terminen, Untereinheiten oder Galerie steht, wie bei „In Gedenken“. Je Bereich gibt es eine Einleitung; sie erscheint mit **Veröffentlichen**.
+Mit **Einleitung für einen Bereich** schreibt ihr einen kurzen Text, auf Wunsch mit Bild, der oben über Vorstand, Terminen, Untereinheiten oder Galerie steht, wie bei „In Gedenken“. Die Einleitung **Kontakt** steht als Kasten rechts neben dem Kontaktformular (auf dem Handy darunter): Titel als Überschrift, darunter der Text; steht im letzten Absatz nur ein Link, etwa auf eure Seite „Mitmachen“, wird er zum Knopf. Ohne diese Einleitung bleibt die Kontaktseite einspaltig. Je Bereich gibt es eine Einleitung; sie erscheint mit **Veröffentlichen**.
 
 ## Bildunterschriften
 

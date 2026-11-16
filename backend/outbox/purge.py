@@ -26,6 +26,19 @@ from .models import EMPTIED, OutgoingMail
 # Nachrichten aus dem Kontaktformular der Webseite: nur 7 Tage
 SHORT_RETENTION_DAYS = 7
 SHORT_RETENTION_KINDS = ("website-contact",)
+SUBJECT_EMPTIED = "(Betreff entfernt)"
+
+
+def purge_inbound(now: datetime.datetime | None = None) -> int:
+    """Eingänge an Mailverteiler (Absender, Empfänger, Betreff) nach der längeren Frist des
+    Postausgangs löschen, wie in docs/aufbewahrung.md zugesagt (Gesamtaudit 15.11., PF-04)."""
+    from circulars.models import InboundMail
+
+    days = getattr(settings, "OUTBOX_FAILED_RETENTION_DAYS", 90)
+    cutoff = (now or timezone.now()) - datetime.timedelta(days=days)
+    with rls_bypass():
+        count, _ = InboundMail.objects.filter(received_at__lt=cutoff).delete()
+    return count
 
 
 def purge_sent(now: datetime.datetime | None = None) -> int:
@@ -42,14 +55,24 @@ def purge_sent(now: datetime.datetime | None = None) -> int:
         )
         # Nicht zugestellt oder nur gespeichert: nach der längeren Frist
         other = ~Q(status=OutgoingMail.Status.SENT) & Q(created_at__lt=failed_cutoff)
-        old = OutgoingMail.objects.filter(sent | other).exclude(body=EMPTIED)
+        old = OutgoingMail.objects.filter(sent | other).exclude(
+            Q(body=EMPTIED) & (~Q(kind__in=SHORT_RETENTION_KINDS) | Q(reply_to=""))
+        )
         paths: set[str] = set()
         count = 0
         for mail in old.iterator():
             paths.update(a.get("path", "") for a in mail.attachments or [])
             mail.body = EMPTIED
             mail.attachments = []
-            mail.save(update_fields=["body", "attachments"])
+            fields = ["body", "attachments"]
+            if mail.kind in SHORT_RETENTION_KINDS:
+                # Absender (Antwort an) und frei eingegebener Betreff des Kontaktformulars
+                # gehören zur Nachricht; die Datenschutzhinweise sagen „höchstens 7 Tage“
+                # (Gesamtaudit 15.11., PF-19)
+                mail.reply_to = ""
+                mail.subject = SUBJECT_EMPTIED
+                fields += ["reply_to", "subject"]
+            mail.save(update_fields=fields)
             count += 1
         # Nur eigene Anhangdateien des Postausgangs löschen (nicht z. B. Dokumente,
         # die ein Rundschreiben mitgeschickt hat) und nur, wenn keine andere Mail sie

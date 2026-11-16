@@ -2,7 +2,7 @@
 key: page.account_login
 titel: Mein Konto › Anmeldung & Sicherheit
 routen: [/mein-konto/anmeldung]
-stichworte: [Passwort, Kennwort, Zwei-Faktor, 2FA, Authenticator]
+stichworte: [Passwort, Kennwort, Zwei-Faktor, 2FA, Authenticator, Konto löschen]
 ---
 
 Hier änderst du dein Passwort und schaltest die **Zwei-Faktor-Anmeldung** ein oder aus. Mit ihr
@@ -25,3 +25,17 @@ mit dem ersten Versuch.
 Gibt jemand mehrmals hintereinander ein falsches Passwort für dein Konto ein, ist die Anmeldung mit
 Passwort einige Minuten gesperrt, aber nur auf fremden Geräten. Auf Geräten, mit denen du dich schon
 einmal angemeldet hast, und mit einem Passkey kommst du weiter hinein. Du bekommst dazu eine Mail.
+
+## Konto löschen
+
+Unter **Konto löschen** löschst du dein Konto selbst, mit Passkeys, verbundenen Geräten, Freigaben
+für Nextcloud und KI-Assistenten und deinen persönlichen Aufgaben. Zur Bestätigung gibst du deine
+Anmelde-E-Mail ein; wie bei anderen heiklen Aktionen fragt HUBIplan zusätzlich nach Passkey, Code
+oder Passwort. Meldest du dich nur über Links an, lösche das Konto innerhalb von 10 Minuten nach
+der Anmeldung. Solange du Ämter hast, geht das nicht: Lass sie zuerst im Verein beenden. Was dein
+Verein über dich als Mitglied führt, bleibt; austreten oder die Löschung deiner Mitgliedsdaten
+verlangen kannst du nur beim Verein.
+
+Hat dein Konto 90 Tage lang keinen Zugang mehr (kein Mitgliederzugang, keine Rolle), löscht
+HUBIplan es von selbst. Zwei Wochen vorher bekommst du eine Mail. Bekommst du vorher wieder einen
+Zugang, bleibt das Konto.

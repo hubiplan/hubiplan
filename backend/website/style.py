@@ -68,6 +68,11 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Karussell: nicht von selbst, langsam (doppelte Zeit je Bild) oder wie eingestellt;
     # #477: „zufällig“ zeigt bei jedem Aufruf ein Bild des Karussells, das fest stehen bleibt
     "carousel": ("off", "slow", "normal", "random"),
+    # Ralf 16.11.2026: Knöpfe am Karussell (Anhalten, zurück, weiter, Zähler) immer sichtbar oder
+    # nur bei Mauszeiger/Tastaturfokus (auf Touch-Geräten immer). Ohne Regler: auf der Bühne
+    # immer (Webseite #130), sonst bei Mauszeiger; die Oberfläche leitet die Markierung daher
+    # aus ``hero_width`` ab, ``_BASE_DEFAULTS`` nennt den Regler nicht.
+    "carousel_controls": ("always", "hover"),
     # Ralf 14.11.2026: Titelbild abdunkeln oder halb durchsichtig in Vereinsfarbe färben,
     # Bildausschnitt und Lage des Namens auf dem Bild
     "hero_shade": ("none", "light", "strong"),
@@ -102,6 +107,14 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "motion": ("off", "subtle"),
     "stripes": bool,
     "date_text": ("weekday", "short", "long"),
+    # Webseite #135–#139 (Ralf 16.11.2026): Würdenträger als Band, Personen ohne Platzhalter,
+    # Personenkarten mit Amt als Etikett, Anrede, Chronik-Epochen als Band, Podium
+    "honors_layout": ("list", "band"),
+    "portrait_placeholder": ("initial", "none"),
+    "person_cards": ("normal", "label"),
+    "address": ("formal", "informal"),
+    "timeline_chapter": ("plain", "band"),
+    "ranking": ("table", "podium"),
 }
 
 # Was ein Design selbst festlegt (ausgegraut in der Oberfläche, die Webseite übergeht es):
@@ -189,6 +202,12 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "motion": "off",
     "stripes": False,
     "date_text": "weekday",
+    "honors_layout": "list",
+    "portrait_placeholder": "initial",
+    "person_cards": "normal",
+    "address": "formal",
+    "timeline_chapter": "plain",
+    "ranking": "table",
 }
 _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
     "classic": {

@@ -52,3 +52,14 @@ def convert_initial_passwords() -> tuple[int, int]:
             converted += 1
             sent += send_password_link(user)
     return converted, sent
+
+
+@shared_task
+def purge_orphaned_accounts() -> dict[str, int]:
+    """Täglich: Konten ohne Zugang nach 90 Tagen löschen, zwei Wochen vorher Hinweismail;
+    App-Geräte nach 180 Tagen ohne Nutzung abmelden (Gesamtaudit 15.11., PF-02)."""
+    from .deletion import orphan_run, retire_idle_devices
+
+    counts = orphan_run()
+    counts["geraete"] = retire_idle_devices()
+    return counts

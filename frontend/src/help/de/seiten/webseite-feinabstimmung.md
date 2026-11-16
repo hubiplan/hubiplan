@@ -25,6 +25,15 @@ stichworte:
     Fuß,
     Dunkel,
     Kontrast,
+    Würdenträger,
+    Platzhalter,
+    Personenkarten,
+    Anrede,
+    Duzen,
+    Chronik,
+    Epochen,
+    Podium,
+    Rangliste,
   ]
 ---
 
@@ -48,7 +57,7 @@ Die Vorschau springt nach einer Änderung an die passende Stelle und hebt sie ku
 
 ## Seite, Karten, Bilder, Knöpfe
 
-**Seite** und Karten, Bilder, Knöpfe: Breite, Hintergrund, Abstände, Ecken („eckig“ gilt auch für Fotos und Initialen der Personen, die Symbole der sozialen Medien und die Chronik), **Helle Abschnitte** (Abschnitte der Startseite mit hellem Hintergrund „getönt“ in der Vereinsfarbe, „warm“ oder „grau“), Karten (Rahmen, Schatten, flach oder **weiß mit Streifen**: weiße Karten mit feiner Kante, Termine mit einem Streifen in der Vereinsfarbe links, Kacheln der Untereinheiten oben), Bilder, **Bildformat in Kacheln** (3:2, 4:3 oder quadratisch für Kacheln der Startseite, Alben der Galerie und Beiträge), Rahmen um Bilder und Knöpfe („gefüllt“, „umrandet“ oder **Etikett**: Großbuchstaben, leicht gesperrt). Auf farbigen Abschnitten stehen Knöpfe und Zierlinien immer in der Schriftfarbe des Abschnitts, damit sie sich abheben.
+**Seite** und Karten, Bilder, Knöpfe: Breite, Hintergrund, Abstände, Ecken („eckig“ gilt auch für Fotos und Initialen der Personen, die Symbole der sozialen Medien, die Chronik mit Fotos, Karten und Sprungmarken und die Felder des Kontaktformulars), **Helle Abschnitte** (Abschnitte der Startseite mit hellem Hintergrund „getönt“ in der Vereinsfarbe, „warm“ oder „grau“), Karten (Rahmen, Schatten, flach oder **weiß mit Streifen**: weiße Karten mit feiner Kante, Termine mit einem Streifen in der Vereinsfarbe links, Kacheln der Untereinheiten oben), Bilder, **Bildformat in Kacheln** (3:2, 4:3 oder quadratisch für Kacheln der Startseite, Alben der Galerie und Beiträge), Rahmen um Bilder und Knöpfe („gefüllt“, „umrandet“ oder **Etikett**: Großbuchstaben, leicht gesperrt). Auf farbigen Abschnitten stehen Knöpfe und Zierlinien immer in der Schriftfarbe des Abschnitts, damit sie sich abheben.
 
 ## Kopf
 
@@ -60,11 +69,22 @@ Art des Menüs (Leiste, Knöpfe, Text), der aktive Menüpunkt, **Schreibweise** 
 
 ## Startseite
 
-**Titelbild** (Höhe), **Titelbild abdunkeln** („leicht“ oder „kräftig“) mit **Farbe darüber** („schwarz“, „Vereinsfarbe“ oder „Zweitfarbe“): eine halb durchsichtige Farbe über dem Bild macht Schrift darauf besser lesbar und färbt das Bild in den Vereinsfarben. **Bildausschnitt** legt fest, ob oben, in der Mitte oder unten sichtbar bleibt, wenn das Bild beschnitten wird. **Name auf dem Titelbild** mit **Lage des Namens** („oben“, „mittig“ oder „unten als Band“), **Bilderkarussell blättert** („nur von Hand“, „langsam“, „normal“ oder „zufällig“: dann zeigt die Startseite bei jedem Aufruf ein anderes Bild des Karussells, das wie ein einzelnes Titelbild stehen bleibt; das gilt auch für das Bild im Überschriften-Band der Unterseiten) und **Abschnitte trennen** („nicht“, „mit Linie“ oder „abwechselnd getönt“; im Design „Bühne“ schaltet das die farbigen Bänder ab). Steht das Bilderkarussell unter Webseite › Startseite auf voller Breite, reicht das Titelbild von Rand zu Rand. **Titelfoto als Bühne** › „randlos“ legt das Titelfoto ohne Rand und Abstand direkt unter den Kopf, in begrenzter Höhe, unten mit einem Verlauf in der dunklen Vereinsfarbe; darauf stehen links die Titelzeilen und die Oberzeile vom Baustein „Bilderkarussell“. Mehrere Titelzeilen wechseln ruhig mit den Bildern; wer das Karussell anhält, hält auch die Zeile an. „in Inhaltsbreite“ zeigt dieselbe Bühne nur so breit wie die Inhaltsspalte, damit auf breiten Bildschirmen mehr vom Foto sichtbar bleibt; die **Breite der Bühne** ist „wie der Inhalt“, „etwas breiter“ oder „breit“, die **Fläche neben der Bühne** zeigt dann den Seitenhintergrund oder die dunkle Vereinsfarbe. Auf dem Handy ist sie wie „randlos“.
+**Titelbild** (Höhe), **Titelbild abdunkeln** („leicht“ oder „kräftig“) mit **Farbe darüber** („schwarz“, „Vereinsfarbe“ oder „Zweitfarbe“): eine halb durchsichtige Farbe über dem Bild macht Schrift darauf besser lesbar und färbt das Bild in den Vereinsfarben. **Bildausschnitt** legt fest, ob oben, in der Mitte oder unten sichtbar bleibt, wenn das Bild beschnitten wird. **Name auf dem Titelbild** mit **Lage des Namens** („oben“, „mittig“ oder „unten als Band“), **Bilderkarussell blättert** („nur von Hand“, „langsam“, „normal“ oder „zufällig“: dann zeigt die Startseite bei jedem Aufruf ein anderes Bild des Karussells, das wie ein einzelnes Titelbild stehen bleibt; das gilt auch für das Bild im Überschriften-Band der Unterseiten) und **Abschnitte trennen** („nicht“, „mit Linie“ oder „abwechselnd getönt“; im Design „Bühne“ schaltet das die farbigen Bänder ab). Steht das Bilderkarussell unter Webseite › Startseite auf voller Breite, reicht das Titelbild von Rand zu Rand. **Titelfoto als Bühne** › „randlos“ legt das Titelfoto ohne Rand und Abstand direkt unter den Kopf, in begrenzter Höhe, unten mit einem Verlauf in der dunklen Vereinsfarbe; darauf stehen links die Titelzeilen und die Oberzeile vom Baustein „Bilderkarussell“. Mehrere Titelzeilen wechseln ruhig mit den Bildern; wer das Karussell anhält, hält auch die Zeile an. **Knöpfe am Bilderkarussell** (Anhalten, Zurück, Weiter und Zähler) sind „immer sichtbar“ oder erscheinen erst „bei Mauszeiger“ über dem Bild oder mit der Tastatur; auf Handys und Tablets bleiben sie immer sichtbar. Ohne eigene Wahl stehen sie auf der Bühne immer da, sonst bei Mauszeiger. „in Inhaltsbreite“ zeigt dieselbe Bühne nur so breit wie die Inhaltsspalte, damit auf breiten Bildschirmen mehr vom Foto sichtbar bleibt; die **Breite der Bühne** ist „wie der Inhalt“, „etwas breiter“ oder „breit“, die **Fläche neben der Bühne** zeigt dann den Seitenhintergrund oder die dunkle Vereinsfarbe. Auf dem Handy ist sie wie „randlos“.
 
 ## Unterseiten und Termine
 
 **Überschrift der Unterseiten** „schlicht“, als **farbiges Band** oder **mit Titelbild** (das Bild der Startseite hinter der Überschrift, abgedunkelt wie dort eingestellt), das **Datumsfeld** als Kachel, Streifen oder **Karten** (die nächsten Termine auf der Startseite und den Seiten der Untereinheiten als Karten nebeneinander mit großem Datum, der nächste in der Vereinsfarbe) und **Datum daneben**: nur der Wochentag, kurz („Sa., 14.11.2026“) oder lang („Samstag, 14. November 2026“).
+
+Dazu kommen Regler für einzelne Seiten; ohne eigene Wahl bleibt jede Seite, wie sie war:
+
+- **Würdenträger** „Band und Karten“: Die amtierenden Würdenträger stehen groß als Band in der dunklen Vereinsfarbe direkt unter dem Seitentitel, links das Foto, rechts die Würde als Oberzeile mit kurzer Linie in der Zweitfarbe, der Name groß und die Amtszeit. Darunter stehen die letzten acht Vorgänger als Karten (auf dem Handy zwei nebeneinander) und ein Knopf „Alle … Einträge“, der die ganze Liste aufklappt. Ohne Foto bleibt das Band, nur mit Text.
+- **Personen ohne Foto** „ohne Platzhalter“: Vorstand, Ehrungen und Ansprechpartner der Untereinheiten zeigen ohne Foto keinen Anfangsbuchstaben mehr, der Name rückt nach links. Fotos bleiben.
+- **Karten der Personen** „Amt als Etikett“: das Amt klein in Großbuchstaben über dem Namen, der Name groß in der Schrift der Überschriften, „Nachricht schreiben“ als unterstrichener Textlink, oben eine Kante in der Vereinsfarbe; mehrere Personen eines Amts stehen untereinander, Ehrenmitglieder im Raster mit drei Spalten.
+- **Anrede im Kontaktformular** „Sie“ oder „du“: gilt für Beschriftungen, Einleitung, Fehlermeldungen und die Bestätigung. Den Kasten rechts neben dem Formular (z. B. „Du möchtest mitmachen?“ mit Knopf) schreibt ihr unter Webseite › Texte als Einleitung des Bereichs **Kontakt**.
+- **Epochen der Chronik** „als Band“: jede Epoche randlos in der dunklen Vereinsfarbe, darin groß der Zeitraum in der Zweitfarbe, der Titel und der Text der Epoche; die Zeitleiste läuft darunter weiter. Die Sprungmarken oben werden zu unterstrichenen Links, die Jahreszahlen stehen in der Schrift der Überschriften.
+- **Ranglisten der Ergebnisse** „Plätze 1 bis 3 als Karten“: Über jeder Rangliste stehen die ersten drei Plätze als Karten mit großer Platzziffer (Platz 1 in der Vereinsfarbe), Name, Untereinheit und Ergebnis mit Einheit, etwa „48 Ringe“. Bei Gleichstand bekommt jeder Gleichplatzierte eine Karte; die Tabelle darunter beginnt mit Platz 4 und entfällt, wenn es nicht mehr Plätze gibt.
+
+Etiketten, die Ziffern der Plätze 2 und 3 und der Kasten neben dem Kontaktformular stehen in der Farbe, die ihr bei den Farben des Designs für das Datumsfeld gewählt habt.
 
 ## Fuß
 
