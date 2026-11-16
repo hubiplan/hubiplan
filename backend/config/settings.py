@@ -373,7 +373,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "termin-erinnerungen": {
         "task": "events.tasks.send_event_reminders",
-        "schedule": 3600.0,  # stündlich
+        "schedule": 60 * 60,  # stündlich
     },
     "rueckgaengig-aufraeumen": {
         "task": "changes.tasks.purge_old_changes",
@@ -398,7 +398,7 @@ CELERY_BEAT_SCHEDULE = {
     # Schließen einer Abstimmung geschieht das ohnehin sofort
     "abstimmungen-mischen": {
         "task": "meetings.tasks.mix_secret_polls",
-        "schedule": 3600.0,
+        "schedule": 60 * 60,  # stündlich
     },
     "postausgang-aufraeumen": {
         "task": "outbox.tasks.purge_sent_mails",
@@ -407,7 +407,7 @@ CELERY_BEAT_SCHEDULE = {
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {
         "task": "events.tasks.sync_external_calendars",
-        "schedule": 3600.0,  # stündlich
+        "schedule": 60 * 60,  # stündlich
     },
     # Social-Media-Beiträge der Webseite (ohne verbundene Kanäle: nichts zu tun)
     "webseite-beitraege-abrufen": {"task": "website.tasks.sync_social_feeds", "schedule": 30 * 60},
@@ -417,7 +417,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "mitgliedsantraege-aufraeumen": {
         "task": "admission.tasks.purge_applications",
-        "schedule": 3600.0,  # stündlich (unbestätigte Anträge nach 48 Stunden)
+        "schedule": 60 * 60,  # stündlich (unbestätigte Anträge nach 48 Stunden)
     },
     "webseite-nachrichten-aufraeumen": {
         "task": "website.tasks.purge_held_messages",
@@ -430,7 +430,7 @@ CELERY_BEAT_SCHEDULE = {
     "verbund-schluessel": {"task": "peering.tasks.keys_daily", "schedule": taeglich(4, 25)},
     "startpasswoerter-ablaufen": {
         "task": "accounts.tasks.expire_initial_passwords",
-        "schedule": 3600.0,  # stündlich
+        "schedule": 60 * 60,  # stündlich
     },
     # Konten ohne Zugang nach 90 Tagen löschen (vorher Hinweismail), App-Geräte nach 180 Tagen
     # ohne Nutzung abmelden (Gesamtaudit 15.11., PF-02)
