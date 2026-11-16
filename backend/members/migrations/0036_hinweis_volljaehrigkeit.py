@@ -5,7 +5,7 @@ class Migration(migrations.Migration):
     """Leeres Feld; ältere Fassungen lesen und schreiben es nicht (abwärtsverträglich)."""
 
     dependencies = [
-        ("members", "0034_erziehungsberechtigte"),
+        ("members", "0035_ehrung_titel"),
     ]
 
     operations = [
