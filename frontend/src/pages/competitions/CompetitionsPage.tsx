@@ -449,6 +449,8 @@ function Setup({
     details: comp.details,
     website: comp.website,
     website_depth: comp.website_depth,
+    // Webseite #149: leer = Adresse aus Titel und Jahr
+    web_slug: comp.web_slug_auto === false ? (comp.web_slug ?? '') : '',
     share_ranking: comp.share_ranking,
     certificate_template: comp.certificate_template,
     series: comp.series,
@@ -821,6 +823,18 @@ function Setup({
                     </option>
                   ))}
                 </SelectField>
+              )}
+              {v.website !== 'aus' && (
+                <Field
+                  label={t('Adresse auf der Webseite')}
+                  value={v.web_slug}
+                  placeholder={comp.web_slug || undefined}
+                  error={errors.web_slug}
+                  hint={t(
+                    'Leer: aus Titel und Jahr, z. B. /ergebnisse/koenigsschiessen-2026/. Frühere Adressen leiten weiter.',
+                  )}
+                  onChange={(e) => set('web_slug', e.target.value)}
+                />
               )}
             </div>
             <p className="setup-derived" aria-live="polite">

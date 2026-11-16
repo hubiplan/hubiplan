@@ -51,6 +51,9 @@ export interface Series {
   description: string
   on_website: boolean
   competition_count: number
+  /** Webseite #149: Adresse auf der Webseite; leer gesendet = aus dem Namen */
+  web_slug?: string
+  web_slug_auto?: boolean
 }
 
 export interface PodiumRow {
@@ -66,6 +69,9 @@ export interface SeriesArchive {
   id: number
   name: string
   description: string
+  on_website?: boolean
+  web_slug?: string
+  web_slug_auto?: boolean
   years: {
     competition: number
     title: string

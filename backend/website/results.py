@@ -57,9 +57,26 @@ def available(site) -> bool:
     return bool(published(site)) or bool(series_list(site)) or bool(trophies(site))
 
 
+def _matches(site, kind: str, obj, token: str) -> bool:
+    """Kennung oder lesbare Adresse (Webseite #149), auch eine frühere."""
+    if hmac.compare_digest(site.token(kind, obj.pk), token):
+        return True
+    return bool(obj.web_slug) and (token == obj.web_slug or token in (obj.web_slug_history or []))
+
+
+def _slug(obj) -> dict:
+    """Lesbare Adresse und frühere Adressen für die Weiterleitung (Webseite #149)."""
+    return {"slug": obj.web_slug or None, "aliases": list(obj.web_slug_history or [])}
+
+
 def find(site, token: str):
-    for c in published(site):
-        if hmac.compare_digest(site.token("competition", c.pk), token):
+    published_now = published(site)
+    # Aktuelle Adressen gehen früheren eines anderen Wettbewerbs vor
+    for c in published_now:
+        if c.web_slug and token == c.web_slug:
+            return c
+    for c in published_now:
+        if _matches(site, "competition", c, token):
             return c
     return None
 
@@ -164,6 +181,7 @@ def summary(site, comp) -> dict:
         "organizer": comp.organizer if not comp.own else "",
         **_state(comp),
         "url": site.url(f"results/{site.token('competition', comp.pk)}/"),
+        **_slug(comp),
     }
 
 
@@ -308,6 +326,7 @@ def series_list(site) -> list:
             "id": site.token("series", s.pk),
             "name": s.name,
             "url": site.url(f"results/series/{site.token('series', s.pk)}/"),
+            **_slug(s),
         }
         for s in Series.objects.filter(organization=site.org, on_website=True)
         if s.competitions.filter(status="endgueltig").exclude(website="aus").exists()
@@ -320,8 +339,12 @@ def find_series(site, token: str):
 
     if not enabled(site):
         return None
-    for s in Series.objects.filter(organization=site.org, on_website=True):
-        if hmac.compare_digest(site.token("series", s.pk), token):
+    candidates = list(Series.objects.filter(organization=site.org, on_website=True))
+    for s in candidates:
+        if s.web_slug and token == s.web_slug:
+            return s
+    for s in candidates:
+        if _matches(site, "series", s, token):
             return s
     return None
 
@@ -365,6 +388,7 @@ def series_detail(site, series) -> dict:
                 "year": comp.date.year,
                 "title": comp.title,
                 "url": d["url"],
+                "slug": d.get("slug"),
                 "winners": winners,
                 "depth": comp.website_depth,
             }
@@ -392,6 +416,7 @@ def series_detail(site, series) -> dict:
         titles.append({"year": g.year, "title": g.full_title or g.trophy.name, "name": who})
     return {
         "id": site.token("series", series.pk),
+        **_slug(series),
         "name": series.name,
         "description": series.description,
         "years": years,

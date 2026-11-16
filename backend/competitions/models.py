@@ -20,10 +20,11 @@ from django.utils.translation import gettext_lazy
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.privatefiles import PrivateFileField
+from core.webslug import WebSlugMixin
 from exchange.models import private_storage
 
 
-class Series(models.Model):
+class Series(WebSlugMixin, models.Model):
     """Reihe: verbindet denselben Wettbewerb über die Jahre („Vergleichsschießen“), für
     Archiv, Bestenliste und Vergleich der eigenen Züge (Konzept Abschnitte 3 und 12)."""
 
@@ -44,8 +45,17 @@ class Series(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    # Webseite #149: /ergebnisse/reihe/vereinsmeister/
+    WEB_SLUG_FALLBACK = "reihe"
 
-class Competition(models.Model):
+    def web_slug_source(self) -> str:
+        return self.name
+
+    def web_slug_siblings(self):
+        return Series.objects.filter(organization_id=self.organization_id)
+
+
+class Competition(WebSlugMixin, models.Model):
     class Status(models.TextChoices):
         PREPARATION = "vorbereitung", gettext_lazy("Vorbereitung")
         RUNNING = "laeuft", gettext_lazy("läuft")
@@ -147,6 +157,17 @@ class Competition(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    # Webseite #149: /ergebnisse/koenigsschiessen-2026/; ohne Jahr im Titel kommt es dazu,
+    # weil derselbe Wettbewerb jedes Jahr wiederkehrt
+    WEB_SLUG_FALLBACK = "wettbewerb"
+
+    def web_slug_source(self) -> str:
+        year = str(self.date.year) if self.date else ""
+        return self.title if not year or year in self.title else f"{self.title} {year}"
+
+    def web_slug_siblings(self):
+        return Competition.objects.filter(organization_id=self.organization_id)
 
 
 class ShootingProgram(models.Model):

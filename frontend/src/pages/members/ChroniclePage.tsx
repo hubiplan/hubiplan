@@ -931,6 +931,8 @@ function DignityForm({
     count_each_reign: dignity?.count_each_reign ?? false,
     share_down: dignity?.share_down ?? false,
     name_plural: dignity?.name_plural ?? '',
+    // Webseite #149: leer = Adresse aus der Mehrzahl
+    web_slug: dignity && dignity.web_slug_auto === false ? (dignity.web_slug ?? '') : '',
   })
   const { values: v, set, errors } = form
   // Bestehende Würden speichern automatisch, neue erst mit „Anlegen“
@@ -971,6 +973,16 @@ function DignityForm({
           placeholder={dignity?.plural || undefined}
           error={errors.name_plural}
           onChange={(e) => set('name_plural', e.target.value)}
+        />
+        <Field
+          label={t('Adresse auf der Webseite')}
+          value={v.web_slug}
+          placeholder={dignity?.web_slug || undefined}
+          error={errors.web_slug}
+          hint={t(
+            'Leer: aus der Mehrzahl, z. B. /majestaeten/hubertuskoenige/. Frühere Adressen leiten weiter.',
+          )}
+          onChange={(e) => set('web_slug', e.target.value)}
         />
         <SelectField
           label={t('Gehört zu')}

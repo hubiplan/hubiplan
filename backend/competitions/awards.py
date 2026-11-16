@@ -321,6 +321,10 @@ def series_archive(series: Series, *, public: bool = False) -> dict:
         "id": series.pk,
         "name": series.name,
         "description": series.description,
+        "on_website": series.on_website,
+        # Webseite #149
+        "web_slug": series.web_slug,
+        "web_slug_auto": series.web_slug_auto,
         "years": years,
         "titles": titles,
         "records": sorted(records.values(), key=lambda r: r["scoring"]),

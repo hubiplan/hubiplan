@@ -74,6 +74,9 @@ export interface Competition {
   status_label: string
   website: WebsiteMode
   website_depth: WebsiteDepth
+  /** Webseite #149: Adresse auf der Webseite (/ergebnisse/…/); leer gesendet = aus Titel und Jahr */
+  web_slug?: string
+  web_slug_auto?: boolean
   /** Ausschreibung an Untereinheiten: ganze Rangliste an die meldenden Untereinheiten */
   share_ranking: boolean
   /** Urkundenvorlage (leer: Standard) */

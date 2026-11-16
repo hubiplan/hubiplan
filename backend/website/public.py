@@ -817,6 +817,25 @@ class SiteView:
         """Würde auf dieser Webseite eingeschaltet (Häkchen im Menü, Ralf 2026-10-31)?"""
         return self.site.block_on(f"dignity:{dignity.pk}")
 
+    @cached_property
+    def dignity_slugs(self) -> dict[int, dict]:
+        """Lesbare Adressen der Würden dieser Webseite (Webseite #149): eigene vor
+        weitergegebenen; trifft eine weitergegebene auf eine schon vergebene Adresse, bekommt
+        sie einen Zusatz. Frühere Adressen leiten weiter, solange keine andere sie trägt."""
+        result: dict[int, dict] = {}
+        used: set[str] = set()
+        for qs, _view, _owner, _origins in self.dignity_sources():
+            for d in qs.order_by("pk"):
+                base = d.web_slug or unit_slug(d.plural or d.name)
+                slug, n = base, 2
+                while slug in used:
+                    slug, n = f"{base}-{n}", n + 1
+                used.add(slug)
+                result[d.pk] = {"slug": slug, "aliases": list(d.web_slug_history or [])}
+        for item in result.values():
+            item["aliases"] = [a for a in item["aliases"] if a not in used]
+        return result
+
     def honors(self, unit: Department | None = None) -> list[dict]:
         """Öffentliche Würden mit aktuellen Trägern und Chronik (neueste zuerst);
         im Menü ausgeschaltete Würden fehlen."""
@@ -829,6 +848,8 @@ class SiteView:
                 if item:
                     if owner:
                         item["owner"] = owner
+                    if unit is None:
+                        item.update(self.dignity_slugs.get(dignity.pk, {}))
                     result.append(item)
         return result
 
@@ -946,7 +967,13 @@ class SiteView:
                     if not self.dignity_on(d):
                         continue
                     label = d.plural if d.reign_count > 1 else d.name
-                    dignities.append({"id": self.token("dignity", d.pk), "label": label})
+                    dignities.append(
+                        {
+                            "id": self.token("dignity", d.pk),
+                            "label": label,
+                            "slug": self.dignity_slugs.get(d.pk, {}).get("slug"),
+                        }
+                    )
         honorary = self.honorary() if self.site.block_on("honorary") else []
         return {
             "label": self.site.block_name("honors") or "Würdenträger",

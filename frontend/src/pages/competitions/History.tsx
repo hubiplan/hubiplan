@@ -20,6 +20,7 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
+import { WebSlugField } from '../../components/WebSlugField.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 
 function places(a: { place_from: number; place_to: number }): string {
@@ -472,8 +473,10 @@ export function SeriesPage() {
     id: data.id,
     name: data.name,
     description: data.description,
-    on_website: true,
+    on_website: data.on_website ?? true,
     competition_count: data.years.length,
+    web_slug: data.web_slug,
+    web_slug_auto: data.web_slug_auto,
   }
 
   async function save(changes: Partial<Series>) {
@@ -490,6 +493,15 @@ export function SeriesPage() {
           label={t('Archiv auf der Webseite zeigen')}
           checked={s.on_website}
           onChange={(on) => void save({ on_website: on })}
+        />
+      )}
+      {canManage && (
+        <WebSlugField
+          key={`${s.web_slug ?? ''}-${String(s.web_slug_auto)}`}
+          slug={s.web_slug ?? ''}
+          auto={s.web_slug_auto !== false}
+          hint={t('Leer: aus dem Namen, z. B. /ergebnisse/reihe/vereinsmeister/.')}
+          onSave={(web_slug) => save({ web_slug })}
         />
       )}
       <h2>{t('Sieger je Jahr')}</h2>

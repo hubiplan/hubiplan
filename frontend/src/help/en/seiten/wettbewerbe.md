@@ -37,6 +37,10 @@ Zero prize places show no individual places. Tied prize places are shown in full
 existing consent and objections still apply. Unit and team rankings also show only their prize places, likewise
 with **only the scoring of subunits and teams**. All places appear only with **full ranking**.
 
+## Address on the website
+
+Results appear under a readable address made from title and year, such as `/ergebnisse/vereinsmeisterschaft-2027/`. You can choose it yourself under **Address on the website**; left empty, it follows the title again. Earlier addresses redirect.
+
 ## Personal results for connected clubs
 
 Under **Evaluation** → **Result approval for connected clubs**, administrators with both
