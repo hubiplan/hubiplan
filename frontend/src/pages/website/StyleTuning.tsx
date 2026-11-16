@@ -419,9 +419,9 @@ function GROUPS(): Group[] {
         {
           key: 'timeline_chapter',
           label: t('Epochen der Chronik'),
-          options: { plain: t('Zwischentitel'), band: t('als Band') },
+          options: { plain: t('Zwischentitel'), band: t('als Band'), slim: t('als flaches Band') },
           hint: t(
-            'Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe; die Sprungmarken oben werden zu unterstrichenen Links.',
+            'Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe. Als flaches Band: Zeitraum und Titel in einer Zeile, deutlich niedriger. Bei beiden werden die Sprungmarken oben zu unterstrichenen Links.',
           ),
         },
         {
