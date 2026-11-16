@@ -41,15 +41,15 @@ tragen beide dieselbe Transaktionsnummer (`xmin`) und liegen nacheinander in der
 Wer die Datenbank oder eine Sicherung lesen kann, könnte so jede Antwort ihrer Person zuordnen.
 Deshalb schreibt `services.mix_answers` alle Antworten einer anonymen Umfrage unter Sperre der
 Umfrage neu: neue Kennungen, zufällige Reihenfolge, eine gemeinsame neue Transaktionsnummer. Das
-geschieht stündlich für alle offenen anonymen Umfragen (`surveys.tasks.hourly`, gerade gesperrte
-Umfragen beim nächsten Lauf) und beim Schließen (`services.close`, auch „Jetzt beenden“). Das
+geschieht alle 15 Minuten für alle offenen anonymen Umfragen (`surveys.tasks.hourly`, gerade
+gesperrte Umfragen beim nächsten Lauf) und beim Schließen (`services.close`, auch „Jetzt beenden“). Das
 Ergebnis erscheint erst, wenn die Umfrage geschlossen und damit gemischt ist; ist das Ende
-abgelaufen, aber der Stundenlauf noch nicht da, wartet es so lange. Die Zählung ändert sich
+abgelaufen, aber der nächste Lauf noch nicht da, wartet es so lange. Die Zählung ändert sich
 dadurch nicht.
 
 Grenzen (ehrlich):
 
-- Bis zum nächsten Mischlauf (höchstens eine Stunde) kann jemand mit Datenbankzugang neue
+- Bis zum nächsten Mischlauf (höchstens 15 Minuten) kann jemand mit Datenbankzugang neue
   Antworten noch zuordnen.
 - Wer Sicherungen oder Datenbankstände vor und nach einem Mischlauf vergleicht, sieht, welche
   Antworten in welchem Zeitfenster dazukamen; kam in einem Fenster nur eine Stimme, ist das eine

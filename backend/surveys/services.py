@@ -383,7 +383,7 @@ def results_hidden(survey: Survey, count: int, now=None) -> bool:
     if not survey.anonymous:
         return False
     # Erst nach dem förmlichen Schließen, das die Antworten mischt (GEH-1); per Zeitablauf
-    # beendet, aber noch nicht geschlossen: bis zum nächsten Stundenlauf warten
+    # beendet, aber noch nicht geschlossen: bis zum nächsten Lauf (alle 15 Minuten) warten
     return count < ANONYMOUS_MIN or survey.status != Survey.Status.CLOSED
 
 
@@ -523,7 +523,7 @@ def mix_answers(survey: Survey) -> int:
 
 
 def mix_open() -> int:
-    """Stündlich: offene anonyme Umfragen mischen. Gerade gesperrte (jemand stimmt ab) kommen
+    """Alle 15 Minuten: offene anonyme Umfragen mischen. Gerade gesperrte (jemand stimmt ab) kommen
     beim nächsten Lauf dran; beim Schließen wird ohnehin gemischt."""
     from core.tenancy import rls_bypass
 
