@@ -44,7 +44,7 @@ export function ArtistFeesPage() {
       </div>
       <p className="muted small">
         {t(
-          'Gezählt werden Ausgaben, die im Kassenbuch als Honorar an Künstler gekennzeichnet sind oder deren Kategorie so markiert ist (Einrichtung › Kategorien), etwa für Kapelle, Tambourcorps, DJ oder Grafiker. Gemeldet werden die Honorare ohne gesondert ausgewiesene Umsatzsteuer.',
+          'Gezählt werden Ausgaben, die im Kassenbuch als Honorar an Künstler gekennzeichnet sind oder deren Kategorie so markiert ist (Einrichtung › Kategorien), etwa für Band, Chorleitung, DJ oder Grafiker. Gemeldet werden die Honorare ohne gesondert ausgewiesene Umsatzsteuer.',
         )}
       </p>
       <div className="card card-wide" data-testid="artist-fees-total">

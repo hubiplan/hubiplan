@@ -4,13 +4,13 @@ titel: Einstellungen › Orte
 rechte: [settings.view, events.manage, competitions.manage, helpers.edit, meetings.edit]
 routen: [/einstellungen/orte]
 stichworte:
-  [Ort, Orte, Raum, Räume, Gebäude, Saal, Anschrift, Anfahrt, Schützenhaus, Festplatz, Kartenpunkt]
+  [Ort, Orte, Raum, Räume, Gebäude, Saal, Anschrift, Anfahrt, Vereinsheim, Sportplatz, Kartenpunkt]
 ---
 
-Hier speicherst du Orte, die immer wieder vorkommen, etwa Schützenhaus, Festplatz oder Schießstand. In Terminen, Wettbewerben, Helferdiensten und Versammlungen wählst du sie dann im Feld **Ort** aus, statt sie jedes Mal einzutippen.
+Hier speicherst du Orte, die immer wieder vorkommen, etwa Vereinsheim, Sportplatz oder Probenraum. In Terminen, Wettbewerben, Helferdiensten und Versammlungen wählst du sie dann im Feld **Ort** aus, statt sie jedes Mal einzutippen.
 
 - **Neuer Ort**: Name, Anschrift und **Anfahrt und Hinweise** (z. B. Parkplatz oder Eingang). Unter **Genauer Kartenpunkt (optional)** trägst du Breite und Länge ein, wenn die Anschrift nicht reicht.
-- Räume: Liegen mehrere Räume im selben Gebäude (Saal, Schießstand, Versammlungsraum), legst du das Gebäude einmal als Ort mit Anschrift an und darunter mit **Raum hinzufügen** die Räume. Ein Raum hat nur einen Namen und auf Wunsch einen **Hinweis zum Raum** (z. B. „Eingang über den Hof“); Anschrift, Anfahrt und Kartenpunkt kommen vom Ort. In den Formularen steht er als „Ort, Raum“ zur Auswahl, etwa „Bürgerhaus, Saal“. Über **Gehört zu** machst du einen bestehenden Ort nachträglich zum Raum.
+- Räume: Liegen mehrere Räume im selben Gebäude (Saal, Küche, Versammlungsraum), legst du das Gebäude einmal als Ort mit Anschrift an und darunter mit **Raum hinzufügen** die Räume. Ein Raum hat nur einen Namen und auf Wunsch einen **Hinweis zum Raum** (z. B. „Eingang über den Hof“); Anschrift, Anfahrt und Kartenpunkt kommen vom Ort. In den Formularen steht er als „Ort, Raum“ zur Auswahl, etwa „Bürgerhaus, Saal“. Über **Gehört zu** machst du einen bestehenden Ort nachträglich zum Raum.
 - **Vorschläge aus bisherigen Einträgen** zeigt Orte, die in den letzten zwei Jahren mehrfach eingetippt wurden. **Übernehmen** speichert einen davon.
 - Wählst du in einem Formular einen gespeicherten Ort, übernimmt HUBIplan Name und Anschrift. Spätere Änderungen hier ändern frühere Einträge nicht.
 - Tippst du im Formular einen neuen Ort ein, speichert **Als Ort speichern** ihn gleich mit. Beginnt er mit einem gespeicherten Ort und Komma, etwa „Bürgerhaus, Küche“, heißt der Knopf **Als Raum speichern** und legt den Raum dort an.

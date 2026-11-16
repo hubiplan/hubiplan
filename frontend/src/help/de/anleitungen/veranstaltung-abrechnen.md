@@ -16,6 +16,6 @@ stichworte: [Fest, Veranstaltung, Projekt, Kassenbericht, Überschuss, Plan]
 6. Öffne die Veranstaltung mit **Ansehen** und prüfe Einnahmen, Ausgaben und Ergebnis.
 7. Hole die Auswertung als PDF oder mit **Excel**.
 
-Mit einer **Reihe**, etwa „Schützenfest“, vergleichst du die Jahre miteinander.
+Mit einer **Reihe**, etwa „Sommerfest“, vergleichst du die Jahre miteinander.
 
 ![Ausgangspunkt: Fest oder Veranstaltung abrechnen](bild:veranstaltung-abrechnen)

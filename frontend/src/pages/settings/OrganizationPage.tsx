@@ -350,7 +350,7 @@ function OrganizationForm({
                 <h3>{t('Bezeichnung dieser Einheit')}</h3>
                 <p className="muted small">
                   {t(
-                    'Wie heißt diese Einheit in den Texten der App? Zum Beispiel Verein, Gesellschaft, Dachverband oder Bruderschaft.',
+                    'Wie heißt diese Einheit in den Texten der App? Zum Beispiel Verein, Club, Gesellschaft oder Dachverband.',
                   )}
                 </p>
                 <LabelFields
@@ -386,7 +386,7 @@ function OrganizationForm({
                 <p className="muted small">
                   {detail.type === 'club'
                     ? t(
-                        'Wie sollen die Untereinheiten heißen? Zum Beispiel Zug, Sparte, Kompanie oder Gruppe.',
+                        'Wie sollen die Untereinheiten heißen? Zum Beispiel Abteilung, Sparte, Mannschaft oder Gruppe.',
                       )
                     : t(
                         'Wie heißen die Einheiten, die zu dieser Einheit gehören? Zum Beispiel Verein oder Gesellschaft.',
@@ -570,9 +570,9 @@ function FederationNameGrammar({
           error={errors.name_gender}
           onChange={(e) => onGender(e.target.value as 'f' | 'm' | 'n')}
         >
-          <option value="m">{t('der (z. B. der BSV)')}</option>
-          <option value="f">{t('die (z. B. die Bruderschaft)')}</option>
-          <option value="n">{t('das (z. B. das Korps)')}</option>
+          <option value="m">{t('der (z. B. der Verein)')}</option>
+          <option value="f">{t('die (z. B. die Gesellschaft)')}</option>
+          <option value="n">{t('das (z. B. das Orchester)')}</option>
         </SelectField>
         <Field
           label={t('Genitiv, nur falls abweichend')}

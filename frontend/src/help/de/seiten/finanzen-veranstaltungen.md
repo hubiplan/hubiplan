@@ -13,4 +13,4 @@ Unter **geplante Einnahmen (optional)** und **geplante Ausgaben (optional)** tra
 
 ## Reihen
 
-Eine Reihe fasst wiederkehrende Veranstaltungen zusammen, z. B. „Schützenfest“. Die Reihe wählst du beim Bearbeiten einer Veranstaltung unter **Reihe (optional)**; so vergleichst du die Jahre miteinander.
+Eine Reihe fasst wiederkehrende Veranstaltungen zusammen, z. B. „Sommerfest“. Die Reihe wählst du beim Bearbeiten einer Veranstaltung unter **Reihe (optional)**; so vergleichst du die Jahre miteinander.

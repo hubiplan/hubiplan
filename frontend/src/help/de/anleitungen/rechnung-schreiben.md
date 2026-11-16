@@ -5,7 +5,7 @@ modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen]
 reihe: 30
-stichworte: [Rechnung, Uniform, Posten, einzeln]
+stichworte: [Rechnung, Vereinskleidung, Posten, einzeln]
 ---
 
 1. Öffne [Finanzen › Rechnungen](/finanzen/rechnungen) und klicke auf **Neue Rechnung**.

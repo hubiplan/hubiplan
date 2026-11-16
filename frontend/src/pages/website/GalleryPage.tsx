@@ -1,4 +1,4 @@
-// Galerie der Webseite (Ralf 05.11.2026): Alben mit Unteralben (z. B. „2024“ › „Schützenfest“),
+// Galerie der Webseite (Ralf 05.11.2026): Alben mit Unteralben (z. B. „2024“ › „Sommerfest“),
 // viele Fotos auf einmal hochladen, Bilder aus der Bilderverwaltung übernehmen, sortieren nach
 // Aufnahmedatum, Dateiname … oder in eigener Reihenfolge per Ziehen.
 import { useState } from 'react'
@@ -104,7 +104,7 @@ function AlbumOverview({
       <h2>{t('Galerie')}</h2>
       <p className="muted small">
         {t(
-          'Fotoalben für die Webseite. Ein Album kann Unteralben haben, z. B. „2024“ mit „Schützenfest“ und „Königsball“. Auf der Webseite erscheint ein Album erst mit „Auf der Webseite zeigen“.',
+          'Fotoalben für die Webseite. Ein Album kann Unteralben haben, z. B. „2024“ mit „Sommerfest“ und „Jahresausflug“. Auf der Webseite erscheint ein Album erst mit „Auf der Webseite zeigen“.',
         )}
       </p>
       {!listing.block_on && (

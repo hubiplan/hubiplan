@@ -96,7 +96,7 @@ function AssetForm({
             required
             value={v.name}
             error={errors.name}
-            placeholder={t('z. B. Festzelt 10 × 20 m')}
+            placeholder={t('z. B. Kühlanhänger 2,5 t')}
             onChange={(e) => set('name', e.target.value)}
           />
           <Field
@@ -304,7 +304,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
       </div>
       <p className="muted small">
         {t(
-          'Gegenstände ab {x} netto, die mehrere Jahre genutzt werden, z. B. Zelte, Kühlanhänger oder Möbel. Die Abschreibung erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.',
+          'Gegenstände ab {x} netto, die mehrere Jahre genutzt werden, z. B. Beamer, Kühlanhänger oder Möbel. Die Abschreibung erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.',
           { x: euro(data.suggest_from) },
         )}
       </p>

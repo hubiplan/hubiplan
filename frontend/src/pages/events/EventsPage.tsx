@@ -125,7 +125,7 @@ function CategoriesPanel({ base }: { base: CalendarBase }) {
     <div className="card card-wide stack">
       <p className="muted small">
         {t(
-          'Kategorien gliedern den Kalender, z. B. Versammlung, Fest oder Umzug. {pl} nutzen die Kategorien {e_gen}.',
+          'Kategorien gliedern den Kalender, z. B. Versammlung, Fest oder Training. {pl} nutzen die Kategorien {e_gen}.',
           { pl: tm.pl, e_gen: tm.e_gen },
         )}
       </p>

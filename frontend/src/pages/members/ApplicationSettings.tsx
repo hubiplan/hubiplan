@@ -686,7 +686,7 @@ function DistributeCard({ detail }: { detail: FormSettings }) {
       {editable && (
         <div className="grid-2">
           <Field
-            label={t('Bezeichnung, z. B. Schützenfest')}
+            label={t('Bezeichnung, z. B. Sommerfest')}
             value={label}
             maxLength={100}
             onChange={(e) => setLabel(e.target.value)}

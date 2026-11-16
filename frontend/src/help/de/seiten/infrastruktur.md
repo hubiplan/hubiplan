@@ -8,7 +8,7 @@ stichworte: [Schießstand, Schützenhaus, Vereinsheim, Raum, Saal, Bereich, Schl
 ---
 
 Unter Material & Räume › **Räume und Anlagen** (Modul Infrastruktur) stehen die ortsfesten Einrichtungen deiner aktiven Einheit, zum
-Beispiel Schießstand, Schützenhaus oder Vereinsheim. Jede Infrastruktur erhält eine eigene
+Beispiel Vereinsheim, Sportplatz oder Schießstand. Jede Infrastruktur erhält eine eigene
 Kennung (INF-…), eine Art, eine Kurzbeschreibung und eine Anschrift.
 
 Mit Bearbeitungsrecht legst du über **Infrastruktur anlegen** einen Eintrag an. Optional

@@ -44,5 +44,5 @@ Rechte und Zielobjekte das zulassen. Verlauf und Papierkorb werden 30 Tage aufbe
 Material auszusondern erhält seine Zuordnungen; kläre vorher offene Aufgaben und künftige Einsätze.
 
 Ist das Modul Infrastruktur eingeschaltet, kann der Standort auch **In einer Infrastruktur**
-liegen, etwa im Keller des Schützenhauses. Unter **Gehört zu** verbindest du ein Teil mit einer
+liegen, etwa im Keller des Vereinsheims. Unter **Gehört zu** verbindest du ein Teil mit einer
 Infrastruktur, zum Beispiel einen Schlüssel, der bei einem Mitglied liegt.
