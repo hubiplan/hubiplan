@@ -22,3 +22,6 @@ einmal übernimmst du aus einer Excel-Datei.
 
 Pflegen darf, wer das Recht „Chronik pflegen“ hat; lesen, wer „Chronik lesen“ hat. Rollen,
 die Inhalte der Webseite bearbeiten, haben beides schon.
+
+Ein verbundener KI-Assistent kann die Chronik ebenfalls im Entwurf pflegen, etwa Einträge aus einer
+Festschrift übernehmen (siehe [KI-Assistent verbinden](/hilfe/ki-assistent-verbinden)).
