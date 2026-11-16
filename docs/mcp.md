@@ -173,7 +173,10 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 `/bilder-hochladen/<schlüssel>` ist eine Seite ohne Anmeldung; sie spricht
 `/api/public/website-images/<schlüssel>/` (GET Angaben, POST ein Bild, je IP begrenzt). Der
 Link endet nach Ablauf, voll, mit stillgelegter Einheit, abgeschaltetem Modul oder inaktivem
-Konto. Jedes Bild belegt erst einen Platz und wird dann wie jeder Upload geprüft (Größe,
+Konto. Über die KI-Schnittstelle angelegte Links hängen an der Verbindung
+(`ImageUploadLink.grant`, Gesamtaudit 15.11., MCP-06): Sie enden, wenn die Verbindung endet
+(Trennen, Kopie eines Schlüssels, Konto geändert), das Modul „KI-Assistenten“ aus ist oder die
+Person das Recht „Inhalte bearbeiten“ (`website.content`) nicht mehr hat. Jedes Bild belegt erst einen Platz und wird dann wie jeder Upload geprüft (Größe,
 Format, Pixel, Metadaten entfernt); scheitert es, zählt es nicht. Angelegt werden die Bilder im
 Namen der Person, die den Link erzeugt hat.
 

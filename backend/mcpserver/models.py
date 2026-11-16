@@ -105,3 +105,11 @@ class McpGrant(models.Model):
             self.revoked_at = timezone.now()
             self.revoked_reason = reason[:40]
             self.save(update_fields=["revoked_at", "revoked_reason"])
+            # Offene Hochladelinks dieser Verbindung enden mit ihr (Gesamtaudit 15.11., MCP-06)
+            from core.tenancy import rls_bypass
+            from website.models import ImageUploadLink
+
+            with rls_bypass():
+                ImageUploadLink.objects.filter(grant=self, revoked_at=None).update(
+                    revoked_at=self.revoked_at
+                )

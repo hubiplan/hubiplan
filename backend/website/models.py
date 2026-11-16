@@ -694,6 +694,11 @@ class ImageUploadLink(models.Model):
     max_files = models.PositiveSmallIntegerField(default=UPLOAD_LINK_MAX_FILES)
     uploaded = models.PositiveSmallIntegerField(default=0)
     revoked_at = models.DateTimeField(null=True, blank=True)
+    # Über welche KI-Verbindung angelegt (Gesamtaudit 15.11., MCP-06): Der Link gilt nur, solange
+    # die Verbindung besteht, das Modul an ist und die Person Inhalte bearbeiten darf
+    grant = models.ForeignKey(
+        "mcpserver.McpGrant", on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
 
     class Meta:
         verbose_name = "Link zum Hochladen von Bildern"
@@ -712,9 +717,12 @@ class ImageUploadLink(models.Model):
         )
 
     @classmethod
-    def create(cls, website: Website, user, via: str = "") -> tuple[ImageUploadLink, str]:
+    def create(
+        cls, website: Website, user, via: str = "", grant=None
+    ) -> tuple[ImageUploadLink, str]:
         token = secrets.token_urlsafe(32)
         link = cls.objects.create(
+            grant=grant,
             organization=website.organization,
             website=website,
             token_hash=hash_token(token),
