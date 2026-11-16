@@ -272,7 +272,7 @@ const DECISIONS_DATA = {
   pro_rata: {
     title: d('Beitrag bei Eintritt im laufenden Zeitraum anteilig?'),
     text: d(
-      'Anteilig heißt: Wer im Lauf des Zeitraums eintritt, zahlt je angefangenem Monat. Das wirkt gerecht und erleichtert den Eintritt im Herbst, macht die Beträge aber krumm und erklärungsbedürftig. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).',
+      'Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre. Je Halbjahr heißt bei einem Geschäftsjahr wie dem Kalenderjahr: Eintritt bis 30. Juni voller Jahresbeitrag, ab 1. Juli die Hälfte. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).',
     ),
     sources: ['bgb'],
     place: d('Beitragsregeln → Abrechnung und Rechnung'),
@@ -2635,13 +2635,16 @@ const HOWTOS_DATA = {
     kind: 'calc',
     title: d('Anteiliger Beitrag'),
     text: d(
-      'Der Beitrag des Zeitraums wird durch dessen Monate geteilt und mit den Monaten der Mitgliedschaft malgenommen, wobei ein angefangener Monat voll zählt, und kaufmännisch auf Cent gerundet. Bei mehreren Raten im Jahr gehen übrige Cents auf die ersten Raten, damit alle zusammen genau den Jahresbeitrag ergeben (100,00 € monatlich: 4 × 8,34 € und 8 × 8,33 €).',
+      'Der Beitrag des Zeitraums wird durch dessen Monate geteilt, mit den Monaten der Mitgliedschaft malgenommen und kaufmännisch auf Cent gerundet. Ein angefangener Abschnitt zählt voll: je nach Einstellung ein Monat, ein Quartal oder ein Halbjahr, gezählt ab Beginn des Geschäftsjahres. Ist der Abschnitt länger als der Abrechnungszeitraum, gilt der Zeitraum als ein Abschnitt. Bei mehreren Raten im Jahr gehen übrige Cents auf die ersten Raten, damit alle zusammen genau den Jahresbeitrag ergeben (100,00 € monatlich: 4 × 8,34 € und 8 × 8,33 €).',
     ),
     example: {
       head: ['Eintritt', 'Monate', 'Rechnung', 'Beitrag'],
       rows: [
         ['1. Januar', '12 von 12', '72,00 € × 12/12', '72,00 €'],
-        ['15. September', '4 von 12', '72,00 € × 4/12', '24,00 €'],
+        ['15. September, je Monat', '4 von 12', '72,00 € × 4/12', '24,00 €'],
+        ['15. September, je Quartal', '6 von 12', '72,00 € × 6/12', '36,00 €'],
+        ['30. Juni, je Halbjahr', '12 von 12', '72,00 € × 12/12', '72,00 €'],
+        ['1. Juli, je Halbjahr', '6 von 12', '72,00 € × 6/12', '36,00 €'],
       ],
     },
     sources: [],

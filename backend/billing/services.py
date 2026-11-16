@@ -174,25 +174,41 @@ def yearly_fee(
     return (base * factor).quantize(CENT, ROUND_HALF_UP), stage.name
 
 
-def _member_months(periods_, p: Period) -> int:
+def _member_months(periods_, p: Period, step: int = 1) -> int:
     """Angefangene Monate des Zeitraums, in denen die Mitgliedschaft bestand.
 
     Die Monatsgrenzen werden vom Beginn des Geschäftsjahres aus gezählt, nicht vom
     Beginn des Zeitraums: Beginnt das Jahr am 31.01., läuft der zweite Monat vom 28.02.
     bis 30.03. (nicht nur bis 27.03.).
+
+    Mit ``step`` (3 = Quartal, 6 = Halbjahr) zählt ein angefangener Abschnitt dieser Länge
+    voll; das Ergebnis bleibt in Monaten. Abschnitte gehen vom Beginn des Geschäftsjahres
+    aus, so dass der Stichtag mit dem Geschäftsjahr wandert. Ist ein Abschnitt länger als
+    der Zeitraum, zählt der Zeitraum als ein Abschnitt.
     """
     first = p.first or p.start
     offset = p.months * (p.index - 1) if p.first else 0
+    step = max(1, min(step, p.months))
     count = 0
-    for k in range(p.months):
+    for k in range(0, p.months, step):
         m_start = add_months(first, offset + k)
-        m_end = add_months(first, offset + k + 1) - datetime.timedelta(days=1)
+        m_end = add_months(first, offset + k + step) - datetime.timedelta(days=1)
         if any(
-            p.entry_date <= m_end and (p.exit_date is None or p.exit_date >= m_start)
-            for p in periods_
+            s.entry_date <= m_end and (s.exit_date is None or s.exit_date >= m_start)
+            for s in periods_
         ):
-            count += 1
+            count += step
     return count
+
+
+def pro_rata_note(months: int, p: Period, step: int) -> str:
+    """Hinweis auf der Rechnung, z. B. „anteilig 1/2 Halbjahre“."""
+    step = max(1, min(step, p.months))
+    if step == 3:
+        return gettext("anteilig {n}/{total} Quartale").format(n=months // 3, total=p.months // 3)
+    if step == 6:
+        return gettext("anteilig {n}/{total} Halbjahre").format(n=months // 6, total=p.months // 6)
+    return gettext("anteilig {n}/{total} Monate").format(n=months, total=p.months)
 
 
 def rate_share(yearly: Decimal, p: Period) -> Decimal:
@@ -370,11 +386,12 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
             details = [member_type.name, title_name]
             reason = title_name
         amount = rate_share(yearly, p)
-        if cfg.pro_rata:
-            months = _member_months(spans, p)
+        step = cfg.pro_rata_months
+        if step:
+            months = _member_months(spans, p, step)
             if months < p.months:
                 amount = amount * months / p.months
-                details.append(f"anteilig {months}/{p.months} Monate")
+                details.append(pro_rata_note(months, p, step))
         amount = amount.quantize(CENT, ROUND_HALF_UP)
         if amount <= 0:
             plan.skipped.append(

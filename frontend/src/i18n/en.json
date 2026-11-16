@@ -2771,7 +2771,6 @@
   "Abrechnung und Rechnung": "Billing and invoice",
   "Abrechnungsrhythmus": "Billing cycle",
   "Zahlungsziel (Tage)": "Payment term (days)",
-  "Eintritt im laufenden Zeitraum anteilig je angefangenem Monat": "Joining during the current period pro rata per started month",
   "Konto für Überweisungen": "Account for bank transfers",
   "steht mit IBAN auf der Rechnung": "appears with IBAN on the invoice",
   "kein Konto": "no account",
@@ -9426,5 +9425,11 @@
   "Lange Listen": "Long lists",
   "untereinander": "one below the other",
   "zweispaltig": "in two columns",
-  "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column."
+  "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column.",
+  "Beitrag bei Eintritt im laufenden Zeitraum": "Fee when joining during the period",
+  "Angefangene Abschnitte zählen voll, gerechnet ab Beginn des Geschäftsjahres": "Started parts count in full, counted from the start of the financial year",
+  "voller Beitrag (nicht anteilig)": "full fee (not pro rata)",
+  "anteilig je angefangenem Monat": "pro rata per started month",
+  "anteilig je angefangenem Quartal": "pro rata per started quarter",
+  "anteilig je angefangenem Halbjahr": "pro rata per started half-year"
 }
