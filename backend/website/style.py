@@ -113,7 +113,7 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "portrait_placeholder": ("initial", "none"),
     "person_cards": ("normal", "label"),
     "address": ("formal", "informal"),
-    "timeline_chapter": ("plain", "band"),
+    "timeline_chapter": ("plain", "band", "slim"),  # #141 flaches Band
     "ranking": ("table", "podium"),
 }
 
