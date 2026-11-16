@@ -1153,7 +1153,9 @@ Passkeys (Art, Name, Zeiten), Geräte mit Benachrichtigungsdienst, Nextcloud-Kon
 KI-Assistenten, Anmeldungen über andere Instanzen, ob eine Unterschrift gespeichert ist, die
 Briefbogen-Auswahl und eigene Aufgaben. Einheitsbezogenes nur aus diesem Verein und seinen
 Untereinheiten; Schlüssel, Prüfsummen und die Push-Adresse nie, von persönlichen (nicht
-geteilten) Aufgaben nur Status und Daten.
+geteilten) Aufgaben nur Status und Daten. Außerdem: Rechnungen und Mandate eines Haushalts, für den die Person
+zahlt, Mails an ihre Erziehungsberechtigten, Qualifikationen aus Untereinheiten, wartende
+Mitgliederfotos und Fotos von Würden, auf denen sie genannt ist.
 
 **Entfernen wirkt nach höchstens 15 Minuten** (Fachfrage 10 zum Gesamtaudit 10.11.): Die
 öffentliche Schnittstelle und das Kalender-Abo (ICS) erlauben Zwischenspeichern höchstens
