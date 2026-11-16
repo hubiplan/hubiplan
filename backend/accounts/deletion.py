@@ -91,8 +91,36 @@ def delete_account(user, *, reason: str) -> None:
         RoleAssignment.objects.filter(user=user).filter(
             Q(person__isnull=False) | Q(membership__isnull=False)
         ).update(user=None)
+        _disable_nextcloud_after_commit(user)
         user.delete()
     logger.info("Konto gelöscht (%s)", reason)
+
+
+def _disable_nextcloud_after_commit(user) -> None:
+    """Nextcloud-Konten des Kontos nach dem Löschen deaktivieren, wo der Dienst das darf
+    („Konten automatisch deaktivieren“); sonst bleibt es Sache der Nextcloud-Verwaltung."""
+    from oidc.models import Account
+
+    pending = list(
+        Account.objects.filter(
+            user=user, client__manage_accounts=True, client__is_active=True
+        ).values_list("client_id", "nc_user")
+    )
+    if not pending:
+        return
+
+    def start():
+        from oidc.tasks import disable_deleted
+
+        for client_id, nc_user in pending:
+            try:
+                disable_deleted.delay(client_id, nc_user)
+            except Exception:  # noqa: BLE001 – das Löschen ist geschehen
+                logger.exception(
+                    "Deaktivieren in Nextcloud nicht angestoßen (Dienst %s)", client_id
+                )
+
+    transaction.on_commit(start)
 
 
 def orphan_run(now: datetime.datetime | None = None) -> dict[str, int]:
