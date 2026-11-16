@@ -72,7 +72,11 @@ class ImageUploadLinkView(_ContentMixin, APIView):
         website = self.website()
         via = request.data.get("via") if isinstance(request.data, dict) else ""
         link, token = ImageUploadLink.create(
-            website, request.user, via if isinstance(via, str) else ""
+            website,
+            request.user,
+            via if isinstance(via, str) else "",
+            # Über die KI-Schnittstelle: an die Verbindung binden (MCP-06)
+            grant=getattr(request, "mcp_grant", None),
         )
         record(
             self.org,
@@ -104,9 +108,27 @@ def _open_link(token: str) -> ImageUploadLink:
         or not link.organization.is_active
         or not link.created_by.is_active
         or not module_on(link.organization, "website")
+        or (link.grant_id is not None and not _grant_ok(link))
     ):
         raise Http404
     return link
+
+
+def _grant_ok(link: ImageUploadLink) -> bool:
+    """Link eines KI-Assistenten (Gesamtaudit 15.11., MCP-06): Verbindung aktiv, Modul
+    „KI-Assistenten“ an und die Person darf noch Inhalte der Webseite bearbeiten."""
+    from access.catalog import WEBSITE_CONTENT
+    from access.permissions import permissions_in
+    from core.tenancy import user_view
+    from mcpserver.models import McpGrant
+    from mcpserver.oauth import MODULE
+
+    with rls_bypass():
+        grant = McpGrant.objects.filter(pk=link.grant_id).first()
+    if grant is None or not grant.is_active or not module_on(link.organization, MODULE):
+        return False
+    with user_view(link.created_by_id):
+        return WEBSITE_CONTENT in permissions_in(link.created_by, link.organization)
 
 
 class PublicImageUploadView(APIView):
