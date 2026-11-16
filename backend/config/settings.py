@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -405,6 +406,12 @@ CELERY_BEAT_SCHEDULE = {
     "verbund-zustellen": {"task": "peering.tasks.deliver_due", "schedule": 60},
     "verbund-abgleich": {"task": "peering.tasks.reconcile_all", "schedule": 24 * 60 * 60},
     "verbund-schluessel": {"task": "peering.tasks.keys_daily", "schedule": 24 * 60 * 60},
+    # Konten ohne Zugang nach 90 Tagen löschen (vorher Hinweismail), App-Geräte nach 180 Tagen
+    # ohne Nutzung abmelden (Gesamtaudit 15.11., PF-02)
+    "konten-aufraeumen": {
+        "task": "accounts.tasks.purge_orphaned_accounts",
+        "schedule": crontab(minute=55, hour=4),
+    },
     "startpasswoerter-ablaufen": {
         "task": "accounts.tasks.expire_initial_passwords",
         "schedule": 60 * 60,  # stündlich

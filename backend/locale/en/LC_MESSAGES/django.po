@@ -12981,3 +12981,24 @@ msgstr "At most {x0} title lines on the cover photo."
 
 msgid "Der Text auf dem Titelfoto ist zu lang (höchstens {x0} Zeichen)."
 msgstr "The text on the cover photo is too long (at most {x0} characters)."
+
+msgid "Plattform-Verwaltung"
+msgstr "Platform administration"
+
+msgid "Ihr Konto bei {instanz} wird gelöscht"
+msgstr "Your account at {instanz} will be deleted"
+
+msgid "Ihr Konto {email} bei {instanz} hat seit drei Monaten keinen Zugang mehr zu einem Verein: kein Mitgliederzugang und keine Rolle. Am {datum} löschen wir es deshalb mit allen Kontodaten (Passkeys, verbundene Geräte, Freigaben, persönliche Aufgaben)."
+msgstr "Your account {email} at {instanz} has had no access to any club for three months: no member access and no role. We will therefore delete it with all account data (passkeys, connected devices, authorisations, personal tasks) on {datum}."
+
+msgid "Was Ihr Verein über Sie als Mitglied führt, betrifft das nicht. Brauchen Sie das Konto weiter, bitten Sie Ihren Verein um einen Zugang; dann bleibt es."
+msgstr "This does not affect what your club keeps about you as a member. If you still need the account, ask your club for access; it will then be kept."
+
+msgid "Bitte gib zur Bestätigung deine Anmelde-E-Mail ein."
+msgstr "Please enter your login email to confirm."
+
+msgid "Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden."
+msgstr "You still hold roles in: {names}. Please have them ended first."
+
+msgid "Bitte melde dich mit einem neuen Anmeldelink an und lösche das Konto dann innerhalb von 10 Minuten."
+msgstr "Please sign in with a new login link and then delete the account within 10 minutes."

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import * as api from '../../api/auth.ts'
 import type { ChangeResult, TotpState } from '../../api/auth.ts'
-import { LoginSections, NameSection } from './ProfileCards.tsx'
+import { DeleteAccountSection, LoginSections, NameSection } from './ProfileCards.tsx'
 import { LearningCard } from '../../learning/LearningCard.tsx'
 import { LanguageCard } from '../../i18n/LanguageControls.tsx'
 import { AppearanceCard } from './AppearanceCard.tsx'
@@ -49,6 +49,7 @@ export function AccountLoginPage() {
         <LoginSections />
         <PasskeyCard />
         <TwoFactorCard />
+        <DeleteAccountSection />
       </div>
     </section>
   )

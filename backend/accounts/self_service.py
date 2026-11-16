@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext
 from rest_framework import serializers, status
-from rest_framework.exceptions import NotAuthenticated
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -30,6 +30,8 @@ from core.ratelimit import TooMany, too_many
 from organizations.platform_public import instance_name
 from outbox import mail
 
+from .deletion import blockers as deletion_blockers
+from .deletion import delete_account
 from .models import EmailChange, User
 from .security import secure_account
 
@@ -52,6 +54,8 @@ def account_data(user: User) -> dict:
         "last_name": user.last_name,
         "has_password": user.has_usable_password(),
         "pending_email": pending.new_email if pending else None,
+        # Selbst löschen (Gesamtaudit 15.11., PF-02): nicht mit laufenden Ämtern
+        "delete_blockers": deletion_blockers(user),
     }
 
 
@@ -341,3 +345,51 @@ class EmailConfirmView(APIView):
         # gelten nicht mehr (Gesamtaudit 05.11. GA-10). App-Geräte bleiben gekoppelt.
         secure_account(change.user, devices=False)
         return Response({"email": change.new_email})
+
+
+class DeleteAccountSerializer(serializers.Serializer):
+    email = serializers.CharField()
+
+
+class DeleteAccountView(APIView):
+    """POST ``{"email": …}``: eigenes Konto endgültig löschen (Gesamtaudit 15.11., PF-02).
+
+    Bestätigt wird mit der eigenen Anmelde-E-Mail und, wie bei anderen heiklen Aktionen,
+    frisch mit Passkey, Code oder Passwort. Konten ohne Passwort und ohne Zwei-Faktor
+    (Anmeldung nur per Link) gelten bis 10 Minuten nach der Anmeldung als bestätigt.
+    Mit laufenden oder künftigen Ämtern geht es nicht: Die Ämter gehören dem Verein."""
+
+    def post(self, request):
+        from django.contrib.auth import logout
+
+        from . import step_up
+
+        user = request.user
+        _limit(user.pk, "loeschen", 5)
+        data = DeleteAccountSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        if data.validated_data["email"].strip().lower() != user.email.lower():
+            raise serializers.ValidationError(
+                {"email": gettext("Bitte gib zur Bestätigung deine Anmelde-E-Mail ein.")}
+            )
+        names = deletion_blockers(user)
+        if names:
+            raise PermissionDenied(
+                gettext("Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.").format(
+                    names=", ".join(names)
+                )
+            )
+        if user.has_usable_password() or step_up.has_mfa(user):
+            step_up.require(request)
+        elif getattr(settings, "MFA_STEP_UP", True) and not step_up.is_fresh(
+            request._request, user
+        ):
+            raise PermissionDenied(
+                gettext(
+                    "Bitte melde dich mit einem neuen Anmeldelink an und lösche das Konto "
+                    "dann innerhalb von 10 Minuten."
+                )
+            )
+        delete_account(user, reason="selbst gelöscht")
+        logout(request._request)
+        return Response(status=status.HTTP_204_NO_CONTENT)

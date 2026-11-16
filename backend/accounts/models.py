@@ -92,6 +92,10 @@ class User(AbstractUser):
         "Zwei-Faktor-Anmeldung einrichten bis", null=True, blank=True
     )
     auth_version = models.PositiveBigIntegerField(default=0, db_default=0, editable=False)
+    # Kontolöschung (Gesamtaudit 15.11., PF-02, FF-05): seit wann ohne Zugang, wann die
+    # Hinweismail ging. Nach 90 Tagen ohne Zugang wird das Konto gelöscht (accounts/deletion.py).
+    orphaned_since = models.DateTimeField("ohne Zugang seit", null=True, blank=True)
+    deletion_notice_at = models.DateTimeField("Hinweis zur Löschung am", null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []

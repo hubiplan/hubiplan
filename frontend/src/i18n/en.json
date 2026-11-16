@@ -9377,5 +9377,12 @@
   "Anhänge geprüft: keine Listen mit Daten anderer Mitglieder.": "Attachments checked: no lists with other members’ data.",
   "Vor dem Kopieren und Aufführen die Rechte klären:": "Clear the rights before copying and performing:",
   "Schutzfrist": "Term of protection",
-  "GEMA": "GEMA"
+  "GEMA": "GEMA",
+  "Dein Konto ist gelöscht.": "Your account has been deleted.",
+  "Konto löschen": "Delete account",
+  "Löscht dein Konto mit Passkeys, verbundenen Geräten, Freigaben für Nextcloud und KI-Assistenten und deinen persönlichen Aufgaben. Was dein Verein über dich als Mitglied führt, bleibt; austreten oder die Löschung deiner Mitgliedsdaten verlangen kannst du nur beim Verein.": "Deletes your account with passkeys, connected devices, authorisations for Nextcloud and AI assistants and your personal tasks. What your club keeps about you as a member remains; you can only leave or request deletion of your member data with the club.",
+  "Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.": "You still hold roles in: {names}. Please have them ended first.",
+  "Deine Anmelde-E-Mail zur Bestätigung": "Your login email to confirm",
+  "Konto endgültig löschen": "Delete account permanently",
+  "Konto löschen …": "Delete account …"
 }
