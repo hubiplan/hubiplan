@@ -24,6 +24,8 @@ def ohne_broker(settings):
     # Mit echten Transaktionen laufen on_commit-Aufgaben (Bescheid beim Start); ohne Broker
     # im Testaufbau gleich im Prozess ausführen
     settings.CELERY_TASK_ALWAYS_EAGER = True
+
+
 YESNO = {"kind": "yesno", "text": "Neue Uniformjacken bestellen?"}
 
 
