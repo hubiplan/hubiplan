@@ -872,7 +872,7 @@ function ItemForm({
                   )}
                 </p>
                 <p className="muted">
-                  {t('Zum Beispiel ein Schlüssel, der zum Schützenhaus gehört.')}
+                  {t('Zum Beispiel ein Schlüssel, der zum Vereinsheim gehört.')}
                 </p>
                 <MaterialPicker
                   base={base}

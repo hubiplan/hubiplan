@@ -745,7 +745,7 @@ function Directions({
       </label>
       <p className="muted small">
         {t(
-          'Ohne genauen Punkt führen die Kartenlinks zur Anschrift. Einen Punkt brauchst du nur, wenn die Anschrift nicht reicht, etwa für ein Festzelt.',
+          'Ohne genauen Punkt führen die Kartenlinks zur Anschrift. Einen Punkt brauchst du nur, wenn die Anschrift nicht reicht, etwa für eine Wiese oder einen Platz im Freien.',
         )}
       </p>
       <div className="grid-3">

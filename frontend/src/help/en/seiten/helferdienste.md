@@ -34,7 +34,7 @@ are only visible to those who may edit duty rosters.
 ## Requirement
 
 If the “Qualifications” module is switched on, you choose a qualification under
-**Requirement** at a duty, for example range officer for the shooting range. If the person lacks
+**Requirement** at a duty, for example first aid for the first-aid service. If the person lacks
 it or it expires before the end of the shift, HUBIplan asks when assigning, and a note appears at
 the person. Members who sign up themselves see the requirement and cannot sign up without a valid
 certificate.

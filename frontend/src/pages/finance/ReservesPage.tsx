@@ -44,7 +44,7 @@ export function ReservesPage({ canEdit }: { canEdit: boolean }) {
       <p className="muted small">
         {t('Eine')} <Term k="reserve">{t('Rücklage')}</Term>{' '}
         {t(
-          'bindet einen Teil der Mittel für einen Zweck, etwa das nächste Fest (Projektrücklage) oder ein neues Zelt (Wiederbeschaffung). Das Geld bleibt auf den Konten. Die freie Rücklage darf höchstens ein Drittel des Überschusses aus der Vermögensverwaltung plus 10 % der übrigen zeitnah zu verwendenden Mittel betragen (§ 62 Abs. 1 Nr. 3 AO). Den Beschluss bitte im Vorstandsprotokoll festhalten.',
+          'bindet einen Teil der Mittel für einen Zweck, etwa die nächste Veranstaltung (Projektrücklage) oder den Ersatz eines Geräts oder Fahrzeugs (Wiederbeschaffung). Das Geld bleibt auf den Konten. Die freie Rücklage darf höchstens ein Drittel des Überschusses aus der Vermögensverwaltung plus 10 % der übrigen zeitnah zu verwendenden Mittel betragen (§ 62 Abs. 1 Nr. 3 AO). Den Beschluss bitte im Vorstandsprotokoll festhalten.',
         )}
       </p>
       <Why k="reserves" />
@@ -246,7 +246,7 @@ function ReserveForm({
           label={t('Bezeichnung')}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={t('z. B. Schützenfest 2027')}
+          placeholder={t('z. B. Jubiläumsfeier 2027')}
           required
         />
         <SelectField
@@ -268,7 +268,7 @@ function ReserveForm({
         required={needsPurpose}
         hint={
           needsPurpose
-            ? t('Konkret und mit Zeitraum, z. B. „Festzelt für das Schützenfest 2027“.')
+            ? t('Konkret und mit Zeitraum, z. B. „Neue Bühnentechnik bis 2027“.')
             : undefined
         }
       />
@@ -492,7 +492,9 @@ function ReserveCard({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={
-                direction === 'add' ? t('z. B. Vorstandsbeschluss vom …') : t('z. B. Zelt gekauft')
+                direction === 'add'
+                  ? t('z. B. Vorstandsbeschluss vom …')
+                  : t('z. B. Anschaffung bezahlt')
               }
             />
           </div>

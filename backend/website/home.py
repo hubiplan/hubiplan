@@ -83,7 +83,7 @@ KIND_HINTS = {
     "countdown": "Tage, Stunden, Minuten und Sekunden bis zu einem Termin oder Zeitpunkt",
     "join": "kurzer Werbetext mit Knopf zum Online-Mitgliedsantrag",
     "donation": "Spendenzweck, Bankverbindung und auf Wunsch ein Fortschrittsbalken",
-    "hours": "Wochentage mit Uhrzeiten, z. B. für Schießstand oder Probe",
+    "hours": "Wochentage mit Uhrzeiten, z. B. für Training oder Probe",
     "columns": "zwei Textblöcke nebeneinander",
     "table": "eine einfache Tabelle mit Kopfzeile",
     "timeline": "eigene Stationen mit Zeitangabe und Text",

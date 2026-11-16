@@ -25,7 +25,7 @@ Shows events from other calendars in your own, for example those of a neighbouri
 
 ## Sharing
 
-For each category you choose whether its events also appear elsewhere: **Pass on upwards (in the calendar of the higher unit)** or **Pass on downwards (to the sub-units and their members)**. This way the festival also appears in every platoon's calendar, but the board meeting does not.
+For each category you choose whether its events also appear elsewhere: **Pass on upwards (in the calendar of the higher unit)** or **Pass on downwards (to the sub-units and their members)**. This way the summer party also appears in every sub-unit's calendar, but the board meeting does not.
 
 ## Public link
 

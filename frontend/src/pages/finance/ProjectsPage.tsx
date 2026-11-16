@@ -134,7 +134,7 @@ function ProjectList() {
             <p>{t('Noch keine Veranstaltung.')}</p>
             <p className="muted small">
               {t(
-                'Lege zum Beispiel das Schützenfest als Veranstaltung an und ordne ihm im Kassenbuch Einnahmen und Ausgaben zu. Die Buchungen bleiben ganz normal im Kassenbuch.',
+                'Lege zum Beispiel das Sommerfest als Veranstaltung an und ordne ihm im Kassenbuch Einnahmen und Ausgaben zu. Die Buchungen bleiben ganz normal im Kassenbuch.',
               )}
             </p>
           </div>
@@ -217,7 +217,7 @@ function ProjectForm({
   async function addSeries() {
     const name = await promptDialog({
       title: t('Neue Reihe'),
-      message: t('Eine Reihe fasst wiederkehrende Veranstaltungen zusammen, z. B. „Schützenfest“.'),
+      message: t('Eine Reihe fasst wiederkehrende Veranstaltungen zusammen, z. B. „Sommerfest“.'),
       label: t('Name der Reihe'),
       confirmLabel: t('Anlegen'),
       danger: false,
@@ -286,7 +286,7 @@ function ProjectForm({
             <Field
               label={t('Name')}
               required
-              placeholder={t('z. B. Schützenfest 2026')}
+              placeholder={t('z. B. Sommerfest 2026')}
               value={v.name}
               error={errors.name}
               onChange={(e) => set('name', e.target.value)}
@@ -1005,7 +1005,7 @@ function SeriesPage() {
   async function create() {
     const name = await promptDialog({
       title: t('Neue Reihe'),
-      message: t('z. B. „Schützenfest“ – danach die Veranstaltungen der einzelnen Jahre zuordnen.'),
+      message: t('z. B. „Sommerfest“ – danach die Veranstaltungen der einzelnen Jahre zuordnen.'),
       label: t('Name'),
       confirmLabel: t('Anlegen'),
       danger: false,
@@ -1120,7 +1120,7 @@ function SeriesPage() {
           <p>{t('Noch keine Reihe.')}</p>
           <p className="muted small">
             {t(
-              'Mit einer Reihe vergleichst du wiederkehrende Veranstaltungen, z. B. das Schützenfest über mehrere Jahre.',
+              'Mit einer Reihe vergleichst du wiederkehrende Veranstaltungen, z. B. das Sommerfest über mehrere Jahre.',
             )}
           </p>
         </div>
