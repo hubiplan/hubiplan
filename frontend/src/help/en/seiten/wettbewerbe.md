@@ -25,7 +25,7 @@ Changes to conditions or calculations require confirmation when results exist. C
 
 ## Names on the website
 
-Members under 18 and members without a date of birth appear by name only with the consent “Competition results under 18”. Guests have no date of birth: tick **of age** when recording a new guest, otherwise the website shows “without name”. You can add this later under **Evaluation** in the section **Guests on the website**.
+Members under 18 and members without a date of birth appear by name only with the consent “Competition results under 18”. Guests have no date of birth: tick “of age” when recording a new guest, otherwise the website shows “without name”. You can add this later under **Evaluation** in the section **Guests on the website**.
 
 Under **Set up** → **Output & sharing** → **Publicly visible**, **prize places with names** publishes
 individual places up to the number of **prize places** configured for each scoring.
