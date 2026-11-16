@@ -69,9 +69,13 @@ def _split(name: str) -> tuple[str, str]:
     return (parts[0], parts[1]) if len(parts) == 2 else (parts[0], "")
 
 
-def _age_on(birth, on) -> int | None:
+def _age_on(birth, on, year_only: bool = False) -> int | None:
     if not birth:
         return None
+    if year_only:
+        # Nur das Jahr bekannt (z. B. nach der Löschfrist auf den 1.1. gekürzt): so jung wie
+        # möglich rechnen, also mit dem 31.12. (Gesamtaudit 15.11., PF-21)
+        birth = birth.replace(month=12, day=31)
     return on.year - birth.year - ((on.month, on.day) < (birth.month, birth.day))
 
 
@@ -110,9 +114,11 @@ class Names:
         active = self.site.consents.get(membership.pk, set())
         if Category.RESULTS in active:
             return WITHOUT_NAME
-        age = _age_on(person.birth_date, self.comp.date)
-        if age is not None and age < 18 and Category.RESULTS_MINOR not in active:
-            return WITHOUT_NAME
+        age = _age_on(person.birth_date, self.comp.date, person.birth_year_only)
+        # Ohne Geburtsdatum wie minderjährig: nur mit Einwilligung (Fachfrage FF-24, PF-21)
+        if (age is None or age < 18) and Category.RESULTS_MINOR not in active:
+            if not person.is_organization:
+                return WITHOUT_NAME
         title = person.title if self.site.site.show_titles else ""
         return self._format(person.first_name, person.last_name, fmt, title) or WITHOUT_NAME
 
