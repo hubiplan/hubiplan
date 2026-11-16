@@ -12982,6 +12982,221 @@ msgstr "At most {x0} title lines on the cover photo."
 msgid "Der Text auf dem Titelfoto ist zu lang (höchstens {x0} Zeichen)."
 msgstr "The text on the cover photo is too long (at most {x0} characters)."
 
+msgid ""
+"Die Chronik wird mit dem Veröffentlichen öffentlich: Lebende Personen nur "
+"nennen, wenn sie der Nennung in „Würden und Chronik“ nicht widersprochen "
+"haben; HUBIplan prüft Namen im Freitext nicht."
+msgstr ""
+"The chronicle becomes public when it is published: only name living people "
+"if they have not objected to being named in “Honours and chronicle”; "
+"HUBIplan does not check names in free text."
+
+msgid ""
+"Gespeichert als Entwurf der Chronik. Öffentlich wird er erst, wenn jemand "
+"ihn in HUBIplan unter Chronik veröffentlicht; frühere Fassungen lassen sich "
+"dort wieder holen."
+msgstr ""
+"Saved as a draft of the chronicle. It only becomes public once someone "
+"publishes it in HUBIplan under Chronicle; earlier versions can be restored "
+"there."
+
+msgid "Nummer aus chronik_ansehen."
+msgstr "Number from chronik_ansehen."
+
+msgid ""
+"Überschrift des Eintrags laut chronik_ansehen; stimmt sie nicht mehr, ändert"
+" sich nichts (Schutz, falls jemand die Chronik inzwischen geändert hat)."
+msgstr ""
+"Heading of the entry as returned by chronik_ansehen; if it no longer "
+"matches, nothing changes (protection in case someone has changed the "
+"chronicle in the meantime)."
+
+msgid ""
+"ereignis (Standard) oder kapitel (Zwischenüberschrift ab diesem Jahr, ohne "
+"Bilder)."
+msgstr ""
+"ereignis (event, default) or kapitel (chapter: subheading from this year on,"
+" without images)."
+
+msgid "Endjahr eines Zeitraums, z. B. 1939 bis 1948; null: keins."
+msgstr "End year of a period, e.g. 1939 to 1948; null: none."
+
+msgid "Kurzer Text, höchstens 400 Zeichen."
+msgstr "Short text, at most 400 characters."
+
+msgid ""
+"Bis zu 6 Bildnummern aus webseite_bilder, in dieser Reihenfolge; [] entfernt"
+" alle."
+msgstr ""
+"Up to 6 image numbers from webseite_bilder, in this order; [] removes all."
+
+msgid "auto (abwechselnd), links, rechts oder unten (groß)."
+msgstr ""
+"auto (alternating), links (left), rechts (right) or unten (large, below)."
+
+msgid "Das Modul „Chronik“ ist für diese Einheit nicht eingeschaltet."
+msgstr "The “Chronicle” module is not switched on for this unit."
+
+msgid "Noch keine Chronik angelegt."
+msgstr "No chronicle created yet."
+
+msgid "Die Chronik darfst du nur lesen."
+msgstr "You may only read the chronicle."
+
+msgid ""
+"Chronik im Entwurf: Einleitung und Zeitleiste, nach Jahren sortiert. „nr“ "
+"ist die Stelle in dieser Liste; sie ändert sich, wenn Einträge dazukommen "
+"oder wegfallen. Kapitel sind Zwischenüberschriften für alle Ereignisse ab "
+"ihrem Jahr. Bilder sind Nummern aus webseite_bilder. Ändern darf: {can}."
+msgstr ""
+"Chronicle draft: introduction and timeline, sorted by year. “nr” is the "
+"position in this list; it changes when entries are added or removed. "
+"Chapters are subheadings for all events from their year on. Images are "
+"numbers from webseite_bilder. May change: {can}."
+
+msgid "Bitte titel, einleitung oder neueste_zuerst angeben."
+msgstr "Please specify titel, einleitung or neueste_zuerst."
+
+msgid "„eintraege“ muss eine Liste mit mindestens einem Eintrag sein."
+msgstr "“eintraege” must be a list with at least one entry."
+
+msgid "Eintrag in die Chronik aufgenommen."
+msgstr "Entry added to the chronicle."
+
+msgid "Bitte angeben, was sich am Eintrag ändern soll."
+msgstr "Please specify what should change in the entry."
+
+msgid "Chronik ansehen"
+msgstr "View chronicle"
+
+msgid ""
+"Chronik (Vereinsgeschichte) im Entwurf: Titel, Einleitung, Reihenfolge der "
+"Zeitleiste und alle Einträge mit Nummer, Jahr oder Zeitraum, Überschrift, "
+"Text und Bildern; dazu, ob der Entwurf veröffentlicht ist. Braucht das Modul"
+" „Chronik“."
+msgstr ""
+"Chronicle (club history) as a draft: title, introduction, order of the "
+"timeline and all entries with number, year or period, heading, text and "
+"images; plus whether the draft is published. Needs the “Chronicle” module."
+
+msgid "Chronik ändern"
+msgstr "Change chronicle"
+
+msgid "Einträge in die Chronik aufnehmen"
+msgstr "Add entries to the chronicle"
+
+msgid "Chronik-Eintrag ändern"
+msgstr "Change chronicle entry"
+
+msgid "Chronik-Eintrag entfernen"
+msgstr "Remove chronicle entry"
+
+msgid ""
+"Entfernt einen Eintrag aus der Zeitleiste der Chronik (Nummer aus "
+"chronik_ansehen). Nur im Entwurf: Die veröffentlichte Fassung bleibt, bis "
+"jemand neu veröffentlicht, und frühere Fassungen lassen sich in HUBIplan "
+"zurückholen. Vorher die Person fragen."
+msgstr ""
+"Removes an entry from the chronicle timeline (number from chronik_ansehen). "
+"Only in the draft: the published version stays until someone publishes "
+"again, and earlier versions can be restored in HUBIplan. Ask the person "
+"first."
+
+msgid "Die Chronik darfst du nicht sehen."
+msgstr "You may not see the chronicle."
+
+msgid "„%(name)s“ muss eine Jahreszahl sein."
+msgstr "“%(name)s” must be a year."
+
+msgid "„art“ muss ereignis oder kapitel sein."
+msgstr "“art” must be ereignis or kapitel."
+
+msgid "„bildposition“ muss auto, links, rechts oder unten sein."
+msgstr "“bildposition” must be auto, links, rechts or unten."
+
+msgid "Kapitel haben keine Bilder."
+msgstr "Chapters have no images."
+
+msgid "ja"
+msgstr "yes"
+
+msgid "nein"
+msgstr "no"
+
+msgid "Eintrag {nr} geändert."
+msgstr "Entry {nr} changed."
+
+msgid ""
+"Ändert Titel und Einleitung der Chronik (Markdown) und ob die Webseite die "
+"neuesten Einträge zuerst zeigt. Nur im Entwurf; nur Angegebenes ändert sich."
+" Braucht das Recht, die Chronik zu pflegen."
+msgstr ""
+"Changes title and introduction of the chronicle (Markdown) and whether the "
+"website shows the newest entries first. Only in the draft; only what is "
+"given changes. Needs the permission to maintain the chronicle."
+
+msgid ""
+"Nimmt einen oder mehrere Einträge in die Zeitleiste der Chronik auf (z. B. "
+"aus einer Festschrift), je mit Jahr, Überschrift und kurzem Text, optional "
+"Endjahr und Bildern; Kapitel als Zwischenüberschriften. Die Liste wird nach "
+"Jahren sortiert. Nur im Entwurf. Braucht das Recht, die Chronik zu pflegen."
+msgstr ""
+"Adds one or more entries to the chronicle timeline (e.g. from an anniversary"
+" publication), each with year, heading and short text, optionally end year "
+"and images; chapters as subheadings. The list is sorted by year. Only in the"
+" draft. Needs the permission to maintain the chronicle."
+
+msgid ""
+"Ändert einen Eintrag der Zeitleiste (Nummer aus chronik_ansehen): Art, Jahr,"
+" Endjahr, Überschrift, Text, Bilder oder Bildposition. Nur Angegebenes "
+"ändert sich; die Liste wird danach nach Jahren sortiert. Nur im Entwurf."
+msgstr ""
+"Changes an entry of the timeline (number from chronik_ansehen): type, year, "
+"end year, heading, text, images or image position. Only what is given "
+"changes; the list is then sorted by year. Only in the draft."
+
+msgid "Einen Eintrag mit dieser Nummer gibt es nicht (1 bis {n})."
+msgstr "There is no entry with this number (1 to {n})."
+
+msgid ""
+"Eintrag {nr} heißt inzwischen „{title}“. Bitte die Chronik mit "
+"chronik_ansehen neu laden."
+msgstr ""
+"Entry {nr} is now called “{title}”. Please reload the chronicle with "
+"chronik_ansehen."
+
+msgid "„%(name)s“ ist ja oder nein."
+msgstr "“%(name)s” is yes or no."
+
+msgid ""
+"Höchstens {n} Einträge auf einmal; den Rest bitte in einem zweiten Aufruf."
+msgstr "At most {n} entries at once; please add the rest in a second call."
+
+msgid "{n} Einträge in die Chronik aufgenommen."
+msgstr "{n} entries added to the chronicle."
+
+msgid "Eintrag {n} muss ein Objekt sein."
+msgstr "Entry {n} must be an object."
+
+msgid "Chronik geändert ({keys})."
+msgstr "Chronicle changed ({keys})."
+
+msgid "Eintrag {nr} „{title}“ ({year}) aus dem Entwurf entfernt."
+msgstr "Entry {nr} “{title}” ({year}) removed from the draft."
+
+msgid "Webseite lesen: Einstellungen, Texte, Startseite und Chronik ansehen"
+msgstr "Read website: view settings, texts, home page and chronicle"
+
+msgid ""
+"Webseite als Entwurf bearbeiten: Texte, Startseite, Gestaltung, Menü und "
+"Chronik ändern, neue Textseiten anlegen, Bilder hinzufügen und beschreiben, "
+"Beiträge für soziale Medien vorbereiten (veröffentlicht wird nur in "
+"HUBIplan)"
+msgstr ""
+"Edit the website as a draft: change texts, home page, design, menu and "
+"chronicle, create new text pages, add and describe images, prepare social "
+"media posts (publishing happens only in HUBIplan)"
+
 msgid "Plattform-Verwaltung"
 msgstr "Platform administration"
 

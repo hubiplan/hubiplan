@@ -67,11 +67,13 @@ SCOPE_THEME = "verein.erscheinungsbild"
 # Briefbogen der Einheit (Word-Vorlage und PDF-Briefe): wirkt sofort (Issue #470)
 SCOPE_LETTERHEAD = "verein.briefbogen"
 SCOPES = {
-    SCOPE_READ: gettext_lazy("Webseite lesen: Einstellungen, Texte und Startseite ansehen"),
+    SCOPE_READ: gettext_lazy(
+        "Webseite lesen: Einstellungen, Texte, Startseite und Chronik ansehen"
+    ),
     SCOPE_DRAFT: gettext_lazy(
-        "Webseite als Entwurf bearbeiten: Texte, Startseite, Gestaltung und Menü ändern, "
-        "neue Textseiten anlegen, Bilder hinzufügen und beschreiben, Beiträge für soziale "
-        "Medien vorbereiten (veröffentlicht wird nur in HUBIplan)"
+        "Webseite als Entwurf bearbeiten: Texte, Startseite, Gestaltung, Menü und Chronik "
+        "ändern, neue Textseiten anlegen, Bilder hinzufügen und beschreiben, Beiträge für "
+        "soziale Medien vorbereiten (veröffentlicht wird nur in HUBIplan)"
     ),
     SCOPE_THEME: gettext_lazy(
         "Erscheinungsbild ändern: Farben, Verläufe, Farbrollen und Logo der Einheit (gilt "

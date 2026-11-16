@@ -90,7 +90,8 @@ def test_darstellung_wird_geprueft(club, site, manager, layouts):
 
 def test_einleitung_je_bereich(club, site, editor):
     areas = editor.get(url(club, "texts/")).json()["intro_areas"]
-    assert [a["area"] for a in areas] == list(STANDARD)
+    assert [a["area"] for a in areas] == [*STANDARD, "contact"]
+    assert areas[-1]["label"] == "Kontakt"
     image = WebsiteImage.objects.create(
         organization=club, website=site, key="vorstandsbild", alt_text="Vorstand"
     )

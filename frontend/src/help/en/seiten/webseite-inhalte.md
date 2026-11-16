@@ -23,7 +23,7 @@ If the photo is not there yet, leave the picture empty in **Text with image** or
 
 ## Area introductions
 
-**Introduction for an area** lets you write a short text, with an image if you like, that appears at the top of the board, events, sub-units or gallery, as on the memorial page. Each area has one introduction; it appears once you choose **Publish**.
+**Introduction for an area** lets you write a short text, with an image if you like, that appears at the top of the board, events, sub-units or gallery, as on the memorial page. The **Contact** introduction appears as a box to the right of the contact form (below it on a phone): the title as its heading, then the text; if the last paragraph holds nothing but a link, for example to your “Join in” page, it becomes a button. Without this introduction the contact page stays in one column. Each area has one introduction; it appears once you choose **Publish**.
 
 ## Image captions
 

@@ -25,6 +25,14 @@ stichworte:
     footer,
     dark,
     contrast,
+    dignitaries,
+    placeholder,
+    person cards,
+    form of address,
+    chronicle,
+    eras,
+    podium,
+    ranking,
   ]
 ---
 
@@ -48,7 +56,7 @@ After a change the preview jumps to the matching spot and briefly highlights it:
 
 ## Page, cards, images, buttons
 
-**Page** and Cards, images, buttons: width, background, spacing, corners (“square” also applies to photos and initials of people, the social media icons and the chronicle), **Light sections** (home page sections with a light background “tinted” in the club colour, “warm” or “grey”), cards (border, shadow, flat or **white with stripe**: white cards with a fine edge, events with a club-colour stripe on the left, subunit tiles on top), images, **Image format in tiles** (3:2, 4:3 or square for home page tiles, gallery albums and posts), frames around images and buttons (“filled”, “outlined” or **Label**: capitals, slightly spaced). On coloured sections, buttons and decorative lines always use the text colour of the section so they stand out.
+**Page** and Cards, images, buttons: width, background, spacing, corners (“square” also applies to photos and initials of people, the social media icons, the chronicle with its photos, cards and jump links, and the fields of the contact form), **Light sections** (home page sections with a light background “tinted” in the club colour, “warm” or “grey”), cards (border, shadow, flat or **white with stripe**: white cards with a fine edge, events with a club-colour stripe on the left, subunit tiles on top), images, **Image format in tiles** (3:2, 4:3 or square for home page tiles, gallery albums and posts), frames around images and buttons (“filled”, “outlined” or **Label**: capitals, slightly spaced). On coloured sections, buttons and decorative lines always use the text colour of the section so they stand out.
 
 ## Header
 
@@ -65,6 +73,17 @@ Type of menu (bar, buttons, text), the active item, **Lettering** (“normal” 
 ## Sub-pages and events
 
 **Heading of sub-pages** “plain”, as a **coloured band** or **with title image** (the home page image behind the heading, darkened as set there), the **Date field** as a tile, strip or **Cards** (the upcoming events on the home page and sub-unit pages as cards side by side with a large date, the next one in the club colour) and **Date next to it**: only the weekday, short (“Sat 14/11/2026”) or long (“Saturday 14 November 2026”).
+
+There are also controls for individual pages; without your own choice every page stays as it was:
+
+- **Title holders** “Band and cards”: the current title holders appear large in a band in the dark club colour directly below the page title, with the photo on the left and, on the right, the dignity as a top line with a short line in the second colour, the name in large type and the term of office. Below, the last eight predecessors appear as cards (two side by side on a phone) and a button “All … entries” expands the full list. Without a photo the band stays, with text only.
+- **People without a photo** “no placeholder”: the board, honours and contacts of sub-units no longer show an initial letter when there is no photo; the name moves to the left. Photos stay.
+- **Person cards** “Office as a label”: the office in small capitals above the name, the name in large type in the heading font, “Write a message” as an underlined text link and a top edge in the club colour; several people in one office are listed one below the other, honorary members in a three-column grid.
+- **Form of address in the contact form** “formal (Sie)” or “informal (du)”: applies to the labels, the introduction, error messages and the confirmation on German pages. You write the box to the right of the form (e.g. “Want to join in?” with a button) under Website › Texts as the introduction of the **Contact** area.
+- **Chronicle eras** “as a band”: each era edge to edge in the dark club colour, with the period in large type in the second colour, the title and the text of the era; the timeline continues below. The jump links at the top become underlined links, and the years use the heading font.
+- **Result rankings** “Places 1 to 3 as cards”: above each ranking the first three places appear as cards with a large place number (place 1 in the club colour), name, sub-unit and result with its unit, such as “48 Ringe”. In a tie everyone sharing a place gets a card; the table below starts at place 4 and is left out when there are no further places.
+
+Labels, the numbers of places 2 and 3 and the box next to the contact form use the colour you chose for the date field among the design colours.
 
 ## Footer
 
