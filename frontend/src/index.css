@@ -22,7 +22,7 @@ body {
 .stand-page .live-camera,
 .stand-page .stand-block {
   /* Design „Frisch“: Nebenknöpfe weiß mit Rand (3 : 1), beim Darüberfahren leicht getönt */
-  /* #539: Knöpfe wie Eingabefelder, damit sie sich von getönten Flächen abheben */
+  /* Issue 539: Knöpfe wie Eingabefelder, damit sie sich von getönten Flächen abheben */
   --color-button-bg: var(--color-input-bg);
   --color-button-hover: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
   --color-button-disabled: color-mix(in srgb, var(--color-text) 10%, var(--color-surface));
@@ -5034,7 +5034,7 @@ label:has(> .file-input:focus-visible) {
   --color-button-primary-hover: color-mix(in srgb, var(--color-focus) 85%, #ffffff);
   --color-bg: color-mix(in srgb, var(--color-primary) 22%, #0c0e0d);
   --color-surface: color-mix(in srgb, var(--color-primary) 18%, #1c201e);
-  /* #539: Knöpfe bleiben in der dunklen Fläche; die Felder sind unten eigens hell */
+  /* Issue 539: Knöpfe bleiben in der dunklen Fläche; die Felder sind unten eigens hell */
   --color-input-bg: var(--color-surface);
   --color-text: #f2f5f3;
   --color-text-muted: #b9c3bf;
@@ -6114,7 +6114,7 @@ label:has(> .file-input:focus-visible) {
   width: 18rem;
   max-width: 100%;
 }
-/* #526: eigene Schriftfolge */
+/* Issue 526: eigene Schriftfolge */
 .style-fonts {
   width: 24rem;
   max-width: 100%;
