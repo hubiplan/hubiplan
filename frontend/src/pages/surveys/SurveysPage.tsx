@@ -56,6 +56,9 @@ function kindLabel(kind: QuestionKind) {
 
 const KINDS: QuestionKind[] = ['single', 'multiple', 'yesno', 'dates', 'quantity', 'text']
 
+/** Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende (Gesamtaudit 15.11., FF-22). */
+const ANONYMOUS_RESULTS: ResultsMode[] = ['after_close', 'managers']
+
 function namesLabel(mode: NamesMode) {
   if (mode === 'open') return t('offen: alle Befragten sehen Namen')
   if (mode === 'anonymous') return t('anonym: niemand sieht, wer was geantwortet hat')
@@ -648,7 +651,22 @@ function SurveyEditor({
       <div className="survey-fields">
         <label className="field">
           <span>{t('Namen')}</span>
-          <select value={form.names} onChange={(e) => set('names', e.target.value as NamesMode)}>
+          <select
+            value={form.names}
+            onChange={(e) => {
+              const names = e.target.value as NamesMode
+              // Anonym: Ergebnis erst nach dem Ende (FF-22); strengere Wahl bleibt
+              setForm((f) => ({
+                ...f,
+                names,
+                results:
+                  names === 'anonymous' && !ANONYMOUS_RESULTS.includes(f.results)
+                    ? 'after_close'
+                    : f.results,
+              }))
+              setCount(null)
+            }}
+          >
             {(['open', 'managers', 'anonymous'] as NamesMode[]).map((m) => (
               <option key={m} value={m}>
                 {namesLabel(m)}
@@ -662,7 +680,10 @@ function SurveyEditor({
             value={form.results}
             onChange={(e) => set('results', e.target.value as ResultsMode)}
           >
-            {(['after_answer', 'always', 'after_close', 'managers'] as ResultsMode[]).map((m) => (
+            {(form.names === 'anonymous'
+              ? ANONYMOUS_RESULTS
+              : (['after_answer', 'always', 'after_close', 'managers'] as ResultsMode[])
+            ).map((m) => (
               <option key={m} value={m}>
                 {resultsLabel(m)}
               </option>
@@ -694,7 +715,8 @@ function SurveyEditor({
         <p className="muted small">
           {t(
             'Anonym: Niemand sieht, wer was geantwortet hat, auch die Verwaltung nicht. Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab drei Antworten.',
-          )}
+          )}{' '}
+          {t('Das Ergebnis erscheint erst nach dem Ende, auch für die Verwaltung.')}
         </p>
       )}
       {error && <p role="alert">{error}</p>}

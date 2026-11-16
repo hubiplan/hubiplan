@@ -125,7 +125,8 @@ def test_anlegen_starten_und_beantworten_mit_namen(setup):
 def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
     s = setup
     yesno = {"kind": "yesno", "text": "Neue Uniformjacken bestellen?"}
-    survey = new_survey(s, [yesno], names="anonymous", results="always")
+    # Anonym: Ergebnis erst nach dem Ende (Gesamtaudit 15.11., FF-22 (a))
+    survey = new_survey(s, [yesno], names="anonymous", results="after_close")
     start(s, survey)
     client, url = s["portals"]["Anna"]
     q = ok(client.get(url))["surveys"][0]["questions"][0]
@@ -133,15 +134,14 @@ def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
     # Nicht änderbar
     answer(s, "Anna", survey, [{"question": q["id"], "value": "no"}], code=400)
     data = answer(s, "Bernd", survey, [{"question": q["id"], "value": "no"}])
-    assert data["results"]["hidden"] and data["mine"] is None and not data["can_answer"]
-    # Auch die Verwaltung sieht unter drei Antworten nichts
+    assert data["results"] is None and data["mine"] is None and not data["can_answer"]
+    # Auch die Verwaltung sieht während der Umfrage nichts, auch nicht ab drei Antworten
     full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
     assert full["result"]["hidden"] and "pending" not in full
     data = answer(s, "Carla", survey, [{"question": q["id"], "value": "yes"}])
-    values = data["results"]["questions"][0]["values"]
-    assert values["yes"]["count"] == 2 and values["no"]["count"] == 1
+    assert data["results"] is None
     full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
-    assert full["result"]["questions"][0]["values"]["yes"]["names"] == []
+    assert full["result"]["hidden"] and full["result"]["until_close"]
     # Keine Verbindung zwischen Teilnahme und Antwort, kein Zeitpunkt
     assert not SurveyAnswer.objects.filter(participation__isnull=False).exists()
     assert not SurveyParticipation.objects.filter(answered_at__isnull=False).exists()
@@ -155,6 +155,15 @@ def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
         content_type=JSON,
     )
     assert resp.status_code == 400
+    # Nach dem Ende: Ergebnis ab drei Antworten, ohne Namen
+    ok(s["chef"].post(f"{s['url']}{survey['id']}/close/"))
+    full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
+    values = full["result"]["questions"][0]["values"]
+    assert values["yes"]["count"] == 2 and values["no"]["count"] == 1
+    assert values["yes"]["names"] == []
+    client, url = s["portals"]["Anna"]
+    mine = next(x for x in ok(client.get(url))["surveys"] if x["id"] == survey["id"])
+    assert mine["results"]["questions"][0]["values"]["no"]["count"] == 1
 
 
 def test_platzgrenze_wer_faehrt_mit(setup):

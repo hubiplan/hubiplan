@@ -353,8 +353,23 @@ def apply(view, survey: Survey, data: dict, *, creating: bool) -> None:
                 }
             )
         survey.names = data["names"]
-    if "results" in data:
+    if "results" in data and data["results"] != survey.results:
+        # Gesamtaudit 15.11., UM-1: Wer unter „nur die Verwaltung sieht das Ergebnis“
+        # geantwortet hat, darf nicht nachträglich für alle sichtbar werden
+        if started and not services.stricter(
+            survey.results, data["results"], services.RESULTS_ORDER
+        ):
+            raise ValidationError(
+                {"results": _("Nach dem Start lässt sich das Ergebnis nur noch strenger schützen.")}
+            )
         survey.results = data["results"]
+    if survey.anonymous and survey.results not in services.ANONYMOUS_RESULTS:
+        if "results" in data:
+            raise ValidationError(
+                {"results": _("Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende.")}
+            )
+        # Auf anonym umgestellt: Ergebnis gleich mit verschärfen
+        survey.results = Survey.Results.AFTER_CLOSE
     if "closes_at" in data:
         end = data["closes_at"]
         if started and end is None:

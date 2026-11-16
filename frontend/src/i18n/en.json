@@ -9442,5 +9442,7 @@
   "voller Beitrag (nicht anteilig)": "full fee (not pro rata)",
   "anteilig je angefangenem Monat": "pro rata per started month",
   "anteilig je angefangenem Quartal": "pro rata per started quarter",
-  "anteilig je angefangenem Halbjahr": "pro rata per started half-year"
+  "anteilig je angefangenem Halbjahr": "pro rata per started half-year",
+  "Das Ergebnis erscheint erst nach dem Ende, auch für die Verwaltung.": "The result appears only after the end, also for the administration.",
+  "Das Ergebnis erscheint nach dem Ende der Umfrage, damit niemand zurückrechnen kann.": "The result appears after the end of the survey so that no one can work back to individual answers."
 }
