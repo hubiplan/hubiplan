@@ -1111,7 +1111,13 @@ Alle Datenarten mit Rechtsgrundlage und Frist: [aufbewahrung.md](aufbewahrung.md
 **Auskunft (Art. 15 DSGVO):** In der Akte unter „Abläufe“ › „Auskunft für dieses Mitglied
 (ZIP)“ (Recht „Vollständigen Datenexport erstellen“): Akte, Zusatzfelder, Rechnungen mit PDF,
 Mandate, Zuwendungen, versandte Mails, Zugang und Geräte der App, Termin-Rückmeldungen,
-Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
+Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen. `konto.json` enthält je
+Anmeldekonto der Person (Mitgliederzugang, Ämter) E-Mail-Adressen, Zwei-Faktor-Verfahren und
+Passkeys (Art, Name, Zeiten), Geräte mit Benachrichtigungsdienst, Nextcloud-Konten, verbundene
+KI-Assistenten, Anmeldungen über andere Instanzen, ob eine Unterschrift gespeichert ist, die
+Briefbogen-Auswahl und eigene Aufgaben. Einheitsbezogenes nur aus diesem Verein und seinen
+Untereinheiten; Schlüssel, Prüfsummen und die Push-Adresse nie, von persönlichen (nicht
+geteilten) Aufgaben nur Status und Daten.
 
 **Entfernen wirkt nach höchstens 15 Minuten** (Fachfrage 10 zum Gesamtaudit 10.11.): Die
 öffentliche Schnittstelle und das Kalender-Abo (ICS) erlauben Zwischenspeichern höchstens
