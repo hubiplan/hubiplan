@@ -509,6 +509,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         org, perms = self.org, self.org_permissions
         from admission.open_tasks import application_tasks
         from entries.open_tasks import entry_tasks
+        from expenses.views import review_tasks as expense_tasks
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
         from obligations.open_tasks import obligation_tasks
@@ -542,6 +543,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
                     billing_tasks(org, perms)
                     + incoming_tasks(org, perms)
                     + bookkeeping_tasks(org, perms)
+                    + expense_tasks(org, perms)
                 ),
             ),
             ("bookings", lambda: booking_tasks(org, perms)),

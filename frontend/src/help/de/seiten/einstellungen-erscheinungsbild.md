@@ -8,6 +8,8 @@ stichworte: [Farbe, Logo, Wappen, Aussehen, Dunkelmodus, Verlauf, Farbblatt, Cor
 
 Hier legt ihr Vereinsfarben und Logo fest. Sie erscheinen in HUBIplan, auf Ausweisen, Briefen und der Webseite. Untereinheiten übernehmen sie, solange sie keine eigenen festlegen.
 
+Ein Logo im Querformat, etwa ein Schriftzug, behält sein Seitenverhältnis: Im Kopf von HUBIplan und der Webseite, auf Ausweisen, Urkunden, im Jahresprogramm und in Listen als PDF ist die Höhe fest und die Breite folgt dem Bild bis zu einer Obergrenze. Quadratische Wappen sehen aus wie bisher.
+
 ## Farben und Verwendung
 
 Zur Hauptfarbe und Zweitfarbe kommen unter **Weitere Farben** bis zu vier weitere, zusammen also sechs. Jede Farbe bekommt einen Namen und auf Wunsch eine Verwendung, etwa „Leitfarbe“, „Fließtext“ oder „Flächen, Tabellenzeilen“. So lässt sich das Farbblatt eines Corporate Designs übernehmen. Unter **Verläufe** legt ihr bis zu zwei benannte Verläufe aus zwei Farben der Palette an, etwa einen Blauverlauf von Blau nach Dunkelblau, von links nach rechts oder von oben nach unten. Die Webseite nutzt sie für Kopf, Fuß, Farbbänder, Zierlinien und Abschnitte; wo genau, stellt ihr unter Webseite › Design und Farben ein. Neben jedem Verlauf steht, wie gut Text darauf lesbar ist. Weitere Farben und Verläufe gelten nur zusammen mit einer eigenen Hauptfarbe.

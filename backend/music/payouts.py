@@ -100,7 +100,13 @@ def data(run):
     }
 
 
-def xml(run):
+def _music_text(item, reference: str) -> str:
+    return f"Musikverguetung {item.claim_id} / {reference[:12]}"
+
+
+def xml(run, remittance=_music_text):
+    """pain.001 einer Sammelüberweisung; ``remittance`` liefert den Verwendungszweck je Posten
+    (auch für Auslagen, expenses/transfer.py)."""
     root = etree.Element(f"{{{NS}}}Document", nsmap={None: NS})
 
     def add(parent, name, text=None, **attrs):
@@ -142,7 +148,7 @@ def xml(run):
             add(add(add(tx, "CdtrAgt"), "FinInstnId"), "BICFI", item.payee["bic"])
         add(add(tx, "Cdtr"), "Nm", sepa_text(item.payee["holder"], 70))
         add(add(add(tx, "CdtrAcct"), "Id"), "IBAN", item.payee["iban"])
-        add(add(tx, "RmtInf"), "Ustrd", f"Musikverguetung {item.claim_id} / {reference[:12]}")
+        add(add(tx, "RmtInf"), "Ustrd", sepa_text(remittance(item, reference), 140))
     validate(root)
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True)
 

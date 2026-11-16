@@ -21,6 +21,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from core.logobox import logo_size
 from exchange.export import _logo_path
 from organizations.theme import effective_theme
 
@@ -106,11 +107,13 @@ def render(
     logo = _logo_path(logo_org)
     if logo:
         try:
-            img = Image(logo, width=22 * mm, height=22 * mm, kind="proportional")
+            # #527: Höhe fest, Breite nach dem Seitenverhältnis (Schriftzüge im Querformat)
+            lw, lh = logo_size(logo, 60 * mm, 22 * mm)
+            img = Image(logo, width=lw, height=lh)
             story.append(
                 Table(
                     [[head, img]],
-                    colWidths=[None, 26 * mm],
+                    colWidths=[None, lw + 4 * mm],
                     style=[("VALIGN", (0, 0), (-1, -1), "TOP")],
                 )
             )

@@ -101,6 +101,9 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     # Ralf 14.11.2026: Überschrift der Unterseiten, Schrift der Überschriften, Menüschrift,
     # sanftes Einblenden, gestreifte Tabellen, Datum neben dem Datumsfeld
     "page_title": ("plain", "band", "image"),
+    # Webseite #148: Band auf den Seiten der Einheiten in Vereinsfarbe, Kastenfarbe, hell oder
+    # schlicht mit Linie, damit es nicht wie ein zweiter Seitenkopf wirkt
+    "unit_title": ("primary", "box", "light", "plain"),
     "heading_font": ("text", "modern", "festive", "clear", "elegant", "fraktur", "strong"),
     "nav_case": ("normal", "upper"),
     "nav_size": ("normal", "large"),
@@ -200,6 +203,7 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "footer_name": True,
     "footer_founded": True,
     "page_title": "plain",
+    "unit_title": "primary",
     "heading_font": "text",
     "nav_case": "normal",
     "nav_size": "normal",

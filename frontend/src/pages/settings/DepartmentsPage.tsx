@@ -622,7 +622,7 @@ function DepartmentCard({
   return (
     <div className="card card-wide">
       <div className="card-head">
-        {dep.logo_url && <img src={dep.logo_url} alt="" className="logo-img" />}
+        {dep.logo_url && <img src={dep.logo_url} alt="" className="logo-img logo-upload" />}
         <div>
           <h2>{dep.name}</h2>
           <p className="muted small">

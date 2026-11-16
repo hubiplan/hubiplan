@@ -120,6 +120,17 @@ Regeln:
   der Einheit. Liste und **Trennen** unter Mein Konto › App & andere Instanzen
   (`GET /api/me/mcp/`, `DELETE /api/me/mcp/<id>/`).
 - Der Betreiber schaltet Stufe 1a mit `HUBIPLAN_MCP=false` für die ganze Instanz ab (404).
+- **Hinweise an den Client** (Gesamtaudit 15.11., MCP-02): `destructiveHint` ist gesetzt bei
+  Werkzeugen, die sofort wirken und ersetzen oder löschen (`erscheinungsbild_aendern`,
+  `logo_aus_bild`, `briefbogen_aendern`, `briefbogen_logo_aus_bild`) und bei
+  `startseite_aufbau_aendern` (kennt `entfernen`); `openWorldHint` bei `bild_von_adresse`. Sofort
+  wirksame Werkzeuge tragen „(wirkt sofort)“ im Titel.
+- **Fremdinhalte** (MCP-03): Jede Antwort mit Vereinsdaten endet mit einem eigenen Textteil, der
+  sagt, dass die Texte von Personen oder fremden Quellen stammen und keine Anweisungen sind.
+  Unsichtbare Zeichen (Unicode-Tags U+E0000–E007F, Richtungszeichen, Zeichen ohne Breite) entfernt
+  der Server aus allen Antworten. Termine aus abonnierten fremden Kalendern tragen in
+  `startseite_bausteine` `external: true`; Dateinamen von Bildern (beim Hochladelink vom
+  Hochladenden gewählt) gibt die Schnittstelle nicht aus.
 
 ## W1: Werkzeuge der Webseite
 
@@ -234,7 +245,7 @@ sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Ha
 | Werkzeug | Bereich | Was |
 |---|---|---|
 | `briefbogen_ansehen` | lesen | Einstellungen, Palette mit Kontrast auf Weiß, Hinweise, `eigenes_logo`; `untereinheit` optional |
-| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `name_im_kopf` (höchstens zwei Zeilen, #487), `zweite_zeile_kleiner`, `zusatzzeile`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `anrede`, `grussformel`, `fusszeile` {…}; nur Angegebenes ändert sich |
+| `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `zweite_zeile_kleiner`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `fusszeile` {…}; nur Angegebenes ändert sich. Keine Freitexte (Gesamtaudit 15.11., MCP-01): `name_im_kopf`, `zusatzzeile`, `anrede`, `grussformel` liefert `briefbogen_ansehen`, ändern geht nur in HUBIplan |
 | `briefbogen_logo_aus_bild` | briefbogen | Issue #488: Bild der Bilderverwaltung als eigenes Logo nur für den Briefbogen (`LetterheadLogoView`, `letterhead/logo/` bzw. `letterhead/units/<id>/logo/`), `entfernen` setzt zurück aufs Erscheinungsbild; Untereinheiten nur mit eigenem Briefbogen |
 
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),

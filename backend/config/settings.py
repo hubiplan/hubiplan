@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "meetings",
     "helpers",
     "surveys",
+    "expenses",
     "obligations",
     "qualifications",
     "places",
@@ -343,6 +344,8 @@ CELERY_BEAT_SCHEDULE = {
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": taeglich(2, 20)},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
     "umfragen-stuendlich": {"task": "surveys.tasks.hourly", "schedule": 900.0},
+    # Auslagen: Belege abgelehnter Anträge nach 6 Monaten, alte Entwürfe (AE-11)
+    "auslagen-aufraeumen": {"task": "expenses.tasks.daily", "schedule": taeglich(2, 45)},
     "fristenkalender-erinnerungen": {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,

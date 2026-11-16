@@ -93,8 +93,44 @@ def _liabilities(org, last: datetime.date) -> dict:
                 "amount": amount,
             }
         )
+    rows += _expense_liabilities(org, last)
     rows.sort(key=lambda r: (r["due_date"] or r["date"], r["seller"].casefold()))
     return {"total": sum((r["amount"] for r in rows), ZERO), "count": len(rows), "items": rows}
+
+
+def _expense_liabilities(org, last: datetime.date) -> list[dict]:
+    """Freigegebene Auslagen, die am Stichtag noch nicht ausgezahlt waren (docs/auslagen.md, A3)."""
+    from expenses.models import ExpenseClaim
+    from expenses.services import enabled, person_name
+
+    if not enabled(org):
+        return []
+    S = ExpenseClaim.Status
+    qs = (
+        ExpenseClaim.objects.filter(organization=org, approved_at__isnull=False)
+        .filter(status__in=(S.APPROVED, S.PAID))
+        .select_related("membership__person", "advance")
+    )
+    rows = []
+    for claim in qs:
+        approved = timezone.localdate(claim.approved_at)
+        if approved > last:
+            continue
+        if claim.paid_at and timezone.localdate(claim.paid_at) <= last:
+            continue
+        amount = claim.amount_due
+        if amount <= 0:
+            continue
+        rows.append(
+            {
+                "seller": person_name(claim),
+                "number": claim.number,
+                "date": approved,
+                "due_date": None,
+                "amount": amount,
+            }
+        )
+    return rows
 
 
 def report(org, year: int) -> dict:

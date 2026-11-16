@@ -76,7 +76,7 @@ Type of menu (bar, buttons, text), the active item, **Lettering** (“normal” 
 
 ## Sub-pages and events
 
-**Heading of sub-pages** “plain”, as a **coloured band** or **with title image** (the home page image behind the heading, darkened as set there), the **Date field** as a tile, strip or **Cards** (the upcoming events on the home page and sub-unit pages as cards side by side with a large date, the next one in the club colour) and **Date next to it**: only the weekday, short (“Sat 14/11/2026”) or long (“Saturday 14 November 2026”).
+**Heading of sub-pages** “plain”, as a **coloured band** or **with title image** (the home page image behind the heading, darkened as set there), the **Band of sub-units** on their pages (in the “club colour” like the other bands, in the “box colour” of the colour role “Date field”, “light” in the tone of the light sections with a fine line, or “plain with line” on the page background; light and plain show the name in the dark club colour so the band does not look like a second page header; it only applies when the heading is shown as a band), the **Date field** as a tile, strip or **Cards** (the upcoming events on the home page and sub-unit pages as cards side by side with a large date, the next one in the club colour) and **Date next to it**: only the weekday, short (“Sat 14/11/2026”) or long (“Saturday 14 November 2026”).
 
 There are also controls for individual pages; without your own choice every page stays as it was:
 
