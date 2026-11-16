@@ -1,0 +1,5 @@
+# Wackelige Tests (docs/testserver.md, „Wackelige Tests“): Scheitern in einem Lauf nur Tests
+# aus dieser Liste, wiederholt scripts/test.sh sie einmal allein. Grün → Lauf grün, das
+# Messprotokoll vermerkt sie. Die Liste soll schrumpfen: jeden Eintrag reparieren und streichen.
+# Eine Zeile je Test, wie pytest ihn nennt (ohne Parameter in eckigen Klammern).
+tests/test_gesamtaudit_1311.py::TestStandZaehler::test_unbekannte_schluessel_zaehlen_je_adresse
