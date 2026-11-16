@@ -171,7 +171,7 @@ November 2026:
 
 #### KI-Assistenten
 
-- KI-Assistenten: Ein verbundener Assistent pflegt jetzt auch die **Chronik**: Einträge der Zeitleiste ansehen, aufnehmen (auch viele auf einmal), ändern, entfernen und Bilder zuordnen, dazu Einleitung und Reihenfolge. Alles landet im Entwurf; veröffentlicht wird unter Chronik. Wer nur die Chronik pflegt, kann dafür ebenfalls einen Assistenten verbinden.
+- KI-Assistenten: Ein verbundener Assistent pflegt jetzt auch die **Chronik**: Einträge der Zeitleiste ansehen, aufnehmen (auch viele auf einmal), ändern, entfernen und Bilder zuordnen, dazu Einleitung und Reihenfolge. Alles landet im Entwurf; veröffentlicht wird unter Chronik.
 - KI-Assistenten: Ein verbundener Assistent kann jetzt auch das **Erscheinungsbild** ändern: Farben, Verläufe, Farbrollen und Logo. Das gilt sofort und lässt sich im Änderungsprotokoll rückgängig machen. Bestehende Verbindungen einmal neu verbinden.
 - **KI-Assistenten gestalten mit**: Ein verbundener Assistent ändert jetzt auch Design, Farben, Menü und den Aufbau der Startseite im Entwurf, beschreibt Bilder und legt Entwürfe für Instagram- und Facebook-Beiträge unter Webseite › Social Media ab. Fotos lädst du über einen Link hoch, den der Assistent im Chat gibt; von Servern, die ihr unter Webseite › Internetadresse freigebt, holt HUBIplan Bilder auch per Adresse. Menüänderungen kommen jetzt für alle in den Entwurf und erscheinen erst nach **Veröffentlichen**.
 - KI-Assistenten: Unter der Adresse `/api/mcp/` eurer HUBIplan-Instanz kann ein KI-Assistent wie Claude oder ChatGPT die HUBIplan-Hilfe durchsuchen und Begriffe erklären (Model Context Protocol). Er sieht dabei keine Vereinsdaten und ändert nichts.

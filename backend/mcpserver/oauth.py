@@ -31,13 +31,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
-from access.catalog import (
-    CHRONICLE_EDIT,
-    CHRONICLE_VIEW,
-    MCP_CONNECT,
-    WEBCONTENT_VIEW,
-    WEBSITE_VIEW,
-)
+from access.catalog import MCP_CONNECT, WEBCONTENT_VIEW, WEBSITE_VIEW
 from changes import tracking
 from core.tenancy import rls_bypass
 from organizations.addresses import base_url
@@ -321,8 +315,7 @@ def units_for(user) -> list:
         org
         for org, perms in organizations_for(user)
         if MCP_CONNECT in perms
-        # Chronik pflegen geht auch ohne Rechte an der Webseite (Modul „Chronik“)
-        and {WEBCONTENT_VIEW, WEBSITE_VIEW, CHRONICLE_VIEW, CHRONICLE_EDIT} & perms
+        and {WEBCONTENT_VIEW, WEBSITE_VIEW} & perms
         and module_on(org, MODULE)
     ]
     return sorted(units, key=lambda o: o.name.lower())

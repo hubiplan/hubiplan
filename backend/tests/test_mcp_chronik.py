@@ -164,22 +164,29 @@ def test_ohne_modul_chronik(club, site, editor):  # noqa: F811
     assert failed and "Chronik" in text
 
 
-def test_chronist_ohne_webseitenrechte(club):  # noqa: F811
-    """Wer nur die Chronik pflegt, kann einen Assistenten dafür verbinden; die Webseite bleibt
-    verborgen, auch ohne Modul „Webseite“."""
-    club.enabled_modules = ["members", "chronicle", "mcp"]
-    club.save()
+def test_chronist_ohne_recht_an_inhalten(chronicle_on, site):  # noqa: F811
+    """Wer Inhalte nur lesen, die Chronik aber pflegen darf, pflegt sie auch über den
+    Assistenten; andere Texte der Webseite ändert er nicht."""
     chronist = make_user("ki-chronik@example.org", first_name="Clara", last_name="Muster")
-    give_role(chronist, club, permissions=["chronicle.edit", "mcp.connect"], name="Chronik")
-    token = connect(chronist, club)["access_token"]
+    give_role(
+        chronist,
+        chronicle_on,
+        permissions=["webcontent.view", "chronicle.edit", "mcp.connect"],
+        name="Chronik",
+    )
+    token = connect(chronist, chronicle_on)["access_token"]
     text, failed = call(
         token, "chronik_eintraege_anlegen", eintraege=[{"jahr": 1920, "ueberschrift": "Gründung"}]
     )
     assert not failed, text
-    assert Website.objects.get(organization=club).state == Website.State.OFF
-    assert chronicle_of(club).timeline[0]["title"] == "Gründung"
-    text, failed = call(token, "webseite_texte")
+    assert chronicle_of(chronicle_on).timeline[0]["title"] == "Gründung"
+    greeting = WebsiteText.objects.create(
+        organization=chronicle_on, website=site, kind="greeting", title="Hallo"
+    )
+    text, failed = call(token, "webseite_text_aendern", nummer=greeting.pk, text="Geändert")
     assert failed
+    greeting.refresh_from_db()
+    assert greeting.body != "Geändert"
 
 
 def test_nur_lesen(chronicle_on, site):  # noqa: F811

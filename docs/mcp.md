@@ -212,8 +212,8 @@ die Oberfläche bei Bedarf an) und `TextDetailView` (PUT `website/texts/<id>/`) 
 `chronicle.edit` oder Inhalte der Webseite bearbeiten, gleiche Prüfung, Änderungsprotokoll. Nur der
 Entwurf ändert sich; veröffentlicht wird unter Chronik. Einträge haben keine feste Kennung, sie
 heißen nach ihrer Stelle `nr` in der nach Jahren sortierten Liste; `ueberschrift_bisher` schützt
-vor veralteten Nummern. Verbinden darf auch, wer nur `chronicle.view` hat (ohne Rechte an der
-Webseite). Namen im Freitext prüft HUBIplan nicht gegen Widersprüche (FF-25); die Beschreibungen
+vor veralteten Nummern. Wer Inhalte der Webseite nur lesen darf, aber `chronicle.edit` hat,
+pflegt über den Assistenten nur die Chronik. Namen im Freitext prüft HUBIplan nicht gegen Widersprüche (FF-25); die Beschreibungen
 der Werkzeuge weisen darauf hin.
 
 | Werkzeug | Bereich | Was |

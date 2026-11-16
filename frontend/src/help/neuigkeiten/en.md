@@ -171,7 +171,7 @@ November 2026:
 
 #### AI assistants
 
-- AI assistants: a connected assistant now also maintains the **chronicle**: view, add (also many at once), change and remove timeline entries and assign images, plus introduction and order. Everything goes into the draft; publishing happens under Chronicle. Anyone who only maintains the chronicle can also connect an assistant for it.
+- AI assistants: a connected assistant now also maintains the **chronicle**: view, add (also many at once), change and remove timeline entries and assign images, plus introduction and order. Everything goes into the draft; publishing happens under Chronicle.
 - AI assistants: a connected assistant can now also change the **appearance**: colours, gradients, colour roles and logo. This applies immediately and can be undone in the change log. Reconnect existing connections once.
 - **AI assistants help with design**: a connected assistant now also changes design, colours, menu and home page layout in the draft, describes images and stores drafts for Instagram and Facebook posts under Website › Social media. You upload photos via a link the assistant gives you in the chat; HUBIplan can also fetch images by address from servers you approve under Website › Web address. Menu changes now go into the draft for everyone and only appear after **Publish**.
 - AI assistants: At the address `/api/mcp/` of your HUBIplan instance, an AI assistant such as Claude or ChatGPT can search the HUBIplan help and explain terms (Model Context Protocol). It sees no club data and changes nothing.
