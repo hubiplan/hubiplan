@@ -79,6 +79,30 @@ def historie(cal):
             starts_at=at(2026, 5, 20, 18),
             ends_at=at(2026, 5, 20, 20),
         )
+        # Serie, die erst nach dem Zeitraum beginnt, mit einem vorgezogenen Termin darin
+        later = _event(org, "Vorgezogen", at(2026, 9, 1, 18), repeat="weekly")
+        EventException.objects.create(
+            organization=org,
+            event=later,
+            original_start=at(2026, 9, 1, 18),
+            starts_at=at(2026, 5, 15, 18),
+            ends_at=at(2026, 5, 15, 20),
+        )
+        # Serie, die vor mehr als 400 Tagen endete; ihr letzter Termin in den Zeitraum verlegt
+        old = _event(
+            org,
+            "Lange vorbei",
+            at(2023, 1, 10, 18),
+            repeat="monthly",
+            repeat_until=datetime.date(2023, 6, 10),
+        )
+        EventException.objects.create(
+            organization=org,
+            event=old,
+            original_start=at(2023, 6, 10, 18),
+            starts_at=at(2026, 5, 25, 18),
+            ends_at=at(2026, 5, 25, 20),
+        )
         # Gestrichener Termin der Wochenserie im Zeitraum
         EventException.objects.create(
             organization=org, event=weekly, original_start=at(2026, 5, 12, 19), is_cancelled=True
@@ -118,6 +142,8 @@ def test_verschobene_und_gestrichene_ausnahmen(historie):
     titles = {(o.event.title, o.starts_at, o.is_cancelled) for o in items}
     assert ("Verschoben", at(2026, 5, 20, 18), False) in titles
     assert ("Übungsabend", at(2026, 5, 12, 19), True) in titles
+    assert ("Vorgezogen", at(2026, 5, 15, 18), False) in titles
+    assert ("Lange vorbei", at(2026, 5, 25, 18), False) in titles
     assert any(t == "Schützenfest" for t, _s, _c in titles)
 
 
@@ -128,7 +154,7 @@ def test_alte_historie_wird_nicht_geladen(historie):
         total = qs.count()
     names = {e.title for e in loaded}
     # Vorher: alle Termine (über 50); jetzt nur die, die im Zeitraum vorkommen können
-    assert total > 50 and len(loaded) <= 6, names
+    assert total > 50 and len(loaded) <= 8, names
     assert not any(n.startswith("Alt ") for n in names)
     assert "Alte Serie" not in names
 
