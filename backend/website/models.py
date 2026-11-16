@@ -302,16 +302,16 @@ class Website(models.Model):
     # Eigene Namen der Bausteine: Schlüssel → Name (nur gesetzte; RENAMABLE_BLOCKS)
     block_names = models.JSONField("Eigene Namen der Bausteine", default=dict, blank=True)
     # Adressen der Links nach außen im Menü: ``link:<Nummer>`` → https://…
-    menu_links = models.JSONField("Links im Menü", default=dict, blank=True)
+    menu_links = models.JSONField("Links im Menü", default=dict, db_default={}, blank=True)
     # Ein Hauptpunkt des Menüs als Knopf hervorgehoben (z. B. „Mitglied werden“), leer = keiner
-    menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True)
+    menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True, db_default="")
     # Platz von Hauptpunkten (Webseite #75): Schlüssel → "footer" (nur im Fuß) oder "both"
     # (Hauptmenü und Fuß); fehlt = nur im Hauptmenü (website/menu.py PLACES)
-    menu_places = models.JSONField("Platz der Menüpunkte", default=dict, blank=True)
+    menu_places = models.JSONField("Platz der Menüpunkte", default=dict, db_default={}, blank=True)
     # Stilregler (Gestaltung › Feinabstimmung, website/style.py): nur verstellte; leer = Design
-    style = models.JSONField("Stilregler", default=dict, blank=True)
+    style = models.JSONField("Stilregler", default=dict, db_default={}, blank=True)
     # Darstellung der festen Bereiche (G5, website/variants.py): nur abweichende Varianten
-    layouts = models.JSONField("Darstellung der Bereiche", default=dict, blank=True)
+    layouts = models.JSONField("Darstellung der Bereiche", default=dict, db_default={}, blank=True)
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
@@ -327,14 +327,18 @@ class Website(models.Model):
     notice_until = models.DateField("Hinweisleiste bis", null=True, blank=True)
     # Entwurf der Gestaltung (Konzept webseite-baukasten G2): nur geänderte Felder aus
     # DRAFT_FIELDS; sichtbar nur in der Vorschau, bis jemand „Veröffentlichen“ wählt
-    draft = models.JSONField("Entwurf der Gestaltung", default=dict, blank=True)
+    draft = models.JSONField("Entwurf der Gestaltung", default=dict, db_default={}, blank=True)
     # Standarddesign der Webseite und eigene Farbzuordnung je Design (Ralf 2026-10-31).
     # Auch der Schlüssel eines freigegebenen Designpakets (DesignPackage, Ralf 2026-11-02);
     # geprüft wird im Code (design_choices), nicht über feste choices.
     design = models.CharField("Design", max_length=40, default=DEFAULT_DESIGN)
     # Galerie (Ralf 05.11.): Reihenfolge der Alben auf der Galerie-Seite
     gallery_order = models.CharField(
-        "Alben sortieren nach", max_length=20, default="date_desc", blank=True
+        "Alben sortieren nach",
+        max_length=20,
+        default="date_desc",
+        db_default="date_desc",
+        blank=True,
     )
     color_roles = models.JSONField("Farbzuordnung je Design", default=dict, blank=True)
     # Server, von denen ein KI-Assistent Bilder per Adresse holen darf (W3, docs/mcp.md);

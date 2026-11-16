@@ -372,7 +372,7 @@ class Score(models.Model):
     scoring = models.ForeignKey(Scoring, on_delete=models.CASCADE, related_name="scores")
     starter = models.ForeignKey(Starter, on_delete=models.CASCADE, related_name="scores")
     value = models.DecimalField("Wert", max_digits=10, decimal_places=3)
-    from_hits = models.BooleanField("aus Treffern berechnet", default=False)
+    from_hits = models.BooleanField("aus Treffern berechnet", default=False, db_default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
