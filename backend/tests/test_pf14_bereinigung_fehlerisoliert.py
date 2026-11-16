@@ -54,14 +54,16 @@ def test_umfrage_bereinigung_alles_oder_nichts():
     org = make_org("Umfrageverein")
     broken = _survey(org, "Kaputt")
     fine = _survey(org, "Heil")
-    original = QuerySet.delete
+    original = QuerySet.update
 
-    def fails_once(qs):
-        if qs.model is SurveyAnswer and qs.filter(survey=broken).exists():
+    # Abbruch erst beim Vermerken, nachdem Teilnahmen und Antworten gelöscht sind: Das Löschen
+    # muss zurückgerollt werden
+    def fails(qs, **kwargs):
+        if qs.model is Survey and "purged_at" in kwargs and qs.filter(pk=broken.pk).exists():
             raise RuntimeError("erfundener Abbruch")
-        return original(qs)
+        return original(qs, **kwargs)
 
-    with mock.patch.object(QuerySet, "delete", fails_once):
+    with mock.patch.object(QuerySet, "update", fails):
         assert services.purge_due() == 1  # die andere Umfrage läuft weiter
     with rls_bypass():
         broken.refresh_from_db()
@@ -69,6 +71,7 @@ def test_umfrage_bereinigung_alles_oder_nichts():
         # Abgebrochen: nichts vermerkt, nichts halb gelöscht, nächster Lauf holt es nach
         assert broken.purged_at is None
         assert SurveyParticipation.objects.filter(survey=broken).exists()
+        assert SurveyAnswer.objects.filter(survey=broken).exists()
         assert fine.purged_at is not None
         assert not SurveyAnswer.objects.filter(survey=fine).exists()
     assert services.purge_due() == 1
