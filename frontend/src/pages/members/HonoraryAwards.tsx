@@ -3,6 +3,8 @@
 // Ehrungen mit „nur Jahr der Verleihung“ haben statt von–bis nur ein Jahr.
 // Darunter (nur lesen) die Ehrungen der anderen Ebene: im Verein die des Dachverbands, im Dachverband die des Vereins.
 // Der Dachverband verleiht seine eigenen Ehrungen (``federation``).
+// Optional trägt jede Verleihung einen eigenen Titel (#518), z. B. „Ehrenhauptmann“ bei der
+// Ehrung „Ehrenmitglied“; die Webseite zeigt ihn statt des Namens der Ehrung.
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { memberApi, todayIso } from '../../api/members.ts'
@@ -16,7 +18,8 @@ import { t } from '../../i18n/index.ts'
 function AwardLine({ a, children }: { a: HonoraryAward; children?: ReactNode }) {
   return (
     <li>
-      <strong>{a.title_name}</strong> ·{' '}
+      <strong>{a.title_name}</strong>
+      {a.display_title && <> ({a.display_title})</>} ·{' '}
       {a.year_only ? (
         t('verliehen {x}', { x: a.valid_from.split('-')[0] })
       ) : (
@@ -86,7 +89,22 @@ function AwardDates({
   )
 }
 
-/** Verleihung nachträglich ändern: Ehrung, von, bis, Bemerkung. */
+/** Eigener Titel des Trägers, z. B. „Ehrenhauptmann“ (optional). */
+function DisplayTitleInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <input
+      type="text"
+      aria-label={t('Titel')}
+      placeholder={t('Titel, z. B. Ehrenhauptmann (optional)')}
+      title={t('Steht auf der Webseite statt des Namens der Ehrung')}
+      maxLength={100}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
+}
+
+/** Verleihung nachträglich ändern: Ehrung, von, bis, Titel, Bemerkung. */
 function AwardEdit({
   a,
   options,
@@ -104,6 +122,7 @@ function AwardEdit({
   const [from, setFrom] = useState(a.valid_from)
   const [until, setUntil] = useState(a.valid_until ?? '')
   const [note, setNote] = useState(a.note ?? '')
+  const [displayTitle, setDisplayTitle] = useState(a.display_title ?? '')
   // Archivierte Ehrung bleibt wählbar, solange sie hier vergeben ist.
   const list = options.some((tm) => tm.id === a.title)
     ? options
@@ -120,6 +139,7 @@ function AwardEdit({
             title: Number(title),
             valid_from: from,
             valid_until: yearOnly ? null : until || null,
+            display_title: displayTitle,
             note,
           })
         }}
@@ -138,6 +158,7 @@ function AwardEdit({
           setFrom={setFrom}
           setUntil={setUntil}
         />
+        <DisplayTitleInput value={displayTitle} onChange={setDisplayTitle} />
         <input
           type="text"
           aria-label={t('Bemerkung')}
@@ -184,6 +205,7 @@ export function HonoraryAwards({
   const [from, setFrom] = useState(todayIso)
   const [until, setUntil] = useState('')
   const [note, setNote] = useState('')
+  const [displayTitle, setDisplayTitle] = useState('')
   const [busy, setBusy] = useState(false)
   const [editing, setEditing] = useState<number | null>(null)
   const options = titles.data?.filter((tm) => !tm.is_archived) ?? []
@@ -215,6 +237,7 @@ export function HonoraryAwards({
           title: Number(title),
           valid_from: from,
           valid_until: addYearOnly ? null : until || null,
+          display_title: displayTitle,
           note,
         },
         federation,
@@ -224,6 +247,7 @@ export function HonoraryAwards({
       setTitle('')
       setUntil('')
       setNote('')
+      setDisplayTitle('')
     }
   }
 
@@ -335,6 +359,7 @@ export function HonoraryAwards({
               setFrom={setFrom}
               setUntil={setUntil}
             />
+            <DisplayTitleInput value={displayTitle} onChange={setDisplayTitle} />
             <input
               type="text"
               aria-label={t('Bemerkung')}

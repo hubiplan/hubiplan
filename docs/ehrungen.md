@@ -4,7 +4,9 @@ Vereine und Dachverbände legen ihre Ehrungen selbst an (Mitglieder › Einricht
 Ehrungen), z. B. Ehrenmitglied, Ehrenmajor, Ehrenoberst. Verliehen wird in der
 Mitgliederakte (Reiter „Rollen & Ehrungen“) mit Beginn, optional Ende und Bemerkung.
 Ein Mitglied kann mehrere Ehrungen gleichzeitig haben; beendete Verleihungen bleiben im
-Verlauf. (Bis Oktober 2026 hießen Ehrungen „Ehrentitel“; im Code heißen sie weiter
+Verlauf. Optional hat jede Verleihung einen eigenen **Titel** (`display_title`, #518), z. B.
+„Ehrenhauptmann“ bei der Ehrung „Ehrenmitglied“: Die Webseite liefert ihn als
+`honorary[].holders[].title` und zeigt ihn statt des Namens der Ehrung. (Bis Oktober 2026 hießen Ehrungen „Ehrentitel“; im Code heißen sie weiter
 `HonoraryTitle`, der Listenfilter weiter `ehrentitel`.)
 
 ## Beitrag

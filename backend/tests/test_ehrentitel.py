@@ -133,6 +133,17 @@ class TestVerleihung:
             organization=orgs["a"], person_id=members["emil"].person_id, action="create"
         ).exists()
 
+    def test_titel_je_traeger(self, orgs, board_a, api, members):
+        """#518: optionaler Titel beim Träger, Leerraum wird bereinigt."""
+        c = api(board_a)
+        tid = create_title(c, orgs["a"], "Ehrenmitglied")
+        url = awards_url(orgs["a"], members["max"])
+        data = award(c, url, tid, display_title="  Ehren major ")
+        assert data["display_title"] == "Ehren major"
+        resp = c.patch(f"{url}{data['id']}/", {"display_title": "Ehrenmajor"}, content_type=JSON)
+        assert resp.status_code == 200 and resp.json()["display_title"] == "Ehrenmajor"
+        assert award(c, awards_url(orgs["a"], members["emil"]), tid)["display_title"] == ""
+
     def test_nur_jahr_der_verleihung(self, orgs, board_a, api, members):
         """Ralf 2026-10-31: Ehrung wahlweise nur mit dem Jahr der Verleihung."""
         c = api(board_a)
