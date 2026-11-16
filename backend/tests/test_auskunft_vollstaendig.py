@@ -71,6 +71,7 @@ def test_ausnahmelisten_sind_aktuell():
 # hat; sie sind Angaben zu einem Vorgang des Vereins, nicht Daten des Kontos.
 KONTO_AUSNAHMEN = {
     "access.RoleAssignment": "Ämter, in der Akte",
+    "members.DepartmentRoleHolder": "Ämter in Untereinheiten, in der Akte",
     "changes.RequestKey": "Schlüssel gegen doppelte Absendung, technische Kennung ohne Inhalt",
     "devices.PairingCode": "Kopplungscode der App, nur wenige Minuten gültig, nur Prüfsumme",
     "peering.LoginLink": "Anmeldelink über eine andere Instanz, kurzlebig, nur Prüfsumme",
