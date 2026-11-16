@@ -456,60 +456,64 @@ def send_pending(circular_id: int) -> int:
             return 0
         attachments = stored_attachments(circular)
         pending = circular.recipients.filter(status=CircularRecipient.Status.PENDING)
-        for recipient in pending.iterator(chunk_size=200):
-            app = recipient.channel == CircularRecipient.Channel.APP
-            if limited and not app:
-                continue  # Stundengrenze erreicht; App-Empfänger kommen trotzdem weiter an
-            claimed = claim(recipient.pk, mail=not app)
-            if claimed is None:
-                limited = True
-                continue
-            if not claimed:
-                continue
-            if app:
-                if deliver_app(recipient, circular):
-                    sent += 1
-                    error = ""
-                    if circular.also_mail and recipient.email:
-                        # Zusätzlich per Mail, wenn die Stundengrenze es zulässt
-                        if not mail_room_for_claimed():
-                            error = "Per App zugestellt; keine zusätzliche Mail (Stundengrenze)."
-                        elif not deliver(recipient, circular, attachments):
-                            error = "Per App zugestellt; die zusätzliche Mail schlug fehl."
-                    CircularRecipient.objects.filter(pk=recipient.pk).update(
-                        status=CircularRecipient.Status.SENT, error=error
-                    )
-                    continue
-                if not recipient.email:
-                    CircularRecipient.objects.filter(pk=recipient.pk).update(
-                        status=CircularRecipient.Status.FAILED,
-                        error="Push nicht zustellbar; im Mitgliederbereich sichtbar.",
-                    )
-                    continue
-                # Kein Gerät erreicht: Ersatz per Mail, bei erreichter Stundengrenze später
-                recipient.channel = CircularRecipient.Channel.MAIL
-                if not mail_room_for_claimed():
-                    CircularRecipient.objects.filter(pk=recipient.pk).update(
-                        channel=CircularRecipient.Channel.MAIL,
-                        status=CircularRecipient.Status.PENDING,
-                        sent_at=None,
-                    )
+        # Eine SMTP-Verbindung für alle Mails dieses Laufs (Gesamtaudit 15.11., PF-09)
+        with mail.connection():
+            for recipient in pending.iterator(chunk_size=200):
+                app = recipient.channel == CircularRecipient.Channel.APP
+                if limited and not app:
+                    continue  # Stundengrenze erreicht; App-Empfänger kommen trotzdem weiter an
+                claimed = claim(recipient.pk, mail=not app)
+                if claimed is None:
                     limited = True
                     continue
-                CircularRecipient.objects.filter(pk=recipient.pk).update(
-                    channel=CircularRecipient.Channel.MAIL
-                )
-            ok = deliver(recipient, circular, attachments)
-            if ok:
-                sent += 1
-                CircularRecipient.objects.filter(pk=recipient.pk).update(
-                    status=CircularRecipient.Status.SENT
-                )
-            else:
-                CircularRecipient.objects.filter(pk=recipient.pk).update(
-                    status=CircularRecipient.Status.FAILED,
-                    error="Versand fehlgeschlagen (siehe Postausgang).",
-                )
+                if not claimed:
+                    continue
+                if app:
+                    if deliver_app(recipient, circular):
+                        sent += 1
+                        error = ""
+                        if circular.also_mail and recipient.email:
+                            # Zusätzlich per Mail, wenn die Stundengrenze es zulässt
+                            if not mail_room_for_claimed():
+                                error = (
+                                    "Per App zugestellt; keine zusätzliche Mail (Stundengrenze)."
+                                )
+                            elif not deliver(recipient, circular, attachments):
+                                error = "Per App zugestellt; die zusätzliche Mail schlug fehl."
+                        CircularRecipient.objects.filter(pk=recipient.pk).update(
+                            status=CircularRecipient.Status.SENT, error=error
+                        )
+                        continue
+                    if not recipient.email:
+                        CircularRecipient.objects.filter(pk=recipient.pk).update(
+                            status=CircularRecipient.Status.FAILED,
+                            error="Push nicht zustellbar; im Mitgliederbereich sichtbar.",
+                        )
+                        continue
+                    # Kein Gerät erreicht: Ersatz per Mail, bei erreichter Stundengrenze später
+                    recipient.channel = CircularRecipient.Channel.MAIL
+                    if not mail_room_for_claimed():
+                        CircularRecipient.objects.filter(pk=recipient.pk).update(
+                            channel=CircularRecipient.Channel.MAIL,
+                            status=CircularRecipient.Status.PENDING,
+                            sent_at=None,
+                        )
+                        limited = True
+                        continue
+                    CircularRecipient.objects.filter(pk=recipient.pk).update(
+                        channel=CircularRecipient.Channel.MAIL
+                    )
+                ok = deliver(recipient, circular, attachments)
+                if ok:
+                    sent += 1
+                    CircularRecipient.objects.filter(pk=recipient.pk).update(
+                        status=CircularRecipient.Status.SENT
+                    )
+                else:
+                    CircularRecipient.objects.filter(pk=recipient.pk).update(
+                        status=CircularRecipient.Status.FAILED,
+                        error="Versand fehlgeschlagen (siehe Postausgang).",
+                    )
         if not circular.recipients.filter(status=CircularRecipient.Status.PENDING).exists():
             Circular.objects.filter(pk=circular.pk).update(status=Circular.Status.SENT)
             circular.status = Circular.Status.SENT

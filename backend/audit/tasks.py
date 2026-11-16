@@ -2,10 +2,12 @@
 
 from celery import shared_task
 
+from core.einzeln import einzeln
 from core.tenancy import rls_bypass
 
 
 @shared_task
+@einzeln
 def check_chains() -> int:
     """Versiegelt liegen gebliebene Einträge, prüft jede Kette und meldet Brüche."""
     from core.alarm import send_alert

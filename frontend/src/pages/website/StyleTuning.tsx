@@ -408,6 +408,15 @@ function GROUPS(): Group[] {
             'Amt als Etikett: Amt klein in Großbuchstaben über dem Namen, Name in der Schrift der Überschriften, „Nachricht schreiben“ als Textlink, Kante oben in der Vereinsfarbe. Ehrenmitglieder stehen im Raster mit drei Spalten.',
           ),
         },
+        // Webseite #143 (Ralf 16.11.2026)
+        {
+          key: 'honorary_layout',
+          label: t('Ehrungen'),
+          options: { list: t('Liste je Ehrung'), cards: t('eine Karte je Person') },
+          hint: t(
+            'Eine Karte je Person: Alle Geehrten stehen in einem gemeinsamen Raster wie der Vorstand, oben auf jeder Karte die Ehrung als Etikett. Hat jemand bei der Verleihung einen eigenen Titel (z. B. Ehrenhauptmann), steht dieser Titel auf der Karte.',
+          ),
+        },
         {
           key: 'address',
           label: t('Anrede im Kontaktformular'),
@@ -419,9 +428,9 @@ function GROUPS(): Group[] {
         {
           key: 'timeline_chapter',
           label: t('Epochen der Chronik'),
-          options: { plain: t('Zwischentitel'), band: t('als Band') },
+          options: { plain: t('Zwischentitel'), band: t('als Band'), slim: t('als flaches Band') },
           hint: t(
-            'Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe; die Sprungmarken oben werden zu unterstrichenen Links.',
+            'Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe. Als flaches Band: Zeitraum und Titel in einer Zeile, deutlich niedriger. Bei beiden werden die Sprungmarken oben zu unterstrichenen Links.',
           ),
         },
         {

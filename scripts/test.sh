@@ -427,6 +427,13 @@ if [ "$RUN_BACKEND" = 1 ]; then
         exit 1
     fi
     echo "Backend: Migrationen vollständig und ohne Konflikt"
+    # Rückweg-Regel (docs/releases.md, Gesamtaudit 15.11. PF-06): neue Migrationen gegen den
+    # letzten Release-Tag und gegen den vorigen main-Stand prüfen. Einzeln abschaltbar mit
+    # MIGRATIONSPRUEFUNG_RELEASE=0 bzw. MIGRATIONSPRUEFUNG_MAIN=0. Skript aus dem geprüften Stand.
+    if git cat-file -e "$COMMIT:scripts/pruefe-migrationen.py" 2> /dev/null; then
+        git show "$COMMIT:scripts/pruefe-migrationen.py" | python3 - --selbsttest || exit 1
+        git show "$COMMIT:scripts/pruefe-migrationen.py" | python3 - "$COMMIT" || exit 1
+    fi
     # Übersetzung (konzepte/englisch.md): bis zur Abnahme nur Bericht, danach --streng
     docker run --rm "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test --entrypoint sh \
         "$BACKEND_IMG" -c "python manage.py uebersetzung_pruefen"
