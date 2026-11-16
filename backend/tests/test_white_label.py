@@ -373,20 +373,48 @@ def test_passwort_vergessen_auf_der_aufgerufenen_adresse(mailoutbox, adressen, s
     main = settings.FRONTEND_URL.rstrip("/")
     club = make_org("Schützenverein Musterstadt")
     _adresse(club)
-    make_user("anna@example.org")
-    for host, expected in (
-        (VEREIN_HOST, f"{_scheme()}://{VEREIN_HOST}"),
-        ("unbekannt.example", main),
+    # Anna gehört zum Verein (Rolle), Bernd nicht: Fremde bekommen den Link nie auf die
+    # Vereinsadresse (Gesamtaudit 15.11., AUTH-01)
+    give_role(make_user("anna@example.org"), club)
+    make_user("bernd@example.org")
+    for email, host, expected in (
+        ("anna@example.org", VEREIN_HOST, f"{_scheme()}://{VEREIN_HOST}"),
+        ("anna@example.org", "unbekannt.example", main),
+        ("bernd@example.org", VEREIN_HOST, main),
     ):
         client = Client(HTTP_HOST=host)
         resp = client.post(
             "/_allauth/browser/v1/auth/password/request",
-            {"email": "anna@example.org"},
+            {"email": email},
             content_type="application/json",
             headers=csrf_headers(client),
         )
         assert resp.status_code == 200, resp.content
-        assert f"{expected}/passwort-zuruecksetzen/" in mailoutbox[-1].body
+        assert mailoutbox[-1].to == [email]
+        assert f"{expected}/passwort-zuruecksetzen/" in mailoutbox[-1].body, mailoutbox[-1].body
+
+
+def test_ruecksetzlink_nie_auf_adresse_eines_fremden_vereins(mailoutbox, adressen, settings):
+    """Vorstand von Verein B, Rücksetzung über die Adresse von Verein A angestoßen (AUTH-01)."""
+    from .conftest import csrf_headers
+
+    main = settings.FRONTEND_URL.rstrip("/")
+    verein_a = make_org("Schützenverein Fremdort")
+    _adresse(verein_a)
+    opfer = make_user("opfer@example.org")
+    give_role(opfer, make_org("Schützenverein Musterstadt"))
+    client = Client(HTTP_HOST=VEREIN_HOST)
+    resp = client.post(
+        "/_allauth/browser/v1/auth/password/request",
+        {"email": "opfer@example.org"},
+        content_type="application/json",
+        headers=csrf_headers(client),
+    )
+    assert resp.status_code == 200, resp.content
+    body = mailoutbox[-1].body
+    assert f"{main}/passwort-zuruecksetzen/" in body
+    # Weder Link noch Begrüßung nennen den fremden Host
+    assert VEREIN_HOST not in body
 
 
 # --- W7c: Erlaubte Hosts und Zertifikate aus der Liste ---
