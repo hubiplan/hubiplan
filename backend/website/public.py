@@ -732,6 +732,11 @@ class SiteView:
             for award in awards:
                 entry = self.person(award.person, category=Category.HONORS)
                 if entry:
+                    # Besonderer Titel des Trägers (#518); nicht bei „N. N.“ ohne Einwilligung
+                    if award.display_title and self.allowed(
+                        self.memberships.get(award.person_id), Category.HONORS
+                    ):
+                        entry["title"] = award.display_title
                     people.append(entry)
             if people:
                 # Überschrift: bei mehreren Trägern in der Mehrzahl (Ralf 2026-10-31)
