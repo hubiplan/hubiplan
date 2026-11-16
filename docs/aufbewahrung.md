@@ -72,6 +72,11 @@ Gelöschte Einheiten stehen auf der Löschliste (Kennung und Anlagezeitpunkt, ke
 Taucht eine davon nach dem Einspielen eines älteren Backups wieder auf, wird sie beim Start
 und täglich erneut gelöscht; lässt sie sich nicht automatisch löschen, kommt eine Alarm-Mail.
 
+Personen eines Vereins im Dachverband liegen im Bereich des Dachverbands. Waren sie nur in der
+gelöschten Einheit (und ihren Untereinheiten) Mitglied, gehen Person, gemeinsame Kontaktdaten
+und Verbandsmeldung mit (Gesamtaudit 15.11., PF-15); wer noch anderswo Mitglied ist, bleibt.
+Verweist noch etwas anderes auf eine Person, bleibt sie stehen (Protokoll des Workers).
+
 English: Units are deleted in two stages. Stage 1 deactivates the unit and its subunits and
 schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
 withdrawn. Stage 2 is possible 30 days later at the earliest (immediately for an empty unit that never had members or financial data) and only after the § 147 AO
