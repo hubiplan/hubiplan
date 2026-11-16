@@ -8,6 +8,10 @@
 - Tests nur über `scripts/test.sh` starten. Es holt über `scripts/testplatz.sh` einen Testplatz;
   wie viele Plätze und Kerne ein Rechner hat, ist lokal eingestellt
   (siehe [docs/testserver.md](docs/testserver.md)).
+- **PRs in hubiplan nur über den Merge-Zug** testen und mergen: `scripts/zug.sh <PR>`. Bei
+  „ZUG GRÜN“ sofort die genannten PRs in genau dieser Reihenfolge mit „Create a merge commit“
+  mergen; danach ist main ohne eigenen Lauf ausrollbar. Läufe nur mit
+  `scripts/test.sh --abbrechen <Lauf-ID>` abbrechen, nie über eine Mustersuche (`pkill -f` o. Ä.).
 - Keine Passwörter, Schlüssel oder Geheimnisse ins Repo, in PRs oder in Chats.
 - Persönliche Rechnerpfade, Serverziele, Betriebsunterlagen sowie interne Chat-/Projektlinks
   bleiben in privaten lokalen Unterlagen. Öffentliche Beispiele verwenden Musterwerte.

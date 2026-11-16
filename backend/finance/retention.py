@@ -351,6 +351,17 @@ def _purge_documents(org, year, start, end) -> dict[str, int]:
     return counts
 
 
+def _mandate_end(mandate) -> datetime.date:
+    """Ende eines Mandats: Widerruf, sonst 36 Monate nach der letzten Nutzung (SEPA-Regel);
+    ein laufendes Mandat endet frühestens heute plus 36 Monate."""
+    from dateutil.relativedelta import relativedelta
+
+    if mandate.revoked_on:
+        return mandate.revoked_on
+    last = mandate.last_used_on or mandate.signed_on
+    return last + relativedelta(months=36)
+
+
 def _anonymize_records(org, start, end) -> dict[str, int]:
     from audit.log import OBJECT_TYPES
     from audit.models import AuditEntry
@@ -407,6 +418,16 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         note="",
         membership=None,
         electronic_data={},
+    )
+    # SEPA-Mandate (Gesamtaudit 15.11., PF-16): Sie bleiben als Beleg mit den Büchern
+    # (docs/aufbewahrung.md) und werden mit den Büchern des Jahres anonymisiert, in dem sie
+    # endeten: Widerruf, sonst 36 Monate nach der letzten Lastschrift bzw. der Unterschrift
+    # (SEPA-Regel). Mandatsreferenz, Daten und Stand bleiben; laufende Mandate nie.
+    from billing.models import Mandate
+
+    ended = [m.pk for m in Mandate.objects.filter(organization=org) if _mandate_end(m) <= end]
+    counts["SEPA-Mandate"] = update_encrypted(
+        ids(Mandate.objects.filter(pk__in=ended), "mandate"), holder=ANON, iban="", bic=""
     )
     from billing.einvoice_retention import anonymize, incoming_for_period
 

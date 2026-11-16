@@ -84,7 +84,7 @@ Es läuft immer nur ein main-Lauf; wer währenddessen `--main` startet, wartet o
 häufigsten scheitern: ruff, Typprüfung, Lint, Prettier, i18n, die Hilfe-Tests (erzeugte
 `backend/mcpserver/hilfe.json`, Fettschrift-Namen) und die Vitest-Dateien, die der Stand gegenüber
 main ändert. Sie belegt keinen Testplatz, nutzt höchstens zwei Kerne mit niedriger Priorität und ist
-nie eine Freigabe. `scripts/test.sh` und `scripts/zug.sh` rufen sie vor der Warteschlange auf
+nie eine Freigabe. `scripts/test.sh` startet sie, während der Lauf auf seinen Platz wartet (rot → Lauf endet sofort); `scripts/zug.sh` prüft vor dem Einreihen
 (`TEST_VORPRUEFUNG=0`: aus); ein grüner Tree wird vermerkt. Ohne Docker, z. B. in einer
 Cloud-Sitzung vor dem Lauf auf dem Testrechner, läuft sie mit dem installierten node/npm
 (`VORPRUEFUNG_OHNE_DOCKER=1`) und holt sich ruff in der festgeschriebenen Fassung.

@@ -36,10 +36,30 @@ def is_minor(person, on: datetime.date | None = None) -> bool:
     return age_on(person.birth_date, on or today()) < ADULT_AGE
 
 
+# Einwilligung eines Kindes in die Verarbeitung (Art. 8 DSGVO): unter 16 durch die
+# Erziehungsberechtigten (Gesamtaudit 15.11., PF-21)
+CONSENT_AGE = 16
+
+
+def needs_guardian_consent(person, on: datetime.date | None = None) -> bool:
+    """Unter 16 (nach Geburtsdatum; nur Jahrgang: so jung wie möglich gerechnet)."""
+    if person.is_organization or person.birth_date is None:
+        return False
+    birth = person.birth_date
+    if getattr(person, "birth_year_only", False):
+        birth = birth.replace(month=12, day=31)
+    return age_on(birth, on or today()) < CONSENT_AGE
+
+
 def adult_on(person) -> datetime.date | None:
+    """Tag der Volljährigkeit. Ist nur das Geburtsjahr bekannt, spätestmöglich (31.12.):
+    Die Erziehungsberechtigung endet so nie vor dem 18. Geburtstag (Gesamtaudit 15.11., PF-27)."""
     if person.birth_date is None:
         return None
-    return person.birth_date + relativedelta(years=ADULT_AGE)
+    birth = person.birth_date
+    if getattr(person, "birth_year_only", False):
+        birth = birth.replace(month=12, day=31)
+    return birth + relativedelta(years=ADULT_AGE)
 
 
 def guardians_of(membership: Membership):
@@ -79,7 +99,8 @@ def end_adults(on: datetime.date | None = None) -> int:
     count = 0
     for membership in _guardian_memberships():
         person = membership.person
-        if person.birth_date is None or is_minor(person, on):
+        adult = adult_on(person)
+        if adult is None or person.is_organization or on < adult:
             continue
         with tenant_context(membership.organization_id):
             count += end_for(membership)
@@ -136,6 +157,7 @@ def notice_text(membership: Membership) -> tuple[str, str]:
 
 def send_notices(on: datetime.date | None = None) -> int:
     """Täglich: Mail an Erziehungsberechtigte, deren Kind in vier Wochen 18 wird."""
+    from django.utils import timezone
     from rest_framework.exceptions import ValidationError
 
     from core.i18n import language_of_org
@@ -144,16 +166,27 @@ def send_notices(on: datetime.date | None = None) -> int:
     from portal.services import contact_email
 
     on = on or today()
-    birthday = on + datetime.timedelta(days=NOTICE_DAYS) - relativedelta(years=ADULT_AGE)
     sent = 0
     for membership in _guardian_memberships():
-        if membership.person.birth_date != birthday:
+        # Ab vier Wochen vorher bis zum Tag der Volljährigkeit, einmal je Erziehungsberechtigtem:
+        # Vorher nur am genauen Tag; fiel der Lauf aus oder lag der Geburtstag auf dem 29.02.,
+        # kam nie ein Hinweis (Gesamtaudit 15.11., PF-27)
+        adult = adult_on(membership.person)
+        if adult is None or membership.person.is_organization:
+            continue
+        if not adult - datetime.timedelta(days=NOTICE_DAYS) <= on < adult:
             continue
         with tenant_context(membership.organization_id):
             org = membership.organization
             with language_of_org(org):
                 subject, body = notice_text(membership)
-            for contact in guardians_of(membership):
+            for contact in guardians_of(membership).filter(adult_notice_at__isnull=True):
+                # Erst vermerken, dann senden: lieber ein Hinweis zu wenig als doppelt
+                claimed = ContactPerson.objects.filter(
+                    pk=contact.pk, adult_notice_at__isnull=True
+                ).update(adult_notice_at=timezone.now())
+                if not claimed:
+                    continue
                 try:
                     address = contact_email(org, contact)
                 except ValidationError:
