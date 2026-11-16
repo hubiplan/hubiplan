@@ -529,9 +529,13 @@ def purge_membership(
     from changes.purge import forget_person
     from changes.tracking import suppress
 
+    from .auskunft import _org_ids
+
     with suppress():
         _purge_membership(membership, after_deadline)
-        forget_person(membership.organization_id, membership.person_id)
+        # Auch in den Untereinheiten (Gesamtaudit 15.11., PF-17)
+        for org_id in _org_ids(membership.organization):
+            forget_person(org_id, membership.person_id)
     if not listed:
         # Fachfrage 7 (31.10.b): gilt auch nach dem Einspielen eines älteren Backups
         from . import loeschliste
@@ -587,8 +591,11 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
         if after_deadline:
             # Nur nach Ablauf der Löschfrist; ein Verbund-Widerruf kürzt nur die Kopie hier
             _reduce_identity(person)
-    # Personenbezogene Inhalte aus dem Protokoll dieses Vereins entfernen
-    AuditEntry.objects.filter(organization=club, person_id=person.pk).update(
+    # Personenbezogene Inhalte aus dem Protokoll dieses Vereins und seiner Untereinheiten
+    # entfernen (Gesamtaudit 15.11., PF-17)
+    from .auskunft import _org_ids
+
+    AuditEntry.objects.filter(organization_id__in=_org_ids(club), person_id=person.pk).update(
         changes={}, cleared=True
     )
     MembershipPeriod.objects.filter(membership=membership).update(note="")
@@ -610,6 +617,48 @@ def _reduce_identity(person) -> None:
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 
+# Steht statt des Namens bei Helferdiensten gelöschter Mitglieder
+NAME_PURGED = "–"
+
+
+def _purge_traces(membership: Membership) -> None:
+    """Weitere Spuren der Mitgliedschaft (Gesamtaudit 15.11., PF-03, PF-04, PF-18).
+
+    - Online-Antrag: PDF (mit Unterschrift, Erziehungsberechtigten, Mandat) und Angaben
+      löschen; Nummer, Daten und Entscheidung bleiben (Fachfrage FF-28 (a)).
+    - Rundschreiben: Name, Mail, Anschrift und Platzhalterwerte der Empfängerzeilen leeren;
+      Zustellstand bleibt (Zahlen des Rundschreibens).
+    - Termine: Bemerkungen der Rückmeldungen leeren; Helferdienste: Name und Telefon.
+    """
+    from admission.models import Application
+    from circulars.models import CircularRecipient
+    from events.models import EventResponse
+    from helpers.models import ShiftAssignment
+
+    for app in Application.objects.filter(membership=membership):
+        if app.pdf:
+            app.pdf.delete(save=False)
+        data = app.data or {}
+        app.data = {k: data[k] for k in ("first_name", "last_name") if data.get(k)}
+        app.mandate = {}
+        app.guardians = []
+        app.signature = {}
+        app.data_purged_at = app.data_purged_at or timezone.now()
+        app.save()
+    update_encrypted(
+        CircularRecipient.objects.filter(membership=membership),
+        first_name="",
+        last_name="",
+        email="",
+        address="",
+        values={},
+    )
+    EventResponse.objects.filter(membership=membership).update(note="")
+    update_encrypted(
+        ShiftAssignment.objects.filter(membership=membership), name=NAME_PURGED, phone=""
+    )
+
+
 def _purge_related(membership: Membership, person, club) -> None:
     """Zusatzfelder, Datenänderungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
 
@@ -626,7 +675,10 @@ def _purge_related(membership: Membership, person, club) -> None:
     # niemand mehr
     from qualifications.models import Qualification
 
-    Qualification.objects.filter(organization=club, person=person).delete()
+    from .auskunft import _org_ids
+
+    org_ids = _org_ids(club)
+    Qualification.objects.filter(organization_id__in=org_ids, person=person).delete()
     # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
     # gelöschte Daten zurückschreibt
     ChangeRequest.objects.filter(membership=membership).update(
@@ -639,6 +691,7 @@ def _purge_related(membership: Membership, person, club) -> None:
     CancellationRequest.objects.filter(
         membership=membership, status=CancellationRequest.Status.PENDING
     ).update(status=CancellationRequest.Status.REJECTED, decided_at=timezone.now())
+    _purge_traces(membership)
     # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
     # (bei Organisationen die Zugänge aller Ansprechpartner)
     for access in PortalAccess.objects.filter(membership=membership):

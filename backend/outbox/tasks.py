@@ -4,7 +4,7 @@ import logging
 
 from celery import shared_task
 
-from .purge import purge_sent
+from .purge import purge_inbound, purge_sent
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 def purge_sent_mails() -> int:
     """Täglich: Text und Anhänge zugestellter Mails nach Ablauf der Frist leeren."""
     count = purge_sent()
-    logger.info("Postausgang: %s Mails geleert", count)
+    inbound = purge_inbound()
+    logger.info("Postausgang: %s Mails geleert, %s Verteiler-Eingänge gelöscht", count, inbound)
     return count
 
 
