@@ -54,7 +54,14 @@ export interface Reign {
   origin_name: string
   origin_text: string
   companions: Companion[]
-  photo: { url: string; small_url: string } | null
+  photo: {
+    url: string
+    small_url: string
+    /** Einwilligung der nur mit Namen Abgebildeten bestätigt (PF-21) */
+    consent?: boolean
+    /** Auf der Regentschaft steht jemand nur mit Namen */
+    free_names?: boolean
+  } | null
 }
 
 export type ReignInput = Pick<
@@ -156,11 +163,18 @@ export const honorsApi = {
   /** Frühere Text-Einträge gleichen Namens mit einem Mitglied verknüpfen (ohne confirm: zählen) */
   linkReignName: (org: number, data: { name: string; person: number; confirm?: boolean }) =>
     api.post<{ linked: number; found: number }>(`${base(org)}reigns/link-name/`, data),
-  uploadPhoto: (org: number, id: number, file: File) => {
+  uploadPhoto: (org: number, id: number, file: File, consent = false) => {
     const form = new FormData()
     form.append('file', file)
+    if (consent) form.append('consent', 'true')
     return api.post<Reign['photo']>(`${base(org)}reigns/${id}/photo/`, form)
   },
+  setPhotoConsent: (org: number, id: number, consent: boolean) =>
+    api.patch<Reign['photo']>(`${base(org)}reigns/${id}/photo/`, { consent }),
+  /** Würden-Fotos mit freien Namen ohne bestätigte Einwilligung: Anzahl bzw. alle bestätigen */
+  photoConsentOpen: (org: number) => api.get<{ open: number }>(`${base(org)}photo-consent/`),
+  confirmAllPhotos: (org: number) =>
+    api.post<{ open: number; confirmed: number }>(`${base(org)}photo-consent/`, { all: true }),
   deletePhoto: (org: number, id: number) => api.del(`${base(org)}reigns/${id}/photo/`),
   origins: (org: number) => api.get<Origin[]>(`${base(org)}origins/`),
   shared: (org: number) => api.get<SharedDignity[]>(`${base(org)}shared/`),
