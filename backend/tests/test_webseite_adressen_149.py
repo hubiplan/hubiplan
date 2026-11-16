@@ -61,6 +61,9 @@ def test_wettbewerb_mit_jahr_und_reihe(orgs):
         organization=org, title="Vereinsmeisterschaft 2026", date=datetime.date(2026, 3, 1)
     )
     assert c2.web_slug == "vereinsmeisterschaft-2026"
+    # Datum als Text, wie es manche Aufrufer vor dem Speichern setzen
+    c3 = Competition.objects.create(organization=org, title="Pokalschießen", date="2027-05-01")
+    assert c3.web_slug == "pokalschiessen-2027"
     s = Series.objects.create(organization=org, name="Vereinsmeister")
     assert s.web_slug == "vereinsmeister"
     # „reihe“ belegt die Webseite selbst

@@ -163,7 +163,9 @@ class Competition(WebSlugMixin, models.Model):
     WEB_SLUG_FALLBACK = "wettbewerb"
 
     def web_slug_source(self) -> str:
-        year = str(self.date.year) if self.date else ""
+        # Vor dem Speichern kann das Datum noch als Text („2026-06-01“) gesetzt sein
+        year = str(self.date)[:4] if self.date else ""
+        year = year if year.isdigit() else ""
         return self.title if not year or year in self.title else f"{self.title} {year}"
 
     def web_slug_siblings(self):
