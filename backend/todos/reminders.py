@@ -149,12 +149,15 @@ def sync(todo, now=None):
                 todo=todo,
                 user_id=uid,
             )
+            changed = config.last_due_revision != todo.due_revision
             if not config.active:
                 config.active = True
                 config.revision += 1
                 config.enrolled_at = now
+                changed = True
             config.last_due_revision = todo.due_revision
-            config.save()
+            if changed:
+                config.save()
             todo.reminders.filter(user_id=uid, result="pending").exclude(
                 due_revision=todo.due_revision,
                 config_revision=config.revision,
@@ -345,17 +348,75 @@ def deliver(pk, now=None):
     return sent
 
 
+# Erinnerungen liegen höchstens 7 Tage vor der Frist (ReminderInput: 0, 1, 3, 7) oder am Tag
+# danach („overdue_once“). Nur Aufgaben in diesem Fenster müssen regelmäßig abgeglichen werden;
+# die übrigen gleicht der Lauf ab, sobald sie hineinrücken. Änderungen an Aufgabe, Frist und
+# Einstellungen gleichen die Signale sofort ab (signals.py, reminder_views.py).
+WINDOW_BEFORE_DAYS = 8
+WINDOW_AFTER_DAYS = 2
+# Eine Aufgabe im Fenster wird höchstens so oft neu abgeglichen (neue Empfänger durch Rollen
+# oder Freigaben); beim Versand prüft deliver() die Empfänger ohnehin erneut.
+RESYNC_SECONDS = 3600
+RUN_LOCK = 0x48554254_4F444F52  # "HUBTODOR"
+
+
+def _due_window(now):
+    today = timezone.localtime(now).date()
+    return (
+        today - datetime.timedelta(days=WINDOW_AFTER_DAYS),
+        today + datetime.timedelta(days=WINDOW_BEFORE_DAYS),
+    )
+
+
 def run(now=None):
+    """Alle 5 Minuten: fällige Erinnerungen zustellen (Gesamtaudit 15.11., PF-07).
+
+    Vorher wurde jede offene Aufgabe der Instanz bei jedem Lauf neu abgeglichen (bei 500
+    Aufgaben rund 9.000 Abfragen). Jetzt nur Aufgaben mit Frist im Erinnerungsfenster, jede
+    höchstens stündlich; jede Aufgabe und jede Zustellung für sich, ein Fehler hält die übrigen
+    nicht auf. Ein zweiter, überlappender Lauf endet sofort."""
+    from django.core.cache import cache
+    from django.db import connection
+
     now = now or timezone.now()
-    with rls_bypass():
-        tasks = list(
-            Todo.objects.filter(status="open", deleted_at__isnull=True, due_date__isnull=False)
-        )
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_try_advisory_lock(%s)", [RUN_LOCK])
+        locked = cursor.fetchone()[0]
+    if not locked:
+        logger.warning("Aufgabenerinnerungen: ein anderer Lauf ist noch aktiv, übersprungen")
+        return 0
+    try:
+        start, end = _due_window(now)
+        with rls_bypass():
+            tasks = list(
+                Todo.objects.filter(
+                    status="open",
+                    deleted_at__isnull=True,
+                    due_date__gte=start,
+                    due_date__lte=end,
+                ).only("pk")
+            )
         for todo in tasks:
-            sync(todo, now)
-        ids = list(
-            TodoReminder.objects.filter(
-                result="pending", claimed_at__isnull=True, scheduled_at__lte=now
-            ).values_list("pk", flat=True)
-        )
-    return sum(deliver(pk, now) for pk in ids)
+            if not cache.add(f"todo-erinnerung-abgleich:{todo.pk}", 1, RESYNC_SECONDS):
+                continue
+            try:
+                sync(todo, now)
+            except Exception:  # noqa: BLE001 - eine Aufgabe darf die übrigen nicht aufhalten
+                cache.delete(f"todo-erinnerung-abgleich:{todo.pk}")
+                logger.exception("Aufgabenerinnerung: Aufgabe %s nicht abgeglichen", todo.pk)
+        with rls_bypass():
+            ids = list(
+                TodoReminder.objects.filter(
+                    result="pending", claimed_at__isnull=True, scheduled_at__lte=now
+                ).values_list("pk", flat=True)
+            )
+        sent = 0
+        for pk in ids:
+            try:
+                sent += bool(deliver(pk, now))
+            except Exception:  # noqa: BLE001
+                logger.exception("Aufgabenerinnerung %s nicht zugestellt", pk)
+        return sent
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_unlock(%s)", [RUN_LOCK])

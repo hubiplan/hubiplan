@@ -130,10 +130,35 @@ Ob ein Stand lokal getestet ist und die Sperre gegen gleichzeitige Läufe prüft
 ## Migrationen und Rückweg
 
 `deploy/zurueck.sh` tauscht Code und Images, angewendete Migrationen bleiben. Damit das
-sicher ist, bleiben Migrationen **eine Fassung lang abwärtsverträglich**: Neue Spalten sind
-nullable oder haben einen Standardwert; Spalten und Tabellen werden erst im nächsten Release
-entfernt oder umbenannt. Geht das nicht, steht im PR „Rückweg möglich: nein“, und das Release
-bekommt oben den Hinweis, vorher eine Sicherung anzulegen.
+sicher ist, bleiben Migrationen **eine Fassung lang abwärtsverträglich**:
+
+- Neue Spalten auf bestehenden Tabellen sind `null=True` oder haben einen **`db_default`**.
+  Ein Django-`default` reicht nicht: Er gilt nur im neuen Code, die vorige Fassung lässt die
+  Spalte beim Einfügen weg und scheitert an NOT NULL (Gesamtaudit 15.11., PF-06).
+- Spalten und Tabellen werden erst eine Fassung später entfernt oder umbenannt.
+- Zeilenschutz, Trigger und Constraints auf bestehenden Tabellen nur so, dass der alte Code
+  weiterläuft.
+
+Geht das nicht, steht im PR „Rückweg möglich: nein“, in der Migration ein Kommentar
+`# rueckweg-ok: <Grund>`, und das Release bekommt oben den Hinweis, vorher eine Sicherung
+anzulegen.
+
+**Prüfung:** `scripts/test.sh` ruft `scripts/pruefe-migrationen.py` auf (nach
+`makemigrations --check`). Sie prüft die neuen Migrationen gegen zwei Vergleichsstände
+(Fachfrage FF-40, von Ralf am 16.11. bestätigt):
+
+- **release:** seit dem letzten Release-Tag, für den Rückweg fremder Betreiber von Release zu
+  Release; abschaltbar mit `MIGRATIONSPRUEFUNG_RELEASE=0`,
+- **main:** seit der Basis des Zweigs bzw. bei einem Stand auf main seit dem vorigen main, für
+  Server, die jeden main-Stand ausrollen; abschaltbar mit `MIGRATIONSPRUEFUNG_MAIN=0`, Vergleich
+  festlegen mit `MIGRATIONSPRUEFUNG_BASIS=<Commit>`.
+
+Gemeldet werden `AddField` ohne `null=True`/`db_default` im Endstand, `RemoveField`,
+`RenameField`, `RenameModel`, `DeleteModel` und `RunSQL` mit Zeilenschutz, Trigger oder
+Constraint auf vorher vorhandenen Tabellen. Ob ein `AlterField` eine ältere Spalte erst NOT
+NULL macht, erkennt die Prüfung nicht (darauf beim Review achten). Ältere Fälle seit
+v2026.11.0 stehen in `scripts/migrationen-bekannt.txt`; sie sind dort nur bekannt, nicht
+behoben.
 
 ## Rollout-Protokoll
 

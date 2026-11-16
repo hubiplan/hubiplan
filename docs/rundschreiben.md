@@ -63,6 +63,17 @@ Mitglieder sehen ihre Rundschreiben im Mitgliederbereich.
 Mit `MAIL_RATE_PER_HOUR` (z. B. 100 beim Hestia-Postfach) gehen höchstens 90 % davon
 je Stunde als Rundschreiben hinaus (alle Mails der letzten Stunde im Postausgang
 zählen mit); der Rest folgt automatisch alle 5 Minuten, bis alles versendet ist.
+Dieselbe Grenze gilt seit dem Gesamtaudit 15.11. (PF-09) auch für Termin-Einladungen,
+-Änderungen, -Absagen und -Erinnerungen: Ist die Stunde voll, folgen die übrigen
+Empfänger nach 10 Minuten, niemand bekommt die Mail doppelt. Anmelde- und Sicherheitsmails
+warten nie, für sie bleibt ein Zehntel frei. Ohne `MAIL_RATE_PER_HOUR` gibt es keine Grenze.
+
+Ein Versandlauf (Rundschreiben, Termin-Mails) nutzt eine SMTP-Verbindung für alle Mails.
+Lehnt der Mailserver eine Mail vorübergehend ab (4xx) oder kommt die Verbindung nicht
+zustande, versucht HUBIplan es nach `MAIL_RETRY_DELAYS` Sekunden erneut (Standard `2,10`,
+leer: kein neuer Versuch). Bricht die Verbindung mitten im Senden ab, bleibt es bei einem
+Versuch, damit keine Mail doppelt ankommt; die Mail steht dann als fehlgeschlagen im
+Postausgang.
 
 ## Mailverteiler (aus dem eigenen Mailprogramm)
 
