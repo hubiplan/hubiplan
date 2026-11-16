@@ -9,7 +9,7 @@ import pytest
 
 from core.tenancy import rls_bypass
 from members import personsearch
-from members.models import Membership, Person
+from members.models import ContactPerson, Membership, Person
 
 from .factories import give_role, make_member, make_org, make_user
 
@@ -78,14 +78,55 @@ def test_geaenderter_name_nicht_mehr_gefunden(verein):
     assert "Anonym Anonym" in _names(c.get(base))
 
 
-def test_obergrenze_und_ablauf(monkeypatch):
+def test_obergrenze_und_gleitender_ablauf(monkeypatch):
     cache = personsearch._PlainCache(size=2, ttl=10)
     now = [100.0]
     monkeypatch.setattr(personsearch.time, "monotonic", lambda: now[0])
     cache.put("a", "1")
     cache.put("b", "2")
     cache.put("c", "3")
-    assert cache.get("a") is None and len(cache.items) == 2
-    assert cache.get("c") == "3"
+    assert cache.get("a") is None and len(cache.items) == 2  # Obergrenze
+    now[0] += 8
+    assert cache.get("c") == "3"  # benutzt: Ablauf beginnt neu
+    now[0] += 8
+    assert cache.get("b") is None  # ungenutzt: nach 16 s heraus
+    assert cache.get("c") == "3"  # genutzt vor 8 s: bleibt
     now[0] += 11
-    assert cache.get("c") is None and cache.get("b") is None
+    assert cache.get("c") is None
+
+
+def test_altbestand_ohne_praefix_und_leere_werte(verein):
+    """Altbestand im Klartext (ohne „enc1:“) und leere Werte wie bei values_list."""
+    from django.db import connection
+
+    club, _c = verein
+    with rls_bypass():
+        person_id = Membership.objects.filter(organization=club).values_list(
+            "person_id", flat=True
+        )[0]
+        with connection.cursor() as cur:
+            cur.execute(
+                "UPDATE members_person SET last_name = %s, first_name = %s WHERE id = %s",
+                ["Altname", "", person_id],
+            )
+        qs = Membership.objects.filter(organization=club)
+        expected = sorted(qs.values_list("pk", "person__last_name", "person__first_name"))
+        got = sorted(personsearch.plain_values(qs, "person__last_name", "person__first_name"))
+    assert got == expected
+    assert any(row[1] == "Altname" and row[2] == "" for row in got)
+
+
+def test_beziehung_ohne_person_liefert_none(verein):
+    """Ansprechpartner ohne verknüpfte Person: der Pfad über die Person ist NULL."""
+    club, _c = verein
+    with rls_bypass():
+        membership = Membership.objects.filter(organization=club).first()
+        contact = ContactPerson.objects.create(
+            organization=club, membership=membership, last_name="Frei", first_name="Hans"
+        )
+        rows = list(
+            personsearch.plain_values(
+                ContactPerson.objects.filter(pk=contact.pk), "person__last_name", "last_name"
+            )
+        )
+    assert rows == [(contact.pk, None, "Frei")]

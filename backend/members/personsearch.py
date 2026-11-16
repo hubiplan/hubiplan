@@ -31,7 +31,7 @@ PLAIN_TTL = 10 * 60
 
 
 class _PlainCache:
-    """LRU mit Ablaufzeit: (Feld, Chiffrat) -> Klartext. Nur im Arbeitsspeicher."""
+    """LRU mit gleitender Ablaufzeit: (Feld, Chiffrat) -> Klartext. Nur im Arbeitsspeicher."""
 
     def __init__(self, size: int, ttl: float):
         self.size, self.ttl = size, ttl
@@ -47,6 +47,9 @@ class _PlainCache:
             if hit[0] < now:
                 del self.items[key]
                 return None
+            # Gleitende Ablaufzeit: benutzte Namen bleiben, nie mehr getroffene (geändert,
+            # gelöscht, anonymisiert) fallen nach PLAIN_TTL heraus
+            self.items[key] = (now + self.ttl, hit[1])
             self.items.move_to_end(key)
             return hit[1]
 
