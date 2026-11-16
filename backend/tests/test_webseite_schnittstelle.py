@@ -159,6 +159,28 @@ class TestPersonen:
         heading = get("schluessel-a/board/").json()["honorary"][0]["heading"]
         assert heading == "Ehrenmitglieder des Vereins"
 
+    def test_titel_je_traeger(self, setup):
+        """#518: besonderer Titel des Trägers (Ehrenhauptmann bei „Ehrenmitglied“)."""
+        from members.models import HonoraryTitle, HonoraryTitleAward
+
+        org = setup["site"].organization
+        title = HonoraryTitle.objects.create(organization=org, name="Ehrenmitglied", is_public=True)
+        since = datetime.date(2000, 1, 1)
+        HonoraryTitleAward.objects.create(
+            organization=org,
+            person=setup["erika"].person,
+            title=title,
+            valid_from=since,
+            display_title="Ehrenhauptmann",
+        )
+        HonoraryTitleAward.objects.create(
+            organization=org, person=setup["otto"].person, title=title, valid_from=since
+        )
+        holders = get("schluessel-a/board/").json()["honorary"][0]["holders"]
+        titles = {h["name"]: h.get("title") for h in holders}
+        assert titles["Erika Beispiel"] == "Ehrenhauptmann"
+        assert all(t is None for n, t in titles.items() if n != "Erika Beispiel")
+
     def test_widerspruch_und_einwilligung(self, setup):
         erika = setup["erika"]
         services.set_entry(erika, "email", True, "paper", None)
