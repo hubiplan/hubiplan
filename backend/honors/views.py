@@ -18,7 +18,7 @@ from django.utils.translation import gettext
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -472,9 +472,10 @@ def _remove_photo(photo: ReignPhoto) -> None:
 
 
 class ReignPhotoView(_HonorsMixin, APIView):
-    """GET: Foto · POST: Foto hochladen (ersetzt ein vorhandenes) · DELETE: entfernen."""
+    """GET: Foto · POST: Foto hochladen (ersetzt ein vorhandenes) · PATCH: Einwilligung der nur
+    mit Namen Abgebildeten (JSON) · DELETE: entfernen."""
 
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def reign(self, pk: int) -> Reign:
         return get_object_or_404(Reign, organization=self.org, pk=pk)
