@@ -22,6 +22,13 @@ from .test_versammlungen import JSON, ok, setup  # noqa: F401
 pytestmark = pytest.mark.django_db(transaction=True)
 
 
+@pytest.fixture(autouse=True)
+def ohne_broker(settings):
+    # Mit echten Transaktionen laufen on_commit-Aufgaben; ohne Broker im Testaufbau gleich im
+    # Prozess ausführen
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+
 def _xmin_matches(poll_id: int) -> int:
     with connection.cursor() as cursor:
         cursor.execute(
