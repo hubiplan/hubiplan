@@ -456,7 +456,9 @@ class TestOeffentlich:
         )
         c = api(board_a)
         for reign in (old, new):
-            assert c.post(url(org, f"reigns/{reign.pk}/photo/"), {"file": png()}).status_code == 201
+            # „Hans Alt“ steht nur mit Namen darauf: Einwilligung bestätigt (PF-21)
+            data = {"file": png(), "consent": "true"}
+            assert c.post(url(org, f"reigns/{reign.pk}/photo/"), data).status_code == 201
         reigns = (
             Client()
             .get("/api/public/site/v1/schluessel-w/honors/")

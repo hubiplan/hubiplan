@@ -332,10 +332,21 @@ def erase_organization(org, actor, *, confirmed_by: str = "", listed: bool = Fal
             if not state["can_erase"]:
                 raise serializers.ValidationError(" ".join(state["blockers"]))
         units = subtree(org)
+        # Personen, die im Bereich eines Dachverbands liegen und nur hier Mitglied waren:
+        # Ohne Mitgliedschaft fände sie danach kein Löschlauf mehr (Gesamtaudit 15.11., PF-15)
+        from members.models import Membership
+
+        unit_ids = [u.pk for u in units]
+        persons = set(
+            Membership.objects.filter(organization_id__in=unit_ids)
+            .exclude(person__scope_id__in=unit_ids)
+            .values_list("person_id", flat=True)
+        )
         erased = []
         for unit in reversed(units):  # Kinder vor Eltern
             erased.append((unit.pk, unit.name, unit.created_at))
             _erase_one(unit)
+        orphans = _erase_orphaned_persons(persons)
     for pk, _name, created in erased:
         loeschliste.note_unit(pk, created)
     org.pk = erased[-1][0]
@@ -346,7 +357,52 @@ def erase_organization(org, actor, *, confirmed_by: str = "", listed: bool = Fal
         changes["Fristen bestätigt von"] = [None, confirmed_by]
     if listed:
         changes["Löschliste"] = [None, "erneut gelöscht"]
+    if orphans:
+        changes["Personen ohne Mitgliedschaft"] = [None, f"{orphans} gelöscht"]
     record(Organization.platform(), actor, "delete", org, changes)
+
+
+def _person_still_used(person) -> bool:
+    """Verweist außer Kontaktdaten und Verbandsmeldung noch etwas auf die Person?
+
+    Alle Rückbeziehungen zählen, auch SET_NULL und CASCADE (Amt im Dachverband, Verbandsehrung,
+    Würde, Qualifikation, Zusatzfelder …): Das Löschen der Person würde sie sonst still mitlöschen
+    oder die Verknüpfung kappen. Generisch über ``_meta.related_objects``, damit neue Verweise
+    von selbst zählen."""
+    from members.models import ContactDetails, FederationMember
+
+    for rel in person._meta.related_objects:
+        if rel.related_model in (ContactDetails, FederationMember):
+            continue
+        if rel.related_model._base_manager.filter(**{rel.field.name: person}).exists():
+            return True
+    return False
+
+
+def _erase_orphaned_persons(person_ids: set[int]) -> int:
+    """Personen ohne verbleibende Mitgliedschaft samt gemeinsamen Kontaktdaten und
+    Verbandsmeldung löschen. Verweist sonst noch etwas auf eine Person (z. B. eine Würde oder
+    Ehrung im Dachverband), bleibt sie stehen; das meldet das Protokoll des Workers."""
+    from members.models import ContactDetails, FederationMember, Person
+
+    count = 0
+    for pk in sorted(person_ids):
+        person = Person.objects.filter(pk=pk, memberships__isnull=True).first()
+        if person is None:
+            continue
+        if _person_still_used(person):
+            logger.info("Person %s nach Einheitenlöschung behalten (weitere Verweise)", pk)
+            continue
+        try:
+            with transaction.atomic():
+                ContactDetails.objects.filter(person=person).delete()
+                FederationMember.objects.filter(person=person).delete()
+                person.delete()
+        except (models.ProtectedError, models.RestrictedError):
+            logger.info("Person %s nach Einheitenlöschung behalten (weitere Verweise)", pk)
+            continue
+        count += 1
+    return count
 
 
 def reapply(entries: list[dict]) -> int:

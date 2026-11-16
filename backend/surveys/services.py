@@ -7,8 +7,10 @@ Mitgliederbereich, Mail-Link) rufen nur diese Funktionen; RLS setzen sie vorher.
 from __future__ import annotations
 
 import datetime
+import logging
 import random
 
+from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -24,6 +26,8 @@ from .models import (
     SurveyParticipation,
     SurveyQuestion,
 )
+
+logger = logging.getLogger(__name__)
 
 Kind = SurveyQuestion.Kind
 Value = SurveyAnswer.Value
@@ -543,10 +547,18 @@ def purge_due(now: datetime.datetime | None = None) -> int:
         for survey in rows.iterator():
             if survey.closed_at + datetime.timedelta(days=30 * survey.keep_months) > now:
                 continue
-            data = result_data(survey, with_names=False)
-            Survey.objects.filter(pk=survey.pk).update(archived=data, purged_at=now)
-            survey.participations.all().delete()
-            survey.answers.all().delete()
+            # Alles oder nichts, und erst löschen, dann vermerken: Bricht der Lauf ab, bleibt
+            # die Umfrage unbereinigt und kommt beim nächsten Lauf wieder (Gesamtaudit 15.11.,
+            # PF-14). Vorher stand „bereinigt“ schon da, die Antworten aber noch.
+            try:
+                with transaction.atomic():
+                    data = result_data(survey, with_names=False)
+                    survey.participations.all().delete()
+                    survey.answers.all().delete()
+                    Survey.objects.filter(pk=survey.pk).update(archived=data, purged_at=now)
+            except Exception:  # noqa: BLE001 – eine Umfrage darf die übrigen nicht aufhalten
+                logger.exception("Umfrage %s nicht bereinigt", survey.pk)
+                continue
             done += 1
     return done
 
