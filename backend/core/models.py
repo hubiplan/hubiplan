@@ -111,3 +111,27 @@ class QuarantinedFile(models.Model):
 
     def __str__(self) -> str:
         return self.label or self.name
+
+
+class JobRun(models.Model):
+    """Letzter Lauf eines Jobs aus dem Zeitplan von "beat" (Gesamtaudit 15.11., PF-01).
+
+    Ohne diese Aufzeichnung fiel nicht auf, dass tägliche Jobs (Löschfrist, Bereinigungen,
+    Kettenprüfung) nach häufigem Ausrollen nie liefen. Eine Zeile je Eintrag im Zeitplan;
+    ohne Personenbezug und ohne RLS (Systemaufgabe über alle Vereine).
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+    task = models.CharField(max_length=200, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_started_at = models.DateTimeField(null=True, blank=True)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+    last_failure_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=500, blank=True, default="")
+
+    class Meta:
+        verbose_name = "Joblauf"
+        verbose_name_plural = "Jobläufe"
+
+    def __str__(self) -> str:
+        return self.name

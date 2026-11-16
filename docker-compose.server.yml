@@ -244,9 +244,13 @@ services:
   beat:
     <<: *backend
     pull_policy: never
-    command: celery -A config beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    # Zeitplan-Datei auf einem Volume: Sie hält fest, wann jeder Job zuletzt lief, und
+    # überlebt so das Ausrollen; verpasste Uhrzeiten holt beat nach (Gesamtaudit 15.11., PF-01)
+    command: celery -A config beat --loglevel=info --schedule /app/beat/celerybeat-schedule
     mem_limit: 256m
     cpus: 0.5
+    volumes:
+      - beat-zeitplan:/app/beat
     depends_on:
       backend:
         condition: service_healthy
@@ -357,3 +361,5 @@ volumes:
   loeschliste:
   # Zwischendateien laufender Uploads; nicht im Backup, darf jederzeit leer sein
   upload-tmp:
+  # Zeitplan-Datei von beat (letzte Läufe); nicht im Backup, darf jederzeit leer sein
+  beat-zeitplan:
