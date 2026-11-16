@@ -1079,6 +1079,11 @@
   "Tipp: Telefon quer halten, dann ist mehr Platz.": "Tip: hold your phone sideways for more space.",
   "Titel": "Title",
   "Titel des Wettbewerbs": "Title of the competition",
+  "Liste je Ehrung": "List per honour",
+  "eine Karte je Person": "one card per person",
+  "Eine Karte je Person: Alle Geehrten stehen in einem gemeinsamen Raster wie der Vorstand, oben auf jeder Karte die Ehrung als Etikett. Hat jemand bei der Verleihung einen eigenen Titel (z. B. Ehrenhauptmann), steht dieser Titel auf der Karte.": "One card per person: all honoured people stand in one shared grid like the board, with the honour as a label at the top of each card. If someone was given their own title with the award (e.g. honorary captain), the card shows this title.",
+  "Titel, z. B. Ehrenhauptmann (optional)": "Title, e.g. honorary captain (optional)",
+  "Steht auf der Webseite statt des Namens der Ehrung": "Shown on the website instead of the name of the honour",
   "Titel und Auszeichnungen": "Titles and awards",
   "Titel und Würden": "Titles and honours",
   "Trotzdem veröffentlichen": "Publish anyway",
@@ -9397,7 +9402,8 @@
   "Epochen der Chronik": "Chronicle eras",
   "Zwischentitel": "Subheadings",
   "als Band": "as a band",
-  "Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe; die Sprungmarken oben werden zu unterstrichenen Links.": "As a band: each era edge to edge in the dark club colour with the period in large type in the second colour; the jump links at the top become underlined links.",
+  "als flaches Band": "as a slim band",
+  "Als Band: jede Epoche randlos in der dunklen Vereinsfarbe mit großem Zeitraum in der Zweitfarbe. Als flaches Band: Zeitraum und Titel in einer Zeile, deutlich niedriger. Bei beiden werden die Sprungmarken oben zu unterstrichenen Links.": "As a band: each era edge to edge in the dark club colour with the period in large type in the second colour. As a slim band: period and title on one line, much lower. With both, the jump links at the top become underlined links.",
   "Ranglisten der Ergebnisse": "Result rankings",
   "Plätze 1 bis 3 als Karten": "Places 1 to 3 as cards",
   "Die ersten drei Plätze jeder Wertung stehen als Karten mit großer Platzziffer über der Tabelle; bei Gleichstand bekommen alle Gleichplatzierten eine Karte.": "The first three places of each ranking appear as cards with a large place number above the table; in a tie, everyone sharing a place gets a card.",
@@ -9409,5 +9415,9 @@
   "Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.": "You still hold roles in: {names}. Please have them ended first.",
   "Deine Anmelde-E-Mail zur Bestätigung": "Your login email to confirm",
   "Konto endgültig löschen": "Delete account permanently",
-  "Konto löschen …": "Delete account …"
+  "Konto löschen …": "Delete account …",
+  "Lange Listen": "Long lists",
+  "untereinander": "one below the other",
+  "zweispaltig": "in two columns",
+  "Zweispaltig: Listen mit mindestens 20 Zeilen und höchstens zwei Spalten (etwa Könige, Wanderpokale, Sieger je Jahr) stehen am Bildschirm in zwei Spalten nebeneinander, erst links von oben nach unten, dann rechts. Auf dem Handy bleibt es eine Spalte.": "In two columns: lists with at least 20 rows and no more than two columns (such as kings, challenge trophies, winners by year) appear side by side in two columns on a computer screen, first the left column from top to bottom, then the right one. On a phone it stays a single column."
 }
