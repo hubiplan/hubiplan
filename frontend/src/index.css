@@ -716,6 +716,9 @@ button.tab.active {
     max-height: 2.25rem;
     width: auto;
   }
+  .topbar-brand .logo-img.logo-upload {
+    max-width: 6rem;
+  }
 }
 
 .sidebar-tools {
@@ -1863,6 +1866,13 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 
 .logo-upload {
   object-fit: contain;
+}
+/* Issue 527: Hochgeladene Logos behalten ihr Seitenverhältnis. Die Höhe ist fest, die Breite folgt
+   dem Bild bis zu einer Obergrenze; so bleiben Schriftzüge (etwa 3 : 1) lesbar, quadratische
+   Wappen sehen aus wie bisher. Das H-Zeichen (SVG) bleibt quadratisch. */
+.logo-img.logo-upload {
+  width: auto;
+  max-width: 10rem;
 }
 
 .logo-preview {

@@ -7,6 +7,8 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
+from core.tenancy import rls_bypass
+from events.models import Event
 from website import content
 from website.models import Website, WebsiteImage
 
@@ -94,6 +96,71 @@ def test_hinweisleiste_nur_im_zeitraum(club, site, manager):
     site.notice_text = ""
     site.save()
     assert info()["notice"] is None
+
+
+def test_hinweisleiste_aussehen(club, site, manager):
+    """Ralf 16.11.2026: Stil, Platz, Symbol, Knopf und Countdown."""
+    # Vorgabe für bestehende Webseiten: auffällig in Akzentfarbe unter dem Kopf
+    site.notice_text = "Sommerfest"
+    site.save()
+    notice = info()["notice"]
+    assert notice["style"] == "accent" and notice["place"] == "below"
+    assert notice["icon"] == "megaphone"
+    # Ohne Ziel kein Knopf, ohne Datum kein Countdown
+    assert notice["button"] == "" and notice["date"] is None
+    day = timezone.localdate() + datetime.timedelta(days=12)
+    resp = manager.put(
+        url(club),
+        {
+            "notice_style": "festive",
+            "notice_place": "float",
+            "notice_icon": "calendar",
+            "notice_button": "  Zum   Programm ",
+            "notice_target": {"page": "events"},
+            "notice_date": str(day),
+        },
+        "application/json",
+    )
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["website"]["notice_button"] == "Zum Programm"
+    notice = info()["notice"]
+    assert notice["style"] == "festive" and notice["place"] == "float"
+    assert notice["icon"] == "calendar" and notice["button"] == "Zum Programm"
+    assert notice["date"] == day.isoformat()
+    # „passend zum Stil“ und „kein Symbol“
+    manager.put(url(club), {"notice_icon": "auto", "notice_style": "alert"}, "application/json")
+    assert info()["notice"]["icon"] == "alert"
+    manager.put(url(club), {"notice_icon": "none"}, "application/json")
+    assert info()["notice"]["icon"] == ""
+    manager.put(url(club), {"notice_style": "quiet", "notice_icon": "auto"}, "application/json")
+    assert info()["notice"]["icon"] == ""
+    for bad in ({"notice_style": "blinkend"}, {"notice_place": "links"}, {"notice_icon": "x"}):
+        assert manager.put(url(club), bad, "application/json").status_code == 400
+
+
+def test_hinweisleiste_countdown_aus_termin(club, site, manager):
+    site.blocks = {**(site.blocks or {}), "events": True}
+    site.save()
+    start = timezone.now() + datetime.timedelta(days=3)
+    with rls_bypass():
+        fest = Event.objects.create(
+            organization=club,
+            title="Sommerfest",
+            visibility="public",
+            starts_at=start,
+            ends_at=start + datetime.timedelta(hours=5),
+        )
+    resp = manager.put(
+        url(club),
+        {"notice_text": "Sommerfest", "notice_target": {"event": fest.pk}},
+        "application/json",
+    )
+    assert resp.status_code == 200, resp.content
+    assert info()["notice"]["date"] == timezone.localdate(start).isoformat()
+    # Ein eingetragenes Datum geht vor
+    day = timezone.localdate() + datetime.timedelta(days=30)
+    manager.put(url(club), {"notice_date": str(day)}, "application/json")
+    assert info()["notice"]["date"] == day.isoformat()
 
 
 def test_hinweisleiste_pruefung(club, site, manager, editor):

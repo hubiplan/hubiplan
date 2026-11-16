@@ -37,6 +37,23 @@ der Webseite an, auf Wunsch mit Passkey, und tippt auf „Verbinden“. Die Seit
 Einmalcode (`POST /api/app/v1/pairing/`) und ruft `hubiplan://verbinden?server=…&code=…` auf;
 die App verbindet sich damit wie beim QR-Code.
 
+**Code an die App gebunden (Gesamtaudit 15.11., APP-01):** Eigene URL-Schemata wie `hubiplan`
+gehören keiner App allein; eine fremde App mit demselben Schema könnte den Rückruf abfangen.
+Deshalb erzeugt die App vor dem Öffnen ein Zufallsgeheimnis `verifier` (43–128 Zeichen aus
+`A–Z a–z 0–9 - . _ ~`, wie PKCE, RFC 7636) und öffnet
+`/app/anmelden?challenge=<base64url(SHA-256(verifier))>`. Die Seite gibt den Prüfwert beim
+Erzeugen des Codes mit (`POST pairing/` `{"challenge"}`); die App löst mit
+`POST pair/` `{"code", "verifier", …}` ein. Fehlt der `verifier` oder passt er nicht, antwortet
+der Server 404 wie bei einem ungültigen Code; ein falscher Wert verbraucht den Code. Der
+Vergleich ist zeitkonstant, die Ratenbegrenzung der Kopplung gilt weiter.
+
+**Übergang:** Codes ohne Prüfwert (QR-Code aus „Mein Konto“, der Knopf „In der HUBIplan-App
+öffnen“ und ältere Apps) gelten vorerst weiter. Solange das so ist, schützt der Prüfwert nur
+Verbindungen, die eine neue App selbst über `/app/anmelden` anfordert. Später folgen: der Knopf
+öffnet die App ohne Code (`hubiplan://anmelden?server=…`, die App fordert dann selbst an), und
+Codes ohne Prüfwert gelten nur noch für den QR-Weg; ältere Apps werden über `min_app_version`
+ausgeschlossen. Die Instanz meldet die Funktion als `app-pruefwert` in `features`.
+
 `GET /api/app/v1/instance/` nennt in `passkey` die Wege: `android` (App bestätigt) und
 `browser` (Anmeldung im eingebetteten Browser, solange Passkeys eingeschaltet sind).
 
@@ -407,6 +424,13 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `DELETE …/surveys/<id>/answer/` (zurückziehen, nicht bei anonymen Umfragen) und
   `POST …/surveys/<id>/follow/` (Zusage zum Termin aus der Terminfindung übernehmen).
   `surveys_enabled` und `surveys_open` (Zahl unbeantworteter Umfragen) stehen in `portal`.
+- Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
+  dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
+  vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,
+  `lines` und `payee` als JSON-Text, Fotos als `file`, `source=app`), `GET/DELETE
+  …/expenses/<id>/`, `POST …/expenses/<id>/files/` (Foto ergänzen) und
+  `POST …/expenses/<id>/<submit|answer|withdraw>/`. `expenses_enabled` und
+  `expenses_questions` (offene Rückfragen der Kasse) stehen in `portal`.
 - Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.

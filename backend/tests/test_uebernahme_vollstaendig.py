@@ -71,6 +71,15 @@ NICHT = {
     "surveys.SurveyOption": "Antwortmöglichkeit einer Umfrage, kommt mit der Umfrage nicht mit",
     "surveys.SurveyParticipation": "Teilnahme an einer Umfrage der alten Instanz",
     "surveys.SurveyAnswer": "Antworten, anonyme ohne Person, bleiben auf der alten Instanz",
+    # Auslagen vor dem Umzug abschließen; Auszahlungen kommen als Buchungen mit Belegen mit
+    "expenses.ExpenseSettings": "Einstellungen der Auslagen, am Ziel neu einrichten",
+    "expenses.ExpenseClaim": "Auslagen vorher abschließen; Auszahlungen stehen in den Buchungen",
+    "expenses.ExpenseLine": "Position einer Auslage, kommt mit der Auslage nicht mit",
+    "expenses.ExpenseFile": "Beleg einer Auslage; ausgezahlte Belege stehen an der Buchung",
+    "expenses.ExpenseEvent": "Verlauf einer Auslage der alten Instanz",
+    "expenses.ExpenseLink": "Persönlicher Link der alten Instanz, am Ziel neu ausstellen",
+    "expenses.TransferRun": "Sammelüberweisung der alten Instanz (Datei ist heruntergeladen)",
+    "expenses.TransferItem": "Posten einer Sammelüberweisung der alten Instanz",
 }
 
 

@@ -94,6 +94,7 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
             "title_size",
             "carousel",
             "footer_line",
+            "unit_title",  # Webseite #148
         )
         most = 4 if key in vier else 3
         # Schriften stehen als Ausklappliste, nicht als Leiste (Ralf 14.11.2026)

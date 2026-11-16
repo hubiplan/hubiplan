@@ -345,6 +345,16 @@ export const modules: AppModule[] = [
       ),
     children: websiteSections,
   },
+  // Untereinheit: Auslagen sachlich bestätigen; im Verein unter Finanzen › Auslagen
+  {
+    id: 'auslagen',
+    group: 'verwaltung',
+    label: t('Auslagen'),
+    path: '/auslagen',
+    icon: icon('M4 4h12l4 4v12H4zM8 12h8M8 16h5M12 6v4'),
+    visible: (org, ws) =>
+      !org && !!(ws.dept?.expenses_enabled && ws.dept.permissions.includes(PERM.expensesView)),
+  },
   {
     id: 'finanzen',
     group: 'verwaltung',

@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "meetings",
     "helpers",
     "surveys",
+    "expenses",
     "obligations",
     "qualifications",
     "places",
@@ -343,6 +344,8 @@ CELERY_BEAT_SCHEDULE = {
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": taeglich(2, 20)},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
     "umfragen-stuendlich": {"task": "surveys.tasks.hourly", "schedule": 900.0},
+    # Auslagen: Belege abgelehnter Anträge nach 6 Monaten, alte Entwürfe (AE-11)
+    "auslagen-aufraeumen": {"task": "expenses.tasks.daily", "schedule": taeglich(2, 45)},
     "fristenkalender-erinnerungen": {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,
@@ -394,9 +397,20 @@ CELERY_BEAT_SCHEDULE = {
         "task": "billing.tasks.purge_rejected_incoming",
         "schedule": taeglich(3, 50),
     },
+    # Stimmzettel offener geheimer Abstimmungen mischen (Gesamtaudit 15.11., GEH-1); beim
+    # Schließen einer Abstimmung geschieht das ohnehin sofort
+    "abstimmungen-mischen": {
+        "task": "meetings.tasks.mix_secret_polls",
+        "schedule": 60 * 60,  # stündlich
+    },
     "postausgang-aufraeumen": {
         "task": "outbox.tasks.purge_sent_mails",
         "schedule": taeglich(4, 0),
+    },
+    # Frühere Erneuerungsschlüssel beendeter KI-Verbindungen (Gesamtaudit 15.11., MCP-04)
+    "ki-erneuerungen-aufraeumen": {
+        "task": "mcpserver.tasks.purge_retired_refresh",
+        "schedule": taeglich(4, 40),
     },
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {

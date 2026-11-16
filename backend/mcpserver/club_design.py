@@ -626,7 +626,6 @@ def _image_search(args: dict, ctx: ClubContext) -> str:
                 i.get("caption"),
                 i.get("alt_text"),
                 i.get("credit"),
-                i.get("file_name"),
                 i.get("department_name"),
             )
         ).lower()
@@ -640,7 +639,6 @@ def _image_search(args: dict, ctx: ClubContext) -> str:
                 "bildunterschrift": i.get("caption") or "",
                 "urheber": i.get("credit") or "",
                 "dekorativ": i.get("decorative"),
-                "datei": i.get("file_name") or "",
                 "gehoert_zu": i.get("department_name"),
                 "aufgenommen": i.get("taken_at"),
                 "benutzt": i.get("used"),
@@ -1014,6 +1012,7 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                 },
             }
         ),
+        destructive=True,
         run=_home_build,
         writes=True,
         scope=SCOPE_DRAFT,
@@ -1197,6 +1196,7 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
             },
             ["adresse", "quelle"],
         ),
+        open_world=True,
         run=_image_fetch,
         writes=True,
         scope=SCOPE_DRAFT,

@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { leaveTo } from '../api/peering.ts'
 import { AuthProvider } from '../auth/AuthContext.tsx'
-import { AppLoginPage, here } from '../pages/AppLoginPage.tsx'
+import { AppLoginPage, appChallenge, here } from '../pages/AppLoginPage.tsx'
 import { AppUnlockPage } from '../pages/AppUnlockPage.tsx'
 import { fakeApi, testUser } from './fakeApi.ts'
 
@@ -54,6 +54,36 @@ describe('App im Browser verbinden', () => {
         'hubiplan://verbinden?server=https%3A%2F%2Fzweite.example.de&code=Ab-_9',
       ),
     )
+  })
+
+  it('gibt den Prüfwert der App an den Server weiter (APP-01)', async () => {
+    vi.spyOn(leaveTo, 'go').mockImplementation(() => {})
+    const challenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM'
+    vi.spyOn(here, 'search').mockReturnValue(`?challenge=${challenge}`)
+    let sent: unknown = null
+    renderPage({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'POST /api/app/v1/pairing/': (init) => {
+        sent = JSON.parse(String(init?.body ?? '{}'))
+        return {
+          status: 201,
+          body: {
+            id: 4,
+            url: 'https://verein.example.de/app/verbinden#code=Xy',
+            expires_at: '2026-11-15T10:00:00Z',
+          },
+        }
+      },
+    })
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Verbinden' }))
+    await waitFor(() => expect(sent).toEqual({ challenge }))
+  })
+
+  it('nimmt nur einen gültigen Prüfwert an', () => {
+    expect(appChallenge('?challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM')).toHaveLength(43)
+    expect(appChallenge('?challenge=kurz')).toBe('')
+    expect(appChallenge('?challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw%2BcM')).toBe('')
+    expect(appChallenge('')).toBe('')
   })
 
   it('zeigt einen Fehler ohne Mitgliederbereich', async () => {

@@ -129,24 +129,49 @@ def test_ohne_recht_nur_lesen(club, site, editor):  # noqa: F811
     assert service.ensure(club).line_color == "1"
 
 
-def test_name_im_kopf(club, site, secretary):  # noqa: F811
+def test_name_im_kopf_nur_zweite_zeile(club, site, secretary):  # noqa: F811
+    """Den eigenen Namen setzt die Person in HUBIplan; der Assistent schaltet nur die kleinere
+    zweite Zeile um."""
+    lh = service.ensure(club)
+    lh.head_name = "Musterschützen-Bruderschaft\nMusterstadt von 1920"
+    lh.save()
     token = connect(secretary, club, scope=ALL, haken=[LETTERHEAD])["access_token"]
-    text, failed = call(
-        token,
-        "briefbogen_aendern",
-        name_im_kopf="Musterschützen-Bruderschaft\nMusterstadt von 1920",
-        zweite_zeile_kleiner=True,
-    )
+    text, failed = call(token, "briefbogen_aendern", zweite_zeile_kleiner=True)
     assert not failed, text
     lh = Letterhead.objects.get(organization=club)
-    assert (lh.head_name, lh.head_name_small) == (
-        "Musterschützen-Bruderschaft\nMusterstadt von 1920",
-        True,
+    assert lh.head_name_small is True
+    info = data_of(text)["einstellungen"]
+    assert info["zweite_zeile_kleiner"] is True
+    # Lesen geht weiter
+    assert info["name_im_kopf"] == "Musterschützen-Bruderschaft\nMusterstadt von 1920"
+
+
+@pytest.mark.parametrize(
+    "key,field",
+    [
+        ("zusatzzeile", "tagline"),
+        ("name_im_kopf", "head_name"),
+        ("anrede", "salutation"),
+        ("grussformel", "closing"),
+    ],
+)
+def test_freitexte_nicht_ueber_den_assistenten(club, site, secretary, key, field):  # noqa: F811
+    """Gesamtaudit 15.11., MCP-01; FF-12 (c): Ein eingeschleuster Text darf nicht über den
+    Assistenten sofort auf Rechnungen und Spendenquittungen gelangen."""
+    before = getattr(service.ensure(club), field)
+    token = connect(secretary, club, scope=ALL, haken=[LETTERHEAD])["access_token"]
+    text, failed = call(
+        token, "briefbogen_aendern", linienfarbe=1, **{key: "Neue Bankverbindung: DE00 0000"}
     )
-    assert data_of(text)["einstellungen"]["zweite_zeile_kleiner"] is True
-    _text, failed = call(token, "briefbogen_aendern", name_im_kopf="Eins\nZwei\nDrei")
-    assert failed
-    assert Letterhead.objects.get(organization=club).head_name.count("\n") == 1
+    assert failed and "Einstellungen › Briefbogen" in text
+    lh = Letterhead.objects.get(organization=club)
+    assert getattr(lh, field) == before
+    schema = next(
+        t
+        for t in rpc(token, "tools/list").json()["result"]["tools"]
+        if t["name"] == "briefbogen_aendern"
+    )["inputSchema"]
+    assert key not in schema["properties"]
 
 
 def test_logo_fuer_briefbogen(club, site, secretary, settings, tmp_path):  # noqa: F811
