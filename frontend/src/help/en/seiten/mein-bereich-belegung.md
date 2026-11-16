@@ -2,10 +2,10 @@
 key: page.portal_bookings
 titel: My area › Bookings
 routen: [/mein-bereich/belegung]
-stichworte: [Booking, Request, Clubhouse, Hall, Range, Equipment, borrow]
+stichworte: [Booking, Request, Clubhouse, Hall, Room, Equipment, borrow]
 ---
 
-Here you see when the clubhouse, a range or equipment that your club has opened for requests
+Here you see when the clubhouse, rooms or equipment that your club has opened for requests
 from the members' area is booked. Other people's bookings only appear as "Booked".
 
 Under **Make a request** you choose the item, the purpose and the time and send it with

@@ -518,7 +518,7 @@ const DECISIONS_DATA = {
   reserves: {
     title: d('Wann braucht der Verein eine Rücklage?'),
     text: d(
-      'Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden (§ 55 Abs. 1 Nr. 5 AO); wer für ein Vorhaben spart, etwa ein Zelt oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck. Kleine Vereine unter der Einnahmengrenze in § 55 Abs. 1 Nr. 5 AO müssen nicht zeitnah verwenden, eine Rücklage hilft dann trotzdem bei der Planung.',
+      'Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden (§ 55 Abs. 1 Nr. 5 AO); wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck. Kleine Vereine unter der Einnahmengrenze in § 55 Abs. 1 Nr. 5 AO müssen nicht zeitnah verwenden, eine Rücklage hilft dann trotzdem bei der Planung.',
     ),
     sources: ['ao'],
     place: d('Finanzen → Rücklagen'),
@@ -1323,7 +1323,7 @@ const DECISIONS_DATA = {
   custom_fields: {
     title: d('Welche Angaben gehören in ein Zusatzfeld?'),
     text: d(
-      'Erhebe nur, was der Verein für seinen Zweck braucht, etwa die Kleidergröße für die Uniform oder das Instrument (Art. 5 Abs. 1 lit. c DSGVO). Angaben zu Gesundheit, Religion oder politischer Meinung sind besonders geschützt und gehören nicht in ein Zusatzfeld (Art. 9 DSGVO). Jedes Feld macht außerdem Arbeit, weil es gepflegt und bei einer Auskunft mit herausgegeben werden muss.',
+      'Erhebe nur, was der Verein für seinen Zweck braucht, etwa die Kleidergröße für die Vereinskleidung oder das Instrument (Art. 5 Abs. 1 lit. c DSGVO). Angaben zu Gesundheit, Religion oder politischer Meinung sind besonders geschützt und gehören nicht in ein Zusatzfeld (Art. 9 DSGVO). Jedes Feld macht außerdem Arbeit, weil es gepflegt und bei einer Auskunft mit herausgegeben werden muss.',
     ),
     sources: ['dsgvo'],
     place: d('Einstellungen → Zusatzfelder'),
@@ -1685,7 +1685,7 @@ const TERMS_DATA = {
       'Differenz von Einnahmen und Ausgaben, etwa je Kategorie. Positiv heißt: mehr eingenommen als ausgegeben (§ 259 Abs. 1 BGB).',
     ),
     example: d(
-      'Beispiel: Kategorie Schützenfest: Einnahmen 3.100,00 €, Ausgaben 2.700,00 €, Saldo 400,00 €.',
+      'Beispiel: Kategorie Sommerfest: Einnahmen 3.100,00 €, Ausgaben 2.700,00 €, Saldo 400,00 €.',
     ),
     sources: ['bgb'],
     section: 'cash',
@@ -1723,7 +1723,7 @@ const TERMS_DATA = {
       'Der Zeitraum, für den der Verein abrechnet und einen Kassenbericht vorlegt, meist das Kalenderjahr. Die Satzung kann ein anderes Jahr festlegen (§ 25 BGB).',
     ),
     example: d(
-      'Beispiel: Geschäftsjahr 1. Juli 2025 bis 30. Juni 2026: Das Schützenfest im Juni fällt ans Ende desselben Jahres.',
+      'Beispiel: Geschäftsjahr 1. Juli 2025 bis 30. Juni 2026: Das Sommerfest im Juni fällt ans Ende desselben Jahres.',
     ),
     sources: ['bgb'],
     section: 'cash',
@@ -1795,7 +1795,7 @@ const TERMS_DATA = {
       'Eine selbstständige, nachhaltige Tätigkeit, mit der der Verein Einnahmen erzielt und die über Vermögensverwaltung hinausgeht (§ 14 AO). Steuer fällt erst an, wenn diese Einnahmen einschließlich Umsatzsteuer 50.000 € im Jahr übersteigen (§ 64 Abs. 3 AO).',
     ),
     example: d(
-      'Beispiel: Getränkeverkauf am Schützenfest, 14.000,00 €: steuerpflichtiger Bereich, aber unter der Freigrenze.',
+      'Beispiel: Getränkeverkauf am Sommerfest, 14.000,00 €: steuerpflichtiger Bereich, aber unter der Freigrenze.',
     ),
     sources: ['ao'],
     section: 'tax',
@@ -1955,7 +1955,7 @@ const TERMS_DATA = {
       'Schriftliche Bestätigung, dass Geld empfangen wurde; wer Geld bekommt, muss sie auf Verlangen ausstellen (§ 368 BGB). Für die Kasse ist sie zugleich der Beleg zur Buchung.',
     ),
     example: d(
-      'Beispiel: Ein Mitglied zahlt 40 € Beitrag bar beim Schützenfest und bekommt Quittung Q-2026-0012.',
+      'Beispiel: Ein Mitglied zahlt 40 € Beitrag bar beim Sommerfest und bekommt Quittung Q-2026-0012.',
     ),
     sources: ['bgb'],
     section: 'cash',
@@ -2050,7 +2050,7 @@ const TERMS_DATA = {
       'Teil der Mittel, den der Verein für einen Zweck zurücklegt, ohne Geld zu bewegen (§ 62 AO). Er steht dann nicht mehr frei zur Verfügung.',
     ),
     example: d(
-      'Beispiel: 3.000,00 € von 8.000,00 € auf den Konten sind als „Rücklage Festzelt“ gebunden, frei verfügbar sind 5.000,00 €.',
+      'Beispiel: 3.000,00 € von 8.000,00 € auf den Konten sind als „Rücklage Kühlanhänger“ gebunden, frei verfügbar sind 5.000,00 €.',
     ),
     sources: ['ao'],
     section: 'tax',
@@ -2406,7 +2406,7 @@ const TERMS_DATA = {
       'Abgabe an die Künstlersozialkasse auf Honorare an selbständige Künstler und Publizisten (§§ 24, 25 KSVG). Die Summe eines Jahres meldet der Verein bis 31. März des Folgejahres (§ 27 KSVG).',
     ),
     example: d(
-      'Beispiel: 2.400 € für die Kapelle beim Schützenfest; bei einem Abgabesatz von 5 % wären das 120,00 €.',
+      'Beispiel: 2.400 € für die Band beim Sommerfest; bei einem Abgabesatz von 5 % wären das 120,00 €.',
     ),
     sources: ['ksvg'],
     section: 'tax',
@@ -2419,7 +2419,7 @@ const TERMS_DATA = {
       'Verteilung der Anschaffungskosten eines Gegenstands auf die Jahre seiner Nutzung (§ 7 Abs. 1 EStG). Steuerlich zählt sie nur im wirtschaftlichen Geschäftsbetrieb.',
     ),
     example: d(
-      'Beispiel: Ein Festzelt für 6.000 € mit 10 Jahren Nutzungsdauer: 600 € Abschreibung je Jahr.',
+      'Beispiel: Ein Kühlanhänger für 6.000 € mit 10 Jahren Nutzungsdauer: 600 € Abschreibung je Jahr.',
     ),
     sources: ['estg'],
     section: 'cash',
@@ -2431,7 +2431,7 @@ const TERMS_DATA = {
       'Anschaffungskosten abzüglich aller bisherigen Abschreibungen (§ 7 Abs. 1 EStG). Er sagt, mit welchem Wert ein Gegenstand noch im Verzeichnis steht, nicht, was er beim Verkauf brächte.',
     ),
     example: d(
-      'Beispiel: Festzelt für 6.000 €, nach 3 Jahren mit je 600 € Abschreibung: Buchwert 4.200 €.',
+      'Beispiel: Kühlanhänger für 6.000 €, nach 3 Jahren mit je 600 € Abschreibung: Buchwert 4.200 €.',
     ),
     sources: ['estg'],
     section: 'cash',
@@ -2467,7 +2467,7 @@ const TERMS_DATA = {
       'Rechnung über einen Teil des Entgelts vor der Leistung; die Umsatzsteuer entsteht schon mit der Zahlung (§ 13 Abs. 1 Nr. 1 Buchstabe a Satz 4 UStG). Die Schlussrechnung zieht die Anzahlungen mit ihrer Steuer ab (§ 14 Abs. 5 UStG).',
     ),
     example: d(
-      'Beispiel: Für das Zeltfest zahlt die Brauerei 1.190 € an; die Schlussrechnung über 4.760 € zieht sie ab, offen bleiben 3.570 €.',
+      'Beispiel: Für das Sommerfest zahlt die Brauerei 1.190 € an; die Schlussrechnung über 4.760 € zieht sie ab, offen bleiben 3.570 €.',
     ),
     sources: ['ustg'],
     section: 'invoices',
@@ -2504,7 +2504,7 @@ const TERMS_DATA = {
       'Plan der erwarteten Einnahmen und Ausgaben für ein Geschäftsjahr, meist je Bereich oder Kategorie. Pflicht ist er nur, wenn die Satzung ihn vorsieht; beschließt ihn die Versammlung, richtet sich der Vorstand danach wie nach einer Weisung (§ 27 Abs. 3, § 665 BGB).',
     ),
     example: d(
-      'Beispiel: Plan 4.000 € für das Schützenfest, Ist im Oktober 4.600 €; die 600 € Abweichung erklärt der Kassierer in der Versammlung.',
+      'Beispiel: Plan 4.000 € für das Sommerfest, Ist im Oktober 4.600 €; die 600 € Abweichung erklärt der Kassierer in der Versammlung.',
     ),
     sources: ['bgb'],
     section: 'cash',
@@ -2826,7 +2826,7 @@ const HOWTOS_DATA = {
       head: ['Posten', 'Betrag'],
       rows: [
         ['Bestand aller Konten', '8.000,00 €'],
-        ['− Rücklage Festzelt', '3.000,00 €'],
+        ['− Rücklage Kühlanhänger', '3.000,00 €'],
         ['− Rücklage Jubiläum', '1.500,00 €'],
         ['= frei verfügbar', '3.500,00 €'],
       ],

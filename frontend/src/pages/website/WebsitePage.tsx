@@ -421,7 +421,7 @@ function WebsiteAdmin({
         <>
           <p className="muted small">
             {t(
-              'Ein kurzer Hinweis oben auf allen Seiten, z. B. „Schützenfest 22.–25.8.: Programm“. Er erscheint nur im Zeitraum und verschwindet danach von selbst.',
+              'Ein kurzer Hinweis oben auf allen Seiten, z. B. „Sommerfest 22.–25.8.: Programm“. Er erscheint nur im Zeitraum und verschwindet danach von selbst.',
             )}
           </p>
           <Field

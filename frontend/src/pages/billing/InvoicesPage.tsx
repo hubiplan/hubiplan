@@ -1168,7 +1168,7 @@ function InvoiceForm({
       {invoice && <SaveStatus auto={auto} />}
       <p className="muted small">
         {t(
-          'Für Aufnahmegebühren, Umlagen, Uniformen und andere Einzelposten. Eine Ermäßigung trägst du als Posten mit Minusbetrag ein.',
+          'Für Aufnahmegebühren, Umlagen, Vereinskleidung und andere Einzelposten. Eine Ermäßigung trägst du als Posten mit Minusbetrag ein.',
         )}
       </p>
       <div className="grid-3">

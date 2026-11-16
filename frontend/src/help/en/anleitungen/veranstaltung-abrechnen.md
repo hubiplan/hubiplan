@@ -16,6 +16,6 @@ stichworte: [festival, event, project, cash report, surplus, plan]
 6. Open the event with **View** and check income, expenses and result.
 7. Fetch the evaluation as a PDF or with **Excel**.
 
-With a **Series**, for example "Schützenfest", you compare the years with each other.
+With a **Series**, for example "Summer party", you compare the years with each other.
 
 ![Starting point: Settle the accounts of an event](bild:veranstaltung-abrechnen)
