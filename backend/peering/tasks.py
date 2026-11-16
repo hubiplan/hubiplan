@@ -1,5 +1,6 @@
 from celery import shared_task
 
+from core.einzeln import einzeln
 from core.tenancy import rls_bypass
 
 from . import services
@@ -12,12 +13,14 @@ def deliver_coupling(coupling_id: int) -> None:
 
 
 @shared_task
+@einzeln
 def deliver_due() -> None:
     with rls_bypass():
         services.deliver_due()
 
 
 @shared_task
+@einzeln
 def sync_all() -> None:
     """Geänderte Stände aller aktiven Kopplungen in den Postausgang legen."""
     with rls_bypass():
@@ -25,6 +28,7 @@ def sync_all() -> None:
 
 
 @shared_task
+@einzeln
 def reconcile_all() -> None:
     """Täglicher Abgleich der Prüfsummen mit allen Partnern."""
     with rls_bypass():

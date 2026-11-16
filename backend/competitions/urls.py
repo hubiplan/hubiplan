@@ -102,6 +102,7 @@ org_patterns = [
         f"{C}result-ownership/", ResultOwnershipView.as_view(), name="competition-result-ownership"
     ),
     path(f"{C}starters/<int:pk>/", views.StarterView.as_view(), name="competition-starter"),
+    path(f"{C}guests-adult/", views.GuestsAdultView.as_view(), name="competition-guests-adult"),
     path(f"{C}scores/", views.ScoreView.as_view(), name="competition-score"),
     path(f"{C}sync/", views.SyncView.as_view(), name="competition-sync"),
     path(f"{C}members/", views.MemberListView.as_view(), name="competition-members"),

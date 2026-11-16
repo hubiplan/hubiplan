@@ -2,10 +2,12 @@
 
 from celery import shared_task
 
+from core.einzeln import LONG_HARD, LONG_SOFT
+
 from . import services
 
 
-@shared_task
+@shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def send_circular(circular_id: int) -> int:
     """Offene Mails eines Rundschreibens verschicken."""
     return services.send_pending(circular_id)

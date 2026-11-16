@@ -109,7 +109,7 @@ class WebsiteText(models.Model):
     # Webseite zeigt die neuesten Einträge oben (Ralf 02.11., wahlweise)
     timeline_newest_first = models.BooleanField("neueste Einträge oben", default=False)
     # Textseite aus Abschnitten (G3/G4): fester Abschnitt „body“ und eigene Abschnitte
-    sections = models.JSONField("Abschnitte", default=list, blank=True)
+    sections = models.JSONField("Abschnitte", default=list, db_default=[], blank=True)
     # Veröffentlicht
     published_title = models.CharField(max_length=MAX_TITLE, blank=True)
     published_body = models.TextField(blank=True)
@@ -122,7 +122,7 @@ class WebsiteText(models.Model):
     published_show_captions = models.BooleanField(default=False)
     published_timeline = models.JSONField(default=list, blank=True)
     published_timeline_newest_first = models.BooleanField(default=False)
-    published_sections = models.JSONField(default=list, blank=True)
+    published_sections = models.JSONField(default=list, db_default=[], blank=True)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -224,7 +224,7 @@ class WebsiteRevision(models.Model):
     show_captions = models.BooleanField(default=False)
     timeline = models.JSONField(default=list, blank=True)
     timeline_newest_first = models.BooleanField(default=False)
-    sections = models.JSONField(default=list, blank=True)
+    sections = models.JSONField(default=list, db_default=[], blank=True)
     published_at = models.DateTimeField(default=timezone.now)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -263,7 +263,7 @@ class WebsiteImage(models.Model):
     alt_text = models.CharField("Alternativtext", max_length=300, blank=True)
     # Urheber/in (Ralf 15.11.): wer das Bild gemacht oder bereitgestellt hat; die Webseite
     # nennt es als „Foto: …“ am Bild und im Impressum (Namensnennung, § 13 UrhG)
-    credit = models.CharField("Urheber/in", max_length=CREDIT_MAX, blank=True)
+    credit = models.CharField("Urheber/in", max_length=CREDIT_MAX, blank=True, db_default="")
     # Bewusst ohne Beschreibung (reiner Schmuck): dann alt="" auf der Webseite,
     # sonst ersetzt die Bildunterschrift einen fehlenden Alternativtext
     decorative = models.BooleanField("nur Schmuck", default=False)
@@ -298,14 +298,16 @@ class WebsiteImage(models.Model):
     # Zum Sortieren der Galerie (Ralf 05.11.): Aufnahmezeit aus der Kamera und Dateiname,
     # beim Hochladen gemerkt; die Bilddatei selbst bleibt ohne Metadaten
     taken_at = models.DateTimeField("aufgenommen", null=True, blank=True)
-    file_name = models.CharField("Dateiname", max_length=200, blank=True)
+    file_name = models.CharField("Dateiname", max_length=200, blank=True, db_default="")
     # Kopfbild der Webseite (Ralf 05.11.): zeigt die Webseite statt Wappen und Vereinsname
     # im Kopf. Höchstens eines je Webseite (website/views.py). Am Bild statt an der Webseite,
     # damit Export und Import es ohne Verweis in beide Richtungen mitnehmen.
-    header = models.BooleanField("Kopfbild der Webseite", default=False)
+    header = models.BooleanField("Kopfbild der Webseite", default=False, db_default=False)
     # Kopfbild für schmale Bildschirme (Webseite #73): optional, die Webseite zeigt es unter
     # 600 px Breite statt des Kopfbilds. Höchstens eines je Webseite, wie ``header``.
-    header_narrow = models.BooleanField("Kopfbild für schmale Bildschirme", default=False)
+    header_narrow = models.BooleanField(
+        "Kopfbild für schmale Bildschirme", default=False, db_default=False
+    )
 
     class Meta:
         verbose_name = "Bild der Webseite"

@@ -262,7 +262,7 @@ MIGRATE_LOCK_TIMEOUT=${MIGRATE_LOCK_TIMEOUT:-30s}
 case "$MIGRATE_LOCK_TIMEOUT" in
     *[!0-9a-z]*|'') echo "Abbruch: MIGRATE_LOCK_TIMEOUT ungültig." >&2; exit 1 ;;
 esac
-ANHALTEN="backend worker beat backup"
+ANHALTEN="backend worker worker-zeitplan beat backup"
 # Laufen Datenbank und Redis schon, nicht anfassen (--no-deps)
 OHNE_ABH=""
 if [ -n "$($COMPOSE ps -q --status running postgres)" ] \
