@@ -102,6 +102,14 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "motion": ("off", "subtle"),
     "stripes": bool,
     "date_text": ("weekday", "short", "long"),
+    # Webseite #135–#139 (Ralf 16.11.2026): Würdenträger als Band, Personen ohne Platzhalter,
+    # Personenkarten mit Amt als Etikett, Anrede, Chronik-Epochen als Band, Podium
+    "honors_layout": ("list", "band"),
+    "portrait_placeholder": ("initial", "none"),
+    "person_cards": ("normal", "label"),
+    "address": ("formal", "informal"),
+    "timeline_chapter": ("plain", "band"),
+    "ranking": ("table", "podium"),
 }
 
 # Was ein Design selbst festlegt (ausgegraut in der Oberfläche, die Webseite übergeht es):
@@ -189,6 +197,12 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "motion": "off",
     "stripes": False,
     "date_text": "weekday",
+    "honors_layout": "list",
+    "portrait_placeholder": "initial",
+    "person_cards": "normal",
+    "address": "formal",
+    "timeline_chapter": "plain",
+    "ranking": "table",
 }
 _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
     "classic": {
