@@ -283,7 +283,15 @@ def standings(competition: Competition) -> dict:
         else:
             src_values = individual.get(sc.source_id, {}).get("values", {})
             data = _team(sc, starters, src_values, unit_names)
-        out.append({"scoring": sc.pk, "name": sc.name, "kind": sc.kind, **data})
+        out.append(
+            {
+                "scoring": sc.pk,
+                "name": sc.name,
+                "kind": sc.kind,
+                "unit_label": sc.unit_label,
+                **data,
+            }
+        )
     return {
         "scorings": out,
         "open_shootoffs": sum(len(s["open"]) for s in out),
@@ -400,6 +408,7 @@ def foreign_standings(competition: Competition) -> dict:
                 "scoring": sc.pk,
                 "name": sc.name,
                 "kind": sc.kind,
+                "unit_label": sc.unit_label,
                 "field_size": sc.field_size,
                 "rows": rows,
                 "open": [],

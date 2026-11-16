@@ -97,7 +97,7 @@ export function ContentPage() {
               {g.kind === 'intro' && (
                 <p className="muted small">
                   {t(
-                    'Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie. Wie diese Bereiche aussehen, wählst du unter',
+                    'Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie; die Einleitung „Kontakt“ steht als Kasten neben dem Kontaktformular, ein Link allein im letzten Absatz wird dort zum Knopf. Wie diese Bereiche aussehen, wählst du unter',
                   )}{' '}
                   <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link>.
                 </p>
