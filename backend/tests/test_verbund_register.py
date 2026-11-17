@@ -135,6 +135,8 @@ class TestKlaerfaelle:
             nachbar = make_org("Nachbarverein Musterstadt", parent=world["fed"])
             return make_member(nachbar, "Anna", "Aktiv", birth_date=ANNA)
 
+    # Wie im Betrieb (AZ-04): Nummer geht nach dem Klärfall an den Verein zurück
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_gleiche_person_zusammenfuehren(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
@@ -213,6 +215,59 @@ class TestKlaerfaelle:
         assert kandidat["units"] == ["Nachbarverein Musterstadt"]
         assert set(kandidat) == {"id", "name", "birth_date", "member_number", "units"}
         assert "Altverein" not in resp.content.decode()
+
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
+    def test_nummern_nur_dieser_kopplung(self, net, world, members, monkeypatch):
+        """Gegenprobe (AZ-04): Nach dem Klärfall gehen nur Nummern der gemeldeten Personen
+        dieser Kopplung an den Verein, keine aus einer anderen Kopplung des Verbands."""
+        import uuid
+
+        from core.tenancy import rls_bypass
+        from peering import services as peering_services
+        from peering.models import Coupling
+
+        self.local_anna(net, world)
+        lower, upper = named(net, world)
+        rm = RemoteMember.objects.get(coupling=upper, uid=f"m{members['anna'].pk}")
+        with net.on(VERBAND), rls_bypass():
+            fremd = make_org("Fremder Platzhalter", parent=world["fed"])
+            fremde = make_member(fremd, "Fritz", "Fremd", birth_date=datetime.date(1970, 2, 3))
+            fremde_nummer = FederationMember.objects.get(person=fremde.person).member_number
+            andere = Coupling.objects.create(
+                local_unit=world["fed"],
+                remote_unit=fremd,
+                remote_uuid=uuid.uuid4(),
+                peer=upper.peer,
+                direction=upper.direction,
+                state=upper.state,
+            )
+            RemoteMember.objects.create(
+                coupling=andere, uid="fremd-1", membership=fremde, status="active"
+            )
+        gesendet = []
+        original = peering_services.enqueue
+
+        def enqueue(coupling, kind, payload, *args, **kwargs):
+            if kind == "register.numbers":
+                gesendet.append((coupling.pk, payload))
+            return original(coupling, kind, payload, *args, **kwargs)
+
+        monkeypatch.setattr(peering_services, "enqueue", enqueue)
+        with net.on(VERBAND):
+            c = api(world["fed_board"])
+            base = f"/api/orgs/{world['fed'].pk}/peering/couplings/{upper.pk}"
+            case = c.get(f"{base}/").json()["register"]["unclear"][0]
+            resp = c.post(
+                f"{base}/members/{rm.pk}/resolve/",
+                {"person": case["candidates"][0]["id"]},
+                content_type=JSON,
+            )
+        assert resp.status_code == 200, resp.content[:300]
+        assert gesendet, "keine Nummern an den Verein geschickt"
+        for coupling_id, payload in gesendet:
+            assert coupling_id == upper.pk
+            assert "fremd-1" not in payload["numbers"]
+            assert fremde_nummer not in payload["numbers"].values()
 
     # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
     @pytest.mark.usefixtures("anfragen_unter_app_rolle")
