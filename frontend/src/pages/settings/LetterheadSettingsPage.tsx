@@ -4,7 +4,12 @@ import { saveBlob } from '../../api/client.ts'
 import { docApi, docBase } from '../../api/documents.ts'
 import type { DocFolder } from '../../api/documents.ts'
 import { FONTS, WEB_FONTS, letterFileName, letterheadApi } from '../../api/letterhead.ts'
-import type { FileFormat, LetterheadFields, LetterheadState } from '../../api/letterhead.ts'
+import type {
+  FileFormat,
+  LetterheadFields,
+  LetterheadProposal,
+  LetterheadState,
+} from '../../api/letterhead.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { Department } from '../../api/orgs.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
@@ -21,6 +26,7 @@ import {
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { TextArea } from './TextArea.tsx'
 import { LogoUpload } from './AppearancePage.tsx'
+import { formatDate } from '../../i18n/format.ts'
 import { t } from '../../i18n/index.ts'
 import { Why } from '../../learning/Aids.tsx'
 
@@ -663,6 +669,97 @@ function NeutralCard({
 }
 
 /** Einstellungen › Briefbogen: die Einheit selbst und ihre Untereinheiten. */
+const PROPOSAL_LABELS: Record<string, () => string> = {
+  head_name: () => t('Name im Briefkopf'),
+  tagline: () => t('Zusatzzeile im Kopf'),
+  salutation: () => t('Anrede'),
+  closing: () => t('Grußformel'),
+}
+
+/** Vorschläge eines KI-Assistenten für die Texte (Gesamtaudit 15.11., FF-12 a). */
+function Proposals({
+  orgId,
+  state,
+  editable,
+  done,
+}: {
+  orgId: number
+  state: LetterheadState
+  editable: boolean
+  done: () => void
+}) {
+  const [err, setErr] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const items: LetterheadProposal[] = state.proposals ?? []
+  if (items.length === 0) return null
+
+  async function run(fn: () => Promise<unknown>) {
+    setErr(null)
+    setBusy(true)
+    try {
+      await fn()
+      done()
+    } catch (e) {
+      setErr(errorMessage(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="card stack">
+      <h2>{t('Vorschlag für die Texte des Briefbogens')}</h2>
+      <p className="muted">
+        {t(
+          'Ein KI-Assistent hat neue Texte vorgeschlagen. Sie gelten erst, wenn du sie übernimmst; dann stehen sie auf allen neuen Rechnungen, Mahnungen und Spendenquittungen. Prüfe sie genau, besonders Bankangaben oder Aufforderungen.',
+        )}
+      </p>
+      {err && <Alert kind="error">{err}</Alert>}
+      {items.map((p) => (
+        <div key={p.id} className="stack">
+          <p className="muted small">
+            {p.via} · {t('verfällt am {date}', { date: formatDate(p.expires_at) })}
+          </p>
+          <dl>
+            {Object.entries(p.texts).map(([key, value]) => (
+              <div key={key}>
+                <dt>{PROPOSAL_LABELS[key]?.() ?? key}</dt>
+                <dd>
+                  <span className="muted">
+                    {String((state.letterhead as unknown as Record<string, unknown>)[key] ?? '') ||
+                      '–'}
+                  </span>{' '}
+                  → <strong>{value || '–'}</strong>
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {editable && (
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-primary"
+                disabled={busy}
+                onClick={() => void run(() => letterheadApi.applyProposal(orgId, p.id))}
+              >
+                {t('Übernehmen')}
+              </button>
+              <button
+                type="button"
+                className="button"
+                disabled={busy}
+                onClick={() => void run(() => letterheadApi.discardProposal(orgId, p.id))}
+              >
+                {t('Verwerfen')}
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </section>
+  )
+}
+
 export function LetterheadSettingsPage() {
   const org = useActiveOrg()
   const { can } = useOrg()
@@ -715,6 +812,12 @@ export function LetterheadSettingsPage() {
       {!state.data && !state.error && <Loading />}
       {state.data && state.data.organization.id === (unitId ?? org.id) && (
         <>
+          <Proposals
+            orgId={org.id}
+            state={state.data}
+            editable={editable}
+            done={() => void state.reload()}
+          />
           <LetterheadEditor
             key={state.data.organization.id}
             state={state.data}

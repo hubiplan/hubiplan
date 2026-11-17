@@ -20,4 +20,4 @@ Die Grundeinstellungen entsprechen dem bisherigen Aussehen. Für ein eigenes Ers
 - **Farbe von Titel und Betreff**: Schwarz oder Hauptfarbe, etwa für „Rechnung“ und den Betreff der Word-Vorlage.
 - **Linien in Tabellen** und **Streifen in Tabellen** für Rechnungen, Stornorechnungen und Quittungen.
 
-Jede Untereinheit mit eigenem Briefbogen stellt das für sich ein. Ein verbundener KI-Assistent kann den Briefbogen ebenfalls ändern, wenn ihr das beim Verbinden eigens erlaubt.
+Jede Untereinheit mit eigenem Briefbogen stellt das für sich ein. Ein verbundener KI-Assistent kann den Briefbogen ebenfalls ändern, wenn ihr das beim Verbinden eigens erlaubt. Die Texte (Name im Briefkopf, Zusatzzeile, Anrede, Grußformel) legt er aber nur als Vorschlag ab: Er erscheint oben auf dieser Seite mit dem bisherigen und dem neuen Text. Mit **Übernehmen** (frische Bestätigung mit dem zweiten Faktor) gilt er für alle neuen Briefe, mit **Verwerfen** ist er weg; nach 30 Tagen verfällt er von selbst.

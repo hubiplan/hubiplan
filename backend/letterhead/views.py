@@ -22,7 +22,7 @@ from organizations.theme import contrast
 
 from . import data as service
 from . import docx, preview
-from .models import Letterhead, LetterheadChoice
+from .models import Letterhead, LetterheadChoice, LetterheadProposal
 from .typefaces import WEB_FONTS
 
 EDIT_FIELDS = [
@@ -154,6 +154,28 @@ def palette_state(letter: service.LetterData) -> list[dict]:
     ]
 
 
+# Felder, die ein Assistent nur als Vorschlag ablegt (Gesamtaudit 15.11., FF-12 a)
+PROPOSAL_FIELDS = ("head_name", "tagline", "salutation", "closing")
+
+
+def proposals_of(org: Organization) -> list[dict]:
+    """Offene Vorschläge für den Briefbogen dieser Einheit; abgelaufene entfallen dabei."""
+    now = timezone.now()
+    with rls_bypass():
+        LetterheadProposal.objects.filter(target=org, expires_at__lte=now).delete()
+        items = list(LetterheadProposal.objects.filter(target=org))
+    return [
+        {
+            "id": p.pk,
+            "texts": {k: v for k, v in (p.texts or {}).items() if k in PROPOSAL_FIELDS},
+            "via": p.via,
+            "created_at": p.created_at,
+            "expires_at": p.expires_at,
+        }
+        for p in items
+    ]
+
+
 def _state(org: Organization) -> dict:
     letterhead = service.ensure(org)
     owner, _ = service.owner_of(org)
@@ -161,6 +183,7 @@ def _state(org: Organization) -> dict:
     return {
         "organization": {"id": org.pk, "name": org.name, "type": org.type},
         "letterhead": LetterheadSerializer(letterhead).data,
+        "proposals": proposals_of(org),
         "may_have_own": service.may_have_own(org),
         "owner": {"id": owner.pk, "name": owner.name, "is_self": owner.pk == org.pk},
         "accounts": service.bank_accounts(owner),
@@ -173,9 +196,11 @@ def _state(org: Organization) -> dict:
     }
 
 
-def _update(request, org: Organization, audit_org: Organization) -> dict:
+def _update(request, org: Organization, audit_org: Organization, data=None) -> dict:
     letterhead = service.ensure(org)
-    serializer = LetterheadSerializer(letterhead, data=request.data, partial=True)
+    serializer = LetterheadSerializer(
+        letterhead, data=request.data if data is None else data, partial=True
+    )
     serializer.is_valid(raise_exception=True)
     with transaction.atomic():
         before = snapshot(letterhead)
@@ -227,6 +252,50 @@ class UnitLetterheadView(_OrgLetterheadMixin, APIView):
 
     def patch(self, request, org_id: int, unit_id: int):
         return Response(_update(request, self.target(unit_id), self.org))
+
+
+class LetterheadProposalView(_OrgLetterheadMixin, APIView):
+    """Vorschlag eines Assistenten übernehmen (POST) oder verwerfen (DELETE)."""
+
+    def _proposal(self, pk: int) -> LetterheadProposal:
+        with rls_bypass():
+            proposal = (
+                LetterheadProposal.objects.filter(
+                    pk=pk, organization=self.org, expires_at__gt=timezone.now()
+                )
+                .select_related("target")
+                .first()
+            )
+        if proposal is None:
+            raise NotFound()
+        return proposal
+
+    def post(self, request, org_id: int, pk: int):
+        from accounts import step_up
+
+        # Texte erscheinen sofort auf allen neuen Belegen: frische Bestätigung
+        step_up.require(request)
+        proposal = self._proposal(pk)
+        texts = {k: v for k, v in (proposal.texts or {}).items() if k in PROPOSAL_FIELDS}
+        with transaction.atomic():
+            # Dieselbe Prüfung und dasselbe Protokoll wie beim Bearbeiten
+            _update(request, proposal.target, self.org, data=texts)
+            with rls_bypass():
+                LetterheadProposal.objects.filter(pk=proposal.pk).delete()
+        return Response(_state(proposal.target))
+
+    def delete(self, request, org_id: int, pk: int):
+        proposal = self._proposal(pk)
+        with rls_bypass():
+            LetterheadProposal.objects.filter(pk=proposal.pk).delete()
+        record(
+            self.org,
+            request.user,
+            "update",
+            proposal.target,
+            {"Vorschlag für den Briefbogen": ["offen", "verworfen"]},
+        )
+        return Response(status=204)
 
 
 class LetterheadLogoView(_OrgLetterheadMixin, APIView):

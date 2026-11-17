@@ -62,6 +62,16 @@ export interface LetterheadState {
   hints: string[]
   /** Eigenes Logo nur für den Briefbogen (Issue #488); null: wie im Erscheinungsbild */
   logo_url?: string | null
+  /** Vorschläge eines KI-Assistenten für die Texte (Gesamtaudit 15.11., FF-12 a) */
+  proposals?: LetterheadProposal[]
+}
+
+export interface LetterheadProposal {
+  id: number
+  texts: Record<string, string>
+  via: string
+  created_at: string
+  expires_at: string
 }
 
 export type ContactKey = 'unit' | 'role' | 'own_email' | 'own_phone' | 'own_address'
@@ -132,6 +142,9 @@ const org = (id: number) => `/api/orgs/${id}/letterhead`
 
 export const letterheadApi = {
   get: (id: number) => api.get<LetterheadState>(`${org(id)}/`),
+  applyProposal: (id: number, pk: number) =>
+    api.post<LetterheadState>(`${org(id)}/proposals/${pk}/`),
+  discardProposal: (id: number, pk: number) => api.del(`${org(id)}/proposals/${pk}/`),
   update: (id: number, data: Partial<LetterheadFields>) =>
     api.patch<LetterheadState>(`${org(id)}/`, data),
   unit: (id: number, unit: number) => api.get<LetterheadState>(`${org(id)}/units/${unit}/`),
