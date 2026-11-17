@@ -6,8 +6,10 @@ import { useVersion } from './standStore.ts'
 import { errorMessage } from '../../components/forms.ts'
 import { LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { useSportText } from './words.ts'
 
 export function LiveTables({ api }: { api: StandApi }) {
+  const sw = useSportText()
   const [blocks, setBlocks] = useState<StandingBlock[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [stale, setStale] = useState(false)
@@ -89,7 +91,7 @@ export function LiveTables({ api }: { api: StandApi }) {
                         ) : r.count !== undefined ? (
                           <span className="muted small">
                             {' '}
-                            {t('· {count} Schützen', { count: r.count })}
+                            {sw('· {count} Schützen', { count: r.count })}
                           </span>
                         ) : null
                       ) : (
@@ -105,7 +107,7 @@ export function LiveTables({ api }: { api: StandApi }) {
               </tbody>
             </table>
           )}
-          {b.open.length > 0 && <p className="muted small">{t('* Gleichstand: Stechen nötig')}</p>}
+          {b.open.length > 0 && <p className="muted small">{sw('* Gleichstand: Stechen nötig')}</p>}
         </section>
       ))}
     </aside>

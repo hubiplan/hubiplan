@@ -72,14 +72,19 @@ export function displayName(x: { name: string; display_name?: string | null }): 
   return x.display_name || x.name
 }
 
-/** Name einer Untereinheit in Auswahlfeldern; tiefere Ebenen mit Pfad („Jägerzug › Gruppe 1“). */
+/**
+ * Name einer Untereinheit in Auswahlfeldern; tiefere Ebenen mit Pfad („Jägerzug › Gruppe 1“).
+ * Oberste Ebene mit vollem Namen, der Kurzname in Klammern: „Gren“ allein erklärt sich in einer
+ * Auswahl nicht (UX-Audit 16.11. VW-55).
+ */
 export function unitName(d: {
   name: string
   display_name?: string | null
   depth?: number
   path?: string
 }): string {
-  return d.depth && d.path ? d.path : displayName(d)
+  if (d.depth && d.path) return d.path
+  return d.display_name && d.display_name !== d.name ? `${d.name} (${d.display_name})` : d.name
 }
 
 export interface OrgSummary {

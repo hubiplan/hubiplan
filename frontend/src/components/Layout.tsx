@@ -265,7 +265,13 @@ export function Layout() {
   // Persönliches im Kontomenü (UX-Audit 10.7); die Auswahl oben zeigt nur Verwaltungsbereiche
   const personal: PersonalArea[] = portal.map((p) => ({
     key: `p:${p.id}`,
-    title: portal.length > 1 ? p.club_display_name || p.club_name : undefined,
+    // Mehrere Zugänge (z. B. zwei Kinder im selben Verein): am Namen unterscheidbar (VW-25)
+    title:
+      portal.length > 1
+        ? `${p.member_kind === 'organization' ? (p.member_name ?? '') : p.first_name} · ${
+            p.club_display_name || p.club_name
+          }`
+        : undefined,
     links: portalSections(p).flatMap((s) => (s.account ? [{ to: s.to, label: s.account }] : [])),
   }))
   const portalInPicker = portal.filter((p) => activeKey === `p:${p.id}`)
@@ -364,7 +370,14 @@ export function Layout() {
   // Lernhilfen nur in der Oberfläche der Bearbeitenden, nie im Mitgliederbereich
   const headerTools = (
     <>
-      {undoBase && !previewOrg && <UndoControls base={undoBase} />}
+      {undoBase && !previewOrg && (
+        <UndoControls
+          base={undoBase}
+          logTo={
+            active?.permissions.includes(PERM.auditView) ? '/einstellungen/protokoll' : undefined
+          }
+        />
+      )}
       {contextCount > 1 && (
         <label className="org-switch">
           <span className="sr-only">{t('Einheit wechseln')}</span>
@@ -651,7 +664,10 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
       <p>
         {overdue
           ? t('Zwei-Faktor-Anmeldung fehlt: Deine Verwaltungsrechte ruhen.')
-          : t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
+          : t(
+              'Zwei-Faktor-Anmeldung nötig ab {date}. Rundschreiben, Exporte und das Buchen in der Kasse ruhen schon jetzt.',
+              { date },
+            )}{' '}
         <NavLink to="/mein-konto/anmeldung#zwei-faktor">{t('Jetzt einrichten')}</NavLink>
       </p>
       <details>
