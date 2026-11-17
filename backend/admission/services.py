@@ -112,6 +112,20 @@ def create(form: ApplicationForm, clean: dict, *, source: str = "web", kiosk=Non
     return app, token
 
 
+# Gesamtaudit 15.11., PUB-05: höchstens so viele Antragsmails je Empfängeradresse und Tag,
+# auch über viele Absender-Netze. Danach still nichts mehr; die Antwort nach außen bleibt gleich.
+MAILS_PER_RECIPIENT_DAY = 3
+
+
+def recipient_allowed(address: str) -> bool:
+    import hashlib
+
+    from core.ratelimit import too_many
+
+    digest = hashlib.sha256((address or "").strip().lower().encode()).hexdigest()[:32]
+    return not too_many(f"join:empfaenger:{digest}", MAILS_PER_RECIPIENT_DAY, 24 * 3600)
+
+
 def confirmation_email(app: Application) -> str:
     """Minderjährige: die Bestätigung geht an den ersten Erziehungsberechtigten (B3)."""
     if app.guardians:
@@ -146,6 +160,9 @@ def send_confirmation(app: Application, token: str) -> None:
             + "\n"
         )
         subject = gettext("Bitte Mitgliedsantrag bestätigen: {org}").format(org=org.name)
+    if not recipient_allowed(confirmation_email(app)):
+        logger.info("Antragsmail %s: Grenze je Empfänger erreicht", app.pk)
+        return
     send(
         [confirmation_email(app)],
         subject,
@@ -222,7 +239,10 @@ def send_receipt(app: Application, token: str, needs_signature: bool) -> None:
                 ),
                 url["status"],
             ]
-        lines += ["", gettext("Deine Angaben:"), *summary_lines(app)]
+        if app.source != Application.Source.KIOSK:
+            # Gesamtaudit 15.11., PUB-06: Am Stand ist die Adresse ungeprüft; keine Angaben
+            # (freie Felder) an sie, nur die Kurzbestätigung
+            lines += ["", gettext("Deine Angaben:"), *summary_lines(app)]
         lines += [
             "",
             gettext(
@@ -231,6 +251,11 @@ def send_receipt(app: Application, token: str, needs_signature: bool) -> None:
             url["status"],
         ]
         subject = gettext("Mitgliedsantrag eingegangen: {org}").format(org=org.name)
+    if app.source == Application.Source.KIOSK and not recipient_allowed(confirmation_email(app)):
+        # Am Stand ungeprüfte Adresse: zählt wie eine Bestätigungsmail (PUB-05/06). Sonst hat
+        # die Person ihre Adresse gerade selbst bestätigt.
+        logger.info("Eingangsmail %s: Grenze je Empfänger erreicht", app.pk)
+        return
     send(
         [confirmation_email(app)],
         subject,

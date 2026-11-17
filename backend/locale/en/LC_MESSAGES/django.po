@@ -13708,6 +13708,39 @@ msgstr "After the start, the result can only be protected more strictly."
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
 
+msgid "Zwei-Faktor-Anmeldung eingerichtet"
+msgstr "Two-factor authentication set up"
+
+msgid "Für deinen HUBIplan-Zugang wurde eine Authenticator-App eingerichtet."
+msgstr "An authenticator app was set up for your HUBIplan account."
+
+msgid "Zwei-Faktor-Anmeldung entfernt"
+msgstr "Two-factor authentication removed"
+
+msgid "Die Authenticator-App wurde aus deinem HUBIplan-Zugang entfernt."
+msgstr "The authenticator app was removed from your HUBIplan account."
+
+msgid "Wiederherstellungscodes entfernt"
+msgstr "Recovery codes removed"
+
+msgid "Die Wiederherstellungscodes deines HUBIplan-Zugangs wurden entfernt."
+msgstr "The recovery codes of your HUBIplan account were removed."
+
+msgid "Neue Wiederherstellungscodes"
+msgstr "New recovery codes"
+
+msgid "Für deinen HUBIplan-Zugang wurden neue Wiederherstellungscodes erzeugt. Die bisherigen gelten nicht mehr."
+msgstr "New recovery codes were created for your HUBIplan account. The previous ones are no longer valid."
+
+msgid "Anmelde-E-Mail geändert"
+msgstr "Sign-in email changed"
+
+msgid "Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."
+msgstr "The sign-in email of your HUBIplan account is now {new}."
+
+msgid "Hallo {name},\n\n{text}\n\nZeit: {when} Uhr\n\nWarst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.\n"
+msgstr "Hello {name},\n\n{text}\n\nTime: {when}\n\nIf this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.\n"
+
 msgid "Verwaltungs- und Dienstkonten der Nextcloud lassen sich nicht zuordnen (admin, root, administrator, das Dienstkonto). Bitte entfernen: {lines}"
 msgstr "Administration and service accounts of the Nextcloud cannot be assigned (admin, root, administrator, the service account). Please remove: {lines}"
 
@@ -14021,3 +14054,9 @@ msgstr "Please only provide letterhead texts."
 
 msgid "Für diesen Briefbogen liegen schon {count} offene Vorschläge. Bitte zuerst in HUBIplan unter Einstellungen › Briefbogen übernehmen oder verwerfen."
 msgstr "There are already {count} open proposals for this letterhead. Please apply or discard them first in HUBIplan under Settings › Letterhead."
+
+msgid "Passwort zurückgesetzt"
+msgstr "Password reset"
+
+msgid "Das Passwort deines HUBIplan-Zugangs wurde über „Passwort vergessen“ neu gesetzt."
+msgstr "The password of your HUBIplan account was set again via “Forgot password”."

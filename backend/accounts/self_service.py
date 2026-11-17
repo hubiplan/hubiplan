@@ -340,7 +340,12 @@ class EmailConfirmView(APIView):
             return Response({"email": change.new_email, "waiting_for": waiting})
         change.used_at = now
         change.save(update_fields=["used_at", "new_confirmed_at", "old_confirmed_at"])
+        old_email = change.user.email
         apply_email(change.user, change.new_email)
+        # Gesamtaudit 15.11., AUTH-09: Hinweis an die alte und die neue Adresse
+        from .hinweismail import EMAIL_CHANGED, notify
+
+        notify(change.user, EMAIL_CHANGED, [old_email, change.new_email], new=change.new_email)
         # Andere Sitzungen und Zugänge abmelden, Anmeldelinks an die alte Adresse
         # gelten nicht mehr (Gesamtaudit 05.11. GA-10). App-Geräte bleiben gekoppelt.
         secure_account(change.user, devices=False)
