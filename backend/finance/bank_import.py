@@ -530,7 +530,7 @@ def book(
         raise ValidationError(
             {"category": gettext("Die Kategorie passt nicht zu dieser Richtung.")}
         )
-    services.ensure_open(org, date=line.date)
+    services.ensure_bookable(org, line.date)
     year = org.fiscal_year_of(line.date)
     booking = Booking(
         organization=org,

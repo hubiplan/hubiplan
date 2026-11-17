@@ -799,7 +799,7 @@ def pay(
     date = date or timezone.localdate()
     if date > timezone.localdate() + datetime.timedelta(days=365):
         raise ValidationError({"date": gettext("Bitte ein gültiges Datum angeben.")})
-    fin.ensure_open(org, date=date)
+    fin.ensure_bookable(org, date)
     year = org.fiscal_year_of(date)
     due = claim.amount_due
     name = person_name(claim)

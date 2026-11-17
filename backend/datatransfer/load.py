@@ -923,6 +923,9 @@ class Loader:
         self.invitations: list[tuple[User, Organization, str]] = []
         self.shared = PlatformSettings.load().person_data_mode == PlatformSettings.PersonData.SHARED
         self.result: dict = {}
+        # „Kasse festgeschrieben bis“ erst nach den Buchungen setzen: Der Trigger der Datenbank
+        # weist Buchungen im festgeschriebenen Zeitraum ab (Gesamtaudit 15.11., PUB-08)
+        self.locked_until: dict[int, object] = {}
 
     def save_file(self, fieldfile, path: str | None) -> bool:
         content = self.files.read(path)
@@ -1081,6 +1084,8 @@ class Loader:
             org.uuid = given
         org.contact_source = Organization.ContactSource.OWN
         org.contact_role = None
+        locked_until = org.finance_locked_until
+        org.finance_locked_until = None
         if not self.by_platform:
             # Gesamtaudit 15.11., AZ-10: Platzhalter ferner Einheiten legt nur die Plattform an;
             # ein „ferner“ Verein wäre hier für niemanden bearbeitbar und nicht löschbar
@@ -1140,6 +1145,8 @@ class Loader:
                 gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
             ) from exc
         org.save()
+        if locked_until:
+            self.locked_until[org.pk] = locked_until
         self.load_logos(org, data)
         self.ids.set("organization", data.get("id"), org.pk)
         return org
@@ -1426,7 +1433,13 @@ class Loader:
         self.result["renumbered"] = self.assign_federation_numbers(scope, self.reported_persons())
         self.board(org)
         self.couplings(data)
+        self.apply_locks()
         return org
+
+    def apply_locks(self) -> None:
+        """„Kasse festgeschrieben bis“ aus der Datei, nachdem alle Buchungen da sind."""
+        for pk, until in self.locked_until.items():
+            Organization.objects.filter(pk=pk).update(finance_locked_until=until)
 
     def couplings(self, data: dict) -> None:
         """Verbund: Kopplungen aus der Datei neu anlegen (Umzug auf diese Instanz).
@@ -1600,6 +1613,7 @@ class Loader:
             )
         self.result["renumbered"] = self.assign_federation_numbers(org, self.reported_persons())
         self.board(org)
+        self.apply_locks()
         return org
 
     def reported_persons(self) -> set[int]:
