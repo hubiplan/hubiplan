@@ -312,6 +312,15 @@ wird ein zufälliges Passwort erzeugt und einmal ausgegeben.
 Nur lokal, siehe „Ausrollen“: `scripts/test.sh` (mit `BACKUP_TEST=1` auch Backup
 und Rücksicherung). Auf dem Server laufen keine Tests.
 
+Anfragen in Tests laufen wie im Betrieb in der Rolle der Anwendung (`hubiplan_app`), also
+mit aktivem Zeilenschutz (RLS): Jede Anfrage über den Django-Testclient oder den
+DRF-`APIClient` wechselt dafür in diese Rolle und danach zurück (`backend/tests/conftest.py`,
+`backend/tests/app_rolle.py`). Testdaten legen Factories und Fixtures weiter als
+Tabelleneigentümer an; auch Prüfungen außerhalb von Anfragen sehen alle Zeilen. Der
+Rollenwechsel zählt in keiner Abfragezählung. Ausnahmen nur mit
+`@pytest.mark.ohne_app_rolle(grund="…")`; `tests/test_az04_app_rolle_waechter.py` prüft,
+dass jede Ausnahme begründet ist, und zählt sie.
+
 ## Vereinswebseite (hubiplan-website)
 
 Die Vereinsseite aus dem Repository `hubiplan-website` läuft auf dem Testserver als eigener

@@ -203,22 +203,53 @@ def board_c(orgs):
     return user
 
 
-@pytest.fixture
-def anfragen_unter_app_rolle(monkeypatch):
-    """Anfragen über den Testclient laufen unter der Rolle der Anwendung, mit dem Kontext
-    der Middleware wie im Betrieb; Testaufbau und Prüfungen bleiben Eigentümer
-    (Gesamtaudit 15.11., AZ-04). Für Tests, die den Zeilenschutz im Anfrageweg prüfen."""
+@pytest.fixture(autouse=True)
+def _anfragen_unter_app_rolle(request, monkeypatch):
+    """Anfragen über den Testclient (auch DRF-APIClient) laufen wie im Betrieb unter der
+    Rolle der Anwendung, mit Zeilenschutz (RLS) und dem Kontext der Middleware; Testaufbau
+    und Prüfungen außerhalb der Anfragen bleiben Eigentümer (Gesamtaudit 15.11., AZ-04).
+
+    Der Rollenwechsel zählt in keiner Abfragezählung und wird nach jeder Anfrage
+    zurückgenommen, auch nach Ausnahmen und abgebrochenen Transaktionen (tests/app_rolle.py)."""
     from django.test.client import Client as _Client
 
-    from .verbund_netz import app_role
+    from .app_rolle import ausnahme_grund, offene_vergessen, unter_app_rolle
+
+    if ausnahme_grund(request.node) is not None:
+        yield
+        return
 
     original = _Client.request
 
-    def request(self, **kwargs):
-        with app_role():
-            return original(self, **kwargs)
+    def je_teil_unter_app_rolle(teile):
+        # Herunterladen (FileResponse u. ä.) liest erst beim Abholen der Teile, im Betrieb
+        # ebenfalls in der Rolle der Anwendung; dazwischen bleibt der Test Eigentümer.
+        teile = iter(teile)
+        while True:
+            with unter_app_rolle():
+                try:
+                    teil = next(teile)
+                except StopIteration:
+                    return
+            yield teil
 
-    monkeypatch.setattr(_Client, "request", request)
+    def request_unter_app_rolle(self, **kwargs):
+        with unter_app_rolle():
+            response = original(self, **kwargs)
+        if getattr(response, "streaming", False) and not getattr(response, "is_async", False):
+            response.streaming_content = je_teil_unter_app_rolle(response.streaming_content)
+        return response
+
+    monkeypatch.setattr(_Client, "request", request_unter_app_rolle)
+    try:
+        yield
+    finally:
+        offene_vergessen()
+
+
+@pytest.fixture
+def anfragen_unter_app_rolle():
+    """Früher nötig, heute Standard für alle Tests (``_anfragen_unter_app_rolle``)."""
 
 
 @pytest.fixture

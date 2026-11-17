@@ -135,8 +135,6 @@ class TestKlaerfaelle:
             nachbar = make_org("Nachbarverein Musterstadt", parent=world["fed"])
             return make_member(nachbar, "Anna", "Aktiv", birth_date=ANNA)
 
-    # Wie im Betrieb (AZ-04): Nummer geht nach dem Klärfall an den Verein zurück
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_gleiche_person_zusammenfuehren(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
@@ -165,7 +163,6 @@ class TestKlaerfaelle:
         number = FederationMember.objects.get(person_id=local.person_id).member_number
         assert RemoteMember.objects.get(coupling=lower, uid=rm.uid).number == number
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_ansicht_zeigt_nur_die_meldung_dieser_kopplung(self, net, world, members):
         """Die gemeldeten Mitgliedschaften werden im Bereich des Platzhalters gelesen
         (Gesamtaudit 15.11., AZ-04); Mitglieder anderer Vereine des Verbands erscheinen
@@ -185,7 +182,6 @@ class TestKlaerfaelle:
             sum(register["counts"].values()) == RemoteMember.objects.filter(coupling=upper).count()
         )
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_kandidaten_nur_vereinsnamen_ohne_geloeschte(self, net, world, members):
         """Gegenprobe (Fachfrage AZ-04): Der Dachverband sieht von den Kandidaten nur die Namen
         ihrer Vereine im eigenen Verband; gelöschte Mitgliedschaften erscheinen nicht, und
@@ -216,7 +212,6 @@ class TestKlaerfaelle:
         assert set(kandidat) == {"id", "name", "birth_date", "member_number", "units"}
         assert "Altverein" not in resp.content.decode()
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nummern_nur_dieser_kopplung(self, net, world, members, monkeypatch):
         """Gegenprobe (AZ-04): Nach dem Klärfall gehen nur Nummern der gemeldeten Personen
         dieser Kopplung an den Verein, keine aus einer anderen Kopplung des Verbands."""
@@ -269,8 +264,6 @@ class TestKlaerfaelle:
             assert "fremd-1" not in payload["numbers"]
             assert fremde_nummer not in payload["numbers"].values()
 
-    # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
         from access.catalog import MEMBERS_VIEW, PEERING_MANAGE
@@ -298,8 +291,6 @@ class TestKlaerfaelle:
             resp = api(lesen).post(f"{base}/members/{rm.pk}/resolve/", {}, content_type=JSON)
             assert resp.status_code == 403
 
-    # Klärfall entscheiden wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_andere_person(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
@@ -383,7 +374,6 @@ class TestFremdeVerbandsnummer:
                 person=local.person, organization=upper.remote_unit
             ).exists()
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_berichtigung_geteilter_person_braucht_freigabe(self, net, world, members):
 
         with net.on(VERBAND):

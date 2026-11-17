@@ -235,7 +235,6 @@ def test_erinnerungseinstellungen_werden_vererbt_und_geaenderte_folge_blockiert_
 
 def test_beteiligter_bearbeiter_kann_unter_rls_folge_erzeugen(api, board_a, orgs):
     from .factories import give_role, make_user
-    from .test_rls import as_app_role
 
     org = orgs["a"]
     reader = make_user("serie-bearbeiten@example.org")
@@ -244,11 +243,10 @@ def test_beteiligter_bearbeiter_kann_unter_rls_folge_erzeugen(api, board_a, orgs
     first = patch(
         api, board_a, org, first, shares=[{"user": reader.pk, "level": "edit"}], following=True
     ).json()
-    with as_app_role():
-        complete(api, reader, org, first)
-        response = api(reader).get(url(org))
-        assert response.status_code == 200
-        assert len(response.json()["items"]) == 2
+    complete(api, reader, org, first)
+    response = api(reader).get(url(org))
+    assert response.status_code == 200
+    assert len(response.json()["items"]) == 2
 
 
 def test_dokumentverweise_werden_vererbt_dateien_nicht(api, board_a, orgs):

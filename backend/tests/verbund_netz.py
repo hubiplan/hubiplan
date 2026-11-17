@@ -6,6 +6,11 @@ ihre Schlüssel und Adresse. Alle Daten sind erfunden.
 
 Eingehende Anfragen laufen wie im Echtbetrieb in der Rolle ``hubiplan_app``, damit die
 Zeilensicherheit (RLS) dort wirklich greift.
+
+Im Betrieb ist die Anfrage an die andere Instanz ein echter HTTP-Aufruf an einen anderen
+Server. Hier läuft sie verschachtelt auf derselben Datenbankverbindung; deren Middleware
+setzt am Ende den RLS-Kontext zurück. ``Net`` stellt deshalb nach jedem Aufruf Rolle und
+RLS-Kontext der äußeren Anfrage wieder her (Gesamtaudit 15.11., AZ-04).
 """
 
 from __future__ import annotations
@@ -13,7 +18,7 @@ from __future__ import annotations
 import contextlib
 import urllib.parse
 
-from django.db import connection
+from django.db import DatabaseError
 from django.test import Client, override_settings
 
 from peering import identity, transport
@@ -55,7 +60,7 @@ class Net:
         self.calls.append((self.current or "", path))
         if base in self.down:
             raise transport.PeerError("nicht erreichbar (Test)")
-        with self.on(base), app_role():
+        with aussen_bewahren(), self.on(base), app_role():
             resp = Client().post(
                 path,
                 data=body,
@@ -68,7 +73,7 @@ class Net:
         base, path = self.target(url)
         if base in self.down:
             raise transport.PeerError("nicht erreichbar (Test)")
-        with self.on(base):
+        with aussen_bewahren(), self.on(base), app_role():
             resp = Client().get(path)
         return resp.status_code, resp.content
 
@@ -76,20 +81,38 @@ class Net:
 @contextlib.contextmanager
 def app_role():
     """Anfrage in der eingeschränkten Rolle der Anwendung bearbeiten (RLS aktiv)."""
-    from core.rls import APP_ROLE
+    from .app_rolle import unter_app_rolle
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT current_user")
-        outer = cursor.fetchone()[0]
-        cursor.execute(f"SET ROLE {APP_ROLE}")
+    with unter_app_rolle():
+        yield
+
+
+@contextlib.contextmanager
+def aussen_bewahren():
+    """Rolle und RLS-Kontext (samt Bypass) der äußeren Anfrage über einen verschachtelten
+    Aufruf der anderen Instanz retten. Deren Middleware setzt am Ende ``reset_rls()``; im
+    Betrieb träfe das eine andere Verbindung auf einem anderen Server."""
+    from core.tenancy import _apply, get_rls
+
+    from . import app_rolle
+
+    zustand = get_rls()
+    rolle = None
+    if app_rolle.aktiv() and not app_rolle.abgebrochen():
+        rolle = app_rolle.rollen()[0]
     try:
         yield
-    finally:
-        with connection.cursor() as cursor:
-            if outer == APP_ROLE:
-                cursor.execute(f"SET ROLE {APP_ROLE}")
-            else:
-                cursor.execute("RESET ROLE")
+    except BaseException:
+        # Die Ausnahme des Aufrufs soll sichtbar bleiben, nicht ein Folgefehler in einer
+        # abgebrochenen Transaktion; deren Zurückrollen stellt die Rolle ohnehin wieder her.
+        if rolle is not None:
+            app_rolle.wiederherstellen(rolle)
+        with contextlib.suppress(DatabaseError):
+            _apply(zustand)
+        raise
+    if rolle is not None:
+        app_rolle.wiederherstellen(rolle)
+    _apply(zustand)
 
 
 def install(monkeypatch, tmp_path) -> Net:

@@ -14,7 +14,7 @@ from .factories import give_role, make_user
 from .test_todos import create, url
 from .test_todos import patch as change
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
@@ -126,14 +126,12 @@ def test_kanaleinstellungen_und_push_ohne_titel(api, board_a, orgs, reader):
 
 @pytest.mark.skipif(connection.vendor != "postgresql", reason="PostgreSQL-RLS")
 def test_freigabe_funktioniert_unter_rls(api, board_a, orgs, reader):
-    from .test_rls import as_app_role
 
     org = orgs["a"]
-    with as_app_role():
-        todo = create(api, board_a, org)
-        todo = share(api, board_a, org, todo, reader, "edit")
-        assert api(reader).get(url(org, todo["id"])).status_code == 200
-        assert change(api, reader, org, todo, status="done").status_code == 200
+    todo = create(api, board_a, org)
+    todo = share(api, board_a, org, todo, reader, "edit")
+    assert api(reader).get(url(org, todo["id"])).status_code == 200
+    assert change(api, reader, org, todo, status="done").status_code == 200
 
 
 def test_export_enthaelt_nur_berechtigte_geteilte_aufgaben(api, board_a, orgs, reader):
@@ -195,7 +193,6 @@ def test_postausgang_speichert_keine_aufgabeninhalte(orgs):
 
 @pytest.mark.skipif(connection.vendor != "postgresql", reason="PostgreSQL-RLS")
 def test_rollenvorschau_zeigt_nur_rollenfreigaben_auch_unter_rls(api, board_a, orgs, reader):
-    from .test_rls import as_app_role
 
     org = orgs["a"]
     maker = make_user("aufgaben-erstellen@example.org")
@@ -205,13 +202,12 @@ def test_rollenvorschau_zeigt_nur_rollenfreigaben_auch_unter_rls(api, board_a, o
     change(api, maker, org, todo, shares=[{"role": assignment.role_id}])
     create(api, board_a, org)
     client = api(board_a)
-    with as_app_role():
-        response = client.post(
-            f"/api/orgs/{org.pk}/ansicht/",
-            {"role": assignment.role_id},
-            content_type="application/json",
-        )
-        assert response.status_code == 200
-        listed = client.get(url(org)).json()["items"]
-        assert [item["id"] for item in listed] == [todo["id"]]
-        assert not listed[0]["can_edit"]
+    response = client.post(
+        f"/api/orgs/{org.pk}/ansicht/",
+        {"role": assignment.role_id},
+        content_type="application/json",
+    )
+    assert response.status_code == 200
+    listed = client.get(url(org)).json()["items"]
+    assert [item["id"] for item in listed] == [todo["id"]]
+    assert not listed[0]["can_edit"]

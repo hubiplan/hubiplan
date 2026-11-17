@@ -13,6 +13,7 @@ filterwarnings = ["ignore:No directory at:UserWarning"]
 markers = [
     "langsam: dauert mehrere Sekunden; läuft zuerst, damit es parallel nicht am Ende hängt",
     "migration: migriert hin und zurück; scripts/test.sh lässt sie aus, solange Migrationen und diese Tests schon grün waren",
+    "ohne_app_rolle(grund): Anfragen dieses Tests laufen ausnahmsweise als Tabelleneigentümer statt in der Rolle der Anwendung; nur mit Begründung, gezählt in tests/test_az04_app_rolle_waechter.py",
 ]
 
 [tool.ruff]

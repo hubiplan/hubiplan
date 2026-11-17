@@ -363,44 +363,34 @@ def test_api_unter_rls(setup, board_a, board_b, board_fed, zug, api):
     """Ende-zu-Ende in der eingeschränkten Rolle: Vorstand, Dachverband, Abteilung, Mitglied."""
     from django.db import connection
 
-    from core.rls import APP_ROLE
-    from core.tenancy import set_rls
-
     if connection.vendor != "postgresql":
         pytest.skip("nur PostgreSQL")
     m, member, access = member_with_access(setup["a"], "Erika", depts=[zug])
     dept_role(zug, m, [DEPT_MEMBERS_VIEW, DEPT_DOCS_MANAGE])
-    with connection.cursor() as cursor:
-        cursor.execute(f"SET ROLE {APP_ROLE}")
-    try:
-        fb = base(setup["federation"])
-        upload(api(board_fed), fb, folder(api(board_fed), fb, "Rundschreiben", "clubs")["id"])
-        upload(api(board_fed), fb, folder(api(board_fed), fb, "Intern")["id"], "Intern")
-        ab = base(setup["a"])
-        upload(api(board_a), ab, folder(api(board_a), ab, "Formulare", "members")["id"], "Antrag")
-        db = f"/api/depts/{zug.pk}/documents/"
-        upload(api(member), db, folder(api(member), db, "Zug", "members")["id"], "Zugantrag")
-        data = overview(api(board_a), ab)
-        assert [f["name"] for f in data["folders"]] == ["Formulare"]
-        assert [f["name"] for f in data["shared"]] == ["Rundschreiben"]
-        shared_url = data["shared"][0]["documents"][0]["current"]["url"]
-        assert api(board_a).get(shared_url).status_code == 200
-        assert overview(api(board_b), base(setup["b"]))["folders"] == []
-        # Freigabe nach oben: Dachverband liest nur freigegebene Vereinsordner
-        assert overview(api(board_fed), fb)["from_below"] == []
-        up = folder(api(board_a), ab, "Meldungen")
-        upload(api(board_a), ab, up["id"], "Meldung")
-        api(board_a).patch(f"{ab}folders/{up['id']}/", {"shared_up": True}, content_type=JSON)
-        below = overview(api(board_fed), fb)["from_below"]
-        assert [f["name"] for f in below] == ["Meldungen"]
-        assert api(board_fed).get(below[0]["documents"][0]["current"]["url"]).status_code == 200
-        assert overview(api(board_b), base(setup["b"]))["shared"][0]["name"] == "Rundschreiben"
-        portal = api(member).get(f"/api/portal/{access.pk}/documents/").json()
-        titles = sorted(d["title"] for f in portal["folders"] for d in f["documents"])
-        assert titles == ["Antrag", "Zugantrag"]
-        zug_doc = portal["folders"][1]["documents"][0]["id"]
-        assert api(member).delete(f"{db}{zug_doc}/").status_code == 204
-    finally:
-        with connection.cursor() as cursor:
-            cursor.execute("RESET ROLE")
-        set_rls(None, None, False)
+    fb = base(setup["federation"])
+    upload(api(board_fed), fb, folder(api(board_fed), fb, "Rundschreiben", "clubs")["id"])
+    upload(api(board_fed), fb, folder(api(board_fed), fb, "Intern")["id"], "Intern")
+    ab = base(setup["a"])
+    upload(api(board_a), ab, folder(api(board_a), ab, "Formulare", "members")["id"], "Antrag")
+    db = f"/api/depts/{zug.pk}/documents/"
+    upload(api(member), db, folder(api(member), db, "Zug", "members")["id"], "Zugantrag")
+    data = overview(api(board_a), ab)
+    assert [f["name"] for f in data["folders"]] == ["Formulare"]
+    assert [f["name"] for f in data["shared"]] == ["Rundschreiben"]
+    shared_url = data["shared"][0]["documents"][0]["current"]["url"]
+    assert api(board_a).get(shared_url).status_code == 200
+    assert overview(api(board_b), base(setup["b"]))["folders"] == []
+    # Freigabe nach oben: Dachverband liest nur freigegebene Vereinsordner
+    assert overview(api(board_fed), fb)["from_below"] == []
+    up = folder(api(board_a), ab, "Meldungen")
+    upload(api(board_a), ab, up["id"], "Meldung")
+    api(board_a).patch(f"{ab}folders/{up['id']}/", {"shared_up": True}, content_type=JSON)
+    below = overview(api(board_fed), fb)["from_below"]
+    assert [f["name"] for f in below] == ["Meldungen"]
+    assert api(board_fed).get(below[0]["documents"][0]["current"]["url"]).status_code == 200
+    assert overview(api(board_b), base(setup["b"]))["shared"][0]["name"] == "Rundschreiben"
+    portal = api(member).get(f"/api/portal/{access.pk}/documents/").json()
+    titles = sorted(d["title"] for f in portal["folders"] for d in f["documents"])
+    assert titles == ["Antrag", "Zugantrag"]
+    zug_doc = portal["folders"][1]["documents"][0]["id"]
+    assert api(member).delete(f"{db}{zug_doc}/").status_code == 204

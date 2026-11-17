@@ -19,7 +19,7 @@ from .test_todo_sharing import reader, share  # noqa: F401
 from .test_todos import create, url
 from .test_todos import patch as change
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 def test_lesefreigabe_sichtbar_aber_nicht_beschreibbar_ist_403(api, board_a, orgs, reader):

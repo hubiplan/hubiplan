@@ -135,8 +135,7 @@ def test_reset_mfa_nicht_bei_amt_in_fremder_untereinheit(orgs, api, board_a, zug
     _totp(board_a)
     assert any(ctx.permissions for ctx in department_contexts(ziel).values())
     board = User.objects.get(pk=board_a.pk)
-    with as_app_role():
-        resp = api(board).post(f"/api/orgs/{orgs['a'].pk}/assignments/{zuordnung.pk}/reset-mfa/")
+    resp = api(board).post(f"/api/orgs/{orgs['a'].pk}/assignments/{zuordnung.pk}/reset-mfa/")
     assert resp.status_code == 400, resp.json()
     assert "Plattform" in resp.json()["detail"]
     assert Authenticator.objects.filter(user=ziel).exists()
