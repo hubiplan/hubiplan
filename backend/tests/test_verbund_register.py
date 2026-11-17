@@ -234,9 +234,7 @@ class TestKlaerfaelle:
         with net.on(VERBAND), rls_bypass():
             fremd = make_org("Fremder Platzhalter", parent=world["fed"])
             fremde = make_member(fremd, "Fritz", "Fremd", birth_date=datetime.date(1970, 2, 3))
-            FederationMember.objects.create(
-                scope=world["fed"], person=fremde.person, member_number=987654
-            )
+            fremde_nummer = FederationMember.objects.get(person=fremde.person).member_number
             andere = Coupling.objects.create(
                 local_unit=world["fed"],
                 remote_unit=fremd,
@@ -271,7 +269,7 @@ class TestKlaerfaelle:
         for coupling_id, payload in gesendet:
             assert coupling_id == upper.pk
             assert "fremd-1" not in payload["numbers"]
-            assert 987654 not in payload["numbers"].values()
+            assert fremde_nummer not in payload["numbers"].values()
 
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
