@@ -226,7 +226,7 @@ function QuickSearchDialog({
     )
 
   return (
-    <Modal title={t('Schnellsuche')} onClose={onClose}>
+    <Modal title={t('Schnellsuche')} onClose={onClose} guard={false}>
       <div className="quick-search">
         <input
           ref={inputRef}

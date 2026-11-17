@@ -12,16 +12,9 @@ import type {
   PaletteRoles,
   ThemeSettings,
 } from '../../api/orgs.ts'
-import {
-  Alert,
-  Checkbox,
-  Field,
-  SaveStatus,
-  SelectField,
-  LoadError,
-  Loading,
-} from '../../components/ui.tsx'
-import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { Alert, Checkbox, Field, SelectField, LoadError, Loading } from '../../components/ui.tsx'
+import { errorMessage, useForm, useLoad } from '../../components/forms.ts'
+import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn, readableOnPair } from '../../theme/contrast.ts'
 import { appColors, buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
@@ -106,21 +99,42 @@ function ThemeForm({
   }
   const paletteColors = [{ color: primary }, { color: accent }, ...form.values.extra_colors]
 
-  const auto = useAutoSave(form, (changes) => orgApi.updateTheme(orgId, changes), {
-    enabled: editable,
-    onSaved: (saved) => {
-      onSaved(saved as ThemeSettings)
+  // Farben wirken nach außen (alle Mitglieder, Webseite, Briefe): Änderungen zeigt erst die
+  // Vorschau, für alle gelten sie nach „Für alle übernehmen“ (UX-Audit 16.11. VW-22, F-7).
+  const [applied, setApplied] = useState(form.values)
+  const pending: Partial<typeof form.values> = {}
+  for (const key of Object.keys(form.values) as (keyof typeof form.values)[]) {
+    if (JSON.stringify(form.values[key]) !== JSON.stringify(applied[key]))
+      Object.assign(pending, { [key]: form.values[key] })
+  }
+  const dirty = editable && Object.keys(pending).length > 0
+  const discard = () => {
+    form.setValues(applied)
+    form.setErrors({})
+    form.setMessage(null)
+  }
+  useDraftGuard(dirty)
+  const apply = () =>
+    form.submit(async () => {
+      const values = form.values
+      const saved = await orgApi.updateTheme(orgId, pending)
+      setApplied(values)
+      onSaved(saved)
       void refresh()
       // Farben der Instanz gelten auch für Anmeldeseite und Seiten ohne Einheit
       if (isPlatform) void loadPlatform(true)
-    },
-  })
+    }, t('Übernommen. Die Farben gelten jetzt für alle.'))
 
   return (
     <div className="stack">
-      <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="card card-wide"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (dirty) void apply()
+        }}
+      >
         <h2>{t('Farben')}</h2>
-        {editable && <SaveStatus auto={auto} />}
         {isPlatform && (
           <p className="small">
             {t(
@@ -245,6 +259,34 @@ function ThemeForm({
           </span>
         </div>
         <ContrastHints primary={primary} accent={accent} />
+        {editable && (
+          <div className="stack" data-testid="farben-uebernehmen">
+            <p className="small" role="status">
+              {dirty
+                ? t(
+                    'Bisher siehst nur du die Änderungen in der Vorschau. Für alle gelten sie erst nach „Für alle übernehmen“.',
+                  )
+                : t(
+                    'Änderungen an den Farben zeigt zuerst die Vorschau. Für alle gelten sie erst nach „Für alle übernehmen“.',
+                  )}
+            </p>
+            {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+            <div className="button-row">
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={!dirty || form.busy}
+              >
+                {t('Für alle übernehmen')}
+              </button>
+              {dirty && (
+                <button type="button" className="button" disabled={form.busy} onClick={discard}>
+                  {t('Änderungen verwerfen')}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         <p className="muted small">
           {t('Das Design und seine Farbverwendung stellst du hier ein:')}{' '}
           <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link>.

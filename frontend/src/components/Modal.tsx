@@ -4,10 +4,13 @@
 // und Screenreader gesperrt (inert), Esc schließt, und danach kehrt der Fokus
 // zum auslösenden Element zurück. `beforeClose` kann das Schließen verhindern,
 // z. B. damit ein angefangener Entwurf nicht versehentlich verloren geht.
+// Ohne `beforeClose` schützt der Dialog selbst: Wurde etwas eingegeben, fragen Esc, „Schließen“
+// und der Klick daneben vor dem Verwerfen (UX-Audit 16.11. VW-26; Regel in docs/ui-rueckmeldungen.md).
 import { useEffect, useId, useRef } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { t } from '../i18n/index.ts'
+import { confirmDiscard } from './leaveGuard.ts'
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -16,20 +19,26 @@ export function Modal({
   title,
   onClose,
   beforeClose,
+  guard = true,
   children,
 }: {
   title: string
   onClose: () => void
   /** Liefert false, wenn der Dialog offen bleiben soll. */
   beforeClose?: () => boolean | Promise<boolean>
+  /** false: Eingaben sind nichts, was verloren gehen kann (z. B. ein Suchfeld). */
+  guard?: boolean
   children: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const titleId = useId()
-  const latest = useRef({ onClose, beforeClose })
+  const latest = useRef({ onClose, beforeClose, guard })
   useEffect(() => {
-    latest.current = { onClose, beforeClose }
+    latest.current = { onClose, beforeClose, guard }
   })
+  // Seit dem Öffnen wurde ein Feld geändert
+  const touched = useRef(false)
+  const asking = useRef(false)
 
   // Beim Öffnen: Fokus in den Dialog, Hintergrund sperren; beim Schließen zurück.
   useEffect(() => {
@@ -47,8 +56,18 @@ export function Modal({
   }, [])
 
   async function requestClose() {
-    const guard = latest.current.beforeClose
-    if (guard && !(await guard())) return
+    const before = latest.current.beforeClose
+    if (before) {
+      if (!(await before())) return
+    } else if (latest.current.guard && touched.current) {
+      if (asking.current) return
+      asking.current = true
+      try {
+        if (!(await confirmDiscard(true))) return
+      } finally {
+        asking.current = false
+      }
+    }
     latest.current.onClose()
   }
 
@@ -89,6 +108,12 @@ export function Modal({
           ref={ref}
           onKeyDown={onKeyDown}
           onMouseDown={(e) => e.stopPropagation()}
+          onInput={() => {
+            touched.current = true
+          }}
+          onChange={() => {
+            touched.current = true
+          }}
         >
           <div className="modal-head">
             <h2 id={titleId}>{title}</h2>
