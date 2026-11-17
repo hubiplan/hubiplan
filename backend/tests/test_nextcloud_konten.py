@@ -59,7 +59,7 @@ def managed(org, **extra):
         org,
         manage_accounts=True,
         service_user="hubiplan-dienst",
-        service_password=encrypt("app-passwort"),
+        service_password=encrypt("app-passwort", purpose="nextcloud"),
         account_group="HUBIplan",
         **extra,
     )
