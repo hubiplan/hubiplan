@@ -27,6 +27,7 @@ from access.models import Role
 from audit.log import record
 from core.api_base import OrgScopedMixin
 from core.files import delete_on_commit
+from core.listing import page_of
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import Membership, MemberType
 from members.personsearch import ordered
@@ -737,9 +738,11 @@ class _Recipients(APIView):
                 }
             )
         rows = ordered(circular.recipients.select_related("club"), "last_name", "first_name", "pk")
-        return Response(
-            {"counts": sent_counts(circular), "items": [recipient_data(r) for r in rows]}
-        )
+        rows, page = page_of(request.query_params, rows)
+        data = {"counts": sent_counts(circular), "items": [recipient_data(r) for r in rows]}
+        if page is not None:
+            data["page"] = page
+        return Response(data)
 
 
 class _Search(APIView):

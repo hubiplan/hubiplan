@@ -13723,6 +13723,25 @@ msgstr "Nextcloud assignment changed"
 msgid "Hallo,\n\nbei {org} hat {who} für „{name}“ geändert: {what}.\n\nDiese Zuordnungen bestimmen, welche Konten und Gruppen in der Nextcloud jemand bekommt. War das nicht abgesprochen, prüft bitte unter Einstellungen › Nextcloud.\n"
 msgstr "Hello,\n\nat {org}, {who} changed the following for “{name}”: {what}.\n\nThese assignments determine which accounts and groups someone gets in the Nextcloud. If this was not agreed, please check under Settings › Nextcloud.\n"
 
+msgid "{where}: Die Satzung aus der Datei wird nicht übernommen."
+msgstr "{where}: The statutes from the file are not taken over."
+
+msgid "Für diesen Import fehlt das Recht „{code}“."
+msgstr "This import requires the permission “{code}”."
+
+msgid "{where}: {x1} {x2} gehört zu keiner Abteilung der Datei und kann nicht übernommen werden."
+msgstr "{where}: {x1} {x2} does not belong to any department in the file and cannot be taken over."
+
+msgid "Eine Zeile gehört zu keiner Abteilung der Datei."
+msgstr "A row does not belong to any department in the file."
+
+msgid "{x0}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{x0}: Only clubs can be imported below a unit."
+
+msgid "{where}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{where}: Only clubs can be imported below a unit."
+
+
 msgid "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder mit Suchwort.]"
 msgstr "[Answer shortened: too long. Please ask more narrowly, e.g. for one text, one page or with a search word.]"
 
@@ -13763,6 +13782,9 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Zu viele Suchanfragen."
+msgstr "Too many searches."
 
 msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
 msgstr "Please update the app; HUBIplan no longer supports this version."
