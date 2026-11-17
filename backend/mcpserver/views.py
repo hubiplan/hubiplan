@@ -107,6 +107,9 @@ class McpView(APIView):
 # --- Stufe 1a: mit Anmeldung, für die verbundene Einheit (/api/mcp/verein/) ---
 
 GRANT_LIMIT = 300  # Werkzeugaufrufe je Stunde und Verbindung
+# Je Person über alle ihre Verbindungen (Gesamtaudit 15.11., MCP-09): Neue Verbindungen
+# vervielfachen sonst die Grenze
+USER_LIMIT = 600
 
 
 def _unauthorized(request, description: str = "") -> JsonResponse:
@@ -187,7 +190,9 @@ class McpClubView(APIView):
             return _json(
                 protocol.error(None, protocol.INVALID_REQUEST, "Unsupported protocol version"), 400
             )
-        if too_many(f"mcp:grant:{grant.pk}", GRANT_LIMIT, 3600):
+        if too_many(f"mcp:grant:{grant.pk}", GRANT_LIMIT, 3600) or too_many(
+            f"mcp:user:{grant.user_id}", USER_LIMIT, 3600
+        ):
             return _json(protocol.error(None, protocol.INVALID_REQUEST, "Too many requests"), 429)
         body = request.body
         if len(body) > MAX_BODY:

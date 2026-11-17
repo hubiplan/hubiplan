@@ -882,6 +882,10 @@ class PlatformSettings(models.Model):
     # Verbund Schritt 7: Personen melden sich hier mit ihrem Zugang einer gekoppelten
     # Instanz an (nach eigener Verknüpfung). Aus: nur Zugänge dieser Instanz.
     peering_login = models.BooleanField("Anmeldung über gekoppelte Instanzen", default=False)
+    # Gesamtaudit 15.11., MCP-09: Speicher für Webseitenbilder je Einheit (MB, 0 = ohne Grenze)
+    website_image_quota_mb = models.PositiveIntegerField(
+        "Speicher für Webseitenbilder je Einheit (MB)", default=2048, db_default=2048
+    )
     # White Label W2: quadratisches Symbol der Instanz für Browser-Tab und Handy (PWA).
     # Leer: das H-Zeichen von HUBIplan (konzepte/white-label.md)
     brand_icon = models.ImageField(

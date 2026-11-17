@@ -13708,6 +13708,17 @@ msgstr "After the start, the result can only be protected more strictly."
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
 
+msgid "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder mit Suchwort.]"
+msgstr "[Answer shortened: too long. Please ask more narrowly, e.g. for one text, one page or with a search word.]"
+
+msgid "Es gibt schon {n} offene Hochladelinks von dir. Bitte erst diese nutzen oder ablaufen lassen."
+msgstr "You already have {n} open upload links. Please use them first or let them expire."
+
+msgid "Für heute bzw. diese Stunde sind genug Bilder über Adressen geholt. Bitte später erneut oder einen Hochladelink nutzen."
+msgstr "Enough images have been fetched from addresses for today or this hour. Please try again later or use an upload link."
+
+msgid "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte Bilder löschen oder die Plattform um mehr Platz bitten."
+msgstr "The storage for website images is full ({mb} MB). Please delete images no longer used or ask the platform for more space."
 msgid "Die Instanz meldet andere Schlüssel als die Datei."
 msgstr "The instance reports different keys than the file."
 
@@ -13749,3 +13760,6 @@ msgstr "Only as a proposal: applies once the person accepts it in HUBIplan."
 
 msgid "Vorschlag für den Briefbogen"
 msgstr "Proposal for the letterhead"
+
+msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+msgstr "Please update the app; HUBIplan no longer supports this version."
