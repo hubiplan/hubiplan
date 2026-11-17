@@ -27,7 +27,8 @@ from todos.models import Todo
 from .factories import make_user
 from .test_m3_workflows import member, types, url  # noqa: F401
 
-pytestmark = pytest.mark.django_db
+# Anfragen wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
 
 
 def _konto(c, orgs, member) -> tuple[list, bytes]:
