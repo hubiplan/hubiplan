@@ -9,7 +9,8 @@ from admission.models import KioskLink
 
 from .test_mitgliedsantrag import club, leichte_aufgabe, submit  # noqa: F401
 
-pytestmark = pytest.mark.django_db
+# Wie test_mitgliedsantrag: Antrag und Mails erst nach dem Commit
+pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def test_hoechstens_drei_bestaetigungsmails_je_adresse(club):  # noqa: F811
@@ -18,7 +19,7 @@ def test_hoechstens_drei_bestaetigungsmails_je_adresse(club):  # noqa: F811
     antworten = [
         submit(club["key"], last_name=f"Muster{i}", first_name=f"Max{i}") for i in range(5)
     ]
-    assert {r.status_code for r in antworten} == {201}
+    assert {r.status_code for r in antworten} == {201}, [r.content for r in antworten]
     assert len({frozenset(r.json()) for r in antworten}) == 1  # Antwort immer gleich
     an = [m for m in mail.outbox if "max.muster@example.org" in m.to]
     assert len(an) == 3
