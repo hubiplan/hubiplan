@@ -13806,3 +13806,9 @@ msgstr "Too many searches."
 
 msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
 msgstr "Please update the app; HUBIplan no longer supports this version."
+
+msgid "Passwort zurückgesetzt"
+msgstr "Password reset"
+
+msgid "Das Passwort deines HUBIplan-Zugangs wurde über „Passwort vergessen“ neu gesetzt."
+msgstr "The password of your HUBIplan account was set again via “Forgot password”."

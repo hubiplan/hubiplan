@@ -14,6 +14,7 @@ from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.core import mail
 from django.test import Client
 
+from .conftest import csrf_headers
 from .factories import PASSWORD, make_user
 
 pytestmark = pytest.mark.django_db
@@ -77,3 +78,71 @@ def test_email_wechsel_an_alte_und_neue_adresse(api, django_capture_on_commit_ca
         "neu-hinweis@example.org",
     ]
     assert all(_links(m.body) == [] for m in notices)
+
+
+AUTH = "/_allauth/browser/v1"
+
+
+def _reset(client, email: str, password: str):
+    resp = client.post(
+        f"{AUTH}/auth/password/request",
+        {"email": email},
+        content_type=JSON,
+        headers=csrf_headers(client),
+    )
+    assert resp.status_code == 200, resp.content
+    key = re.search(r"/passwort-zuruecksetzen/(\S+)", mail.outbox[-1].body).group(1)
+    mail.outbox.clear()
+    resp = client.post(
+        f"{AUTH}/auth/password/reset",
+        {"key": key, "password": password},
+        content_type=JSON,
+        headers=csrf_headers(client),
+    )
+    assert resp.status_code in (200, 401), resp.content
+
+
+def test_passwort_zurueckgesetzt(client, django_capture_on_commit_callbacks):
+    from django.utils import timezone
+
+    user = make_user("reset-hinweis@example.org")
+    user.last_login = timezone.now()
+    user.save(update_fields=["last_login"])
+    with django_capture_on_commit_callbacks(execute=True):
+        _reset(client, user.email, "Ganz-Neues-Passwort-42")
+    notes = [m for m in mail.outbox if m.subject == "Passwort zurückgesetzt"]
+    assert [m.to for m in notes] == [[user.email]]
+    assert _links(notes[0].body) == []
+    assert "Ganz-Neues-Passwort-42" not in notes[0].body
+
+
+def test_erstes_passwort_aus_der_einladung_ohne_hinweis(client, django_capture_on_commit_callbacks):
+    from accounts.invitations import password_link
+
+    user = make_user("einladung-hinweis@example.org")
+    user.set_unusable_password()
+    user.save()
+    key = password_link(user).rsplit("/", 1)[1]
+    mail.outbox.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        resp = client.post(
+            f"{AUTH}/auth/password/reset",
+            {"key": key, "password": "Mein-Erstes-Passwort-7"},
+            content_type=JSON,
+            headers=csrf_headers(client),
+        )
+    assert resp.status_code in (200, 401), resp.content
+    assert not [m for m in mail.outbox if m.subject == "Passwort zurückgesetzt"]
+
+
+def test_passkey_hinweis_kommt_aus_passkeys(django_capture_on_commit_callbacks):
+    """Passkeys meldet accounts/passkeys.py; hier kein zweiter Hinweis."""
+    from allauth.mfa.models import Authenticator
+
+    user = make_user("passkey-hinweis@example.org")
+    passkey = Authenticator(user=user, type=Authenticator.Type.WEBAUTHN, data={"name": "Laptop"})
+    mail.outbox.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        _signal(signals.authenticator_added, user, passkey)
+        _signal(signals.authenticator_removed, user, passkey)
+    assert len(mail.outbox) == 2, [m.subject for m in mail.outbox]

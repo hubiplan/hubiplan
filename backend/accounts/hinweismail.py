@@ -33,6 +33,12 @@ RECOVERY_RESET = (
         "gelten nicht mehr."
     ),
 )
+PASSWORD_RESET = (
+    gettext_noop("Passwort zurückgesetzt"),
+    gettext_noop(
+        "Das Passwort deines HUBIplan-Zugangs wurde über „Passwort vergessen“ neu gesetzt."
+    ),
+)
 EMAIL_CHANGED = (
     gettext_noop("Anmelde-E-Mail geändert"),
     gettext_noop("Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."),
@@ -102,9 +108,21 @@ def _on_reset(sender, request=None, user=None, authenticator=None, **kwargs):
     notify(user, RECOVERY_RESET)
 
 
+def _on_password_reset(sender, request=None, user=None, **kwargs):
+    # Ein Konto, das sich noch nie angemeldet hat, legt sein erstes Passwort über den Link der
+    # Einladung fest (derselbe Weg); dafür kein Hinweis. Passwort ändern und festlegen unter
+    # Mein Konto melden accounts/self_service.py (PasswordView), Passkeys accounts/passkeys.py.
+    if user is not None and user.last_login is not None:
+        notify(user, PASSWORD_RESET)
+
+
 def connect() -> None:
+    from allauth.account import signals as account_signals
     from allauth.mfa import signals
 
     signals.authenticator_added.connect(_on_added, dispatch_uid="hinweis-2fa-added")
     signals.authenticator_removed.connect(_on_removed, dispatch_uid="hinweis-2fa-removed")
     signals.authenticator_reset.connect(_on_reset, dispatch_uid="hinweis-2fa-reset")
+    account_signals.password_reset.connect(
+        _on_password_reset, dispatch_uid="hinweis-passwort-reset"
+    )
