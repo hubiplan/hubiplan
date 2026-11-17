@@ -13,6 +13,12 @@ Außerdem zählen:
 - Zahlungen der Untereinheiten mit eigener Kasse, die steuerlich zum Verein gehören. Personen
   werden über ihre Akte erkannt, damit dieselbe Person in Verein und Untereinheit nur einmal
   erscheint.
+
+Unter dem Zeilenschutz sieht der Verein die Kasse einer Untereinheit nicht, und die
+Untereinheit sieht die Mitgliedschaften des Vereins nicht. Deshalb wird jede Untereinheit in
+ihrem eigenen Bereich gelesen (wie in der steuerlichen Auswertung) und dort nur die Nummer der
+Mitgliedschaft gemerkt; Mitgliedschaft und Akte werden danach im Bereich der Mitgliedschaften
+aufgelöst (Gesamtaudit 15.11., AZ-04).
 """
 
 from __future__ import annotations
@@ -23,6 +29,8 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.utils.translation import gettext
+
+from core.tenancy import tenant_context, unit_context
 
 from .models import Booking, Donation
 
@@ -62,25 +70,100 @@ def _membership_key(membership) -> tuple[str, str]:
     return f"p{membership.person_id}", membership.person.display_name
 
 
-def _key(booking: Booking) -> tuple[str, str, object]:
-    """Schlüssel, Name und Mitgliedschaft der Person: Musiker der Musikerabrechnung,
-    sonst das Mitglied, sonst der Empfänger als Freitext."""
+def _booking_entry(booking: Booking, org) -> dict:
+    """Eine Zahlung als einfache Daten, ohne Mitgliedschaft und Akte zu laden.
+
+    Person: der Musiker der Musikerabrechnung, sonst das Mitglied der Buchung, sonst der
+    Empfänger als Freitext."""
     expense = getattr(booking, "performance_expense", None)
     musician = expense.claim.assignment.musician if expense and expense.claim_id else None
-    if musician is not None:
-        if musician.membership_id:
-            return (*_membership_key(musician.membership), musician.membership)
-        if musician.name:
-            return (*_free_text(musician.name), None)
-    if booking.membership_id:
-        return (*_membership_key(booking.membership), booking.membership)
-    return (*_free_text(booking.counterparty), None)
+    if musician is not None and musician.membership_id:
+        membership_id, name = musician.membership_id, musician.name or booking.counterparty
+    elif musician is not None and musician.name:
+        membership_id, name = None, musician.name
+    else:
+        membership_id, name = booking.membership_id, booking.counterparty
+    return {
+        "membership_id": membership_id,
+        "name": name,
+        "allowance": booking.allowance,
+        "order": (booking.date, booking.organization_id, booking.number),
+        "row": {
+            "id": booking.id,
+            "source": "booking",
+            "display_number": booking.display_number,
+            "date": booking.date,
+            "amount": booking.amount,
+            "text": booking.text,
+            "unit": booking.organization.name if booking.organization_id != org.pk else "",
+        },
+    }
 
 
-def _donation_key(donation: Donation) -> tuple[str, str, object]:
-    if donation.membership_id:
-        return (*_membership_key(donation.membership), donation.membership)
-    return (*_free_text(donation.donor_name), None)
+def _waiver_entry(donation: Donation, org) -> dict:
+    return {
+        "membership_id": donation.membership_id,
+        "name": donation.donor_name,
+        "allowance": donation.allowance,
+        "order": (donation.date, donation.pk),
+        "row": {
+            "id": donation.id,
+            "source": "waiver",
+            "display_number": gettext("Verzicht (Aufwandsspende)"),
+            "date": donation.date,
+            "amount": donation.amount,
+            "text": donation.note,
+            "unit": donation.organization.name if donation.organization_id != org.pk else "",
+        },
+    }
+
+
+def _per_unit(org, orgs, read) -> list:
+    """Liest die eigene Einheit im Kontext der Anfrage und jede Untereinheit strikt in ihrem
+    eigenen Bereich (eigene RLS-Zeilen), wie ``tax._totals_of``. ``read`` lädt die Daten
+    vollständig, solange der Bereich gilt."""
+    rows: list = []
+    for unit in orgs:
+        if unit.pk == org.pk:
+            rows.extend(read([unit]))
+        else:
+            with unit_context(unit.pk):
+                rows.extend(read([unit]))
+    return rows
+
+
+def _memberships(org, ids: set[int]) -> dict:
+    """Mitgliedschaften mit Akte, im Kontext der Anfrage gelesen. Im Arbeitsbereich einer
+    Untereinheit liegen sie im Datenbereich darüber (wie ``billing.units.member_of``)."""
+    from members.models import Membership
+    from organizations.models import Organization
+
+    if not ids:
+        return {}
+    found = {m.pk: m for m in Membership.objects.filter(pk__in=ids).select_related("person")}
+    missing = ids - found.keys()
+    area = org.organization_id
+    if missing and org.type == Organization.Type.UNIT and area and area != org.pk:
+        with tenant_context(area):
+            found.update(
+                (m.pk, m)
+                for m in Membership.objects.filter(
+                    pk__in=missing, organization_id=area
+                ).select_related("person")
+            )
+    return found
+
+
+def _person_of(entry: dict, memberships: dict) -> tuple[str, str, object]:
+    """Schlüssel, Name und Mitgliedschaft der Person einer Zahlung."""
+    membership_id = entry["membership_id"]
+    if membership_id:
+        membership = memberships.get(membership_id)
+        if membership is not None:
+            return (*_membership_key(membership), membership)
+        # Nicht lesbar: je Mitgliedschaft getrennt zählen, nicht mit Freitext mischen
+        return f"m{membership_id}", (entry["name"] or "").strip(), None
+    return (*_free_text(entry["name"] or ""), None)
 
 
 def _board_people(orgs, year: int) -> set[int]:
@@ -125,11 +208,9 @@ def bookings(orgs, year: int):
             )
         )
         .exclude(allowance="")
-        .select_related(
-            "membership__person",
-            "organization",
-            "performance_expense__claim__assignment__musician__membership__person",
-        )
+        # Mitgliedschaft und Akte nicht mitladen: Im Bereich einer Untereinheit sind sie
+        # nicht sichtbar (AZ-04); ``_memberships`` löst sie danach auf.
+        .select_related("organization", "performance_expense__claim__assignment__musician")
         .order_by("date", "organization_id", "number")
     )
 
@@ -139,14 +220,14 @@ def waivers(orgs, year: int):
     return (
         Donation.objects.filter(organization__in=orgs, waiver=True, date__year=year)
         .exclude(allowance="")
-        .select_related("membership__person", "organization")
+        .select_related("organization")
         .order_by("date", "pk")
     )
 
 
-def _music_unassigned(orgs, year: int) -> dict | None:
-    """Auszahlungen aus der Musikerabrechnung ohne gewählte Vergütungsart."""
-    rows = list(
+def _music_amounts(orgs, year: int) -> list[Decimal]:
+    """Beträge der Auszahlungen aus der Musikerabrechnung ohne gewählte Vergütungsart."""
+    return list(
         _active(
             Booking.objects.filter(
                 organization__in=orgs,
@@ -157,6 +238,9 @@ def _music_unassigned(orgs, year: int) -> dict | None:
             )
         ).values_list("amount", flat=True)
     )
+
+
+def _music_unassigned(rows: list[Decimal]) -> dict | None:
     if not rows:
         return None
     return {"count": len(rows), "total": sum(rows, Decimal("0"))}
@@ -183,40 +267,20 @@ def report(org, year: int) -> dict:
         person["totals"][kind] = person["totals"].get(kind, Decimal("0")) + row["amount"]
         person["bookings"].append({**row, "allowance": kind})
 
-    for b in bookings(orgs, year):
-        key, name, membership = _key(b)
-        add(
-            key,
-            name,
-            membership,
-            b.allowance,
-            {
-                "id": b.id,
-                "source": "booking",
-                "display_number": b.display_number,
-                "date": b.date,
-                "amount": b.amount,
-                "text": b.text,
-                "unit": b.organization.name if b.organization_id != org.pk else "",
-            },
-        )
-    for d in waivers(orgs, year):
-        key, name, membership = _donation_key(d)
-        add(
-            key,
-            name,
-            membership,
-            d.allowance,
-            {
-                "id": d.id,
-                "source": "waiver",
-                "display_number": gettext("Verzicht (Aufwandsspende)"),
-                "date": d.date,
-                "amount": d.amount,
-                "text": d.note,
-                "unit": d.organization.name if d.organization_id != org.pk else "",
-            },
-        )
+    # Erst je Einheit in ihrem Bereich lesen, dann wie bisher über alle Einheiten ordnen
+    paid = sorted(
+        _per_unit(org, orgs, lambda o: [_booking_entry(b, org) for b in bookings(o, year)]),
+        key=lambda e: e["order"],
+    )
+    waived = sorted(
+        _per_unit(org, orgs, lambda o: [_waiver_entry(d, org) for d in waivers(o, year)]),
+        key=lambda e: e["order"],
+    )
+    memberships = _memberships(
+        org, {e["membership_id"] for e in (*paid, *waived) if e["membership_id"]}
+    )
+    for entry in (*paid, *waived):
+        add(*_person_of(entry, memberships), entry["allowance"], entry["row"])
     for person in people.values():
         person["bookings"].sort(key=lambda r: r["date"])
     rows = []
@@ -264,7 +328,7 @@ def report(org, year: int) -> dict:
                 ),
             }
         )
-    music = _music_unassigned(orgs, year)
+    music = _music_unassigned(_per_unit(org, orgs, lambda o: _music_amounts(o, year)))
     if music:
         warnings.append(
             {
