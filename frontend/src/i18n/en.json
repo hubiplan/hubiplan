@@ -4766,6 +4766,7 @@
   "Hervorgehoben.": "Highlighted.",
   "Auf dieser Seite nicht zu sehen. Öffne zuerst die Seite aus Schritt 1.": "Not visible on this page. Open the page from step 1 first.",
   "Dafür fehlt dir ein Recht": "You lack a right for these",
+  "Diese Zeilen zeigen auf Verwaltungs- oder Dienstkonten der Nextcloud und werden nie zugeordnet. Bitte entfernen:": "These lines point to administration or service accounts of the Nextcloud and are never assigned. Please remove:",
   "Bisherige Benutzernamen in der Nextcloud": "Existing user names in the Nextcloud",
   "Für Konten, die es in der Nextcloud schon gibt: je Zeile die Anmelde-E-Mail bei HUBIplan und der bisherige Benutzername. Wer hier steht, landet bei der ersten Anmeldung in seinem vorhandenen Konto mit allen Dateien. Wer fehlt, bekommt ein neues Konto. Nur eintragen, wenn es wirklich dieselbe Person ist.": "For accounts that already exist in the Nextcloud: one line each with the HUBIplan login email and the existing user name. Anyone listed here lands in their existing account with all files on first login. Anyone missing gets a new account. Only enter a line if it really is the same person.",
   "männlich": "male",

@@ -17,3 +17,5 @@ Under **Adjust groups for individual roles** you choose which Nextcloud groups a
 Nextcloud itself decides how long a sign-in lasts: usually up to 24 hours without activity and up to 15 days with “stay logged in”; sync apps stay connected permanently. If access ends in HUBIplan without automatic disabling, only the next sign-in fails. Running sessions and sync apps only end when the account is disabled, automatically or by hand in Nextcloud.
 
 “Only with PKCE (S256)” is switched on from the start and protects the login code. The Nextcloud app “user_oidc” uses PKCE by itself. You only need to switch it off for older applications that cannot do PKCE.
+
+The accounts “admin”, “root”, “administrator” and the service account can never be assigned, not even via “Existing user names in the Nextcloud”. If such a line is already there, the page shows it in red; it has no effect and should be removed. Changes to user names and groups for roles require a fresh confirmation with the second factor, and everyone allowed to manage roles gets a notice by email.

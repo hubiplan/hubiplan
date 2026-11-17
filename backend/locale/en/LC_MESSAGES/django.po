@@ -13708,6 +13708,21 @@ msgstr "After the start, the result can only be protected more strictly."
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
 
+msgid "Verwaltungs- und Dienstkonten der Nextcloud lassen sich nicht zuordnen (admin, root, administrator, das Dienstkonto). Bitte entfernen: {lines}"
+msgstr "Administration and service accounts of the Nextcloud cannot be assigned (admin, root, administrator, the service account). Please remove: {lines}"
+
+msgid "bisherige Benutzernamen"
+msgstr "existing user names"
+
+msgid "Gruppen für Rollen"
+msgstr "groups for roles"
+
+msgid "Nextcloud-Zuordnung geändert"
+msgstr "Nextcloud assignment changed"
+
+msgid "Hallo,\n\nbei {org} hat {who} für „{name}“ geändert: {what}.\n\nDiese Zuordnungen bestimmen, welche Konten und Gruppen in der Nextcloud jemand bekommt. War das nicht abgesprochen, prüft bitte unter Einstellungen › Nextcloud.\n"
+msgstr "Hello,\n\nat {org}, {who} changed the following for “{name}”: {what}.\n\nThese assignments determine which accounts and groups someone gets in the Nextcloud. If this was not agreed, please check under Settings › Nextcloud.\n"
+
 msgid "{where}: Die Satzung aus der Datei wird nicht übernommen."
 msgstr "{where}: The statutes from the file are not taken over."
 
