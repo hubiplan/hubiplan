@@ -7,7 +7,8 @@ from django.test import Client
 
 from organizations.models import Department
 from statutes.models import StatutePublication, StatuteVersion
-from website.models import Website
+
+from .factories import make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -102,7 +103,7 @@ def test_webseite_dokumente(orgs, board_a, api):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    make_website(org, public_key="schluessel-a", state="public")
     c = api(board_a)
     info = Client().get("/api/public/site/v1/schluessel-a/").json()
     assert info["fee_rules_url"] is None and info["fee_rules_preview_url"] is None

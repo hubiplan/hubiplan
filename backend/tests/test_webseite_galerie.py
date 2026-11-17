@@ -7,9 +7,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from PIL import Image
 
-from website.models import GalleryAlbum, GalleryItem, Website, WebsiteImage
+from website.models import GalleryAlbum, GalleryItem, WebsiteImage
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -24,9 +24,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    return Website.objects.create(
-        organization=org, public_key="galerie-a", state="public", blocks={"gallery": True}
-    )
+    return make_website(org, public_key="galerie-a", state="public", blocks={"gallery": True})
 
 
 @pytest.fixture
@@ -97,7 +95,7 @@ class TestVerwaltung:
         # andere Webseite
         orgs["b"].enabled_modules = ["members", "website"]
         orgs["b"].save()
-        Website.objects.create(organization=orgs["b"], public_key="galerie-b")
+        make_website(orgs["b"], public_key="galerie-b")
         cb = api(board_b)
         assert cb.get(url(orgs["b"], f"albums/{album['id']}/")).status_code == 404
         resp = post(cb, orgs["b"], "albums/", {"title": "B", "parent": album["id"]})
@@ -290,6 +288,6 @@ class TestOeffentlich:
         assert not any(n["key"] == "gallery" for n in nav)
 
     def test_neue_webseite_ohne_galerie(self, orgs):
-        site = Website.objects.create(organization=orgs["b"], public_key="neu-b")
+        site = make_website(orgs["b"], public_key="neu-b")
         assert site.block_on("gallery") is False
         assert site.block_on("events") is True

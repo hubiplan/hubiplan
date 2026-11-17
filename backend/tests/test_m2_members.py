@@ -7,6 +7,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 from access.models import Role
+from core.tenancy import rls_bypass
 from members.models import (
     ContactDetails,
     DepartmentMembership,
@@ -23,6 +24,8 @@ pytestmark = pytest.mark.django_db
 JSON = "application/json"
 
 
+# Testvorbereitung unter rls_bypass (Gesamtaudit 15.11., AZ-04)
+@rls_bypass()
 def make_types(org):
     return {
         "aktiv": MemberType.objects.create(organization=org, name="aktiv", active=True),

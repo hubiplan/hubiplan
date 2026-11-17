@@ -19,7 +19,7 @@ from core.tenancy import rls_bypass
 from website import upload_views
 from website.models import ImageUploadLink, SocialDraft, WebsiteImage, WebsiteText
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 from .test_mcp_verein import call, club, connect, editor, rpc, site  # noqa: F401
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -445,7 +445,6 @@ def test_titelbild_und_karussell_setzen(club, site, editor):  # noqa: F811
 
 
 def test_textseite_mit_bild_und_fremde_bilder_abgelehnt(club, site, editor, orgs):  # noqa: F811
-    from website.models import Website
 
     token = connect(editor, club)["access_token"]
     image = add_image(site, editor, alt_text="Vereinsheim")
@@ -457,7 +456,7 @@ def test_textseite_mit_bild_und_fremde_bilder_abgelehnt(club, site, editor, orgs
     page = WebsiteText.objects.get(website=site, slug="ueber-uns")
     assert page.image_id == image.pk
     # Bild einer anderen Einheit
-    other = Website.objects.create(organization=orgs["b"], public_key="mcp-b")
+    other = make_website(orgs["b"], public_key="mcp-b")
     with rls_bypass():
         foreign = add_image(other, editor)
     text, failed = call(token, "webseite_text_aendern", nummer=page.pk, bild=foreign.pk)

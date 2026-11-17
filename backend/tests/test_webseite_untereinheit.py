@@ -16,7 +16,7 @@ from members.models import DepartmentRoleHolder
 from organizations.models import Department, DepartmentRole
 from website.models import Website
 
-from .factories import make_member, make_user
+from .factories import make_member, make_user, make_website
 
 JSON = "application/json"
 
@@ -138,9 +138,7 @@ class TestOeffentlich:
     @pytest.fixture
     def site(self, zug_site):
         with rls_bypass():
-            Website.objects.create(
-                organization=zug_site["zug"], public_key="zug-schluessel", state="public"
-            )
+            make_website(zug_site["zug"], public_key="zug-schluessel", state="public")
         return zug_site
 
     def test_grunddaten(self, site):

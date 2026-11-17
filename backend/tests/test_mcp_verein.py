@@ -26,7 +26,7 @@ from mcpserver.oauth import redirect_kind
 from website.content_models import WebsiteText
 from website.models import Website
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -56,8 +56,8 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    site = Website.objects.create(
-        organization=club,
+    site = make_website(
+        club,
         public_key="mcp-a",
         state="public",
         privacy_mode="link",
@@ -453,7 +453,7 @@ def test_nur_eigene_einheit(club, site, editor, orgs):
     other = orgs["b"]
     other.enabled_modules = ["members", "events", "website", "mcp"]
     other.save()
-    Website.objects.create(organization=other, public_key="mcp-b")
+    make_website(other, public_key="mcp-b")
     token = connect(editor, club)["access_token"]
     with_other = WebsiteText.objects.create(
         organization=other,

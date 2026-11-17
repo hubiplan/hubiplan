@@ -10,7 +10,8 @@ from django.test import Client
 from competitions.models import Competition, Series
 from core.webslug import make_slug
 from honors.models import Dignity, Reign
-from website.models import Website
+
+from .factories import make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -20,7 +21,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "honors", "competitions"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-149", state="public")
+    return make_website(org, public_key="schluessel-149", state="public")
 
 
 def public(path=""):

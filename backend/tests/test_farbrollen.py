@@ -13,6 +13,8 @@ from organizations.theme import clean_palette_roles, effective_theme
 from website import designs
 from website.models import Website, WebsiteDomain
 
+from .factories import make_website
+
 pytestmark = pytest.mark.django_db(transaction=True)
 JSON = "application/json"
 
@@ -123,8 +125,8 @@ def test_schnittstelle_liefert_farbrollen(orgs):
         setattr(org, k, v)
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    site = Website.objects.create(
-        organization=org,
+    site = make_website(
+        org,
         public_key="schluessel-r",
         state=Website.State.PUBLIC,
         privacy_text="Datenschutz (erfunden)",

@@ -14,7 +14,7 @@ from core import ratelimit
 from website import public, public_views, services
 from website.models import Website
 
-from .factories import make_member
+from .factories import make_member, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -109,7 +109,7 @@ def seite(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    site = Website.objects.create(organization=org, public_key="schluessel-ga", state="public")
+    site = make_website(org, public_key="schluessel-ga", state="public")
     erika = make_member(org, "Erika", "Beispiel", email="erika@example.org")
     chair = Role.objects.create(
         organization=org, name="1. Vorsitzende", on_website=True, website_position=1

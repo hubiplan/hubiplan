@@ -18,7 +18,7 @@ from finance.models import Account, Booking, Category, Project, ProjectSeries
 from members.models import DepartmentMembership, FederationMember, Membership, Person
 from organizations.models import Department, DepartmentRole, Organization
 
-from .factories import give_role, make_member, make_org, make_user, named
+from .factories import give_role, make_member, make_org, make_user, make_website, named
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -979,9 +979,7 @@ class TestWebseite:
 
         club = club_c["club"]
         with tenant_context(club.pk):
-            site = Website.objects.create(
-                organization=club, public_key=Website.new_key(), state="public"
-            )
+            site = make_website(club, public_key=Website.new_key(), state="public")
             WebsiteDomain.objects.create(organization=club, website=site, hostname="c.example.org")
             image = WebsiteImage(organization=club, website=site, key="schluessel1", width=1)
             image.file.save("bild.png", ContentFile(PNG), save=False)

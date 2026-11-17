@@ -8,8 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.utils import timezone
 
-from website.models import Website
-
+from .factories import make_website
 from .test_m12_events import cal, create, org_base, private_root  # noqa: F401
 
 JSON = "application/json"
@@ -30,7 +29,7 @@ def site(cal):
     org = cal["a"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    return make_website(org, public_key="schluessel-a", state="public")
 
 
 def public(path):
@@ -86,7 +85,7 @@ def test_fremde_webseite_und_ohne_terminbereich(cal, site, board_a, board_b, api
     org_b = cal["b"]
     org_b.enabled_modules = [*org_b.enabled_modules, "website"]
     org_b.save()
-    Website.objects.create(organization=org_b, public_key="schluessel-b", state="public")
+    make_website(org_b, public_key="schluessel-b", state="public")
     resp = Client().get(f"/api/public/site/v1/schluessel-b/events/attachments/{att['id']}/")
     assert resp.status_code == 404
     # Mitglied ohne Bearbeitungsrecht kann den Schalter nicht setzen

@@ -11,6 +11,8 @@ from organizations.theme import effective_theme
 from website import designs
 from website.models import Website, WebsiteDomain
 
+from .factories import make_website
+
 pytestmark = pytest.mark.django_db(transaction=True)
 JSON = "application/json"
 
@@ -159,8 +161,8 @@ def site(orgs):
     org.gradients = [{"name": "Blau", "from": 0, "to": 1, "direction": "right"}]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    site = Website.objects.create(
-        organization=org,
+    site = make_website(
+        org,
         public_key="schluessel-v",
         state=Website.State.PUBLIC,
         privacy_text="Datenschutz (erfunden)",

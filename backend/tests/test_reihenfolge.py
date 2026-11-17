@@ -6,7 +6,7 @@ from access.models import Role
 from members.models import HonoraryTitle, MemberType
 from organizations.models import Department, DepartmentRole
 
-from .factories import audit_with
+from .factories import audit_with, make_website
 
 JSON = "application/json"
 
@@ -124,12 +124,10 @@ class TestListen:
 def test_webseite_zeigt_untereinheiten_in_gezogener_reihenfolge(client_a, orgs):
     from django.test import Client
 
-    from website.models import Website
-
     org = orgs["a"]
     org.enabled_modules = ["members", "events", "website"]
     org.save()
-    Website.objects.create(organization=org, public_key="schluessel-r", state="public")
+    make_website(org, public_key="schluessel-r", state="public")
     a = Department.objects.create(organization=org, parent=org, name="Alpha")
     b = Department.objects.create(organization=org, parent=org, name="Beta")
     client_a.post(

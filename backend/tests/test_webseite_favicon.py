@@ -11,6 +11,8 @@ from PIL import Image
 from organizations.models import PlatformSettings
 from website.models import Website
 
+from .factories import make_website
+
 pytestmark = pytest.mark.django_db(transaction=True)
 
 BASE = "/api/public/site/v1/favicon-a/"
@@ -27,8 +29,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key="favicon-a",
         state="public",
         privacy_published_text="Wir speichern wenig.",

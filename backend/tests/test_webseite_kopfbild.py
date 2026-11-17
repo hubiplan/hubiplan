@@ -8,9 +8,9 @@ from django.test import Client
 from django.utils import timezone
 from PIL import Image
 
-from website.models import Website, WebsiteImage
+from website.models import WebsiteImage
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -25,8 +25,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key="kopf-a",
         state="public",
         privacy_published_text="Wir speichern wenig.",
