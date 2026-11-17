@@ -13707,3 +13707,47 @@ msgstr "After the start, the result can only be protected more strictly."
 
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
+
+msgid "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder mit Suchwort.]"
+msgstr "[Answer shortened: too long. Please ask more narrowly, e.g. for one text, one page or with a search word.]"
+
+msgid "Es gibt schon {n} offene Hochladelinks von dir. Bitte erst diese nutzen oder ablaufen lassen."
+msgstr "You already have {n} open upload links. Please use them first or let them expire."
+
+msgid "Für heute bzw. diese Stunde sind genug Bilder über Adressen geholt. Bitte später erneut oder einen Hochladelink nutzen."
+msgstr "Enough images have been fetched from addresses for today or this hour. Please try again later or use an upload link."
+
+msgid "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte Bilder löschen oder die Plattform um mehr Platz bitten."
+msgstr "The storage for website images is full ({mb} MB). Please delete images no longer used or ask the platform for more space."
+msgid "Die Instanz meldet andere Schlüssel als die Datei."
+msgstr "The instance reports different keys than the file."
+
+msgid "Eine Kopplung in der Datei ist unvollständig und wurde übergangen."
+msgstr "A link in the file is incomplete and was skipped."
+
+msgid "Die Kopplung mit „{name}“ läuft auf dieser Instanz und wurde übergangen."
+msgstr "The link with “{name}” runs on this instance and was skipped."
+
+msgid "{url} ist hier mit einem anderen Schlüssel bekannt; übergangen."
+msgstr "{url} is known here with a different key; skipped."
+
+msgid "Kopplung mit „{name}“ übergangen: {reason}"
+msgstr "Link with “{name}” skipped: {reason}"
+
+msgid "Platzhalter für „{name}“ fehlt; Kopplung übergangen."
+msgstr "Placeholder for “{name}” is missing; link skipped."
+
+msgid "Es gibt hier schon eine Einheit darüber; Kopplung übergangen."
+msgstr "There is already a unit above here; link skipped."
+
+msgid "Kopplungen aus der Datei übernimmt nur die Plattform; „{name}“: {count} übergangen."
+msgstr "Only the platform takes over links from the file; “{name}”: {count} skipped."
+
+msgid "{where}: {count} Kopplung(en) im Verbund werden übernommen und ruhen, bis ein Vorstand den Fingerabdruck der anderen Instanz bestätigt."
+msgstr "{where}: {count} federation link(s) will be taken over and stay on hold until a board member confirms the fingerprint of the other instance."
+
+msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
+msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+msgstr "Please update the app; HUBIplan no longer supports this version."

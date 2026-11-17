@@ -18,10 +18,10 @@ from django.conf import settings
 from django.contrib.sessions.backends.base import SessionBase
 from django.db import transaction
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from rest_framework import serializers
 from rest_framework.authentication import BaseAuthentication, SessionAuthentication
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import APIException, NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -54,6 +54,30 @@ logger = logging.getLogger(__name__)
 API_VERSION = 1
 # Älteste App-Version (versionCode), die diese Schnittstelle noch bedient
 MIN_APP_VERSION = 1
+# Je Plattform (Gesamtaudit 15.11., APP-11): Android zählt versionCode, iOS die Buildnummer
+# (CFBundleVersion); beide Zählungen sind unabhängig. ``min_app_version`` bleibt für ältere
+# Android-Fassungen eine Fassung lang der Android-Wert.
+MIN_APP_VERSIONS = {"android": MIN_APP_VERSION, "ios": 1}
+
+
+def app_too_old(platform: str, app_version: str) -> bool:
+    """Ist die App älter als ihre Plattform verlangt? Unlesbare Angaben gelten nicht als zu alt
+    (Entwicklungsfassungen)."""
+    try:
+        number = int(str(app_version).strip())
+    except ValueError:
+        return False
+    return number < MIN_APP_VERSIONS.get(platform, 1)
+
+
+class AppTooOld(APIException):
+    status_code = 426
+    default_code = "app_too_old"
+    default_detail = gettext_lazy(
+        "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+    )
+
+
 RATE = (10, 15 * 60)  # 10 Versuche je 15 Minuten und IP
 MAX_DEVICES = 10  # je Konto
 
@@ -188,6 +212,7 @@ class InstanceView(APIView):
                 # Was diese Instanz kann (core/features.py, docs/versionen.md)
                 "features": app_features(),
                 "min_app_version": MIN_APP_VERSION,
+                "min_app_versions": MIN_APP_VERSIONS,
                 "url": settings.FRONTEND_URL,
                 # Push-Wege der Instanz; Abruf geht immer
                 "push": push_ways(),
@@ -283,6 +308,9 @@ class PairView(APIView):
             raise ValidationError(
                 gettext("Bitte den QR-Code scannen oder einen Anmeldelink öffnen.")
             )
+        if app_too_old(v["platform"], v.get("app_version", "")):
+            # Vor dem Einlösen: Der Code bleibt für die aktualisierte App gültig
+            raise AppTooOld()
         wrong_verifier = False
         with transaction.atomic():
             if v["code"]:

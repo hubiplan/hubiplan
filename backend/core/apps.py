@@ -9,7 +9,7 @@ class CoreConfig(AppConfig):
     def ready(self) -> None:
         # Registriert den Rollenwechsel (SET ROLE hubiplan_app) für jede neue
         # Datenbankverbindung – in Web-Anfragen, Celery-Jobs und Verwaltungsbefehlen.
-        from . import tenancy  # noqa: F401
+        from . import checks, tenancy  # noqa: F401
         from .encrypted_ordering import install
 
         install()

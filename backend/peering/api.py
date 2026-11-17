@@ -172,6 +172,8 @@ def _move_data(c: Coupling) -> dict | None:
         "fingerprint": move.get("fingerprint", ""),
         "country": move.get("country", ""),
         "at": move.get("at"),
+        # Aus einer Vereinsdatei übernommen (Gesamtaudit 15.11., AZ-01), kein Umzug der Gegenseite
+        "import": bool(move.get("import")),
     }
 
 

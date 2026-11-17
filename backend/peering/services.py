@@ -620,6 +620,8 @@ def deliver_later(coupling_id: int) -> None:
 
 def deliver(coupling_id: int) -> None:
     """Wartende Pakete einer Kopplung der Reihe nach zustellen."""
+    if not enabled():
+        return  # Verbund abgeschaltet (Gesamtaudit 15.11., AZ-01): nichts geht hinaus
     coupling = Coupling.objects.select_related("peer", "local_unit").filter(pk=coupling_id).first()
     if coupling is None or coupling.state in (
         Coupling.State.ENDED,
@@ -768,6 +770,8 @@ def _retry(coupling: Coupling, msg: Message, error: str) -> None:
 
 def deliver_due() -> None:
     """Regelmäßig: fällige Pakete aller Kopplungen zustellen, bei Stau warnen."""
+    if not enabled():
+        return
     ids = (
         Message.objects.filter(
             direction=Message.Direction.OUT,
@@ -812,7 +816,7 @@ def sync(coupling: Coupling) -> int:
     geändert oder hat ein anderer Lauf ein Paket inzwischen eingereiht, wird der Bau
     verworfen. So überschreibt ein älterer Bau nie einen neueren Stand, und nach einem
     Widerruf oder Trennen geht kein Paket mehr hinaus."""
-    if coupling.state != Coupling.State.ACTIVE:
+    if coupling.state != Coupling.State.ACTIVE or not enabled():
         return 0
     snapshot = Coupling.objects.select_related("local_unit").get(pk=coupling.pk)
     if snapshot.state != Coupling.State.ACTIVE:
@@ -851,6 +855,8 @@ def sync(coupling: Coupling) -> int:
 
 
 def sync_all() -> None:
+    if not enabled():
+        return
     for coupling in Coupling.objects.filter(state=Coupling.State.ACTIVE):
         try:
             sync(coupling)
@@ -860,7 +866,7 @@ def sync_all() -> None:
 
 def reconcile(coupling: Coupling) -> list[str]:
     """Täglicher Abgleich: Prüfsummen der Gegenseite holen, Abweichendes neu senden."""
-    if coupling.state != Coupling.State.ACTIVE:
+    if coupling.state != Coupling.State.ACTIVE or not enabled():
         return []
     try:
         answer = transport.call(
@@ -905,6 +911,8 @@ def _remember_versions(peer: Peer, versions) -> None:
 
 
 def reconcile_all() -> None:
+    if not enabled():
+        return
     for coupling in Coupling.objects.filter(state=Coupling.State.ACTIVE).select_related(
         "peer", "local_unit"
     ):

@@ -599,6 +599,8 @@ export interface PlatformSettings {
   peering_enabled: boolean
   peering_allowed_hosts: string
   peering_login: boolean
+  /** Speicher für Webseitenbilder je Einheit in MB (0 = ohne Grenze) */
+  website_image_quota_mb?: number
 }
 
 const org = (id: number) => `/api/orgs/${id}`

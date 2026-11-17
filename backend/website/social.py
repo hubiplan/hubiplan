@@ -165,15 +165,15 @@ def frontend_return(ok: bool, message: str = "") -> str:
 
 
 def set_secret(feed: SocialFeed, value: str) -> None:
-    feed.app_secret = encrypt(value) if value else ""
+    feed.app_secret = encrypt(value, purpose="meta") if value else ""
 
 
 def app_secret(feed: SocialFeed) -> str:
-    return decrypt(feed.app_secret) if feed.app_secret else ""
+    return decrypt(feed.app_secret, purpose="meta") if feed.app_secret else ""
 
 
 def token(feed: SocialFeed) -> str:
-    return decrypt(feed.access_token) if feed.access_token else ""
+    return decrypt(feed.access_token, purpose="meta") if feed.access_token else ""
 
 
 def _state_hash(state: str) -> str:
@@ -472,7 +472,7 @@ def _choose_or_use(feed: SocialFeed, pages: list[dict]) -> None:
     if len(pages) == 1:
         _use_page(feed, pages[0])
         return
-    feed.pending_pages = encrypt(json.dumps(pages))
+    feed.pending_pages = encrypt(json.dumps(pages), purpose="meta")
     feed.status = SocialFeed.Status.CHOOSE
     feed.save()
 
@@ -482,13 +482,13 @@ def pending_pages(feed: SocialFeed) -> list[dict]:
         return []
     return [
         {"id": p["id"], "name": p.get("name", "") + (f" ({p['page']})" if p.get("page") else "")}
-        for p in json.loads(decrypt(feed.pending_pages))
+        for p in json.loads(decrypt(feed.pending_pages, purpose="meta"))
     ]
 
 
 @transaction.atomic
 def choose_page(feed: SocialFeed, page_id: str) -> None:
-    pages = json.loads(decrypt(feed.pending_pages)) if feed.pending_pages else []
+    pages = json.loads(decrypt(feed.pending_pages, purpose="meta")) if feed.pending_pages else []
     page = next((p for p in pages if str(p.get("id")) == str(page_id)), None)
     if page is None:
         raise MetaError("Diese Seite steht nicht zur Auswahl.")
@@ -496,7 +496,7 @@ def choose_page(feed: SocialFeed, page_id: str) -> None:
 
 
 def _use_page(feed: SocialFeed, page: dict) -> None:
-    feed.access_token = encrypt(page["access_token"])
+    feed.access_token = encrypt(page["access_token"], purpose="meta")
     feed.token_expires_at = None  # Seiten-Zugänge laufen nicht zeitlich ab
     feed.token_refreshed_at = timezone.now()
     feed.pending_pages = ""
@@ -509,7 +509,7 @@ def _store_token(feed: SocialFeed, data: dict) -> None:
     value = data.get("access_token")
     if not value:
         raise MetaError("Meta hat keinen Zugang geliefert.")
-    feed.access_token = encrypt(value)
+    feed.access_token = encrypt(value, purpose="meta")
     expires = int(data.get("expires_in") or 0)
     now = timezone.now()
     feed.token_expires_at = now + datetime.timedelta(seconds=expires) if expires else None

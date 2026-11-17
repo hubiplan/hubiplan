@@ -182,6 +182,33 @@ def clean_credit(value: str | None) -> str:
         text = stripped
 
 
+def used_bytes(org) -> int:
+    """Belegter Speicher der Webseitenbilder einer Einheit (Bild, kleine Fassung, Original)."""
+    total = 0
+    for image in WebsiteImage.objects.filter(organization=org).only("file", "small", "original"):
+        for f in (image.file, image.small, image.original):
+            if f.name:
+                try:
+                    total += f.size
+                except OSError:
+                    pass
+    return total
+
+
+def check_quota(org, adding: int = 0) -> None:
+    """Gesamtaudit 15.11., MCP-09: Speichergrenze für Webseitenbilder je Einheit."""
+    from organizations.models import PlatformSettings
+
+    limit_mb = PlatformSettings.load().website_image_quota_mb
+    if limit_mb and used_bytes(org) + adding > limit_mb * 1024 * 1024:
+        raise ValidationError(
+            gettext(
+                "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte "
+                "Bilder löschen oder die Plattform um mehr Platz bitten."
+            ).format(mb=limit_mb)
+        )
+
+
 def store_image(
     website,
     upload,
@@ -211,6 +238,7 @@ def store_image(
         updated_by=user,
     )
     source = original if original is not None else upload
+    check_quota(website.organization, getattr(source, "size", 0) or 0)
     image.taken_at, image.file_name = capture_info(source)
     _save_files(image, upload, source)
     image.save()
@@ -253,6 +281,7 @@ def replace_image(image: WebsiteImage, upload, original, crop: dict, user) -> We
 
 def copy_image(image: WebsiteImage, upload, crop: dict, user) -> WebsiteImage:
     """Zweites Bild aus demselben Original (z. B. anderes Format), Angaben übernommen."""
+    check_quota(image.organization, getattr(upload, "size", 0) or 0)
     if not image.original.name:
         ensure_original(image)
         image.save(update_fields=["original", "crop"])

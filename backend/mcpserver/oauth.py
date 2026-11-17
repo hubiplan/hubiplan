@@ -398,6 +398,9 @@ def describe(request, params) -> dict:
         # Woran die Person die Gegenseite erkennt (Name ist frei wählbar, Gesamtaudit S-06)
         "redirect_kind": redirect_kind(redirect_uri),
         "connected_before": before,
+        # Frisch angemeldeter Assistent und Link von außen sind typisch für Zustimmungs-Phishing
+        # (Gesamtaudit 15.11., MCP-08); die Seite nennt das Datum
+        "client_registered_at": client.created_at.isoformat(),
         "scopes": scope_labels(granted_scopes(scopes, [])),
         # Nur mit eigenem Haken auf der Seite
         "optional": scope_labels(OPTIONAL_SCOPES),
