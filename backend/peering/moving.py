@@ -75,8 +75,30 @@ def dump_couplings(org) -> list[dict]:
     return result
 
 
+def _verified_info(peer_data: dict) -> dict:
+    """Selbstauskunft der Gegenstelle aus der Datei holen; sie muss zur Datei passen.
+
+    Gesamtaudit 15.11., AZ-01: Adresse und Schlüssel der Gegenstelle kamen ungeprüft aus der
+    Datei. Jetzt gilt nur, was die Instanz unter dieser Adresse selbst meldet."""
+    base_url = transport.normalize_url(str(peer_data.get("base_url") or ""))
+    transport.check_host(base_url)
+    info = transport.fetch_info(base_url)
+    if (
+        str(info["instance_id"]) != str(peer_data.get("instance_id"))
+        or info["public_key"] != peer_data.get("public_key")
+        or info["enc_public_key"] != peer_data.get("enc_public_key")
+    ):
+        raise transport.PeerError(gettext("Die Instanz meldet andere Schlüssel als die Datei."))
+    return info
+
+
 def load_couplings(org, items: list, ids_of_orgs: dict, warn, membership_id=None) -> int:
-    """Kopplungen aus einer Exportdatei auf dieser Instanz anlegen."""
+    """Kopplungen aus einer Exportdatei auf dieser Instanz anlegen (nur Plattform-Import).
+
+    Gesamtaudit 15.11., AZ-01, Fachfrage FF-19: Die Gegenstelle wird über ihre
+    Selbstauskunft geprüft, und jede Kopplung wartet wie bei einem angekündigten Umzug, bis
+    ein Vorstand den Fingerabdruck bestätigt, den die andere Seite mitteilt. Bis dahin geht
+    nichts hinaus und nichts herein. Übergangene Kopplungen hinterlassen nichts."""
     from organizations.models import Organization
 
     count = 0
@@ -84,76 +106,116 @@ def load_couplings(org, items: list, ids_of_orgs: dict, warn, membership_id=None
         try:
             peer_data = item["peer"]
             direction = item["direction"]
-            if direction not in Coupling.Direction.values:
+            remote_uuid = item["remote_uuid"]
+            if direction not in Coupling.Direction.values or not isinstance(peer_data, dict):
                 raise KeyError("direction")
         except (KeyError, TypeError):
-            warn("Eine Kopplung in der Datei ist unvollständig und wurde übergangen.")
+            warn(gettext("Eine Kopplung in der Datei ist unvollständig und wurde übergangen."))
             continue
+        name = str((item.get("placeholder") or {}).get("name", ""))
         if str(peer_data.get("instance_id")) == identity.identity().instance_id:
             warn(
-                f"Die Kopplung mit „{item.get('placeholder', {}).get('name', '')}“ läuft auf "
-                "dieser Instanz und wurde übergangen."
+                gettext(
+                    "Die Kopplung mit „{name}“ läuft auf dieser Instanz und wurde übergangen."
+                ).format(name=name)
             )
             continue
-        peer = Peer.objects.filter(instance_id=peer_data["instance_id"]).first()
-        if peer is not None and (
-            peer.public_key != peer_data.get("public_key")
-            or peer.enc_public_key != peer_data.get("enc_public_key")
+        known = Peer.objects.filter(instance_id=peer_data.get("instance_id")).first()
+        if known is not None and (
+            known.public_key != peer_data.get("public_key")
+            or known.enc_public_key != peer_data.get("enc_public_key")
         ):
-            warn(f"{peer.base_url} ist hier mit einem anderen Schlüssel bekannt; übergangen.")
-            continue
-        if peer is None:
-            peer = Peer.objects.create(
-                instance_id=peer_data["instance_id"],
-                base_url=str(peer_data.get("base_url", ""))[:300],
-                public_key=str(peer_data.get("public_key", ""))[:100],
-                enc_public_key=str(peer_data.get("enc_public_key", ""))[:100],
-                fingerprint=str(peer_data.get("fingerprint", ""))[:40],
-                versions=peer_data.get("versions") or [1],
-                country=str(peer_data.get("country", ""))[:10],
+            warn(
+                gettext("{url} ist hier mit einem anderen Schlüssel bekannt; übergangen.").format(
+                    url=known.base_url
+                )
             )
+            continue
+        try:
+            info = _verified_info(peer_data)
+        except (transport.PeerError, ValidationError) as exc:
+            warn(
+                gettext("Kopplung mit „{name}“ übergangen: {reason}").format(
+                    name=name, reason="; ".join(getattr(exc, "messages", [str(exc)]))
+                )
+            )
+            continue
         ph_info = item.get("placeholder") or {}
-        placeholder = None
         if direction == Coupling.Direction.CHILD:
             placeholder = ids_of_orgs.get(ph_info.get("id"))
             if placeholder is None or not placeholder.is_remote:
-                warn(f"Platzhalter für „{ph_info.get('name', '')}“ fehlt; Kopplung übergangen.")
-                continue
-        else:
-            if Coupling.objects.filter(
-                local_unit=org, direction=Coupling.Direction.PARENT, state__in=OPEN
-            ).exists():
-                warn("Es gibt hier schon eine Einheit darüber; Kopplung übergangen.")
-                continue
-            placeholder = services._placeholder(
-                str(ph_info.get("name") or "Ferne Einheit"),
-                parent=Organization.platform(),
-                type_=Organization.Type.FEDERATION,
-            )
-        coupling = Coupling.objects.create(
-            local_unit=org,
-            remote_unit=placeholder,
-            remote_uuid=item["remote_uuid"],
-            peer=peer,
-            direction=direction,
-            state=item.get("state") if item.get("state") in OPEN else Coupling.State.ACTIVE,
-            packets=item.get("packets") or {},
-            remote_packets=item.get("remote_packets") or {},
-            options=item.get("options") or {},
-            version=int(item.get("version") or 1),
-            activated_at=timezone.now(),
-        )
-        if direction == Coupling.Direction.PARENT and membership_id is not None:
-            for old, number in (item.get("numbers") or {}).items():
-                try:
-                    new = membership_id(int(old))
-                    number = int(number)
-                except (TypeError, ValueError):
-                    continue
-                if new:
-                    RemoteMember.objects.create(
-                        coupling=coupling, uid=f"m{new}", membership_id=new, number=number
+                warn(
+                    gettext("Platzhalter für „{name}“ fehlt; Kopplung übergangen.").format(
+                        name=name
                     )
+                )
+                continue
+        elif Coupling.objects.filter(
+            local_unit=org, direction=Coupling.Direction.PARENT, state__in=OPEN
+        ).exists():
+            warn(gettext("Es gibt hier schon eine Einheit darüber; Kopplung übergangen."))
+            continue
+        previous = item.get("state") if item.get("state") in OPEN else Coupling.State.ACTIVE
+        options = dict(item.get("options") or {}) if isinstance(item.get("options"), dict) else {}
+        options["move"] = {
+            "from": "",
+            "import": True,
+            "base_url": info["base_url"],
+            "instance_id": str(info["instance_id"]),
+            "public_key": info["public_key"],
+            "enc_public_key": info["enc_public_key"],
+            "fingerprint": info["fingerprint"],
+            "country": str(info.get("country", ""))[:10],
+            "versions": info.get("versions") or [1],
+            "previous": previous,
+            "at": timezone.now().isoformat(),
+        }
+        try:
+            with transaction.atomic():
+                peer = services._store_peer(info)
+                if direction == Coupling.Direction.PARENT:
+                    placeholder = services._placeholder(
+                        str(ph_info.get("name") or "Ferne Einheit"),
+                        parent=Organization.platform(),
+                        type_=Organization.Type.FEDERATION,
+                    )
+                coupling = Coupling.objects.create(
+                    local_unit=org,
+                    remote_unit=placeholder,
+                    remote_uuid=remote_uuid,
+                    peer=peer,
+                    direction=direction,
+                    state=Coupling.State.MOVING,
+                    packets=item.get("packets") or {},
+                    remote_packets=item.get("remote_packets") or {},
+                    options=options,
+                    version=int(item.get("version") or 1),
+                    activated_at=timezone.now(),
+                )
+                if direction == Coupling.Direction.PARENT and membership_id is not None:
+                    for old, number in (item.get("numbers") or {}).items():
+                        try:
+                            new = membership_id(int(old))
+                            number = int(number)
+                        except (TypeError, ValueError):
+                            continue
+                        if new:
+                            RemoteMember.objects.create(
+                                coupling=coupling, uid=f"m{new}", membership_id=new, number=number
+                            )
+                services._audit(
+                    coupling,
+                    None,
+                    f"Aus Datei übernommen: {peer.base_url} "
+                    "(wartet auf Bestätigung des Fingerabdrucks)",
+                )
+        except ValidationError as exc:
+            warn(
+                gettext("Kopplung mit „{name}“ übergangen: {reason}").format(
+                    name=name, reason="; ".join(exc.messages)
+                )
+            )
+            continue
         count += 1
     return count
 
