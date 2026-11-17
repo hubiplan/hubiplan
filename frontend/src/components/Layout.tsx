@@ -356,11 +356,11 @@ export function Layout() {
       {undoBase && !previewOrg && <UndoControls base={undoBase} />}
       {contextCount > 1 && (
         <label className="org-switch">
-          <span className="sr-only">{t('Organisation wechseln')}</span>
+          <span className="sr-only">{t('Einheit wechseln')}</span>
           <select
             value={activeKey ?? ''}
             onChange={(e) => void switchOrg(e.target.value)}
-            aria-label={t('Organisation wechseln')}
+            aria-label={t('Einheit wechseln')}
           >
             {orgs.map((o) => (
               <option key={o.id} value={String(o.id)}>

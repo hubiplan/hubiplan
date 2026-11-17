@@ -402,7 +402,7 @@ describe('Versammlungen', () => {
   it('ohne Recht kein Zugang', async () => {
     show(['events.view'])
     expect(
-      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+      await screen.findByRole('heading', { name: 'Kein Zugriff in dieser Einheit' }),
     ).toBeInTheDocument()
   })
 })

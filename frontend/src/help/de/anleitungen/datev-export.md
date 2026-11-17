@@ -8,7 +8,7 @@ reihe: 90
 stichworte: [DATEV, Steuerberater, Export, Buchungsstapel, Kontenrahmen]
 ---
 
-1. Öffne [Finanzen › Einrichten › Konten](/finanzen/einrichtung/konten).
+1. Öffne [Finanzen › Einrichten › Bankkonten und Kassen](/finanzen/einrichtung/konten).
 2. Kreuze **DATEV-Export für die Steuerberatung nutzen** an.
 3. Trage bei Konten und Kategorien das **DATEV-Konto** ein, das eure Steuerberatung nennt.
 4. Öffne den [Jahresabschluss](/finanzen/abschluss).

@@ -122,7 +122,7 @@ describe('Infrastruktur', () => {
   it('verlangt das Leserecht für Infrastruktur', async () => {
     show('/infrastruktur', ['material.view'])
     expect(
-      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+      await screen.findByRole('heading', { name: 'Kein Zugriff in dieser Einheit' }),
     ).toBeInTheDocument()
   })
 })

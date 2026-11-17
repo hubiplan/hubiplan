@@ -183,7 +183,7 @@ export function useOrg(): OrgState {
 // oxlint-disable-next-line react/only-export-components
 export function useActiveOrg(): OrgSummary {
   const { active } = useOrg()
-  if (!active) throw new NoWorkspaceError(t('Keine aktive Organisation.'))
+  if (!active) throw new NoWorkspaceError(t('Keine Einheit gewählt.'))
   return active
 }
 

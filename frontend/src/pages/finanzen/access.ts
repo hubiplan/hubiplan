@@ -240,7 +240,7 @@ export function financeSections(a: FinanceAccess): NavItem[] {
       },
       a.tax && {
         to: '/finanzen/anlagen',
-        label: t('Anlagen'),
+        label: t('Anlagegüter'),
         text: t('Anlagegüter und Abschreibung'),
       },
       a.tax && {
@@ -299,7 +299,7 @@ export function financeSections(a: FinanceAccess): NavItem[] {
       },
       a.finance && {
         to: '/finanzen/einrichtung/konten',
-        label: t('Konten'),
+        label: t('Bankkonten und Kassen'),
         text: t('Bankkonten und Barkassen'),
       },
       a.finance && {

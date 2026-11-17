@@ -1,6 +1,6 @@
 ---
 key: page.finance_accounts
-titel: Finanzen › Einrichten › Konten
+titel: Finanzen › Einrichten › Bankkonten und Kassen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/konten]

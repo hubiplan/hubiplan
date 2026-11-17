@@ -34,7 +34,7 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Einrichtung eines Moduls | **Einrichtung** | Setup | „Einstellungen“ im Modul |
 | Kasse und Buchungen | **Finanzen › Kassenbuch** | Finances › Cash book | „Kasse“ als Bereichsname |
 | Rechnungen an Mitglieder | **Finanzen › Rechnungen** | Finances › Invoices | „Beiträge“ als Menüpunkt |
-| Wechsel zwischen Untereinheiten | **Wechselanfragen** | Change requests | „Anfragen“ allein in Überschriften |
+| Wechsel zwischen Untereinheiten | **Wechselanfragen** | Transfer requests | „Anfragen“ allein in Überschriften |
 | Von Mitgliedern gemeldete Änderungen ihrer Daten | **Datenänderungen** | Data changes | „Änderungsmeldung“ („Meldungen“ sind Wettbewerbsmeldungen) |
 | Material, Infrastruktur und Belegung zusammen (Seitenleiste) | **Material & Räume** mit **Material**, **Räume und Anlagen**, **Belegung** | Equipment & rooms with Equipment, Rooms and facilities, Bookings | drei eigene Hauptpunkte |
 | Wettbewerbstitel und ihre Träger (Wettbewerbe) | **Titel und Sieger** | Titles and winners | „Titel und Würden“ als Menüpunkt |
@@ -53,6 +53,19 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Rechnungen im App-Bereich Verwaltung | **Rechnungen** | Invoices | „Beiträge“ |
 | Buchungen im App-Bereich Verwaltung | **Kassenbuch** | Cash book | „Kasse“ |
 | Geburtstage und Jubiläen der nächsten Wochen | **Jubiläen und Geburtstage** | Anniversaries and birthdays | „Anlässe“ |
+| Verein, Verband oder Gruppe, in der man gerade arbeitet (Auswahl oben) | **Einheit**, Handlung **Einheit wechseln**; wo es geht, der Name der Einheit | Unit, Switch unit | „Organisation“ (nur für Organisationsmitglieder und Einstellungen › Organisation), „Arbeitsbereich“, „Instanz“ (nur Technik) |
+| Untereinheit mit eigener Kasse und eigenen Rollen | **Eigener Arbeitsbereich** | Own workspace | „Arbeitsbereich“ für die gewählte Einheit |
+| Kopplung mehrerer HUBIplan-Instanzen | **Verbund** | Network | “Federation” |
+| Verband über dem Verein | **Dachverband** | Umbrella association | “Federation” |
+| Bank- und Barkonten der Kasse | **Bankkonten und Kassen** | Bank accounts and cash | „Konten“ allein (das sind die Anmeldekonten) |
+| Verzeichnis der Anlagegüter mit Abschreibung | **Anlagegüter** | Fixed assets | „Anlagen“ allein (so heißen Räume und Anlagen) |
+| Zahlen über die Jahre (Mitglieder, Finanzen) | **Entwicklung** | Trends | “Development” |
+| Rückmeldung zu einem Termin | Knöpfe **Zusagen** und **Absagen**; Zustand **Zugesagt** und **Nicht dabei** | Accept, Decline; Attending, Not attending | “Accepted”/“Declined” als Knopf, „Abgelehnt“ |
+| Termin findet nicht statt | **Abgesagt** (nur für den Termin) | Cancelled | „Abgesagt“ für die eigene Absage |
+| App von der Einheit trennen | **Auf diesem Gerät abmelden** | Sign out on this device | „Verbindung trennen“, „Konto vom Gerät abmelden“ |
+| Daten neu holen | **Aktualisieren**; Zeitpunkt als „Stand: …“ | Refresh; As of … | in der App „Jetzt abgleichen“, „Erneut laden“ als Dauerknopf |
+| Handy oder Tablet mit der App | **Gerät** | Device | „Telefon“ |
+| Baustein einer Seite im Baukasten der Webseite | **Abschnitt** | Section | „Baustein“, „Block“ |
 
 ## Symbole in der App
 
@@ -77,4 +90,8 @@ Kernpaket nicht hat, steht in `hubiplan-android` unter `ui/Symbole.kt`).
 ## Pflege
 
 - Neue Begriffe hier eintragen, bevor sie in Web, App und Hilfe auftauchen.
+- Die Liste bindet alle fünf Teile: Verwaltung, Vereinswebseite, Produktwebseite, Android und iOS.
+- Tests melden Wörter aus „Nicht verwenden“ in neuen Texten: `frontend/src/test/Begriffe.test.ts`
+  (Verwaltung) und `BegriffeTest` in `hubiplan-android`. Die Zahl je Wort ist der Bestand und
+  darf nur sinken.
 - Die App folgt dieser Liste (`hubiplan-android`, `app/src/main/assets/texte/`).

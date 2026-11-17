@@ -33,9 +33,11 @@ Verbindlich für die englische Oberfläche von HUBIplan, der App und der Vereins
 | Beitragsordnung | fee regulations |
 | Briefvorlage | letterhead |
 | Buchung | entry |
-| Dachverband | umbrella association |
+| Dachverband | umbrella association (nicht “federation”) |
 | Ehrung | honour |
+| Eigener Arbeitsbereich (Untereinheit) | own workspace |
 | Einheit | unit |
+| Entwicklung (Zahlen über die Jahre) | trends |
 | Eintritt | joining |
 | Festschreiben (Kasse) | lock (entries) |
 | Geschäftsjahr | financial year |
@@ -72,6 +74,7 @@ Verbindlich für die englische Oberfläche von HUBIplan, der App und der Vereins
 | Termin | event |
 | Testserver | test server |
 | Untereinheit | sub-unit |
+| Verbund (gekoppelte Instanzen) | network (nicht “federation”) |
 | Verein | club |
 | Vereinswebseite | club website |
 | Verteiler (Mail) | mailing list |
@@ -79,6 +82,7 @@ Verbindlich für die englische Oberfläche von HUBIplan, der App und der Vereins
 | Vorstand | board |
 | Wettbewerb | competition |
 | Würde, Würdenträger | title, title holder |
-| Zu- und Absage | RSVP (yes / no) |
+| Wechselanfrage | transfer request |
+| Zu- und Absage | RSVP (yes / no); Knöpfe accept / decline, Zustand attending / not attending |
 | Zuwendungsbestätigung | donation receipt (Zuwendungsbestätigung) |
 | Zwei-Faktor-Anmeldung | two-factor authentication |

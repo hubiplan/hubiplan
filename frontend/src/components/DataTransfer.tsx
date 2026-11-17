@@ -161,7 +161,7 @@ export function ExportSection({
                   <div className="muted">{j.created_by}</div>
                 </td>
                 <td className="small">
-                  {j.subject?.name ?? j.department?.name ?? t('ganze Organisation')}
+                  {j.subject?.name ?? j.department?.name ?? t('ganze Einheit')}
                   {j.with_files ? t(' · mit Dateien') : ''}
                 </td>
                 <td className="small">

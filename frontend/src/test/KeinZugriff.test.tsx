@@ -30,7 +30,7 @@ function renderAt(path: string, orgs: unknown[]) {
 
 async function expectNoAccess() {
   expect(
-    await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+    await screen.findByRole('heading', { name: 'Kein Zugriff in dieser Einheit' }),
   ).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Zur Startseite' })).toBeInTheDocument()
   expect(screen.queryByText(/ließ sich nicht laden/)).not.toBeInTheDocument()

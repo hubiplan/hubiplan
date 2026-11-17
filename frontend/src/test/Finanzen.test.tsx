@@ -215,7 +215,9 @@ describe('Finanzen', () => {
     expect(screen.getByText('Bankkonten und Barkassen')).toBeInTheDocument()
     const nav = subnav()
     const user = userEvent.setup()
-    await user.click(within(screen.getByRole('main')).getByRole('link', { name: /^Konten/ }))
+    await user.click(
+      within(screen.getByRole('main')).getByRole('link', { name: /^Bankkonten und Kassen/ }),
+    )
     expect(await screen.findByText('nur lesen')).toBeInTheDocument()
     expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einrichtung/konten')
     // Nur Einträge mit Recht; „Einrichten“ ist offen, weil die Seite darin liegt
@@ -223,7 +225,7 @@ describe('Finanzen', () => {
       'aria-expanded',
       'true',
     )
-    for (const name of ['Konten', 'Kategorien'])
+    for (const name of ['Bankkonten und Kassen', 'Kategorien'])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()
     // Geschäftspartner haben einen eigenen Menüpunkt unter Verein
     expect(nav.getByRole('link', { name: 'Geschäftspartner' })).toHaveAttribute(

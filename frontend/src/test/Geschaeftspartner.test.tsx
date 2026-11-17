@@ -208,7 +208,7 @@ describe('Geschäftspartner', () => {
     show(['events.view'])
     expect(
       await screen.findByText(
-        /Für diese Seite fehlt dir im aktuellen Arbeitsbereich das nötige Recht/,
+        /Für diese Seite fehlt dir in der gewählten Einheit das nötige Recht/,
       ),
     ).toBeInTheDocument()
   })

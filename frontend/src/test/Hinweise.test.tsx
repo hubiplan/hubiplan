@@ -44,7 +44,7 @@ describe('Hinweise statt stiller Umleitung', () => {
     })
     renderApp('/mitglieder')
     expect(
-      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+      await screen.findByRole('heading', { name: 'Kein Zugriff in dieser Einheit' }),
     ).toBeInTheDocument()
     expect(screen.getByText(/Aktuell gewählt: TV Beispielhausen/)).toBeInTheDocument()
     // Der Vereinsname im Titel kommt mit den Organisationsdaten, unter Last etwas später

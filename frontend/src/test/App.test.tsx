@@ -247,7 +247,7 @@ describe('Layout', () => {
     })
     renderApp()
     const user = userEvent.setup()
-    const select = await screen.findByRole('combobox', { name: 'Organisation wechseln' })
+    const select = await screen.findByRole('combobox', { name: 'Einheit wechseln' })
     await user.selectOptions(select, '8')
     expect(
       await screen.findByRole('heading', { name: 'Schachfreunde Testdorf' }),
@@ -280,7 +280,7 @@ describe('Layout', () => {
       }),
     })
     renderApp()
-    const select = await screen.findByRole('combobox', { name: 'Organisation wechseln' })
+    const select = await screen.findByRole('combobox', { name: 'Einheit wechseln' })
     await userEvent.setup().selectOptions(select, '7')
     expect(await screen.findByRole('heading', { name: 'TV Beispielhausen' })).toBeInTheDocument()
     expect(screen.getByRole('banner')).toHaveTextContent('TV Beispielhausen')
@@ -294,7 +294,7 @@ describe('Layout', () => {
   it('ohne Organisation ein Hinweis', async () => {
     fakeApi({ [SESSION]: loggedIn })
     renderApp()
-    expect(await screen.findByText(/noch keine Organisation zugeordnet/)).toBeInTheDocument()
+    expect(await screen.findByText(/noch keine Einheit zugeordnet/)).toBeInTheDocument()
   })
 })
 
