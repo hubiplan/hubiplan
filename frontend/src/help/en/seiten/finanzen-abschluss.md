@@ -4,12 +4,16 @@ titel: Finance › Year-end closing
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/abschluss]
-stichworte: [Year-end closing, cash report, DATEV, retention, reopen]
+stichworte: [Year-end closing, cash report, DATEV, retention, reopen, locking]
 ---
 
 Under year-end closing you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
 
 The **Cash audit** is a separate tab in the year-end closing. Evaluation, Taxes, Assets and Allowances have their own items in the Finance sidebar.
+
+## Locking the cash book
+
+Under **Locking** you lock the cash book after the audit up to a day (**Locked up to**). Bookings up to that day can then no longer be changed or deleted, only reversed. New bookings dated within that period are no longer possible either, whichever way they come in: cash book, payment for an invoice, bank import, expenses, cash receipt, cash count or an invoice from the federation. HUBIplan then gives the reason; book with today's date. In the bank import, such a line stays open with the reason.
 
 ## Reopening a closing
 
