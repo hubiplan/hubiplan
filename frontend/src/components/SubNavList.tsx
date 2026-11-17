@@ -2,7 +2,7 @@
 // Konzept S-01) erscheinen als aufklappbare Gruppen: Die Gruppe der aktuellen Seite ist
 // offen, ▸ öffnet eine andere zum Nachsehen (eine zur Zeit). Eine Gruppe mit nur einem
 // Eintrag erscheint als einfacher Eintrag.
-import { useId, useState } from 'react'
+import { Fragment, useId, useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { activeGroup, groupNodes } from './subnav.ts'
@@ -45,10 +45,28 @@ export function SubNavList({
     ))
 
   if (nodes.length === 0) return null
+  // Zwischenüberschriften nur, wenn es mehr als einen Abschnitt gibt (UX-Audit 16.11. VW-06)
+  const sectioned = new Set(nodes.map((n) => n.section).filter(Boolean)).size > 1
+  const starts = new Set(
+    sectioned
+      ? nodes.filter((n, i) => n.section && n.section !== nodes[i - 1]?.section).map((n) => n.to)
+      : [],
+  )
   return (
     <ul className="sidebar-sub">
       {groupNodes(nodes).map((b) => {
-        if (b.kind === 'item') return renderItems([b.node], 1)
+        if (b.kind === 'item') {
+          const section = b.node.section
+          if (!starts.has(b.node.to)) return renderItems([b.node], 1)
+          return (
+            <Fragment key={`s:${b.node.to}`}>
+              <li className="sidebar-sub-heading" role="presentation">
+                <span>{section}</span>
+              </li>
+              {renderItems([b.node], 1)}
+            </Fragment>
+          )
+        }
         const own = b.key === current
         const open = own ? !ownClosed : peek === b.key
         const listId = `${baseId}-${b.key}`

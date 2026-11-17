@@ -245,12 +245,34 @@ export function HomePage() {
           return list
         }}
       >
-        {!upcoming && !people && catalog.length === 0 && (
-          <div className="card tile">
-            <h2>{t('Übersicht')}</h2>
-            <p className="muted">{t('Hier erscheinen Kacheln der Module.')}</p>
-          </div>
-        )}
+        {!upcoming &&
+          !people &&
+          catalog.length === 0 &&
+          (user?.mfa_overdue ? (
+            // VW-37: ruhende Rechte ohne Platzhalter, mit dem einen nächsten Schritt
+            <div className="card tile" data-testid="mfa-schritt">
+              <h2>{t('Zwei-Faktor-Anmeldung einrichten')}</h2>
+              <p>
+                {t(
+                  'Deine Verwaltungsrechte ruhen, bis die Zwei-Faktor-Anmeldung eingerichtet ist. Danach siehst du wieder alle Bereiche.',
+                )}
+              </p>
+              <div className="button-row">
+                <Link to="/mein-konto/anmeldung#zwei-faktor" className="button button-primary">
+                  {t('Jetzt einrichten')}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="card tile">
+              <h2>{t('Übersicht')}</h2>
+              <p className="muted">
+                {t(
+                  'Für diese Einheit sind noch keine Bereiche für dich freigeschaltet. Wer bei euch die Rollen vergibt, kann das ändern.',
+                )}
+              </p>
+            </div>
+          ))}
       </HomeBoard>
     </section>
   )

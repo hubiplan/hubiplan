@@ -317,6 +317,24 @@ function PortalRoutes() {
   )
 }
 
+/**
+ * Bei mehreren Zugängen (z. B. Erziehungsberechtigte mit zwei Kindern) nennt jede Seite des
+ * Bereichs die Person, für die gerade gehandelt wird (UX-Audit 16.11. VW-25).
+ */
+function ActingFor() {
+  const { portal, activePortal } = useOrg()
+  if (!activePortal || portal.length < 2) return null
+  const name =
+    activePortal.member_kind === 'organization'
+      ? (activePortal.member_name ?? '')
+      : `${activePortal.first_name} ${activePortal.last_name}`.trim()
+  return (
+    <p className="alert alert-info" data-testid="handelt-fuer">
+      {t('Du handelst für {name}. Wechseln kannst du oben unter „Mein Konto“.', { name })}
+    </p>
+  )
+}
+
 function PortalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
@@ -324,6 +342,7 @@ function PortalSection({ title, children }: { title: string; children: ReactNode
         <Link to="/mein-bereich">{t('← Mein Bereich')}</Link>
       </p>
       <h1>{title}</h1>
+      <ActingFor />
       <div className="stack">{children}</div>
     </section>
   )
@@ -379,6 +398,7 @@ function PortalOverview({ entry }: { entry: PortalEntry }) {
         {entry.club_display_name ?? entry.club_name}
         {data?.status === 'former' && t(' · ehemaliges Mitglied')}
       </p>
+      <ActingFor />
       <PortalTasks entry={entry} />
       <OwnMusic accessId={entry.id} />
       {pending && (

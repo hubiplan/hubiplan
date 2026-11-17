@@ -576,7 +576,7 @@ function Setup({
               />
               <Field
                 label={t('Anlass')}
-                placeholder={t('z. B. Schützenfest')}
+                placeholder={t('z. B. Sommerfest')}
                 value={v.occasion}
                 error={errors.occasion}
                 onChange={(e) => set('occasion', e.target.value)}

@@ -286,7 +286,8 @@ export function ResponsesPanel({
         <div>
           <h3 className="event-card-title">
             {t('Rückmeldungen')}
-            {data.scope === 'department' ? t(' deiner Zugmitglieder') : ''}
+            {/* VW-13: Bezeichnung der Einheit statt fest „Zug“ */}
+            {data.scope === 'department' ? t(' (nur {unit})', { unit: tm.sg }) : ''}
           </h3>
           {note && <span className="muted small">{note}</span>}
         </div>

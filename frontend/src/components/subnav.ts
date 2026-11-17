@@ -9,6 +9,8 @@ export interface SubNavItem {
   label: string
   /** Arbeitsgruppe in der Seitenleiste, z. B. „Buchen“ bei Finanzen (Konzept S-01) */
   group?: { key: string; label: string; to?: string }
+  /** Zwischenüberschrift: steht vor dem ersten Punkt eines neuen Abschnitts (VW-06) */
+  section?: string
 }
 
 export interface SubNavApi {
@@ -34,6 +36,7 @@ export interface NavNode {
   to: string
   label: string
   group?: { key: string; label: string; to?: string }
+  section?: string
   /** NavLink nur bei genau diesem Pfad aktiv */
   end: boolean
   children: NavNode[]

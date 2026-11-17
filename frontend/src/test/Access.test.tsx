@@ -140,6 +140,42 @@ describe('Mitgliederbereich', () => {
   })
 })
 
+describe('Mitgliederbereich mit mehreren Zugängen (UX-Audit 16.11. VW-25)', () => {
+  it('nennt auf jeder Seite, für wen gerade gehandelt wird', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [] }),
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: {
+          departments: [],
+          portal: [portalEntry, { ...portalEntry, id: 6, first_name: 'Jonas' }],
+        },
+      }),
+      'GET /api/portal/5/': () => ({ status: 200, body: portalDetail }),
+    })
+    renderApp('/mein-bereich/daten')
+    expect(await screen.findByTestId('handelt-fuer')).toHaveTextContent(
+      'Du handelst für Erika Muster.',
+    )
+  })
+
+  it('zeigt den Hinweis bei nur einem Zugang nicht', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [] }),
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: { departments: [], portal: [portalEntry] },
+      }),
+      'GET /api/portal/5/': () => ({ status: 200, body: portalDetail }),
+    })
+    renderApp('/mein-bereich/daten')
+    expect(await screen.findByText('Lindenweg 4')).toBeInTheDocument()
+    expect(screen.queryByTestId('handelt-fuer')).not.toBeInTheDocument()
+  })
+})
+
 describe('Mitgliederbereich nach Aufgaben', () => {
   it('führt von der Übersicht mit einem Klick zum Ausweis', async () => {
     fakeApi({
