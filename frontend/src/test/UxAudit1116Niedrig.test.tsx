@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { ApiError, statusMessage } from '../api/client.ts'
 import { errorMessage } from '../components/forms.ts'
+import { trailTitle } from '../components/navTrail.ts'
 
 describe('VW-30 Auffangmeldungen', () => {
   it('nennt bei einem Programmfehler nicht den Server als Ursache', () => {
@@ -43,5 +44,22 @@ describe('VW-28 und VW-42 im Quelltext', () => {
     const tile = readFileSync('src/components/calendar/UpcomingTile.tsx', 'utf8')
     expect(tile).toContain('new Set(items.map((o) => o.owner)).size > 1')
     expect(tile).toMatch(/showOwner && o\.owner && \(/)
+  })
+})
+
+describe('VW-54 Seitentitel', () => {
+  it('nennt gleiche Namen hintereinander nur einmal', () => {
+    expect(
+      trailTitle([
+        { to: '/geschaeftspartner', label: 'Geschäftspartner' },
+        { to: '/geschaeftspartner', label: 'Geschäftspartner' },
+      ]),
+    ).toBe('Geschäftspartner')
+    expect(
+      trailTitle([
+        { to: '/finanzen', label: 'Finanzen' },
+        { to: '/finanzen/rechnungen', label: 'Rechnungen' },
+      ]),
+    ).toBe('Rechnungen · Finanzen')
   })
 })

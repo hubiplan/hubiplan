@@ -71,7 +71,11 @@ export function navTrail(
 
 /** Seitentitel aus dem Pfad: tiefste Ebene zuerst („Mahnungen · Rechnungen · Finanzen“). */
 export function trailTitle(trail: TrailItem[], title?: string | null): string | null {
-  const parts = [...(title ? [title] : []), ...trail.map((i) => i.label).reverse()]
+  // Gleiche Namen hintereinander nur einmal („Geschäftspartner · Geschäftspartner“,
+  // UX-Audit 16.11. VW-54)
+  const parts = [...(title ? [title] : []), ...trail.map((i) => i.label).reverse()].filter(
+    (label, i, all) => i === 0 || label !== all[i - 1],
+  )
   if (parts.length === 0) return null
   return parts.reduce((all, label) => t('{label} · {modLabel}', { label: all, modLabel: label }))
 }
