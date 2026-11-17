@@ -280,6 +280,22 @@ def build_index(site, events) -> list[dict]:
     return entries
 
 
+def _stand(website) -> str:
+    """Billiger Stand der Inhalte (je Tabelle Anzahl und letzte Änderung): Ändert sich etwas,
+    gilt der Index sofort nicht mehr, nicht erst nach INDEX_SECONDS. Termine und Namen von
+    Untereinheiten erscheinen spätestens nach INDEX_SECONDS."""
+    from django.db.models import Count, Max
+
+    from .content_models import GalleryAlbum, WebsiteDocument
+
+    parts = [str(website.updated_at)]
+    for model in (WebsiteText, GalleryAlbum, WebsiteDocument):
+        field = "updated_at" if any(f.name == "updated_at" for f in model._meta.fields) else "pk"
+        agg = model.objects.filter(website=website).aggregate(n=Count("pk"), m=Max(field))
+        parts.append(f"{agg['n']}:{agg['m']}")
+    return "|".join(parts)
+
+
 def _index(site, events) -> list[dict]:
     from django.core.cache import cache
     from django.utils.translation import get_language
@@ -287,10 +303,12 @@ def _index(site, events) -> list[dict]:
     if getattr(site.site, "draft_shown", False):
         return build_index(site, events)  # Vorschau: Entwurf nie zwischenspeichern
     key = index_key(site.site.pk, get_language() or "de")
-    entries = cache.get(key)
-    if entries is None:
-        entries = build_index(site, events)
-        cache.set(key, entries, INDEX_SECONDS)
+    stand = _stand(site.site)
+    hit = cache.get(key)
+    if hit is not None and hit[0] == stand:
+        return hit[1]
+    entries = build_index(site, events)
+    cache.set(key, (stand, entries), INDEX_SECONDS)
     return entries
 
 

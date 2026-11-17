@@ -1,4 +1,4 @@
-# ruff: noqa: F811  (Fixtures aus test_webseite_suche)
+# ruff: noqa: F401, F811  (Fixtures aus test_webseite_suche)
 """Suche über einen zwischengespeicherten Index und mit eigener Grenze (Gesamtaudit 15.11.,
 WEB-06). Erfundene Daten."""
 
@@ -12,7 +12,7 @@ from website import content, public_views, search
 from website.models import WebsiteText
 
 from .factories import make_user
-from .test_webseite_suche import KEY, WHEN, hits
+from .test_webseite_suche import KEY, WHEN, club, hits, site
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
