@@ -9,7 +9,7 @@ from organizations.models import Department
 from website import services
 from website.models import PreviewLink, PublicationConsent, Website
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -216,7 +216,7 @@ class TestVorschau:
         assert services.valid_session(site, session)
         assert until > timezone.now()
         # Schlüssel gilt nur für diese Webseite
-        other = Website.objects.create(organization=orgs["b"], public_key=Website.new_key())
+        other = make_website(orgs["b"], public_key=Website.new_key())
         assert services.exchange(other, token) is None
         assert not services.valid_session(other, session)
         assert not services.valid_session(site, "gefaelscht")

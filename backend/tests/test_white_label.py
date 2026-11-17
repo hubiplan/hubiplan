@@ -10,7 +10,7 @@ from PIL import Image
 from core.tenancy import tenant_context
 from organizations.models import Organization, PlatformSettings
 
-from .factories import give_role, make_org, make_user
+from .factories import give_role, make_org, make_user, make_website
 from .test_impressum import platform_admin  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -241,7 +241,7 @@ def test_adresse_eintragen_und_erscheinungsbild(api, platform_admin, adressen):
 
 
 def test_adresse_pruefung(api, platform_admin, adressen, settings):
-    from website.models import Website, WebsiteDomain
+    from website.models import WebsiteDomain
 
     settings.FRONTEND_URL = "https://portal.musterkreis.example"
     club = make_org("Schützenverein Musterstadt")
@@ -257,7 +257,7 @@ def test_adresse_pruefung(api, platform_admin, adressen, settings):
     assert post("kein host").status_code == 400
     assert post("portal.musterkreis.example").status_code == 400
     with tenant_context(club.pk):
-        site = Website.objects.create(organization=club)
+        site = make_website(club)
         WebsiteDomain.objects.create(
             organization=club, website=site, hostname="www.sv-musterstadt.example"
         )

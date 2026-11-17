@@ -12,7 +12,7 @@ from members.models import MemberType, TransferRequest
 from members.photo_models import MemberPhoto
 from portal.models import ChangeRequest
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, make_website
 
 pytestmark = pytest.mark.django_db
 
@@ -127,7 +127,6 @@ def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
     from circulars.models import Circular, MailingList
     from materials.models import MaterialItem
     from website.contact_models import HeldMessage
-    from website.models import Website
 
     a = orgs["a"]
     a.enabled_modules = ["members", "website", "infrastructure", "circulars"]
@@ -159,7 +158,7 @@ def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
             ends_at=start + datetime.timedelta(hours=1),
             status="confirmed",
         )
-        site = Website.objects.create(organization=a, public_key="k" * 20, state="public")
+        site = make_website(a, public_key="k" * 20, state="public")
         HeldMessage.objects.create(
             organization=a,
             website=site,

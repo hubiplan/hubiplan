@@ -9,7 +9,7 @@ from PIL import Image
 from organizations.models import Department
 from website.models import Website, WebsiteImage, WebsiteRevision, WebsiteText
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -24,7 +24,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "events", "website"]
     org.save()
-    return Website.objects.create(organization=org, public_key=Website.new_key())
+    return make_website(org, public_key=Website.new_key())
 
 
 def url(org, rest=""):

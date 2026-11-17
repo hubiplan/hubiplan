@@ -9,9 +9,8 @@ from honors.models import Companion, Dignity, Reign
 from members.models import HonoraryTitle, HonoraryTitleAward
 from organizations.models import Department
 from website import services
-from website.models import Website
 
-from .factories import make_member
+from .factories import make_member, make_website
 from .test_rls import as_app_role
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -40,7 +39,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "honors", "awards"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-x", state="public")
+    return make_website(org, public_key="schluessel-x", state="public")
 
 
 def honors():
@@ -175,9 +174,7 @@ class TestWebseite:
         Reign.objects.create(organization=org, dignity=koenig, year=2023, name="Anderer Zug")
         zk = Dignity.objects.create(organization=org, unit=zug, name="Zugkönig")
         Reign.objects.create(organization=org, dignity=zk, year=2024, name="Zug Mann")
-        Website.objects.create(
-            organization=zug, public_key="schluessel-z", state="public", include_parent_honors=True
-        )
+        make_website(zug, public_key="schluessel-z", state="public", include_parent_honors=True)
         resp = Client().get("/api/public/site/v1/schluessel-z/honors/")
         assert resp.status_code == 200, resp.content
         data = resp.json()["dignities"]

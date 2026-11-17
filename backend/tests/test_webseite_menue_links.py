@@ -8,7 +8,7 @@ from website import menu
 from website.models import Website
 from website.public import SiteView
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "links-a"
@@ -24,7 +24,7 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(organization=club, public_key=KEY, state="maintenance")
+    return make_website(club, public_key=KEY, state="maintenance")
 
 
 @pytest.fixture

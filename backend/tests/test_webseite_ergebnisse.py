@@ -22,7 +22,7 @@ from organizations.models import Department
 from website import services
 from website.models import Website
 
-from .factories import make_member
+from .factories import make_member, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -36,9 +36,7 @@ def setup(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "competitions"]
     org.save()
-    site = Website.objects.create(
-        organization=org, public_key="schluessel-a", state="public", name_format="initial"
-    )
+    site = make_website(org, public_key="schluessel-a", state="public", name_format="initial")
     zug = Department.objects.create(organization=org, parent=org, name="Zug 1")
     max_ = make_member(org, "Max", "Muster", departments=[zug])
     erika = make_member(org, "Erika", "Beispiel", departments=[zug])

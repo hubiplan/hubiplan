@@ -10,9 +10,8 @@ import pytest
 
 from audit.models import AuditEntry
 from website.content_models import TIMELINE_SLUG, WebsiteImage, WebsiteText
-from website.models import Website
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 from .test_mcp_verein import call, club, connect, editor, rpc, site  # noqa: F401
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -143,7 +142,7 @@ def test_pruefung_wie_in_der_oberflaeche(chronicle_on, site, editor, orgs):  # n
     )
     assert failed and "Kapitel" in text
     # Bilder einer anderen Einheit gibt es hier nicht (Mandantentrennung)
-    other_site = Website.objects.create(organization=orgs["b"], public_key="mcp-b")
+    other_site = make_website(orgs["b"], public_key="mcp-b")
     foreign = WebsiteImage.objects.create(
         organization=orgs["b"], website=other_site, key="Fremd0001"
     )

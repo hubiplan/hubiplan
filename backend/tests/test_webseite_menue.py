@@ -8,9 +8,8 @@ from honors.models import Dignity, Reign
 from members.models import HonoraryTitle, HonoraryTitleAward
 from website import menu
 from website.content_models import WebsiteText
-from website.models import Website
 
-from .factories import make_member
+from .factories import make_member, make_website
 
 JSON = "application/json"
 
@@ -22,8 +21,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = [*org.enabled_modules, "website", "chronicle", "social"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key="schluessel-m",
         state="public",
         privacy_text="Datenschutz (erfunden)",

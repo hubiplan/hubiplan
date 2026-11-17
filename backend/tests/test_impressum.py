@@ -12,7 +12,7 @@ from organizations.imprint import ensure, missing, owner_of
 from organizations.models import Department, Imprint, Organization
 from outbox.mail import send
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 from .test_datatransfer import _eager, _on_commit_now, as_doc, export, upload  # noqa: F401
 
 JSON = "application/json"
@@ -119,7 +119,6 @@ class TestPflege:
 
     def test_vertretung_mit_titel_nach_schalter(self, api, orgs, board_a):
         # Titel aus der Akte nur mit „Titel vor dem Namen nennen“ der Webseite (Ralf 14.11.)
-        from website.models import Website
 
         from .factories import make_member
 
@@ -141,7 +140,7 @@ class TestPflege:
 
         assert reps() == ["Vera Vorsitz"]
         with rls_bypass():
-            site = Website.objects.create(organization=orgs["a"], public_key="schluessel-t")
+            site = make_website(orgs["a"], public_key="schluessel-t")
         assert reps() == ["Vera Vorsitz"]
         site.show_titles = True
         site.save()

@@ -18,6 +18,8 @@ from datatransfer.validation import validate_urls
 from peering.packet_results import _is_own_starter
 from website import social
 
+from .factories import make_website
+
 
 def test_partner_controlled_names_never_authorize_people():
     coupling = SimpleNamespace(remote_unit_id=42)
@@ -148,7 +150,7 @@ def test_manual_social_fetch_is_coalesced_and_enqueued_after_commit(monkeypatch,
 
     from core.tenancy import rls_bypass
     from website import tasks
-    from website.models import SocialFeed, Website
+    from website.models import SocialFeed
     from website.social_jobs import request_sync
 
     seen = []
@@ -156,7 +158,7 @@ def test_manual_social_fetch_is_coalesced_and_enqueued_after_commit(monkeypatch,
     monkeypatch.setattr(transaction, "on_commit", pending.append)
     monkeypatch.setattr(tasks.sync_social_feed, "delay", lambda *args: seen.append(args))
     with rls_bypass():
-        site = Website.objects.create(organization=orgs["a"])
+        site = make_website(orgs["a"])
         feed = SocialFeed.objects.create(organization=orgs["a"], website=site, kind="instagram")
         feed.status = SocialFeed.Status.OK
         feed.access_token = "synthetic-not-decrypted"
