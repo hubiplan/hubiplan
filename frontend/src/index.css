@@ -789,7 +789,8 @@ button.tab.active {
 .topbar-user .org-switch select {
   min-height: 2.25rem;
   padding: 0.35rem 0.6rem;
-  border-color: color-mix(in srgb, var(--color-input-border) 55%, var(--color-surface));
+  /* voller Feldrahmen: mind. 3 : 1 gegen die Fläche (WCAG 1.4.11, VW-18) */
+  border-color: var(--color-input-border);
 }
 .topbar-user .org-switch select:hover:not(:disabled) {
   border-color: var(--color-input-border);
@@ -1010,14 +1011,14 @@ button.tab.active {
   color: var(--sidebar-text);
   text-decoration: none;
   font-size: 0.92rem;
-  opacity: 0.85;
+  /* feste Farbe statt Deckkraft: hält 4,5 : 1 auch bei hellen Vereinsfarben (VW-17) */
+  color: var(--sidebar-sub, var(--sidebar-text));
 }
 
 .sidebar-sublink:hover,
 .sidebar-sublink.active {
   background: var(--sidebar-active-bg);
   color: #fff;
-  opacity: 1;
 }
 
 .sidebar-backdrop {
@@ -3300,7 +3301,7 @@ fieldset.subcard legend {
   margin-top: 1.25rem;
 }
 .button-danger-solid {
-  background: var(--color-error);
+  background: var(--color-error-solid, var(--color-error));
   color: #fff;
   border-color: transparent;
 }

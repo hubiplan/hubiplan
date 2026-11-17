@@ -28,6 +28,7 @@ const BASE_VARS = [
   '--color-on-accent',
   '--sidebar-bg',
   '--sidebar-muted',
+  '--sidebar-sub',
   '--sidebar-focus',
   '--button-brand-primary',
   '--button-brand-primary-hover',
@@ -40,6 +41,17 @@ const ROLE_VARS = [
   '--color-surface',
   '--color-bg',
   '--color-input-bg',
+  '--color-input-border',
+  '--color-error',
+  '--color-error-bg',
+  '--color-success',
+  '--color-success-bg',
+  '--color-warning',
+  '--color-warning-bg',
+  '--color-info',
+  '--color-info-bg',
+  '--color-gold',
+  '--color-gold-bg',
 ] as const
 const VARS = [...BASE_VARS, ...ROLE_VARS]
 type ThemeVars = Record<(typeof BASE_VARS)[number], string> &
@@ -190,6 +202,80 @@ export function sidebarMuted(sidebar: string): string {
 }
 
 /**
+ * Unterpunkte der Seitenleiste: 85 % Deckkraft als feste Farbe, bei hellen Vereinsfarben so
+ * viel kräftiger wie nötig für 4,5 : 1 (UX-Audit 16.11., VW-17; vorher `opacity: 0.85`).
+ */
+export function sidebarSub(sidebar: string): string {
+  for (let alpha = 0.85; alpha < 1; alpha += 0.05) {
+    const c = blend(SIDEBAR_TEXT, sidebar, alpha)
+    if (contrastRatio(c, sidebar) >= 4.5) return c
+  }
+  return SIDEBAR_TEXT
+}
+
+/**
+ * Vordergrundfarbe so wenig wie nötig abdunkeln oder aufhellen, bis sie auf jeder der Flächen
+ * den Mindestkontrast erreicht (UX-Audit 16.11., X-03: korrigieren statt nur warnen). Reicht
+ * kein Ton der Farbe, gilt Schwarz oder Weiß, je nachdem was besser lesbar ist.
+ */
+export function ensureContrast(color: string, backgrounds: string[], min: number): string {
+  const worst = (c: string) => Math.min(...backgrounds.map((b) => contrastRatio(c, b)))
+  if (worst(color) >= min) return color
+  for (let step = 1; step <= 100; step++) {
+    for (const c of [darken(color, step / 100), lighten(color, step / 100)]) {
+      if (worst(c) >= min) return c
+    }
+  }
+  return worst('#000000') >= worst('#ffffff') ? '#000000' : '#ffffff'
+}
+
+/** Zustandsfarben der hellen Oberfläche (theme.css): Schrift und zugehörige Hinweisfläche */
+export const STATUS_COLORS = {
+  error: { text: '#b3261e', bg: '#fbe9e7' },
+  success: { text: '#1d6b46', bg: '#e6f3ee' },
+  warning: { text: '#7a5200', bg: '#fdf1d8' },
+  info: { text: '#1f4f8f', bg: '#eef3fb' },
+  gold: { text: '#7a5a00', bg: '#fbf1cf' },
+} as const
+/** Rahmen von Eingabefeldern (--color-input-border in theme.css) */
+export const INPUT_BORDER = '#828b87'
+
+/**
+ * Farben, die auf den Farbrollen „Flächen“ und „Hintergrund“ stehen, gegen die wirksame
+ * Fläche gerechnet (UX-Audit 16.11., VW-16): Link und Fokus, Feldrahmen, Zustandsfarben samt
+ * ihrer Hinweisflächen. Nur was auf den gewählten Flächen durchfiele, wird gesetzt.
+ */
+export function colorsOnSurfaces(
+  link: string,
+  primary: string,
+  surface: string,
+  background: string,
+  inputBg: string,
+): { link: string; vars: Partial<Record<(typeof ROLE_VARS)[number], string>> } {
+  const vars: Partial<Record<(typeof ROLE_VARS)[number], string>> = {}
+  const fixedLink = ensureContrast(
+    link,
+    [surface, background, blend(primary, surface, BRAND_SOFT)],
+    4.5,
+  )
+  const border = ensureContrast(INPUT_BORDER, [surface, background, inputBg], 3)
+  if (border !== INPUT_BORDER) vars['--color-input-border'] = border
+  for (const [name, base] of Object.entries(STATUS_COLORS)) {
+    if (Math.min(contrastRatio(base.text, surface), contrastRatio(base.text, background)) >= 4.5)
+      continue
+    // Hinweisfläche aus der gewählten Fläche getönt, Schrift darauf und auf der Fläche lesbar
+    const bg = blend(base.text, surface, 0.14)
+    vars[`--color-${name}-bg` as (typeof ROLE_VARS)[number]] = bg
+    vars[`--color-${name}` as (typeof ROLE_VARS)[number]] = ensureContrast(
+      base.text,
+      [surface, background, bg],
+      4.5,
+    )
+  }
+  return { link: fixedLink, vars }
+}
+
+/**
  * Hoverfarbe für gefüllte Schaltflächen: in die Richtung, in der die Schrift
  * besser lesbar bleibt (helle Schrift → dunkler, dunkle Schrift → heller).
  */
@@ -313,7 +399,7 @@ export function appColors(
 export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVars {
   const dark = scheme === 'dark'
   const button = (dark ? buttonColorsDark : buttonColors)(theme.primary, theme.on_primary)
-  const link = (dark ? linkColorDark : linkColor)(theme.primary)
+  let link = (dark ? linkColorDark : linkColor)(theme.primary)
   const sidebar = sidebarColor(theme.primary)
   // Farbrollen nur im hellen Modus; im dunklen bleiben Grund, Flächen und Text aus theme.css
   const roles: Partial<Record<(typeof ROLE_VARS)[number], string>> = {}
@@ -325,6 +411,18 @@ export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVa
     const text = colors.text ?? APP_DEFAULTS.text
     if (colors.surface && contrastRatio(text, '#ffffff') < 4.5)
       roles['--color-input-bg'] = colors.surface
+    // VW-16: Link, Fokus, Feldrahmen und Zustandsfarben gegen die gewählten Flächen rechnen
+    if (colors.surface || colors.background) {
+      const fixed = colorsOnSurfaces(
+        link,
+        theme.primary,
+        colors.surface ?? APP_DEFAULTS.surface,
+        colors.background ?? APP_DEFAULTS.background,
+        roles['--color-input-bg'] ?? '#ffffff',
+      )
+      link = fixed.link
+      Object.assign(roles, fixed.vars)
+    }
   }
   return {
     ...roles,
@@ -342,6 +440,7 @@ export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVa
     '--color-on-accent': theme.on_accent,
     '--sidebar-bg': sidebar,
     '--sidebar-muted': sidebarMuted(sidebar),
+    '--sidebar-sub': sidebarSub(sidebar),
     // Fokusrahmen in der Seitenleiste: Weiß oder Schwarz, je nachdem was dort absticht
     '--sidebar-focus': readableOn(sidebar),
   }
