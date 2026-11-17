@@ -131,6 +131,8 @@ class _RowError(Exception):
 def export_workbook(org, partners, money: bool) -> bytes:
     from openpyxl import Workbook
 
+    from exchange.export import safe_cell
+
     roles = dict(BusinessPartner.Role.choices)
     kinds = dict(BusinessPartner.Kind.choices)
     columns = PARTNER_COLUMNS + (MONEY_COLUMNS if money else [])
@@ -176,23 +178,27 @@ def export_workbook(org, partners, money: bool) -> bytes:
             if field.field_type == "bool" and value is not None:
                 value = _yes_no(value)
             row.append(value)
-        sheet.append(row)
+        # Gesamtaudit 15.11., PUB-03: Text aus fremden E-Rechnungen nie als Formel
+        sheet.append([safe_cell(v) for v in row])
         if values["first_contact_on"]:
             sheet.cell(sheet.max_row, DATE_COLUMN).number_format = "DD.MM.YYYY"
         for c in p.contacts.all():
             contacts.append(
                 [
-                    p.number,
-                    p.name,
-                    c.last_name,
-                    c.first_name,
-                    c.function,
-                    c.email,
-                    c.phone,
-                    _yes_no(c.is_primary),
-                    _yes_no(c.receives_invoices),
-                    _yes_no(c.receives_mail),
-                    c.notes,
+                    safe_cell(v)
+                    for v in (
+                        p.number,
+                        p.name,
+                        c.last_name,
+                        c.first_name,
+                        c.function,
+                        c.email,
+                        c.phone,
+                        _yes_no(c.is_primary),
+                        _yes_no(c.receives_invoices),
+                        _yes_no(c.receives_mail),
+                        c.notes,
+                    )
                 ]
             )
     out = io.BytesIO()
