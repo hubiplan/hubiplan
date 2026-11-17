@@ -216,8 +216,6 @@ class TestKlaerfaelle:
         assert set(kandidat) == {"id", "name", "birth_date", "member_number", "units"}
         assert "Altverein" not in resp.content.decode()
 
-    # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nummern_nur_dieser_kopplung(self, net, world, members, monkeypatch):
         """Gegenprobe (AZ-04): Nach dem Klärfall gehen nur Nummern der gemeldeten Personen
@@ -271,6 +269,8 @@ class TestKlaerfaelle:
             assert "fremd-1" not in payload["numbers"]
             assert fremde_nummer not in payload["numbers"].values()
 
+    # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
         from access.catalog import MEMBERS_VIEW, PEERING_MANAGE
