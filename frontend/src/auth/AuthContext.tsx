@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react'
 import * as api from '../api/auth.ts'
 import type { User } from '../api/auth.ts'
+import { nextAuthGeneration, sessionLostListeners } from '../api/client.ts'
 import { bindUndoToUser, clearUndo } from '../components/undo.ts'
 import { lang, switchLanguage, t } from '../i18n/index.ts'
 import {
@@ -19,6 +20,8 @@ interface AuthState {
   loading: boolean
   /** Server beim Start nicht erreichbar (z. B. Standmodus ohne Empfang) */
   offline: boolean
+  /** Die Sitzung ist während der Arbeit abgelaufen; die Anmeldeseite sagt das. */
+  expired: boolean
   setUser: (user: User | null) => void
   logout: () => Promise<boolean>
 }
@@ -29,12 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, putUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
+  const [expired, setExpired] = useState(false)
   const revision = useRef(0)
   const setUser = useCallback((next: User | null) => {
     revision.current += 1
     bindStandUser(next?.id ?? null)
     setOffline(false)
     setLoading(false)
+    setExpired(false)
     putUser(next)
   }, [])
 
@@ -85,6 +90,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [setUser])
 
+  // Sitzung abgelaufen (VW-36): zur Anmeldung, die aufgerufene Seite merkt RequireAuth.
+  // Nicht übertragene Stand-Eingaben bleiben auf dem Gerät und gehören weiter zum Konto.
+  useEffect(() => {
+    if (!user) return
+    const lost = () => {
+      revision.current += 1
+      nextAuthGeneration()
+      suspendStandUser()
+      setExpired(true)
+      putUser(null)
+    }
+    sessionLostListeners.add(lost)
+    return () => {
+      sessionLostListeners.delete(lost)
+    }
+  }, [user])
+
   const logout = useCallback(async () => {
     const pending = pendingStandInputs()
     if (
@@ -116,8 +138,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   const value = useMemo(
-    () => ({ user, loading, offline, setUser, logout }),
-    [user, loading, offline, logout, setUser],
+    () => ({ user, loading, offline, expired, setUser, logout }),
+    [user, loading, offline, expired, logout, setUser],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

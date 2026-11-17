@@ -639,6 +639,24 @@ button.tab.active {
   }
 }
 
+/* Sprungziel unter dem festen Kopf sichtbar (VW-50) */
+.anchor-target {
+  scroll-margin-top: 5rem;
+}
+.anchor-target > h2:focus {
+  outline: none;
+}
+.totp-manual code {
+  word-spacing: 0.15em;
+  overflow-wrap: anywhere;
+}
+/* Der Link in die Authenticator-App hilft nur am Gerät mit der App: am Handy zeigen */
+@media not all and (pointer: coarse) {
+  .totp-open {
+    display: none;
+  }
+}
+
 .recovery-codes ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
@@ -6986,6 +7004,19 @@ html body select:not([multiple]):not([size]):disabled {
   }
   .content:has(.page-header-primary) {
     padding-bottom: calc(var(--bottom-nav-height) + var(--control-height) + 2.5rem);
+  }
+  /* Rückgängig-Hinweis über der unteren Leiste, nicht dahinter */
+  .undo-notice {
+    bottom: calc(
+      var(--bottom-nav-height, 4rem) + var(--space-3) + env(safe-area-inset-bottom, 0px)
+    );
+    width: max-content;
+  }
+  body:has(.page-header-primary) .undo-notice {
+    bottom: calc(
+      var(--bottom-nav-height, 4rem) + var(--control-height) + var(--space-5) +
+        env(safe-area-inset-bottom, 0px)
+    );
   }
 }
 

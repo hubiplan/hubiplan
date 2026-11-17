@@ -38,6 +38,36 @@ export function currentAuthGeneration() {
   return authGeneration
 }
 
+/**
+ * Abgelaufene Sitzung (UX-Audit 16.11. VW-36): Der Server antwortet dann auf jede Anfrage
+ * mit 401 oder 403, was wie „keine Berechtigung“ oder ein Ladefehler aussieht. Nach so
+ * einer Antwort wird deshalb einmal die Sitzung geprüft; ist sie weg, erfahren es die
+ * Zuhörer (AuthContext) und die Anmeldung erscheint, mit Rückkehr zur Seite.
+ */
+export const sessionLostListeners = new Set<() => void>()
+const SESSION_URL = '/_allauth/browser/v1/auth/session'
+let sessionCheck: Promise<void> | null = null
+
+function checkSessionAfter(url: string, status: number, generation: number) {
+  if (status !== 401 && status !== 403) return
+  if (!url.startsWith('/api/') || sessionLostListeners.size === 0 || sessionCheck) return
+  sessionCheck = (async () => {
+    try {
+      const res = await send(SESSION_URL, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+      })
+      // Nur ein bestätigtes „nicht angemeldet“ zählt; Serverfehler beweisen nichts
+      if (res.status === 401 && generation === authGeneration)
+        for (const listener of sessionLostListeners) listener()
+    } catch {
+      // ohne Netz bleibt alles, wie es ist
+    } finally {
+      sessionCheck = null
+    }
+  })()
+}
+
 /** Schlüssel für ein Formular: dieselbe Anfrage erneut gesendet wirkt nur einmal. */
 export function newRequestKey(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -106,7 +136,9 @@ async function requestOnce<T>(
   const res = await send(url, { method, headers, credentials: 'same-origin', body }, retriable)
   if (method !== 'GET' && generation === authGeneration)
     for (const listener of mutationListeners) listener(url, res.status, res.headers)
-  return { status: res.status, body: parseBody(await res.text()) as T }
+  const parsed = parseBody(await res.text())
+  if (!stepUpKind(res.status, parsed)) checkSessionAfter(url, res.status, generation)
+  return { status: res.status, body: parsed as T }
 }
 
 /**

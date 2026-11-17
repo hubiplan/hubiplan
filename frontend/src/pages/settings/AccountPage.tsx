@@ -1,9 +1,13 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import * as api from '../../api/auth.ts'
-import type { ChangeResult, TotpState } from '../../api/auth.ts'
+import type { ChangeResult, CodesResult, TotpState } from '../../api/auth.ts'
+import { saveBlob } from '../../api/client.ts'
+import { useAuth } from '../../auth/AuthContext.tsx'
+import { confirmDialog } from '../../components/dialog.ts'
+import { useOrg } from '../../org/OrgContext.tsx'
 import { DeleteAccountSection, LoginSections, NameSection } from './ProfileCards.tsx'
 import { LearningCard } from '../../learning/LearningCard.tsx'
 import { LanguageCard } from '../../i18n/LanguageControls.tsx'
@@ -42,6 +46,15 @@ export function AccountPage() {
 
 /** Mein Konto › Anmeldung & Sicherheit */
 export function AccountLoginPage() {
+  // „Jetzt einrichten“ im Hinweis springt zum Abschnitt, nicht an den Seitenanfang (VW-50)
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (!hash) return
+    const target = document.getElementById(hash.slice(1))
+    if (!target) return
+    target.scrollIntoView({ block: 'start' })
+    target.querySelector<HTMLElement>('h2')?.focus()
+  }, [hash])
   return (
     <section>
       <h1>{t('Anmeldung & Sicherheit')}</h1>
@@ -108,8 +121,16 @@ function TwoFactorCard() {
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([])
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  // Aktion, die nach erneuter Passwortbestätigung wiederholt wird
-  const [pending, setPending] = useState<(() => Promise<ChangeResult>) | null>(null)
+  // Aktion, die nach erneuter Passwortbestätigung wiederholt wird, mit ihrem Abschluss
+  const [pending, setPending] = useState<{
+    action: () => Promise<ChangeResult>
+    onSuccess: () => Promise<void>
+  } | null>(null)
+  const { setUser } = useAuth()
+  const { refresh: refreshOrgs } = useOrg()
+  const codeRef = useRef<HTMLInputElement>(null)
+  const errorRef = useRef<HTMLParagraphElement>(null)
+  const [copied, setCopied] = useState<'codes' | 'secret' | null>(null)
 
   const load = useCallback(async () => {
     setTotp(await api.getTotp())
@@ -145,9 +166,14 @@ function TwoFactorCard() {
     try {
       const result = await action()
       if (result.kind === 'reauthenticate') {
-        setPending(() => action)
+        setPending({ action, onSuccess })
       } else if (result.kind === 'error') {
         setError(result.message)
+        // Meldung sichtbar und Fokus im Feld, das zu korrigieren ist (VW-51)
+        requestAnimationFrame(() => {
+          errorRef.current?.scrollIntoView({ block: 'center' })
+          codeRef.current?.focus()
+        })
       } else {
         await onSuccess()
       }
@@ -162,12 +188,54 @@ function TwoFactorCard() {
     }
   }
 
+  /** Codes anzeigen oder neu erzeugen; allauth verlangt dafür ggf. erst das Passwort. */
+  function codes(fetchCodes: () => Promise<CodesResult>, done: string | null) {
+    let found: string[] = []
+    return run(
+      async () => {
+        const result = await fetchCodes()
+        if (result.kind !== 'ok') return result
+        found = result.codes
+        return { kind: 'ok' }
+      },
+      async () => {
+        setRecoveryCodes(found)
+        setCodesFailed(false)
+        setCopied(null)
+        if (done) setMessage(done)
+      },
+    )
+  }
+
   async function loadRecoveryCodes() {
     try {
-      setRecoveryCodes(await api.getRecoveryCodes())
-      setCodesFailed(false)
+      const result = await api.getRecoveryCodes()
+      if (result.kind === 'ok') setRecoveryCodes(result.codes)
+      setCodesFailed(result.kind === 'error')
     } catch {
       setCodesFailed(true)
+    }
+  }
+
+  async function regenerate() {
+    const yes = await confirmDialog({
+      title: t('Neue Wiederherstellungscodes erzeugen?'),
+      message: t('Die bisherigen Codes gelten danach nicht mehr.'),
+      confirmLabel: t('Neue Codes erzeugen'),
+    })
+    if (yes)
+      await codes(
+        api.regenerateRecoveryCodes,
+        t('Neue Wiederherstellungscodes erzeugt. Die alten gelten nicht mehr.'),
+      )
+  }
+
+  async function copy(text: string, what: 'codes' | 'secret') {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(what)
+    } catch {
+      setError(t('Kopieren hat nicht geklappt. Bitte von Hand abschreiben.'))
     }
   }
 
@@ -177,6 +245,15 @@ function TwoFactorCard() {
     setMessage(t('Zwei-Faktor-Anmeldung ist aktiv.'))
     await loadRecoveryCodes()
     await load()
+    // Der Hinweis „Zwei-Faktor-Anmeldung fehlt“ und die ruhenden Rechte hängen am Konto:
+    // gleich neu laden, nicht erst beim nächsten Seitenwechsel (VW-52)
+    try {
+      const next = await api.getSession()
+      if (next) setUser(next)
+      await refreshOrgs()
+    } catch {
+      // der Stand kommt beim nächsten Laden
+    }
   }
   const afterDeactivate = async () => {
     setRecoveryCodes([])
@@ -202,21 +279,21 @@ function TwoFactorCard() {
       <ReauthCard
         onCancel={() => setPending(null)}
         onConfirmed={async () => {
-          const action = pending
+          const { action, onSuccess } = pending
           setPending(null)
-          await run(action, totp?.active ? afterDeactivate : afterActivate)
+          await run(action, onSuccess)
         }}
       />
     )
   }
 
   return (
-    <div className="card">
-      <h2>{t('Zwei-Faktor-Anmeldung')}</h2>
+    <div className="card anchor-target" id="zwei-faktor">
+      <h2 tabIndex={-1}>{t('Zwei-Faktor-Anmeldung')}</h2>
       <Why k="two_factor" />
       <StatusMessage message={message} />
-      {error && (
-        <p className="alert alert-error" role="alert">
+      {error && totp?.active !== false && (
+        <p className="alert alert-error" role="alert" ref={errorRef}>
           {error}
         </p>
       )}
@@ -246,23 +323,72 @@ function TwoFactorCard() {
               </button>
             </div>
           )}
-          {recoveryCodes.length > 0 && (
-            <div className="recovery-codes">
-              <p>
-                <strong>{t('Wiederherstellungscodes')}</strong>{' '}
-                {t(
-                  '– sicher aufbewahren. Jeder Code funktioniert einmal, falls du dein Handy nicht zur Hand hast.',
-                )}
-              </p>
-              <ul>
-                {recoveryCodes.map((c) => (
-                  <li key={c}>
-                    <code>{c}</code>
-                  </li>
-                ))}
-              </ul>
+          <div className="recovery-codes">
+            <p>
+              <strong>{t('Wiederherstellungscodes')}</strong>{' '}
+              {t(
+                '– sicher aufbewahren. Jeder Code funktioniert einmal, falls du dein Handy nicht zur Hand hast.',
+              )}
+            </p>
+            {recoveryCodes.length > 0 && (
+              <>
+                <ul>
+                  {recoveryCodes.map((c) => (
+                    <li key={c}>
+                      <code>{c}</code>
+                    </li>
+                  ))}
+                </ul>
+                <p className="muted small">
+                  {t(
+                    'Du kannst die Codes hier später wieder anzeigen. Bewahre sie trotzdem getrennt vom Handy auf.',
+                  )}
+                </p>
+              </>
+            )}
+            <div className="button-row">
+              {recoveryCodes.length > 0 ? (
+                <>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => void copy(recoveryCodes.join('\n'), 'codes')}
+                  >
+                    {copied === 'codes' ? t('Kopiert') : t('Codes kopieren')}
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() =>
+                      saveBlob(
+                        new Blob([recoveryCodes.join('\r\n') + '\r\n'], { type: 'text/plain' }),
+                        t('wiederherstellungscodes.txt'),
+                      )
+                    }
+                  >
+                    {t('Als Textdatei speichern')}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="button"
+                  disabled={busy}
+                  onClick={() => void codes(api.getRecoveryCodes, null)}
+                >
+                  {t('Wiederherstellungscodes anzeigen')}
+                </button>
+              )}
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() => void regenerate()}
+              >
+                {t('Neue Codes erzeugen')}
+              </button>
             </div>
-          )}
+          </div>
           <button
             type="button"
             className="button button-ghost"
@@ -289,9 +415,24 @@ function TwoFactorCard() {
               role="img"
               aria-label={t('QR-Code für die Authenticator-App')}
             />
-            <p className="muted">
-              {t('Manuell:')} <code>{totp.secret}</code>
-            </p>
+            <div className="totp-manual">
+              <p className="muted">
+                {t('Manuell:')} <code>{totp.secret.replace(/(.{4})(?=.)/g, '$1 ')}</code>
+              </p>
+              <div className="button-row">
+                {/* Am Handy lässt sich der QR-Code nicht scannen: Link öffnet die App (VW-49) */}
+                <a className="button totp-open" href={totp.totpUrl}>
+                  {t('In Authenticator-App öffnen')}
+                </a>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => void copy(totp.secret, 'secret')}
+                >
+                  {copied === 'secret' ? t('Kopiert') : t('Schlüssel kopieren')}
+                </button>
+              </div>
+            </div>
           </div>
           <label className="field">
             <span>{t('Code aus der App')}</span>
@@ -299,6 +440,9 @@ function TwoFactorCard() {
               inputMode="numeric"
               autoComplete="one-time-code"
               required
+              ref={codeRef}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'zwei-faktor-fehler' : undefined}
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />
@@ -313,6 +457,11 @@ function TwoFactorCard() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+          {error && (
+            <p className="alert alert-error" role="alert" id="zwei-faktor-fehler" ref={errorRef}>
+              {error}
+            </p>
+          )}
           <button type="submit" className="button button-primary" disabled={busy}>
             {t('Aktivieren')}
           </button>

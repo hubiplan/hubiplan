@@ -4,7 +4,7 @@ import { ApiError, parseBody, send, saveBlob } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { usePublicImprint } from '../../components/publicImprint.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
-import { lang, t } from '../../i18n/index.ts'
+import { lang, t, tc } from '../../i18n/index.ts'
 import { MusicStatus } from './MusicLayout.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
 
@@ -206,8 +206,8 @@ function GuestAssignment({ token, rehearsal }: { token: string; rehearsal: boole
         {row.can_respond && (
           <div className="music-actions">
             {[
-              ['accepted', t('Zusagen')],
-              ['declined', t('Absagen')],
+              ['accepted', tc('action', 'Zusagen')],
+              ['declined', tc('action', 'Absagen')],
             ].map(([status, label]) => (
               <button
                 key={status}

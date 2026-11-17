@@ -1,5 +1,6 @@
 // Rückgängig/Wiederherstellen in der Kopfleiste, Strg+Z / Strg+Y und ein kurzer Hinweis.
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { dismissNotice, groupSteps, redo, undo, useUndo } from './undo.ts'
 import { t } from '../i18n/index.ts'
 
@@ -151,38 +152,42 @@ export function UndoControls({ base }: { base: string }) {
           )}
         </div>
       </div>
-      {notice && (
-        <div
-          className="undo-notice"
-          role="status"
-          onMouseEnter={() => setHoldNotice(true)}
-          onMouseLeave={() => setHoldNotice(false)}
-          onFocus={() => setHoldNotice(true)}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHoldNotice(false)
-          }}
-        >
-          <span>{notice.text}</span>
-          {notice.action === 'undo' && (
-            <button type="button" className="link-button" onClick={() => void undo(base)}>
-              {t('Rückgängig')}
-            </button>
-          )}
-          {notice.action === 'redo' && (
-            <button type="button" className="link-button" onClick={() => void redo(base)}>
-              {t('Wiederherstellen')}
-            </button>
-          )}
-          <button
-            type="button"
-            className="link-button undo-notice-close"
-            onClick={dismissNotice}
-            aria-label={t('Hinweis schließen')}
+      {/* Am Handy stehen die Knöpfe im eingeklappten Menü. Der Hinweis hängt deshalb am
+          Dokument und nicht am Menü, sonst rutscht er mit dem Menü aus dem Bild. */}
+      {notice &&
+        createPortal(
+          <div
+            className="undo-notice"
+            role="status"
+            onMouseEnter={() => setHoldNotice(true)}
+            onMouseLeave={() => setHoldNotice(false)}
+            onFocus={() => setHoldNotice(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHoldNotice(false)
+            }}
           >
-            ×
-          </button>
-        </div>
-      )}
+            <span>{notice.text}</span>
+            {notice.action === 'undo' && (
+              <button type="button" className="link-button" onClick={() => void undo(base)}>
+                {t('Rückgängig')}
+              </button>
+            )}
+            {notice.action === 'redo' && (
+              <button type="button" className="link-button" onClick={() => void redo(base)}>
+                {t('Wiederherstellen')}
+              </button>
+            )}
+            <button
+              type="button"
+              className="link-button undo-notice-close"
+              onClick={dismissNotice}
+              aria-label={t('Hinweis schließen')}
+            >
+              ×
+            </button>
+          </div>,
+          document.body,
+        )}
     </>
   )
 }
