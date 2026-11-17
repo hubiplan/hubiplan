@@ -8,6 +8,7 @@
 - AZ-11: Import, Abteilungsexport und Kopplungsaktionen verlangen eine frische Bestätigung.
 """
 
+import datetime
 import json
 import uuid
 
@@ -165,8 +166,33 @@ class TestFrischeBestaetigung:
         assert resp.status_code == 403, resp.content
         assert resp.json().get("step_up"), resp.json()
 
-    def test_abteilungsexport(self, api, club_c, board_c):
-        resp = api(board_c).post(
-            f"/api/depts/{club_c['dept'].pk}/datatransfer/exports/", {}, content_type=JSON
-        )
+    def test_abteilungsexport(self, api, club_c):
+        """Export einer Abteilung durch ihr Amt (Weg über /api/depts/, wie
+        test_datatransfer.test_abteilungsrolle_exportiert)."""
+        from organizations.models import DepartmentRole
+        from portal.models import PortalAccess
+
+        club, dept = club_c["club"], club_c["dept"]
+        club.department_access_enabled = True
+        club.save()
+        with tenant_context(club.pk):
+            role = DepartmentRole.objects.create(
+                organization=club,
+                department=dept,
+                name="Spieß",
+                permissions=["dept.members.view", "dept.export"],
+            )
+            from members.models import DepartmentRoleHolder, Membership
+
+            membership = Membership.objects.get(pk=club_c["erika"]["id"])
+            DepartmentRoleHolder.objects.create(
+                organization=club,
+                membership=membership,
+                role=role,
+                valid_from=datetime.date(2020, 1, 1),
+            )
+        user = make_user("spiess-az11@example.org")
+        with tenant_context(club.pk):
+            PortalAccess.objects.create(organization=club, membership=membership, user=user)
+        resp = api(user).post(f"/api/depts/{dept.pk}/datatransfer/exports/", {}, content_type=JSON)
         assert resp.status_code == 403 and resp.json().get("step_up"), resp.content
