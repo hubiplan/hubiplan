@@ -30,6 +30,7 @@ from rest_framework.views import APIView
 from access.catalog import DEPT_EVENTS_MANAGE, DOCS_VIEW, EVENTS_MANAGE, EVENTS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import OrgScopedMixin, has_needed
+from core.listing import page_of
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import DepartmentMembership, Membership, today
 from organizations.models import Organization
@@ -1336,6 +1337,22 @@ class _ResponsesMixin:
         return membership
 
 
+def _response_pages(request, answered: list, open_: list) -> dict:
+    """Rückmeldungen und Offene, mit ``?seite=`` seitenweise (Gesamtaudit 15.11., PF-28)."""
+    items, page = page_of(request.query_params, answered)
+    rest, open_page = page_of(request.query_params, open_)
+    data = {
+        "items": [r.data() for r in items],
+        "open": [
+            {"membership_id": r.membership_id, "name": r.name, "departments": r.departments}
+            for r in rest
+        ],
+    }
+    if page is not None:
+        data["page"] = {**page, "more": page["more"] or open_page["more"]}
+    return data
+
+
 class _Responses(_ResponsesMixin, APIView):
     """GET: Teilnehmerliste · PUT: Rückmeldung für ein Mitglied eintragen (Vorstand)."""
 
@@ -1357,11 +1374,7 @@ class _Responses(_ResponsesMixin, APIView):
                     "open": len(open_),
                 },
                 "capacity": event.rsvp_capacity,
-                "items": [r.data() for r in answered],
-                "open": [
-                    {"membership_id": r.membership_id, "name": r.name, "departments": r.departments}
-                    for r in open_
-                ],
+                **_response_pages(request, answered, open_),
             }
         )
 

@@ -666,9 +666,11 @@ function SentView({
   const tm = useTerms()
   const activeType = useOptionalOrg()?.active?.type
   const navigate = useNavigate()
+  // Versandprotokoll seitenweise zu je 200 (Gesamtaudit 15.11., PF-28)
+  const [pages, setPages] = useState(1)
   const recipients = useLoad(
-    () => circularApi.recipients(base, circular.id),
-    [JSON.stringify(base), circular.id, circular.status],
+    () => circularApi.recipientPages(base, circular.id, pages),
+    [JSON.stringify(base), circular.id, circular.status, pages],
   )
   const [error, setError] = useState<string | null>(null)
   const sending = circular.status === 'sending'
@@ -818,6 +820,19 @@ function SentView({
                 ))}
               </tbody>
             </table>
+            {recipients.data.page?.more && (
+              <button
+                type="button"
+                className="button"
+                disabled={recipients.loading}
+                onClick={() => setPages((n) => n + 1)}
+              >
+                {t('Weitere laden ({n} von {total})', {
+                  n: recipients.data.items.length,
+                  total: recipients.data.page.total,
+                })}
+              </button>
+            )}
           </div>
         )}
       </div>
