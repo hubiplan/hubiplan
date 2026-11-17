@@ -248,7 +248,7 @@ MODULE_MODELS = (
 # nicht zum Kassen- und Beitragsbereich: Sie kommen immer mit.
 PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
-# mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
+# mit, nicht aber im Dachverbands-Export der Vereine.
 DEPARTMENT_MODELS = {
     "meetings.meetingkind",
     "meetings.meeting",
