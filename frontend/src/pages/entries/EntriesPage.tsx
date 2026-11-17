@@ -44,6 +44,7 @@ import { CallEventCard, InterestCard } from './CallEvent.tsx'
 import { UnitEntryPage, UnitsPanel } from './UnitEntries.tsx'
 import { EntryResultsCard } from './EntryResults.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 export function EntriesPage() {
   return (
@@ -97,6 +98,18 @@ function CallList() {
           rowKey={(c) => c.id}
           initialSort={{ key: 'deadline', dir: 'desc' }}
           emptyText={t('Noch keine Ausschreibungen.')}
+          empty={
+            creating ? undefined : (
+              <EmptyList
+                title={t('Noch keine Ausschreibungen.')}
+                canAdd
+                action={{
+                  label: t('Neue Ausschreibung erfassen'),
+                  onClick: () => setCreating(true),
+                }}
+              />
+            )
+          }
           columns={[
             {
               key: 'deadline',

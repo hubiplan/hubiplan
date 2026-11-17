@@ -23,6 +23,7 @@ import { ApiError } from '../../api/client.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 export function CashReceiptsArea({ canEdit }: { canEdit: boolean }) {
   return (
@@ -59,7 +60,17 @@ function CashReceiptList({ canEdit }: { canEdit: boolean }) {
       </p>
       {error && <LoadError message={error} onRetry={() => void reload()} />}
       {!data && !error && <Loading />}
-      {data && data.results.length === 0 && <p className="muted">{t('Noch keine Quittungen.')}</p>}
+      {data && data.results.length === 0 && (
+        <EmptyList
+          title={t('Noch keine Quittungen.')}
+          canAdd={canEdit}
+          link={
+            <Link className="button button-primary" to="/finanzen/quittungen/neu">
+              {t('Quittung ausstellen')}
+            </Link>
+          }
+        />
+      )}
       {data && data.results.length > 0 && (
         <div className="table-scroll">
           <table className="table">

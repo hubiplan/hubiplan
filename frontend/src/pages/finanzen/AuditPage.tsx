@@ -20,6 +20,7 @@ import { Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { auditCloseChecks } from '../../learning/checks.ts'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 function resultOptions(): { value: AuditResult; label: string }[] {
   return [
@@ -726,7 +727,13 @@ export function AuditPage({ canEdit }: { canEdit: boolean }) {
       )}
       <div className="card card-wide">
         {audits.data.length === 0 ? (
-          <p className="muted">{t('Noch keine Kassenprüfung angelegt.')}</p>
+          !creating && (
+            <EmptyList
+              title={t('Noch keine Kassenprüfung angelegt.')}
+              canAdd={canEdit}
+              action={{ label: t('Prüfauftrag anlegen'), onClick: () => setCreating(true) }}
+            />
+          )
         ) : (
           <table className="table">
             <thead>

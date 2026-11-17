@@ -11,6 +11,7 @@ import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 function methodOptions(): { value: AssetMethod; label: string }[] {
   return [
@@ -321,7 +322,11 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
       )}
       <div className="card card-wide">
         {data.assets.length === 0 ? (
-          <p className="muted">{t('Noch keine Anlagen erfasst.')}</p>
+          <EmptyList
+            title={t('Noch keine Anlagen erfasst.')}
+            canAdd={canEdit}
+            action={{ label: t('Anlage hinzufügen'), onClick: () => setEditing('new') }}
+          />
         ) : (
           <table className="table">
             <thead>

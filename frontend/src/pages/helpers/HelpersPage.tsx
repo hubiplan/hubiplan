@@ -22,6 +22,7 @@ import { Loading } from '../../components/ui.tsx'
 import './helpers.css'
 import { PlaceField } from '../../components/PlaceField.tsx'
 import { NoAccessPage } from '../NoticePages.tsx'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -133,7 +134,17 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
       {!base.startsWith('/api/orgs/') && <UnitQuotas base={base} orgId={orgId} canEdit={canEdit} />}
       {list.error && <p role="alert">{list.error}</p>}
       {list.data && rows.length === 0 ? (
-        <p className="muted">{t('Noch kein Dienstplan.')}</p>
+        !creating && (
+          <EmptyList
+            title={t('Noch kein Dienstplan.')}
+            canAdd={canEdit}
+            action={{ label: t('Neuer Dienstplan'), onClick: () => setCreating(true) }}
+          >
+            {t(
+              'Ein Dienstplan sammelt die Dienste eines Festes oder Termins; Mitglieder tragen sich dort ein.',
+            )}
+          </EmptyList>
+        )
       ) : (
         <table className="table">
           <thead>

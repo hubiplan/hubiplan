@@ -10,6 +10,7 @@ import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 function todayIso(): string {
   const d = new Date()
@@ -84,7 +85,13 @@ export function CashCountsPage({ canEdit }: { canEdit: boolean }) {
         />
       )}
       {data.results.length === 0 ? (
-        <p className="muted">{t('Noch keine Zählungen.')}</p>
+        form === null && (
+          <EmptyList
+            title={t('Noch keine Zählungen.')}
+            canAdd={canEdit}
+            action={{ label: t('Kasse zählen'), onClick: () => setForm('count') }}
+          />
+        )
       ) : (
         <table className="table">
           <thead>

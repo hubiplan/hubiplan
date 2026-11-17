@@ -64,6 +64,8 @@ export interface DataTableProps<T> {
   searchPlaceholder?: string
   /** Text bei leerer Liste bzw. wenn Suche/Filter nichts finden */
   emptyText?: string
+  /** Leerzustand mit nächstem Schritt statt `emptyText`, wenn es noch gar keine Zeilen gibt (VW-20) */
+  empty?: ReactNode
   /** z. B. „3 Züge“ */
   countText?: (count: number, total: number) => string
   rowClassName?: (row: T) => string | undefined
@@ -104,6 +106,7 @@ export function DataTable<T>({
   pageSizes = [10, 20, 50],
   searchPlaceholder = t('Suchen …'),
   emptyText = t('Keine Einträge.'),
+  empty,
   countText,
   rowClassName,
   toolbar,
@@ -258,7 +261,11 @@ export function DataTable<T>({
       </p>
 
       {shown.length === 0 ? (
-        <p className="muted">{rows.length > 0 && filtered ? t('Nichts gefunden.') : emptyText}</p>
+        rows.length === 0 && empty ? (
+          empty
+        ) : (
+          <p className="muted">{rows.length > 0 && filtered ? t('Nichts gefunden.') : emptyText}</p>
+        )
       ) : (
         <div className="table-scroll">
           <table className={fixedLayout ? 'table table-fixed' : 'table'} aria-label={label}>

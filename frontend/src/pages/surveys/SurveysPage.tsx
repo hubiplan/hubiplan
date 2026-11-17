@@ -31,6 +31,7 @@ import { SurveyAnswerForm, SurveyResults, dateLabel, endText } from './SurveyPar
 import './surveys.css'
 import { Why } from '../../learning/Aids.tsx'
 import { NoAccessPage } from '../NoticePages.tsx'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 export function statusLabel(status: SurveyStatus) {
   if (status === 'open') return t('läuft')
@@ -157,47 +158,51 @@ function Surveys({ base, orgId, canEdit }: { base: string; orgId: number; canEdi
       )}
       {list.error && <p role="alert">{list.error}</p>}
       {!list.data && !list.error && <Loading />}
-      {list.data && rows.length === 0 ? (
-        <p className="muted">{t('Noch keine Umfrage.')}</p>
-      ) : (
-        rows.length > 0 && (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{t('Umfrage')}</th>
-                <th>{t('Ende')}</th>
-                <th>{t('Antworten')}</th>
-                <th>{t('Stand')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((s) => (
-                <tr key={s.id}>
-                  <td>
-                    <button
-                      type="button"
-                      className="link-button"
-                      onClick={() => detail.open(String(s.id))}
-                    >
-                      {s.title}
-                    </button>
-                    {s.event_title && <span className="muted small"> · {s.event_title}</span>}
-                  </td>
-                  <td>{endText(s.closes_at)}</td>
-                  <td>
-                    {s.invited != null
-                      ? t('{n} von {m}', { n: s.participants, m: s.invited })
-                      : s.participants}
-                  </td>
-                  <td>
-                    <span className="badge">{statusLabel(s.status)}</span>
-                  </td>
+      {list.data && rows.length === 0
+        ? !creating && (
+            <EmptyList
+              title={t('Noch keine Umfrage.')}
+              canAdd={canEdit}
+              action={{ label: t('Neue Umfrage'), onClick: () => setCreating(true) }}
+            />
+          )
+        : rows.length > 0 && (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>{t('Umfrage')}</th>
+                  <th>{t('Ende')}</th>
+                  <th>{t('Antworten')}</th>
+                  <th>{t('Stand')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )
-      )}
+              </thead>
+              <tbody>
+                {rows.map((s) => (
+                  <tr key={s.id}>
+                    <td>
+                      <button
+                        type="button"
+                        className="link-button"
+                        onClick={() => detail.open(String(s.id))}
+                      >
+                        {s.title}
+                      </button>
+                      {s.event_title && <span className="muted small"> · {s.event_title}</span>}
+                    </td>
+                    <td>{endText(s.closes_at)}</td>
+                    <td>
+                      {s.invited != null
+                        ? t('{n} von {m}', { n: s.participants, m: s.invited })
+                        : s.participants}
+                    </td>
+                    <td>
+                      <span className="badge">{statusLabel(s.status)}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
     </div>
   )
 }

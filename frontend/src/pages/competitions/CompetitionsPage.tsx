@@ -60,6 +60,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { PlaceField } from '../../components/PlaceField.tsx'
 import { useSportText } from './words.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 export function CompetitionsPage() {
   return (
@@ -114,6 +115,15 @@ function CompetitionList() {
           rowKey={(c) => c.id}
           initialSort={{ key: 'date', dir: 'desc' }}
           emptyText={t('Noch keine Wettbewerbe.')}
+          empty={
+            creating ? undefined : (
+              <EmptyList
+                title={t('Noch keine Wettbewerbe.')}
+                canAdd={canManage}
+                action={{ label: t('Neuer Wettbewerb'), onClick: () => setCreating(true) }}
+              />
+            )
+          }
           columns={[
             {
               key: 'date',

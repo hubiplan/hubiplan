@@ -12,6 +12,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
 import { Why } from '../../learning/Aids.tsx'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 const typeLabel = (tmx: FieldType) => FIELD_TYPES.find((x) => x.value === tmx)?.label ?? tmx
 
@@ -206,7 +207,17 @@ export function FieldsAdmin({
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {current.length === 0 ? (
-        <p className="muted">{t('Noch keine Zusatzfelder.')}</p>
+        editing === null && (
+          <EmptyList
+            title={t('Noch keine Zusatzfelder.')}
+            canAdd={editable}
+            action={{ label: t('Neues Feld'), onClick: () => setEditing('new') }}
+          >
+            {t(
+              'Zusatzfelder nehmen auf, was euer Verein zusätzlich zu den festen Angaben festhalten will.',
+            )}
+          </EmptyList>
+        )
       ) : (
         <table className="table">
           <thead>
