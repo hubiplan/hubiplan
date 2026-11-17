@@ -595,7 +595,10 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
     # Anlegen den Zeilenschutz; die Entscheidung endete mit Fehler 500 (Gesamtaudit 15.11., AZ-04).
     with suppress(), unit_context(coupling.remote_unit_id):
         _import(coupling, federation, row, rm, person=person)
-    send_numbers(coupling)
+        # Auch die Rückmeldung der Verbandsnummern liest die gemeldeten Mitgliedschaften des
+        # Platzhalters; im Kontext des Dachverbands fand sie keine und schickte nichts
+        # (Gesamtaudit 15.11., AZ-04). Wie beim Eingang der Meldung im Bereich des Platzhalters.
+        send_numbers(coupling)
     rm.refresh_from_db()
     return rm
 
