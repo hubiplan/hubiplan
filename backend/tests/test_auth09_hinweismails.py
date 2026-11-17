@@ -20,6 +20,15 @@ pytestmark = pytest.mark.django_db
 JSON = "application/json"
 
 
+def _links(body: str) -> list[str]:
+    """Links außer Impressum und Datenschutz im Fuß jeder Mail."""
+    return [
+        url
+        for url in re.findall(r"https?://\S+", body)
+        if not url.rstrip("/").endswith(("/impressum", "/datenschutz"))
+    ]
+
+
 def _signal(signal, user, authenticator):
     signal.send(sender=Authenticator, request=None, user=user, authenticator=authenticator)
 
@@ -46,7 +55,7 @@ def test_zwei_faktor_hinweise(django_capture_on_commit_callbacks):
     for m in mail.outbox:
         assert m.to == [user.email]
         assert secret not in m.body
-        assert "http" not in m.body  # kein Link
+        assert _links(m.body) == []  # kein Link zum Handeln
 
 
 def test_email_wechsel_an_alte_und_neue_adresse(api, django_capture_on_commit_callbacks):
@@ -67,4 +76,4 @@ def test_email_wechsel_an_alte_und_neue_adresse(api, django_capture_on_commit_ca
         "alt-hinweis@example.org",
         "neu-hinweis@example.org",
     ]
-    assert all("http" not in m.body for m in notices)
+    assert all(_links(m.body) == [] for m in notices)
