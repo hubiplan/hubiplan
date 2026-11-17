@@ -13738,19 +13738,5 @@ msgstr "Sign-in email changed"
 msgid "Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."
 msgstr "The sign-in email of your HUBIplan account is now {new}."
 
-msgid "Hallo {name},
-
-{text}
-
-Zeit: {when} Uhr
-
-Warst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.
-"
-msgstr "Hello {name},
-
-{text}
-
-Time: {when}
-
-If this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.
-"
+msgid "Hallo {name},\n\n{text}\n\nZeit: {when} Uhr\n\nWarst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.\n"
+msgstr "Hello {name},\n\n{text}\n\nTime: {when}\n\nIf this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.\n"
