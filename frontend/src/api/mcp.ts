@@ -15,6 +15,7 @@ export interface McpRequest {
   redirect_kind: 'bekannt' | 'web' | 'rechner'
   /** Mit diesem Assistenten schon einmal verbunden */
   connected_before: boolean
+  client_registered_at?: string
   scopes: McpScope[]
   /** Gibt es nur mit eigenem Haken (wirkt sofort, ohne Entwurf) */
   optional: McpScope[]

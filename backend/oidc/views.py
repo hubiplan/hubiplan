@@ -216,7 +216,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def validate_service_password(self, value):
         # Leer heißt: das gespeicherte behalten
-        return encrypt(value) if value else None
+        return encrypt(value, purpose="nextcloud") if value else None
 
     def validate_account_group(self, value):
         value = " ".join(str(value or "").split())

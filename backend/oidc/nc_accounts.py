@@ -45,7 +45,7 @@ class NextcloudError(Exception):
 def _ocs(client: Client, method: str, path: str) -> dict:
     if not client.service_user or not client.service_password:
         raise NextcloudError(gettext("Dienstkonto und App-Passwort fehlen."))
-    auth = f"{client.service_user}:{decrypt(client.service_password)}"
+    auth = f"{client.service_user}:{decrypt(client.service_password, purpose='nextcloud')}"
     url = f"{client.base_url.rstrip('/')}/ocs/v2.php/{path}?format=json"
     try:
         resp = safehttp.request(

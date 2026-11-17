@@ -236,7 +236,7 @@ class TestVereinsplaner:
         def switch(current):
             items = original(current)
             ExternalCalendar.objects.filter(pk=current.pk).update(
-                token=encrypt("tok-anderes"), visibility="public"
+                token=encrypt("tok-anderes", purpose="kalender"), visibility="public"
             )
             return items
 
