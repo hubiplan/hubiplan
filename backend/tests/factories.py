@@ -1,4 +1,9 @@
-"""Hilfsfunktionen für Testdaten (alles erfunden)."""
+"""Hilfsfunktionen für Testdaten (alles erfunden).
+
+Die Fabriken legen ihre Daten unter ``rls_bypass`` an (Gesamtaudit 15.11., AZ-04): Sie
+bereiten nur vor, was ein Test braucht, und gelingen so auch, wenn der Test unter der
+Rolle der Anwendung läuft. Was der Test selbst prüft, bleibt unter dem Zeilenschutz.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +12,7 @@ import datetime
 from access.catalog import DEFAULT_MODULES, codes_for
 from access.models import Role, RoleAssignment
 from accounts.models import User
+from core.tenancy import rls_bypass
 from organizations.models import Organization
 
 PASSWORD = "Sicheres-Passwort-123"
@@ -38,9 +44,10 @@ def make_org(name: str, type_: str = "club", parent: Organization | None = None,
         "enabled_modules": [m for m in DEFAULT_MODULES if m != "portal"] + ["honors"],
     }
     defaults.update(extra)
-    return Organization.objects.create(
-        name=name, type=type_, parent=parent or Organization.platform(), **defaults
-    )
+    with rls_bypass():
+        return Organization.objects.create(
+            name=name, type=type_, parent=parent or Organization.platform(), **defaults
+        )
 
 
 def make_user(email: str, **extra) -> User:
@@ -55,18 +62,19 @@ def give_role(
     valid_from: datetime.date | None = None,
     valid_until: datetime.date | None = None,
 ) -> RoleAssignment:
-    role, _ = Role.objects.get_or_create(
-        organization=org,
-        name=name,
-        defaults={"permissions": codes_for(org.type) if permissions is None else permissions},
-    )
-    return RoleAssignment.objects.create(
-        organization=org,
-        role=role,
-        user=user,
-        valid_from=valid_from or datetime.date(2020, 1, 1),
-        valid_until=valid_until,
-    )
+    with rls_bypass():
+        role, _ = Role.objects.get_or_create(
+            organization=org,
+            name=name,
+            defaults={"permissions": codes_for(org.type) if permissions is None else permissions},
+        )
+        return RoleAssignment.objects.create(
+            organization=org,
+            role=role,
+            user=user,
+            valid_from=valid_from or datetime.date(2020, 1, 1),
+            valid_until=valid_until,
+        )
 
 
 def make_member(
@@ -84,7 +92,7 @@ def make_member(
     from members import services
     from members.models import MemberType
 
-    with tenant_context(club.pk):
+    with rls_bypass(), tenant_context(club.pk):
         if member_type is None:
             member_type, _ = MemberType.objects.get_or_create(
                 organization=club, name="aktiv", defaults={"active": True}
@@ -104,6 +112,22 @@ def make_member(
                 "departments": list(departments),
             },
         )
+
+
+def make_website(org: Organization, **fields):
+    """Webseite einer Einheit anlegen (Testvorbereitung)."""
+    from website.models import Website
+
+    with rls_bypass():
+        return Website.objects.create(organization=org, **fields)
+
+
+def give_portal_access(org: Organization, membership, user: User):
+    """Zugang zum Mitgliederbereich (Testvorbereitung)."""
+    from portal.models import PortalAccess
+
+    with rls_bypass():
+        return PortalAccess.objects.create(organization=org, membership=membership, user=user)
 
 
 _ANY = object()
@@ -126,7 +150,6 @@ def audit_with(key: str, value=_ANY, **filters) -> list:
 def found(person_id: int) -> dict:
     """Angaben aus der Dublettensuche, mit denen eine vorhandene Person verknüpft wird
     (Audit 02.11. GA-S01: die Personen-ID allein reicht nicht)."""
-    from core.tenancy import rls_bypass
     from members.models import Person
 
     with rls_bypass():

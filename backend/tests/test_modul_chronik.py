@@ -7,7 +7,7 @@ from django.test import Client
 
 from website.models import Website, WebsiteText
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -74,7 +74,7 @@ def test_oeffentliche_zeitleiste_folgt_dem_modul(orgs):
     org = orgs["a"]
     org.enabled_modules = sorted({*org.enabled_modules, "website", "chronicle"})
     org.save()
-    site = Website.objects.create(organization=org, public_key=Website.new_key(), state="public")
+    site = make_website(org, public_key=Website.new_key(), state="public")
     text = content.chronicle(site)
     text.timeline = [{"year": 1920, "title": "Gründung", "kind": "event"}]
     text.save()

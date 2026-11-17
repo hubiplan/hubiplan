@@ -9,6 +9,8 @@ from django.test import Client
 from organizations.models import Department
 from website.models import Website, WebsiteText
 
+from .factories import make_website
+
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "suche-a"
 WHEN = datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC)
@@ -43,7 +45,7 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    site = Website.objects.create(organization=club, public_key=KEY, state="public")
+    site = make_website(club, public_key=KEY, state="public")
     site.blocks = {**(site.blocks or {}), "search": True, "units": True}
     site.home_sections = [{"key": "greeting", "on": True}, TILES, FAQ_OFF]
     site.save()

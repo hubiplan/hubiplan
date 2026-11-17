@@ -19,7 +19,7 @@ from website import contact
 from website import services as website_services
 from website.models import PreviewLink, Website
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 from .test_cards import card_url, club, erika, scan, token_of, zug  # noqa: F401
 from .test_m12_events import cal, private_root  # noqa: F401
 from .test_statutes import upload
@@ -114,7 +114,7 @@ class TestVorschauWiderruf:
     """W-S01: Widerruf beendet auch schon eingetauschte Vorschau-Sitzungen."""
 
     def test_widerruf_beendet_sitzung(self, orgs):
-        site = Website.objects.create(organization=orgs["a"], public_key=Website.new_key())
+        site = make_website(orgs["a"], public_key=Website.new_key())
         link, token = PreviewLink.create(site, 3, "Vorstand", None)
         session, _ = website_services.exchange(site, token)
         assert website_services.valid_session(site, session)
@@ -123,7 +123,7 @@ class TestVorschauWiderruf:
         assert not website_services.valid_session(site, session)
 
     def test_abgelaufener_link_beendet_sitzung(self, orgs):
-        site = Website.objects.create(organization=orgs["a"], public_key=Website.new_key())
+        site = make_website(orgs["a"], public_key=Website.new_key())
         link, token = PreviewLink.create(site, 3, "", None)
         session, _ = website_services.exchange(site, token)
         link.expires_at = timezone.now() - datetime.timedelta(minutes=1)

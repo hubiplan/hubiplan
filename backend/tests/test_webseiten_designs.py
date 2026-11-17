@@ -8,6 +8,8 @@ from organizations.theme import effective_theme
 from website import designs
 from website.models import Website, WebsiteDomain
 
+from .factories import make_website
+
 pytestmark = pytest.mark.django_db(transaction=True)
 JSON = "application/json"
 
@@ -107,8 +109,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    site = Website.objects.create(
-        organization=org,
+    site = make_website(
+        org,
         public_key="schluessel-d",
         state="public",
         privacy_text="Datenschutz (erfunden)",

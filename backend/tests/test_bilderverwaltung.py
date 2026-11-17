@@ -13,7 +13,7 @@ from organizations.models import Department
 from website import content
 from website.models import Website, WebsiteImage, WebsiteText
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -28,7 +28,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    return Website.objects.create(organization=org, public_key=Website.new_key(), state="public")
+    return make_website(org, public_key=Website.new_key(), state="public")
 
 
 @pytest.fixture

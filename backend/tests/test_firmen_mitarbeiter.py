@@ -25,7 +25,11 @@ from .test_mitgliedsantrag import (  # noqa: F401  (Fixtures, auch die automatis
 )
 from .test_organisationsmitglieder import admit_org
 
-pytestmark = pytest.mark.django_db(transaction=True)
+# Anfragen wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
+pytestmark = [
+    pytest.mark.django_db(transaction=True),
+    pytest.mark.usefixtures("anfragen_unter_app_rolle"),
+]
 JSON = "application/json"
 
 

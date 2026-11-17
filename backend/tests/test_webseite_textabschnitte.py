@@ -5,9 +5,9 @@ import pytest
 from django.test import Client
 
 from website import content
-from website.models import Website, WebsiteImage, WebsiteText
+from website.models import WebsiteImage, WebsiteText
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "textabschnitte-a"
@@ -18,8 +18,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "events", "website"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key=KEY,
         state="public",
         privacy_mode="link",

@@ -12,9 +12,9 @@ from core.tenancy import rls_bypass
 from events.models import Event, EventCategory
 from places.models import Place
 from website.content_models import WebsiteDocument, WebsiteText
-from website.models import Website, WebsiteImage
+from website.models import WebsiteImage
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "abschnittsarten-a"
@@ -30,8 +30,8 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(
-        organization=club,
+    return make_website(
+        club,
         public_key=KEY,
         state="public",
         privacy_mode="link",

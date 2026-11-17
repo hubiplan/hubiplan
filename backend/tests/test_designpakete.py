@@ -9,9 +9,9 @@ from django.test import Client
 
 from organizations.models import Organization
 from website import design_packages as dp
-from website.models import DesignPackage, Website, WebsiteDomain
+from website.models import DesignPackage, WebsiteDomain
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 JSON = "application/json"
@@ -173,8 +173,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    site = Website.objects.create(
-        organization=org,
+    site = make_website(
+        org,
         public_key="schluessel-p",
         state="public",
         privacy_text="Datenschutz (erfunden)",
@@ -277,7 +277,7 @@ class TestEinspielen:
 
     def test_fremde_webseite_sieht_paket_nicht(self, api, orgs, admin, site):
         upload(api(admin), orgs["a"], make_zip(), key="hubertus", label="Hubertus")
-        other = Website.objects.create(organization=orgs["b"], public_key="schluessel-q")
+        other = make_website(orgs["b"], public_key="schluessel-q")
         assert other.design_choices() == {"classic", "festive", "sidebar", "stage", "newspaper"}
         # Gespeichertes, aber nicht freigegebenes Design zählt als Klassisch
         other.design = "hubertus"
@@ -320,7 +320,7 @@ def site_b(orgs):
     org = orgs["b"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-b", state="public")
+    return make_website(org, public_key="schluessel-b", state="public")
 
 
 class TestEigeneEinheit:
