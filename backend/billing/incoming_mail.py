@@ -78,7 +78,14 @@ def mailbox_address() -> str:
 
 
 def _new_tag() -> str:
-    return "".join(secrets.choice(TAG_ALPHABET) for _ in range(TAG_LENGTH))
+    """Zufällige Kennung; nie mit „nw“ am Anfang, das ist den Nachweis-Adressen vorbehalten.
+
+    ``rechnung+nw…`` ist die Antwortadresse für Beitragsnachweise (feeproofs/mail.py).
+    """
+    while True:
+        tag = "".join(secrets.choice(TAG_ALPHABET) for _ in range(TAG_LENGTH))
+        if not tag.startswith("nw"):
+            return tag
 
 
 def mailbox_of(org, renew: bool = False) -> IncomingMailbox:
