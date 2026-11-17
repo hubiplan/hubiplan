@@ -33,9 +33,8 @@ def test_doppelte_nummer_abgewiesen(orgs):
 def test_bestand_wird_aufgeloest(orgs):
     with rls_bypass(), transaction.atomic():
         with connection.cursor() as cur:
-            cur.execute(
-                "ALTER TABLE billing_businesspartner DROP CONSTRAINT partner_nummer_eindeutig"
-            )
+            # Eindeutigkeit mit Bedingung ist in PostgreSQL ein eindeutiger Index
+            cur.execute("DROP INDEX partner_nummer_eindeutig")
         alt = _partner(orgs["a"], "Getränke Beispiel GmbH", "GP-0003")
         neu = _partner(orgs["a"], "Bäckerei Muster", "GP-0003")
         _partner(orgs["a"], "Druckerei Beispiel", "GP-0007")
