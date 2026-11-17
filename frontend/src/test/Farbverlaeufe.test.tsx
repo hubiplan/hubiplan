@@ -76,6 +76,7 @@ describe('Verläufe (Erscheinungsbild)', () => {
       await screen.findByRole('button', { name: 'Verlauf hinzufügen' }, { timeout: 5000 }),
     )
     await user.type(screen.getByLabelText('Name'), 'Blauverlauf')
+    await user.click(screen.getByRole('button', { name: 'Für alle übernehmen' }))
     await waitFor(
       () =>
         expect(

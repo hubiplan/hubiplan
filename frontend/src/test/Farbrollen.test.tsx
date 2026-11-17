@@ -94,6 +94,7 @@ describe('Farbrollen in den Einstellungen', () => {
     await user.click(within(fourth).getByRole('checkbox', { name: 'Flächen und Tabellenzeilen' }))
     await user.click(within(fourth).getByRole('checkbox', { name: 'Fließtext' }))
     expect(within(third).getByRole('checkbox', { name: 'Fließtext' })).not.toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Für alle übernehmen' }))
     await waitFor(() => expect(patched().at(-1)?.palette_roles).toEqual({ text: 3, surface: 3 }), {
       timeout: 3000,
     })
@@ -105,6 +106,7 @@ describe('Farbrollen in den Einstellungen', () => {
     await user.click(
       await screen.findByRole('button', { name: '3. Farbe nach unten' }, { timeout: 5000 }),
     )
+    await user.click(screen.getByRole('button', { name: 'Für alle übernehmen' }))
     await waitFor(
       () => {
         const last = patched().at(-1)
@@ -121,6 +123,7 @@ describe('Farbrollen in den Einstellungen', () => {
     const buttons = await screen.findAllByRole('button', { name: 'Entfernen' }, { timeout: 5000 })
     // erster „Entfernen“ gehört zur 3. Farbe (Anthrazit)
     await user.click(buttons[0])
+    await user.click(screen.getByRole('button', { name: 'Für alle übernehmen' }))
     await waitFor(
       () => {
         const last = patched().at(-1)

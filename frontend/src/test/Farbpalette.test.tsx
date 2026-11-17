@@ -51,6 +51,7 @@ describe('Farbpalette (Erscheinungsbild)', () => {
     )
     await user.click(screen.getByRole('button', { name: 'Farbe hinzufügen' }))
     await user.type(screen.getByLabelText('Name der 3. Farbe'), 'Weinrot')
+    await user.click(screen.getByRole('button', { name: 'Für alle übernehmen' }))
     await waitFor(
       () =>
         expect(
