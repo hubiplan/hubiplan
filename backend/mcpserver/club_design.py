@@ -734,8 +734,30 @@ def _image_describe(args: dict, ctx: ClubContext) -> str:
     return _("Texte zu Bild {pk} gespeichert.").format(pk=pk) + " " + hint
 
 
+# Gesamtaudit 15.11., MCP-09: teure Werkzeuge je Einheit bzw. Person begrenzen
+FETCH_PER_HOUR = 20
+FETCH_BYTES_PER_DAY = 200 * 1024 * 1024
+OPEN_LINKS_PER_PERSON = 5
+
+
 def _upload_link(args: dict, ctx: ClubContext) -> str:
+    from django.utils import timezone
+
+    from core.tenancy import rls_bypass
     from website import upload_views
+    from website.models import ImageUploadLink
+
+    with rls_bypass():
+        open_links = ImageUploadLink.objects.filter(
+            created_by_id=ctx.grant.user_id, expires_at__gt=timezone.now()
+        ).count()
+    if open_links >= OPEN_LINKS_PER_PERSON:
+        raise ToolError(
+            _(
+                "Es gibt schon {n} offene Hochladelinks von dir. Bitte erst diese nutzen oder "
+                "ablaufen lassen."
+            ).format(n=open_links)
+        )
 
     data = ctx.call(
         upload_views.ImageUploadLinkView,
@@ -759,10 +781,48 @@ def _image_fetch(args: dict, ctx: ClubContext) -> str:
         "caption": _str(args, "bildunterschrift", MAX_ALT) or "",
         "alt_text": _str(args, "alternativtext", MAX_ALT) or "",
     }
+    from django.core.cache import cache
+    from django.utils import timezone
+
+    from core.ratelimit import too_many
+
+    day_key = f"mcp:fetchbytes:{ctx.org_id}:{timezone.localdate():%Y%m%d}"
+    if too_many(f"mcp:fetch:{ctx.org_id}", FETCH_PER_HOUR, 3600) or (
+        cache.get(day_key, 0) >= FETCH_BYTES_PER_DAY
+    ):
+        raise ToolError(
+            _(
+                "Für heute bzw. diese Stunde sind genug Bilder über Adressen geholt. Bitte "
+                "später erneut oder einen Hochladelink nutzen."
+            )
+        )
     data = ctx.call(upload_views.ImageFetchView, "POST", "website/images/fetch/", body)
+    _count_bytes(day_key, data.get("id"))
     return _("Bild als Nummer {pk} in der Bilderverwaltung gespeichert ({markdown}).").format(
         pk=data["id"], markdown=data.get("markdown")
     )
+
+
+def _count_bytes(day_key: str, pk) -> None:
+    from django.core.cache import cache
+
+    from core.tenancy import rls_bypass
+    from website.models import WebsiteImage
+
+    with rls_bypass():
+        image = WebsiteImage.objects.filter(pk=pk).first()
+    size = 0
+    for f in (image.original, image.file) if image is not None else ():
+        try:
+            size = max(size, f.size if f.name else 0)
+        except OSError:
+            pass
+    if cache.add(day_key, size, 2 * 24 * 3600):
+        return
+    try:
+        cache.incr(day_key, size)
+    except ValueError:
+        cache.set(day_key, size, 2 * 24 * 3600)
 
 
 def _via(ctx: ClubContext) -> str:

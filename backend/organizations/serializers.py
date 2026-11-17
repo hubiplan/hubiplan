@@ -1138,6 +1138,7 @@ class PlatformSettingsSerializer(serializers.ModelSerializer):
             "peering_enabled",
             "peering_allowed_hosts",
             "peering_login",
+            "website_image_quota_mb",
         ]
 
     def get_deletion_shorter_from(self, obj) -> datetime.datetime | None:
