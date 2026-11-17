@@ -13707,3 +13707,50 @@ msgstr "After the start, the result can only be protected more strictly."
 
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
+
+msgid "Zwei-Faktor-Anmeldung eingerichtet"
+msgstr "Two-factor authentication set up"
+
+msgid "Für deinen HUBIplan-Zugang wurde eine Authenticator-App eingerichtet."
+msgstr "An authenticator app was set up for your HUBIplan account."
+
+msgid "Zwei-Faktor-Anmeldung entfernt"
+msgstr "Two-factor authentication removed"
+
+msgid "Die Authenticator-App wurde aus deinem HUBIplan-Zugang entfernt."
+msgstr "The authenticator app was removed from your HUBIplan account."
+
+msgid "Wiederherstellungscodes entfernt"
+msgstr "Recovery codes removed"
+
+msgid "Die Wiederherstellungscodes deines HUBIplan-Zugangs wurden entfernt."
+msgstr "The recovery codes of your HUBIplan account were removed."
+
+msgid "Neue Wiederherstellungscodes"
+msgstr "New recovery codes"
+
+msgid "Für deinen HUBIplan-Zugang wurden neue Wiederherstellungscodes erzeugt. Die bisherigen gelten nicht mehr."
+msgstr "New recovery codes were created for your HUBIplan account. The previous ones are no longer valid."
+
+msgid "Anmelde-E-Mail geändert"
+msgstr "Sign-in email changed"
+
+msgid "Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."
+msgstr "The sign-in email of your HUBIplan account is now {new}."
+
+msgid "Hallo {name},
+
+{text}
+
+Zeit: {when} Uhr
+
+Warst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.
+"
+msgstr "Hello {name},
+
+{text}
+
+Time: {when}
+
+If this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.
+"
