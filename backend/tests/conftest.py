@@ -204,6 +204,24 @@ def board_c(orgs):
 
 
 @pytest.fixture
+def anfragen_unter_app_rolle(monkeypatch):
+    """Anfragen über den Testclient laufen unter der Rolle der Anwendung, mit dem Kontext
+    der Middleware wie im Betrieb; Testaufbau und Prüfungen bleiben Eigentümer
+    (Gesamtaudit 15.11., AZ-04). Für Tests, die den Zeilenschutz im Anfrageweg prüfen."""
+    from django.test.client import Client as _Client
+
+    from .verbund_netz import app_role
+
+    original = _Client.request
+
+    def request(self, **kwargs):
+        with app_role():
+            return original(self, **kwargs)
+
+    monkeypatch.setattr(_Client, "request", request)
+
+
+@pytest.fixture
 def api():
     """API-Client ohne CSRF-Prüfung, angemeldet per force_login."""
 

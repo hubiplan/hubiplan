@@ -18,6 +18,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from core.tenancy import rls_bypass
+
 from .models import Membership
 
 README = """Auskunft über gespeicherte Daten (Art. 15 DSGVO)
@@ -663,7 +665,13 @@ def build(membership: Membership, org) -> bytes:
             }
         )
     files["zugang.json"] = _dump(access_rows)
-    files["konto.json"] = _dump([_account(u, org_ids) for u in _users(membership, org_ids)])
+    # Kontodaten gehören der Person, nicht der anfragenden: Unter dem Zeilenschutz sähe der
+    # Vorstand etwa die hinterlegte Unterschrift nicht, und die Auskunft behauptete „keine“.
+    # Jede Abfrage in _account grenzt selbst auf das Konto und die Einheiten ein
+    # (Gesamtaudit 15.11., AZ-04).
+    with rls_bypass():
+        accounts = [_account(u, org_ids) for u in _users(membership, org_ids)]
+    files["konto.json"] = _dump(accounts)
 
     files["termine.json"] = _dump(
         [
@@ -844,16 +852,22 @@ def build(membership: Membership, org) -> bytes:
 
     from qualifications.models import Qualification
 
+    # Verein und Untereinheiten (Gesamtaudit 15.11., PF-20). Qualifikationen einer Untereinheit
+    # sieht der Vorstand des Vereins unter dem Zeilenschutz nicht; die Abfrage grenzt selbst auf
+    # die Person und die Einheiten ein (AZ-04).
+    with rls_bypass():
+        quals = list(
+            Qualification.objects.filter(
+                organization_id__in=org_ids, person_id=membership.person_id
+            ).select_related("kind")
+        )
     files["qualifikationen.json"] = _dump(
         [
             {
                 "qualifikation": q.kind.name,
                 **_row(q, {"kind", "person", "organization", "created_by", "reminded_at"}),
             }
-            # Verein und Untereinheiten (Gesamtaudit 15.11., PF-20)
-            for q in Qualification.objects.filter(
-                organization_id__in=org_ids, person_id=membership.person_id
-            ).select_related("kind")
+            for q in quals
         ]
     )
 

@@ -24,7 +24,8 @@ from qualifications.models import Qualification, QualificationType
 from .factories import make_member, make_org
 from .test_m3_workflows import member, types, url  # noqa: F401
 
-pytestmark = pytest.mark.django_db
+# Anfragen wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
 
 
 @pytest.fixture(autouse=True)
