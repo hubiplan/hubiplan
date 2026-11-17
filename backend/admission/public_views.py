@@ -204,7 +204,10 @@ class KioskView(_Public):
             .filter(organization_id=link.organization_id)
             .first()
         )
-        if form is None or not form.enabled:
+        # Gesamtaudit 15.11., PUB-06: dieselben Prüfungen wie das öffentliche Formular
+        if form is None or not form.enabled or not form.organization.is_active:
+            raise Http404
+        if not form.organization.keeps_members:
             raise Http404
         return link, form
 
