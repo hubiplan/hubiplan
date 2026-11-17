@@ -1,5 +1,7 @@
 """SQL-Bausteine für Row-Level Security, genutzt von den Migrationen."""
 
+import re
+
 APP_ROLE = "hubiplan_app"
 # Nur für pg_dump im Backup-Dienst: liest alles, schreibt nichts (Gesamtaudit 08.11., GA8-06)
 BACKUP_ROLE = "hubiplan_backup"
@@ -107,3 +109,69 @@ def enable_policy_sql(table: str, using: str, check: str | None = None) -> str:
         USING (({using}) OR {BYPASS})
         WITH CHECK (({check or using}) OR {BYPASS});
     """
+
+
+# Heutiges Datum für Zeilenschutzregeln, in der Zeitzone der Anwendung (settings.TIME_ZONE).
+# ``CURRENT_DATE`` richtet sich nach der Zeitzone der DB-Sitzung, und die ist bei Django mit
+# USE_TZ immer UTC. Zwischen Mitternacht und 1 Uhr (Sommerzeit 2 Uhr) lag die Datenbank damit
+# einen Tag hinter ``timezone.localdate()``. Regeln vergleichen Zeiträume deshalb mit HEUTE.
+HEUTE = "public.hubiplan_heute()"
+_CURRENT_DATE = re.compile(r"\bcurrent_date\b", re.IGNORECASE)
+_HEUTE = re.compile(r"(?:public\.)?hubiplan_heute\(\)")
+
+
+def heute_funktionen_sql(zeitzone: str) -> str:
+    """``hubiplan_datum(zeitpunkt)`` und ``hubiplan_heute()`` anlegen."""
+    if not re.fullmatch(r"[A-Za-z0-9_+\-/]+", zeitzone):
+        raise ValueError(f"Ungültige Zeitzone: {zeitzone!r}")
+    return f"""
+    CREATE OR REPLACE FUNCTION public.hubiplan_datum(zeitpunkt timestamptz) RETURNS date
+    LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+        SELECT (zeitpunkt AT TIME ZONE '{zeitzone}')::date
+    $$;
+    CREATE OR REPLACE FUNCTION public.hubiplan_heute() RETURNS date
+    LANGUAGE sql STABLE PARALLEL SAFE AS $$
+        SELECT public.hubiplan_datum(now())
+    $$;
+    """
+
+
+def heute_umstellen(schema_editor, tabellen: str, funktionen: tuple[str, ...], vor: bool):
+    """``CURRENT_DATE`` in bestehenden Regeln und Funktionen durch HEUTE ersetzen (oder zurück).
+
+    ``tabellen`` ist ein LIKE-Muster (z. B. ``todos\\_%``), ``funktionen`` sind Namen in public.
+
+    Die Regeln werden aus ``pg_policies`` gelesen und mit ``ALTER POLICY`` geändert, die
+    Funktionen über ``pg_get_functiondef`` neu angelegt. Rechte und Eigentümer bleiben dabei
+    erhalten; sonst ändert sich nichts.
+    """
+
+    def tauschen(text: str) -> str:
+        return _CURRENT_DATE.sub(HEUTE, text) if vor else _HEUTE.sub("CURRENT_DATE", text)
+
+    with schema_editor.connection.cursor() as cur:
+        cur.execute(
+            "SELECT tablename, policyname, qual, with_check FROM pg_policies "
+            "WHERE schemaname = 'public' AND tablename LIKE %s",
+            [tabellen],
+        )
+        regeln = cur.fetchall()
+        cur.execute(
+            "SELECT pg_get_functiondef(p.oid) FROM pg_proc p "
+            "JOIN pg_namespace n ON n.oid = p.pronamespace "
+            "WHERE n.nspname = 'public' AND p.proname = ANY(%s)",
+            [list(funktionen)],
+        )
+        definitionen = [zeile[0] for zeile in cur.fetchall()]
+    for tabelle, regel, using, check in regeln:
+        teile = []
+        if using and tauschen(using) != using:
+            teile.append(f"USING ({tauschen(using)})")
+        if check and tauschen(check) != check:
+            teile.append(f"WITH CHECK ({tauschen(check)})")
+        if teile:
+            # Ohne Parameter, damit ein ``%`` im Regeltext keine Platzhalter auslöst
+            schema_editor.execute(f'ALTER POLICY "{regel}" ON {tabelle} ' + " ".join(teile), None)
+    for definition in definitionen:
+        if tauschen(definition) != definition:
+            schema_editor.execute(tauschen(definition), None)
