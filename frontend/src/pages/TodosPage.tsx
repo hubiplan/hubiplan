@@ -25,6 +25,7 @@ import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
 import { PageHeader } from '../components/PageHeader.tsx'
 import { confirmLeave, useGuarded } from '../components/leaveGuard.ts'
+import { NoAccessPage } from './NoticePages.tsx'
 
 export function TodosPage() {
   const { active, activeDept, activeKey, orgs, departments, select } = useOrg()
@@ -54,7 +55,7 @@ export function TodosPage() {
   }, [target, knownTarget, activeKey, select, params, setParams])
   const base = todoBase(active?.id ?? null, activeDept?.id)
   if (!(active?.permissions ?? activeDept?.permissions ?? []).includes('todos.view'))
-    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+    return <NoAccessPage reason="right" />
   return <TodoWorkspace key={base} base={base} />
 }
 

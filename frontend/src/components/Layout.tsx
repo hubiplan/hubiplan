@@ -428,7 +428,8 @@ export function Layout() {
                   <div className="topbar-user">
                     {!narrow && <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />}
                     {!narrow && headerTools}
-                    {!narrow && <HelpButton />}
+                    {/* VW-02: auch am Handy erreichbar, dort nur als Zeichen mit Namen */}
+                    <HelpButton compact={narrow} />
                     <AccountMenu
                       email={user?.email}
                       onLogout={handleLogout}

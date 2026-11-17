@@ -8,7 +8,7 @@ stichworte: [Rundschreiben, Rundmail, Einladung, Versand]
 ---
 
 1. Öffne [Rundschreiben](/rundschreiben) und klicke auf **Rundschreiben verfassen**.
-2. Wähle die Empfänger, etwa alle Mitglieder, Vorstände oder Rolleninhaber.
+2. Wähle die Empfänger, etwa alle Mitglieder, Vorstände oder Rolleninhaber. Die Liste darunter zeigt zuerst 20 Personen; über das Suchfeld der Liste findest du jemanden, den du abwählen willst, und ein Knopf unter der Liste klappt alle auf.
 3. Wähle die Art: Eine offizielle Mitteilung bekommt jeder, von „Information“ kann man sich abmelden.
 4. Schreib Betreff und Text; bei Bedarf hängst du ein PDF an.
 5. Schick dir mit **Probemail an mich** eine Probe und prüfe sie.

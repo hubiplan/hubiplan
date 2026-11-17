@@ -13,6 +13,7 @@ import { MaterialPicker } from '../materials/MaterialsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './bookings.css'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -91,7 +92,7 @@ export function BookingsPage() {
       (permissions.includes('material.view') || permissions.includes('bookings.view'))) ||
     (modules.includes('infrastructure') &&
       (permissions.includes('infrastructure.view') || permissions.includes('bookings.view')))
-  if (!allowed) return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+  if (!allowed) return <NoAccessPage reason="right" />
   const base = active
     ? `/api/orgs/${active.id}/bookings/`
     : `/api/depts/${activeDept!.id}/bookings/`

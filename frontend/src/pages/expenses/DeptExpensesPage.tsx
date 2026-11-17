@@ -12,11 +12,12 @@ import { t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { ClaimEvents, ClaimFacts, ClaimFiles, StatusBadge } from './ExpenseParts.tsx'
 import { euro } from './format.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 export function DeptExpensesPage() {
   const { activeDept } = useOrg()
   if (!activeDept?.expenses_enabled || !activeDept.permissions.includes(PERM.expensesView))
-    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+    return <NoAccessPage reason="right" />
   return (
     <section>
       <PageHeader />

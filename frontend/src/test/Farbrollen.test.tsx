@@ -7,7 +7,18 @@ import { afterEach, describe, expect, it } from 'vitest'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
-import { appColors, applyTheme, setThemeScheme } from '../theme/theme.ts'
+import { contrastRatio } from '../theme/contrast.ts'
+import {
+  appColors,
+  applyTheme,
+  INPUT_BORDER,
+  setThemeScheme,
+  sidebarColor,
+  sidebarMuted,
+  sidebarSub,
+  STATUS_COLORS,
+  themeVars,
+} from '../theme/theme.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
 const SESSION = 'GET /_allauth/browser/v1/auth/session'
@@ -189,5 +200,70 @@ describe('Farbrollen in der Oberfläche', () => {
       surface: '#eef2f6',
       background: '#ffffff',
     })
+  })
+})
+
+// UX-Audit 16.11.2026, X-03/VW-16/VW-17: abgeleitete Farben werden gegen die wirksame Fläche
+// gerechnet und korrigiert, nicht nur gewarnt.
+describe('Farben gegen die gewählte Fläche (X-03)', () => {
+  // Gemeinsame Prüfpaletten: hell, dunkel, Gelb, Rot, sehr hell, sehr dunkel
+  const PRIMARIES = ['#0a5a4a', '#ffd500', '#d62828', '#7ec8e3', '#101820', '#f6f6f0', '#ff7a00']
+  const SURFACES: [string, string, string, string][] = [
+    // Fläche, Hintergrund, Text, Sekundärtext
+    ['#fff3d6', '#f4e3b5', '#1b1b1b', '#4a4a4a'],
+    ['#1d3557', '#14253d', '#f1faee', '#c9d6df'],
+    ['#ffffff', '#d9e8f5', '#121614', '#4a4a4a'],
+    ['#2b2b2b', '#000000', '#ffffff', '#cccccc'],
+  ]
+
+  it.each(PRIMARIES.flatMap((p) => SURFACES.map((s) => [p, ...s] as const)))(
+    'Primär %s auf Fläche %s / Grund %s',
+    (primary, surface, background, text, muted) => {
+      const vars = themeVars({
+        primary,
+        on_primary: '#ffffff',
+        accent: '#000000',
+        on_accent: '#ffffff',
+        palette: [{ color: surface }, { color: background }, { color: text }, { color: muted }],
+        palette_roles: { surface: 0, background: 1, text: 2, muted: 3 },
+        palette_roles_in_app: true,
+      } as never)
+      expect(vars['--color-surface']).toBe(surface)
+      const on = (c: string) => Math.min(contrastRatio(c, surface), contrastRatio(c, background))
+      expect(on(vars['--color-link'])).toBeGreaterThanOrEqual(4.5)
+      expect(on(vars['--color-focus'])).toBeGreaterThanOrEqual(3)
+      expect(on(vars['--color-input-border'] ?? INPUT_BORDER)).toBeGreaterThanOrEqual(3)
+      for (const [name, base] of Object.entries(STATUS_COLORS)) {
+        const fg = vars[`--color-${name}` as '--color-error'] ?? base.text
+        const bg = vars[`--color-${name}-bg` as '--color-error-bg'] ?? base.bg
+        expect(on(fg), name).toBeGreaterThanOrEqual(4.5)
+        expect(contrastRatio(fg, bg), `${name} auf Hinweisfläche`).toBeGreaterThanOrEqual(4.5)
+      }
+    },
+  )
+
+  it('lässt die Vorgaben stehen, solange sie lesbar sind', () => {
+    const vars = themeVars({
+      primary: '#0a5a4a',
+      on_primary: '#ffffff',
+      accent: '#000000',
+      on_accent: '#ffffff',
+      palette: [{ color: '#ffffff' }, { color: '#f3f5f2' }],
+      palette_roles: { surface: 0, background: 1 },
+      palette_roles_in_app: true,
+    } as never)
+    expect(vars['--color-error']).toBeUndefined()
+    expect(vars['--color-input-border']).toBeUndefined()
+  })
+
+  it('Unterpunkte und Gruppenüberschriften der Seitenleiste halten 4,5 : 1 (VW-17)', () => {
+    for (const primary of PRIMARIES) {
+      const bg = sidebarColor(primary)
+      expect(contrastRatio(sidebarSub(bg), bg)).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(sidebarMuted(bg), bg)).toBeGreaterThanOrEqual(4.5)
+    }
+    // Vorgaben aus theme.css ohne Erscheinungsbild
+    expect(contrastRatio('#aec8c1', '#0a5a4a')).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio('#b8cfc9', '#0a5a4a')).toBeGreaterThanOrEqual(4.5)
   })
 })

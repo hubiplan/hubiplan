@@ -196,17 +196,28 @@ const SettingsLayout = lazyPage(
   'SettingsLayout',
 )
 
+const WEBSITE_RIGHTS = [
+  PERM.webcontentView,
+  PERM.websiteView,
+  PERM.websiteManage,
+  PERM.websiteContent,
+]
+
 /** Seite nur zeigen, wenn eine Organisation aktiv ist (und ggf. ein Recht vorliegt). */
 function RequireOrg({
   permission,
+  module,
   children,
 }: {
   /** ein Recht oder mehrere (eines genügt) */
   permission?: string | string[]
+  /** Modul, das für die Einheit eingeschaltet sein muss */
+  module?: string
   children: ReactNode
 }) {
   const { active, can } = useOrg()
   if (!active) return <NoAccessPage reason="workspace" />
+  if (module && !active.modules.includes(module)) return <NoAccessPage reason="right" />
   const needed = typeof permission === 'string' ? [permission] : permission
   if (needed && !needed.some((p) => can(p))) return <NoAccessPage reason="right" />
   return <>{children}</>
@@ -423,7 +434,9 @@ export default function App() {
           <Route
             path="webseite/*"
             element={
-              <RequireOrg>
+              // Ohne Webseitenrecht antwortet die Schnittstelle mit 404; das sah wie ein
+              // Ladefehler aus (UX-Audit 16.11. VW-35)
+              <RequireOrg module="website" permission={WEBSITE_RIGHTS}>
                 <WebsitePage />
               </RequireOrg>
             }

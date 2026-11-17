@@ -18,6 +18,7 @@ import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { canWriteCirculars, receivesCirculars } from './access.ts'
 import { t } from '../../i18n/index.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 const ROOT = '/rundschreiben'
 
@@ -40,7 +41,9 @@ export function CircularsPage() {
     base = circularBase.dept(activeDept.id)
     write = true
   }
-  if (!base || (!write && !receive)) return <Navigate to="/" replace />
+  // Keine stille Umleitung auf die Startseite (UX-Audit 16.11. VW-35)
+  if (!base || (!write && !receive))
+    return <NoAccessPage reason={active || activeDept ? 'right' : 'workspace'} />
   const orgId = active?.id ?? 0
   const tabs = [
     ...(write ? [{ to: ROOT, label: t('Verfassen') }] : []),

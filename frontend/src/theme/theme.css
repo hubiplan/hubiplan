@@ -73,6 +73,9 @@
   /* Rahmen von Eingabefeldern: mind. 3:1 gegen Weiß (WCAG 1.4.11) */
   --color-input-border: #828b87;
   --color-error: #b3261e;
+  /* Gefüllter Löschknopf mit weißer Schrift: bleibt fest, auch wenn die Fehlerschrift für eine
+     dunkle Vereinsfläche aufgehellt wird (VW-16) */
+  --color-error-solid: #b3261e;
   --color-error-bg: #fbe9e7;
   --color-success-bg: #e6f3ee;
   --color-success: #1d6b46;
@@ -91,6 +94,10 @@
 
   --sidebar-bg: #0a5a4a;
   --sidebar-text: #d7e4df;
+  /* Gruppenüberschriften und Unterpunkte: je mind. 4,5 : 1 auf der Leiste (VW-17); mit
+     Vereinsfarben rechnet themeVars beide neu */
+  --sidebar-muted: #aec8c1;
+  --sidebar-sub: #b8cfc9;
   /* Fokusrahmen in der Seitenleiste (hell auf dunkel, UI-Audit NUI-04) */
   --sidebar-focus: #ffffff;
   --sidebar-active-bg: rgba(255, 255, 255, 0.12);

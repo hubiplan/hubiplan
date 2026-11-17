@@ -8,6 +8,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 type Choice = { id: number; name: string }
 type Stock = { id: number; title: string; number: string; version: number }
@@ -57,7 +58,7 @@ const today = () =>
 export function EquipmentPage() {
   const org = useActiveOrg()
   if (!org.modules.includes('material') || !org.permissions.includes('material.view'))
-    return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    return <NoAccessPage reason="right" embedded />
   return <EquipmentWorkspace />
 }
 

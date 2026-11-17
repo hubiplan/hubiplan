@@ -121,6 +121,8 @@ describe('Infrastruktur', () => {
 
   it('verlangt das Leserecht für Infrastruktur', async () => {
     show('/infrastruktur', ['material.view'])
-    expect(await screen.findByText('Dafür fehlt dir die Berechtigung.')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+    ).toBeInTheDocument()
   })
 })

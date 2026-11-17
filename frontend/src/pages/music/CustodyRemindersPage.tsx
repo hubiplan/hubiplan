@@ -6,6 +6,7 @@ import { Alert, Field, SaveStatus } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MusicHeader } from './MusicLayout.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 type Preference = { enabled: boolean; days_ahead: number; scores: boolean; equipment: boolean }
 /** Aufgaben › Erinnerungen für Noten und Ausstattung (Menüprüfung 2, N-05) */
@@ -21,7 +22,7 @@ export function CustodyRemindersPage() {
   return org.permissions.includes('todos.view') ? (
     <ReminderSettings />
   ) : (
-    <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    <NoAccessPage reason="right" />
   )
 }
 function ReminderSettings() {

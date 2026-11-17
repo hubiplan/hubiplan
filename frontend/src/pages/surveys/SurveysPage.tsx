@@ -30,6 +30,7 @@ import { useOrg } from '../../org/OrgContext.tsx'
 import { SurveyAnswerForm, SurveyResults, dateLabel, endText } from './SurveyParts.tsx'
 import './surveys.css'
 import { Why } from '../../learning/Aids.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 export function statusLabel(status: SurveyStatus) {
   if (status === 'open') return t('läuft')
@@ -89,7 +90,7 @@ export function SurveysPage() {
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
   const enabled = active ? active.modules.includes('surveys') : !!activeDept?.surveys_enabled
   if (!enabled || !permissions.includes(PERM.surveysView)) {
-    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+    return <NoAccessPage reason="right" />
   }
   const base = active ? `/api/orgs/${active.id}/surveys/` : `/api/depts/${activeDept!.id}/surveys/`
   return (

@@ -9,6 +9,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Checkbox, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 // Einrichtung der Module, soweit es eine eigene Seite gibt
 const SETUP: Record<string, string> = {
@@ -31,7 +32,7 @@ export function ModulesPage() {
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   if (org.type !== 'club' && org.type !== 'federation')
-    return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    return <NoAccessPage reason="right" embedded />
   if (load.error) return <LoadError message={load.error} onRetry={load.reload} />
   if (!load.data) return <Loading />
   const all = load.data.groups.flatMap((g) => g.modules)

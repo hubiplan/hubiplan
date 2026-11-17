@@ -12,6 +12,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextPanel } from '../website/ContentPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { periodLabel, sortTimeline } from '../website/timeline.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 /** Chronik mit einheitlichem Seitenkopf (S-05; h1 fehlte bisher, UX-Audit W-04). */
 export function ChronikPage() {
@@ -30,7 +31,7 @@ function ChronikBody() {
     () => (allowed ? chronicleApi.get(org.id) : Promise.resolve(null)),
     [org.id, allowed],
   )
-  if (!allowed) return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+  if (!allowed) return <NoAccessPage reason="right" />
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
   if (!data) return <Loading />
   const hint = data.website ? (

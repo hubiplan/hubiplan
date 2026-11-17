@@ -137,6 +137,9 @@ function EventRecipients({
   )
 }
 
+/** So viele Empfänger zeigt die Liste, bevor „Alle anzeigen“ gewählt wird (VW-58) */
+const RECIPIENTS_SHOWN = 20
+
 export function RecipientPanel({
   base,
   circularId,
@@ -166,6 +169,7 @@ export function RecipientPanel({
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<SearchHit[]>([])
   const [showAll, setShowAll] = useState(false)
+  const [listQuery, setListQuery] = useState('')
 
   useEffect(() => {
     let alive = true
@@ -220,7 +224,17 @@ export function RecipientPanel({
   const boards = federation && audience === 'boards'
   const showGroup = federation || audience === 'departments' || audience === 'roles'
   const items = data?.items ?? []
-  const shown = showAll ? items : items.slice(0, 100)
+  // VW-58: Die Liste beginnt kurz (am Handy standen sonst alle Empfänger untereinander);
+  // wer jemanden abwählen will, sucht in der Liste.
+  const needle = listQuery.trim().toLocaleLowerCase()
+  const matching = needle
+    ? items.filter((c) =>
+        `${c.last_name} ${c.first_name ?? ''} ${c.email ?? ''}`
+          .toLocaleLowerCase()
+          .includes(needle),
+      )
+    : items
+  const shown = showAll ? matching : matching.slice(0, RECIPIENTS_SHOWN)
   const year = new Date().getFullYear()
 
   return (
@@ -510,62 +524,90 @@ export function RecipientPanel({
           {items.length === 0 ? (
             <p className="muted">{t('Für diese Auswahl gibt es keine Empfänger.')}</p>
           ) : (
-            <div className="table-scroll">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>{t('Name')}</th>
-                    {showGroup && (
-                      <th className="col-optional">{federation ? tm.Sg : t('Rolle')}</th>
-                    )}
-                    <th>{t('Weg')}</th>
-                    {!fixed && (
-                      <th>
-                        <span className="sr-only">{t('Auswahl')}</span>
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {shown.map((c) => (
-                    <tr key={c.key} className={c.excluded ? 'muted' : undefined}>
-                      <td>
-                        {c.last_name}
-                        {c.first_name && t(', {first_name}', { first_name: c.first_name })}
-                        {c.included && <span className="badge">{t('einzeln')}</span>}
-                        {c.email && <div className="muted small">{c.email}</div>}
-                      </td>
+            <>
+              {items.length > RECIPIENTS_SHOWN && (
+                <input
+                  type="search"
+                  className="search-input recipient-filter"
+                  placeholder={t('In der Liste suchen: Name oder E-Mail')}
+                  aria-label={t('In der Empfängerliste suchen')}
+                  value={listQuery}
+                  onChange={(e) => setListQuery(e.target.value)}
+                />
+              )}
+              {matching.length === 0 && <p className="muted">{t('Nichts gefunden.')}</p>}
+              <div className="table-scroll" hidden={matching.length === 0}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>{t('Name')}</th>
                       {showGroup && (
-                        <td className="col-optional">
-                          {federation ? c.club : (c.departments ?? []).join(', ')}
-                        </td>
+                        <th className="col-optional">{federation ? tm.Sg : t('Rolle')}</th>
                       )}
-                      <td>
-                        {c.channel ? channelLabel[c.channel] : '–'}
-                        {(c.opted_out || c.merged_into) && (
-                          <div className="muted small">{c.note}</div>
-                        )}
-                      </td>
+                      <th>{t('Weg')}</th>
                       {!fixed && (
-                        <td>
-                          <button
-                            type="button"
-                            className="link-button"
-                            onClick={() => setExcluded(c, !c.excluded)}
-                          >
-                            {c.excluded ? t('wieder aufnehmen') : t('abwählen')}
-                          </button>
-                        </td>
+                        <th>
+                          <span className="sr-only">{t('Auswahl')}</span>
+                        </th>
                       )}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {shown.map((c) => (
+                      <tr key={c.key} className={c.excluded ? 'muted' : undefined}>
+                        <td>
+                          {c.last_name}
+                          {c.first_name && t(', {first_name}', { first_name: c.first_name })}
+                          {c.included && <span className="badge">{t('einzeln')}</span>}
+                          {c.email && <div className="muted small">{c.email}</div>}
+                        </td>
+                        {showGroup && (
+                          <td className="col-optional">
+                            {federation ? c.club : (c.departments ?? []).join(', ')}
+                          </td>
+                        )}
+                        <td>
+                          {c.channel ? channelLabel[c.channel] : '–'}
+                          {(c.opted_out || c.merged_into) && (
+                            <div className="muted small">{c.note}</div>
+                          )}
+                        </td>
+                        {!fixed && (
+                          <td>
+                            <button
+                              type="button"
+                              className="link-button"
+                              onClick={() => setExcluded(c, !c.excluded)}
+                            >
+                              {c.excluded ? t('wieder aufnehmen') : t('abwählen')}
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
-          {items.length > shown.length && (
-            <button type="button" className="link-button" onClick={() => setShowAll(true)}>
-              {t('Alle {n} anzeigen', { n: items.length })}
+          {matching.length > shown.length && (
+            <button
+              type="button"
+              className="link-button"
+              aria-expanded={false}
+              onClick={() => setShowAll(true)}
+            >
+              {t('Alle {n} anzeigen', { n: matching.length })}
+            </button>
+          )}
+          {showAll && matching.length > RECIPIENTS_SHOWN && (
+            <button
+              type="button"
+              className="link-button"
+              aria-expanded={true}
+              onClick={() => setShowAll(false)}
+            >
+              {t('Weniger anzeigen')}
             </button>
           )}
         </>
