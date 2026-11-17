@@ -13726,6 +13726,18 @@ msgstr "{x0}: Only clubs can be imported below a unit."
 msgid "{where}: Unter einer Einheit lassen sich nur Vereine einlesen."
 msgstr "{where}: Only clubs can be imported below a unit."
 
+
+msgid "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder mit Suchwort.]"
+msgstr "[Answer shortened: too long. Please ask more narrowly, e.g. for one text, one page or with a search word.]"
+
+msgid "Es gibt schon {n} offene Hochladelinks von dir. Bitte erst diese nutzen oder ablaufen lassen."
+msgstr "You already have {n} open upload links. Please use them first or let them expire."
+
+msgid "Für heute bzw. diese Stunde sind genug Bilder über Adressen geholt. Bitte später erneut oder einen Hochladelink nutzen."
+msgstr "Enough images have been fetched from addresses for today or this hour. Please try again later or use an upload link."
+
+msgid "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte Bilder löschen oder die Plattform um mehr Platz bitten."
+msgstr "The storage for website images is full ({mb} MB). Please delete images no longer used or ask the platform for more space."
 msgid "Die Instanz meldet andere Schlüssel als die Datei."
 msgstr "The instance reports different keys than the file."
 
@@ -13755,3 +13767,6 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+msgstr "Please update the app; HUBIplan no longer supports this version."
