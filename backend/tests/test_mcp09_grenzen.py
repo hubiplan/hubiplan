@@ -65,22 +65,33 @@ def test_bild_von_adresse_je_stunde_begrenzt(club, site, editor, monkeypatch):
     assert WebsiteImage.objects.filter(website=site).count() == 1
 
 
+def _rauschen() -> bytes:
+    """Bild aus Zufallswerten: lässt sich kaum packen, belegt also echten Speicher."""
+    import io
+    import os
+
+    from PIL import Image
+
+    img = Image.frombytes("RGB", (900, 900), os.urandom(900 * 900 * 3))
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
 def test_speichergrenze_fuer_webseitenbilder(club, site, editor):
     settings = PlatformSettings.load()
-    settings.website_image_quota_mb = 1
-    settings.save()
-    big = picture(size=(1800, 1800))
-    content.store_image(
-        site, SimpleUploadedFile("a.png", big, content_type="image/png"), "", "", editor
-    )
-    with pytest.raises(ValidationError) as exc:
-        for i in range(20):
-            content.store_image(
-                site, SimpleUploadedFile(f"b{i}.png", big, content_type="image/png"), "", "", editor
-            )
-    assert "Speicher für Webseitenbilder ist voll" in str(exc.value)
     settings.website_image_quota_mb = 0  # ohne Grenze
     settings.save()
+    data = _rauschen()
     content.store_image(
-        site, SimpleUploadedFile("c.png", big, content_type="image/png"), "", "", editor
+        site, SimpleUploadedFile("a.png", data, content_type="image/png"), "", "", editor
     )
+    assert content.used_bytes(club) > 1024 * 1024
+    settings.website_image_quota_mb = 1
+    settings.save()
+    with pytest.raises(ValidationError) as exc:
+        content.store_image(
+            site, SimpleUploadedFile("b.png", data, content_type="image/png"), "", "", editor
+        )
+    assert "Speicher für Webseitenbilder ist voll" in str(exc.value)
+    assert WebsiteImage.objects.filter(website=site).count() == 1
