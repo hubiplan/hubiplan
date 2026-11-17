@@ -39,6 +39,7 @@ import { ColorSchemeSync } from './components/ColorSchemeSync.tsx'
 import { SessionWatch } from './auth/SessionWatch.tsx'
 import { formatTitle } from './components/pageTitle.ts'
 import { t } from './i18n/index.ts'
+import { prepareAnnouncements } from './components/announce.ts'
 
 const ImprintSettingsPage = lazyPage(
   () => import('./pages/settings/ImprintSettingsPage.tsx'),
@@ -273,6 +274,8 @@ function KeepHash({ to }: { to: string }) {
 }
 
 export default function App() {
+  // Ansage-Regionen stehen, bevor die erste Meldung kommt (VW-29)
+  useEffect(prepareAnnouncements, [])
   return (
     <>
       <LeaveGuard />

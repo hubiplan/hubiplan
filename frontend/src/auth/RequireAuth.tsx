@@ -2,13 +2,14 @@ import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext.tsx'
 import { t } from '../i18n/index.ts'
+import { useAnnounce } from '../components/announce.ts'
 
 const PASSWORD_PAGE = '/mein-konto/anmeldung'
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
   const location = useLocation()
-  if (loading) return <div className="page-loading">{t('Wird geladen …')}</div>
+  if (loading) return <PageLoading />
   if (!user) {
     // Aufgerufene Seite merken: nach der Anmeldung geht es dorthin zurück.
     const from = location.pathname + location.search + location.hash
@@ -27,4 +28,10 @@ export function RequireAuthOrOffline({ children }: { children: ReactNode }) {
   const { user, loading, offline } = useAuth()
   if (!loading && !user && offline) return <>{children}</>
   return <RequireAuth>{children}</RequireAuth>
+}
+
+/** Ladezeile der ganzen Seite, angesagt über die Ansage-Region (VW-29) */
+function PageLoading() {
+  useAnnounce(t('Wird geladen …'))
+  return <div className="page-loading">{t('Wird geladen …')}</div>
 }
