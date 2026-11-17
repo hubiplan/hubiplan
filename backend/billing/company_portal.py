@@ -139,8 +139,12 @@ def _access(request, access_id: int):
     from portal.views import _portal_access
 
     access = _portal_access(request.user, access_id)
-    if not has_company(access):
-        raise NotFound()
+    # Im Kontext des Vereins prüfen, wie die Übersicht (portal_summary): Ohne Kontext sah die
+    # Anfrage unter dem Zeilenschutz keine Zahlerzuordnung, und die Firmenseite antwortete
+    # dem Ansprechpartner mit „nicht gefunden“ (Gesamtaudit 15.11., AZ-04)
+    with tenant_context(access.organization_id, request.user.pk):
+        if not has_company(access):
+            raise NotFound()
     return access
 
 
