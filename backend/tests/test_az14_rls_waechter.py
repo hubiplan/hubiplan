@@ -30,7 +30,6 @@ OHNE_RLS_KONTO = {
     "changes_requestkey": "Wiederholschutz je Konto (Idempotency-Key)",
     "devices_device": "Geräte des eigenen Kontos; Zugriff nur über das angemeldete Konto",
     "devices_pairingcode": "Verbindungscodes der App; eingelöst über den Code",
-    "mcpserver_mcpclient": "KI-Verbindungen; Zugriff über das Konto bzw. den Zugangsschlüssel",
     "peering_remoteaccount": "ferne Konten im Verbund; Zuordnung bei der Anmeldung (peering/sso)",
     "peering_loginlink": "Anmeldelinks im Verbund; gefunden über ihren Schlüssel vor der Anmeldung",
     "account_emailaddress": "allauth: Adressen des eigenen Kontos (Kontoverwaltung über allauth "
