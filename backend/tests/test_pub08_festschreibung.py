@@ -79,16 +79,25 @@ def test_datenbank_weist_neue_und_verschobene_buchungen_ab(orgs):
         assert _fails(verschieben)
         assert _fails(lambda: Booking.objects.filter(pk=alt.pk).update(amount="11.00"))
         assert _fails(lambda: Booking.objects.filter(pk=alt.pk).delete())
-        # Text bleibt änderbar (Anonymisieren, Schlüsselwechsel)
-        assert not _fails(lambda: Booking.objects.filter(pk=alt.pk).update(text="Spende"))
+
+        # Text bleibt änderbar (Anonymisieren, Schlüsselwechsel; verschlüsselt, also über save)
+        def anonymisieren():
+            b = Booking.objects.get(pk=alt.pk)
+            b.text = "Spende"
+            b.save(update_fields=["text"])
+
+        assert not _fails(anonymisieren)
 
 
 def test_oberflaeche_nennt_den_grund(api, orgs, board_a):
     org = orgs["a"]
     org.enabled_modules = sorted({*(org.enabled_modules or []), "finance"})
     org.save()
+    from finance.models import Category
+
     with tenant_context(org.pk):
         account = _account(org)
+        category = Category.objects.create(organization=org, name="Spenden", kind="income")
     _lock(org)
     resp = api(board_a).post(
         f"/api/orgs/{org.pk}/finance/bookings/",
@@ -98,6 +107,7 @@ def test_oberflaeche_nennt_den_grund(api, orgs, board_a):
             "amount": "5.00",
             "text": "Nachtrag",
             "account": account.pk,
+            "category": category.pk,
         },
         content_type=JSON,
     )
