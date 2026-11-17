@@ -5,6 +5,7 @@ import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalSurveys } from './PortalSurveys.tsx'
 import { PortalExpenses } from './PortalExpenses.tsx'
+import { PortalFeeProofs } from './PortalFeeProofs.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
 import { PortalMeetingLive } from './PortalMeetingLive.tsx'
 import { PortalCompany } from './PortalCompany.tsx'
@@ -200,6 +201,16 @@ function PortalRoutes() {
           element={
             <PortalSection title={t('Auslagen')}>
               <PortalExpenses key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
+      {activePortal.fee_proofs_enabled && (
+        <Route
+          path="beitragsnachweise"
+          element={
+            <PortalSection title={t('Beitragsnachweise')}>
+              <PortalFeeProofs key={activePortal.id} accessId={activePortal.id} />
             </PortalSection>
           }
         />

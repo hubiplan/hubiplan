@@ -17,6 +17,7 @@ from rest_framework import serializers
 
 from core.i18n import available, normalize
 from core.names import clean_person_name, has_link
+from feeproofs import admission as proof_admission
 from members.serializers import OptionalDateField
 
 from . import services
@@ -268,6 +269,8 @@ def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = 
         "company": company.name if company is not None else None,
         # Vorbelegung aus dem verschlüsselten Link, nicht aus der Adresse (S-01)
         "invite": invite[1] if invite else None,
+        # Ermäßigung mit Nachweis (feeproofs/admission.py)
+        "discounts": proof_admission.choices(org),
     }
 
 
@@ -331,6 +334,8 @@ class SubmitSerializer(serializers.Serializer):
     nonce = serializers.IntegerField(min_value=0, required=False)
     # Link „Mitarbeiter melden“: Firma, die den Beitrag zahlt (H5)
     company = serializers.CharField(max_length=1500, required=False, allow_blank=True)
+    # Ermäßigung mit Nachweis (Nachweis folgt auf der Seite des Antrags)
+    discount = serializers.IntegerField(required=False, allow_null=True)
 
 
 def age_on(birth: datetime.date, on: datetime.date) -> int:
@@ -564,6 +569,12 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
             errors["signature"] = exc.messages
     elif kiosk and form.signature == ApplicationForm.Signature.REQUIRED:
         errors["signature"] = gettext("Bitte unterschreiben.")
+
+    discount = proof_admission.clean(
+        form.organization, v.get("discount"), member_type, kind, errors
+    )
+    if discount:
+        data["discount"] = discount
 
     if errors:
         raise serializers.ValidationError(errors)

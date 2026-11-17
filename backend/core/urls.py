@@ -35,6 +35,8 @@ from events import rsvp_link
 from events import views as event_views
 from exchange import views as exchange_views
 from expenses import urls as expense_urls
+from feeproofs import urls as feeproof_urls
+from feeproofs import views as feeproof_views
 from finance import (
     asset_views,
     bank_views,
@@ -149,6 +151,9 @@ org_router.register(
 )
 org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename="billing-age-rate")
 org_router.register(
+    "fee-proofs/discounts", feeproof_views.DiscountViewSet, basename="fee-proof-discount"
+)
+org_router.register(
     "billing/size-rates", billing_views.SizeRateViewSet, basename="billing-size-rate"
 )
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
@@ -252,6 +257,9 @@ member_router.register(
 )
 member_router.register(
     "qualifications", qualification_views.MemberRecordViewSet, basename="member-qualification"
+)
+member_router.register(
+    "fee-discounts", feeproof_views.MemberAssignmentViewSet, basename="member-fee-discount"
 )
 
 federation_member_router = SimpleRouter()
@@ -781,6 +789,7 @@ org_patterns = [
     path("events/<int:pk>/ics/", event_views.OrgEventIcsView.as_view(), name="event-ics"),
     *circular_urls.org_patterns,
     *expense_urls.org_patterns,
+    *feeproof_urls.org_patterns,
     *gate_names("social", website_urls.org_patterns, "website-social"),
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
@@ -1018,6 +1027,7 @@ urlpatterns = [
         meeting_portal.VoteView.as_view(),
     ),
     path("portal/<int:access_id>/", include(expense_urls.portal_patterns)),
+    path("portal/<int:access_id>/", include(feeproof_urls.portal_patterns)),
     path("portal/<int:access_id>/surveys/", survey_portal.ListView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
@@ -1081,6 +1091,7 @@ urlpatterns = [
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     *admission_urls.public_patterns,
     *expense_urls.public_patterns,
+    *feeproof_urls.public_patterns,
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(
         "public/survey/<str:token>/", survey_link.PublicSurveyView.as_view(), name="public-survey"

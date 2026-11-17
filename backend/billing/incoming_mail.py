@@ -228,6 +228,12 @@ def _attachments(msg: EmailMessage) -> tuple[list[tuple[str, bytes]], list[dict]
 def process_message(raw: bytes) -> str:
     """Eine Mail verarbeiten. Gibt zurück, ob sie verschoben werden kann oder liegen bleibt."""
     msg = BytesParser(policy=policy.default).parsebytes(raw)
+    from feeproofs import mail as proof_mail
+
+    # Antwort mit Beitragsnachweis (persönliche Adresse +nw…, feeproofs/mail.py)
+    handled = proof_mail.process(msg, recipient_addresses(msg))
+    if handled is not None:
+        return handled
     org_id = find_org_id(recipient_addresses(msg))
     if org_id is None:
         logger.warning("Rechnungspostfach: Mail ohne bekannte Empfängeradresse bleibt liegen")

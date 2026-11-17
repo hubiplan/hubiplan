@@ -11,6 +11,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { Logo } from '../../components/Logo.tsx'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { ACCEPT_FILES } from '../feeproofs/parts.tsx'
 
 function statusText(s: JoinStatus): string {
   switch (s.status) {
@@ -158,6 +159,53 @@ export function JoinStatusPage() {
                     {t('Unterschrift speichern')}
                   </button>
                 </div>
+              </section>
+            )}
+            {info.fee_proof && (
+              <section className="stack-sm">
+                <h2>{t('Nachweis für „{name}“', { name: info.fee_proof.name })}</h2>
+                {info.fee_proof.kinds.length > 0 && (
+                  <p className="muted small">
+                    {t('Als Nachweis zählt zum Beispiel: {x}', {
+                      x: info.fee_proof.kinds.join(', '),
+                    })}
+                  </p>
+                )}
+                {info.fee_proof.files.length > 0 ? (
+                  <ul className="small">
+                    {info.fee_proof.files.map((f, i) => (
+                      <li key={`${f}-${i}`}>{f}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="small">
+                    {t(
+                      'Noch kein Nachweis. Du kannst ihn hier hochladen oder nach der Aufnahme nachreichen; dafür bekommst du eine Erinnerung.',
+                    )}
+                  </p>
+                )}
+                {info.fee_proof.can_upload && (
+                  <div className="button-row">
+                    <label className="button file-button">
+                      {t('Nachweis hochladen')}
+                      <input
+                        type="file"
+                        className="file-input"
+                        accept={ACCEPT_FILES}
+                        disabled={busy}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          e.target.value = ''
+                          if (file)
+                            void run(
+                              () => joinApi.feeProof(token, file),
+                              t('Danke, der Nachweis ist hochgeladen.'),
+                            )
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
               </section>
             )}
             {asking && info.can_withdraw && (

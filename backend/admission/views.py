@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from access.catalog import MEMBERS_EDIT, MEMBERS_VIEW
 from audit.log import record
 from core.api_base import OrgScopedMixin
+from feeproofs import admission as proof_admission
 from members.models import Gender, MemberType, Person
 from members.serializers import OptionalDateField
 from organizations.models import Department, Organization
@@ -305,6 +306,7 @@ class ApplicationDetailView(_Mixin, APIView):
                 "mandate": mandate,
                 "consents": app.consents,
                 "guardians": app.guardians,
+                "fee_proof": proof_admission.board_view(app),
                 "signed": bool(app.signature),
                 "signed_at": app.signed_at,
                 "confirmed_at": app.confirmed_at,
