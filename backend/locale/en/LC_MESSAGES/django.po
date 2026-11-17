@@ -13737,3 +13737,6 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+msgstr "Please update the app; HUBIplan no longer supports this version."
