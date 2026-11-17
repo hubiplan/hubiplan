@@ -362,6 +362,32 @@ class AccountSerializer(serializers.ModelSerializer):
         return self.context.get("planned", {}).get(obj.pk, "")
 
 
+def _pairs(text: str) -> list[tuple[str, str]]:
+    """Zuordnungen „E-Mail = Benutzername“ zeilenweise normalisiert, ohne Reihenfolge."""
+    return sorted((email, name) for email, name, _x in parse_usernames(text))
+
+
+def _groups(value, known: set[str]) -> dict[str, list[str]]:
+    """Gruppen je Rolle bereinigt: nur bekannte Rollen, ohne leere Einträge."""
+    out = {}
+    for key, groups in (value or {}).items():
+        groups = clean_groups(groups) if isinstance(groups, list | str) else []
+        if str(key) in known and groups:
+            out[str(key)] = sorted(groups)
+    return out
+
+
+def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
+    """Ändert die Anfrage Benutzernamen oder Gruppen der Rollen wirklich?"""
+    data = serializer.validated_data
+    if "usernames" in data and _pairs(data["usernames"]) != _pairs(client.usernames):
+        return True
+    if "role_groups" in data:
+        known = {str(role.pk) for role in serializer._roles()}
+        return _groups(data["role_groups"], known) != _groups(client.role_groups, known)
+    return False
+
+
 class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     read_permission = ROLES_MANAGE
@@ -387,12 +413,19 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         # Gesamtaudit 15.11., AUTH-07: Zuordnungen zu Nextcloud-Konten und -Gruppen bestimmen,
-        # wer dort was darf; Änderungen nur mit frischer Bestätigung und mit Hinweis
+        # wer dort was darf; Änderungen nur mit frischer Bestätigung und mit Hinweis. Die Seite
+        # schickt beim Speichern alle Felder mit: Bestätigung nur, wenn sich eine Zuordnung
+        # gegenüber dem gespeicherten Stand wirklich ändert.
         client = self.get_object()
         before = {"usernames": client.usernames, "role_groups": client.role_groups}
-        if any(key in request.data for key in before):
+        serializer = self.get_serializer(
+            client, data=request.data, partial=kwargs.get("partial", False)
+        )
+        serializer.is_valid(raise_exception=True)
+        if mapping_changed(client, serializer):
             step_up.require(request)
-        response = super().update(request, *args, **kwargs)
+        self.perform_update(serializer)
+        response = Response(serializer.data)
         client.refresh_from_db()
         changed = [k for k, v in before.items() if getattr(client, k) != v]
         if changed:

@@ -9,6 +9,7 @@ und gehen als Hinweis an alle mit „Rollen verwalten“. Erfundene Daten.
 import pytest
 from django.core import mail
 
+from access.models import Role
 from core.tenancy import rls_bypass
 from oidc import nc_accounts
 from oidc.models import Account, parse_usernames
@@ -85,3 +86,50 @@ def test_aenderung_braucht_bestaetigung_und_meldet(
     assert resp.status_code == 200, resp.content
     notes = [m for m in mail.outbox if m.subject == "Nextcloud-Zuordnung geändert"]
     assert [m.to for m in notes] == [[board_a.email]]
+
+
+@pytest.fixture
+def zuordnung(orgs, board_a, settings):
+    client, _secret = make_client(orgs["a"])
+    with rls_bypass():
+        role = Role.objects.get(organization=orgs["a"], name="Vorstand")
+        client.usernames = "a@example.org = amuster\nb@example.org = bmuster"
+        client.role_groups = {str(role.pk): ["Vorstand", "Kasse"]}
+        client.save()
+    settings.MFA_STEP_UP = True
+    return client, role
+
+
+def test_unveraenderte_zuordnung_braucht_keine_bestaetigung(api, orgs, board_a, zuordnung):
+    client, role = zuordnung
+    # Wie die Seite beim Speichern: alle Felder, nur der Name ist neu; Zuordnungen in anderer
+    # Schreibweise und Reihenfolge
+    data = api(board_a).get(_url(orgs["a"], client)).json()
+    data.update(
+        name="Neuer Name",
+        usernames="B@example.org=bmuster\n\n a@example.org = amuster ",
+        role_groups={str(role.pk): " Kasse, Vorstand "},
+    )
+    data.pop("service_password", None)
+    resp = api(board_a).put(_url(orgs["a"], client), data, content_type=JSON)
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["name"] == "Neuer Name"
+
+
+@pytest.mark.parametrize(
+    "aenderung",
+    [
+        {"usernames": "a@example.org = amuster\nb@example.org = bneu"},
+        {"role_groups": {"ROLLE": ["Vorstand"]}},
+    ],
+)
+def test_geaenderte_zuordnung_braucht_bestaetigung(api, orgs, board_a, zuordnung, aenderung):
+    client, role = zuordnung
+    if "role_groups" in aenderung:
+        aenderung = {"role_groups": {str(role.pk): ["Vorstand"]}}
+    resp = api(board_a).patch(_url(orgs["a"], client), aenderung, content_type=JSON)
+    assert resp.status_code == 403 and resp.json().get("step_up"), resp.content
+    with rls_bypass():
+        client.refresh_from_db()
+    assert "bneu" not in client.usernames
+    assert client.role_groups == {str(role.pk): ["Vorstand", "Kasse"]}
