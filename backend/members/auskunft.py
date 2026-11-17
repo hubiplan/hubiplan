@@ -204,9 +204,16 @@ def _addresses_of_others(membership: Membership, org_ids: list[int]) -> set[str]
     ):
         if access.user and access.user.email:
             others.add(access.user.email.lower())
-    for role in RoleAssignment.objects.filter(
-        organization_id__in=org_ids, user__isnull=False
-    ).select_related("user"):
+    # Ämter in Untereinheiten sieht der Vorstand des Vereins unter dem Zeilenschutz nicht; ihre
+    # Adressen zählten sonst nicht als „andere“ (Gesamtaudit 15.11., AZ-04). Fest auf die
+    # Einheiten der Auskunft eingegrenzt.
+    with rls_bypass():
+        roles = list(
+            RoleAssignment.objects.filter(
+                organization_id__in=org_ids, user__isnull=False
+            ).select_related("user")
+        )
+    for role in roles:
         if role.user.email:
             others.add(role.user.email.lower())
     return others
@@ -419,13 +426,17 @@ def _users(membership: Membership, org_ids: list[int]) -> list:
             "user_id", flat=True
         )
     )
-    ids.update(
-        RoleAssignment.objects.filter(
-            Q(membership=membership)
-            | Q(person_id=membership.person_id, organization_id__in=org_ids),
-            user__isnull=False,
-        ).values_list("user_id", flat=True)
-    )
+    # Ämter der Person auch in Untereinheiten (unter dem Zeilenschutz für den Vorstand des
+    # Vereins unsichtbar; Gesamtaudit 15.11., AZ-04). Fest auf diese Mitgliedschaft bzw. diese
+    # Person in den Einheiten der Auskunft eingegrenzt.
+    with rls_bypass():
+        ids.update(
+            RoleAssignment.objects.filter(
+                Q(membership=membership)
+                | Q(person_id=membership.person_id, organization_id__in=org_ids),
+                user__isnull=False,
+            ).values_list("user_id", flat=True)
+        )
     from django.contrib.auth import get_user_model
 
     return list(get_user_model().objects.filter(pk__in=ids).order_by("pk"))

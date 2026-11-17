@@ -307,3 +307,77 @@ def test_auskunft_ohne_daten_anderer_personen_und_fremder_vereine(
     assert len(aufgaben["einstellungen"]) == 1
     assert [b["context"] for b in konto["briefbogen"]] == [f"org:{orgs['a'].pk}"]
     assert [x["qualifikation"] for x in quals] == ["Jugendleiterin Erika"]
+
+
+def _amt_in_untereinheit(club, user, person=None):
+    """Amt in einer Untereinheit des Vereins (unter dem Zeilenschutz für den Vorstand des
+    Vereins nicht sichtbar)."""
+    from access.models import Role, RoleAssignment
+
+    with rls_bypass():
+        unit = make_org(f"Abteilung {user.pk}", "unit", parent=club)
+        role = Role.objects.create(organization=unit, name="Jugendwart", permissions=[])
+        RoleAssignment.objects.create(
+            organization=unit,
+            role=role,
+            user=user,
+            person=person,
+            valid_from=datetime.date(2020, 1, 1),
+        )
+
+
+def test_konto_aus_einem_amt_in_der_untereinheit(api, orgs, member, board_a):
+    """Ein Konto, das die Person nur über ein Amt in einer Untereinheit hat, steht in der
+    Auskunft (Gesamtaudit 15.11., AZ-04)."""
+    erika = Membership.objects.get(pk=member["id"])
+    user = make_user("erika.amt@example.org", first_name="Erika", last_name="Muster")
+    _amt_in_untereinheit(orgs["a"], user, person=erika.person)
+    resp = api(board_a).get(url(orgs, member, "auskunft/"))
+    assert resp.status_code == 200, resp.content[:300]
+    konto = json.loads(zipfile.ZipFile(io.BytesIO(resp.content)).read("konto.json"))
+    assert [k["anmelde_email"] for k in konto] == ["erika.amt@example.org"]
+
+
+def test_konto_aus_dem_mitgliederzugang(api, orgs, member, board_a):
+    """Das Konto des Mitgliederzugangs steht in der Auskunft (auch unter dem Zeilenschutz)."""
+    erika = Membership.objects.get(pk=member["id"])
+    user = make_user("erika.zugang@example.org", first_name="Erika", last_name="Muster")
+    with rls_bypass():
+        PortalAccess.objects.create(organization=orgs["a"], membership=erika, user=user)
+    resp = api(board_a).get(url(orgs, member, "auskunft/"))
+    assert resp.status_code == 200, resp.content[:300]
+    konto = json.loads(zipfile.ZipFile(io.BytesIO(resp.content)).read("konto.json"))
+    assert [k["anmelde_email"] for k in konto] == ["erika.zugang@example.org"]
+
+
+def test_adresse_eines_amts_in_der_untereinheit_ist_nicht_die_der_eltern(
+    api, orgs, member, board_a
+):
+    """Gehört die Adresse eines Erziehungsberechtigten auch einem Amt in einer Untereinheit,
+    kommen Mails an diese Adresse nicht in die Auskunft des Kindes (sie können die eigenen
+    Mails dieser anderen Person sein)."""
+    from members.models import ContactPerson
+    from outbox.models import OutgoingMail
+
+    erika = Membership.objects.get(pk=member["id"])
+    club = orgs["a"]
+    with rls_bypass():
+        ContactPerson.objects.create(
+            organization=club,
+            membership=erika,
+            last_name="Muster",
+            first_name="Hans",
+            email="hans.amt@example.org",
+            is_guardian=True,
+        )
+        OutgoingMail.objects.create(
+            organization=club,
+            to="hans.amt@example.org",
+            subject="Sitzung der Jugendwarte",
+            body="Text",
+        )
+    _amt_in_untereinheit(club, make_user("hans.amt@example.org"))
+    resp = api(board_a).get(url(orgs, member, "auskunft/"))
+    assert resp.status_code == 200, resp.content[:300]
+    mails = json.loads(zipfile.ZipFile(io.BytesIO(resp.content)).read("mails.json"))
+    assert not any(m["betreff"] == "Sitzung der Jugendwarte" for m in mails)
