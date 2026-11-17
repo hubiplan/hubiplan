@@ -577,6 +577,22 @@ class Checker:
             self.p.warn(f"{where}: Das Logo fehlt in der Datei.")
         if data.get("logo_dark") and not self.files.has(data.get("logo_dark")):
             self.p.warn(f"{where}: Das Logo für den Dunkelmodus fehlt in der Datei.")
+        if data.get("peering"):
+            # Gesamtaudit 15.11., AZ-01: schon in der Vorschau sagen, was mit Kopplungen geschieht
+            if self.target.type == Organization.Type.PLATFORM:
+                self.p.warn(
+                    gettext(
+                        "{where}: {count} Kopplung(en) im Verbund werden übernommen und ruhen, "
+                        "bis ein Vorstand den Fingerabdruck der anderen Instanz bestätigt."
+                    ).format(where=where, count=len(data["peering"]))
+                )
+            else:
+                self.p.warn(
+                    gettext(
+                        "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; "
+                        "das kann nur die Plattform."
+                    ).format(where=where, count=len(data["peering"]))
+                )
         for c in data.get("clubs") or []:
             self.check_org(c)
         if data.get("tables"):
@@ -1373,11 +1389,23 @@ class Loader:
         return org
 
     def couplings(self, data: dict) -> None:
-        """Verbund: Kopplungen aus der Datei neu anlegen (Umzug auf diese Instanz)."""
+        """Verbund: Kopplungen aus der Datei neu anlegen (Umzug auf diese Instanz).
+
+        Gesamtaudit 15.11., AZ-01, Fachfrage FF-19: Nur die Plattform übernimmt
+        Verbundbeziehungen. Ein Dachverband übergeht sie (die Vorschau sagt es vorher)."""
         from peering.moving import load_couplings
 
+        warnings = self.result.setdefault("coupling_warnings", [])
+
         def walk(item):
-            if item.get("peering"):
+            if item.get("peering") and not self.by_platform:
+                warnings.append(
+                    gettext(
+                        "Kopplungen aus der Datei übernimmt nur die Plattform; „{name}“: "
+                        "{count} übergangen."
+                    ).format(name=item.get("name") or "", count=len(item["peering"]))
+                )
+            elif item.get("peering"):
                 org = Organization.objects.get(pk=self.ids.get("organization", item.get("id")))
                 orgs = {
                     c.get("id"): Organization.objects.filter(
@@ -1389,7 +1417,7 @@ class Loader:
                     org,
                     item["peering"],
                     orgs,
-                    self.result.setdefault("coupling_warnings", []).append,
+                    warnings.append,
                     lambda old: self.ids.get("membership", old),
                 )
             for club in item.get("clubs") or []:
