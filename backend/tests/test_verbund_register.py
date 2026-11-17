@@ -185,6 +185,39 @@ class TestKlaerfaelle:
             sum(register["counts"].values()) == RemoteMember.objects.filter(coupling=upper).count()
         )
 
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
+    def test_kandidaten_nur_vereinsnamen_ohne_geloeschte(self, net, world, members):
+        """Gegenprobe (Fachfrage AZ-04): Der Dachverband sieht von den Kandidaten nur die Namen
+        ihrer Vereine im eigenen Verband; gelöschte Mitgliedschaften erscheinen nicht, und
+        andere Angaben aus den Vereinen (Mail, Nummern) kommen nicht mit."""
+        import datetime as _dt
+
+        from core.tenancy import rls_bypass
+
+        local = self.local_anna(net, world)
+        with net.on(VERBAND):
+            alt = make_org("Altverein Beispielstadt", parent=world["fed"])
+            with rls_bypass():
+                Membership.objects.create(
+                    organization=alt,
+                    person=local.person,
+                    scope=world["fed"],
+                    purged_at=_dt.datetime(2025, 1, 1, tzinfo=_dt.UTC),
+                )
+        lower, upper = named(net, world)
+        with net.on(VERBAND):
+            c = api(world["fed_board"])
+            base = f"/api/orgs/{world['fed'].pk}/peering/couplings/{upper.pk}"
+            resp = c.get(f"{base}/")
+        assert resp.status_code == 200, resp.content[:300]
+        [case] = resp.json()["register"]["unclear"]
+        [kandidat] = case["candidates"]
+        assert kandidat["units"] == ["Nachbarverein Musterstadt"]
+        assert set(kandidat) == {"id", "name", "birth_date", "member_number", "units"}
+        assert "Altverein" not in resp.content.decode()
+
+    # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
         from access.catalog import MEMBERS_VIEW, PEERING_MANAGE
