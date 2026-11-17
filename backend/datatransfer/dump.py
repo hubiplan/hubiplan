@@ -324,10 +324,20 @@ class Packer:
 
 
 class Dumper:
-    def __init__(self, *, with_files: bool, member_data_for: callable, finance_for: callable):
+    def __init__(
+        self,
+        *,
+        with_files: bool,
+        member_data_for: callable,
+        finance_for: callable,
+        limited_for: callable = lambda o: False,
+    ):
         self.packer = Packer(with_files)
         self.member_data_for = member_data_for
         self.finance_for = finance_for
+        # Gesamtaudit 15.11., AZ-06 (Fachfrage FF-18): Vereine im Export eines Dachverbands nur
+        # im Umfang, den der Zeilenschutz dem Dachverband zeigt
+        self.limited_for = limited_for
         self.shared_contacts = (
             PlatformSettings.load().person_data_mode == PlatformSettings.PersonData.SHARED
         )
@@ -367,6 +377,9 @@ class Dumper:
         ]
         assignments = []
         member_data = self.member_data_for(org)
+        if self.limited_for(org):
+            # Rollenbesetzungen (mit Konto-E-Mails) sieht der Dachverband nicht
+            return role_data, assignments
         for a in (
             RoleAssignment.objects.filter(organization=org, role__department__isnull=True)
             .select_related("user")
@@ -405,7 +418,10 @@ class Dumper:
 
     def fields(self, org: Organization) -> list:
         result = []
-        for d in FieldDefinition.objects.filter(organization=org):
+        definitions = FieldDefinition.objects.filter(organization=org)
+        if self.limited_for(org):
+            definitions = definitions.filter(federation_wide=True)
+        for d in definitions:
             self.field_ids.add(d.pk)
             result.append(
                 {
@@ -484,7 +500,7 @@ class Dumper:
             key=lambda h: (h.valid_from, h.pk),
         )
         photo = None
-        if self.packer.with_files:
+        if self.packer.with_files and not self.limited_for(club):
             photo = next(
                 (p for p in m.photos.all() if p.status == MemberPhoto.Status.APPROVED), None
             )
@@ -576,7 +592,9 @@ class Dumper:
                 self.department(
                     units[pk],
                     tables=self.tables(
-                        units[pk], everything=self.finance_for(org), members=bool(member_data)
+                        units[pk],
+                        everything=self.finance_for(org),
+                        members=bool(member_data) and not self.limited_for(org),
                     ),
                 )
                 for pk in UnitTree.of(org.pk).ordered()
@@ -593,7 +611,11 @@ class Dumper:
                 else []
             )
         # Kasse und Beiträge nur mit Recht darauf, Satzungen immer
-        tables = self.tables(org, everything=self.finance_for(org), members=bool(member_data))
+        tables = self.tables(
+            org,
+            everything=self.finance_for(org),
+            members=bool(member_data) and not self.limited_for(org),
+        )
         if tables:
             data["tables"] = tables
         if org.type == Organization.Type.FEDERATION and org.direct_members:
@@ -686,11 +708,17 @@ def export_organization(org: Organization, *, with_files: bool, by_platform: boo
     def finance_for(o: Organization) -> bool:
         return o.type != Organization.Type.PLATFORM and (by_platform or o.pk == org.pk)
 
+    def limited_for(o: Organization) -> bool:
+        return not by_platform and o.pk != org.pk
+
     from todos.exports import for_actor
 
     with consistent_snapshot(), rls_bypass(), for_actor(actor):
         dumper = Dumper(
-            with_files=with_files, member_data_for=member_data_for, finance_for=finance_for
+            with_files=with_files,
+            member_data_for=member_data_for,
+            finance_for=finance_for,
+            limited_for=limited_for,
         )
         doc = _header("organization", org, with_files)
         body = dumper.organization(org)
