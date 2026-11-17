@@ -214,11 +214,25 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
     unclear = []
     candidate_ids = {pid for rm in entries for pid in (rm.data or {}).get("candidates", [])}
     persons = {
-        p.pk: p
-        for p in Person.objects.filter(pk__in=candidate_ids)
-        .select_related("federation")
-        .prefetch_related("memberships__organization")
+        p.pk: p for p in Person.objects.filter(pk__in=candidate_ids).select_related("federation")
     }
+    # Vereine der Kandidaten im Verbandsbereich (nur Namen), damit der Dachverband „dieselbe
+    # Person?“ entscheiden kann. Mitgliedschaften anderer Vereine sind im Kontext des
+    # Dachverbands unter dem Zeilenschutz unsichtbar; gelesen wird deshalb ohne ihn, fest
+    # auf die Kandidaten dieser Klärfälle und den Bereich dieses Verbands (Fachfrage
+    # zum Gesamtaudit 15.11., AZ-04). Recht „Mitglieder ansehen“ prüft die Ansicht (names).
+    units: dict[int, set[str]] = {pid: set() for pid in candidate_ids}
+    if candidate_ids:
+        from core.tenancy import rls_bypass
+        from members.models import Membership
+
+        with rls_bypass():
+            for pid, name in Membership.objects.filter(
+                person_id__in=candidate_ids,
+                scope_id=c.remote_unit.parent_id,
+                purged_at__isnull=True,
+            ).values_list("person_id", "organization__name"):
+                units[pid].add(name)
     for rm in entries:
         if rm.status != RemoteMember.Status.UNCLEAR:
             continue
@@ -242,7 +256,7 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
                         "member_number": getattr(
                             getattr(p, "federation", None), "member_number", None
                         ),
-                        "units": sorted({m.organization.name for m in p.memberships.all()}),
+                        "units": sorted(units.get(p.pk, ())),
                     }
                     for pid in (rm.data or {}).get("candidates", [])
                     if (p := persons.get(pid)) is not None
