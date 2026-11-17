@@ -16,3 +16,5 @@ exported narrow read permissions remain narrow. Unknown schemas are rejected. UR
 must use HTTP(S). If scanning is enabled, every inner file actually reused is scanned
 individually, even when the outer archive exceeded the upload scan limit. Required
 scanning rejects missing scanners and oversized inner files; an error aborts import.
+
+When an umbrella association exports its clubs, the file contains for the clubs only what the association can also see in HUBIplan with its access: master data, contact details and memberships (with read access), member types and sub-units. Photos, the clubs’ own custom fields, honours, qualifications, roles with their holders, letterheads as well as the clubs’ documents, meetings, tasks, helper plans and statutes are not included. The platform handles the complete move of a club.
