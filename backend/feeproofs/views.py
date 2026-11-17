@@ -55,7 +55,7 @@ class _ModuleMixin:
 # --- Ermäßigungen ---
 
 
-class DiscountSerializer(serializers.ModelSerializer):
+class ProofDiscountSerializer(serializers.ModelSerializer):
     member_type = serializers.PrimaryKeyRelatedField(
         queryset=MemberType.objects.all(), allow_null=True, required=False
     )
@@ -150,7 +150,7 @@ class DiscountSerializer(serializers.ModelSerializer):
 
 
 class DiscountViewSet(_ModuleMixin, OrgScopedMixin, viewsets.ModelViewSet):
-    serializer_class = DiscountSerializer
+    serializer_class = ProofDiscountSerializer
     allowed_org_types = ORG_TYPES
     write_permission = BILLING_EDIT
     pagination_class = None
@@ -510,7 +510,7 @@ class _MemberMixin(_ModuleMixin, OrgScopedMixin):
         return self._membership
 
 
-class AssignmentSerializer(serializers.ModelSerializer):
+class DiscountAssignmentSerializer(serializers.ModelSerializer):
     discount_name = serializers.CharField(source="discount.name", read_only=True)
 
     class Meta:
@@ -553,7 +553,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
 
 class MemberAssignmentViewSet(_MemberMixin, viewsets.ModelViewSet):
-    serializer_class = AssignmentSerializer
+    serializer_class = DiscountAssignmentSerializer
     pagination_class = None
     http_method_names = ["get", "post", "patch", "delete", "options", "head"]
 
