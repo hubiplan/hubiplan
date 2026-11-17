@@ -11,6 +11,7 @@ import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 function todayIso(): string {
   const d = new Date()
@@ -85,23 +86,27 @@ export function ReservesPage({ canEdit }: { canEdit: boolean }) {
           }}
         />
       )}
-      {data.reserves.length === 0 ? (
-        <p className="muted">{t('Noch keine Rücklagen.')}</p>
-      ) : (
-        data.reserves.map((r) => (
-          <ReserveCard
-            key={r.id}
-            reserve={r}
-            canEdit={canEdit}
-            onChanged={async (text) => {
-              setNotice(text ? { kind: 'success', text } : null)
-              setVersion((v) => v + 1)
-              await reload()
-            }}
-            onError={(text) => setNotice({ kind: 'error', text })}
-          />
-        ))
-      )}
+      {data.reserves.length === 0
+        ? !creating && (
+            <EmptyList
+              title={t('Noch keine Rücklagen.')}
+              canAdd={canEdit}
+              action={{ label: t('Neue Rücklage'), onClick: () => setCreating(true) }}
+            />
+          )
+        : data.reserves.map((r) => (
+            <ReserveCard
+              key={r.id}
+              reserve={r}
+              canEdit={canEdit}
+              onChanged={async (text) => {
+                setNotice(text ? { kind: 'success', text } : null)
+                setVersion((v) => v + 1)
+                await reload()
+              }}
+              onError={(text) => setNotice({ kind: 'error', text })}
+            />
+          ))}
       <ReserveLimitsCard version={version} />
     </div>
   )

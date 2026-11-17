@@ -13,6 +13,7 @@ import { Alert, Checkbox, Field, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { Why } from '../../learning/Aids.tsx'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 type Draft = Pick<
   QualificationType,
@@ -215,7 +216,13 @@ export function QualificationTypesPage() {
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       <div className="card">
         {active.length === 0 ? (
-          <p className="muted">{t('Noch keine Qualifikationen angelegt.')}</p>
+          !editing && (
+            <EmptyList
+              title={t('Noch keine Qualifikationen angelegt.')}
+              canAdd={editable}
+              action={{ label: t('Qualifikation anlegen'), onClick: () => setEditing('new') }}
+            />
+          )
         ) : (
           <ul className="item-list">
             {active.map((k) => (

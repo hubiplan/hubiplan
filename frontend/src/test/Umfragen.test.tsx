@@ -330,7 +330,7 @@ describe('Umfragen in der Verwaltung', () => {
       </MemoryRouter>,
     )
     expect(await screen.findByText('Noch keine Umfrage.')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Neue Umfrage' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Neue Umfrage' })[0])
     const form = (await screen.findByRole('heading', { name: 'Neue Umfrage' })).closest('form')!
     fireEvent.click(within(form).getByRole('button', { name: 'Essenswahl' }))
     expect(within(form).getByLabelText('Titel')).toHaveValue('Essenswahl')

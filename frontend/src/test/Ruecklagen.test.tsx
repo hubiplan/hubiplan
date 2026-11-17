@@ -84,7 +84,7 @@ describe('Rücklagen', () => {
     renderApp('/finanzen/ruecklagen')
     const user = userEvent.setup()
     expect(await screen.findByText('Noch keine Rücklagen.')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Neue Rücklage' }))
+    await user.click(screen.getAllByRole('button', { name: 'Neue Rücklage' })[0])
     await user.type(screen.getByLabelText('Bezeichnung'), 'Schützenfest 2027')
     await user.type(screen.getByLabelText('Zweck bzw. Vorhaben'), 'Festzelt')
     await user.click(screen.getByRole('button', { name: 'Anlegen' }))

@@ -17,6 +17,7 @@ import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { EmptyList } from '../../components/EmptyList.tsx'
 
 /** Aktuelles Jahr, beim Öffnen eines Formulars ermittelt (nicht beim Laden der Seite). */
 function thisYear() {
@@ -72,7 +73,15 @@ export function AccountsPage() {
         />
       )}
       {data.length === 0 ? (
-        <p className="muted">{t('Noch keine Konten.')}</p>
+        editing === null && (
+          <EmptyList
+            title={t('Noch keine Konten.')}
+            canAdd={canEdit}
+            action={{ label: t('Neues Konto'), onClick: () => setEditing('new') }}
+          >
+            {t('Lege zuerst das Bankkonto und die Barkasse an; darauf wird gebucht.')}
+          </EmptyList>
+        )
       ) : (
         <table className="table">
           <thead>

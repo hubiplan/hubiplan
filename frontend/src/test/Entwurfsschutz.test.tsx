@@ -64,7 +64,7 @@ describe('Manuelle Entwürfe', () => {
     expect(warnsOnClose()).toBe(false)
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Neue Ausschreibung erfassen' }))
+    await user.click(screen.getAllByRole('button', { name: 'Neue Ausschreibung erfassen' })[0])
     await user.type(screen.getByLabelText('Titel'), 'Vereinsturnier')
     expect(warnsOnClose()).toBe(true)
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
