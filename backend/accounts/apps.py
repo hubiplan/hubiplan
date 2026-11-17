@@ -7,7 +7,8 @@ class AccountsConfig(AppConfig):
     verbose_name = "Benutzerkonten"
 
     def ready(self):
-        from . import known_device, security
+        from . import email_verified, known_device, security
 
+        email_verified.connect()
         security.connect()
         known_device.connect()

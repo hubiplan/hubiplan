@@ -1187,8 +1187,11 @@ class LoginLinkUseView(APIView):
         link.used_at = timezone.now()
         link.save(update_fields=["used_at"])
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        from accounts.email_verified import mark_email_verified
         from peering.sso import record
 
+        # Der Link kam an die Anmelde-E-Mail: Sie gilt als bestätigt (#599)
+        mark_email_verified(user)
         # Anmeldeweg vermerken (für Anmeldebestätigungen an andere Instanzen)
         record(request, user, "link")
         return Response({"id": user.pk, "email": user.email, "display": user.get_full_name()})
