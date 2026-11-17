@@ -36,7 +36,12 @@ class ReminderSettingsView(TodoScopeMixin, APIView):
     def patch(self, request, pk, **kwargs):
         from .series import lock_task
 
-        todo = lock_task(request.user, self.scope, pk)
+        # Die Sperre der Aufgabe ordnet diese Änderung hinter eine laufende Neuberechnung
+        # (``sync`` sperrt dieselbe Zeile und speichert die Einstellung ganz). Eigene
+        # Erinnerungen darf jede Person ändern, die die Aufgabe sieht, also auch mit
+        # Lesefreigabe; deren Sperre fände unter dem Zeilenschutz sonst keine Zeile
+        # (Gesamtaudit 15.11., AZ-04). Aufgabenfelder bleiben über die Aufgabe geschützt.
+        todo = lock_task(request.user, self.scope, pk, allowed=lambda todo: True)
         config, _ = TodoReminderConfig.objects.get_or_create(
             organization=todo.organization, todo=todo, user=request.user
         )

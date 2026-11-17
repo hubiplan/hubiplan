@@ -20,7 +20,8 @@ from .reminders import deadline, sync
 def lock_task(user, scope, pk, *, deleted=False, allowed=None):
     """Sichtbare Aufgabe sperren. ``allowed(todo)`` ist die Schreibprüfung des Aufrufers:
     Findet die Sperre nichts, obwohl die Aufgabe sichtbar ist, und verneint sie das
-    Schreibrecht, antwortet die Anfrage mit 403 statt 404."""
+    Schreibrecht, antwortet die Anfrage mit 403 statt 404. Bejaht sie es, wird genau diese
+    Zeile ohne Zeilenschutz gesperrt (Gesamtaudit 15.11., AZ-04)."""
     from django.http import Http404
     from django.shortcuts import get_object_or_404
     from rest_framework.exceptions import PermissionDenied
@@ -49,12 +50,34 @@ def lock_task(user, scope, pk, *, deleted=False, allowed=None):
         # FOR UPDATE wendet unter dem Zeilenschutz zusätzlich die Schreibregel an; wer nur
         # lesen darf, findet hier keine Zeile (Gesamtaudit 15.11., AZ-04). Ohne Sperre und
         # ohne Systemrechte erneut unter der Sicht der Anfrage laden: sichtbar, aber nicht
-        # beschreibbar ist 403. Unsichtbare Aufgaben bleiben 404.
-        if allowed is not None:
-            current = qs.filter(pk=pk).first()
-            if current is not None and not allowed(current):
-                raise PermissionDenied() from None
-        raise
+        # beschreibbar ist 403. Unsichtbare Aufgaben bleiben 404. Ohne ``allowed`` bleibt
+        # es wie bisher bei 404.
+        if allowed is None:
+            raise
+        current = qs.filter(pk=pk).first()
+        if current is None:
+            raise
+        if not allowed(current):
+            raise PermissionDenied() from None
+    # Sichtbar und nach der Prüfung des Aufrufers erlaubt, aber ohne Schreibregel (Übernahme
+    # einer verwaisten Aufgabe, eigene Erinnerungen bei Lesefreigabe): genau diese Zeile ohne
+    # Zeilenschutz sperren, festgelegt auf Nummer und Verein der eben unter der Sicht der
+    # Anfrage gelesenen Aufgabe und mit demselben Papierkorbfilter. Der Aufrufer prüft am
+    # gesperrten Datensatz erneut.
+    with rls_bypass():
+        locked = (
+            Todo.objects.select_for_update()
+            .filter(
+                pk=current.pk,
+                organization_id=current.organization_id,
+                withdrawn=False,
+                deleted_at__isnull=not deleted,
+            )
+            .first()
+        )
+    if locked is None:
+        raise Http404
+    return locked
 
 
 def require_series_edit(todo, user, scope):
