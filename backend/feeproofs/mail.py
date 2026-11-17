@@ -86,6 +86,12 @@ def process(msg: EmailMessage, addresses: list[str]) -> str | None:
     link = link_for(addresses)
     if link is None:
         if any("+nw" in a for a in addresses):
+            from billing.incoming_mail import find_org_id
+
+            # Ältere Kennungen von Vereinen können mit „nw“ beginnen: Dann ist es die
+            # Rechnungsadresse des Vereins, und der Rechnungseingang übernimmt die Mail.
+            if find_org_id(addresses) is not None:
+                return None
             logger.warning("Beitragsnachweis: Mail an unbekannte Antwortadresse bleibt liegen")
             return Result.KEEP
         return None
