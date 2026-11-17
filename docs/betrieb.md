@@ -116,6 +116,12 @@ der Datenbank). Fehlende Einträge ergänzt es bei jedem Ausrollen, vorhandene b
 > mfa_schluessel_wechseln`. Danach `MFA_ENCRYPTION_KEY=neuer` setzen,
 > `MFA_ENCRYPTION_KEYS` leeren und erneut `up -d`. Den alten Schlüssel erst löschen,
 > wenn kein Backup mit Datenbankstand vor dem Wechsel mehr gebraucht wird.
+>
+> Zwecke (Gesamtaudit 15.11., OPS-18): Aus dem `MFA_ENCRYPTION_KEY` leitet HUBIplan je Zweck einen
+> eigenen Schlüssel ab (2FA, Fremdkalender, Nextcloud-Dienstkonto, Facebook/Instagram;
+> `accounts/mfa.py`, `PURPOSES`). Diese Fassung liest solche Werte (`enc2:<zweck>:`), schreibt
+> aber noch im bisherigen Format (`enc1:`); erst eine spätere Fassung stellt das Schreiben um und
+> schlüsselt den Bestand um. Am Schlüssel und seinem Wechsel ändert sich nichts.
 
 ## Verschlüsselung der Daten
 
