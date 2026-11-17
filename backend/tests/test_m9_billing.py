@@ -198,6 +198,9 @@ class TestBeitragslauf:
             "multi_units": 0,
             "households": 0,
             "household_without_payer": 0,
+            "proofs_regular": 0,
+            "proofs_provisional": 0,
+            "proofs_unreviewed": 0,
         }
 
     def test_lauf_erzeugt_entwuerfe(self, c, base, members):

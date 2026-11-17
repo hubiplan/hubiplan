@@ -24,6 +24,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import ROLES_MANAGE
+from accounts import step_up
 from accounts.mfa import encrypt
 from audit.log import record
 from core.api_base import AuditMixin, OrgScopedMixin
@@ -160,6 +161,9 @@ class ClientSerializer(serializers.ModelSerializer):
     )
     has_service_password = serializers.SerializerMethodField()
     role_choices = serializers.SerializerMethodField()
+    # Gesamtaudit 15.11., AUTH-07: gespeicherte Zeilen auf gesperrte Konten (werden nie
+    # zugeordnet); die Ansicht zeigt sie, gelöscht wird nichts
+    blocked_usernames = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -178,6 +182,7 @@ class ClientSerializer(serializers.ModelSerializer):
             "usernames",
             "role_groups",
             "role_choices",
+            "blocked_usernames",
             "manage_accounts",
             "service_user",
             "service_password",
@@ -195,6 +200,13 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def get_has_service_password(self, obj) -> bool:
         return bool(obj.service_password)
+
+    def get_blocked_usernames(self, obj) -> list[str]:
+        return [
+            f"{email} = {name}"
+            for email, name, error in parse_usernames(obj.usernames, obj.blocked_usernames())
+            if error == "blocked"
+        ]
 
     def validate_service_user(self, value):
         value = str(value or "").strip()
@@ -222,7 +234,18 @@ class ClientSerializer(serializers.ModelSerializer):
         return clean_base_url(value)
 
     def validate_usernames(self, value):
-        lines = parse_usernames(value)
+        service = str(self.initial_data.get("service_user") or "").strip().lower()
+        if not service and self.instance is not None:
+            service = (self.instance.service_user or "").strip().lower()
+        lines = parse_usernames(value, {service} if service else frozenset())
+        blocked = [f"{email} = {name}" for email, name, error in lines if error == "blocked"]
+        if blocked:
+            raise serializers.ValidationError(
+                gettext(
+                    "Verwaltungs- und Dienstkonten der Nextcloud lassen sich nicht zuordnen "
+                    "(admin, root, administrator, das Dienstkonto). Bitte entfernen: {lines}"
+                ).format(lines="; ".join(blocked[:3]))
+            )
         bad = [f"{email} = {name}" for email, name, error in lines if error]
         if bad:
             raise serializers.ValidationError(
@@ -339,6 +362,32 @@ class AccountSerializer(serializers.ModelSerializer):
         return self.context.get("planned", {}).get(obj.pk, "")
 
 
+def _pairs(text: str) -> list[tuple[str, str]]:
+    """Zuordnungen „E-Mail = Benutzername“ zeilenweise normalisiert, ohne Reihenfolge."""
+    return sorted((email, name) for email, name, _x in parse_usernames(text))
+
+
+def _groups(value, known: set[str]) -> dict[str, list[str]]:
+    """Gruppen je Rolle bereinigt: nur bekannte Rollen, ohne leere Einträge."""
+    out = {}
+    for key, groups in (value or {}).items():
+        groups = clean_groups(groups) if isinstance(groups, list | str) else []
+        if str(key) in known and groups:
+            out[str(key)] = sorted(groups)
+    return out
+
+
+def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
+    """Ändert die Anfrage Benutzernamen oder Gruppen der Rollen wirklich?"""
+    data = serializer.validated_data
+    if "usernames" in data and _pairs(data["usernames"]) != _pairs(client.usernames):
+        return True
+    if "role_groups" in data:
+        known = {str(role.pk) for role in serializer._roles()}
+        return _groups(data["role_groups"], known) != _groups(client.role_groups, known)
+    return False
+
+
 class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     read_permission = ROLES_MANAGE
@@ -361,6 +410,27 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
             "created_by": self.request.user,
             "secret_hash": draft.secret_hash,
         }
+
+    def update(self, request, *args, **kwargs):
+        # Gesamtaudit 15.11., AUTH-07: Zuordnungen zu Nextcloud-Konten und -Gruppen bestimmen,
+        # wer dort was darf; Änderungen nur mit frischer Bestätigung und mit Hinweis. Die Seite
+        # schickt beim Speichern alle Felder mit: Bestätigung nur, wenn sich eine Zuordnung
+        # gegenüber dem gespeicherten Stand wirklich ändert.
+        client = self.get_object()
+        before = {"usernames": client.usernames, "role_groups": client.role_groups}
+        serializer = self.get_serializer(
+            client, data=request.data, partial=kwargs.get("partial", False)
+        )
+        serializer.is_valid(raise_exception=True)
+        if mapping_changed(client, serializer):
+            step_up.require(request)
+        self.perform_update(serializer)
+        response = Response(serializer.data)
+        client.refresh_from_db()
+        changed = [k for k, v in before.items() if getattr(client, k) != v]
+        if changed:
+            notify_role_managers(self.org, client, request.user, changed)
+        return response
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -408,3 +478,54 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         result = nc_accounts.sync(client, confirmed=bool(request.data.get("confirm")))
         client.refresh_from_db()
         return Response({"result": result, "client": self.get_serializer(client).data})
+
+
+def notify_role_managers(org, client, actor, changed: list[str]) -> None:
+    """Hinweis an alle mit „Rollen verwalten“, wenn sich Zuordnungen zur Nextcloud ändern."""
+    from django.db import transaction
+    from django.utils.translation import gettext as _
+
+    from access.models import RoleAssignment
+    from access.permissions import permissions_in
+    from core.i18n import language_of, user_language
+    from outbox.mail import send as send_mail
+
+    users = {
+        a.user
+        for a in RoleAssignment.objects.filter(organization=org, user__isnull=False)
+        .active()
+        .select_related("user")
+    }
+    recipients = [u for u in users if u.is_active and ROLES_MANAGE in permissions_in(u, org)]
+    from django.utils.translation import gettext_noop
+
+    labels = {
+        "usernames": gettext_noop("bisherige Benutzernamen"),
+        "role_groups": gettext_noop("Gruppen für Rollen"),
+    }
+
+    def send() -> None:
+        for user in recipients:
+            with language_of(user):
+                body = _(
+                    "Hallo,\n\nbei {org} hat {who} für „{name}“ geändert: {what}.\n\n"
+                    "Diese Zuordnungen bestimmen, welche Konten und Gruppen in der Nextcloud "
+                    "jemand bekommt. War das nicht abgesprochen, prüft bitte unter Einstellungen "
+                    "› Nextcloud.\n"
+                ).format(
+                    org=org.name,
+                    who=actor.get_full_name() or actor.email,
+                    name=client.name,
+                    what=", ".join(_(labels[k]) for k in changed),
+                )
+                subject = _("Nextcloud-Zuordnung geändert")
+            send_mail(
+                [user.email],
+                subject,
+                body,
+                kind="sicherheit",
+                fail_silently=True,
+                language=user_language(user),
+            )
+
+    transaction.on_commit(send)

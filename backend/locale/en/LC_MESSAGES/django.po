@@ -13708,6 +13708,21 @@ msgstr "After the start, the result can only be protected more strictly."
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
 
+msgid "Verwaltungs- und Dienstkonten der Nextcloud lassen sich nicht zuordnen (admin, root, administrator, das Dienstkonto). Bitte entfernen: {lines}"
+msgstr "Administration and service accounts of the Nextcloud cannot be assigned (admin, root, administrator, the service account). Please remove: {lines}"
+
+msgid "bisherige Benutzernamen"
+msgstr "existing user names"
+
+msgid "Gruppen für Rollen"
+msgstr "groups for roles"
+
+msgid "Nextcloud-Zuordnung geändert"
+msgstr "Nextcloud assignment changed"
+
+msgid "Hallo,\n\nbei {org} hat {who} für „{name}“ geändert: {what}.\n\nDiese Zuordnungen bestimmen, welche Konten und Gruppen in der Nextcloud jemand bekommt. War das nicht abgesprochen, prüft bitte unter Einstellungen › Nextcloud.\n"
+msgstr "Hello,\n\nat {org}, {who} changed the following for “{name}”: {what}.\n\nThese assignments determine which accounts and groups someone gets in the Nextcloud. If this was not agreed, please check under Settings › Nextcloud.\n"
+
 msgid "{where}: Die Satzung aus der Datei wird nicht übernommen."
 msgstr "{where}: The statutes from the file are not taken over."
 
@@ -13779,6 +13794,221 @@ msgstr "Only as a proposal: applies once the person accepts it in HUBIplan."
 
 msgid "Vorschlag für den Briefbogen"
 msgstr "Proposal for the letterhead"
+
+# Beitragsnachweise (feeproofs)
+msgid "Zu viele Versuche. Bitte später noch einmal."
+msgstr "Too many attempts. Please try again later."
+
+msgid "Hier lässt sich kein Nachweis mehr hochladen."
+msgstr "Proofs can no longer be uploaded here."
+
+msgid "Ermäßigung beantragt"
+msgstr "Reduction requested"
+
+msgid "Diese Ermäßigung gibt es nur für Personen."
+msgstr "This reduction is only available for individuals."
+
+msgid "Unbekannte Ermäßigung."
+msgstr "Unknown reduction."
+
+msgid "Diese Ermäßigung passt nicht zur Mitgliedsart."
+msgstr "This reduction does not match the membership type."
+
+msgid "Für diesen Antrag ist keine Ermäßigung gewählt."
+msgstr "No reduction was chosen for this application."
+
+msgid "Höchstens drei Dateien."
+msgstr "At most three files."
+
+msgid "nur für Mitgliedsart"
+msgstr "only for membership type"
+
+msgid "ermäßigter Jahresbeitrag"
+msgstr "reduced annual fee"
+
+msgid "Kulanzzeit in Tagen"
+msgstr "Grace period in days"
+
+msgid "Nachreichen nach Beginn in Tagen"
+msgstr "Days to submit after joining"
+
+msgid "Arten von Nachweisen"
+msgstr "Types of proof"
+
+msgid "Ermäßigung mit Nachweis"
+msgstr "Reduction with proof"
+
+msgid "Ermäßigungen mit Nachweis"
+msgstr "Reductions with proof"
+
+msgid "von"
+msgstr "from"
+
+msgid "bis"
+msgstr "until"
+
+msgid "anerkannt"
+msgstr "accepted"
+
+msgid "vom Vorstand eingetragen"
+msgstr "entered by the board"
+
+msgid "Beitragsjahr"
+msgstr "Fee year"
+
+msgid "Art des Nachweises"
+msgstr "Type of proof"
+
+msgid "eingegangen am"
+msgstr "received on"
+
+msgid "Beitragsnachweis"
+msgstr "Fee proof"
+
+msgid "Beitragsnachweise"
+msgstr "Fee proofs"
+
+msgid "erste Erinnerung"
+msgstr "first reminder"
+
+msgid "zweite Erinnerung"
+msgstr "second reminder"
+
+msgid "Mitteilung nach Fristablauf"
+msgstr "Notice after the deadline"
+
+msgid "Erinnerung: Nachweis für „{name}“ {year} bis {day}"
+msgstr "Reminder: proof for “{name}” {year} due by {day}"
+
+msgid "Nachweis für „{name}“ {year} bis {day}"
+msgstr "Proof for “{name}” {year} due by {day}"
+
+msgid "für die Ermäßigung „{name}“ brauchen wir jedes Jahr einen aktuellen Nachweis. Für {year} fehlt er noch. Bitte reiche ihn bis {day} ein."
+msgstr "for the reduction “{name}” we need a current proof every year. The proof for {year} is still missing. Please submit it by {day}."
+
+msgid "Als Nachweis zählt zum Beispiel:"
+msgstr "Accepted proofs include:"
+
+msgid "So geht es am einfachsten:"
+msgstr "The easiest ways:"
+
+msgid "- Antworte auf diese Mail und hänge die Bescheinigung (PDF oder Foto) an."
+msgstr "- Reply to this email and attach the certificate (PDF or photo)."
+
+msgid "- Oder lade sie hier hoch: {url}"
+msgstr "- Or upload it here: {url}"
+
+msgid "- Oder im Mitgliederbereich bzw. in der App unter „Beitragsnachweise“."
+msgstr "- Or in the members’ area or the app under “Fee proofs”."
+
+msgid "Wer es nicht rechtzeitig schafft, kann den Nachweis noch bis {day} nachreichen."
+msgstr "If you cannot make it in time, you can still submit the proof until {day}."
+
+msgid "Ohne Nachweis gilt für {year} der normale Beitrag. Studierst du nicht mehr oder fallen die Voraussetzungen weg, musst du nichts tun."
+msgstr "Without a proof, the regular fee applies for {year}. If you no longer study or no longer meet the conditions, you do not need to do anything."
+
+msgid "Kein Nachweis für „{name}“ {year}: normaler Beitrag"
+msgstr "No proof for “{name}” {year}: regular fee"
+
+msgid "für die Ermäßigung „{name}“ ist bis {day} kein Nachweis für {year} bei uns eingegangen. Nach der Beitragsordnung gilt deshalb für {year} der normale Beitrag."
+msgstr "we did not receive a proof for {year} for the reduction “{name}” by {day}. Under the fee rules, the regular fee therefore applies for {year}."
+
+msgid "Für das nächste Jahr kannst du die Ermäßigung wieder mit einem Nachweis bekommen. Hast du Fragen, melde dich gern beim Vorstand."
+msgstr "You can get the reduction again next year with a proof. If you have questions, please contact the board."
+
+msgid "Nachweis für „{name}“ {year} anerkannt"
+msgstr "Proof for “{name}” {year} accepted"
+
+msgid "dein Nachweis für die Ermäßigung „{name}“ {year} ist anerkannt. Danke!"
+msgstr "your proof for the reduction “{name}” {year} has been accepted. Thank you!"
+
+msgid "Nachweis für „{name}“ {year} nicht anerkannt"
+msgstr "Proof for “{name}” {year} not accepted"
+
+msgid "dein Nachweis für die Ermäßigung „{name}“ {year} konnten wir leider nicht anerkennen. Grund: {note}"
+msgstr "unfortunately we could not accept your proof for the reduction “{name}” {year}. Reason: {note}"
+
+msgid "Rückfrage zu deinem Nachweis für „{name}“ {year}"
+msgstr "Question about your proof for “{name}” {year}"
+
+msgid "zu deinem Nachweis für die Ermäßigung „{name}“ {year} haben wir eine Rückfrage: {note}\n\nDu kannst im Mitgliederbereich, in der App oder über den Link aus der Erinnerung einen weiteren Nachweis einreichen."
+msgstr "we have a question about your proof for the reduction “{name}” {year}: {note}\n\nYou can submit another proof in the members’ area, in the app or via the link from the reminder."
+
+msgid "für ermäßigte Beiträge"
+msgstr "for reduced fees"
+
+msgid "Ermäßigung beenden?"
+msgstr "End the reduction?"
+
+msgid "Der Nachweis muss am {day} noch gültig sein (Eingang oder Beginn des Beitragsjahres)."
+msgstr "The proof must still be valid on {day} (receipt or start of the fee year)."
+
+msgid "{name} (Nachweis offen)"
+msgstr "{name} (proof pending)"
+
+msgid "{name}: kein Nachweis bis {day}, normaler Beitrag"
+msgstr "{name}: no proof by {day}, regular fee"
+
+msgid "Erlaubt sind PDF und Fotos (JPEG, PNG, WebP, HEIC)."
+msgstr "Allowed are PDF files and photos (JPEG, PNG, WebP, HEIC)."
+
+msgid "Für {year} ist hier kein Nachweis vorgesehen."
+msgstr "No proof is expected here for {year}."
+
+msgid "Unbekannte Art des Nachweises."
+msgstr "Unknown type of proof."
+
+msgid "Bitte die Rückfrage eingeben."
+msgstr "Please enter the question."
+
+msgid "Diese Ermäßigung gibt es schon."
+msgstr "This reduction already exists."
+
+msgid "Bitte eine Liste von Bezeichnungen."
+msgstr "Please provide a list of names."
+
+msgid "Höchstens 20 Arten."
+msgstr "At most 20 types."
+
+msgid "Bitte entweder einen ermäßigten Beitrag oder einen Abschlag angeben."
+msgstr "Please enter either a reduced fee or a percentage off."
+
+msgid "Diesen Tag gibt es nicht."
+msgstr "This day does not exist."
+
+msgid "Bitte Tag und Monat angeben oder beides leer lassen."
+msgstr "Please enter day and month, or leave both empty."
+
+msgid "„{name}“ ist bei Mitgliedern eingetragen. Bitte stattdessen „nicht mehr verwendet“ ankreuzen."
+msgstr "“{name}” is assigned to members. Please tick “no longer used” instead."
+
+msgid "Unbekanntes Jahr."
+msgstr "Unknown year."
+
+msgid "Diese Ermäßigung wird nicht mehr verwendet."
+msgstr "This reduction is no longer used."
+
+msgid "Diese Ermäßigung ist für den Zeitraum schon eingetragen."
+msgstr "This reduction is already assigned for this period."
+
+msgid "Bitte eine Ermäßigung wählen."
+msgstr "Please choose a reduction."
+
+msgid "Bitte ein Beitragsjahr angeben."
+msgstr "Please enter a fee year."
+
+msgid "Diese Ermäßigung ist dem Mitglied nicht zugeordnet."
+msgstr "This reduction is not assigned to the member."
+
+msgid "{n} Nachweis prüfen"
+msgid_plural "{n} Nachweise prüfen"
+msgstr[0] "Review {n} proof"
+msgstr[1] "Review {n} proofs"
+
+msgid "{n} Ermäßigung ohne Nachweis seit zwei Jahren"
+msgid_plural "{n} Ermäßigungen ohne Nachweis seit zwei Jahren"
+msgstr[0] "{n} reduction without proof for two years"
+msgstr[1] "{n} reductions without proof for two years"
 
 msgid "Zu viele Suchanfragen."
 msgstr "Too many searches."

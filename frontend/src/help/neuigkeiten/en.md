@@ -84,6 +84,7 @@ November 2026:
 
 #### Club and members
 
+- Members: **Reduction with proof.** For reduced fees, for example for students, the treasurer sets up a reduction under Finances › Fee rates with a deadline (e.g. 28/02), grace period and types of proof. HUBIplan reminds members in January and before the deadline, accepts proofs in the members' area, the app, via a personal link or as a reply to the reminder email, and runs a pre-check (name, studies, validity). The board decides under Members › Fee proofs; without an accepted proof the fee run charges the regular fee after the deadline. Also available in the online application.
 - **Family application**: in the online application you can turn on the family application under Fields. Adults then register further family members at the same address at once; on acceptance a household is created and the applicant pays for everyone with one mandate.
 - **Households in Excel import and export**: columns “Haushalt”, “Rolle im Haushalt”, “Firma” and “Beitrag über”; the same name in the file makes one household. HUBIplan books payments on household and company invoices to the payer, so the donation receipt goes to them as well.
 - **Companies report employees**: if an organisation member pays for employees, its contact persons see under My area › Employees whom the company pays for. They report new employees with name and email (the person gets the link to the online application and joins the company once admitted) and end the payment from a date; the membership continues.
