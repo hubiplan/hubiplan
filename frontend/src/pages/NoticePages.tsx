@@ -1,6 +1,7 @@
 // Verständliche Hinweise statt stiller Umleitung auf die Startseite.
 import { Link } from 'react-router-dom'
 import { displayName } from '../api/orgs.ts'
+import type { OrgSummary } from '../api/orgs.ts'
 import { useOrg } from '../org/OrgContext.tsx'
 import { usePageTitle } from '../components/pageTitle.ts'
 import { t } from '../i18n/index.ts'
@@ -14,13 +15,28 @@ import { AppOpenLink } from '../components/AppOpenLink.tsx'
 export function NoAccessPage({
   reason,
   embedded = false,
+  need,
 }: {
   reason: 'right' | 'workspace'
   embedded?: boolean
+  /**
+   * Was die Seite braucht. Damit bietet die Karte den Wechsel in die Einheiten an, in denen die
+   * Person die Seite öffnen darf (UX-Audit 16.11. VW-10).
+   */
+  need?: { kind: 'org'; allows: (org: OrgSummary) => boolean } | { kind: 'dept' }
 }) {
   usePageTitle(embedded ? null : t('Kein Zugriff'))
   const Heading = embedded ? 'h2' : 'h1'
-  const { active, activeDept, activePortal } = useOrg()
+  const { active, activeDept, activePortal, orgs, departments, select } = useOrg()
+  const targets: { key: string; name: string }[] = !need
+    ? []
+    : need.kind === 'dept'
+      ? departments
+          .filter((d) => d.id !== activeDept?.id)
+          .map((d) => ({ key: `d:${d.id}`, name: displayName(d) }))
+      : orgs
+          .filter((o) => o.id !== active?.id && need.allows(o))
+          .map((o) => ({ key: String(o.id), name: displayName(o) }))
   const current = active
     ? displayName(active)
     : activeDept
@@ -38,12 +54,24 @@ export function NoAccessPage({
         {current && t(' Aktuell gewählt: {current}.', { current })}
       </p>
       <p className="muted">
-        {t(
-          'Falls du in mehreren Einheiten arbeitest, wechsle oben rechts die Einheit. Sonst hilft dir weiter, wer bei euch die Konten verwaltet.',
-        )}
+        {targets.length > 0
+          ? t('In diesen Einheiten darfst du die Seite öffnen:')
+          : t(
+              'Falls du in mehreren Einheiten arbeitest, wechsle oben rechts die Einheit. Sonst hilft dir weiter, wer bei euch die Konten verwaltet.',
+            )}
       </p>
       <div className="button-row">
-        <Link to="/" className="button button-primary">
+        {targets.slice(0, 8).map((x, i) => (
+          <button
+            key={x.key}
+            type="button"
+            className={i === 0 ? 'button button-primary' : 'button'}
+            onClick={() => select(x.key)}
+          >
+            {t('Weiter in {x}', { x: x.name })}
+          </button>
+        ))}
+        <Link to="/" className={targets.length > 0 ? 'button' : 'button button-primary'}>
           {t('Zur Startseite')}
         </Link>
       </div>

@@ -967,6 +967,7 @@ function ScoringCard({
           'Vorhandene Ergebnisse aus Treffern werden mit den neuen Regeln berechnet. Manuelle Summen müssen geprüft werden. Die Änderung kann Ranglisten und Preisplätze verändern.',
         ),
         confirmLabel: t('Ändern und neu berechnen'),
+        danger: false,
       }))
     )
       return

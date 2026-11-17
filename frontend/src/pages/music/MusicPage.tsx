@@ -546,7 +546,13 @@ function MusicWorkspace() {
                   <button
                     className="button button-ghost"
                     onClick={async () => {
-                      if (!(await confirmDialog(t('Eintrag entfernen?')))) return
+                      if (
+                        !(await confirmDialog({
+                          message: t('Eintrag entfernen?'),
+                          confirmLabel: t('Entfernen'),
+                        }))
+                      )
+                        return
                       try {
                         await api.del(`${base}${kind}/${r.id}/`)
                         await load.reload()

@@ -45,11 +45,13 @@ export function GuestAccessPanel({
   async function act(action: string) {
     if (
       (action === 'revoke' || action === 'rotate') &&
-      !(await confirmDialog(
-        action === 'revoke'
-          ? t('Diesen Einladungslink widerrufen?')
-          : t('Ein neuer Link macht den bisherigen Link ungültig. Fortfahren?'),
-      ))
+      !(await confirmDialog({
+        message:
+          action === 'revoke'
+            ? t('Diesen Einladungslink widerrufen?')
+            : t('Ein neuer Link macht den bisherigen Link ungültig. Fortfahren?'),
+        confirmLabel: t(action === 'revoke' ? 'Widerrufen' : 'Neuen Link erstellen'),
+      }))
     )
       return
     setBusy(true)

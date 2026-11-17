@@ -595,6 +595,7 @@ function MeetingDetail({
                       'Danach schreibst du das Protokoll. Die Tagesordnung lässt sich dann nicht mehr ändern.',
                     ),
                     confirmLabel: t('Durchgeführt'),
+                    danger: false,
                   })
                   if (!yes) return
                   await meetingApi.update(base, sync.current(), { status: 'held' })
@@ -2294,6 +2295,7 @@ function ReleaseCard({
                         'Bitte nur bestätigen, wenn du das Protokoll gelesen hast und es stimmt.',
                       ),
                       confirmLabel: t('Bestätigen'),
+                      danger: false,
                     })
                     if (!yes) return
                     // Bestätigt wird der gespeicherte Stand: erst alles speichern

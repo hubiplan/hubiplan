@@ -15,6 +15,7 @@ import { QuickSearch } from './QuickSearch.tsx'
 import type { QuickPage } from './QuickSearch.tsx'
 import { portalSections } from '../pages/portal/sections.ts'
 import { displayName } from '../api/orgs.ts'
+import { calendarBase } from '../api/events.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoAccount } from '../api/peering.ts'
 import { useOrg } from '../org/OrgContext.tsx'
@@ -310,6 +311,16 @@ export function Layout() {
   })
   const quickMemberOrg =
     active?.type === 'club' && visible.some((m) => m.id === 'mitglieder') ? active.id : null
+  // VW-59: Termine des gewählten Bereichs in der Schnellsuche, wenn der Kalender im Menü steht
+  const quickEventBase = !visible.some((m) => m.id === 'termine')
+    ? null
+    : active
+      ? calendarBase.org(active.id)
+      : activeDept
+        ? calendarBase.dept(activeDept.id)
+        : activePortal
+          ? calendarBase.portal(activePortal.id)
+          : null
   const currentModule = visible
     .filter((m) => modulePaths(m).some(matchesPath))
     .sort((a, b) => b.path.length - a.path.length)[0]
@@ -426,7 +437,13 @@ export function Layout() {
                     <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
                   <div className="topbar-user">
-                    {!narrow && <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />}
+                    {!narrow && (
+                      <QuickSearch
+                        pages={quickPages}
+                        memberOrg={quickMemberOrg}
+                        eventBase={quickEventBase}
+                      />
+                    )}
                     {!narrow && headerTools}
                     {/* VW-02: auch am Handy erreichbar, dort nur als Zeichen mit Namen */}
                     <HelpButton compact={narrow} />
@@ -454,6 +471,7 @@ export function Layout() {
                       <QuickSearch
                         pages={quickPages}
                         memberOrg={quickMemberOrg}
+                        eventBase={quickEventBase}
                         onNavigate={choseInNav}
                       />
                       {headerTools}

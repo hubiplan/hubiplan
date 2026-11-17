@@ -158,6 +158,7 @@ export function DesignVersions({
         title: t('Fassung zurückholen?'),
         message: t('Der jetzige Entwurf wird dabei ersetzt.'),
         confirmLabel: t('Zurückholen'),
+        danger: false,
       })
       if (!ok) return
     }

@@ -85,6 +85,7 @@ export function HonoraryTitlesPage() {
         { x: usage.reasons.join(', ') },
       ),
       confirmLabel: t('Archivieren'),
+      danger: false,
     })
     if (ok) {
       await run(

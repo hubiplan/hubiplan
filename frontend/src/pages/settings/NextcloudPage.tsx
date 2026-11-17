@@ -132,6 +132,8 @@ function AccountList({
           '{count} Konten werden in der Nextcloud deaktiviert. Dateien bleiben erhalten, Sitzungen und Sync-Apps werden abgemeldet.',
           { count: disabling },
         ),
+        confirmLabel: t('Jetzt abgleichen'),
+        danger: false,
       }))
     )
       return
@@ -278,6 +280,7 @@ function ClientCard({
         message: t(
           'Das bisherige Geheimnis gilt sofort nicht mehr. Bis das neue in der Nextcloud eingetragen ist, kann sich dort niemand mit HUBIplan anmelden.',
         ),
+        confirmLabel: t('Neu erzeugen'),
       }))
     )
       return
@@ -295,6 +298,7 @@ function ClientCard({
         message: t(
           'Danach kann sich niemand mehr mit dem HUBIplan-Konto bei dieser Nextcloud anmelden. Konten und Dateien in der Nextcloud bleiben.',
         ),
+        confirmLabel: t('Entfernen'),
       }))
     )
       return

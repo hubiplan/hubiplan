@@ -64,6 +64,7 @@ export function AccessPanel({
           'Mitteilung. Nur übertragen, wenn sicher ist, dass die neue Adresse dem Mitglied gehört.',
         ),
       confirmLabel: t('Übertragen'),
+      danger: false,
     })
     if (!ok) return
     void run(async () => {

@@ -290,6 +290,7 @@ function SpinOffCard({ onChange }: { onChange: () => void }) {
           '(30 Tage gültig). Gib die Datei nur an die Plattformverwaltung der neuen Instanz weiter.',
         ),
       confirmLabel: t('Vorbereiten'),
+      danger: false,
     })
     if (!ok) return
     setErr(null)

@@ -416,12 +416,14 @@ function FeedCard({
                   const text =
                     n === 1 ? t('den wartenden Beitrag') : t('alle {n} wartenden Beiträge', { n })
                   if (
-                    await confirmDialog(
-                      t(
+                    await confirmDialog({
+                      message: t(
                         '{x}{x2} auf der Webseite zeigen? Prüfe vorher, ob alle Fotos gezeigt werden dürfen.',
                         { x: text[0].toUpperCase(), x2: text.slice(1) },
                       ),
-                    )
+                      confirmLabel: t('Auf der Webseite zeigen'),
+                      danger: false,
+                    })
                   )
                     void run(async () => {
                       const r = await socialApi.publishPending(org.id, feed.id)
@@ -469,11 +471,12 @@ function FeedCard({
                   disabled={busy}
                   onClick={async () => {
                     if (
-                      await confirmDialog(
-                        t(
+                      await confirmDialog({
+                        message: t(
                           'Verbindung trennen? Der Zugang und alle abgerufenen Beiträge mit Bildern werden gelöscht.',
                         ),
-                      )
+                        confirmLabel: t('Verbindung trennen'),
+                      })
                     )
                       void run(() => socialApi.disconnect(org.id, feed.id), t('Getrennt.'))
                   }}
@@ -488,7 +491,12 @@ function FeedCard({
                 className="button button-ghost"
                 disabled={busy}
                 onClick={async () => {
-                  if (await confirmDialog(t('{title} mit allen Beiträgen löschen?', { title })))
+                  if (
+                    await confirmDialog({
+                      message: t('{title} mit allen Beiträgen löschen?', { title }),
+                      confirmLabel: t('Löschen'),
+                    })
+                  )
                     void run(() => socialApi.remove(org.id, feed.id))
                 }}
               >

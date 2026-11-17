@@ -395,6 +395,7 @@ function InvoiceDetail({
           'Die Zahlungen werden in der Kasse storniert (Gegenbuchung mit heutigem Datum). Überweise den Betrag danach zurück.',
         ),
         confirmLabel: t('Erstatten'),
+        danger: false,
       })
     )
       void act(() => billingApi.refundCredit(org.id, inv.id), t('Guthaben erstattet.'))
@@ -1162,7 +1163,7 @@ function InvoiceForm({
 
   const total = filled.reduce((sum, l) => sum + (Number(parseAmount(l.amount)) || 0), 0)
   // VW-43: neu eingeblendetes Formular bekommt den Fokus und rückt ins Bild
-  const formRef = useRevealFocus<HTMLFormElement>(!invoice)
+  const formRef = useRevealFocus<HTMLFormElement>(!invoice, invoice ? undefined : onCancel)
   const incomplete = Object.keys(lineErrors).length > 0
 
   return (

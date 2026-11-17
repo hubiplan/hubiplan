@@ -41,6 +41,16 @@ function readStored(): string | null {
   }
 }
 
+// Links können die Einheit mittragen: ?einheit=7 (Einheit) oder ?einheit=d:3 (Untereinheit).
+// Ist sie erlaubt, wird sie gewählt; sonst gilt die zuletzt gewählte (UX-Audit 16.11. VW-10).
+const LINK_PARAM = 'einheit'
+
+function readLinked(): string | null {
+  if (typeof window === 'undefined') return null
+  const wanted = new URLSearchParams(window.location.search).get(LINK_PARAM)
+  return wanted !== null && /^(d:)?\d+$/.test(wanted) ? wanted : null
+}
+
 function store(key: string) {
   try {
     localStorage.setItem(STORAGE_KEY, key)
@@ -64,12 +74,32 @@ async function loadAll(userId: number): Promise<Loaded> {
   return { userId, orgs, departments: contexts.departments, portal: contexts.portal }
 }
 
+/** Bereich zu einem Schlüssel, nur wenn er (noch) erlaubt ist */
+function findUnit(
+  { orgs, departments, portal }: Pick<Loaded, 'orgs' | 'departments' | 'portal'>,
+  key: string | null,
+) {
+  if (!key) return null
+  if (key.startsWith('d:')) {
+    const d = departments.find((x) => `d:${x.id}` === key)
+    return d ? { key, org: null, dept: d, portal: null } : null
+  }
+  if (key.startsWith('p:')) {
+    const p = portal.find((x) => `p:${x.id}` === key)
+    return p ? { key, org: null, dept: null, portal: p } : null
+  }
+  const o = orgs.find((x) => String(x.id) === key)
+  return o ? { key, org: o, dept: null, portal: null } : null
+}
+
 export function OrgProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   // Liste merkt sich, für welchen Benutzer sie geladen wurde – nach einem
   // Benutzerwechsel erscheinen so nie kurz die Organisationen des vorherigen.
   const [loaded, setLoaded] = useState<Loaded | null>(null)
-  const [activeKey, setActiveKey] = useState<string | null>(readStored)
+  const [activeKey, setActiveKey] = useState<string | null>(() => readLinked() ?? readStored())
+  // Rückfall, wenn die im Link genannte Einheit nicht erlaubt ist
+  const [storedKey] = useState<string | null>(readStored)
   const userId = user?.id ?? null
   const unitOfAddress = usePlatform().unit
 
@@ -105,17 +135,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   // Gespeicherten Bereich nur nehmen, wenn er noch erlaubt ist
   const resolved = useMemo(() => {
     const { orgs, departments, portal } = current
-    const key = activeKey ?? ''
-    if (key.startsWith('d:')) {
-      const d = departments.find((x) => `d:${x.id}` === key)
-      if (d) return { key, org: null, dept: d, portal: null }
-    } else if (key.startsWith('p:')) {
-      const p = portal.find((x) => `p:${x.id}` === key)
-      if (p) return { key, org: null, dept: null, portal: p }
-    } else {
-      const o = orgs.find((x) => String(x.id) === key)
-      if (o) return { key, org: o, dept: null, portal: null }
-    }
+    // zuerst die gewählte (oder im Link genannte) Einheit, sonst die zuletzt gemerkte
+    const chosen = findUnit(current, activeKey) ?? findUnit(current, storedKey)
+    if (chosen) return chosen
     // Noch nichts gewählt: Einheit der aufgerufenen Adresse (White Label W7)
     if (unitOfAddress !== null && unitOfAddress !== undefined) {
       const o = orgs.find((x) => x.id === unitOfAddress)
@@ -128,7 +150,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       return { key: `d:${departments[0].id}`, org: null, dept: departments[0], portal: null }
     if (portal[0]) return { key: `p:${portal[0].id}`, org: null, dept: null, portal: portal[0] }
     return { key: null, org: null, dept: null, portal: null }
-  }, [current, activeKey, unitOfAddress])
+  }, [current, activeKey, storedKey, unitOfAddress])
 
   useEffect(() => {
     const theme = resolved.org?.theme ?? resolved.dept?.theme ?? resolved.portal?.theme ?? null
@@ -140,6 +162,17 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     setActiveKey(k)
     store(k)
   }, [])
+
+  // Die Einheit aus dem Link ist gewählt: merken und die Angabe aus der Adresse nehmen
+  useEffect(() => {
+    if (loading || userId === null) return
+    const url = new URL(window.location.href)
+    const wanted = url.searchParams.get(LINK_PARAM)
+    if (wanted === null) return
+    if (resolved.key === wanted) store(wanted)
+    url.searchParams.delete(LINK_PARAM)
+    window.history.replaceState(window.history.state, '', url)
+  }, [loading, userId, resolved])
 
   const active = resolved.org
   const can = useCallback(

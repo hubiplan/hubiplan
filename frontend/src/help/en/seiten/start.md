@@ -26,7 +26,7 @@ The navigation on the left starts with **Home**, **Tasks** and **Events**. Club 
 
 At the top, **Help on this page** opens help for the current page; on narrow screens only the “?” sign is shown. **Help** in the sidebar opens the overview of all guides. **My account** contains your email address, personal settings and **Sign out**.
 
-**Quick search** at the top (or Ctrl+K, on a Mac ⌘K) jumps straight to a page: type a few letters, such as “remind” for Finance › Reminders, choose with the arrow keys and open with Enter. If you may see the club's members, you also find members there by name or membership number and land in the member record. Only what you can reach in the menu is found. On a phone, quick search is at the top of the menu (“More”).
+**Quick search** at the top (or Ctrl+K, on a Mac ⌘K) jumps straight to a page: type a few letters, such as “remind” for Finance › Reminders, choose with the arrow keys and open with Enter. If you may see the club's members, you also find members there by name or membership number and land in the member record. Only what you can reach in the menu is found. On a phone, quick search is at the top of the menu (“More”). Events from the calendar are found there by their title too, such as “meeting” for the general meeting; upcoming ones come first.
 
 Buttons have their own opaque background, including subtle actions, disabled buttons and file pickers. Selected views also use a distinct fill. Very light club colours are darkened for action buttons to keep them recognisable; the club logo and the remaining brand colour are preserved.
 

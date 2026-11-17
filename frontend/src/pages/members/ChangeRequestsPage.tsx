@@ -89,6 +89,7 @@ function RequestCard({
           title: t('Neuere Angaben überschreiben?'),
           message: err.message,
           confirmLabel: t('Trotzdem annehmen'),
+          danger: false,
         })
         if (!ok) return
         await portalApi.decide(orgId, c.id, accept, response, true)

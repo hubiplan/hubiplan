@@ -312,6 +312,7 @@ function ListSettings({
           t('Mailserver die Herkunft nicht (dmarc=pass), kommt trotzdem ein Bestätigungslink. ') +
           t('Am besten nur für kleine Empfängerkreise nutzen.'),
         confirmLabel: t('Direkt versenden'),
+        danger: false,
       })
       if (!ok) return
     }
@@ -328,6 +329,7 @@ function ListSettings({
         ) +
         t('Empfängerkreise nutzen.'),
       confirmLabel: t('Alle schreiben lassen'),
+      danger: false,
     })
     if (!ok) return
     setSomeSenders(false)

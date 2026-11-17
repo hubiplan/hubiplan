@@ -76,7 +76,7 @@ it('lädt beim Wechsel zur gesamten Serie deren Vorlage statt des Einzelprogramm
 it('kann ein Einzelprogramm wieder auf die Serienvorlage zurücksetzen', async () => {
   const { calls, onSaved } = setup()
   await userEvent.click(await screen.findByRole('button', { name: 'Serienprogramm übernehmen' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Ja' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Vorlage übernehmen' }))
   await waitFor(() => expect(onSaved).toHaveBeenCalledOnce())
   expect(JSON.parse(String(calls.find((c) => c.key === `POST ${url}`)?.init?.body)).scope).toBe(
     'inherit',

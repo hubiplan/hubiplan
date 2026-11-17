@@ -1,5 +1,5 @@
 // Einstellungen › Module: freigegebene Module ein- und ausschalten (M3).
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it } from 'vitest'
@@ -102,7 +102,9 @@ it('schaltet ein Modul mit seinen Voraussetzungen ein, nicht freigegebene sind u
   expect(screen.getByRole('checkbox', { name: /Altmodul/ })).toBeEnabled()
   await user.click(screen.getByRole('checkbox', { name: /^Musik/ }))
   expect(await screen.findByText(/Mit eingeschaltet: Notenarchiv/)).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: /OK|Ja|Bestätigen/ }))
+  await user.click(
+    within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Übernehmen' }),
+  )
   await waitFor(() => expect(screen.getByRole('checkbox', { name: /^Musik/ })).toBeChecked())
   const saves = calls.filter((c) => c.key === `PATCH ${M}`)
   expect(saves.map((c) => JSON.parse(String(c.init?.body)).dry_run)).toEqual([true, false])

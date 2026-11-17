@@ -180,6 +180,8 @@ export function TodoSeries({
                         message: t(
                           'Die Aktion betrifft die Serie einschließlich ihres Verlaufs und ihrer Anhänge.',
                         ),
+                        confirmLabel: t(trash ? 'Zurückholen' : 'Löschen'),
+                        danger: !trash,
                       })
                     )
                       await change({ deleted: !trash })

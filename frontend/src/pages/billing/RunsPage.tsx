@@ -490,6 +490,7 @@ function RunCard({
                       title: t('Handänderungen verwerfen?'),
                       message: err.message,
                       confirmLabel: t('Neu berechnen'),
+                      danger: false,
                     })
                     if (!ok) return null
                     return billingApi.rebuildRun(orgId, run.id, true)

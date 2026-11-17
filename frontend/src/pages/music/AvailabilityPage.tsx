@@ -108,7 +108,10 @@ export function AvailabilityPage() {
                 onClick={async () => {
                   if (
                     !(await confirmLeave()) ||
-                    !(await confirmDialog(t('Abwesenheit entfernen?')))
+                    !(await confirmDialog({
+                      message: t('Abwesenheit entfernen?'),
+                      confirmLabel: t('Entfernen'),
+                    }))
                   )
                     return
                   try {
@@ -196,7 +199,13 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
             <button
               className="button button-ghost"
               onClick={async () => {
-                if (!(await confirmLeave()) || !(await confirmDialog(t('Abwesenheit entfernen?'))))
+                if (
+                  !(await confirmLeave()) ||
+                  !(await confirmDialog({
+                    message: t('Abwesenheit entfernen?'),
+                    confirmLabel: t('Entfernen'),
+                  }))
+                )
                   return
                 if (!deleteKeys.has(row.id)) deleteKeys.set(row.id, newRequestKey())
                 try {

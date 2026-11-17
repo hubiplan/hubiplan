@@ -44,10 +44,9 @@ function open(spec: DialogSpec): Promise<boolean | string | null> {
   })
 }
 
-/** Rückfrage mit Ja/Abbrechen; liefert true, wenn bestätigt. */
-export function confirmDialog(options: string | ConfirmOptions): Promise<boolean> {
-  const opts = typeof options === 'string' ? { message: options } : options
-  return open({ kind: 'confirm', options: opts }) as Promise<boolean>
+/** Rückfrage; der Knopf nennt die Handlung (confirmLabel). Liefert true, wenn bestätigt. */
+export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
+  return open({ kind: 'confirm', options }) as Promise<boolean>
 }
 
 /** Eingabe abfragen; liefert den Text oder null bei Abbruch. */

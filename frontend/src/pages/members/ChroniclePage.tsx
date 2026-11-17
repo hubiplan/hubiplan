@@ -1344,6 +1344,7 @@ function PhotoConsentHint({ org }: { org: number }) {
           { n: open },
         ),
         confirmLabel: t('Bestätigen'),
+        danger: false,
       }))
     )
       return
