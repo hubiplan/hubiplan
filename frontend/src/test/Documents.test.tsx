@@ -113,7 +113,7 @@ describe('Dokumente', () => {
   it('zeigt Ordner, Freigaben des Dachverbands, Platz und sucht in Titel und Bemerkung', async () => {
     setup(['docs.view', 'docs.manage'])
     renderApp('/dokumente')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Dokumente' })).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: /Protokolle/ })).toBeInTheDocument()
     expect(screen.getByText(/Belegter Platz: 3,0 MB · 1 im Papierkorb/)).toBeInTheDocument()
@@ -178,7 +178,7 @@ describe('Dokumente', () => {
   it('ohne Recht erscheint der Bereich nicht', async () => {
     setup(['members.view'])
     renderApp('/')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Startseite' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Dokumente' })).not.toBeInTheDocument()
   })

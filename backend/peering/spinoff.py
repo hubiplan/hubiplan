@@ -83,7 +83,9 @@ def prepare(club, unit, user, *, way: str, cutoff, checklist: dict, with_files: 
         raise ValidationError(gettext("Bitte einen Weg wählen."))
     missing = [text for key, text in CHECKLIST[way].items() if not (checklist or {}).get(key)]
     if missing:
-        raise ValidationError("Bitte vorher bestätigen: " + " ".join(missing))
+        raise ValidationError(
+            gettext("Bitte vorher bestätigen: %(punkte)s") % {"punkte": " ".join(missing)}
+        )
     if cutoff is None:
         raise ValidationError(gettext("Bitte einen Stichtag angeben."))
     with transaction.atomic():

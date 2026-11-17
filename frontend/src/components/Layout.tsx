@@ -284,6 +284,13 @@ export function Layout() {
     .map((id) => visible.find((m) => m.id === id))
     .filter((m): m is (typeof visible)[number] => !!m)
     .slice(0, 3)
+  // Aufeinanderfolgende Bereiche derselben Gruppe (VW-28)
+  const navGroups: { group: (typeof modules)[number]['group']; items: typeof visible }[] = []
+  for (const m of visible) {
+    const last = navGroups[navGroups.length - 1]
+    if (last && last.group === m.group) last.items.push(m)
+    else navGroups.push({ group: m.group, items: [m] })
+  }
   const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
   const inModule = (m: (typeof modules)[number]) =>
     modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -474,7 +481,12 @@ export function Layout() {
                   </div>
                 </header>
 
-                <nav className="sidebar" id="hauptnavigation" aria-label={t('Module')} ref={navRef}>
+                <nav
+                  className="sidebar"
+                  id="hauptnavigation"
+                  aria-label={t('Hauptmenü')}
+                  ref={navRef}
+                >
                   <button type="button" className="sidebar-close" onClick={closeNav}>
                     <span aria-hidden="true">×</span> {t('Navigation schließen')}
                   </button>
@@ -490,45 +502,46 @@ export function Layout() {
                       {headerTools}
                     </div>
                   )}
-                  <ul>
-                    {visible.map((m, index) => (
-                      <li
-                        key={m.id}
-                        className={
-                          index > 0 && visible[index - 1].group !== m.group
-                            ? 'sidebar-group-start'
-                            : undefined
-                        }
-                      >
-                        {(index === 0 || visible[index - 1].group !== m.group) && (
-                          <span className="sidebar-group-label">{GROUP_LABELS[m.group]}</span>
-                        )}
-                        <NavLink
-                          to={m.linkFor?.(active, ws) ?? m.path}
-                          end={m.path === '/'}
-                          className="sidebar-link"
-                          onClick={choseInNav}
-                        >
-                          {m.icon}
-                          <span>
-                            {m.id === 'abteilung' && activeDept
-                              ? activeDept.label
-                              : (m.labelFor?.(active, ws) ?? m.label)}
-                          </span>
-                        </NavLink>
-                        {inModule(m) && (
-                          // Unterpunkte; tiefere Ebenen nur unter dem aktiven Punkt, Finanzen
-                          // in aufklappbaren Arbeitsgruppen (Konzept S-01)
-                          <SubNavList
-                            nodes={buildNavTree(
-                              m.path,
-                              m.children?.(active, ws) ?? [],
-                              Object.values(subNav),
-                            )}
-                            pathname={pathname}
-                            onChoose={choseInNav}
-                          />
-                        )}
+                  {/* Je Gruppe eine Überschrift mit eigener Liste, damit Hilfstechnik die Gruppen
+                      ansagt (UX-Audit 16.11. VW-28) */}
+                  <ul className="sidebar-groups">
+                    {navGroups.map((g, index) => (
+                      <li key={g.group} className={index > 0 ? 'sidebar-group-start' : undefined}>
+                        <h2 className="sidebar-group-label" id={`menue-gruppe-${g.group}`}>
+                          {GROUP_LABELS[g.group]}
+                        </h2>
+                        <ul aria-labelledby={`menue-gruppe-${g.group}`}>
+                          {g.items.map((m) => (
+                            <li key={m.id}>
+                              <NavLink
+                                to={m.linkFor?.(active, ws) ?? m.path}
+                                end={m.path === '/'}
+                                className="sidebar-link"
+                                onClick={choseInNav}
+                              >
+                                {m.icon}
+                                <span>
+                                  {m.id === 'abteilung' && activeDept
+                                    ? activeDept.label
+                                    : (m.labelFor?.(active, ws) ?? m.label)}
+                                </span>
+                              </NavLink>
+                              {inModule(m) && (
+                                // Unterpunkte; tiefere Ebenen nur unter dem aktiven Punkt, Finanzen
+                                // in aufklappbaren Arbeitsgruppen (Konzept S-01)
+                                <SubNavList
+                                  nodes={buildNavTree(
+                                    m.path,
+                                    m.children?.(active, ws) ?? [],
+                                    Object.values(subNav),
+                                  )}
+                                  pathname={pathname}
+                                  onChoose={choseInNav}
+                                />
+                              )}
+                            </li>
+                          ))}
+                        </ul>
                       </li>
                     ))}
                   </ul>

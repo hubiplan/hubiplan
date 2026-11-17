@@ -6,7 +6,12 @@ import { locale, t } from '../i18n/index.ts'
 
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) return err.message
-  return t('Der Server ist nicht erreichbar.')
+  // Fehlgeschlagene Abrufe meldet der Browser als TypeError; alles andere ist ein Fehler im
+  // Programm und soll nicht nach einem Netzproblem klingen (UX-Audit 16.11. VW-30).
+  if (err instanceof TypeError) return t('Der Server ist nicht erreichbar.')
+  return t(
+    'Das hat wegen eines Fehlers im Programm nicht geklappt. Bitte lade die Seite neu und versuche es noch einmal.',
+  )
 }
 
 /** Lädt Daten und bietet reload() sowie Fehlerstatus. */

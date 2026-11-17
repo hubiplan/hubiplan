@@ -73,7 +73,7 @@ describe('Ansicht als Rolle', () => {
     await user.click(await screen.findByRole('button', { name: /Mein Konto/ }))
     const select = await screen.findByRole('combobox', { name: 'Ansicht als Rolle' })
     await within(select).findByRole('option', { name: 'Ansicht als Kassierer' })
-    const nav = screen.getByRole('navigation', { name: 'Module' })
+    const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).toHaveTextContent('Mitglieder')
 
     await user.selectOptions(select, 'Ansicht als Kassierer')
@@ -87,7 +87,7 @@ describe('Ansicht als Rolle', () => {
     expect(screen.queryByRole('button', { name: /Rückgängig/ })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Ansicht beenden' }))
-    expect(await screen.findByRole('navigation', { name: 'Module' })).toHaveTextContent(
+    expect(await screen.findByRole('navigation', { name: 'Hauptmenü' })).toHaveTextContent(
       'Mitglieder',
     )
     expect(screen.queryByText(/Ändern ist ausgeschaltet/)).not.toBeInTheDocument()

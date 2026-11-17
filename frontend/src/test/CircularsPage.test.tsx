@@ -44,7 +44,7 @@ describe('Menüpunkt Rundschreiben', () => {
       }),
     })
     renderApp('/rundschreiben')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Rundschreiben' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Verfassen' })).not.toBeInTheDocument()
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Königsschießen' }))
@@ -60,7 +60,7 @@ describe('Menüpunkt Rundschreiben', () => {
       }),
     })
     renderApp('/')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Mitglieder' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Rundschreiben' })).not.toBeInTheDocument()
   })
@@ -120,7 +120,7 @@ describe('Menüpunkt Rundschreiben', () => {
       }),
     })
     renderApp('/')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Mitglieder' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Rundschreiben' })).not.toBeInTheDocument()
   })

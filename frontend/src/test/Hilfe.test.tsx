@@ -397,7 +397,7 @@ describe('Oberfläche', () => {
   it('Menüpunkt heißt „Hilfe“; /hilfe zeigt Anleitungen nach Rechten, die Suche auch das Glossar', async () => {
     renderApp('/hilfe')
     expect(await screen.findByRole('heading', { level: 1, name: 'Hilfe' })).toBeInTheDocument()
-    const nav = screen.getByRole('navigation', { name: 'Module' })
+    const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(within(nav).getByRole('link', { name: 'Hilfe' })).toHaveAttribute('href', '/hilfe')
     expect((await screen.findAllByRole('link', { name: 'Passwort ändern' }))[0]).toHaveAttribute(
       'href',

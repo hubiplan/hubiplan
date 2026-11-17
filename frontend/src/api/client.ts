@@ -292,7 +292,10 @@ export function statusMessage(status: number): string {
       'Keine Verbindung zum Server. Bitte die Internetverbindung prüfen und es gleich noch einmal versuchen.',
     )
   if (status === 403) return t('Dafür fehlt dir die Berechtigung.')
-  if (status === 404) return t('Nicht gefunden.')
+  if (status === 404)
+    return t(
+      'Nicht gefunden. Der Eintrag wurde vielleicht gelöscht, oder die Adresse stimmt nicht.',
+    )
   if (status === 413) return t('Die Datei ist zu groß.')
   if (status === 429) return t('Zu viele Versuche. Bitte einen Moment warten.')
   if (status === 502 || status === 503 || status === 504)
@@ -301,7 +304,9 @@ export function statusMessage(status: number): string {
     )
   // W-10: verständlich statt „Serverfehler“
   if (status >= 500) return t('Der Server antwortet gerade nicht. Bitte später erneut versuchen.')
-  return t('Das hat nicht geklappt.')
+  return t(
+    'Das hat nicht geklappt. Bitte versuche es noch einmal; bleibt es dabei, lade die Seite neu.',
+  )
 }
 
 async function call<T>(method: Method, url: string, data?: unknown, key?: string): Promise<T> {

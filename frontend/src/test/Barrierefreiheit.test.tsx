@@ -129,7 +129,7 @@ describe('H-03 Seitenwechsel', () => {
     renderApp('/einstellungen/xyz')
     const user = userEvent.setup()
     await screen.findByRole('heading', { level: 1 })
-    const hilfe = within(screen.getByRole('navigation', { name: 'Module' })).getByRole('link', {
+    const hilfe = within(screen.getByRole('navigation', { name: 'Hauptmenü' })).getByRole('link', {
       name: 'Hilfe',
     })
     await user.click(hilfe)

@@ -156,7 +156,7 @@ describe('Mitgliederentwicklung', () => {
     renderApp('/mitglieder/entwicklung')
     expect(await screen.findByRole('heading', { name: 'Mitglieder am 31.3.2025' })).toBeVisible()
     expect(screen.getByText('+3 seit 1.1.2025 (98)')).toBeInTheDocument()
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(nav.getByRole('link', { name: 'Entwicklung' })).toHaveAttribute(
       'href',
       '/mitglieder/entwicklung',
@@ -287,7 +287,7 @@ describe('Finanzentwicklung', () => {
     // nur ein Konto: kein eigenes Diagramm je Konto
     expect(screen.queryByRole('heading', { name: 'Kontostände je Konto' })).toBeNull()
     expect(screen.getAllByText('Vorjahreszeitraum (1.1.2024 bis 29.2.2024)')).toHaveLength(2)
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(nav.getByRole('link', { name: 'Entwicklung' })).toHaveAttribute(
       'href',
       '/finanzen/entwicklung',
@@ -320,7 +320,7 @@ describe('Finanzentwicklung', () => {
     })
     renderApp('/finanzen')
     expect(await screen.findByRole('heading', { name: 'Offene Rechnungen' })).toBeVisible()
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(nav.queryByRole('link', { name: 'Entwicklung' })).toBeNull()
   })
 })

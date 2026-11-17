@@ -156,8 +156,10 @@
   margin: 0.35rem 0;
 }
 .help-steps input[type='checkbox'] {
-  width: 1.2rem;
-  height: 1.2rem;
+  /* mindestens 24 px (UX-Audit 16.11. VW-42) */
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
 }
 .help-step-done a {
   text-decoration: line-through;
