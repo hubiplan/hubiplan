@@ -13737,3 +13737,6 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Die Kasse ist bis {x:%d.%m.%Y} festgeschrieben. Buchungen in diesem Zeitraum sind nicht mehr möglich; bitte mit heutigem Datum buchen."
+msgstr "The cash book is locked until {x:%d/%m/%Y}. Bookings in this period are no longer possible; please book with today's date."
