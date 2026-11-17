@@ -1219,7 +1219,7 @@ def add_payment(
         )
     if account is None or account.organization_id != org.pk:
         raise ValidationError({"account": gettext("Bitte das Konto wählen.")})
-    finance_services.ensure_open(org, date=date)
+    finance_services.ensure_bookable(org, date)
     year = org.fiscal_year_of(date)
     from .households import booking_parties
 
