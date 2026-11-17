@@ -357,6 +357,10 @@ class Dumper:
     # --- Bausteine ---
 
     def roles(self, org: Organization) -> tuple[list, list]:
+        if self.limited_for(org):
+            # Rollen und Besetzungen der Vereine zeigt der Zeilenschutz dem Dachverband nicht
+            # (Gesamtaudit 15.11., AZ-06)
+            return [], []
         roles = list(Role.objects.filter(organization=org).order_by("name"))
         self.counts["roles"] += len(roles)
         role_data = [
@@ -449,6 +453,7 @@ class Dumper:
         self, dept: Department, with_holders: bool = True, tables: dict | None = None
     ) -> dict:
         self.counts["departments"] += 1
+        limited = self.limited_for(dept.organization)
         data = {
             "id": dept.pk,
             # Übergeordnete Untereinheit (leer: direkt unter der Einheit)
@@ -474,10 +479,14 @@ class Dumper:
                         ).exclude(name="")
                     ],
                 }
-                for r in DepartmentRole.objects.filter(department=dept)
+                for r in (
+                    DepartmentRole.objects.none()
+                    if limited
+                    else DepartmentRole.objects.filter(department=dept)
+                )
             ],
             "imprint": imprint_data(dept),
-            "letterhead": letterhead_data(dept, self.packer),
+            "letterhead": None if limited else letterhead_data(dept, self.packer),
         }
         if tables:
             # Kasse, Rechnungen, Belege … des eigenen Arbeitsbereichs (Audit 31.10. D31-01)
@@ -527,7 +536,11 @@ class Dumper:
                 {"member_type": t.member_type_id, **period(t)} for t in m.type_assignments.all()
             ],
             "departments": [{"department": d.department_id, **period(d)} for d in departments],
-            "department_roles": [{"role": h.role_id, **period(h)} for h in holders],
+            "department_roles": (
+                []
+                if self.limited_for(club)
+                else [{"role": h.role_id, **period(h)} for h in holders]
+            ),
             "photo": (
                 {
                     "image": self.packer.add(photo.image, "photos"),
@@ -565,7 +578,7 @@ class Dumper:
             "id": org.pk,
             "uuid": str(org.uuid),
             **values(org, ORG_FIELDS),
-            "contact_role": org.contact_role_id,
+            "contact_role": None if self.limited_for(org) else org.contact_role_id,
             "logo": self.packer.add(org.logo, "logos"),
             "logo_dark": self.packer.add(org.logo_dark, "logos"),
             "roles": roles,
@@ -573,7 +586,7 @@ class Dumper:
             "fields": self.fields(org),
             "imprint": imprint_data(org),
             "social_links": social_data(org),
-            "letterhead": letterhead_data(org, self.packer),
+            "letterhead": None if self.limited_for(org) else letterhead_data(org, self.packer),
         }
         if not org.is_remote:
             # Verbund: offene Kopplungen ziehen beim Umzug mit (ohne Schlüssel dieser Instanz)

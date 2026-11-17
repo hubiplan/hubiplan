@@ -91,7 +91,10 @@ def test_export_nur_im_umfang_des_zeilenschutzes(verband):
     # Was entfällt
     assert all(m["photo"] is None for m in data["memberships"])
     assert data["fields"] == []
-    assert data["role_assignments"] == []
+    assert data["role_assignments"] == [] and data["roles"] == []
+    assert data["letterhead"] is None and data["contact_role"] is None
+    assert all(d["roles"] == [] and d["letterhead"] is None for d in data["departments"])
+    assert all(m["department_roles"] == [] for m in data["memberships"])
     values = [v for p in doc["persons"] for v in p["field_values"]]
     assert values == []
     assert "vorstand-umfang@example.org" not in json.dumps(data)
@@ -103,7 +106,7 @@ def test_plattform_bekommt_weiter_alles(verband):
     data = _club(as_doc(content), club.pk)
     assert any(m["photo"] for m in data["memberships"])
     assert [f["key"] for f in data["fields"]] == ["schuh"]
-    assert data["role_assignments"]
+    assert data["role_assignments"] and data["roles"]
     assert "members.honorarytitle" in (data.get("tables") or {})
     assert "documents.folder" in (data.get("tables") or {}) or any(
         "documents.folder" in (d.get("tables") or {}) for d in data["departments"]
