@@ -9,7 +9,8 @@ from django.test import Client
 from reportlab.pdfgen import canvas
 
 from statutes.models import StatutePublication
-from website.models import Website
+
+from .factories import make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -33,7 +34,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    return make_website(org, public_key="schluessel-a", state="public")
 
 
 def upload(api, user, org, body: bytes):

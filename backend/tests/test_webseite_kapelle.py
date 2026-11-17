@@ -16,7 +16,7 @@ from website import menu
 from website.models import PublicationConsent, Website, WebsiteDocument, WebsiteText
 from website.public import SiteView
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "kapelle-a"
@@ -37,7 +37,7 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(organization=club, public_key=KEY, state="public")
+    return make_website(club, public_key=KEY, state="public")
 
 
 def public(path):

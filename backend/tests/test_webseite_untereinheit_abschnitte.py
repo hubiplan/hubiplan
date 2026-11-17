@@ -7,10 +7,10 @@ from django.test import Client
 from organizations.models import Department
 from website import search
 from website.home import UNIT_BUILTINS
-from website.models import Website, WebsiteText
+from website.models import WebsiteText
 from website.public import SiteView
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "untereinheit-abschnitte-a"
@@ -21,8 +21,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "events", "website"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key=KEY,
         state="public",
         privacy_mode="link",

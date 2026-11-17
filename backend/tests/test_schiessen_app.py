@@ -11,9 +11,8 @@ from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
 from django.test import Client
 
 from competitions.models import Competition, Score, Scoring, StandAccess, Starter
-from website.models import Website
 
-from .factories import give_role, make_member
+from .factories import give_role, make_member, make_website
 from .test_app_devices import APP, app, pair, pairing_code
 from .test_app_verwaltung import unlock
 from .test_m12_events import JSON, cal, member_with_access  # noqa: F401
@@ -114,8 +113,8 @@ class TestStandzugangInDerApp:
 class TestRanglistenFuerMitglieder:
     def test_wie_auf_der_webseite(self, verein, api):
         # Webseite noch auf der Wartungsseite: Mitglieder sehen die Ergebnisse trotzdem
-        site = Website.objects.create(
-            organization=verein["club"],
+        site = make_website(
+            verein["club"],
             public_key="schluessel-a",
             state="maintenance",
             name_format="initial",

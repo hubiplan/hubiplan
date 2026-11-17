@@ -13,7 +13,8 @@ from core import safehttp
 from organizations import homepage_preview
 from organizations.models import Department
 from organizations.tasks import fetch_homepage_preview
-from website.models import Website
+
+from .factories import make_website
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -30,7 +31,7 @@ def unit(orgs):
     org = orgs["a"]
     org.enabled_modules = [*(org.enabled_modules or []), "website"]
     org.save()
-    Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    make_website(org, public_key="schluessel-a", state="public")
     return Department.objects.create(
         organization=org, parent=org, name="Jägerzug", website="https://jaeger.example/"
     )

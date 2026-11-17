@@ -4,9 +4,8 @@ CSS. Alle Daten erfunden."""
 import pytest
 
 from website import style
-from website.models import Website
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 KEY = "schrift-a"
 
@@ -57,7 +56,7 @@ def test_speichern_und_oeffentlich(orgs, api):
     club = orgs["a"]
     club.enabled_modules = ["members", "events", "website"]
     club.save()
-    site = Website.objects.create(organization=club, public_key=KEY, state="maintenance")
+    site = make_website(club, public_key=KEY, state="maintenance")
     user = make_user("web-schrift@example.org")
     give_role(user, club, permissions=["website.manage"], name="Webseite")
     resp = api(user).put(

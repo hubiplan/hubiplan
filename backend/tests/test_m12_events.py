@@ -9,6 +9,7 @@ from django.test import Client
 from django.utils import timezone
 
 from audit.models import AuditEntry
+from core.tenancy import rls_bypass
 from events.models import CalendarPublication, Event, EventCategory, EventException
 from events.recurrence import occurrences
 from members.models import DepartmentRoleHolder
@@ -86,6 +87,8 @@ def titles(client, base, frm="2026-01-01", to="2026-12-31") -> list[str]:
     return [i["title"] for i in resp.json()["items"]]
 
 
+# Testvorbereitung unter rls_bypass (Gesamtaudit 15.11., AZ-04)
+@rls_bypass()
 def member_with_access(club, first, depts=(), user_email=None):
     m = make_member(club, first, "Muster", departments=depts)
     user = make_user(user_email or f"{first.lower()}@example.org")

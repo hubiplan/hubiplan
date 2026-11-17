@@ -14,7 +14,7 @@ from access.permissions import permissions_in
 from organizations.models import Department
 from website.public import SiteView
 
-from .factories import make_member, named
+from .factories import make_member, make_website, named
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -243,9 +243,8 @@ class TestImport:
 
 class TestWebseite:
     def test_aemter_mit_frueherem_inhaber(self, orgs, chair):
-        from website.models import Website
 
-        site = Website.objects.create(organization=orgs["a"])
+        site = make_website(orgs["a"])
         RoleAssignment.all_objects.create(
             organization=orgs["a"],
             role=chair,
@@ -262,9 +261,8 @@ class TestWebseite:
 
     def test_freier_name_nur_mit_haekchen(self, orgs, chair, board_a, api):
         """FQ-19 (Ralf 01.11.2026): freie Namen ohne Akte erst nach Häkchen veröffentlichen."""
-        from website.models import Website
 
-        site = Website.objects.create(organization=orgs["a"])
+        site = make_website(orgs["a"])
         c = api(board_a)
         body = {"role": chair.pk, "name": "Wilhelm Vorzeit", "from_year": 1955, "until_year": 1972}
         resp = c.post(url(orgs["a"], ""), body, "application/json")
@@ -280,9 +278,9 @@ class TestWebseite:
     def test_menue_pruefung_wie_liste_ohne_alle_mitglieder(self, orgs, chair):
         """Menü und Grunddaten fragen nur, ob es Ämter gibt: gleiches Ergebnis wie die Liste,
         aber ohne die Mitgliedschaften aller Mitglieder zu laden (Vorschau-Tempo 08.11.)."""
-        from website.models import PublicationConsent, Website
+        from website.models import PublicationConsent
 
-        site = Website.objects.create(organization=orgs["a"])
+        site = make_website(orgs["a"])
         assert SiteView(site).has_chairs() is False
         make_member(orgs["a"], "Erna", "Unbeteiligt")
         otto = make_member(orgs["a"], "Otto", "Muster")

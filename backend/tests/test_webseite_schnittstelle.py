@@ -14,9 +14,9 @@ from core.tenancy import rls_bypass
 from events.models import Event
 from organizations.models import Department, DepartmentRole
 from website import contact, services
-from website.models import HeldMessage, Website, WebsiteDomain, WebsiteText
+from website.models import HeldMessage, WebsiteDomain, WebsiteText
 
-from .factories import make_member
+from .factories import make_member, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -32,7 +32,7 @@ def setup(orgs):
     org.enabled_modules = ["members", "events", "website", "honors", "awards", "chronicle"]
     org.contact_email = "info@verein-a.example.org"
     org.save()
-    site = Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    site = make_website(org, public_key="schluessel-a", state="public")
     WebsiteDomain.objects.create(organization=org, website=site, hostname="www.verein-a.example")
     erika = make_member(org, "Erika", "Beispiel", email="erika@example.org")
     otto = make_member(org, "Otto", "Muster", email="otto@example.org")

@@ -14,7 +14,7 @@ from core.tenancy import rls_bypass, tenant_context
 from members.models import ContactPerson, Membership, MemberType
 from website import contact
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 from .test_rls import as_app_role
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -506,10 +506,9 @@ class TestEinbindung:
         assert found and found[0]["link"] == f"/mitglieder/antraege/{app.pk}"
 
     def test_webseite_baustein_und_seite(self, club):
-        from website.models import Website
 
         org = club["org"]
-        site = Website.objects.create(organization=org, public_key="seite-a", state="public")
+        site = make_website(org, public_key="seite-a", state="public")
         info = Client().get("/api/public/site/v1/seite-a/").json()
         assert info["blocks"]["join"] is True
         data = Client().get("/api/public/site/v1/seite-a/join/").json()

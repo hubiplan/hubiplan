@@ -20,7 +20,7 @@ from core.rls import APP_ROLE
 from core.tenancy import rls_bypass, set_rls, tenant_context
 from organizations.models import Department, DepartmentRole
 
-from .factories import found
+from .factories import found, make_website
 
 pytestmark = [
     pytest.mark.django_db(transaction=False),
@@ -464,13 +464,13 @@ def test_webseiten_hochladelink_unter_rls(orgs, board_a, client, settings, tmp_p
     from django.core.files.uploadedfile import SimpleUploadedFile
     from PIL import Image
 
-    from website.models import ImageUploadLink, Website, WebsiteImage
+    from website.models import ImageUploadLink, WebsiteImage
 
     settings.PRIVATE_ROOT = tmp_path / "private"
     org = orgs["a"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    site = Website.objects.create(organization=org, public_key="rls-hochladen")
+    site = make_website(org, public_key="rls-hochladen")
     link, secret = ImageUploadLink.create(site, board_a, "")
 
     def img():
