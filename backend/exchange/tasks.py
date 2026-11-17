@@ -14,7 +14,7 @@ from django.utils import timezone
 from core import alarm
 from core.einzeln import LONG_HARD, LONG_SOFT
 from core.files import delete_on_commit
-from core.tenancy import rls_bypass, tenant_context
+from core.tenancy import org_context, rls_bypass, tenant_context
 
 from . import export, importer
 from .models import EXPORT_KEEP_DAYS, IMPORT_KEEP_DAYS, ExportJob, ImportJob, private_storage
@@ -31,7 +31,8 @@ def _load(model, pk):
 @shared_task(soft_time_limit=LONG_SOFT, time_limit=LONG_HARD)
 def run_export(job_id: int) -> None:
     job = _load(ExportJob, job_id)
-    with tenant_context(job.organization_id, job.created_by_id):
+    # Dachverband: Freigabe auf Vereinsmitglieder wie in der Ansicht (Gesamtaudit 15.11., AZ-02)
+    with org_context(job.organization, job.created_by_id):
         try:
             job.status = ExportJob.Status.RUNNING
             job.save(update_fields=["status"])
