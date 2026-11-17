@@ -791,6 +791,15 @@ function SettingsForm({
         hint={t('Danach bleibt nur ein Minimum: Name, Geburtsdatum, Verbandsnummer und Zeiträume.')}
         onChange={(e) => form.set('deletion_period_months', Number(e.target.value))}
       />
+      <Field
+        label={t('Speicher für Webseitenbilder je Einheit (MB)')}
+        type="number"
+        min={0}
+        value={form.values.website_image_quota_mb ?? 2048}
+        error={form.errors.website_image_quota_mb}
+        hint={t('0 heißt ohne Grenze. Gilt für Bilder der Webseite, nicht für Dokumente.')}
+        onChange={(e) => form.set('website_image_quota_mb', Number(e.target.value))}
+      />
       {settings.deletion_shorter_from && (
         <Alert kind="info">
           {t(

@@ -56,6 +56,9 @@ export interface PortalEntry {
   /** Auslagen erstatten (Modul) und offene Rückfragen der Kasse */
   expenses_enabled?: boolean
   expenses_questions?: number
+  /** Beitragsnachweise: Menüpunkt und Jahre, für die noch ein Nachweis fehlt */
+  fee_proofs_enabled?: boolean
+  fee_proofs_due?: number
   /** Module Aufgaben, Dokumente, Rundschreiben, Ausweise (fehlt bei älteren Servern: an) */
   todos_enabled?: boolean
   docs_enabled?: boolean

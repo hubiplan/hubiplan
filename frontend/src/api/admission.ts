@@ -62,6 +62,8 @@ export interface JoinSchema {
   company?: string | null
   /** Gemeldete Person aus dem Link der Firma (Vorbelegung) */
   invite?: { first_name: string; last_name: string; email: string } | null
+  /** Ermäßigungen mit Nachweis (docs/beitragsnachweise.md) */
+  discounts?: { id: number; name: string; member_type: number | null; kinds: string[] }[]
   challenge?: { token: string; salt: string; difficulty: number }
   key?: string
   kiosk?: string
@@ -110,6 +112,8 @@ export interface JoinSubmission {
   signature?: SignatureInput | null
   homepage?: string
   company?: string
+  /** gewählte Ermäßigung mit Nachweis */
+  discount?: number | null
   challenge?: string
   nonce?: number
 }
@@ -128,6 +132,8 @@ export interface JoinStatus {
   signature_required: boolean
   can_withdraw: boolean
   can_sign: boolean
+  /** Ermäßigung mit Nachweis: Dateien auf dieser Seite hochladen */
+  fee_proof?: { name: string; kinds: string[]; files: string[]; can_upload: boolean } | null
 }
 
 export type ApplicationStatus =
@@ -155,6 +161,14 @@ export const joinApi = {
     api.get<JoinStatus>(`/api/public/join/application/${encodeURIComponent(token)}/`),
   confirm: (token: string) =>
     api.post<JoinStatus>(`/api/public/join/application/${encodeURIComponent(token)}/confirm/`),
+  feeProof: (token: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post<JoinStatus>(
+      `/api/public/join/application/${encodeURIComponent(token)}/fee-proof/`,
+      form,
+    )
+  },
   withdraw: (token: string) =>
     api.post<JoinStatus>(`/api/public/join/application/${encodeURIComponent(token)}/withdraw/`),
   sign: (token: string, signature: SignatureInput) =>

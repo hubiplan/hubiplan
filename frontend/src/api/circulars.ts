@@ -178,6 +178,15 @@ export interface RecipientCounts {
 export interface Recipients {
   counts: RecipientCounts
   items: Candidate[]
+  /** Mit Seiten (Gesamtaudit 15.11., PF-28): mehr vorhanden? */
+  page?: PageInfo
+}
+
+export interface PageInfo {
+  page: number
+  pages: number
+  total: number
+  more: boolean
 }
 
 export interface SearchHit {
@@ -227,6 +236,16 @@ export const circularApi = {
   remove: (b: CircularBase, id: number) => api.del(`${baseUrl(b)}${id}/`),
   recipients: (b: CircularBase, id: number) =>
     api.get<Recipients>(`${baseUrl(b)}${id}/recipients/`),
+  /** Versandprotokoll seitenweise: die ersten ``pages`` Seiten zu je 200 zusammen */
+  recipientPages: async (b: CircularBase, id: number, pages: number): Promise<Recipients> => {
+    let all: Recipients | null = null
+    for (let page = 1; page <= pages; page++) {
+      const part = await api.get<Recipients>(`${baseUrl(b)}${id}/recipients/?seite=${page}`)
+      all = all ? { ...part, items: [...all.items, ...part.items] } : part
+      if (!part.page?.more) break
+    }
+    return all as Recipients
+  },
   search: (b: CircularBase, id: number, q: string) =>
     api.get<SearchHit[]>(`${baseUrl(b)}${id}/search/?suche=${encodeURIComponent(q)}`),
   send: (b: CircularBase, id: number) =>

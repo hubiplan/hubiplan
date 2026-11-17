@@ -298,6 +298,12 @@ def summary_lines(app: Application) -> list[str]:
         rows.append((gettext("Gewünschter Eintritt"), app.entry_wish.strftime("%d.%m.%Y")))
     if d.get("company_name"):
         rows.append((gettext("Beitrag zahlt"), d["company_name"]))
+    if d.get("discount"):
+        from feeproofs.admission import chosen
+
+        discount = chosen(app)
+        if discount is not None:
+            rows.append((gettext("Ermäßigung beantragt"), discount.name))
     for f in d.get("family") or []:
         parts = [f"{f.get('first_name', '')} {f.get('last_name', '')}".strip()]
         if f.get("birth_date"):
@@ -657,6 +663,10 @@ def accept(app: Application, user, perms: set[str], options: dict, *, auto: bool
         person=membership.person,
     )
     _accept_extras(app, membership, user)
+    from feeproofs.admission import on_accept as proof_on_accept
+
+    # Ermäßigung mit Nachweis ab Eintritt, hochgeladene Nachweise übernehmen
+    proof_on_accept(app, membership, entry_date, user)
     if d.get("family"):
         _accept_family(app, membership, data, user)
     app.status = Application.Status.ACCEPTED

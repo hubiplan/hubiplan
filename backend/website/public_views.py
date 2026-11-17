@@ -12,6 +12,7 @@ import datetime
 from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
+from django.utils.translation import gettext
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -504,6 +505,9 @@ class DocumentFileView(_Public):
         return self.decorate(response, site)
 
 
+SEARCH_LIMIT = 30  # Suchanfragen je Minute und Besucher
+
+
 class SearchView(_Public):
     """GET ?q=…: Suche in allen öffentlichen Texten, Alben und Terminen (Lupe, Ralf 05.11.)."""
 
@@ -514,6 +518,9 @@ class SearchView(_Public):
         from . import search
 
         query = request.query_params.get("q") or ""
+        # Gesamtaudit 15.11., WEB-06 (Fachfrage F3): eigene, niedrigere Grenze für die Suche
+        if too_many(f"website:search:{visitor_ip(request)}", SEARCH_LIMIT, 60):
+            return Response({"detail": gettext("Zu viele Suchanfragen.")}, status=429)
         hits = search.search(site, query, lambda: _events(site, None))
         return self.respond({"query": query[: search.MAX_QUERY], "results": hits}, site)
 

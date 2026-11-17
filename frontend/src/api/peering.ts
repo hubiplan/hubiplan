@@ -69,6 +69,8 @@ export interface Coupling {
     fingerprint: string
     country: string
     at: string | null
+    // Aus einer Vereinsdatei übernommen (kein Umzug der Gegenseite)
+    import?: boolean
   } | null
   // Notfallwechsel der Schlüssel der Gegenstelle, wartet auf Bestätigung
   keys: { fingerprint: string; at: string | null } | null

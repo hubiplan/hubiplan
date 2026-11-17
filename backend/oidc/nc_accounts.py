@@ -45,7 +45,7 @@ class NextcloudError(Exception):
 def _ocs(client: Client, method: str, path: str) -> dict:
     if not client.service_user or not client.service_password:
         raise NextcloudError(gettext("Dienstkonto und App-Passwort fehlen."))
-    auth = f"{client.service_user}:{decrypt(client.service_password)}"
+    auth = f"{client.service_user}:{decrypt(client.service_password, purpose='nextcloud')}"
     url = f"{client.base_url.rstrip('/')}/ocs/v2.php/{path}?format=json"
     try:
         resp = safehttp.request(
@@ -169,7 +169,9 @@ def plan(client: Client, users: list[int] | None = None) -> list[Plan]:
         qs = Account.objects.filter(client=client).select_related("user")
         if users is not None:
             qs = qs.filter(user_id__in=users)
-        accounts = list(qs)
+        # Verwaltungs- und Dienstkonten fasst der Abgleich nie an (Gesamtaudit 15.11., AUTH-07)
+        blocked = client.blocked_usernames()
+        accounts = [a for a in qs if a.nc_user.lower() not in blocked]
     return [Plan(a, _allowed(client, a.user)) for a in accounts]
 
 

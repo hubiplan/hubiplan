@@ -97,6 +97,11 @@ MODULE_MODELS = (
     # Qualifikationen vor den Helferdiensten (ein Dienst kann eine voraussetzen)
     "qualifications.QualificationType",
     "qualifications.Qualification",
+    # Ermäßigung mit Nachweis: Ermäßigungen vor Zuordnungen und Nachweisen (Vermerke)
+    "feeproofs.ProofSettings",
+    "feeproofs.ProofDiscount",
+    "feeproofs.DiscountAssignment",
+    "feeproofs.FeeProof",
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
     "members.BillingAddress",
@@ -248,7 +253,7 @@ MODULE_MODELS = (
 # nicht zum Kassen- und Beitragsbereich: Sie kommen immer mit.
 PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
-# mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
+# mit, nicht aber im Dachverbands-Export der Vereine.
 DEPARTMENT_MODELS = {
     "meetings.meetingkind",
     "meetings.meeting",
@@ -280,6 +285,8 @@ MEMBER_MODELS = {
     "members.honorarytitleaward",
     "qualifications.qualificationtype",
     "qualifications.qualification",
+    "feeproofs.discountassignment",
+    "feeproofs.feeproof",
     "events.eventresponse",
     "circulars.circularrecipient",
     "website.publicationconsent",
@@ -325,6 +332,31 @@ MEMBER_MODELS = {
 # die Tabellen schreiben, die auch der Export einer Abteilung enthält, nie Kasse oder
 # Beiträge des Vereins (dafür fehlen dem Importierenden ggf. die Rechte).
 DEPARTMENT_IMPORT_MODELS = PUBLIC_MODELS | DEPARTMENT_MODELS
+# Abteilung in einen Verein (Gesamtaudit 15.11., AZ-05): ohne Satzung, die gehört dem Verein
+DEPARTMENT_INTO_CLUB_MODELS = DEPARTMENT_MODELS
+# Rechte, die der Abteilungsimport je Bereich der Datei zusätzlich zu „Einstellungen“ verlangt
+DEPARTMENT_IMPORT_PERMISSIONS = {
+    "meetings": "meetings.edit",
+    "helpers": "helpers.edit",
+    "bookings": "bookings.edit",
+    "materials": "material.edit",
+    "todos": "todos.edit",
+    "documents": "docs.edit",
+}
+
+
+def department_field(model):
+    """Spalte ``department`` (Verweis auf eine Abteilung) eines Modells oder None."""
+    for f in model._meta.concrete_fields:
+        if (
+            f.name == "department"
+            and f.is_relation
+            and label(f.related_model) == "organizations.department"
+        ):
+            return f
+    return None
+
+
 # Zeilen, deren Verweis auf diese Spalte in der Datei fehlt, fallen beim Import weg
 # (z. B. Ehrungen des Dachverbands an Personen, deren Daten nicht exportiert wurden).
 DROP_IF_MISSING = {
@@ -337,6 +369,8 @@ DROP_IF_MISSING = {
     "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
     "qualifications.qualification": "person",
+    "feeproofs.discountassignment": "membership",
+    "feeproofs.feeproof": "membership",
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
     "circulars.circularrecipient": "club",
@@ -1133,10 +1167,13 @@ def check_tables(
     where: str,
     allowed: set | None = None,
     per_class: dict | None = None,
+    require_department: bool = False,
 ) -> int:
     """Prüft Tabellen und Verweise. ``known`` = Nummern je Ziel, die die Datei enthält.
 
     ``allowed``: nur diese Tabellen dürfen vorkommen (z. B. beim Abteilungsimport).
+    ``require_department``: Jede Zeile mit Abteilungsspalte muss zu einer Abteilung der Datei
+    gehören (Abteilungsimport, Gesamtaudit 15.11., AZ-05); sonst landete sie beim Verein.
     """
     count = 0
     models_by_label = {label(m): m for m in module_models()}
@@ -1179,8 +1216,20 @@ def check_tables(
         if per_class is not None and rows:
             key = str(model._meta.verbose_name_plural)
             per_class[key] = per_class.get(key, 0) + len(rows)
+        dept_field = department_field(model) if require_department else None
         for row in rows:
             count += 1
+            if dept_field is not None and (
+                not isinstance(row, dict)
+                or row.get("department") not in known.get("department", set())
+            ):
+                errors.append(
+                    gettext(
+                        "{where}: {x1} {x2} gehört zu keiner Abteilung der Datei und kann nicht "
+                        "übernommen werden."
+                    ).format(where=where, x1=model._meta.verbose_name, x2=(row or {}).get("id"))
+                )
+                continue
             try:
                 validate_url_data(model, row)
             except ValidationError as exc:
@@ -1211,10 +1260,14 @@ def check_tables(
     return count
 
 
-def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -> int:
+def load_tables(
+    tables: dict, org, ids: IdMap, files, user=None, allowed=None, departments=None
+) -> int:
     """Legt die Zeilen in der Reihenfolge von ``MODULE_MODELS`` an.
 
     ``allowed``: nur diese Tabellen anlegen; andere in der Datei brechen den Import ab.
+    ``departments``: neue Abteilungen (IDs); jede Zeile mit Abteilungsspalte muss zu einer
+    davon gehören (Abteilungsimport, Gesamtaudit 15.11., AZ-05).
     """
     from django.core.files.base import ContentFile
 
@@ -1273,6 +1326,12 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                     setattr(obj, f.attname, _binary(value))
                 else:
                     setattr(obj, f.attname, f.to_python(value))
+            if (
+                departments is not None
+                and department_field(model) is not None
+                and obj.department_id not in departments
+            ):
+                raise ValidationError(gettext("Eine Zeile gehört zu keiner Abteilung der Datei."))
             for field_name, make in FRESH_VALUES.get(name, {}).items():
                 setattr(obj, field_name, make())
             fix_website_keys(name, obj, ids)

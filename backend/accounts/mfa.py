@@ -39,11 +39,51 @@ def fernet() -> MultiFernet:
     return _fernet(tuple(settings.MFA_ENCRYPTION_KEYS))
 
 
+# Gesamtaudit 15.11., OPS-18 (Folge von OPS-02): Je Zweck ein eigener, aus dem MFA-Schlüssel
+# abgeleiteter Schlüssel (HKDF). Ein Chiffrat eines Zwecks lässt sich unter einem anderen nicht
+# entschlüsseln, ein TOTP-Geheimnis also nicht als Nextcloud-Passwort einschleusen.
+# Zentrale Liste: Jeder Aufruf von encrypt/decrypt nennt genau einen dieser Zwecke
+# (tests/test_ops18_zweckschluessel.py prüft das am Quelltext).
+PURPOSES = {
+    "mfa": "TOTP-Geheimnisse und Wiederherstellungscodes (allauth)",
+    "kalender": "Zugang zu abonnierten Fremdkalendern (Token, Geheimnis)",
+    "nextcloud": "App-Passwort des Nextcloud-Dienstkontos",
+    "meta": "Zugänge zu Facebook/Instagram (App-Geheimnis, Seiten-Token)",
+}
+PREFIX2 = "enc2:"
+# Stufe 1 (diese Fassung): enc2 lesen, weiter enc1 schreiben, damit der Rückweg auf die vorige
+# Fassung offen bleibt. Stufe 2 schaltet das Schreiben um und schlüsselt den Bestand um.
+WRITE_PURPOSE_KEYS = False
+
+
+@lru_cache(maxsize=16)
+def _purpose_fernet(keys: tuple[str, ...], purpose: str) -> MultiFernet:
+    import base64
+
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+
+    derived = []
+    for key in keys:
+        material = base64.urlsafe_b64decode(key.encode())
+        out = HKDF(
+            algorithm=hashes.SHA256(), length=32, salt=None, info=f"hubiplan:{purpose}".encode()
+        ).derive(material)
+        derived.append(Fernet(base64.urlsafe_b64encode(out)))
+    return MultiFernet(derived)
+
+
+def purpose_fernet(purpose: str) -> MultiFernet:
+    if purpose not in PURPOSES:
+        raise ImproperlyConfigured(f"Unbekannter Zweck für die Verschlüsselung: {purpose}")
+    return _purpose_fernet(tuple(settings.MFA_ENCRYPTION_KEYS), purpose)
+
+
 def is_encrypted(value: str) -> bool:
-    return isinstance(value, str) and value.startswith(PREFIX)
+    return isinstance(value, str) and (value.startswith(PREFIX) or value.startswith(PREFIX2))
 
 
-def encrypt(text: str) -> str:
+def encrypt(text: str, *, purpose: str) -> str:
     """Immer neu verschlüsseln, auch wenn die Eingabe schon wie ein Chiffrat aussieht.
 
     Früher kam ein Wert mit ``enc1:`` unverändert durch. Über Eingaben wie das App-Passwort der
@@ -51,19 +91,30 @@ def encrypt(text: str) -> str:
     TOTP-Geheimnis) einschleusen und von HUBIplan entschlüsselt an einen fremden Server
     schicken (Gesamtaudit 15.11., OPS-02). Für Bestandsläufe gibt es ``ensure_encrypted``.
     """
+    fernet_for_purpose = purpose_fernet(purpose)  # Zweck immer prüfen, auch in Stufe 1
+    if WRITE_PURPOSE_KEYS:
+        token = fernet_for_purpose.encrypt(text.encode()).decode()
+        return f"{PREFIX2}{purpose}:{token}"
     return PREFIX + fernet().encrypt(text.encode()).decode()
 
 
-def ensure_encrypted(value: str) -> str:
+def ensure_encrypted(value: str, *, purpose: str) -> str:
     """Nur für Bestandsläufe über gespeicherte Daten: schon Verschlüsseltes bleibt, wie es ist."""
-    return value if is_encrypted(value) else encrypt(value)
+    return value if is_encrypted(value) else encrypt(value, purpose=purpose)
 
 
-def decrypt(value: str) -> str:
+def decrypt(value: str, *, purpose: str) -> str:
     if not is_encrypted(value):
         # Die Migration hat alle Einträge verschlüsselt; Klartext gilt als untergeschoben
         raise ImproperlyConfigured("2FA-Geheimnis ist nicht verschlüsselt gespeichert.")
     try:
+        if value.startswith(PREFIX2):
+            stored, _, token = value[len(PREFIX2) :].partition(":")
+            if stored != purpose:
+                # Chiffrat eines anderen Zwecks: nie entschlüsseln (OPS-18)
+                raise ImproperlyConfigured("Geheimnis gehört zu einem anderen Zweck.")
+            return purpose_fernet(purpose).decrypt(token.encode()).decode()
+        purpose_fernet(purpose)  # Zweck prüfen
         return fernet().decrypt(value[len(PREFIX) :].encode()).decode()
     except InvalidToken as exc:
         raise ImproperlyConfigured(
@@ -71,10 +122,15 @@ def decrypt(value: str) -> str:
         ) from exc
 
 
-def rotate(value: str) -> str:
+def rotate(value: str, *, purpose: str) -> str:
     """Mit dem ersten (neuen) Schlüssel neu verschlüsseln."""
     if not is_encrypted(value):
-        return encrypt(value)
+        return encrypt(value, purpose=purpose)
+    if value.startswith(PREFIX2):
+        stored, _, token = value[len(PREFIX2) :].partition(":")
+        if stored != purpose:
+            raise ImproperlyConfigured("Geheimnis gehört zu einem anderen Zweck.")
+        return f"{PREFIX2}{purpose}:" + purpose_fernet(purpose).rotate(token.encode()).decode()
     return PREFIX + fernet().rotate(value[len(PREFIX) :].encode()).decode()
 
 
@@ -93,10 +149,10 @@ def transform_data(kind: str, data: dict, func) -> dict:
 
 class MFAAdapter(DefaultMFAAdapter):
     def encrypt(self, text: str) -> str:
-        return encrypt(text)
+        return encrypt(text, purpose="mfa")
 
     def decrypt(self, encrypted_text: str) -> str:
-        return decrypt(encrypted_text)
+        return decrypt(encrypted_text, purpose="mfa")
 
     def build_totp_url(self, user, secret: str) -> str:
         url = super().build_totp_url(user, secret)

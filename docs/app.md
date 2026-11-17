@@ -129,7 +129,7 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 
 | Methode und Pfad | Zweck |
 |---|---|
-| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version`, `url`, `push` |
+| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version` (Android, für ältere Fassungen), `min_app_versions` (je Plattform: `android` = versionCode, `ios` = Buildnummer; Gesamtaudit 15.11., APP-11), `url`, `push`. Beim Verbinden (`pair/`) antwortet der Server einer zu alten App mit 426 `app_too_old`, ohne den Code zu verbrauchen |
 | `GET /api/app/v1/me/` | Konto, dieses Gerät, Zugänge (`portal`, je mit `theme`: Farben und Wappen der Einheit; `member_kind` `person`/`organization` und `member_name`: bei Ansprechpartnern einer Organisation steht deren Name dort, `first_name`/`last_name` sind die des Ansprechpartners) |
 | `GET /api/app/v1/devices/` | eigene Geräte (`current` = dieses Gerät) |
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |
@@ -431,6 +431,12 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   …/expenses/<id>/`, `POST …/expenses/<id>/files/` (Foto ergänzen) und
   `POST …/expenses/<id>/<submit|answer|withdraw>/`. `expenses_enabled` und
   `expenses_questions` (offene Rückfragen der Kasse) stehen in `portal`.
+- Beitragsnachweise (Ermäßigung mit Nachweis, siehe [beitragsnachweise.md](beitragsnachweise.md))
+  im Mitgliederbereich, auch mit dem Geräteschlüssel: `GET /api/portal/<Zugang>/fee-proofs/`
+  (`states`: je offenes Beitragsjahr Ermäßigung, Arten, Frist `due`/`final`, Stand
+  `accepted|pending|question|open|missing`; `proofs`: eigene Nachweise) und
+  `POST …/fee-proofs/` mehrteilig (`discount`, `year`, `file`, `kind`, `note`), Antwort wie GET.
+  `fee_proofs_enabled` und `fee_proofs_due` (Jahre, für die noch etwas fehlt) stehen in `portal`.
 - Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.

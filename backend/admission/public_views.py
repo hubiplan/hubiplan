@@ -18,6 +18,7 @@ from rest_framework.views import APIView
 from core.i18n import normalize
 from core.ratelimit import too_many, visitor_ip
 from core.tenancy import rls_bypass, tenant_context
+from feeproofs import admission as proof_admission
 from website import contact as spam
 
 from . import public, services
@@ -145,6 +146,8 @@ def status_payload(app: Application, token: str) -> dict:
             "signature_required": form.signature == ApplicationForm.Signature.REQUIRED,
             "can_withdraw": app.status not in Application.DONE_STATES,
             "can_sign": app.status in ("unconfirmed", "unsigned"),
+            # Ermäßigung mit Nachweis: Datei hier hochladen (feeproofs/admission.py)
+            "fee_proof": None if done else proof_admission.status(app),
         }
 
 
@@ -152,6 +155,31 @@ class ApplicationStatusView(_Public):
     def get(self, request, token: str):
         app = own_application(token)
         return Response(status_payload(app, token))
+
+
+class FeeProofView(_Public):
+    """Nachweis für die gewählte Ermäßigung hochladen (mehrteilig, Feld ``file``)."""
+
+    def post(self, request, token: str):
+        app = own_application(token)
+        key = f"join-proof:{app.pk}"
+        if too_many(key, 10, 60 * 60):
+            return Response(
+                {"detail": gettext("Zu viele Versuche. Bitte später noch einmal.")}, status=429
+            )
+        upload = request.FILES.get("file")
+        if upload is None:
+            return Response({"file": [gettext("Bitte eine Datei wählen.")]}, status=400)
+        status_ok = proof_admission.status(app)
+        if status_ok is None or not status_ok["can_upload"]:
+            return Response(
+                {"detail": gettext("Hier lässt sich kein Nachweis mehr hochladen.")}, status=400
+            )
+        with transaction.atomic(), tenant_context(app.organization_id):
+            proof_admission.add_file(
+                app, upload.name or "", upload.content_type or "", upload.read()
+            )
+        return Response(status_payload(app, token), status=201)
 
 
 class ConfirmView(_Public):

@@ -388,6 +388,14 @@ function ClientCard({
             onChange={(v) => set('role_groups', v)}
           />
         </fieldset>
+        {(client.blocked_usernames ?? []).length > 0 && (
+          <Alert kind="error">
+            {t(
+              'Diese Zeilen zeigen auf Verwaltungs- oder Dienstkonten der Nextcloud und werden nie zugeordnet. Bitte entfernen:',
+            )}{' '}
+            {(client.blocked_usernames ?? []).join('; ')}
+          </Alert>
+        )}
         <label className="field">
           <span>{t('Bisherige Benutzernamen in der Nextcloud')}</span>
           <textarea

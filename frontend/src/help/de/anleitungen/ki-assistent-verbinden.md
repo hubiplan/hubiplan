@@ -59,3 +59,5 @@ Neue Bilder sind erst öffentlich, wenn sie in einem veröffentlichten Text oder
 Bei jeder neuen Verbindung bekommst du eine Mail. Eine Verbindung gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung, ebenso wenn du dein Passwort änderst oder das Recht wegfällt. Trennen kannst du sie jederzeit unter [Mein Konto › App & andere Instanzen](/mein-konto/app) mit **Trennen**.
 
 Was du dem Assistenten schreibst und was er liest, geht an seinen Anbieter. Schreibe dort keine vertraulichen Daten hinein. Ohne Anmeldung kann ein Assistent unter `/api/mcp/` nur die Hilfe von HUBIplan lesen.
+
+Beim Freigeben zeigt HUBIplan immer, wohin die Freigabe geht und seit wann der Assistent hier angemeldet ist. Kam der Link per Mail oder Nachricht und hast du die Verbindung nicht selbst gestartet, lehne ab, auch bei bekannten Assistenten. Damit ein Assistent nicht ausufert, gelten Grenzen: höchstens 5 offene Hochladelinks je Person, Bilder über Adressen höchstens 20 je Stunde und 200 MB je Tag und Einheit, sehr lange Antworten werden gekürzt.

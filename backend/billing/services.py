@@ -254,6 +254,11 @@ class RunPlan:
     households: dict[int, object] = field(default_factory=dict)
     # „Beitrag über den Haushalt“, aber der Haushalt hat keinen Zahler
     household_without_payer: int = 0
+    # Ermäßigung mit Nachweis: normaler Beitrag (kein Nachweis), vorläufig (Frist läuft oder
+    # noch nicht geprüft), davon eingereicht und ungeprüft
+    proofs_regular: int = 0
+    proofs_provisional: int = 0
+    proofs_unreviewed: int = 0
 
 
 def fee_exempt_units(org) -> dict[int, str]:
@@ -316,6 +321,10 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
 
     paying = hh.paying_links(org, ids)
     payers = hh.payers_for(org) if paying else {}
+    from feeproofs.services import BillingContext
+
+    # Ermäßigung nur mit Nachweis (docs/beitragsnachweise.md)
+    proofs = BillingContext(org, ids, p.year, timezone.localdate())
     for m in _in_blocks(ids):
         spans = [
             s
@@ -374,6 +383,10 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
             # Ohne Geburtsdatum greift keine Altersstufe
             details.append(gettext("ohne Geburtsdatum"))
         reason = member_type.name
+        adjusted = proofs.adjust(m, spans, ref, member_type.pk, yearly)
+        if adjusted is not None:
+            yearly, proof_note = adjusted
+            details.append(proof_note)
         # Ehrungen des Vereins mit Beitragsanpassung: der günstigste gilt
         titles = [
             a.title
@@ -448,6 +461,9 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
         else:
             plan.departments[dept.pk] = dept
             plan.department_items.setdefault(dept.pk, []).append(item)
+    plan.proofs_regular = proofs.regular
+    plan.proofs_provisional = proofs.provisional
+    plan.proofs_unreviewed = proofs.unreviewed
     return plan
 
 
@@ -511,6 +527,9 @@ def preview_checks(org, plan: RunPlan) -> dict:
         "multi_units": plan.multi_units,
         "households": len(plan.household_items),
         "household_without_payer": plan.household_without_payer,
+        "proofs_regular": plan.proofs_regular,
+        "proofs_provisional": plan.proofs_provisional,
+        "proofs_unreviewed": plan.proofs_unreviewed,
     }
 
 
