@@ -89,6 +89,10 @@ const PublicExpensePage = lazyPage(
   () => import('./pages/PublicExpensePage.tsx'),
   'PublicExpensePage',
 )
+const PublicFeeProofPage = lazyPage(
+  () => import('./pages/PublicFeeProofPage.tsx'),
+  'PublicFeeProofPage',
+)
 const DeptExpensesPage = lazyPage(
   () => import('./pages/expenses/DeptExpensesPage.tsx'),
   'DeptExpensesPage',
@@ -307,6 +311,7 @@ export default function App() {
           <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
           <Route path="/umfrage/:token" element={<PublicSurveyPage />} />
           <Route path="/auslage/:token" element={<PublicExpensePage />} />
+          <Route path="/nachweis/:token" element={<PublicFeeProofPage />} />
           <Route path="/mitglied-werden/stand/:token" element={<JoinFormPage kiosk />} />
           <Route path="/mitglied-werden/:key" element={<JoinFormPage />} />
           <Route path="/antrag/:token" element={<JoinStatusPage />} />

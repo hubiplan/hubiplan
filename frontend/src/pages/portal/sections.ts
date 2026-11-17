@@ -102,6 +102,20 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    ...(entry.fee_proofs_enabled
+      ? [
+          {
+            to: '/mein-bereich/beitragsnachweise',
+            label: t('Beitragsnachweise'),
+            tile: {
+              title: t('Beitragsnachweise'),
+              text: entry.fee_proofs_due
+                ? t('Nachweis für den ermäßigten Beitrag fehlt, jetzt einreichen')
+                : t('Nachweis für den ermäßigten Beitrag einreichen'),
+            },
+          },
+        ]
+      : []),
     ...(entry.meetings_enabled
       ? [
           {

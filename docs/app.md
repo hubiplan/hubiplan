@@ -431,6 +431,12 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   …/expenses/<id>/`, `POST …/expenses/<id>/files/` (Foto ergänzen) und
   `POST …/expenses/<id>/<submit|answer|withdraw>/`. `expenses_enabled` und
   `expenses_questions` (offene Rückfragen der Kasse) stehen in `portal`.
+- Beitragsnachweise (Ermäßigung mit Nachweis, siehe [beitragsnachweise.md](beitragsnachweise.md))
+  im Mitgliederbereich, auch mit dem Geräteschlüssel: `GET /api/portal/<Zugang>/fee-proofs/`
+  (`states`: je offenes Beitragsjahr Ermäßigung, Arten, Frist `due`/`final`, Stand
+  `accepted|pending|question|open|missing`; `proofs`: eigene Nachweise) und
+  `POST …/fee-proofs/` mehrteilig (`discount`, `year`, `file`, `kind`, `note`), Antwort wie GET.
+  `fee_proofs_enabled` und `fee_proofs_due` (Jahre, für die noch etwas fehlt) stehen in `portal`.
 - Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.

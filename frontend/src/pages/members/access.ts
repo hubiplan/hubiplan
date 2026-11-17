@@ -72,6 +72,9 @@ function extras(org: OrgSummary): NavItem[] {
     ...(org.modules.includes('qualifications')
       ? [{ to: '/mitglieder/qualifikationen', label: t('Qualifikationen') }]
       : []),
+    ...(org.modules.includes('billing')
+      ? [{ to: '/mitglieder/beitragsnachweise', label: t('Beitragsnachweise') }]
+      : []),
     ...(org.modules.includes('awards')
       ? [{ to: '/mitglieder/jubilaeen', label: t('Jubiläen') }]
       : []),

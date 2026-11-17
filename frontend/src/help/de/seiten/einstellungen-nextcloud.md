@@ -17,3 +17,5 @@ Unter **Gruppen für einzelne Rollen anpassen** legt ihr fest, in welche Nextclo
 Wie lange man angemeldet bleibt, bestimmt die Nextcloud selbst. Üblich sind bis zu 24 Stunden ohne Aktivität und bis zu 15 Tage mit „angemeldet bleiben“; Sync-Apps bleiben dauerhaft verbunden. Endet der Zugang bei HUBIplan, scheitert ohne automatisches Deaktivieren nur die nächste Anmeldung. Laufende Sitzungen und Sync-Apps beendet erst das automatische Deaktivieren oder ein Abschalten des Kontos in der Nextcloud.
 
 „Nur mit PKCE (S256)“ ist von Anfang an eingeschaltet und schützt den Anmeldecode. Die Nextcloud-App „user_oidc“ nutzt PKCE von selbst. Ausschalten musst du es nur für ältere Anwendungen, die PKCE nicht können.
+
+Die Konten „admin“, „root“, „administrator“ und das Dienstkonto lassen sich nie zuordnen, auch nicht über „Bisherige Benutzernamen“. Steht dort schon eine solche Zeile, zeigt die Seite sie rot an; sie wirkt nicht und sollte entfernt werden. Änderungen an Benutzernamen und Gruppen für Rollen verlangen eine frische Bestätigung mit dem zweiten Faktor, und alle mit dem Recht, Rollen zu verwalten, bekommen einen Hinweis per Mail.
