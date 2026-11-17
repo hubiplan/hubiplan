@@ -616,6 +616,9 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
     text.published_at = now
     text.updated_by = user
     text.save()
+    from .search import forget_index
+
+    forget_index(text.website_id)  # Suche zeigt den neuen Stand sofort (WEB-06)
     revision = WebsiteRevision.objects.create(
         organization=text.organization,
         text=text,
