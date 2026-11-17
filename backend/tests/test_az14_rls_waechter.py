@@ -21,9 +21,6 @@ OHNE_RLS_EINHEIT = {
     "peering_coupling": "Kopplungen; jeder Zugriff filtert nach der eigenen Einheit "
     "(peering/api.py, local_unit), der Eingang sucht systemweit über die Gegenstelle",
     "peering_couplingcode": "Kopplungscodes; Abruf nur über den Code selbst bzw. die Einheit",
-    "peering_spinoff": "Ausgliederungen; nur über die Einheit des Vorstands abgerufen",
-    "peering_loginlink": "Anmeldelinks im Verbund; gefunden über ihren Schlüssel vor der Anmeldung",
-    "peering_remoteaccount": "ferne Konten im Verbund; Zuordnung bei der Anmeldung (peering/sso)",
 }
 
 # Verweis nur auf ein Konto (ohne Einheit), ohne Zeilenschutz
@@ -34,8 +31,16 @@ OHNE_RLS_KONTO = {
     "devices_device": "Geräte des eigenen Kontos; Zugriff nur über das angemeldete Konto",
     "devices_pairingcode": "Verbindungscodes der App; eingelöst über den Code",
     "mcpserver_mcpclient": "KI-Verbindungen; Zugriff über das Konto bzw. den Zugangsschlüssel",
-    "peering_remoteaccount": OHNE_RLS_EINHEIT["peering_remoteaccount"],
-    "peering_loginlink": OHNE_RLS_EINHEIT["peering_loginlink"],
+    "peering_remoteaccount": "ferne Konten im Verbund; Zuordnung bei der Anmeldung (peering/sso)",
+    "peering_loginlink": "Anmeldelinks im Verbund; gefunden über ihren Schlüssel vor der Anmeldung",
+    "account_emailaddress": "allauth: Adressen des eigenen Kontos (Kontoverwaltung über allauth "
+    "gesperrt, config/urls.py)",
+    "mfa_authenticator": "allauth: zweite Faktoren des eigenen Kontos; nur über die Anmeldung",
+    "accounts_user_groups": "Django-Gruppen; von HUBIplan nicht genutzt",
+    "accounts_user_user_permissions": "Django-Rechte; von HUBIplan nicht genutzt",
+    "django_admin_log": "Protokoll des Django-Admins (standardmäßig aus, nur Superuser mit 2FA)",
+    "circulars_mailinglist_senders": "Zwischentabelle Verteiler ↔ Absender; Zugriff nur über "
+    "den Verteiler der Einheit, der Zeilenschutz hat",
 }
 
 FREMDSCHLUESSEL = """
@@ -75,5 +80,7 @@ def test_ausnahmelisten_sind_aktuell():
     """Bekommt eine Tabelle Zeilenschutz oder verschwindet sie, fliegt sie aus der Liste."""
     einheit = _ohne_rls_mit_verweis("organizations_organization")
     konto = _ohne_rls_mit_verweis("accounts_user")
-    assert set(OHNE_RLS_EINHEIT) - einheit - set(OHNE_RLS_ORGANISATION) == set()
-    assert set(OHNE_RLS_KONTO) - konto == set()
+    veraltet = set(OHNE_RLS_EINHEIT) - einheit - set(OHNE_RLS_ORGANISATION)
+    assert veraltet == set(), sorted(veraltet)
+    veraltet = set(OHNE_RLS_KONTO) - konto
+    assert veraltet == set(), sorted(veraltet)
