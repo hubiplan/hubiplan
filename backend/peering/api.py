@@ -196,9 +196,14 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
 
     Ohne ``names`` nur die Anzahlen (Recht „Mitglieder ansehen“ fehlt).
     """
+    from core.tenancy import unit_context
     from members.models import Person
 
-    entries = list(c.members.select_related("membership__person"))
+    # Gemeldete Mitgliedschaften gehören dem Platzhalter des Vereins; im Kontext des
+    # Dachverbands blieben sie unter dem Zeilenschutz unsichtbar, und die Ansicht der
+    # Kopplung endete bei Berichtigungen mit Fehler 500 (Gesamtaudit 15.11., AZ-04).
+    with unit_context(c.remote_unit_id):
+        entries = list(c.members.select_related("membership__person"))
     if not entries:
         return None
     counts = {s: 0 for s in RemoteMember.Status.values}
