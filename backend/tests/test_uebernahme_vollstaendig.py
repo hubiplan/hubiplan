@@ -80,6 +80,10 @@ NICHT = {
     "expenses.ExpenseLink": "Persönlicher Link der alten Instanz, am Ziel neu ausstellen",
     "expenses.TransferRun": "Sammelüberweisung der alten Instanz (Datei ist heruntergeladen)",
     "expenses.TransferItem": "Posten einer Sammelüberweisung der alten Instanz",
+    "feeproofs.ProofNotice": "versandte Erinnerung der alten Instanz",
+    "feeproofs.ProofLink": "Persönlicher Link der alten Instanz, verfällt",
+    "feeproofs.ApplicationProof": "Nachweis zu einem Online-Antrag; Anträge bleiben auf der alten "
+    "Instanz",
 }
 
 

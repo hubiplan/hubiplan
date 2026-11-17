@@ -148,6 +148,10 @@ export interface RunPreview {
     multi_units?: number
     /** Beitrag über einen Haushalt, der noch keinen Zahler hat */
     household_without_payer?: number
+    /** Beitragsnachweise: normaler Beitrag mangels Nachweis, vorläufig ermäßigt, ungeprüft */
+    proofs_regular?: number
+    proofs_provisional?: number
+    proofs_unreviewed?: number
   }
   // Dachverband
   clubs?: { id: number; name: string; members: number; total: string }[]
