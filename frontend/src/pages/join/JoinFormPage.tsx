@@ -51,6 +51,7 @@ interface Values {
   guardians: Guardian[]
   family: FamilyMember[]
   homepage: string
+  discount: string
 }
 
 const empty: Values = {
@@ -81,6 +82,7 @@ const empty: Values = {
   guardians: [{ last_name: '', first_name: '', email: '', phone: '' }],
   family: [],
   homepage: '',
+  discount: '',
 }
 
 const FAMILY_LIMIT = 8
@@ -183,6 +185,9 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
   }, [step, done])
 
   const type = schema?.types.find((x) => String(x.id) === values.member_type) ?? null
+  const discounts = (schema?.discounts ?? []).filter(
+    (d) => d.member_type === null || !type || d.member_type === type.id,
+  )
   const person = values.kind === 'person'
   const age = ageOn(values.birth_date)
   const minor = useMemo(() => {
@@ -376,6 +381,10 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
         : [],
       signature,
       homepage: values.homepage,
+      discount:
+        person && discounts.some((d) => String(d.id) === values.discount)
+          ? Number(values.discount)
+          : null,
       ...(s.company && companyToken ? { company: companyToken } : {}),
     }
     try {
@@ -524,6 +533,47 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                   <span className="muted"> · {t('{x} € im Jahr', { x: type.fee })}</span>
                 )}
               </p>
+            )}
+            {person && discounts.length > 0 && (
+              <fieldset className="stack-sm">
+                <legend>{t('Ermäßigter Beitrag')}</legend>
+                <label className="checkbox">
+                  <input
+                    type="radio"
+                    name="discount"
+                    checked={!discounts.some((d) => String(d.id) === values.discount)}
+                    onChange={() => set('discount', '')}
+                  />
+                  <span>{t('keine Ermäßigung')}</span>
+                </label>
+                {discounts.map((d) => (
+                  <label key={d.id} className="checkbox">
+                    <input
+                      type="radio"
+                      name="discount"
+                      checked={values.discount === String(d.id)}
+                      onChange={() => set('discount', String(d.id))}
+                    />
+                    <span>
+                      <strong>{d.name}</strong>
+                      {d.kinds.length > 0 && (
+                        <span className="muted small">
+                          {' '}
+                          · {t('Nachweis: {x}', { x: d.kinds.join(', ') })}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                ))}
+                {values.discount && (
+                  <p className="muted small">
+                    {t(
+                      'Den Nachweis lädst du nach dem Absenden auf der Seite deines Antrags hoch (Link in der Bestätigungsmail) oder reichst ihn nach. Ohne Nachweis gilt der normale Beitrag.',
+                    )}
+                  </p>
+                )}
+                {err('discount') && <p className="field-error">{err('discount')}</p>}
+              </fieldset>
             )}
             {type?.organizations && (
               <fieldset className="field">

@@ -18,6 +18,7 @@ import { HonoraryTitlesPage } from './members/HonoraryTitlesPage.tsx'
 import { HouseholdsPage } from './members/HouseholdsPage.tsx'
 import { MemberFilePage } from './members/MemberFilePage.tsx'
 import { QualificationsPage } from './members/QualificationsPage.tsx'
+import { FeeProofsPage } from './members/FeeProofsPage.tsx'
 import { QualificationTypesPage } from './members/QualificationTypesPage.tsx'
 import { MemberListPage } from './members/MemberListPage.tsx'
 import { MemberPortalSettings, MemberDurationSettings } from './members/SetupPages.tsx'
@@ -146,6 +147,18 @@ function ClubMembers() {
           org.modules.includes('qualifications') ? (
             <MembersSection title={t('Qualifikationen')}>
               <QualificationsPage />
+            </MembersSection>
+          ) : (
+            list
+          )
+        }
+      />
+      <Route
+        path="beitragsnachweise"
+        element={
+          org.modules.includes('billing') ? (
+            <MembersSection title={t('Beitragsnachweise')}>
+              <FeeProofsPage />
             </MembersSection>
           ) : (
             list

@@ -46,6 +46,9 @@ Inhalt
 - termine.json: Zu- und Absagen zu Terminen
 - qualifikationen.json: Qualifikationen und Nachweise mit Gültigkeit (bei Einsichtsvermerken wie
   dem Führungszeugnis nur das Datum der Einsicht, nie der Inhalt)
+- beitragsnachweise.json: Ermäßigungen mit Nachweis, eingereichte Nachweise mit Prüfung und
+  Vorprüfung, verschickte Erinnerungen und persönliche Links (Dateien nur, solange noch nicht
+  entschieden ist; danach gibt es sie nicht mehr)
 - verbund.json: Meldungen an andere HUBIplan-Instanzen (z. B. Dachverband)
 - antrag.json / antrag-*.pdf: Online-Mitgliedsantrag mit Einwilligungen und Verlauf
 - aenderungswuensche.json, kuendigungen.json: Wünsche aus dem Mitgliederbereich
@@ -852,6 +855,40 @@ def build(membership: Membership, org) -> bytes:
                 organization_id__in=org_ids, person_id=membership.person_id
             ).select_related("kind")
         ]
+    )
+
+    from feeproofs.models import DiscountAssignment, FeeProof, ProofLink, ProofNotice
+
+    files["beitragsnachweise.json"] = _dump(
+        {
+            "ermaessigungen": [
+                {
+                    "ermaessigung": a.discount.name,
+                    **_row(a, {"discount", "organization", "membership", "created_by"}),
+                }
+                for a in DiscountAssignment.objects.filter(membership=membership).select_related(
+                    "discount"
+                )
+            ],
+            "nachweise": [
+                {
+                    "ermaessigung": q.discount.name,
+                    **_row(
+                        q,
+                        {"discount", "organization", "membership", "created_by", "reviewed_by"},
+                    ),
+                }
+                for q in FeeProof.objects.filter(membership=membership).select_related("discount")
+            ],
+            "erinnerungen": [
+                {"jahr": n.year, "art": n.kind, "verschickt": n.sent_at}
+                for n in ProofNotice.objects.filter(membership=membership)
+            ],
+            "links": [
+                {"jahr": link.year, "gueltig_bis": link.valid_until, "erstellt": link.created_at}
+                for link in ProofLink.objects.filter(membership=membership)
+            ],
+        }
     )
 
     files["verbund.json"] = _dump(

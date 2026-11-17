@@ -97,6 +97,11 @@ MODULE_MODELS = (
     # Qualifikationen vor den Helferdiensten (ein Dienst kann eine voraussetzen)
     "qualifications.QualificationType",
     "qualifications.Qualification",
+    # Ermäßigung mit Nachweis: Ermäßigungen vor Zuordnungen und Nachweisen (Vermerke)
+    "feeproofs.ProofSettings",
+    "feeproofs.ProofDiscount",
+    "feeproofs.DiscountAssignment",
+    "feeproofs.FeeProof",
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
     "members.BillingAddress",
@@ -280,6 +285,8 @@ MEMBER_MODELS = {
     "members.honorarytitleaward",
     "qualifications.qualificationtype",
     "qualifications.qualification",
+    "feeproofs.discountassignment",
+    "feeproofs.feeproof",
     "events.eventresponse",
     "circulars.circularrecipient",
     "website.publicationconsent",
@@ -337,6 +344,8 @@ DROP_IF_MISSING = {
     "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
     "qualifications.qualification": "person",
+    "feeproofs.discountassignment": "membership",
+    "feeproofs.feeproof": "membership",
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
     "circulars.circularrecipient": "club",

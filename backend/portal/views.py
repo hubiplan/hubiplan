@@ -873,6 +873,16 @@ def _expense_questions(access) -> int:
     return has_open(access)
 
 
+def _fee_proofs(access) -> dict:
+    if access.contact_person_id is not None or access.membership_id is None:
+        return {"fee_proofs_enabled": False, "fee_proofs_due": 0}
+    from feeproofs.services import portal_summary as proofs_summary
+    from members.models import today
+
+    enabled, due = proofs_summary(access.membership, today())
+    return {"fee_proofs_enabled": enabled, "fee_proofs_due": due}
+
+
 def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
@@ -904,6 +914,8 @@ def portal_summary(access: PortalAccess) -> dict:
             # Auslagen erstatten: Menüpunkt und offene Rückfragen der Kasse
             "expenses_enabled": _expenses_enabled(access),
             "expenses_questions": _expense_questions(access),
+            # Beitragsnachweise: Menüpunkt und Jahre, für die noch ein Nachweis fehlt
+            **_fee_proofs(access),
             "todos_enabled": "todos" in (club.enabled_modules or []),
             "docs_enabled": "docs" in (club.enabled_modules or []),
             "circulars_enabled": "circulars" in (club.enabled_modules or []),

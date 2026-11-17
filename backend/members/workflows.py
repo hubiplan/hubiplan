@@ -555,6 +555,11 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     ContactPerson.objects.filter(membership=membership).delete()
     ContactPerson.objects.filter(organization=club, person=person).delete()
     BillingAddress.objects.filter(membership=membership).delete()
+    # Ermäßigung mit Nachweis: Zuordnungen, Nachweise (samt Dateien), Hinweise, Links
+    from feeproofs.models import DiscountAssignment, FeeProof, ProofLink, ProofNotice
+
+    for model in (FeeProof, DiscountAssignment, ProofLink, ProofNotice):
+        model.objects.filter(membership=membership).delete()
     # Haushalte und Firmen (H1): Zugehörigkeiten; leere Haushalte entfallen
     homes = list(
         HouseholdMember.objects.filter(membership=membership).values_list("household_id", flat=True)
