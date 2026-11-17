@@ -129,27 +129,6 @@ def section_text(section: dict) -> str:
     return plain(" ".join(str(p) for p in parts if isinstance(p, str | int) and p))
 
 
-def _home_hits(site, words, event_entry) -> list[dict]:
-    from . import home
-
-    result = []
-    for s in home.public(site, site.site.home(), event_entry):
-        if s["kind"] == "greeting":
-            g = site.greeting()
-            if not g:
-                continue
-            title, text = g["title"], plain(g["text"])
-        elif not home.is_custom(s["key"]):
-            continue  # feste Bausteine (Termine, Majestäten …) finden sich anderswo
-        else:
-            title, text = s.get("title") or "", section_text(s)
-        if text and matches(words, title, text):
-            result.append(
-                {"kind": "home", "key": s["key"], "title": title, "text": snippet(text, words)}
-            )
-    return result
-
-
 def _timeline_text(site, t) -> str:
     if not site.chronicle_on:
         return ""
@@ -159,16 +138,52 @@ def _timeline_text(site, t) -> str:
 INTRO_BLOCK = {"board": "board", "events": "events", "gallery": "gallery", "contact": "contact"}
 
 
-def search(site, query: str, events) -> list[dict]:
-    """Treffer in Reihenfolge Startseite, Textseiten, Untereinheiten, Einleitungen, Alben,
-    Dokumente, Termine. ``events``: öffentliche Termine (Vorkommen) wie in der Terminliste."""
-    words = terms(query)
-    if not words:
-        return []
+# Gesamtaudit 15.11., WEB-06: Jede Suche baute alle Texte, Abschnitte, Alben, Dokumente und
+# Terminvorkommen neu auf. Jetzt entsteht je Webseite ein Suchindex (Kandidaten mit ihrem Text),
+# der INDEX_SECONDS im Zwischenspeicher liegt und beim Veröffentlichen verworfen wird. In der
+# Vorschau (Entwurf) wird nie zwischengespeichert.
+INDEX_SECONDS = 120
+
+
+def index_key(website_pk: int, language: str) -> str:
+    return f"website:suchindex:{website_pk}:{language}"
+
+
+def forget_index(website_pk: int) -> None:
+    """Nach dem Veröffentlichen: Index aller Sprachen verwerfen."""
+    from django.conf import settings
+    from django.core.cache import cache
+
+    cache.delete_many([index_key(website_pk, code) for code, _name in settings.LANGUAGES])
+
+
+def _entry(hit: dict, fields, body: str | None, snip: bool = True) -> dict:
+    """Ein Kandidat: ``fields`` zum Vergleich, ``body`` für den Ausschnitt."""
+    return {"hit": hit, "fields": [f or "" for f in fields], "body": body or "", "snip": snip}
+
+
+def build_index(site, events) -> list[dict]:
+    """Alle Kandidaten in Reihenfolge Startseite, Textseiten, Untereinheiten, Einleitungen,
+    Alben, Dokumente, Termine (wie die Treffer)."""
     website = site.site
+    from . import home
     from .public_views import event_entry
 
-    result: list[dict] = _home_hits(site, words, event_entry)
+    entries: list[dict] = []
+    for s in home.public(site, website.home(), event_entry):
+        if s["kind"] == "greeting":
+            g = site.greeting()
+            if not g:
+                continue
+            title, text = g["title"], plain(g["text"])
+        elif not home.is_custom(s["key"]):
+            continue  # feste Bausteine (Termine, Majestäten …) finden sich anderswo
+        else:
+            title, text = s.get("title") or "", section_text(s)
+        if text:
+            entries.append(
+                _entry({"kind": "home", "key": s["key"], "title": title}, [title, text], text)
+            )
     texts = site.published_texts().filter(kind=WebsiteText.Kind.PAGE).order_by("published_title")
     for t in texts:
         if t.slug == HISTORY_SLUG and not website.block_on("history"):
@@ -180,11 +195,13 @@ def search(site, query: str, events) -> list[dict]:
         if t.slug == HISTORY_SLUG:
             extra.append(_timeline_text(site, t))
         full = " ".join(p for p in (body, *extra) if p)
-        if not matches(words, t.published_title, full):
-            continue
         kind = {HISTORY_SLUG: "history", MEMORIAL_SLUG: "memorial"}.get(t.slug, "page")
-        result.append(
-            {"kind": kind, "slug": t.slug, "title": t.published_title, "text": snippet(full, words)}
+        entries.append(
+            _entry(
+                {"kind": kind, "slug": t.slug, "title": t.published_title},
+                [t.published_title, full],
+                full,
+            )
         )
     for u in site.units:
         text = site.unit_text(u)
@@ -196,51 +213,55 @@ def search(site, query: str, events) -> list[dict]:
                 section_text(s) for s in site.unit_sections(text) if s["kind"] not in UNIT_BUILTINS
             ]
             body = " ".join(p for p in (body, *extra) if p)
-        if matches(words, u.name, u.short_name, title, body):
-            result.append(
-                {
-                    "kind": "unit",
-                    "slug": site.unit_slugs[u.pk],
-                    "title": title,
-                    "text": snippet(body, words),
-                }
+        entries.append(
+            _entry(
+                {"kind": "unit", "slug": site.unit_slugs[u.pk], "title": title},
+                [u.name, u.short_name, title, body],
+                body,
             )
+        )
     for area, intro in site.intros().items():
         shown = bool(site.units) if area == "units" else website.block_on(INTRO_BLOCK[area])
         body = plain(intro["text"])
-        if shown and matches(words, intro["title"], body):
-            result.append(
-                {
-                    "kind": "intro",
-                    "area": area,
-                    "title": intro["title"],
-                    "text": snippet(body, words),
-                }
+        if shown:
+            entries.append(
+                _entry(
+                    {"kind": "intro", "area": area, "title": intro["title"]},
+                    [intro["title"], body],
+                    body,
+                )
             )
     for a in gallery.visible_albums(website).order_by("-date", "title"):
-        if matches(words, a.title, a.description):
-            result.append(
+        entries.append(
+            _entry(
                 {
                     "kind": "album",
                     "slug": a.slug,
                     "title": a.title,
-                    "text": snippet(plain(a.description), words),
                     "date": a.date.isoformat() if a.date else None,
-                }
+                },
+                [a.title, a.description],
+                plain(a.description),
             )
+        )
     from .content_models import WebsiteDocument
 
     for d in WebsiteDocument.objects.filter(website=website, published=True):
         block = "press" if d.section == WebsiteDocument.Section.PRESS else "statutes"
-        if website.block_on(block) and matches(words, d.title, d.source):
-            result.append(
-                {
-                    "kind": "press" if block == "press" else "documents",
-                    "id": d.key,
-                    "title": d.title,
-                    "text": d.source,
-                    "date": d.date.isoformat() if d.date else None,
-                }
+        if website.block_on(block):
+            entries.append(
+                _entry(
+                    {
+                        "kind": "press" if block == "press" else "documents",
+                        "id": d.key,
+                        "title": d.title,
+                        "text": d.source,
+                        "date": d.date.isoformat() if d.date else None,
+                    },
+                    [d.title, d.source],
+                    None,
+                    snip=False,
+                )
             )
     if website.block_on("events"):
         seen = set()
@@ -248,15 +269,45 @@ def search(site, query: str, events) -> list[dict]:
             e = o.event
             if o.is_cancelled or e.pk in seen:
                 continue
-            if matches(words, e.title, e.location, e.description):
-                seen.add(e.pk)
-                result.append(
-                    {
-                        "kind": "event",
-                        "id": o.key,
-                        "title": e.title,
-                        "text": snippet(plain(e.description), words),
-                        "starts_at": o.starts_at,
-                    }
+            seen.add(e.pk)
+            entries.append(
+                _entry(
+                    {"kind": "event", "id": o.key, "title": e.title, "starts_at": o.starts_at},
+                    [e.title, e.location, e.description],
+                    plain(e.description),
                 )
-    return result[:MAX_RESULTS]
+            )
+    return entries
+
+
+def _index(site, events) -> list[dict]:
+    from django.core.cache import cache
+    from django.utils.translation import get_language
+
+    if getattr(site.site, "draft_shown", False):
+        return build_index(site, events)  # Vorschau: Entwurf nie zwischenspeichern
+    key = index_key(site.site.pk, get_language() or "de")
+    entries = cache.get(key)
+    if entries is None:
+        entries = build_index(site, events)
+        cache.set(key, entries, INDEX_SECONDS)
+    return entries
+
+
+def search(site, query: str, events) -> list[dict]:
+    """Treffer in Reihenfolge Startseite, Textseiten, Untereinheiten, Einleitungen, Alben,
+    Dokumente, Termine. ``events``: öffentliche Termine (Vorkommen) wie in der Terminliste."""
+    words = terms(query)
+    if not words:
+        return []
+    result = []
+    for entry in _index(site, events):
+        if not matches(words, *entry["fields"]):
+            continue
+        hit = dict(entry["hit"])
+        if entry["snip"]:
+            hit["text"] = snippet(entry["body"], words)
+        result.append(hit)
+        if len(result) >= MAX_RESULTS:
+            break
+    return result
