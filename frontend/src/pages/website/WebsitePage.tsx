@@ -4,7 +4,7 @@
 // Die Seite selbst zeigt das Projekt „hubiplan-website“.
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
 import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
 import type {
@@ -45,11 +45,11 @@ import { ContentPage } from './ContentPage.tsx'
 import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
-import { StyleTuning } from './StyleTuning.tsx'
+import { StyleTuning, tuningAreaNames } from './StyleTuning.tsx'
 import type { PreviewFocus } from './StyleTuning.tsx'
 import { DesignVersions, DraftBar, PreviewFrame, TextVersions } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
-import { AreaLayouts } from './AreaLayouts.tsx'
+import { UndoBar, useDesignHistory } from './designHistory.tsx'
 import { DesignFile } from './DesignFile.tsx'
 import { HomeBuilder, TargetField } from './HomeBuilder.tsx'
 import { t } from '../../i18n/index.ts'
@@ -303,6 +303,12 @@ function HomeContentCard({
   )
 }
 
+/** Bereich der Feinabstimmung aus der Adresse */
+function WithArea({ render }: { render: (area?: string) => ReactNode }) {
+  const { bereich } = useParams()
+  return <>{render(bereich)}</>
+}
+
 function WebsiteAdmin({
   data,
   website,
@@ -331,6 +337,16 @@ function WebsiteAdmin({
   const [message, setMessage] = useState<string | null>(null)
   // Punkt 5 (Ralf 14.11.): Stelle, die die Vorschau nach der letzten Änderung zeigt
   const [focus, setFocus] = useState<PreviewFocus>({})
+  const navigate = useNavigate()
+  // F6 (Ralf 16.11.2026): ein Verlauf für Design, Farben, Feinabstimmung und Bereiche
+  const DESIGN_EMPTY: Record<string, unknown> = { style: {}, layouts: {}, color_roles: {} }
+  const history = useDesignHistory(
+    (key) => (v as unknown as Record<string, unknown>)[key] ?? DESIGN_EMPTY[key] ?? null,
+    (key, value) => {
+      setFocus({})
+      ;(set as (k: string, x: unknown) => void)(key, value)
+    },
+  )
 
   async function remove() {
     const ok = await confirmDialog({
@@ -401,6 +417,33 @@ function WebsiteAdmin({
         render={(field) => settings(t('Sprache der Webseite'), field)}
         onChange={(lang) => set('language', lang)}
       />
+      {/* F3 (Ralf 16.11.2026): Anrede ist Ton der Texte, keine Gestaltung; bleibt im Stil (Entwurf) */}
+      {Array.isArray(data.style_catalog?.options.address) &&
+        settings(
+          t('Anrede'),
+          <>
+            <SelectField
+              label={t('Anrede auf der Webseite')}
+              value={String(v.style?.address ?? 'formal')}
+              hint={t(
+                'Gilt für Kontaktformular und Terminseite. Den Kasten neben dem Formular (z. B. „Du möchtest mitmachen?“) schreibst du unter Webseite › Texte › Einleitungen der Bereiche › Kontakt.',
+              )}
+              onChange={(e) => {
+                const next = { ...(v.style ?? {}) }
+                if (e.target.value === 'formal') delete next.address
+                else next.address = e.target.value
+                history.track('style', next)
+              }}
+            >
+              <option value="formal">{t('Sie')}</option>
+              <option value="informal">{t('du')}</option>
+            </SelectField>
+            <p className="muted small">
+              {t('Wie die Gestaltung gilt sie erst nach „Veröffentlichen“.')}
+            </p>
+            <DraftBar website={website} auto={auto} canManage={data.can_manage} onReset={onReset} />
+          </>,
+        )}
       {settings(
         t('Suchmaschinen'),
         <>
@@ -559,17 +602,33 @@ function WebsiteAdmin({
     <DraftBar website={website} auto={auto} canManage={data.can_manage} onReset={onReset} />
   )
 
-  /** Gestaltung (S1, Ralf 14.11.): Entwurfsleiste oben, Einstellungen links, Vorschau rechts */
-  const shell = (children: React.ReactNode, preview = true) => (
-    <div className="design-split">
+  /** Gestaltung (S1, Ralf 14.11.): Entwurfsleiste oben, Einstellungen links, Vorschau rechts.
+   * ``undo``: Rückgängig/Wiederholen zeigen; ``tuning``: breitere Einstellungen mit Bereichsleiste
+   * und „Zeigen“ in der Vorschau (Feinabstimmung, Ralf 16.11.2026). */
+  const shell = (
+    children: React.ReactNode,
+    preview = true,
+    options: { undo?: boolean; tuning?: boolean } = {},
+  ) => (
+    <div className={`design-split${options.tuning ? ' design-split-tuning' : ''}`}>
       <div className="design-split-grid">
         <div className="design-split-settings">
           {draftBar}
+          {options.undo && data.can_manage && <UndoBar history={history} />}
           {children}
         </div>
         {preview && website.draft !== undefined && (
           <aside className="design-split-preview" aria-label={t('Vorschau')}>
-            <PreviewFrame website={website} focus={focus} />
+            <PreviewFrame
+              website={website}
+              focus={focus}
+              pickNames={options.tuning ? tuningAreaNames() : undefined}
+              onPick={
+                options.tuning
+                  ? (area) => void navigate(`/webseite/feinabstimmung/${area}`)
+                  : undefined
+              }
+            />
           </aside>
         )}
       </div>
@@ -589,11 +648,11 @@ function WebsiteAdmin({
           colorRoles={v.color_roles ?? {}}
           onDesign={(key) => {
             setFocus({})
-            set('design', key)
+            history.track('design', key)
           }}
           onColorRoles={(next) => {
             setFocus({})
-            set('color_roles', next)
+            history.track('color_roles', next)
           }}
           onPackagesChanged={reload}
         />,
@@ -601,46 +660,37 @@ function WebsiteAdmin({
     ) : (
       <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
     ),
+    true,
+    { undo: true },
   )
 
-  const tuning = shell(
-    data.style_catalog
-      ? settings(
-          t('Feinabstimmung'),
-          <StyleTuning
-            catalog={data.style_catalog}
-            design={v.design ?? 'classic'}
-            designLabel={designLabel}
-            value={v.style ?? {}}
-            onChange={(next) => set('style', next)}
-            headerImage={headerImage}
-            homeSections={v.home_sections}
-            blocks={v.blocks}
-            onFocus={setFocus}
-          />,
-        )
-      : settings(t('Kopfbild'), headerImage),
-  )
-
-  const areas = shell(
-    data.layout_catalog ? (
-      settings(
-        t('Darstellung der Bereiche'),
-        <AreaLayouts
-          catalog={data.layout_catalog}
-          labels={data.block_labels}
-          blocks={v.blocks}
-          value={v.layouts ?? {}}
-          onChange={(next) => {
-            setFocus({ target: 'inhalt' })
-            set('layouts', next)
-          }}
-        />,
-      )
-    ) : (
-      <Alert kind="info">{t('Auf diesem Server gibt es keine Darstellungen zur Auswahl.')}</Alert>
-    ),
-  )
+  // Feinabstimmung mit Bereich aus der Adresse; die Darstellung der Bereiche steht mit darin (F2)
+  const tuning = (area?: string) =>
+    shell(
+      data.style_catalog
+        ? settings(
+            t('Feinabstimmung'),
+            <StyleTuning
+              catalog={data.style_catalog}
+              design={v.design ?? 'classic'}
+              designLabel={designLabel}
+              value={v.style ?? {}}
+              onChange={(next) => history.track('style', next)}
+              headerImage={headerImage}
+              homeSections={v.home_sections}
+              blocks={v.blocks}
+              onFocus={setFocus}
+              area={area}
+              layoutCatalog={data.layout_catalog}
+              layouts={v.layouts ?? {}}
+              onLayouts={(next) => history.track('layouts', next)}
+              onUndo={data.can_manage ? history.undo : undefined}
+            />,
+          )
+        : settings(t('Kopfbild'), headerImage),
+      true,
+      { undo: true, tuning: true },
+    )
 
   // S3: Frühere Fassungen und Gestaltung als Datei betreffen alles Gestaltete
   const versions = shell(
@@ -1072,8 +1122,11 @@ function WebsiteAdmin({
           }
         />
         <Route path="gestaltung" element={design} />
-        <Route path="feinabstimmung" element={tuning} />
-        <Route path="bereiche" element={areas} />
+        <Route path="feinabstimmung/:bereich?" element={<WithArea render={tuning} />} />
+        <Route
+          path="bereiche"
+          element={<Navigate to="/webseite/feinabstimmung/bereiche" replace />}
+        />
         <Route path="fassungen" element={versions} />
         <Route path="aufbau" element={structure} />
         <Route path="domain" element={domain} />

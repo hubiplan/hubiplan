@@ -785,21 +785,59 @@ def deliver_due() -> None:
 # --- Stände bauen und abgleichen ---
 
 
+# Was beim Bau eines Stands gilt: ändert sich davon etwas, während außerhalb der Sperre gebaut
+# wird, ist der Bau veraltet und wird verworfen (der nächste Lauf baut neu)
+SYNC_CONFIG = (
+    "state",
+    "direction",
+    "packets",
+    "remote_packets",
+    "options",
+    "version",
+    "peer_id",
+    "local_unit_id",
+)
+
+
+def _config(coupling: Coupling) -> tuple:
+    return tuple(getattr(coupling, name) for name in SYNC_CONFIG)
+
+
 def sync(coupling: Coupling) -> int:
-    """Geänderte Stände in den Postausgang legen. Gibt die Anzahl zurück."""
+    """Geänderte Stände in den Postausgang legen. Gibt die Anzahl zurück.
+
+    Gesamtaudit 15.11., PF-11: Gebaut wird ohne Sperre (der Bau liest alle Mitgliedschaften
+    und dauert); gesperrt wird die Kopplung nur zum Vergleichen und Einreihen. Dort gilt der
+    dann aktuelle Stand: Ist die Kopplung nicht mehr aktiv, eine Freigabe oder Einstellung
+    geändert oder hat ein anderer Lauf ein Paket inzwischen eingereiht, wird der Bau
+    verworfen. So überschreibt ein älterer Bau nie einen neueren Stand, und nach einem
+    Widerruf oder Trennen geht kein Paket mehr hinaus."""
     if coupling.state != Coupling.State.ACTIVE:
         return 0
+    snapshot = Coupling.objects.select_related("local_unit").get(pk=coupling.pk)
+    if snapshot.state != Coupling.State.ACTIVE:
+        return 0
+    seen = dict(snapshot.sent_hashes or {})
+    built = []
+    for packet in packets.sendable(snapshot):
+        if packet.build is None:
+            continue  # Vorgänge statt Stand (z. B. Rechnungen)
+        data = packets.build(snapshot, packet)
+        digest = packets.digest(data)
+        if seen.get(packet.key) == digest:
+            continue
+        built.append((packet, data, digest))
     count = 0
     with transaction.atomic():
         coupling = (
             Coupling.objects.select_for_update().select_related("local_unit").get(pk=coupling.pk)
         )
+        if coupling.state != Coupling.State.ACTIVE or _config(coupling) != _config(snapshot):
+            return 0
         hashes = dict(coupling.sent_hashes or {})
-        for packet in packets.sendable(coupling):
-            if packet.build is None:
-                continue  # Vorgänge statt Stand (z. B. Rechnungen)
-            data = packets.build(coupling, packet)
-            digest = packets.digest(data)
+        for packet, data, digest in built:
+            if hashes.get(packet.key) != seen.get(packet.key):
+                continue  # ein anderer Lauf war schneller: dessen Stand gilt
             if hashes.get(packet.key) == digest:
                 continue
             persons = packet.persons(data) if packet.persons else 0

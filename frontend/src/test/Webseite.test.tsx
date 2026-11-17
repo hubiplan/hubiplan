@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -299,9 +299,10 @@ describe('Webseite', () => {
     )
   })
 
-  it('wählt die Darstellung eines Bereichs im Entwurf (G5)', async () => {
+  it('wählt die Darstellung eines Bereichs im Entwurf (G5, seit 16.11. in der Feinabstimmung)', async () => {
     const withLayouts = {
-      ...data(website('public', { draft: {}, layouts: {} })),
+      ...data(website('public', { draft: {}, layouts: {}, style: {} })),
+      style_catalog: { options: { date: ['tile', 'strip', 'card'] }, locks: {} },
       layout_catalog: [
         {
           area: 'events',
@@ -320,7 +321,9 @@ describe('Webseite', () => {
       '/webseite/bereiche',
     )
     const user = userEvent.setup()
-    const group = await screen.findByRole('group', { name: 'Termine und Kalender-Abo' })
+    // Die alte Adresse führt zu „Bereiche der Webseite“ in der Feinabstimmung
+    expect(await screen.findByRole('heading', { name: 'Bereiche der Webseite' })).toBeVisible()
+    const group = await screen.findByRole('group', { name: 'Ansicht der Termine' })
     expect(within(group).getByRole('button', { name: 'Liste nach Monaten' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -608,7 +611,7 @@ describe('Webseite', () => {
         [`PUT ${base}`]: () => ({ status: 200, body }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
       },
-      '/webseite/feinabstimmung',
+      '/webseite/feinabstimmung/schrift',
     )
     const user = userEvent.setup()
     const lastStyle = () => {
@@ -620,21 +623,30 @@ describe('Webseite', () => {
     await user.click(modern)
     expect(modern).toHaveAttribute('aria-pressed', 'true')
     await waitFor(() => expect(lastStyle()).toEqual({ font: 'modern' }), { timeout: 4000 })
-    // Seitenleiste legt die Lage des Wappens selbst fest: eine Zeile statt ausgegraut
-    await user.click(screen.getByText('Kopf', { selector: 'summary' }))
+    // Bereichsleiste zählt verstellte Regler
+    const nav = screen.getByRole('navigation', { name: 'Bereiche der Feinabstimmung' })
+    expect(within(nav).getByRole('link', { name: /Schrift/ })).toHaveTextContent('1')
+    // Seitenleiste legt die Lage des Wappens selbst fest: eine Zeile mit Link zum Design
+    await user.click(within(nav).getByRole('link', { name: /Kopf und Menü/ }))
     expect(
-      screen.getByText('Legt das Design „Seitenleiste“ selbst fest: Lage des Wappens.'),
+      await screen.findByText(/Legt das Design „Seitenleiste“ selbst fest: Lage des Wappens\./),
     ).toBeVisible()
+    expect(screen.getAllByRole('link', { name: 'Design wechseln' }).length).toBeGreaterThan(0)
     expect(screen.queryByRole('button', { name: 'mittig' })).toBeNull()
+    // Vereinsname steht unter „Weitere Einstellungen“ und wird dort beim Namen genannt
+    expect(screen.queryByRole('switch', { name: 'Vereinsname' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Weitere Einstellungen \(1\)/ }))
     // Wappen aus, dann Name aus: das Wappen geht wieder an (nie beide aus)
-    await user.click(screen.getByRole('switch', { name: 'Wappen zeigen' }))
-    await user.click(screen.getByRole('switch', { name: 'Vereinsnamen zeigen' }))
+    await user.click(screen.getByRole('switch', { name: 'Wappen' }))
+    await user.click(screen.getByRole('switch', { name: 'Vereinsname' }))
     await waitFor(() => expect(lastStyle()).toEqual({ font: 'modern', logo: true, name: false }), {
       timeout: 4000,
     })
-    // Zweiter Klick stellt zurück
-    await user.click(modern)
-    expect(modern).toHaveAttribute('aria-pressed', 'false')
+    // Zurück zur Schrift: zweiter Klick stellt zurück
+    await user.click(within(nav).getByRole('link', { name: /Schrift/ }))
+    const again = await screen.findByRole('button', { name: 'Modern' })
+    await user.click(again)
+    expect(again).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('stellt dunkle Darstellung, Kontrast und Karussell ein (Ralf 13.11.)', async () => {
@@ -665,11 +677,11 @@ describe('Webseite', () => {
       const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
       return JSON.parse(String(last?.init?.body ?? '{}')).style
     }
-    await user.click(await screen.findByText('Lesbarkeit'))
-    await user.click(screen.getByRole('button', { name: 'nach Gerät' }))
+    await user.click(await screen.findByRole('link', { name: /Lesbarkeit/ }))
+    await user.click(await screen.findByRole('button', { name: 'nach Gerät' }))
     await user.click(screen.getByRole('switch', { name: /^Kontrast erhöht/ }))
-    await user.click(screen.getByText('Startseite', { selector: 'summary' }))
-    await user.click(screen.getByRole('button', { name: 'mittel' }))
+    await user.click(screen.getByRole('link', { name: /Titelbild und Startseite/ }))
+    await user.click(await screen.findByRole('button', { name: 'mittel' }))
     await user.click(screen.getByRole('button', { name: 'nur von Hand' }))
     await waitFor(
       () =>
@@ -726,37 +738,101 @@ describe('Webseite', () => {
       const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
       return JSON.parse(String(last?.init?.body ?? '{}')).style
     }
+    const nav = await screen.findByRole('navigation', { name: 'Bereiche der Feinabstimmung' })
+    // Ohne Bereich: Schnellstart mit Voreinstellungen
+    expect(screen.getByRole('heading', { name: 'Schnellstart' })).toBeVisible()
     // Die Stufe des Designs ist markiert
+    await user.click(within(nav).getByRole('link', { name: /Schrift/ }))
     const system = await screen.findByRole('button', { name: 'System' })
     expect(system).toHaveClass('is-default')
     expect(screen.getByRole('button', { name: 'Modern' })).not.toHaveClass('is-default')
-    // Nur, was zutrifft: ohne Titelbild keine Titelbild-Regler, ohne Baustein keine Suche
-    expect(screen.queryByText('Titelbild abdunkeln')).toBeNull()
-    expect(screen.queryByText('Suche', { selector: '.style-label' })).toBeNull()
-    // Voreinstellung setzt mehrere Regler
-    await user.click(screen.getByRole('button', { name: 'Gut lesbar' }))
+    // Was nicht greift, bleibt sichtbar und sagt warum (ohne Titelbild, ohne Suche)
+    await user.click(within(nav).getByRole('link', { name: /Titelbild und Startseite/ }))
+    expect(
+      (await screen.findAllByText(/Die Startseite zeigt kein Titelbild/)).length,
+    ).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: 'leicht' })).toBeNull()
+    // Voreinstellung setzt mehrere Regler; Hinweis mit „Rückgängig“
+    await user.click(within(nav).getByRole('link', { name: /Schnellstart/ }))
+    await user.click(await screen.findByRole('button', { name: /^Gut lesbar/ }))
     await waitFor(() => expect(lastStyle()).toEqual({ size: 'large', contrast: true }), {
       timeout: 4000,
     })
-    // Verstellte Regler als Chips; × stellt einen zurück
-    const chips = screen.getByRole('list', { name: 'Verstellte Regler' })
-    expect(within(chips).getByRole('button', { name: /Schriftgröße: größer/ })).toBeVisible()
-    await user.click(within(chips).getByRole('button', { name: 'Kontrast erhöht zurücksetzen' }))
+    expect(screen.getByText('Voreinstellung „Gut lesbar“ übernommen.')).toBeVisible()
+    expect(within(nav).getByRole('link', { name: /Lesbarkeit/ })).toHaveTextContent('2')
+    // „Nur Verstelltes“ listet alle verstellten Regler; × stellt einen zurück
+    await user.click(within(nav).getByRole('link', { name: /Nur Verstelltes/ }))
+    const list = await screen.findByRole('list', { name: 'Verstellte Regler' })
+    expect(within(list).getByRole('link', { name: /Schriftgröße: größer/ })).toBeVisible()
+    await user.click(within(list).getByRole('button', { name: 'Kontrast erhöht zurücksetzen' }))
     await waitFor(() => expect(lastStyle()).toEqual({ size: 'large' }), { timeout: 4000 })
-    // Suche filtert die Regler und öffnet die Gruppe
-    await user.type(screen.getByRole('searchbox', { name: 'Regler suchen' }), 'Wappen')
-    expect(screen.getByRole('switch', { name: 'Wappen zeigen' })).toBeVisible()
+    // Suche über alle Bereiche, auch Weitere Einstellungen und Verschobenes
+    const search = screen.getByRole('searchbox', { name: 'Regler suchen' })
+    await user.type(search, 'Wappen')
+    expect(screen.getByRole('switch', { name: 'Wappen' })).toBeVisible()
     expect(screen.queryByRole('button', { name: 'System' })).toBeNull()
-    await user.clear(screen.getByRole('searchbox', { name: 'Regler suchen' }))
-    await user.type(screen.getByRole('searchbox', { name: 'Regler suchen' }), 'gibtesnicht')
+    await user.clear(search)
+    await user.type(search, 'Anrede')
+    expect(screen.getByText(/Steht jetzt unter Webseite › Übersicht › Anrede/)).toBeVisible()
+    await user.clear(search)
+    await user.type(search, 'gibtesnicht')
     expect(screen.getByText('Kein Regler gefunden.')).toBeVisible()
-    await user.clear(screen.getByRole('searchbox', { name: 'Regler suchen' }))
-    // ↺ am Regler stellt zurück
-    const reading = screen.getByText('Lesbarkeit', { selector: 'summary' })
-    await user.click(reading)
-    const group = reading.closest('details') as HTMLElement
-    await user.click(within(group).getByRole('button', { name: 'Schriftgröße zurücksetzen' }))
+    await user.clear(search)
+    // Erklärung hinter (i)
+    await user.click(within(nav).getByRole('link', { name: /Lesbarkeit/ }))
+    const info = await screen.findByRole('button', { name: 'Erklärung zu „Kontrast erhöht“' })
+    expect(
+      screen.queryByText('Dunklere Schrift und kräftigere Linien, leichter zu lesen.'),
+    ).toBeNull()
+    await user.click(info)
+    expect(
+      screen.getByText('Dunklere Schrift und kräftigere Linien, leichter zu lesen.'),
+    ).toBeVisible()
+    // ↺ am Regler stellt zurück, „Rückgängig“ holt es wieder
+    await user.click(screen.getByRole('button', { name: 'Schriftgröße zurücksetzen' }))
     await waitFor(() => expect(lastStyle()).toEqual({}), { timeout: 4000 })
+    const undo = screen.getByRole('group', { name: 'Verlauf der Gestaltung' })
+    await user.click(within(undo).getByRole('button', { name: /Rückgängig/ }))
+    await waitFor(() => expect(lastStyle()).toEqual({ size: 'large' }), { timeout: 4000 })
+    await user.click(within(undo).getByRole('button', { name: /Wiederholen/ }))
+    await waitFor(() => expect(lastStyle()).toEqual({}), { timeout: 4000 })
+  })
+
+  it('„Zeigen“: Klick in die Vorschau öffnet den Bereich (Ralf 16.11.)', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const body = {
+      ...data(website('maintenance', { design: 'classic', color_roles: {}, style: {}, draft: {} })),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false }],
+      style_catalog: { options: { footer: ['dark', 'light', 'color'] }, locks: {} },
+    }
+    renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`POST ${base}preview/`]: () => ({
+          status: 200,
+          body: { token: 't', url: 'https://www.beispiel.test/vorschau?schluessel=t' },
+        }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/feinabstimmung',
+    )
+    const user = userEvent.setup()
+    const frame = (await screen.findByTitle('Vorschau der Webseite')) as HTMLIFrameElement
+    // Ältere Webseiten melden sich nicht: kein Knopf
+    expect(screen.queryByRole('button', { name: /Zeigen/ })).toBeNull()
+    const send = (data: unknown, source: MessageEventSource | null = frame.contentWindow) =>
+      act(() => {
+        window.dispatchEvent(new MessageEvent('message', { data, source }))
+      })
+    send({ hubiplan: 'zeigen-bereit' })
+    const point = await screen.findByRole('button', { name: /Zeigen/ })
+    await user.click(point)
+    expect(point).toHaveAttribute('aria-pressed', 'true')
+    // Fremde Fenster zählen nicht
+    send({ hubiplan: 'bereich', bereich: 'fuss' }, window)
+    expect(screen.queryByRole('heading', { name: 'Fuß', level: 2 })).toBeNull()
+    send({ hubiplan: 'bereich', bereich: 'fuss' })
+    expect(await screen.findByRole('heading', { name: 'Fuß', level: 2 })).toBeVisible()
   })
 
   it('Vorschau springt zur geänderten Stelle (Ralf 14.11.)', async () => {
@@ -804,7 +880,7 @@ describe('Webseite', () => {
         [`POST ${base}design/publish/`]: () => ({ status: 200, body: site({}, versions) }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
       },
-      '/webseite/feinabstimmung',
+      '/webseite/feinabstimmung/schrift',
     )
     const user = userEvent.setup()
     expect(await screen.findByText('Alles veröffentlicht.')).toBeInTheDocument()
