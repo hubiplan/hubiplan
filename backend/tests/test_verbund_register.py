@@ -182,7 +182,6 @@ class TestKlaerfaelle:
             sum(register["counts"].values()) == RemoteMember.objects.filter(coupling=upper).count()
         )
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_kandidaten_nur_vereinsnamen_ohne_geloeschte(self, net, world, members):
         """Gegenprobe (Fachfrage AZ-04): Der Dachverband sieht von den Kandidaten nur die Namen
         ihrer Vereine im eigenen Verband; gelöschte Mitgliedschaften erscheinen nicht, und
@@ -213,8 +212,6 @@ class TestKlaerfaelle:
         assert set(kandidat) == {"id", "name", "birth_date", "member_number", "units"}
         assert "Altverein" not in resp.content.decode()
 
-    # Ohne „Mitglieder ansehen“ weiter keine Namen, auch wie im Betrieb (Fachfrage AZ-04)
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
         from access.catalog import MEMBERS_VIEW, PEERING_MANAGE
