@@ -10,6 +10,7 @@ import { lang } from '../i18n/index.ts'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { loadHelp, missingRights, visibleFor } from './content.ts'
 import type { HelpEntry } from './content.ts'
+import { helpShortcutEnabled } from './shortcut.ts'
 
 export interface HelpState {
   /** null: noch nicht geladen */
@@ -160,6 +161,7 @@ export function HelpProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return
+      if (!helpShortcutEnabled()) return
       e.preventDefault()
       setPanelGuide(null)
       setPanelOpenRaw((o) => !o)

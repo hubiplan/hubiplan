@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { PERM } from './api/orgs.ts'
@@ -35,6 +36,8 @@ import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
 import { LeaveGuard } from './components/leaveGuard.ts'
 import { ColorSchemeSync } from './components/ColorSchemeSync.tsx'
+import { formatTitle } from './components/pageTitle.ts'
+import { t } from './i18n/index.ts'
 
 const ImprintSettingsPage = lazyPage(
   () => import('./pages/settings/ImprintSettingsPage.tsx'),
@@ -203,6 +206,14 @@ const WEBSITE_RIGHTS = [
   PERM.websiteContent,
 ]
 
+/** Seitentitel für Vollbildseiten ohne Rahmen (WCAG 2.4.2, UX-Audit 16.11. VW-08) */
+function Titled({ title, children }: { title: string; children: ReactNode }) {
+  useEffect(() => {
+    document.title = formatTitle(title)
+  }, [title])
+  return <>{children}</>
+}
+
 /** Seite nur zeigen, wenn eine Organisation aktiv ist (und ggf. ein Recht vorliegt). */
 function RequireOrg({
   permission,
@@ -341,12 +352,21 @@ export default function App() {
           path="/stand/:org/:id"
           element={
             <RequireAuthOrOffline>
-              <StandPage />
+              <Titled title={t('Standmodus')}>
+                <StandPage />
+              </Titled>
             </RequireAuthOrOffline>
           }
         />
         {/* Standzugang ohne Konto (Link bzw. QR-Code für ein geliehenes Gerät) */}
-        <Route path="/stand/zugang/:token" element={<StandTokenPage />} />
+        <Route
+          path="/stand/zugang/:token"
+          element={
+            <Titled title={t('Standmodus')}>
+              <StandTokenPage />
+            </Titled>
+          }
+        />
         <Route
           element={
             <RequireAuth>
