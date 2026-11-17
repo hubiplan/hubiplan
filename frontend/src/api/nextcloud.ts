@@ -22,6 +22,8 @@ export interface NextcloudClient {
   role_groups: Record<string, string[]>
   // Alle Rollen der Einheit für die Zuordnung (auch Ämter in Untereinheiten)
   role_choices: NextcloudRoleChoice[]
+  // Gespeicherte Zeilen auf Verwaltungs- oder Dienstkonten (werden nie zugeordnet)
+  blocked_usernames?: string[]
   // Konten in der Nextcloud deaktivieren, wenn der Zugang endet
   manage_accounts: boolean
   service_user: string
