@@ -247,3 +247,37 @@ class LetterheadChoice(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} – {self.unit}"
+
+
+class LetterheadProposal(models.Model):
+    """Vorschlag für die Texte eines Briefbogens, abgelegt über die KI-Schnittstelle.
+
+    Gesamtaudit 15.11., MCP-01, Fachfrage FF-12 (a): Freitexte des Briefbogens stehen auf allen
+    neuen Rechnungen, Mahnungen und Spendenquittungen. Ein Assistent ändert sie deshalb nie
+    selbst; er legt einen Vorschlag ab, den eine Person in HUBIplan übernimmt oder verwirft.
+    Der Vorschlag verfällt nach ``PROPOSAL_DAYS`` und mit der Verbindung des Assistenten."""
+
+    PROPOSAL_DAYS = 30
+
+    # Einheit, in deren Bereich der Vorschlag liegt (Zeilenschutz)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="+")
+    # Briefbogen dieser Einheit oder Untereinheit
+    target = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="+")
+    # Feld des Briefbogens → vorgeschlagener Text
+    texts = models.JSONField(default=dict)
+    grant = models.ForeignKey(
+        "mcpserver.McpGrant", on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    via = models.CharField(max_length=120, blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        verbose_name = gettext_lazy("Vorschlag für den Briefbogen")
+
+    def __str__(self) -> str:
+        return f"Vorschlag {self.pk} ({', '.join(sorted(self.texts or {}))})"

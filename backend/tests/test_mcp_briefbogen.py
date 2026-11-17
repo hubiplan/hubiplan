@@ -155,23 +155,22 @@ def test_name_im_kopf_nur_zweite_zeile(club, site, secretary):  # noqa: F811
         ("grussformel", "closing"),
     ],
 )
-def test_freitexte_nicht_ueber_den_assistenten(club, site, secretary, key, field):  # noqa: F811
-    """Gesamtaudit 15.11., MCP-01; FF-12 (c): Ein eingeschleuster Text darf nicht über den
-    Assistenten sofort auf Rechnungen und Spendenquittungen gelangen."""
+def test_freitexte_nur_als_vorschlag(club, site, secretary, key, field):  # noqa: F811
+    """Gesamtaudit 15.11., MCP-01; FF-12 (a): Ein eingeschleuster Text darf nicht über den
+    Assistenten sofort auf Rechnungen und Spendenquittungen gelangen; er wird nur Vorschlag."""
+    from letterhead.models import LetterheadProposal
+
     before = getattr(service.ensure(club), field)
     token = connect(secretary, club, scope=ALL, haken=[LETTERHEAD])["access_token"]
     text, failed = call(
         token, "briefbogen_aendern", linienfarbe=1, **{key: "Neue Bankverbindung: DE00 0000"}
     )
-    assert failed and "Einstellungen › Briefbogen" in text
+    assert not failed and "Vorschlag" in text and "Einstellungen › Briefbogen" in text
     lh = Letterhead.objects.get(organization=club)
     assert getattr(lh, field) == before
-    schema = next(
-        t
-        for t in rpc(token, "tools/list").json()["result"]["tools"]
-        if t["name"] == "briefbogen_aendern"
-    )["inputSchema"]
-    assert key not in schema["properties"]
+    proposal = LetterheadProposal.objects.get(organization=club)
+    assert proposal.texts == {field: "Neue Bankverbindung: DE00 0000"}
+    assert proposal.via.startswith("KI-Assistent")
 
 
 def test_logo_fuer_briefbogen(club, site, secretary, settings, tmp_path):  # noqa: F811

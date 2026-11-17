@@ -20,4 +20,4 @@ The defaults match the previous look. For your own corporate design (style guide
 - **Colour of title and subject**: black or main colour, for example for “Invoice” and the subject of the Word template.
 - **Table lines** and **Table stripes** for invoices, cancellation invoices and receipts.
 
-Every sub-unit with its own letterhead sets this separately. A connected AI assistant can also change the letterhead if you explicitly allow it when connecting.
+Every sub-unit with its own letterhead sets this separately. A connected AI assistant can also change the letterhead if you explicitly allow it when connecting. It only saves the texts (name in the letterhead, additional line, salutation, closing) as a proposal: it appears at the top of this page with the current and the new text. With **Apply** (fresh confirmation with the second factor) it applies to all new letters, with **Discard** it is gone; after 30 days it expires on its own.

@@ -49,6 +49,8 @@ NICHT = {
     "peering.SpinOff": "Ausgründung, gehört zur Kopplung der alten Instanz",
     "oidc.Client": "Anmeldung für Nextcloud, am Ziel neu einrichten",
     "mcpserver.McpGrant": "Freigabe der KI-Schnittstelle, am Ziel neu erteilen",
+    "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
+    "(McpGrant) und verfällt nach 30 Tagen",
     "todos.TodoShare": "Freigaben an Konten, am Ziel neu vergeben (wie SECRET_FIELDS todos)",
     "todos.TodoNotice": "versandte Benachrichtigung",
     "todos.TodoReminder": "geplante Erinnerung",

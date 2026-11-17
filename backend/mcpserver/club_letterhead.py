@@ -60,10 +60,11 @@ FOOTER = {
     "social_media": "show_social",
 }
 SLOT_FIELDS = {"line_color", "table_line_color"}
-# Freitexte (Gesamtaudit 15.11., MCP-01; Fachfrage FF-12 (c)): Sie erscheinen ab sofort auf allen
+# Freitexte (Gesamtaudit 15.11., MCP-01; Fachfrage FF-12 (a)): Sie erscheinen ab sofort auf allen
 # neuen Rechnungen, Mahnungen und Spendenquittungen. Ein eingeschleuster Text („neue
-# Bankverbindung …“) könnte so über den Assistenten auf Belege gelangen. Der Assistent sieht sie,
-# ändert sie aber nicht; das macht die Person unter Einstellungen › Briefbogen.
+# Bankverbindung …“) könnte so über den Assistenten auf Belege gelangen. Der Assistent legt sie
+# nur als Vorschlag ab; übernehmen kann ihn nur eine Person in HUBIplan (Einstellungen ›
+# Briefbogen, mit frischer Bestätigung).
 TEXT_FIELDS = {"name_im_kopf", "zusatzzeile", "anrede", "grussformel"}
 
 
@@ -121,15 +122,29 @@ def _read(args: dict, ctx: ClubContext) -> str:
     return hint + "\n\n" + _dump(_summary(data))
 
 
+def _propose(args: dict, ctx: ClubContext, texts: list[str]) -> str:
+    """Freitexte als Vorschlag ablegen (Gesamtaudit 15.11., FF-12 a); geändert wird nichts.
+
+    Über dieselbe Ansicht wie die Oberfläche: Recht „Einheit bearbeiten“ der Person, die die
+    Verbindung erlaubt hat, in dieser Einheit; Untereinheit wie beim Ändern."""
+    from letterhead.models import LetterheadProposal
+
+    for key in texts:
+        if not isinstance(args[key], str):
+            raise ToolError(_("„%(name)s“ muss ein Text sein.") % {"name": key})
+    path, kwargs = _path(args)
+    values = {FIELDS[key]: args[key] for key in texts}
+    ctx.call(_views().LetterheadProposeView, "POST", path, {"texts": values}, **kwargs)
+    return _(
+        "Vorschlag für die Texte des Briefbogens abgelegt ({keys}). Übernommen wird er erst, "
+        "wenn die Person ihn in HUBIplan unter Einstellungen › Briefbogen bestätigt; nach "
+        "{days} Tagen verfällt er. Ein neuer Vorschlag dieser Verbindung ersetzt den offenen."
+    ).format(keys=", ".join(texts), days=LetterheadProposal.PROPOSAL_DAYS)
+
+
 def _change(args: dict, ctx: ClubContext) -> str:
     texts = sorted(key for key in TEXT_FIELDS if args.get(key) is not None)
-    if texts:
-        raise ToolError(
-            _(
-                "Die Texte des Briefbogens ({keys}) ändert die Person selbst in HUBIplan unter "
-                "Einstellungen › Briefbogen; über den Assistenten geht das nicht."
-            ).format(keys=", ".join(texts))
-        )
+    _path(args)  # Untereinheit vor allem anderen prüfen
     body: dict = {}
     for key, field in FIELDS.items():
         if key in TEXT_FIELDS or key not in args or args[key] is None:
@@ -149,15 +164,21 @@ def _change(args: dict, ctx: ClubContext) -> str:
                 if not isinstance(footer[key], bool):
                     raise ToolError(_("„%(name)s“ ist ja oder nein.") % {"name": key})
                 body[field] = footer[key]
-    if not body:
+    if not body and not texts:
         raise ToolError(_("Bitte angeben, was sich am Briefbogen ändern soll."))
     path, kwargs = _path(args)
-    data = ctx.call(_view(args), "PATCH", path, body, **kwargs)
+    # Erst die übrigen Werte prüfen und speichern, dann den Vorschlag ablegen: Scheitert das
+    # Ändern, bleibt kein Vorschlag liegen
+    data = ctx.call(_view(args), "PATCH", path, body, **kwargs) if body else None
+    proposed = _propose(args, ctx, texts) if texts else ""
+    if data is None:
+        return proposed
     return (
         _(
             "Briefbogen geändert ({keys}). Er gilt ab sofort für neue Briefe, Rechnungen und die "
             "Word-Vorlage; die Vorschau steht unter Einstellungen › Briefbogen."
         ).format(keys=", ".join(sorted(body)))
+        + ("\n\n" + proposed if proposed else "")
         + "\n\n"
         + _dump(_summary(data))
     )
@@ -235,7 +256,8 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
             "Spendenquittungen, Rundschreiben): Aufbau, Logo, Schriften, Farben, Linien und "
             "Fußzeile. Gilt SOFORT, es gibt keinen Entwurf: vorher die Person fragen. Nur "
             "angegebene Werte ändern sich. Texte (Name im Briefkopf, Zusatzzeile, Anrede, "
-            "Grußformel) ändert die Person selbst in HUBIplan. Braucht das Recht, die Einheit zu "
+            "Grußformel) werden nur als Vorschlag abgelegt; übernehmen kann ihn die Person in "
+            "HUBIplan unter Einstellungen › Briefbogen. Braucht das Recht, die Einheit zu "
             "bearbeiten."
         ),
         schema=_schema(
@@ -296,6 +318,18 @@ LETTERHEAD_TOOLS: tuple[Tool, ...] = (
                     "type": "object",
                     "properties": {key: {"type": "boolean"} for key in FOOTER},
                     "additionalProperties": False,
+                },
+                # Gesamtaudit 15.11., FF-12 (a): Texte nur als Vorschlag
+                **{
+                    key: {
+                        "type": "string",
+                        "maxLength": 500,
+                        "description": gettext_lazy(
+                            "Nur als Vorschlag: gilt erst, wenn die Person ihn in HUBIplan "
+                            "übernimmt."
+                        ),
+                    }
+                    for key in sorted(TEXT_FIELDS)
                 },
             }
         ),

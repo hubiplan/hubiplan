@@ -331,6 +331,11 @@ org_patterns = [
     ),
     path("letterhead/", letterhead_views.OrgLetterheadView.as_view(), name="org-letterhead"),
     path(
+        "letterhead/proposals/<int:pk>/",
+        letterhead_views.LetterheadProposalView.as_view(),
+        name="org-letterhead-proposal",
+    ),
+    path(
         "letterhead/logo/",
         letterhead_views.LetterheadLogoView.as_view(),
         name="org-letterhead-logo",
