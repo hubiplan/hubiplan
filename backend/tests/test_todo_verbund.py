@@ -20,7 +20,8 @@ from .test_verbund_kopplung import net as net
 from .test_verbund_kopplung import world as world
 from .verbund_netz import release
 
-pytestmark = pytest.mark.django_db
+# Anfragen laufen wie im Betrieb unter der Rolle der Anwendung (AZ-04).
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
 
 
 @pytest.mark.parametrize("mode", ["copy", "common"])
