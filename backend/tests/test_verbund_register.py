@@ -135,6 +135,8 @@ class TestKlaerfaelle:
             nachbar = make_org("Nachbarverein Musterstadt", parent=world["fed"])
             return make_member(nachbar, "Anna", "Aktiv", birth_date=ANNA)
 
+    # Wie im Betrieb (AZ-04): Nummer geht nach dem Klärfall an den Verein zurück
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_gleiche_person_zusammenfuehren(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
