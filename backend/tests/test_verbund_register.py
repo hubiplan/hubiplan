@@ -163,6 +163,26 @@ class TestKlaerfaelle:
         number = FederationMember.objects.get(person_id=local.person_id).member_number
         assert RemoteMember.objects.get(coupling=lower, uid=rm.uid).number == number
 
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
+    def test_ansicht_zeigt_nur_die_meldung_dieser_kopplung(self, net, world, members):
+        """Die gemeldeten Mitgliedschaften werden im Bereich des Platzhalters gelesen
+        (Gesamtaudit 15.11., AZ-04); Mitglieder anderer Vereine des Verbands erscheinen
+        dabei nicht."""
+        with net.on(VERBAND):
+            fremd = make_org("Fremdverein Beispielstadt", parent=world["fed"])
+            make_member(fremd, "Berta", "Fremdmitglied", birth_date=datetime.date(1975, 3, 9))
+        lower, upper = named(net, world)
+        with net.on(VERBAND):
+            c = api(world["fed_board"])
+            resp = c.get(f"/api/orgs/{world['fed'].pk}/peering/couplings/{upper.pk}/")
+        assert resp.status_code == 200, resp.content[:300]
+        text = resp.content.decode()
+        assert "Fremdmitglied" not in text and "Fremdverein" not in text
+        register = resp.json()["register"]
+        assert (
+            sum(register["counts"].values()) == RemoteMember.objects.filter(coupling=upper).count()
+        )
+
     def test_nur_verbundrecht_ohne_namen(self, net, world, members):
         # Gesamtaudit 30.10.a (BSEC-V02): Namen nur mit „Mitglieder ansehen“
         from access.catalog import MEMBERS_VIEW, PEERING_MANAGE
