@@ -7,7 +7,7 @@ routen: [/meldungen]
 stichworte: [entry, invitation to tender, team, organiser, registration]
 ---
 
-Under Entries you register teams, people and details with an organiser, for example for a tournament or a competition. You can send the entry as a letter, email or spreadsheet, report changes later and pass a call for entries on to your own sub-units.
+Under Entries you register teams, people and details with an organiser, for example for a tournament or a competition. You can send the entry as a letter, email or spreadsheet, report changes later and pass a call for entries on to your own sub-units. In the menu, entries are listed under Competitions; if you have no competitions, they are a menu item of their own.
 
 When creating a call for entries, your input is saved only when you choose **Create**. If you cancel or leave after changing something, HUBIplan asks for confirmation. **Continue editing** retains your input; **Discard** leaves the draft without saving.
 

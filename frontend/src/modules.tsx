@@ -49,6 +49,31 @@ function partnersVisible(org: OrgSummary | null): boolean {
   )
 }
 
+function competitionsVisible(org: OrgSummary | null): boolean {
+  return (
+    !!org &&
+    (org.type === 'club' || org.type === 'federation') &&
+    org.modules.includes('competitions') &&
+    [
+      PERM.competitionsView,
+      PERM.resultsView,
+      PERM.competitionsManage,
+      PERM.competitionsResults,
+    ].some((p) => org.permissions.includes(p))
+  )
+}
+
+function entriesVisible(org: OrgSummary | null): boolean {
+  return (
+    !!org &&
+    (org.type === 'club' || org.type === 'federation') &&
+    (org.modules.includes('entries') || org.modules.includes('calls')) &&
+    [PERM.entriesView, PERM.callsView, PERM.entriesSubmit, PERM.entriesManage].some((p) =>
+      org.permissions.includes(p),
+    )
+  )
+}
+
 /** Welche Teile von Material & Räume die Person sieht (Organisation oder Abteilung). */
 function stockAccess(org: OrgSummary | null, ws: Workspace) {
   const perms = org ? org.permissions : (ws.dept?.permissions ?? [])
@@ -240,23 +265,17 @@ export const modules: AppModule[] = [
     icon: icon(
       'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4v3h-4z',
     ),
-    visible: (org) =>
-      !!org &&
-      (org.type === 'club' || org.type === 'federation') &&
-      org.modules.includes('competitions') &&
-      [
-        PERM.competitionsView,
-        PERM.resultsView,
-        PERM.competitionsManage,
-        PERM.competitionsResults,
-      ].some((p) => org.permissions.includes(p)),
-    children: () => [
+    // Meldungen stehen als Unterpunkt hier, solange es den Menüpunkt Wettbewerbe gibt (VW-33)
+    also: ['/meldungen'],
+    visible: competitionsVisible,
+    children: (org) => [
       { to: '/wettbewerbe', label: t('Wettbewerbe') },
       { to: '/wettbewerbe/statistik', label: t('Statistik') },
       { to: '/wettbewerbe/reihen', label: t('Reihen') },
       { to: '/wettbewerbe/pokale', label: t('Wanderpokale') },
       { to: '/wettbewerbe/titel', label: t('Titel und Sieger') },
       { to: '/wettbewerbe/urkunden', label: t('Urkundenvorlagen') },
+      ...(entriesVisible(org) ? [{ to: '/meldungen', label: t('Meldungen') }] : []),
       // Modul-Einstellungen heißen überall „Einrichtung“ und stehen zuletzt (docs/begriffe.md)
       { to: '/wettbewerbe/einrichtung', label: t('Einrichtung') },
     ],
@@ -267,13 +286,8 @@ export const modules: AppModule[] = [
     label: t('Meldungen'),
     path: '/meldungen',
     icon: icon('M5 4h10l4 4v12H5zM15 4v4h4M8.5 12.5l2 2 4-4.5M8.5 17.5h7'),
-    visible: (org) =>
-      !!org &&
-      (org.type === 'club' || org.type === 'federation') &&
-      (org.modules.includes('entries') || org.modules.includes('calls')) &&
-      [PERM.entriesView, PERM.callsView, PERM.entriesSubmit, PERM.entriesManage].some((p) =>
-        org.permissions.includes(p),
-      ),
+    // Eigener Menüpunkt nur ohne Wettbewerbe; sonst Unterpunkt dort (VW-33)
+    visible: (org) => entriesVisible(org) && !competitionsVisible(org),
   },
   {
     id: 'musik',
