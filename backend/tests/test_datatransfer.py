@@ -707,7 +707,6 @@ def test_rechte_migration_fuer_vorstand(orgs):
 @pytest.mark.skipif(connection.vendor != "postgresql", reason="nur PostgreSQL")
 def test_export_und_import_unter_rls(api, orgs, club_c, board_c, board_a):
     """Mit aktiver Row-Level Security (Rolle der Anwendung) funktioniert alles."""
-    from .test_rls import as_app_role
 
     board_fed = make_user("verband@example.org")
     give_role(board_fed, orgs["federation"])
@@ -715,29 +714,28 @@ def test_export_und_import_unter_rls(api, orgs, club_c, board_c, board_a):
         Department.objects.create(
             self_managed=True, organization=orgs["a"], name="1. Zug", founding_year=1999
         )
-    with as_app_role():
-        content, _ = export(api(board_c), f"/api/orgs/{club_c['club'].pk}")
-        c = api(board_fed)
-        base = f"/api/orgs/{orgs['federation'].pk}"
-        job = upload(c, base, content)
-        assert job["status"] == "checked", job
-        assert job["preview"]["error_count"] == 0, job["preview"]["errors"]
-        c.post(f"{base}/datatransfer/imports/{job['id']}/run/")
-        job = c.get(f"{base}/datatransfer/imports/{job['id']}/").json()
-        assert job["status"] == "done", job
-        # Abteilung mit vorhandenem Namen wird unter RLS erkannt
-        dept_file, _ = export(
-            api(board_c),
-            f"/api/orgs/{club_c['club'].pk}",
-            kind="department",
-            department=club_c["dept"].pk,
-        )
-        a = api(board_a)
-        job = upload(a, f"/api/orgs/{orgs['a'].pk}", dept_file)
-        errors = job["preview"]["errors"]
-        assert any("gibt es schon „1. Zug“" in e for e in errors), errors
-        # Erika ist inzwischen im importierten Verein aktiv: auch das wird erkannt
-        assert any("bereits aktives Mitglied" in e for e in errors), errors
+    content, _ = export(api(board_c), f"/api/orgs/{club_c['club'].pk}")
+    c = api(board_fed)
+    base = f"/api/orgs/{orgs['federation'].pk}"
+    job = upload(c, base, content)
+    assert job["status"] == "checked", job
+    assert job["preview"]["error_count"] == 0, job["preview"]["errors"]
+    c.post(f"{base}/datatransfer/imports/{job['id']}/run/")
+    job = c.get(f"{base}/datatransfer/imports/{job['id']}/").json()
+    assert job["status"] == "done", job
+    # Abteilung mit vorhandenem Namen wird unter RLS erkannt
+    dept_file, _ = export(
+        api(board_c),
+        f"/api/orgs/{club_c['club'].pk}",
+        kind="department",
+        department=club_c["dept"].pk,
+    )
+    a = api(board_a)
+    job = upload(a, f"/api/orgs/{orgs['a'].pk}", dept_file)
+    errors = job["preview"]["errors"]
+    assert any("gibt es schon „1. Zug“" in e for e in errors), errors
+    # Erika ist inzwischen im importierten Verein aktiv: auch das wird erkannt
+    assert any("bereits aktives Mitglied" in e for e in errors), errors
     with rls_bypass():
         new_club = Organization.objects.get(parent=orgs["federation"], name="Verein C ohne Verband")
         assert Membership.objects.filter(organization=new_club).count() == 2

@@ -129,14 +129,13 @@ def test_portal_api_mit_echter_datenbankrolle(api, board_a, orgs):
     user, access = member(orgs["a"])
     private = create(api, board_a, orgs["a"])
     task = create(api, board_a, orgs["a"])
-    with as_app_role():
-        publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
-        rows = api(user).get(portal_url(access))
-        assert rows.status_code == 200, rows.content
-        row = rows.json()["items"][0]
-        response = change(api, user, access, row, status="done")
-        assert response.status_code == 200, response.content
-        assert api(user).get(portal_url(access, private["id"])).status_code == 404
+    publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
+    rows = api(user).get(portal_url(access))
+    assert rows.status_code == 200, rows.content
+    row = rows.json()["items"][0]
+    response = change(api, user, access, row, status="done")
+    assert response.status_code == 200, response.content
+    assert api(user).get(portal_url(access, private["id"])).status_code == 404
 
 
 def test_serienfreigabe_ist_ausdruecklich_und_offenes_angebot_startet_neu(api, board_a, orgs):

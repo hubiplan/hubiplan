@@ -17,7 +17,7 @@ from .test_m12_events import create, org_base, titles
 from .test_termine_weitergabe import board_fed, cal  # noqa: F401
 from .verbund_netz import app_role
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture

@@ -114,18 +114,17 @@ def test_bypass_fuer_systemaufgaben(data):
 def test_api_funktioniert_unter_rls(data, board_a, api):
     """Ende-zu-Ende: die API arbeitet mit der eingeschränkten Rolle korrekt."""
     client = api(board_a)
-    with as_app_role():
-        deps = client.get(f"/api/orgs/{data['a'].pk}/departments/").json()
-        assert [d["name"] for d in deps] == ["Turnen"]
-        me = client.get("/api/me/organizations/").json()
-        assert [o["name"] for o in me] == ["Verein A"]
-        resp = client.post(
-            f"/api/orgs/{data['a'].pk}/departments/",
-            {"name": "Schwimmen", "founding_year": 1980},
-            content_type="application/json",
-        )
-        assert resp.status_code == 201
-        assert client.get(f"/api/orgs/{data['b'].pk}/departments/").status_code == 404
+    deps = client.get(f"/api/orgs/{data['a'].pk}/departments/").json()
+    assert [d["name"] for d in deps] == ["Turnen"]
+    me = client.get("/api/me/organizations/").json()
+    assert [o["name"] for o in me] == ["Verein A"]
+    resp = client.post(
+        f"/api/orgs/{data['a'].pk}/departments/",
+        {"name": "Schwimmen", "founding_year": 1980},
+        content_type="application/json",
+    )
+    assert resp.status_code == 201
+    assert client.get(f"/api/orgs/{data['b'].pk}/departments/").status_code == 404
 
 
 # --- Meilenstein 2: Mitglieder ---
@@ -196,10 +195,9 @@ def test_person_nicht_in_fremden_bereich_schreibbar(orgs, members):
 
 def test_mitglieder_api_unter_rls(orgs, members, board_a, api):
     client = api(board_a)
-    with as_app_role():
-        data = client.get(f"/api/orgs/{orgs['a'].pk}/members/", {"status": "alle"}).json()
-        assert [r["last_name"] for r in data["results"]] == ["Person a"]
-        assert data["results"][0]["email"] == "a@example.org"
+    data = client.get(f"/api/orgs/{orgs['a'].pk}/members/", {"status": "alle"}).json()
+    assert [r["last_name"] for r in data["results"]] == ["Person a"]
+    assert data["results"][0]["email"] == "a@example.org"
 
 
 # --- Meilenstein 3: Wechselanfragen ---
@@ -214,43 +212,42 @@ def test_wechselanfrage_ende_zu_ende_unter_rls(orgs, board_a, board_b, api):
         types[key] = MemberType.objects.create(organization=orgs[key], name="aktiv", active=True)
     a, b = api(board_a), api(board_b)
     contact = {"email": "x@example.org", "street": "s", "postal_code": "1", "city": "c"}
-    with as_app_role():
-        member = a.post(
-            f"/api/orgs/{orgs['a'].pk}/members/admit/",
-            {
-                "last_name": "Wechsel",
-                "first_name": "Willi",
-                "birth_date": "1980-01-01",
-                "member_type": types["a"].pk,
-                "entry_date": "2010-01-01",
-                **contact,
-            },
-            content_type="application/json",
-        ).json()
-        resp = b.post(
-            f"/api/orgs/{orgs['b'].pk}/transfers/",
-            {
-                "person": member["person_id"],
-                **found(member["person_id"]),
-                "member_type": types["b"].pk,
-                "entry_date": "2024-01-01",
-                **contact,
-            },
-            content_type="application/json",
-        )
-        assert resp.status_code == 201, resp.json()
-        tid = resp.json()["id"]
-        # Der alte Verein sieht die Anfrage samt gewünschter Art
-        incoming = a.get(f"/api/orgs/{orgs['a'].pk}/transfers/").json()
-        assert [(t["id"], t["member_type_name"]) for t in incoming] == [(tid, "aktiv")]
-        decided = a.post(
-            f"/api/orgs/{orgs['a'].pk}/transfers/{tid}/decide/",
-            {"decision": "exit"},
-            content_type="application/json",
-        )
-        assert decided.status_code == 200, decided.json()
-        listing = b.get(f"/api/orgs/{orgs['b'].pk}/members/").json()
-        assert [r["last_name"] for r in listing["results"]] == ["Wechsel"]
+    member = a.post(
+        f"/api/orgs/{orgs['a'].pk}/members/admit/",
+        {
+            "last_name": "Wechsel",
+            "first_name": "Willi",
+            "birth_date": "1980-01-01",
+            "member_type": types["a"].pk,
+            "entry_date": "2010-01-01",
+            **contact,
+        },
+        content_type="application/json",
+    ).json()
+    resp = b.post(
+        f"/api/orgs/{orgs['b'].pk}/transfers/",
+        {
+            "person": member["person_id"],
+            **found(member["person_id"]),
+            "member_type": types["b"].pk,
+            "entry_date": "2024-01-01",
+            **contact,
+        },
+        content_type="application/json",
+    )
+    assert resp.status_code == 201, resp.json()
+    tid = resp.json()["id"]
+    # Der alte Verein sieht die Anfrage samt gewünschter Art
+    incoming = a.get(f"/api/orgs/{orgs['a'].pk}/transfers/").json()
+    assert [(t["id"], t["member_type_name"]) for t in incoming] == [(tid, "aktiv")]
+    decided = a.post(
+        f"/api/orgs/{orgs['a'].pk}/transfers/{tid}/decide/",
+        {"decision": "exit"},
+        content_type="application/json",
+    )
+    assert decided.status_code == 200, decided.json()
+    listing = b.get(f"/api/orgs/{orgs['b'].pk}/members/").json()
+    assert [r["last_name"] for r in listing["results"]] == ["Wechsel"]
     assert Membership.objects.filter(organization=orgs["b"]).count() == 1
 
 
@@ -312,26 +309,25 @@ def test_import_und_export_unter_rls(orgs, board_a, board_b, api, settings, tmp_
     buf.name = "import.xlsx"
     a = api(board_a)
     base = f"/api/orgs/{orgs['a'].pk}"
-    with as_app_role():
-        job = a.post(f"{base}/imports/", {"file": buf}).json()
-        a.post(f"{base}/imports/{job['id']}/validate/")
-        done = a.post(f"{base}/imports/{job['id']}/run/").json()
-        assert done["status"] == "imported", done
-        export = a.post(
-            f"{base}/exports/",
-            {
-                "kind": "members",
-                "file_format": "xlsx",
-                "columns": ["last_name"],
-                "filters": {"status": "alle"},
-            },
-            content_type="application/json",
-        ).json()
-        assert a.get(f"{base}/exports/{export['id']}/").json()["row_count"] == 1
-        # Verein B sieht weder Import noch Export von A
-        b = api(board_b)
-        assert b.get(f"/api/orgs/{orgs['b'].pk}/imports/").json() == []
-        assert b.get(f"/api/orgs/{orgs['b'].pk}/exports/").json() == []
+    job = a.post(f"{base}/imports/", {"file": buf}).json()
+    a.post(f"{base}/imports/{job['id']}/validate/")
+    done = a.post(f"{base}/imports/{job['id']}/run/").json()
+    assert done["status"] == "imported", done
+    export = a.post(
+        f"{base}/exports/",
+        {
+            "kind": "members",
+            "file_format": "xlsx",
+            "columns": ["last_name"],
+            "filters": {"status": "alle"},
+        },
+        content_type="application/json",
+    ).json()
+    assert a.get(f"{base}/exports/{export['id']}/").json()["row_count"] == 1
+    # Verein B sieht weder Import noch Export von A
+    b = api(board_b)
+    assert b.get(f"/api/orgs/{orgs['b'].pk}/imports/").json() == []
+    assert b.get(f"/api/orgs/{orgs['b'].pk}/exports/").json() == []
 
 
 # --- Meilenstein 6: Dachverbandszugriff ---
@@ -383,11 +379,10 @@ def test_dachverbandsliste_api_unter_rls(orgs, members, api):
     user = make_user("verband-rls@example.org")
     give_role(user, orgs["federation"])
     client = api(user)
-    with as_app_role():
-        data = client.get(
-            f"/api/orgs/{orgs['federation'].pk}/federation/members/", {"status": "alle"}
-        ).json()
-        assert sorted(r["club"] for r in data["results"]) == ["Verein A", "Verein B"]
+    data = client.get(
+        f"/api/orgs/{orgs['federation'].pk}/federation/members/", {"status": "alle"}
+    ).json()
+    assert sorted(r["club"] for r in data["results"]) == ["Verein A", "Verein B"]
 
 
 def test_rollenwechsel_fuer_jede_neue_verbindung(settings):
@@ -426,31 +421,27 @@ def test_fotos_und_upload_link_unter_rls(orgs, board_a, board_b, api, client, se
         buf.name = "f.jpg"
         return buf
 
-    with as_app_role():
-        m = a.post(
-            f"{base}/admit/",
-            {
-                "last_name": "Foto",
-                "first_name": "Frida",
-                "birth_date": "1990-01-01",
-                "member_type": mt.pk,
-                "entry_date": "2010-01-01",
-                "email": "f@example.org",
-                "street": "s",
-                "postal_code": "1",
-                "city": "c",
-            },
-            content_type="application/json",
-        ).json()
-        assert (
-            a.post(f"{base}/{m['id']}/photo/", {"file": img(), "consent": "true"}).status_code
-            == 200
-        )
-        link = a.post(f"{base}/{m['id']}/photo-links/", {}, content_type="application/json").json()
-        token = link["url"].rsplit("/", 1)[1]
-        # Öffentliche Seite ohne Anmeldung, ebenfalls in der RLS-Rolle
-        public = client.post(f"/api/public/photo/{token}/", {"file": img(), "consent": "true"})
-        assert public.status_code == 201, public.json()
+    m = a.post(
+        f"{base}/admit/",
+        {
+            "last_name": "Foto",
+            "first_name": "Frida",
+            "birth_date": "1990-01-01",
+            "member_type": mt.pk,
+            "entry_date": "2010-01-01",
+            "email": "f@example.org",
+            "street": "s",
+            "postal_code": "1",
+            "city": "c",
+        },
+        content_type="application/json",
+    ).json()
+    assert a.post(f"{base}/{m['id']}/photo/", {"file": img(), "consent": "true"}).status_code == 200
+    link = a.post(f"{base}/{m['id']}/photo-links/", {}, content_type="application/json").json()
+    token = link["url"].rsplit("/", 1)[1]
+    # Öffentliche Seite ohne Anmeldung, ebenfalls in der RLS-Rolle
+    public = client.post(f"/api/public/photo/{token}/", {"file": img(), "consent": "true"})
+    assert public.status_code == 201, public.json()
     assert MemberPhoto.objects.count() == 1  # ersetzt
     with as_app_role(), tenant_context(orgs["b"].pk):
         assert MemberPhoto.objects.count() == 0
@@ -478,13 +469,12 @@ def test_webseiten_hochladelink_unter_rls(orgs, board_a, client, settings, tmp_p
         Image.new("RGB", (300, 200), "blue").save(buf, "PNG")
         return SimpleUploadedFile("bild.png", buf.getvalue(), content_type="image/png")
 
-    with as_app_role():
-        resp = client.post(f"/api/public/website-images/{secret}/", {"file": img()})
-        assert resp.status_code == 201, resp.content
-        assert resp.json()["remaining"] == link.max_files - 1
-        assert client.get(f"/api/public/website-images/{secret}/").json()["remaining"] == (
-            link.max_files - 1
-        )
+    resp = client.post(f"/api/public/website-images/{secret}/", {"file": img()})
+    assert resp.status_code == 201, resp.content
+    assert resp.json()["remaining"] == link.max_files - 1
+    assert client.get(f"/api/public/website-images/{secret}/").json()["remaining"] == (
+        link.max_files - 1
+    )
     with as_app_role(), tenant_context(orgs["b"].pk):
         assert ImageUploadLink.objects.count() == 0
         assert WebsiteImage.objects.count() == 0

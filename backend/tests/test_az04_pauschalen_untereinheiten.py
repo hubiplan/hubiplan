@@ -20,7 +20,7 @@ from .factories import make_member
 from .test_m9_billing import c, club  # noqa: F401
 from .test_pauschalen_reste import _tax, _zahlung, report
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 def _untereinheit(club):

@@ -163,7 +163,6 @@ class TestKlaerfaelle:
         number = FederationMember.objects.get(person_id=local.person_id).member_number
         assert RemoteMember.objects.get(coupling=lower, uid=rm.uid).number == number
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_ansicht_zeigt_nur_die_meldung_dieser_kopplung(self, net, world, members):
         """Die gemeldeten Mitgliedschaften werden im Bereich des Platzhalters gelesen
         (Gesamtaudit 15.11., AZ-04); Mitglieder anderer Vereine des Verbands erscheinen
@@ -210,8 +209,6 @@ class TestKlaerfaelle:
             resp = api(lesen).post(f"{base}/members/{rm.pk}/resolve/", {}, content_type=JSON)
             assert resp.status_code == 403
 
-    # Klärfall entscheiden wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_andere_person(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
@@ -295,7 +292,6 @@ class TestFremdeVerbandsnummer:
                 person=local.person, organization=upper.remote_unit
             ).exists()
 
-    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_berichtigung_geteilter_person_braucht_freigabe(self, net, world, members):
 
         with net.on(VERBAND):

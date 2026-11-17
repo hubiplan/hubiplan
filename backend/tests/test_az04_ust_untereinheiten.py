@@ -13,7 +13,7 @@ from organizations.models import Department
 
 from .test_umsatzsteuer import Kasse, c, club, get, lines  # noqa: F401
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 def test_ust_probe_untereinheit_zaehlt_in_voranmeldung_des_vereins(c, club):

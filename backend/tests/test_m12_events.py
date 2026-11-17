@@ -630,47 +630,38 @@ def test_rls_dachverband_lesen_aber_nicht_schreiben(cal, board_a, board_b, board
 @pytest.mark.skipif(connection.vendor != "postgresql", reason="nur PostgreSQL")
 def test_api_unter_rls_vorstand_abteilung_mitglied(cal, board_a, board_fed, zug, api):
     """Ende-zu-Ende in der eingeschränkten Rolle: alle drei Zugänge und der öffentliche Link."""
-    from core.rls import APP_ROLE
-    from core.tenancy import set_rls
 
     m, member, access = member_with_access(cal["a"], "Erika", depts=[zug])
     dept_role(zug, m, ["dept.events.manage"])
-    with connection.cursor() as cursor:
-        cursor.execute(f"SET ROLE {APP_ROLE}")
-    try:
-        fed = create(
-            api(board_fed), org_base(cal["federation"]), title="Schützenfest", visibility="public"
-        )
-        pdf = SimpleUploadedFile("plan.pdf", b"%PDF-1.4 erfunden", "application/pdf")
-        resp = api(board_fed).post(
-            f"{org_base(cal['federation'])}events/{fed['id']}/attachments/", {"file": pdf}
-        )
-        assert resp.status_code == 201
-        create(api(board_a), org_base(cal["a"]), title="JHV")
-        create(api(member), f"/api/depts/{zug.pk}/", title="Zugabend")
-        assert sorted(titles(api(board_a), org_base(cal["a"]))) == [
-            "JHV",
-            "Schützenfest",
-            "Zugabend",
-        ]
-        assert sorted(titles(api(member), f"/api/portal/{access.pk}/")) == [
-            "JHV",
-            "Schützenfest",
-            "Zugabend",
-        ]
-        detail = api(member).get(f"/api/portal/{access.pk}/events/{fed['id']}/").json()
-        assert api(member).get(detail["attachments"][0]["url"]).status_code == 200
-        api(board_fed).put(
-            f"{org_base(cal['federation'])}events/publication/",
-            {"is_public": True},
-            content_type=JSON,
-        )
-        resp = api(board_fed).get(f"{org_base(cal['federation'])}events/publication/")
-        assert Client().get(resp.json()["json_url"]).status_code == 200
-    finally:
-        with connection.cursor() as cursor:
-            cursor.execute("RESET ROLE")
-        set_rls(None, None, False)
+    fed = create(
+        api(board_fed), org_base(cal["federation"]), title="Schützenfest", visibility="public"
+    )
+    pdf = SimpleUploadedFile("plan.pdf", b"%PDF-1.4 erfunden", "application/pdf")
+    resp = api(board_fed).post(
+        f"{org_base(cal['federation'])}events/{fed['id']}/attachments/", {"file": pdf}
+    )
+    assert resp.status_code == 201
+    create(api(board_a), org_base(cal["a"]), title="JHV")
+    create(api(member), f"/api/depts/{zug.pk}/", title="Zugabend")
+    assert sorted(titles(api(board_a), org_base(cal["a"]))) == [
+        "JHV",
+        "Schützenfest",
+        "Zugabend",
+    ]
+    assert sorted(titles(api(member), f"/api/portal/{access.pk}/")) == [
+        "JHV",
+        "Schützenfest",
+        "Zugabend",
+    ]
+    detail = api(member).get(f"/api/portal/{access.pk}/events/{fed['id']}/").json()
+    assert api(member).get(detail["attachments"][0]["url"]).status_code == 200
+    api(board_fed).put(
+        f"{org_base(cal['federation'])}events/publication/",
+        {"is_public": True},
+        content_type=JSON,
+    )
+    resp = api(board_fed).get(f"{org_base(cal['federation'])}events/publication/")
+    assert Client().get(resp.json()["json_url"]).status_code == 200
 
 
 @pytest.mark.langsam

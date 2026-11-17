@@ -106,14 +106,13 @@ def test_kontobezogene_zeilen_nur_fuer_das_eigene_konto(orgs, board_a, board_b, 
 
 
 def test_unterschrift_und_briefvorlage_api_unter_rls(orgs, board_a, board_b, api):
-    with app_role():
-        a, b = api(board_a), api(board_b)
-        assert a.put("/api/me/signature/", LINE, content_type=JSON).status_code == 200
-        assert b.get("/api/me/signature/").json()["signature"] is None
-        assert a.get("/api/me/signature/").json()["signature"] is not None
-        assert b.delete("/api/me/signature/").status_code == 204
-        assert a.get("/api/me/signature/").json()["signature"] is not None
-        assert a.get("/api/me/letterheads/").status_code == 200
+    a, b = api(board_a), api(board_b)
+    assert a.put("/api/me/signature/", LINE, content_type=JSON).status_code == 200
+    assert b.get("/api/me/signature/").json()["signature"] is None
+    assert a.get("/api/me/signature/").json()["signature"] is not None
+    assert b.delete("/api/me/signature/").status_code == 204
+    assert a.get("/api/me/signature/").json()["signature"] is not None
+    assert a.get("/api/me/letterheads/").status_code == 200
     with rls_bypass():
         assert StoredSignature.objects.filter(user=board_a).exists()
 

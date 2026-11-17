@@ -6,8 +6,7 @@ from decimal import Decimal
 import pytest
 from django.db import connection
 
-from core.rls import APP_ROLE
-from core.tenancy import set_rls, tenant_context
+from core.tenancy import tenant_context
 from finance.models import Account, Booking, Category
 from organizations.models import Department
 
@@ -41,16 +40,6 @@ def unit(c, club):
     return unit
 
 
-@pytest.fixture
-def rls():
-    with connection.cursor() as cursor:
-        cursor.execute(f"SET ROLE {APP_ROLE}")
-    yield
-    with connection.cursor() as cursor:
-        cursor.execute("RESET ROLE")
-    set_rls(None, None, False)
-
-
 def _booking(org, **extra):
     with tenant_context(org.pk):
         account = Account.objects.create(
@@ -71,20 +60,13 @@ def _booking(org, **extra):
         )
 
 
-def test_leere_einheit_laesst_sich_loeschen(c, club, unit, rls):
+def test_leere_einheit_laesst_sich_loeschen(c, club, unit):
     assert c.delete(f"/api/orgs/{club.pk}/departments/{unit.pk}/").status_code == 204
 
 
 def test_einheit_mit_eigenen_buchungen_bleibt(c, club, unit):
     booking = _booking(unit)
-    with connection.cursor() as cursor:
-        cursor.execute(f"SET ROLE {APP_ROLE}")
-    try:
-        resp = c.delete(f"/api/orgs/{club.pk}/departments/{unit.pk}/")
-    finally:
-        with connection.cursor() as cursor:
-            cursor.execute("RESET ROLE")
-        set_rls(None, None, False)
+    resp = c.delete(f"/api/orgs/{club.pk}/departments/{unit.pk}/")
     assert resp.status_code == 400
     assert "Buchungen" in str(resp.json()) and "inaktiv" in str(resp.json())
     assert Booking.objects.filter(pk=booking.pk).exists()

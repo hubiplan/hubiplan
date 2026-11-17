@@ -21,7 +21,7 @@ from .test_documents import folder, upload
 from .test_todo_sharing import share
 from .test_todos import create, url
 
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(autouse=True)

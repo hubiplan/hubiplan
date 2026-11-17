@@ -107,7 +107,7 @@ def test_member_list_preserves_inherited_jit_setting_and_rls(api, orgs, board_a,
         return original(page, org)
 
     client = api(board_a)
-    with as_app_role(), patch.object(views, "member_rows", rows):
+    with patch.object(views, "member_rows", rows):
         if fails:
             with pytest.raises(RuntimeError, match="synthetic list error"):
                 client.get(f"/api/orgs/{orgs['a'].pk}/members/")

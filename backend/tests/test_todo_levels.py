@@ -59,23 +59,22 @@ def test_gemeinsame_aufgabe_aus_zielkontext_mit_rls_und_ruecknahme(
     api, sender, board_a, board_b, orgs
 ):
     source, target = orgs["federation"], orgs["a"]
-    with as_app_role():
-        todo = create(api, sender, source)
-        todo = distribute(api, sender, source, todo, [(board_a, target)], per_unit=False)
-        received = listed(api, board_a, target)
-        assert [row["id"] for row in received] == [todo["id"]]
-        assert listed(api, board_b, orgs["b"]) == []
-        assert api(board_a).get(url(source, todo["id"])).status_code == 403
-        response = patch(api, board_a, target, received[0], status="done")
-        assert response.status_code == 200, response.content
-        assert response["X-Change-Task"] == str(todo["id"])
-        undo_url = url(target, todo["id"]) + f"changes/{response['X-Change-Set']}/undo/"
-        assert api(board_a).post(undo_url).status_code == 200
-        assert listed(api, sender, source)[0]["status"] == "open"
-        current = listed(api, sender, source)[0]
-        assert patch(api, sender, source, current, shares=[]).status_code == 200
-        assert api(board_a).get(url(target, todo["id"])).status_code == 404
-        assert api(board_a).post(undo_url).status_code == 404
+    todo = create(api, sender, source)
+    todo = distribute(api, sender, source, todo, [(board_a, target)], per_unit=False)
+    received = listed(api, board_a, target)
+    assert [row["id"] for row in received] == [todo["id"]]
+    assert listed(api, board_b, orgs["b"]) == []
+    assert api(board_a).get(url(source, todo["id"])).status_code == 403
+    response = patch(api, board_a, target, received[0], status="done")
+    assert response.status_code == 200, response.content
+    assert response["X-Change-Task"] == str(todo["id"])
+    undo_url = url(target, todo["id"]) + f"changes/{response['X-Change-Set']}/undo/"
+    assert api(board_a).post(undo_url).status_code == 200
+    assert listed(api, sender, source)[0]["status"] == "open"
+    current = listed(api, sender, source)[0]
+    assert patch(api, sender, source, current, shares=[]).status_code == 200
+    assert api(board_a).get(url(target, todo["id"])).status_code == 404
+    assert api(board_a).post(undo_url).status_code == 404
 
 
 def test_graph_begrenzt_zieleinheiten_auch_in_der_datenbank(api, sender, board_a, board_c, orgs):
@@ -108,63 +107,59 @@ def test_kopien_trennen_lokale_notizen_dateien_und_zentrale_aenderungen(
     api, sender, board_a, board_b, orgs
 ):
     source = orgs["federation"]
-    with as_app_role():
-        todo = create(api, sender, source, due_date="2032-01-31")
-        added = add(api, sender, source, todo)
-        assert added.status_code == 201, added.content
-        source_attachment = added.json()["attachment"]["id"]
-        todo = listed(api, sender, source)[0]
-        todo = distribute(api, sender, source, todo, [(board_a, orgs["a"]), (board_b, orgs["b"])])
-        a = listed(api, board_a, orgs["a"])[0]
-        b = listed(api, board_b, orgs["b"])[0]
-        assert a["id"] != b["id"] != todo["id"]
-        assert a["central_readonly"] and a["can_complete"]
-        assert patch(api, board_a, orgs["a"], a, title="Eigener Titel").status_code == 403
-        a = patch(api, board_a, orgs["a"], a, local_note="Nur der Verein liest dies").json()
-        assert a["local_note"] == "Nur der Verein liest dies"
-        local_upload = add(api, board_a, orgs["a"], a)
-        assert local_upload.status_code == 201, local_upload.content
-        local_id = local_upload.json()["attachment"]["id"]
-        response = api(board_a).get(endpoint(orgs["a"], a) + f"{source_attachment}/")
-        assert response.status_code == 200
-        assert b"erfundener Anhang" in b"".join(response.streaming_content)
-        assert api(sender).get(url(source, a["id"])).status_code == 404
-        assert api(sender).get(endpoint(source, a) + f"{local_id}/").status_code == 404
-        b = patch(api, board_b, orgs["b"], b, status="done").json()
-        changed = patch(api, sender, source, todo, title="Neue zentrale Überschrift")
-        assert changed.status_code == 200, changed.content
-        a = listed(api, board_a, orgs["a"])[0]
-        b = listed(api, board_b, orgs["b"])[0]
-        assert (
-            a["title"] == "Neue zentrale Überschrift"
-            and a["local_note"] == "Nur der Verein liest dies"
-        )
-        assert b["title"] == todo["title"]
-        progress = api(sender).get(url(source, todo["id"]) + "progress/")
-        assert progress.status_code == 200
-        rows = progress.json()["items"]
-        assert {row["status"] for row in rows} == {"open", "done"}
-        assert "Nur der Verein" not in json.dumps(rows)
-        assert not any(
-            set(row) & {"copy_id", "title", "description", "local_note", "attachments"}
-            for row in rows
-        )
+    todo = create(api, sender, source, due_date="2032-01-31")
+    added = add(api, sender, source, todo)
+    assert added.status_code == 201, added.content
+    source_attachment = added.json()["attachment"]["id"]
+    todo = listed(api, sender, source)[0]
+    todo = distribute(api, sender, source, todo, [(board_a, orgs["a"]), (board_b, orgs["b"])])
+    a = listed(api, board_a, orgs["a"])[0]
+    b = listed(api, board_b, orgs["b"])[0]
+    assert a["id"] != b["id"] != todo["id"]
+    assert a["central_readonly"] and a["can_complete"]
+    assert patch(api, board_a, orgs["a"], a, title="Eigener Titel").status_code == 403
+    a = patch(api, board_a, orgs["a"], a, local_note="Nur der Verein liest dies").json()
+    assert a["local_note"] == "Nur der Verein liest dies"
+    local_upload = add(api, board_a, orgs["a"], a)
+    assert local_upload.status_code == 201, local_upload.content
+    local_id = local_upload.json()["attachment"]["id"]
+    response = api(board_a).get(endpoint(orgs["a"], a) + f"{source_attachment}/")
+    assert response.status_code == 200
+    assert b"erfundener Anhang" in b"".join(response.streaming_content)
+    assert api(sender).get(url(source, a["id"])).status_code == 404
+    assert api(sender).get(endpoint(source, a) + f"{local_id}/").status_code == 404
+    b = patch(api, board_b, orgs["b"], b, status="done").json()
+    changed = patch(api, sender, source, todo, title="Neue zentrale Überschrift")
+    assert changed.status_code == 200, changed.content
+    a = listed(api, board_a, orgs["a"])[0]
+    b = listed(api, board_b, orgs["b"])[0]
+    assert (
+        a["title"] == "Neue zentrale Überschrift" and a["local_note"] == "Nur der Verein liest dies"
+    )
+    assert b["title"] == todo["title"]
+    progress = api(sender).get(url(source, todo["id"]) + "progress/")
+    assert progress.status_code == 200
+    rows = progress.json()["items"]
+    assert {row["status"] for row in rows} == {"open", "done"}
+    assert "Nur der Verein" not in json.dumps(rows)
+    assert not any(
+        set(row) & {"copy_id", "title", "description", "local_note", "attachments"} for row in rows
+    )
 
 
 def test_zielserien_laufen_unabhaengig_und_quellloeschung_erhaelt_lokale_historie(
     api, sender, board_a, board_b, orgs
 ):
     source = orgs["federation"]
-    with as_app_role():
-        todo = start(api, sender, source)
-        todo = distribute(api, sender, source, todo, [(board_a, orgs["a"]), (board_b, orgs["b"])])
-        a = listed(api, board_a, orgs["a"])[0]
-        complete(api, board_a, orgs["a"], a)
-        assert len(listed(api, board_a, orgs["a"])) == 2
-        assert len(listed(api, board_b, orgs["b"])) == 1
-        rows = api(sender).get(url(source, todo["id"]) + "progress/").json()["items"]
-        assert sorted(row["sequence_no"] for row in rows) == [1, 1, 2]
-        assert len(listed(api, sender, source)) == 1
+    todo = start(api, sender, source)
+    todo = distribute(api, sender, source, todo, [(board_a, orgs["a"]), (board_b, orgs["b"])])
+    a = listed(api, board_a, orgs["a"])[0]
+    complete(api, board_a, orgs["a"], a)
+    assert len(listed(api, board_a, orgs["a"])) == 2
+    assert len(listed(api, board_b, orgs["b"])) == 1
+    rows = api(sender).get(url(source, todo["id"]) + "progress/").json()["items"]
+    assert sorted(row["sequence_no"] for row in rows) == [1, 1, 2]
+    assert len(listed(api, sender, source)) == 1
     with rls_bypass():
         Todo.objects.get(pk=todo["id"]).delete()
     with as_app_role():
@@ -229,9 +224,8 @@ def test_private_loeschung_nach_rollenverlust_funktioniert_mit_rls(api, board_a,
 
     first = start(api, board_a, orgs["a"])
     RoleAssignment.objects.filter(user=board_a).delete()
-    with as_app_role():
-        assert api(board_a).get("/api/me/todos/export/").status_code == 200
-        assert api(board_a).delete(f"/api/me/todos/{first['id']}/").status_code == 204
+    assert api(board_a).get("/api/me/todos/export/").status_code == 200
+    assert api(board_a).delete(f"/api/me/todos/{first['id']}/").status_code == 204
 
 
 def test_abteilungen_teilen_im_eigenen_kontext_ohne_elternzugang(api, board_a, orgs):
@@ -249,55 +243,52 @@ def test_abteilungen_teilen_im_eigenen_kontext_ohne_elternzugang(api, board_a, o
     member, user, _ = member_with_access(club, "Mara", [dept])
     role = dept_role(dept, member, ["todos.view", "todos.edit"])
     base = f"/api/depts/{dept.pk}/todos/"
-    with as_app_role():
-        task = create(api, board_a, club)
-        response = patch(
-            api,
-            board_a,
-            club,
-            task,
-            shares=[
+    task = create(api, board_a, club)
+    response = patch(
+        api,
+        board_a,
+        club,
+        task,
+        shares=[
+            {
+                "role": role.pk,
+                "target_org": club.pk,
+                "target_department": dept.pk,
+                "level": "edit",
+            }
+        ],
+        per_unit=False,
+    )
+    assert response.status_code == 200, response.content
+    received = api(user).get(base).json()["items"][0]
+    assert received["id"] == task["id"]
+    changed = api(user).patch(
+        base + f"{task['id']}/",
+        {"version": received["version"], "status": "done"},
+        content_type="application/json",
+    )
+    assert changed.status_code == 200, changed.content
+    own = api(user).post(base, {"title": "Aufgabe aus dem Zug"}, content_type="application/json")
+    assert own.status_code == 201, own.content
+    own = own.json()
+    shared = api(user).patch(
+        base + f"{own['id']}/",
+        {
+            "version": own["version"],
+            "shares": [
                 {
-                    "role": role.pk,
+                    "user": board_a.pk,
                     "target_org": club.pk,
-                    "target_department": dept.pk,
+                    "target_department": None,
                     "level": "edit",
                 }
             ],
-            per_unit=False,
-        )
-        assert response.status_code == 200, response.content
-        received = api(user).get(base).json()["items"][0]
-        assert received["id"] == task["id"]
-        changed = api(user).patch(
-            base + f"{task['id']}/",
-            {"version": received["version"], "status": "done"},
-            content_type="application/json",
-        )
-        assert changed.status_code == 200, changed.content
-        own = api(user).post(
-            base, {"title": "Aufgabe aus dem Zug"}, content_type="application/json"
-        )
-        assert own.status_code == 201, own.content
-        own = own.json()
-        shared = api(user).patch(
-            base + f"{own['id']}/",
-            {
-                "version": own["version"],
-                "shares": [
-                    {
-                        "user": board_a.pk,
-                        "target_org": club.pk,
-                        "target_department": None,
-                        "level": "edit",
-                    }
-                ],
-                "per_unit": False,
-            },
-            content_type="application/json",
-        )
-        assert shared.status_code == 200, shared.content
-        assert api(board_a).get(url(club, own["id"])).status_code == 200
+            "per_unit": False,
+        },
+        content_type="application/json",
+    )
+    assert shared.status_code == 200, shared.content
+    assert api(board_a).get(url(club, own["id"])).status_code == 200
 
 
 def test_entferntes_ziel_stoppt_folge_und_quellanhang_lokale_datei_bleibt(
@@ -311,16 +302,15 @@ def test_entferntes_ziel_stoppt_folge_und_quellanhang_lokale_datei_bleibt(
     todo = distribute(api, sender, source, todo, [(board_a, orgs["a"])])
     local = listed(api, board_a, orgs["a"])[0]
     own_file = add(api, board_a, orgs["a"], local).json()["attachment"]["id"]
-    with as_app_role():
-        assert patch(api, sender, source, todo, shares=[]).status_code == 200
-        assert api(board_a).get(endpoint(orgs["a"], local) + f"{central}/").status_code == 404
-        response = api(board_a).get(endpoint(orgs["a"], local) + f"{own_file}/")
-        assert response.status_code == 200
-        assert b"erfundener Anhang" in b"".join(response.streaming_content)
-        local = listed(api, board_a, orgs["a"])[0]
-        assert not local["series"]["active"]
-        complete(api, board_a, orgs["a"], local)
-        assert len(listed(api, board_a, orgs["a"])) == 1
+    assert patch(api, sender, source, todo, shares=[]).status_code == 200
+    assert api(board_a).get(endpoint(orgs["a"], local) + f"{central}/").status_code == 404
+    response = api(board_a).get(endpoint(orgs["a"], local) + f"{own_file}/")
+    assert response.status_code == 200
+    assert b"erfundener Anhang" in b"".join(response.streaming_content)
+    local = listed(api, board_a, orgs["a"])[0]
+    assert not local["series"]["active"]
+    complete(api, board_a, orgs["a"], local)
+    assert len(listed(api, board_a, orgs["a"])) == 1
 
 
 def test_verwaiste_einzelfreigabe_erzeugt_keine_private_ausgabe_ohne_konto(api, board_a, orgs):

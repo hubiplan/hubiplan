@@ -20,8 +20,7 @@ from .test_verbund_kopplung import net as net
 from .test_verbund_kopplung import world as world
 from .verbund_netz import release
 
-# Anfragen laufen wie im Betrieb unter der Rolle der Anwendung (AZ-04).
-pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
+pytestmark = pytest.mark.django_db
 
 
 @pytest.mark.parametrize("mode", ["copy", "common"])
@@ -174,7 +173,7 @@ def test_uebernahme_bleibt_privater_lokaler_aufgaben_acl_unterstellt(net, world,
     _, target = distribute(net, world, linked)
     other = make_user("anderer-vorstand@example.org")
     give_role(other, world["club"])
-    with net.on(VEREIN), as_app_role():
+    with net.on(VEREIN):
         assert api(other).get(url(world["club"], target["id"])).status_code == 404
         assert api(other).get(url(world["club"]) + "remote/").json()["items"] == []
     with tenant_context(world["club"].pk, world["club_board"].pk), as_app_role():

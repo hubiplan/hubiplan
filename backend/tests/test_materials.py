@@ -222,20 +222,49 @@ def test_private_todo_and_document_permissions(material_setup, api):
 
 
 def test_common_tasks_require_current_source_confirmation(material_setup, monkeypatch):
+    import uuid
+
     from core.tenancy import rls_bypass
     from materials.models import MaterialTodoLink
+    from organizations.models import Organization
+    from peering import services as peering
+    from peering.models import Coupling, Peer
     from todos import remote
-    from todos.models import Todo
+    from todos.models import Todo, TodoRemoteTask
 
     org, user, client, base = material_setup
     item = create(client, base)
     with rls_bypass():
+        # Wie im Betrieb: Eine gemeinsame Aufgabe hat immer eine Herkunft über eine aktive
+        # Kopplung, die Aufgaben annimmt (todos/0017); sonst blendet der Zeilenschutz sie aus.
+        peer = Peer.objects.create(
+            instance_id=uuid.uuid4(),
+            base_url="https://verband.example.invalid",
+            fingerprint="3" * 40,
+            public_key="A" * 43,
+            enc_public_key="B" * 43,
+        )
+        coupling = Coupling.objects.create(
+            local_unit=org,
+            remote_unit=peering._placeholder(
+                "Ferner Musterverband", parent=Organization.platform(), type_="federation"
+            ),
+            remote_uuid=uuid.uuid4(),
+            peer=peer,
+            direction=Coupling.Direction.PARENT,
+            state=Coupling.State.ACTIVE,
+            options={"accept": {"todos": "on"}},
+        )
+        origin = TodoRemoteTask.objects.create(
+            organization=org, coupling=coupling, uid="gemeinsam-1", mode="common"
+        )
         task = Todo.objects.create(
             organization=org,
             owner=user,
             created_by=user,
             title="Alter Titel",
             remote_mode="common",
+            remote_origin=origin,
         )
     MaterialTodoLink.objects.create(organization=org, item_id=item["id"], todo=task)
     calls = []
@@ -252,9 +281,11 @@ def test_common_tasks_require_current_source_confirmation(material_setup, monkey
     assert client.get(f"{base}?todo={task.pk}").status_code == 404
 
     def confirmed(rows):
+        # Wie todos.remote.read_many: Die bestätigte Fassung schreibt der Systempfad
         for row in rows:
             row.title = "Aktuell bestätigter Titel"
-            row.save(update_fields=["title"])
+            with rls_bypass():
+                row.save(update_fields=["title"])
             yield row
 
     monkeypatch.setattr(remote, "fresh_rows", confirmed)
