@@ -13749,8 +13749,8 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
 
-msgid "Vorschlag für die Texte des Briefbogens abgelegt ({keys}). Übernommen wird er erst, wenn die Person ihn in HUBIplan unter Einstellungen › Briefbogen bestätigt; nach {days} Tagen verfällt er."
-msgstr "Proposal for the letterhead texts saved ({keys}). It only applies once the person confirms it in HUBIplan under Settings › Letterhead; it expires after {days} days."
+msgid "Vorschlag für die Texte des Briefbogens abgelegt ({keys}). Übernommen wird er erst, wenn die Person ihn in HUBIplan unter Einstellungen › Briefbogen bestätigt; nach {days} Tagen verfällt er Ein neuer Vorschlag dieser Verbindung ersetzt den offenen."
+msgstr "Proposal for the letterhead texts saved ({keys}). It only applies once the person confirms it in HUBIplan under Settings › Letterhead; it expires after {days} days A new proposal from this connection replaces the open one."
 
 msgid "Ändert den Briefbogen für Word-Vorlage und PDF-Briefe (Rechnungen, Mahnungen, Spendenquittungen, Rundschreiben): Aufbau, Logo, Schriften, Farben, Linien und Fußzeile. Gilt SOFORT, es gibt keinen Entwurf: vorher die Person fragen. Nur angegebene Werte ändern sich. Texte (Name im Briefkopf, Zusatzzeile, Anrede, Grußformel) werden nur als Vorschlag abgelegt; übernehmen kann ihn die Person in HUBIplan unter Einstellungen › Briefbogen. Braucht das Recht, die Einheit zu bearbeiten."
 msgstr "Changes the letterhead for the Word template and PDF letters (invoices, reminders, donation receipts, circulars): layout, logo, fonts, colours, lines and footer. Applies IMMEDIATELY, there is no draft: ask the person first. Only the given values change. Texts (name in the letterhead, additional line, salutation, closing) are only saved as a proposal; the person can accept it in HUBIplan under Settings › Letterhead. Requires the permission to edit the unit."
@@ -13763,3 +13763,9 @@ msgstr "Proposal for the letterhead"
 
 msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
 msgstr "Please update the app; HUBIplan no longer supports this version."
+
+msgid "Bitte nur Texte des Briefbogens angeben."
+msgstr "Please only provide letterhead texts."
+
+msgid "Für diesen Briefbogen liegen schon {count} offene Vorschläge. Bitte zuerst in HUBIplan unter Einstellungen › Briefbogen übernehmen oder verwerfen."
+msgstr "There are already {count} open proposals for this letterhead. Please apply or discard them first in HUBIplan under Settings › Letterhead."

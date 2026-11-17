@@ -123,51 +123,28 @@ def _read(args: dict, ctx: ClubContext) -> str:
 
 
 def _propose(args: dict, ctx: ClubContext, texts: list[str]) -> str:
-    """Freitexte als Vorschlag ablegen (Gesamtaudit 15.11., FF-12 a); geändert wird nichts."""
-    import datetime
+    """Freitexte als Vorschlag ablegen (Gesamtaudit 15.11., FF-12 a); geändert wird nichts.
 
-    from django.utils import timezone
-
-    from core.tenancy import rls_bypass
+    Über dieselbe Ansicht wie die Oberfläche: Recht „Einheit bearbeiten“ der Person, die die
+    Verbindung erlaubt hat, in dieser Einheit; Untereinheit wie beim Ändern."""
     from letterhead.models import LetterheadProposal
-    from letterhead.views import LetterheadSerializer
-    from organizations.models import Department, Organization
 
-    values = {FIELDS[key]: args[key] for key in texts}
     for key in texts:
         if not isinstance(args[key], str):
             raise ToolError(_("„%(name)s“ muss ein Text sein.") % {"name": key})
-    # Werte wie beim Bearbeiten prüfen, ohne zu speichern
-    check = LetterheadSerializer(data=values, partial=True)
-    if not check.is_valid():
-        raise ToolError(_dump(check.errors))
-    unit = args.get("untereinheit")
-    with rls_bypass():
-        if unit:
-            target = Department.objects.filter(pk=unit, organization_id=ctx.org_id).first()
-            if target is None:
-                raise ToolError(_("Diese Untereinheit gibt es hier nicht."))
-        else:
-            target = Organization.objects.get(pk=ctx.org_id)
-        LetterheadProposal.objects.create(
-            organization_id=ctx.org_id,
-            target=target,
-            texts=values,
-            grant=ctx.grant,
-            via=f"KI-Assistent ({ctx.grant.client.name})"[:120],
-            created_by_id=ctx.grant.user_id,
-            expires_at=timezone.now() + datetime.timedelta(days=LetterheadProposal.PROPOSAL_DAYS),
-        )
+    path, kwargs = _path(args)
+    values = {FIELDS[key]: args[key] for key in texts}
+    ctx.call(_views().LetterheadProposeView, "POST", path, {"texts": values}, **kwargs)
     return _(
         "Vorschlag für die Texte des Briefbogens abgelegt ({keys}). Übernommen wird er erst, "
         "wenn die Person ihn in HUBIplan unter Einstellungen › Briefbogen bestätigt; nach "
-        "{days} Tagen verfällt er."
+        "{days} Tagen verfällt er. Ein neuer Vorschlag dieser Verbindung ersetzt den offenen."
     ).format(keys=", ".join(texts), days=LetterheadProposal.PROPOSAL_DAYS)
 
 
 def _change(args: dict, ctx: ClubContext) -> str:
     texts = sorted(key for key in TEXT_FIELDS if args.get(key) is not None)
-    proposed = _propose(args, ctx, texts) if texts else ""
+    _path(args)  # Untereinheit vor allem anderen prüfen
     body: dict = {}
     for key, field in FIELDS.items():
         if key in TEXT_FIELDS or key not in args or args[key] is None:
@@ -187,12 +164,15 @@ def _change(args: dict, ctx: ClubContext) -> str:
                 if not isinstance(footer[key], bool):
                     raise ToolError(_("„%(name)s“ ist ja oder nein.") % {"name": key})
                 body[field] = footer[key]
-    if not body:
-        if proposed:
-            return proposed
+    if not body and not texts:
         raise ToolError(_("Bitte angeben, was sich am Briefbogen ändern soll."))
     path, kwargs = _path(args)
-    data = ctx.call(_view(args), "PATCH", path, body, **kwargs)
+    # Erst die übrigen Werte prüfen und speichern, dann den Vorschlag ablegen: Scheitert das
+    # Ändern, bleibt kein Vorschlag liegen
+    data = ctx.call(_view(args), "PATCH", path, body, **kwargs) if body else None
+    proposed = _propose(args, ctx, texts) if texts else ""
+    if data is None:
+        return proposed
     return (
         _(
             "Briefbogen geändert ({keys}). Er gilt ab sofort für neue Briefe, Rechnungen und die "

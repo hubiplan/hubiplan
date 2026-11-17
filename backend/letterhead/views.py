@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import datetime
+
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -252,6 +254,52 @@ class UnitLetterheadView(_OrgLetterheadMixin, APIView):
 
     def patch(self, request, org_id: int, unit_id: int):
         return Response(_update(request, self.target(unit_id), self.org))
+
+
+class LetterheadProposeView(_OrgLetterheadMixin, APIView):
+    """Vorschlag ablegen (Gesamtaudit 15.11., FF-12 a). Nur für die KI-Schnittstelle
+    (``mcpserver/club_letterhead.py``), daher ohne eigene Adresse. Recht und Einheitstypen
+    wie beim Bearbeiten (``org.edit``); ein neuer Vorschlag derselben Verbindung ersetzt
+    ihren offenen für dasselbe Ziel, je Ziel höchstens ``PROPOSALS_OPEN`` offene."""
+
+    PROPOSALS_OPEN = 5
+
+    def post(self, request, org_id: int, unit_id: int | None = None):
+        grant = getattr(request, "mcp_grant", None)
+        if grant is None:
+            raise PermissionDenied()
+        target = self.target(unit_id)
+        texts = request.data.get("texts") if isinstance(request.data, dict) else None
+        if not isinstance(texts, dict) or not texts or set(texts) - set(PROPOSAL_FIELDS):
+            raise ValidationError({"texts": gettext("Bitte nur Texte des Briefbogens angeben.")})
+        # Werte wie beim Bearbeiten prüfen, ohne zu speichern
+        LetterheadSerializer(data=texts, partial=True).is_valid(raise_exception=True)
+        now = timezone.now()
+        with transaction.atomic(), rls_bypass():
+            open_ = LetterheadProposal.objects.select_for_update().filter(
+                target=target, expires_at__gt=now
+            )
+            open_.filter(grant=grant).delete()
+            if open_.count() >= self.PROPOSALS_OPEN:
+                raise ValidationError(
+                    {
+                        "texts": gettext(
+                            "Für diesen Briefbogen liegen schon {count} offene Vorschläge. "
+                            "Bitte zuerst in HUBIplan unter Einstellungen › Briefbogen "
+                            "übernehmen oder verwerfen."
+                        ).format(count=self.PROPOSALS_OPEN)
+                    }
+                )
+            proposal = LetterheadProposal.objects.create(
+                organization=self.org,
+                target=target,
+                texts=texts,
+                grant=grant,
+                via=f"KI-Assistent ({grant.client.name})"[:120],
+                created_by=request.user,
+                expires_at=now + datetime.timedelta(days=LetterheadProposal.PROPOSAL_DAYS),
+            )
+        return Response({"id": proposal.pk}, status=201)
 
 
 class LetterheadProposalView(_OrgLetterheadMixin, APIView):
