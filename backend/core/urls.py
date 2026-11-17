@@ -12,6 +12,7 @@ from accounts import (
     learning,
     passkeys,
     self_service,
+    session_info,
     step_up,
 )
 from admission import urls as admission_urls
@@ -1198,6 +1199,7 @@ urlpatterns = [
     ),
     path("me/learning/", learning.LearningView.as_view(), name="my-learning"),
     path("me/appearance/", appearance.AppearanceView.as_view(), name="my-appearance"),
+    path("me/session/", session_info.SessionInfoView.as_view(), name="my-session"),
     path("me/home-actions/", home_actions.HomeActionsView.as_view(), name="my-home-actions"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),

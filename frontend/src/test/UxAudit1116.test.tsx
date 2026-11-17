@@ -41,8 +41,63 @@ describe('Abgelaufene Sitzung', () => {
       },
     })
     renderAt('/mitglieder/11')
+    // VW-04: erst die Rückfrage, die Seite bleibt stehen
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: /Zur Anmeldung wechseln/ }))
     expect(await screen.findByRole('heading', { name: 'Anmelden' })).toBeInTheDocument()
     expect(screen.getByText(/Deine Sitzung ist abgelaufen/)).toBeInTheDocument()
+  })
+
+  it('macht nach neuer Anmeldung in einem anderen Tab auf derselben Seite weiter (VW-04)', async () => {
+    let expired = false
+    const calls = fakeApi({
+      [SESSION]: () => (expired ? { status: 401, body: { status: 401 } } : loggedIn()),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [ORG] }),
+      [`GET ${base}/members/11/`]: () => {
+        expired = true
+        return { status: 403, body: { detail: 'Anmeldedaten fehlen.' } }
+      },
+    })
+    renderAt('/mitglieder/11')
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Deine Anmeldung ist abgelaufen',
+    })
+    expect(dialog).toHaveTextContent('Deine Eingaben bleiben erhalten')
+    const user = userEvent.setup()
+    // noch nicht wieder angemeldet: die Rückfrage bleibt
+    await user.click(screen.getByRole('button', { name: /Ich bin wieder angemeldet/ }))
+    expect(
+      await screen.findByRole('alertdialog', { name: 'Deine Anmeldung ist abgelaufen' }),
+    ).toBeInTheDocument()
+    // in einem anderen Tab neu angemeldet
+    expired = false
+    await user.click(screen.getByRole('button', { name: /Ich bin wieder angemeldet/ }))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(screen.queryByRole('heading', { name: 'Anmelden' })).not.toBeInTheDocument()
+    expect(calls.some((c) => c.key === 'GET /api/me/organizations/')).toBe(true)
+  })
+
+  it('warnt vor dem Ablauf und verlängert mit „Angemeldet bleiben“ (VW-04)', async () => {
+    let rest = 300
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [ORG] }),
+      'GET /api/me/session/': () => ({ status: 200, body: { expires_in: rest } }),
+      'POST /api/me/session/': () => {
+        rest = 43200
+        return { status: 200, body: { expires_in: rest } }
+      },
+    })
+    renderAt('/')
+    const user = userEvent.setup()
+    expect(
+      await screen.findByRole('alertdialog', {
+        name: 'Deine Anmeldung läuft in wenigen Minuten ab',
+      }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Angemeldet bleiben' }))
+    await waitFor(() => expect(calls.some((c) => c.key === 'POST /api/me/session/')).toBe(true))
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 
   it('bleibt bei fehlender Berechtigung angemeldet', async () => {

@@ -36,6 +36,7 @@ import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
 import { LeaveGuard } from './components/leaveGuard.ts'
 import { ColorSchemeSync } from './components/ColorSchemeSync.tsx'
+import { SessionWatch } from './auth/SessionWatch.tsx'
 import { formatTitle } from './components/pageTitle.ts'
 import { t } from './i18n/index.ts'
 
@@ -276,6 +277,7 @@ export default function App() {
     <>
       <LeaveGuard />
       <ColorSchemeSync />
+      <SessionWatch />
       <Routes>
         <Route element={<PublicShell />}>
           <Route path="/musik-gast" element={<GuestMusicPage />} />

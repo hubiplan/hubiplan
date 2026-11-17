@@ -22,6 +22,10 @@ interface AuthState {
   offline: boolean
   /** Die Sitzung ist während der Arbeit abgelaufen; die Anmeldeseite sagt das. */
   expired: boolean
+  /** Sitzung ist abgelaufen (VW-04): Dialog zeigen, Seite stehen lassen */
+  markExpired: () => void
+  resumeSession: () => void
+  leaveExpired: () => void
   setUser: (user: User | null) => void
   logout: () => Promise<boolean>
 }
@@ -94,18 +98,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Nicht übertragene Stand-Eingaben bleiben auf dem Gerät und gehören weiter zum Konto.
   useEffect(() => {
     if (!user) return
-    const lost = () => {
-      revision.current += 1
-      nextAuthGeneration()
-      suspendStandUser()
-      setExpired(true)
-      putUser(null)
-    }
+    // VW-04: Die Seite bleibt mit ihren Eingaben stehen; SessionWatch fragt, wie es weitergeht
+    const lost = () => setExpired(true)
     sessionLostListeners.add(lost)
     return () => {
       sessionLostListeners.delete(lost)
     }
   }, [user])
+
+  const markExpired = useCallback(() => setExpired(true), [])
+  /** Wieder angemeldet (in einem anderen Tab): hier ohne Neuladen weiterarbeiten */
+  const resumeSession = useCallback(() => setExpired(false), [])
+  /** Zur Anmeldung wechseln; die aufgerufene Seite merkt RequireAuth */
+  const leaveExpired = useCallback(() => {
+    revision.current += 1
+    nextAuthGeneration()
+    suspendStandUser()
+    setExpired(true)
+    putUser(null)
+  }, [])
 
   const logout = useCallback(async () => {
     const pending = pendingStandInputs()
@@ -138,8 +149,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   const value = useMemo(
-    () => ({ user, loading, offline, expired, setUser, logout }),
-    [user, loading, offline, expired, logout, setUser],
+    () => ({
+      user,
+      loading,
+      offline,
+      expired,
+      setUser,
+      logout,
+      markExpired,
+      resumeSession,
+      leaveExpired,
+    }),
+    [user, loading, offline, expired, logout, setUser, markExpired, resumeSession, leaveExpired],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
