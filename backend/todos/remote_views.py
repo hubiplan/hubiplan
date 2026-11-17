@@ -163,15 +163,17 @@ class RemoteAdoptView(RemoteScope, APIView):
     def post(self, request, remote_id, **kwargs):
         if "todos.edit" not in self.scope.permissions or self.scope.department_id:
             raise PermissionDenied()
-        mapping = get_object_or_404(
-            TodoRemoteTask.objects.select_for_update().select_related(
-                "coupling__peer", "coupling__local_unit"
-            ),
-            organization=self.org,
-            pk=remote_id,
-            active=True,
-            todo__isnull=True,
-        )
+        filters = {"organization": self.org, "pk": remote_id, "active": True, "todo__isnull": True}
+        # Zuerst unter der Sicht der Anfrage prüfen. FOR UPDATE verlangt zusätzlich die
+        # Schreibregel (dort "false"), deshalb nur die geprüfte Zeile als System sperren.
+        get_object_or_404(TodoRemoteTask.objects.only("pk"), **filters)
+        with rls_bypass():
+            mapping = get_object_or_404(
+                TodoRemoteTask.objects.select_for_update().select_related(
+                    "coupling__peer", "coupling__local_unit"
+                ),
+                **filters,
+            )
         answer = call(mapping, "todo.read")
         if not answer.get("available"):
             raise PermissionDenied()
