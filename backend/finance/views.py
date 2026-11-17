@@ -364,6 +364,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     @transaction.atomic
     def perform_create(self, serializer):
         self._open(date=serializer.validated_data["date"])
+        self._not_locked(serializer.validated_data["date"])
         year = self.org.fiscal_year_of(serializer.validated_data["date"])
         number = services.next_number(self.org.pk, year)
         instance = serializer.save(
@@ -526,6 +527,12 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         except DjangoValidationError as exc:
             raise serializers.ValidationError(" ".join(exc.messages)) from exc
 
+    def _not_locked(self, date):
+        try:
+            services.ensure_not_locked(self.org, date)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(" ".join(exc.messages)) from exc
+
     @staticmethod
     def _donation_editable(instance):
         try:
@@ -552,6 +559,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         self._open(year=instance.year)
         if "date" in serializer.validated_data:
             self._open(date=serializer.validated_data["date"])
+            if serializer.validated_data["date"] != instance.date:
+                self._not_locked(serializer.validated_data["date"])
         # Festgeschrieben (Folgemonat abgelaufen oder „Festschreiben bis“): nur noch Storno
         try:
             services.ensure_not_fixed(instance)

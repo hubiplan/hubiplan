@@ -84,6 +84,20 @@ def ensure_open(org, *, date: datetime.date | None = None, year: int | None = No
         )
 
 
+def ensure_not_locked(org, date: datetime.date) -> None:
+    """Fehler, wenn das Datum in der festgeschriebenen Kasse liegt („Festschreiben bis“).
+
+    Gesamtaudit 15.11., PUB-08: Neue Buchungen und Datumsänderungen in einen schon geprüften
+    Zeitraum hinein waren möglich. Dahinter steht ein Trigger der Datenbank (finance 0037)."""
+    if org.finance_locked_until and date <= org.finance_locked_until:
+        raise ValidationError(
+            gettext(
+                "Die Kasse ist bis {x:%d.%m.%Y} festgeschrieben. Buchungen in diesem Zeitraum "
+                "sind nicht mehr möglich; bitte mit heutigem Datum buchen."
+            ).format(x=org.finance_locked_until)
+        )
+
+
 def lock_years_from(org, first: int) -> None:
     """Geteilte Jahressperre für alle Geschäftsjahre ab ``first`` bis zum laufenden."""
     if not connection.in_atomic_block:
