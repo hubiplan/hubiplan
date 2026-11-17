@@ -1,6 +1,7 @@
 // Rückgängig/Wiederherstellen in der Kopfleiste, Strg+Z / Strg+Y und ein kurzer Hinweis.
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { dismissNotice, groupSteps, redo, undo, useUndo } from './undo.ts'
 import { t } from '../i18n/index.ts'
 
@@ -47,7 +48,14 @@ function StepList({
   )
 }
 
-export function UndoControls({ base }: { base: string }) {
+export function UndoControls({
+  base,
+  logTo,
+}: {
+  base: string
+  /** Adresse des Änderungsprotokolls, wenn die Person es lesen darf */
+  logTo?: string
+}) {
   const { canUndo, canRedo, notice, undoList, redoList, busy } = useUndo(base)
   const [open, setOpen] = useState(false)
   const panel = useRef<HTMLDivElement>(null)
@@ -123,7 +131,7 @@ export function UndoControls({ base }: { base: string }) {
             type="button"
             className="button button-ghost undo-button"
             onClick={() => setOpen((o) => !o)}
-            disabled={busy || (undoList.length === 0 && redoList.length === 0)}
+            disabled={busy}
             aria-expanded={open}
             title={t('Letzte Schritte')}
             aria-label={t('Letzte Schritte')}
@@ -148,6 +156,22 @@ export function UndoControls({ base }: { base: string }) {
                   void redo(base, n)
                 }}
               />
+              {/* VW-56: sagen, wie weit die Liste reicht und wo Älteres steht */}
+              <p className="undo-history-note">
+                {undoList.length === 0 && redoList.length === 0
+                  ? t('In diesem Browserfenster gibt es noch keine Schritte zum Zurücknehmen.')
+                  : t('Die Liste zeigt deine Schritte in diesem Browserfenster.')}{' '}
+                {logTo ? (
+                  <>
+                    {t('Ältere Änderungen:')}{' '}
+                    <Link to={logTo} onClick={() => setOpen(false)}>
+                      {t('Einstellungen › Protokoll')}
+                    </Link>
+                  </>
+                ) : (
+                  t('Ältere Änderungen stehen im Protokoll unter Einstellungen.')
+                )}
+              </p>
             </div>
           )}
         </div>

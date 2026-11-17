@@ -14,6 +14,7 @@ import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { ShootoffBlock } from './Shootoffs.tsx'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { useSportText } from './words.ts'
 
 export function ResultsPanel({
   org,
@@ -24,6 +25,7 @@ export function ResultsPanel({
   comp: CompetitionDetail
   onChanged: () => void
 }) {
+  const sw = useSportText()
   const standings = useLoad(() => competitionsApi.standings(org, comp.id), [org, comp.id])
   const shootoffs = useLoad(() => competitionsApi.shootoffs(org, comp.id), [org, comp.id])
   const closed = comp.status === 'endgueltig'
@@ -58,7 +60,7 @@ export function ResultsPanel({
         <Alert kind="info">
           <Term k="comp_tie">{t('Gleichstand')}</Term> {t('auf')}{' '}
           <Term k="comp_prize_place">{t('Preisplätzen')}</Term>
-          {t(': Stechen nötig. Erst danach lässt sich der Wettbewerb endgültig abschließen.')}
+          {sw(': Stechen nötig. Erst danach lässt sich der Wettbewerb endgültig abschließen.')}
         </Alert>
       )}
       {data.scorings.map((block) => {
@@ -186,10 +188,11 @@ function BirdResults({ bird }: { bird: BirdState }) {
 }
 
 function ForeignTable({ block }: { block: StandingBlock }) {
+  const sw = useSportText()
   const team = block.kind === 'mannschaft'
   if (!block.rows.length)
     return (
-      <p className="muted">{team ? t('Noch keine Mannschaften.') : t('Noch keine Schützen.')}</p>
+      <p className="muted">{team ? t('Noch keine Mannschaften.') : sw('Noch keine Schützen.')}</p>
     )
   return (
     <div className="table-scroll">
@@ -198,7 +201,7 @@ function ForeignTable({ block }: { block: StandingBlock }) {
           <tr>
             <th className="num">{t('Platz')}</th>
             <th>{team ? t('Mannschaft') : t('Name')}</th>
-            <th>{team ? t('Schützen') : t('Einheit')}</th>
+            <th>{team ? sw('Schützen') : t('Einheit')}</th>
             <th className="num">{t('Wert')}</th>
             <th>{t('Bemerkung')}</th>
           </tr>
@@ -225,6 +228,7 @@ function ForeignTable({ block }: { block: StandingBlock }) {
 }
 
 function StandingTable({ block }: { block: StandingBlock }) {
+  const sw = useSportText()
   const unit = block.kind === 'einheit'
   const hasShootoff = block.rows.some((r) => r.shootoff && Object.keys(r.shootoff).length)
   if (!block.rows.length) return <p className="muted">{t('Noch keine Ergebnisse.')}</p>
@@ -235,12 +239,12 @@ function StandingTable({ block }: { block: StandingBlock }) {
           <tr>
             <th className="num">{t('Platz')}</th>
             <th>{unit ? t('Einheit') : t('Name')}</th>
-            <th>{unit ? t('Schützen') : t('Einheit / Verein')}</th>
-            {unit && <th>{t('Bester Schütze')}</th>}
+            <th>{unit ? sw('Schützen') : t('Einheit / Verein')}</th>
+            {unit && <th>{sw('Bester Schütze')}</th>}
             <th className="num">{t('Wert')}</th>
             {hasShootoff && (
               <th className="num">
-                <Term k="comp_shootoff">{t('Stechen')}</Term>
+                <Term k="comp_shootoff">{sw('Stechen')}</Term>
               </th>
             )}
           </tr>
@@ -288,11 +292,12 @@ function StandingTable({ block }: { block: StandingBlock }) {
 }
 
 function StatsCard({ stats }: { stats: Stats }) {
+  const sw = useSportText()
   return (
     <div className="card card-wide">
       <h2>{t('Kennzahlen')}</h2>
       <dl className="stats-list">
-        <dt>{t('Schützen')}</dt>
+        <dt>{sw('Schützen')}</dt>
         <dd>
           {stats.count}{' '}
           {t('({members} Mitglieder, {guests} Gäste)', {
@@ -313,7 +318,7 @@ function StatsCard({ stats }: { stats: Stats }) {
             <thead>
               <tr>
                 <th>{t('Einheit')}</th>
-                <th className="num">{t('Schützen')}</th>
+                <th className="num">{sw('Schützen')}</th>
                 <th className="num">{t('Mitglieder')}</th>
                 <th className="num">{t('Beteiligung')}</th>
                 <th className="num">{t('Durchschnitt')}</th>

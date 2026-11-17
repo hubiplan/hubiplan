@@ -15,8 +15,10 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { useSportText } from './words.ts'
 
 export function ForeignPanel({ org, comp }: { org: number; comp: CompetitionDetail }) {
+  const sw = useSportText()
   const starters = useLoad(() => competitionsApi.starters(org, comp.id), [org, comp.id])
   const teams = useLoad(() => competitionsApi.teams(org, comp.id), [org, comp.id])
   const standings = useLoad(() => competitionsApi.standings(org, comp.id), [org, comp.id])
@@ -66,7 +68,7 @@ export function ForeignPanel({ org, comp }: { org: number; comp: CompetitionDeta
       {error && <Alert kind="error">{error}</Alert>}
       {!closed && (
         <div className="card card-wide">
-          <h2>{t('Eigene Schützen')}</h2>
+          <h2>{sw('Eigene Schützen')}</h2>
           <label className="field">
             <span>{t('Mitglied hinzufügen (Name)')}</span>
             <input value={query} autoComplete="off" onChange={(e) => setQuery(e.target.value)} />
@@ -227,6 +229,7 @@ function PlacingCard({
   closed: boolean
   onSaved: () => void
 }) {
+  const sw = useSportText()
   const [error, setError] = useState<string | null>(null)
   const team = scoring.kind === 'mannschaft'
 
@@ -272,7 +275,7 @@ function PlacingCard({
         </p>
       )}
       {!block.rows.length ? (
-        <p className="muted">{team ? t('Noch keine Mannschaft.') : t('Noch keine Schützen.')}</p>
+        <p className="muted">{team ? t('Noch keine Mannschaft.') : sw('Noch keine Schützen.')}</p>
       ) : (
         <div className="table-scroll">
           <table className="table">
