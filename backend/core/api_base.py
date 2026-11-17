@@ -16,7 +16,7 @@ from access.permissions import allowed_codes, permissions_in
 from audit.log import diff, record, snapshot
 from organizations.models import Organization
 
-from .tenancy import scope_of, set_rls
+from .tenancy import federation_access, scope_of, set_rls
 
 
 def has_needed(perms: set[str], needed: str | tuple[str, ...] | None) -> bool:
@@ -69,10 +69,9 @@ class OrgScopedMixin:
         self.org = org
         self.org_permissions = perms
         # Dachverband: Zugriff auf Mitgliedsdaten seiner Vereine nur gemäß Plattform-Freigabe
-        fed_access = ""
-        if org.type == Organization.Type.FEDERATION and org.federation_member_access != "none":
-            fed_access = org.federation_member_access
-        set_rls(org.pk, request.user.pk, scope_id=scope_of(org.pk), fed_access=fed_access)
+        set_rls(
+            org.pk, request.user.pk, scope_id=scope_of(org.pk), fed_access=federation_access(org)
+        )
 
 
 class AuditMixin:

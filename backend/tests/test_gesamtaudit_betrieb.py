@@ -56,7 +56,7 @@ def test_klartext_und_falscher_schluessel_werden_abgewiesen(user, settings):
     instance = Authenticator.objects.get(user=user, type="totp")
     with pytest.raises(ImproperlyConfigured):
         TOTP(instance).validate_code(totp_code(SECRET))
-    instance.data = {"secret": mfa.encrypt(SECRET)}
+    instance.data = {"secret": mfa.encrypt(SECRET, purpose="mfa")}
     instance.save()
     settings.MFA_ENCRYPTION_KEYS = [Fernet.generate_key().decode()]
     with pytest.raises(ImproperlyConfigured):
@@ -83,9 +83,12 @@ def test_migration_verschluesselt_vorhandene_eintraege(user):
     migration.encrypt_all(apps, None)  # zweimal schadet nicht
     totp = stored(user, "totp")
     codes = stored(other, "recovery_codes")
-    assert mfa.decrypt(totp["secret"]) == SECRET
-    assert mfa.decrypt(codes["seed"]) == "abcdef"
-    assert [mfa.decrypt(c) for c in codes["migrated_codes"]] == ["11111111", "22222222"]
+    assert mfa.decrypt(totp["secret"], purpose="mfa") == SECRET
+    assert mfa.decrypt(codes["seed"], purpose="mfa") == "abcdef"
+    assert [mfa.decrypt(c, purpose="mfa") for c in codes["migrated_codes"]] == [
+        "11111111",
+        "22222222",
+    ]
     assert codes["used_mask"] == 0
     assert "abcdef" not in str(codes) and SECRET not in str(totp)
 
@@ -98,7 +101,7 @@ def test_schluesselwechsel(user, settings):
     settings.MFA_ENCRYPTION_KEYS = [new, old]
     call_command("mfa_schluessel_wechseln", stdout=io.StringIO())
     settings.MFA_ENCRYPTION_KEYS = [new]
-    assert mfa.decrypt(stored(user, "totp")["secret"]) == SECRET
+    assert mfa.decrypt(stored(user, "totp")["secret"], purpose="mfa") == SECRET
 
 
 def test_loeschfrist_entfernt_zusatzfelder_meldungen_und_zugang(orgs):

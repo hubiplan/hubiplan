@@ -54,19 +54,21 @@ def test_fremdes_feld_chiffrat_bleibt_unlesbar(api, board_a, board_b, orgs):
 
 
 def test_mfa_encrypt_verschluesselt_auch_chiffrat_eingaben():
-    chiffrat = encrypt(TOTP_SECRET)
-    doppelt = encrypt(chiffrat)
+    chiffrat = encrypt(TOTP_SECRET, purpose="mfa")
+    doppelt = encrypt(chiffrat, purpose="mfa")
     assert doppelt != chiffrat
-    assert decrypt(doppelt) == chiffrat
+    assert decrypt(doppelt, purpose="mfa") == chiffrat
     # Bestandsläufe lassen Verschlüsseltes unverändert
-    assert ensure_encrypted(chiffrat) == chiffrat
-    assert decrypt(ensure_encrypted(TOTP_SECRET)) == TOTP_SECRET
+    assert ensure_encrypted(chiffrat, purpose="mfa") == chiffrat
+    assert decrypt(ensure_encrypted(TOTP_SECRET, purpose="mfa"), purpose="mfa") == TOTP_SECRET
 
 
 def test_totp_geheimnis_fliesst_nicht_an_fremde_nextcloud(api, orgs, board_a, board_b, monkeypatch):
     with rls_bypass():
         auth = Authenticator.objects.create(
-            user=board_a, type=Authenticator.Type.TOTP, data={"secret": encrypt(TOTP_SECRET)}
+            user=board_a,
+            type=Authenticator.Type.TOTP,
+            data={"secret": encrypt(TOTP_SECRET, purpose="mfa")},
         )
     with connection.cursor() as cursor:
         cursor.execute("SELECT data FROM mfa_authenticator WHERE id = %s", [auth.pk])
