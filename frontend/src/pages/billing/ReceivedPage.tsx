@@ -1,4 +1,5 @@
 // Verein: Rechnungen des Dachverbands an den Verein.
+import { useRowSearch } from '../../components/RowSearch.tsx'
 import { billingApi } from '../../api/billing.ts'
 import { euro } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
@@ -12,6 +13,11 @@ export function ReceivedPage() {
   const org = useActiveOrg()
   const terms = useTerms()
   const { data, error } = useLoad(() => billingApi.received(org.id), [org.id])
+  const search = useRowSearch(
+    data?.invoices ?? [],
+    (inv) => `${inv.number} ${inv.subject}`,
+    t('Rechnungen'),
+  )
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading />
   if (!data.federation)
@@ -31,6 +37,7 @@ export function ReceivedPage() {
         <p className="muted">{t('Noch keine Rechnungen.')}</p>
       ) : (
         <div className="table-scroll">
+          {search.field}
           <table className="table">
             <thead>
               <tr>
@@ -44,7 +51,7 @@ export function ReceivedPage() {
               </tr>
             </thead>
             <tbody>
-              {data.invoices.map((inv) => (
+              {search.shown.map((inv) => (
                 <tr key={inv.id}>
                   <td>{inv.number}</td>
                   <td>

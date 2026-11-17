@@ -7221,3 +7221,12 @@ html {
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
+
+/* Suchfeld über einfachen Tabellen ab mehr als 20 Zeilen (UX-Audit 16.11. VW-21) */
+.row-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}

@@ -1,5 +1,6 @@
 // Einstellungen › Konten: wer sich anmelden kann, mit Filtern und Sammelversand
 // (Rollen-Vorschlag R4, konzepte/rollen-zugaenge.md).
+import { useRowSearch } from '../../components/RowSearch.tsx'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { accountsApi } from '../../api/accounts.ts'
@@ -48,10 +49,15 @@ export function AccountsPage() {
   const canSend = can(PERM.loginsEdit) || can(PERM.rolesManage)
   const canOpen = can(PERM.membersView)
 
+  const test = FILTERS.find((f) => f.value === filter)!.test
+  const search = useRowSearch(
+    (accounts.data ?? []).filter(test),
+    (a) => `${a.name} ${a.email}`,
+    t('Konten'),
+  )
   if (accounts.error) return <LoadError message={accounts.error} onRetry={accounts.reload} />
   if (!accounts.data) return <Loading />
-  const test = FILTERS.find((f) => f.value === filter)!.test
-  const rows = accounts.data.filter(test)
+  const rows = search.shown
   const picked = rows.filter((a) => chosen.has(a.id))
   const allPicked = rows.length > 0 && picked.length === rows.length
 
@@ -111,6 +117,7 @@ export function AccountsPage() {
             </option>
           ))}
         </SelectField>
+        {search.field}
         <p className="muted small">{tn('Ein Konto', '{n} Konten', rows.length)}</p>
         <div className="table-scroll">
           <table className="table" aria-label={t('Konten')}>

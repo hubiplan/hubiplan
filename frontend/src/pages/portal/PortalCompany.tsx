@@ -1,5 +1,6 @@
 // Mein Bereich › Firma (Haushalte und Firmen H5): Ansprechpartner einer Firma, die für
 // Mitarbeiter zahlt, sehen nur Name, seit wann und ob der Beitrag über die Firma läuft.
+import { useRowSearch } from '../../components/RowSearch.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../../api/client.ts'
@@ -66,6 +67,7 @@ function CompanyCard({
   onMembers: (members: CompanyEmployee[]) => void
 }) {
   const [ending, setEnding] = useState<number | null>(null)
+  const search = useRowSearch(members, (m) => m.name, name)
   return (
     <section className="card stack" aria-label={name}>
       <h2>{name}</h2>
@@ -73,6 +75,7 @@ function CompanyCard({
         <p className="muted">{t('Noch niemand eingetragen.')}</p>
       ) : (
         <div className="table-scroll">
+          {search.field}
           <table className="table">
             <thead>
               <tr>
@@ -85,7 +88,7 @@ function CompanyCard({
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => (
+              {search.shown.map((m) => (
                 <tr key={m.link}>
                   <td>{m.name}</td>
                   <td>
