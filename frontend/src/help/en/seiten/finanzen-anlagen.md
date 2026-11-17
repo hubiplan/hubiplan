@@ -1,6 +1,6 @@
 ---
 key: page.finance_assets
-titel: Finance › Assets
+titel: Finance › Fixed assets
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/anlagen]

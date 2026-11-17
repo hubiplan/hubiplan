@@ -41,7 +41,7 @@ export function AccountsPage() {
   return (
     <div className="card card-wide">
       <div className="card-head">
-        <h2>{t('Konten')}</h2>
+        <h2>{t('Bankkonten und Kassen')}</h2>
         {canEdit && editing === null && (
           <button
             type="button"

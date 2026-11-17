@@ -30,16 +30,16 @@ export function NoAccessPage({
         : null
   return (
     <section className="card" data-testid="kein-zugriff">
-      <Heading>{t('Kein Zugriff in diesem Arbeitsbereich')}</Heading>
+      <Heading>{t('Kein Zugriff in dieser Einheit')}</Heading>
       <p>
         {reason === 'right'
-          ? t('Für diese Seite fehlt dir im aktuellen Arbeitsbereich das nötige Recht.')
-          : t('Diese Seite gehört zu einem anderen Arbeitsbereich.')}
+          ? t('Für diese Seite fehlt dir in der gewählten Einheit das nötige Recht.')
+          : t('Diese Seite gehört zu einer anderen Einheit.')}
         {current && t(' Aktuell gewählt: {current}.', { current })}
       </p>
       <p className="muted">
         {t(
-          'Falls du mehrere Zugänge hast, wechsle oben rechts den Arbeitsbereich. Sonst hilft dir eine Person aus dem Vorstand weiter.',
+          'Falls du in mehreren Einheiten arbeitest, wechsle oben rechts die Einheit. Sonst hilft dir weiter, wer bei euch die Konten verwaltet.',
         )}
       </p>
       <div className="button-row">
@@ -75,7 +75,7 @@ export function SubpageUnavailable({ to, label }: { to: string; label: string })
     <div className="card">
       <p>
         {t(
-          'Diese Ansicht gibt es nicht oder sie ist in deinem Arbeitsbereich nicht verfügbar, z. B. weil das Recht dafür fehlt oder der Link veraltet ist.',
+          'Diese Ansicht gibt es nicht oder sie ist in deiner Einheit nicht verfügbar, z. B. weil das Recht dafür fehlt oder der Link veraltet ist.',
         )}
       </p>
       <div className="button-row">

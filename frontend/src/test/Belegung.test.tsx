@@ -142,7 +142,7 @@ describe('Belegung', () => {
   it('verlangt ein Leserecht', async () => {
     show(['members.view'])
     expect(
-      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+      await screen.findByRole('heading', { name: 'Kein Zugriff in dieser Einheit' }),
     ).toBeInTheDocument()
   })
 

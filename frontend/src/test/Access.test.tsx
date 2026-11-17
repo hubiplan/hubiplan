@@ -393,7 +393,7 @@ describe('Persönliches im Kontomenü', () => {
     const user = userEvent.setup()
     await screen.findByRole('heading', { name: 'TV Beispielhausen' })
     // Die Auswahl oben zeigt nur Verwaltungsbereiche
-    expect(screen.queryByRole('combobox', { name: 'Organisation wechseln' })).toBeNull()
+    expect(screen.queryByRole('combobox', { name: 'Einheit wechseln' })).toBeNull()
     await user.click(screen.getByRole('button', { name: /Mein Konto/ }))
     const menu = screen.getByRole('navigation', { name: 'Mein Konto' })
     expect(within(menu).getByText('Mein Bereich')).toBeInTheDocument()

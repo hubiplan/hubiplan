@@ -152,7 +152,7 @@ export function HomePage() {
         <h1>{t('Willkommen')}</h1>
         <div className="card">
           <p>
-            {t('Deinem Konto ({email}) ist noch keine Organisation zugeordnet.', {
+            {t('Deinem Konto ({email}) ist noch keine Einheit zugeordnet.', {
               email: user?.email,
             })}
           </p>
