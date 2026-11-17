@@ -1,6 +1,7 @@
 // Ende des Schießens im Standmodus (Ralf 2026-11-01): wer noch fehlt, „Schießen beenden“
 // (vorläufig), Stechen anlegen und erfassen, dann endgültig abschließen. Stechen auch per
 // Standzugang; Beenden und Abschluss nur angemeldet mit „Wettbewerbe verwalten“.
+import { useSportText } from './words.ts'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   competitionsApi,
@@ -42,6 +43,7 @@ export function StandEnd({
   setLocal: (change: (l: Local) => Local) => void
   push: (op: SyncOp) => void
 }) {
+  const sw = useSportText()
   const [error, setError] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
   useVersion(api, () => setTick((tm) => tm + 1))
@@ -93,14 +95,14 @@ export function StandEnd({
 
   async function endShooting() {
     const ok = await confirmDialog({
-      title: t('Schießen beenden'),
+      title: sw('Schießen beenden'),
       message: missing.length
         ? t(
             'Noch ohne Ergebnis: {x}. Trotzdem beenden? Die Ergebnisse gelten dann als vorläufig; Nachträge und Stechen bleiben möglich.',
             { x: missing.join(', ') },
           )
         : t('Die Ergebnisse gelten dann als vorläufig; Nachträge und Stechen bleiben möglich.'),
-      confirmLabel: t('Schießen beenden'),
+      confirmLabel: sw('Schießen beenden'),
       danger: false,
     })
     if (!ok || org === undefined) return
@@ -140,13 +142,13 @@ export function StandEnd({
           {missing.length
             ? t('Noch ohne Ergebnis: {n} ({x})', { n: missing.length, x: missing.join(', ') })
             : t('Alle Schützen haben ein Ergebnis.')}
-          {ended ? t(' · Schießen beendet, Ergebnisse vorläufig.') : ''}
+          {ended ? sw(' · Schießen beendet, Ergebnisse vorläufig.') : ''}
         </p>
         {error && <p className="alert alert-error">{error}</p>}
         {org !== undefined && comp.can_manage && !ended && (
           <div className="button-row">
             <button type="button" className="button" onClick={() => void endShooting()}>
-              {t('Schießen beenden')}
+              {sw('Schießen beenden')}
             </button>
           </div>
         )}
