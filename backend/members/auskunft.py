@@ -464,11 +464,43 @@ def _account(user, org_ids: list[int]) -> dict:
         TodoShare,
     )
 
-    signature = StoredSignature.objects.filter(user=user).first()
-    own = Todo.objects.filter(owner=user, organization_id__in=org_ids, deleted_at__isnull=True)
-    shared_with = Todo.objects.filter(
-        shares__user=user, organization_id__in=org_ids, deleted_at__isnull=True
-    ).distinct()
+    # Diese Tabellen liegen je Konto unter dem Zeilenschutz: Der anfragende Vorstand sähe dort
+    # nur seine eigenen Zeilen, und die Auskunft behauptete „nichts vorhanden“ (Gesamtaudit
+    # 15.11., AZ-04). Jede Abfrage ist fest auf genau dieses Konto und, wo die Daten einer
+    # Einheit gehören, auf die Einheiten der Auskunft (org_ids) eingegrenzt.
+    with rls_bypass():
+        signature = StoredSignature.objects.filter(user=user).first()
+        own = list(
+            Todo.objects.filter(
+                owner=user, organization_id__in=org_ids, deleted_at__isnull=True
+            ).order_by("created_at")
+        )
+        shared_with = list(
+            Todo.objects.filter(
+                shares__user=user, organization_id__in=org_ids, deleted_at__isnull=True
+            )
+            .distinct()
+            .order_by("created_at")
+        )
+        nextcloud = list(
+            Account.objects.filter(user=user, organization_id__in=org_ids).select_related("client")
+        )
+        grants = list(
+            McpGrant.objects.filter(user=user, organization_id__in=org_ids).select_related("client")
+        )
+        letterheads = _rows(
+            LetterheadChoice.objects.filter(user=user, unit_id__in=org_ids), {"user", "unit"}
+        )
+        shares = TodoShare.objects.filter(user=user, organization_id__in=org_ids).count()
+        todo_prefs = _rows(TodoPreference.objects.filter(user=user))
+        reminder_configs = _rows(
+            TodoReminderConfig.objects.filter(user=user, organization_id__in=org_ids)
+        )
+        reminders = TodoReminder.objects.filter(user=user, organization_id__in=org_ids).count()
+        notices = TodoNotice.objects.filter(user=user, organization_id__in=org_ids).count()
+        music = _rows(
+            MusicReminderPreference.objects.filter(user=user, organization_id__in=org_ids)
+        )
 
     def todo(t, content: bool) -> dict:
         row = {
@@ -523,9 +555,7 @@ def _account(user, org_ids: list[int]) -> dict:
                 "letzte_anmeldung": a.last_login_at,
                 "von_hubiplan_deaktiviert": a.disabled_by_hubiplan,
             }
-            for a in Account.objects.filter(user=user, organization_id__in=org_ids).select_related(
-                "client"
-            )
+            for a in nextcloud
         ],
         "ki_assistenten": [
             {
@@ -536,33 +566,23 @@ def _account(user, org_ids: list[int]) -> dict:
                 "gültig_bis": g.expires_at,
                 "getrennt": g.revoked_at,
             }
-            for g in McpGrant.objects.filter(user=user, organization_id__in=org_ids).select_related(
-                "client"
-            )
+            for g in grants
         ],
         "andere_instanzen": [
             {"instanz": r.peer.base_url, "angelegt": r.created_at, "zuletzt": r.last_used_at}
             for r in RemoteAccount.objects.filter(user=user).select_related("peer")
         ],
-        "briefbogen": _rows(
-            LetterheadChoice.objects.filter(user=user, unit_id__in=org_ids), {"user", "unit"}
-        ),
+        "briefbogen": letterheads,
         "aufgaben": {
-            "eigene": [todo(t, t.shared) for t in own.order_by("created_at")],
-            "mit_dir_geteilt": [todo(t, True) for t in shared_with.order_by("created_at")],
-            "freigaben": TodoShare.objects.filter(user=user, organization_id__in=org_ids).count(),
-            "einstellungen": _rows(TodoPreference.objects.filter(user=user)),
-            "erinnerungen": _rows(
-                TodoReminderConfig.objects.filter(user=user, organization_id__in=org_ids)
-            ),
-            "geplante_erinnerungen": TodoReminder.objects.filter(
-                user=user, organization_id__in=org_ids
-            ).count(),
-            "hinweise": TodoNotice.objects.filter(user=user, organization_id__in=org_ids).count(),
+            "eigene": [todo(t, t.shared) for t in own],
+            "mit_dir_geteilt": [todo(t, True) for t in shared_with],
+            "freigaben": shares,
+            "einstellungen": todo_prefs,
+            "erinnerungen": reminder_configs,
+            "geplante_erinnerungen": reminders,
+            "hinweise": notices,
         },
-        "musik_erinnerungen": _rows(
-            MusicReminderPreference.objects.filter(user=user, organization_id__in=org_ids)
-        ),
+        "musik_erinnerungen": music,
     }
 
 
@@ -665,13 +685,7 @@ def build(membership: Membership, org) -> bytes:
             }
         )
     files["zugang.json"] = _dump(access_rows)
-    # Kontodaten gehören der Person, nicht der anfragenden: Unter dem Zeilenschutz sähe der
-    # Vorstand etwa die hinterlegte Unterschrift nicht, und die Auskunft behauptete „keine“.
-    # Jede Abfrage in _account grenzt selbst auf das Konto und die Einheiten ein
-    # (Gesamtaudit 15.11., AZ-04).
-    with rls_bypass():
-        accounts = [_account(u, org_ids) for u in _users(membership, org_ids)]
-    files["konto.json"] = _dump(accounts)
+    files["konto.json"] = _dump([_account(u, org_ids) for u in _users(membership, org_ids)])
 
     files["termine.json"] = _dump(
         [
