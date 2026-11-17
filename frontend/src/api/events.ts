@@ -111,6 +111,8 @@ export interface ResponseList {
   capacity: number | null
   items: ResponseRow[]
   open: { membership_id: number; name: string; departments: string }[]
+  /** Mit Seiten (Gesamtaudit 15.11., PF-28): mehr vorhanden? */
+  page?: { page: number; pages: number; total: number; more: boolean }
 }
 
 export interface EventList {
@@ -433,6 +435,18 @@ export const eventApi = {
     api.delWith<EventDetail>(`${base}events/${id}/response/`, {}),
   responses: (base: CalendarBase, id: number) =>
     api.get<ResponseList>(`${base}events/${id}/responses/`),
+  /** Rückmeldungen seitenweise: die ersten ``pages`` Seiten zu je 200 zusammen */
+  responsePages: async (base: CalendarBase, id: number, pages: number): Promise<ResponseList> => {
+    let all: ResponseList | null = null
+    for (let page = 1; page <= pages; page++) {
+      const part = await api.get<ResponseList>(`${base}events/${id}/responses/?seite=${page}`)
+      all = all
+        ? { ...part, items: [...all.items, ...part.items], open: [...all.open, ...part.open] }
+        : part
+      if (!part.page?.more) break
+    }
+    return all as ResponseList
+  },
   enterResponse: (
     base: CalendarBase,
     id: number,

@@ -162,6 +162,27 @@ def tenant_context(
         _apply(previous)
 
 
+def federation_access(org) -> str:
+    """Freigabe der Plattform für einen Dachverband auf Mitgliedsdaten seiner Vereine
+    (``read``/``write``), sonst leer. Gilt für Anfragen und Hintergrundaufträge gleich."""
+    from organizations.models import Organization
+
+    if org.type == Organization.Type.FEDERATION and org.federation_member_access != "none":
+        return org.federation_member_access
+    return ""
+
+
+@contextmanager
+def org_context(org, user_id: int | None = None) -> Iterator[None]:
+    """Wie ``tenant_context``, dazu die Dachverbandsfreigabe wie in einer Anfrage.
+
+    Gesamtaudit 15.11., AZ-02: Hintergrundaufträge eines Dachverbands liefen ohne die
+    Freigabe und sahen unter der Rolle der Anwendung keine Vereinsmitglieder."""
+    with tenant_context(org.pk, user_id):
+        _apply(replace(get_rls(), fed_access=federation_access(org)))
+        yield
+
+
 @contextmanager
 def unit_context(org_id: int) -> Iterator[None]:
     """Arbeitet streng im Bereich einer Organisation, auch innerhalb von ``rls_bypass``.

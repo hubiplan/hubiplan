@@ -172,6 +172,8 @@ def _move_data(c: Coupling) -> dict | None:
         "fingerprint": move.get("fingerprint", ""),
         "country": move.get("country", ""),
         "at": move.get("at"),
+        # Aus einer Vereinsdatei übernommen (Gesamtaudit 15.11., AZ-01), kein Umzug der Gegenseite
+        "import": bool(move.get("import")),
     }
 
 
@@ -316,6 +318,7 @@ class OverviewView(_Peering):
 
 class CodeView(_Peering):
     def post(self, request, org_id):
+        step_up.require(request)  # Gesamtaudit 15.11., AZ-11
         try:
             text, code = services.create_code(self.org, request.user)
         except DjangoValidationError as exc:
@@ -333,6 +336,7 @@ class InspectView(_Peering):
 
 class JoinView(_Peering):
     def post(self, request, org_id):
+        step_up.require(request)
         try:
             coupling = services.request_coupling(
                 self.org,
@@ -383,6 +387,8 @@ class CouplingView(_Peering):
 class CouplingActionView(_Peering):
     def post(self, request, org_id, pk, action):
         coupling = self.coupling(pk)
+        if action in ("accept", "resume", "move-confirm"):
+            step_up.require(request)  # Daten fließen danach (Gesamtaudit 15.11., AZ-11)
         try:
             if action == "accept":
                 coupling = services.accept(coupling, request.user, request.data.get("packets"))
@@ -639,6 +645,7 @@ class MoveView(_Peering):
             if not fingerprint:
                 info = moving.inspect_target(base_url)
                 return Response({"base_url": info["base_url"], "fingerprint": info["fingerprint"]})
+            step_up.require(request)
             return Response(moving.announce(self.org, base_url, fingerprint, request.user))
         except DjangoValidationError as exc:
             _raise(exc)

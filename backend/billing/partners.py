@@ -238,14 +238,74 @@ class PartnerSerializer(serializers.ModelSerializer):
         return data
 
 
+# Advisory-Sperre je Einheit für die Partnernummer (zweiter Schlüssel: Einheit)
+NUMBER_LOCK_KEY = 300002
+
+
 def next_number(org) -> str:
-    """Fortlaufende Partnernummer „GP-0001“ (GP-12); bestehende Nummern bleiben."""
+    """Fortlaufende Partnernummer „GP-0001“ (GP-12); bestehende Nummern bleiben.
+
+    Gesamtaudit 15.11., PF-25: In einer Transaktion sperrt der Aufruf die Nummernvergabe der
+    Einheit bis zum Ende der Transaktion; gleichzeitige Anlagen (E-Rechnungen, Import) bekommen
+    so verschiedene Nummern. Dahinter steht die Eindeutigkeit in der Datenbank."""
+    from django.db import connection
+
+    if connection.vendor == "postgresql" and connection.in_atomic_block:
+        with connection.cursor() as cur:
+            cur.execute("SELECT pg_advisory_xact_lock(%s, %s)", [NUMBER_LOCK_KEY, org.pk])
     highest = 0
     for number in BusinessPartner.objects.filter(organization=org).values_list("number", flat=True):
         prefix, _, digits = (number or "").rpartition("-")
         if prefix == "GP" and digits.isdigit():
             highest = max(highest, int(digits))
     return f"GP-{highest + 1:04d}"
+
+
+def resolve_duplicate_numbers() -> int:
+    """Doppelte Partnernummern auflösen (Migration billing 0037, Gesamtaudit 15.11., PF-25).
+
+    Der ältere Partner behält seine Nummer, jeder weitere bekommt die nächste freie „GP-xxxx“;
+    jede Umnummerierung steht im Änderungsprotokoll. Gibt die Zahl der Umnummerierungen zurück."""
+    from django.db.models import Count
+
+    from core.tenancy import rls_bypass
+
+    changed = 0
+    with rls_bypass(), transaction.atomic():
+        doubles = (
+            BusinessPartner.objects.exclude(number="")
+            .values("organization_id", "number")
+            .annotate(n=Count("pk"))
+            .filter(n__gt=1)
+        )
+        for row in list(doubles):
+            org_id = row["organization_id"]
+            partners = list(
+                BusinessPartner.objects.filter(organization_id=org_id, number=row["number"])
+                .select_related("organization")
+                .order_by("pk")
+            )
+            highest = 0
+            for number in BusinessPartner.objects.filter(organization_id=org_id).values_list(
+                "number", flat=True
+            ):
+                prefix, _, digits = (number or "").rpartition("-")
+                if prefix == "GP" and digits.isdigit():
+                    highest = max(highest, int(digits))
+            for partner in partners[1:]:
+                highest += 1
+                old, new = partner.number, f"GP-{highest:04d}"
+                BusinessPartner.objects.filter(pk=partner.pk).update(number=new)
+                partner.number = new
+                record(
+                    partner.organization,
+                    None,
+                    "update",
+                    partner,
+                    {"Nummer (doppelt, neu vergeben)": [old, new]},
+                )
+                changed += 1
+    return changed
 
 
 class PartnerAccess(OrgScopedMixin):
@@ -555,6 +615,15 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         upload = request.FILES.get("file")
         if not upload or upload.size > 5 * 1024 * 1024:
             raise serializers.ValidationError({"file": gettext("Bitte eine Excel-Datei wählen.")})
+        from exchange.reading import ReadError, _check_zip
+
+        try:
+            # Entpackte Größe vor dem Lesen begrenzen wie beim Mitgliederimport (Gesamtaudit
+            # 15.11., PUB-09): openpyxl lädt die gemeinsamen Texte vollständig in den Speicher
+            _check_zip(upload)
+        except ReadError as exc:
+            raise serializers.ValidationError({"file": str(exc)}) from exc
+        upload.seek(0)
         try:
             book = load_workbook(upload, read_only=True, data_only=True)
         except Exception as exc:  # noqa: BLE001 – jede kaputte Datei gleich melden

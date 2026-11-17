@@ -236,7 +236,8 @@ describe('Zu- und Absagen', () => {
           summary: { yes: 1, no: 0, guests: 1, persons: 2 },
         }),
       }),
-      [`GET ${base}events/1/responses/`]: responses,
+      // Seitenweise (Gesamtaudit 15.11., PF-28): erste Seite
+      [`GET ${base}events/1/responses/?seite=1`]: responses,
       [`PUT ${base}events/1/responses/`]: () => {
         entered = true
         return { status: 200, body: {} }

@@ -92,11 +92,12 @@ def from_proxy(request) -> bool:
     Mit ``TRUSTED_PROXY_HOSTS`` (im Betrieb der Dienst „web“) zählt nur die Adresse der
     Verbindung: Auf einem geteilten Server erreichen auch Nachbardienste das Backend direkt
     im Docker-Netz und könnten sonst beliebige Kopfzeilen mitschicken (Gesamtaudit 11.11.
-    S-02). Ohne die Einstellung (Entwicklung, Tests) gilt jede Anfrage als vom Proxy.
+    S-02). Ohne die Einstellung gilt eine Anfrage nur in der Entwicklung (``PROXY_TRUST_ALL``,
+    Vorgabe DEBUG) als vom Proxy, im Betrieb nie (Gesamtaudit 15.11., OPS-09).
     """
     names = getattr(settings, "TRUSTED_PROXY_HOSTS", None)
     if not names:
-        return True
+        return bool(getattr(settings, "PROXY_TRUST_ALL", False))
     remote = request.META.get("REMOTE_ADDR", "")
     return remote in _addresses(names, remote)
 
