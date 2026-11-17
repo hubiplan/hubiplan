@@ -189,6 +189,7 @@ function Privacy({
   async function erase() {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Daten von {name} jetzt löschen?', { name }),
         message:
           t('Wie nach Ablauf der Löschfrist bleiben nur Name, Geburtsjahr und Mitgliedszeiten. ') +
@@ -212,6 +213,7 @@ function Privacy({
   async function eraseHistory() {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Namen von {name} auch aus Chronik und Ehrungen entfernen?', { name }),
         message:
           t('In Würden, Begleitungen, Ehrungen und Wettbewerbsergebnissen steht danach ') +
@@ -357,6 +359,7 @@ function Exit({
     e.preventDefault()
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Austritt von {first_name} {last_name} erfassen?', {
           first_name: member.first_name,
           last_name: member.last_name,

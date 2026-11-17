@@ -255,6 +255,7 @@ export function EventForm({
       if (event) {
         if (await auto.flush()) return true
         return confirmDialog({
+          final: false,
           title: t('Änderungen nicht gespeichert'),
           message: t(
             'Die letzten Änderungen am Termin konnten nicht gespeichert werden. Trotzdem schließen und sie verwerfen?',
@@ -265,6 +266,7 @@ export function EventForm({
       }
       if (JSON.stringify(valuesRef.current) === pristine.current) return true
       return confirmDialog({
+        final: false,
         title: t('Entwurf verwerfen?'),
         message: t('Deine Eingaben für den neuen Termin gehen dann verloren.'),
         confirmLabel: t('Verwerfen'),

@@ -95,6 +95,7 @@ function CancellationCard({
               'Mitgliedsart, Untereinheiten und Ämter enden mit dem Austritt. Das Mitglied bekommt eine Austrittsbestätigung per Mail.',
             ),
             confirmLabel: t('Austritt bestätigen'),
+            final: false,
           }
         : {
             title: t('Kündigung von {name} ablehnen?', { name: c.member_name }),
@@ -102,6 +103,7 @@ function CancellationCard({
               'Die Mitgliedschaft läuft weiter. Das Mitglied bekommt deine Antwort per Mail.',
             ),
             confirmLabel: t('Ablehnen'),
+            final: false,
           },
     )
     if (!ok) return

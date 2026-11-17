@@ -582,6 +582,7 @@ function DistributeCard({ detail }: { detail: FormSettings }) {
 
   async function end(row: KioskLinkRow) {
     const ok = await confirmDialog({
+      final: true,
       title: t('Stand-Link beenden?'),
       message: t('Auf dem Gerät mit „{x}“ geht danach kein Antrag mehr.', { x: row.label }),
       confirmLabel: t('Beenden'),

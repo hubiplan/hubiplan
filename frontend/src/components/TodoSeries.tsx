@@ -176,6 +176,7 @@ export function TodoSeries({
                   void (async () => {
                     if (
                       await confirmDialog({
+                        final: false,
                         title: t(trash ? 'Ganze Serie wiederherstellen?' : 'Ganze Serie löschen?'),
                         message: t(
                           'Die Aktion betrifft die Serie einschließlich ihres Verlaufs und ihrer Anhänge.',

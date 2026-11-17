@@ -37,7 +37,11 @@ describe('VW-05 Rückfragen', () => {
     await user.click(sync)
     await expect(harmless).resolves.toBe(true)
 
-    const destructive = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen' })
+    const destructive = confirmDialog({
+      message: 'Foto löschen?',
+      confirmLabel: 'Löschen',
+      final: false,
+    })
     const remove = screen.getByRole('button', { name: 'Löschen' })
     expect(remove.className).toMatch(/danger/)
     await user.click(remove)

@@ -195,20 +195,10 @@ function CategoryRow({
       <button
         type="button"
         className="button button-danger"
-        onClick={async () => {
-          if (
-            await confirmDialog({
-              title: t('Kategorie „{name}“ löschen?', { name: cat.name }),
-              message: t('Termine bleiben erhalten.'),
-              confirmLabel: t('Löschen'),
-            })
-          ) {
-            void run(
-              () => eventApi.removeCategory(base, cat.id),
-              t('Die Kategorie wurde gelöscht.'),
-            )
-          }
-        }}
+        // Ohne Rückfrage: Termine bleiben erhalten, und „Rückgängig“ holt die Kategorie zurück.
+        onClick={() =>
+          void run(() => eventApi.removeCategory(base, cat.id), t('Die Kategorie wurde gelöscht.'))
+        }
       >
         {t('Löschen')}
       </button>

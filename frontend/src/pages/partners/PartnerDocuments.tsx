@@ -96,6 +96,7 @@ export function PartnerDocuments({
                   onClick={async () => {
                     if (
                       !(await confirmDialog({
+                        final: true,
                         message: t('Dokument „{name}“ entfernen?', { name: d.name }),
                         confirmLabel: t('Entfernen'),
                       }))

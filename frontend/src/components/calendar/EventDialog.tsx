@@ -364,6 +364,7 @@ function AttachmentsRow({
                   onClick={async () => {
                     if (
                       !(await confirmDialog({
+                        final: false,
                         title: t('Anhang „{name}“ entfernen?', { name: a.name }),
                         message:
                           a.kind === 'document'
@@ -739,6 +740,7 @@ export function EventDialog({
             onHide={async () => {
               if (
                 !(await confirmDialog({
+                  final: false,
                   title: t('„{title}“ hier ausblenden?', { title: data.title }),
                   message: t(
                     'Der Termin verschwindet aus diesem Kalender und bleibt auch bei jedem Abruf ausgeblendet. Unter „Fremde Kalender“ lässt er sich wieder zeigen.',
@@ -802,6 +804,7 @@ export function EventDialog({
                   const what = data.repeat !== 'none' ? t('die ganze Serie') : t('den Termin')
                   if (
                     !(await confirmDialog({
+                      final: false,
                       title: t('Wirklich {what} „{title}“ löschen?', { what, title: data.title }),
                       confirmLabel: t('Löschen'),
                     }))

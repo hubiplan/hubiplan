@@ -114,6 +114,7 @@ export function PrizesCard({
                   className="button button-ghost"
                   onClick={async () => {
                     const ok = await confirmDialog({
+                      final: true,
                       title: t('Pfand entfernen'),
                       message: t('„{name}“ entfernen?', { name: p.name }),
                       confirmLabel: t('Entfernen'),
@@ -283,6 +284,7 @@ export function StandAccessCard({ org, comp }: { org: number; comp: CompetitionD
 
   async function revoke(a: StandAccessInfo) {
     const ok = await confirmDialog({
+      final: true,
       title: t('Standzugang beenden'),
       message: t('Den Standzugang {x}beenden? Das Gerät kann danach nichts mehr eintragen.', {
         x: a.label ? `„${a.label}“ ` : '',

@@ -247,6 +247,7 @@ function AccountForm({
     if (
       !account ||
       !(await confirmDialog({
+        final: true,
         title: t('Konto „{name}“ löschen?', { name: account.name }),
         confirmLabel: t('Löschen'),
       }))

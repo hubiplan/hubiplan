@@ -189,6 +189,7 @@ function ProgramForm({ initial, ...props }: Props & { initial: Program }) {
               onClick={async () => {
                 if (
                   await confirmDialog({
+                    final: true,
                     message: t(
                       'Eigenes Programm entfernen und die aktuelle Serienvorlage übernehmen?',
                     ),

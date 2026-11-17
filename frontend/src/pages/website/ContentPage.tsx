@@ -440,6 +440,7 @@ function TextForm({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('„{title}“ löschen?', { title: text.title }),
       message: t('Die Seite verschwindet von der Webseite, frühere Fassungen werden mit gelöscht.'),
       confirmLabel: t('Löschen'),

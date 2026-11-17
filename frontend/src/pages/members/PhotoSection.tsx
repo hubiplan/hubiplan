@@ -149,6 +149,7 @@ export function PhotoSection({
                     onClick={async () => {
                       if (
                         await confirmDialog({
+                          final: true,
                           title: organization ? t('Logo löschen?') : t('Foto löschen?'),
                           confirmLabel: t('Löschen'),
                         })
@@ -168,6 +169,7 @@ export function PhotoSection({
                   onClick={async () => {
                     if (
                       await confirmDialog({
+                        final: true,
                         title: t('Einwilligung als widerrufen erfassen?'),
                         message: t('Vorhandene Fotos werden gelöscht.'),
                         confirmLabel: t('Widerruf erfassen'),

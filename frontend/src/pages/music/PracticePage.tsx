@@ -439,6 +439,7 @@ export function PracticePage() {
                 if (
                   !(await confirmLeave()) ||
                   !(await confirmDialog({
+                    final: true,
                     message: t('Eintrag entfernen?'),
                     confirmLabel: t('Entfernen'),
                   }))

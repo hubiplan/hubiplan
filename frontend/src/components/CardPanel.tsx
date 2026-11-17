@@ -77,6 +77,7 @@ export function CardPanel({
                 title: t('Neuen QR-Code erzeugen?'),
                 message: t('Der bisherige Code und alle Ausdrucke werden ungültig.'),
                 confirmLabel: t('Neuen QR-Code erzeugen'),
+                final: true,
               },
               t('Neuer QR-Code erzeugt. Der alte ist ungültig.'),
             )
@@ -88,6 +89,7 @@ export function CardPanel({
                 title: t('Ausweis sperren?'),
                 message: t('Beim Scannen erscheint dann „ungültig“.'),
                 confirmLabel: t('Sperren'),
+                final: false,
               },
               t('Ausweis gesperrt.'),
             )

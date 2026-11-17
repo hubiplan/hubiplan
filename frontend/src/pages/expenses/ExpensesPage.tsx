@@ -880,6 +880,7 @@ function LinksPage() {
                         onClick={async () => {
                           if (
                             await confirmDialog({
+                              final: true,
                               title: t('Link für {name} widerrufen?', { name: l.name }),
                               confirmLabel: t('Widerrufen'),
                             })

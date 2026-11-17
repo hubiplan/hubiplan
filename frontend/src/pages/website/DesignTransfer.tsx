@@ -182,6 +182,7 @@ function DesignImport({ platform, onChanged }: { platform: boolean; onChanged: (
 
   async function remove(p: DesignPackage) {
     const ok = await confirmDialog({
+      final: true,
       title: t('Designpaket „{label}“ löschen?', { label: p.label }),
       message: t(
         'Webseiten können es danach nicht mehr wählen. Eine Sicherung ist das gespeicherte Paket.',

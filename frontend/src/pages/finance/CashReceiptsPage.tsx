@@ -486,7 +486,13 @@ function CashReceiptDetail({ canEdit }: { canEdit: boolean }) {
 
   async function discard() {
     if (!r) return
-    if (!(await confirmDialog({ title: t('Entwurf verwerfen?'), confirmLabel: t('Verwerfen') })))
+    if (
+      !(await confirmDialog({
+        final: false,
+        title: t('Entwurf verwerfen?'),
+        confirmLabel: t('Verwerfen'),
+      }))
+    )
       return
     try {
       await financeApi.deleteCashReceipt(org.id, r.id)

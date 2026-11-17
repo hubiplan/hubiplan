@@ -403,6 +403,7 @@ function ReserveCard({
                         void (async () => {
                           if (
                             await confirmDialog({
+                              final: false,
                               title: t('{direction_label} löschen?', {
                                 direction_label: m.direction_label,
                               }),

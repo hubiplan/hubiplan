@@ -123,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (
       pending &&
       !(await confirmDialog({
+        final: true,
         title: t('Nicht übertragene Stand-Eingaben'),
         message: t(
           '{n} Stand-Eingaben sind noch nicht übertragen. Beim Abmelden werden sie auf diesem Browser gelöscht. Jetzt abmelden und verwerfen?',

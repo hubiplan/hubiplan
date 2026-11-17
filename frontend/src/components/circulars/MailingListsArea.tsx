@@ -339,6 +339,7 @@ function ListSettings({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       message: t('Verteiler „{name}“ löschen? Mails an {address} werden danach verworfen.', {
         name: initial.name,
         address,

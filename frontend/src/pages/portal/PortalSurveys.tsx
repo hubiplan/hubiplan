@@ -33,6 +33,7 @@ export function PortalSurveys({ accessId }: { accessId: number }) {
   }
   const withdraw = async (s: MemberSurvey) => {
     const yes = await confirmDialog({
+      final: false,
       title: t('Antwort zurückziehen?'),
       message: s.title,
       confirmLabel: t('Antwort zurückziehen'),

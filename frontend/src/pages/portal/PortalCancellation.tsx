@@ -32,6 +32,7 @@ export function PortalCancellation({
   async function send(e: FormEvent) {
     e.preventDefault()
     const ok = await confirmDialog({
+      final: false,
       title: t('Mitgliedschaft wirklich kündigen?'),
       message: t('Du trittst zum {date} aus. {e_Nom} bestätigt die Kündigung per Mail.', {
         date: formatDate(exitDate),

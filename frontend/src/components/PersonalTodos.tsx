@@ -15,6 +15,7 @@ export function PersonalTodos() {
   async function erase(id: number) {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Private Aufgabe endgültig löschen?'),
         message: t('Die Aufgabe und ihre gespeicherten Änderungen werden endgültig gelöscht.'),
         confirmLabel: t('Endgültig löschen'),

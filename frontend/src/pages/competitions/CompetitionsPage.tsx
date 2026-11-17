@@ -528,6 +528,7 @@ function Setup({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Wettbewerb löschen'),
       message: sw('„{title}“ mit allen Startern, Ergebnissen und Stechen löschen?', {
         title: comp.title,
@@ -1003,6 +1004,7 @@ function ScoringCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Wertung löschen'),
       message: sw('„{name}“ mit allen Ergebnissen und Stechen löschen?', { name: scoring.name }),
       confirmLabel: t('Löschen'),
@@ -1317,6 +1319,7 @@ function CompetitionCompletion({
     if (
       status === 'endgueltig' &&
       !(await confirmDialog({
+        final: false,
         title: t('Endgültig abschließen'),
         message: t(
           'Die Ergebnisse werden endgültig abgeschlossen. Anschließend sind Eingaben gesperrt und freigegebene Ergebnisse werden veröffentlicht.',

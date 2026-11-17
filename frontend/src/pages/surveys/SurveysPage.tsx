@@ -1045,6 +1045,7 @@ function SurveyDetail({
               disabled={busy}
               onClick={async () => {
                 const okay = await confirmDialog({
+                  final: true,
                   title: t('Umfrage löschen?'),
                   message: t('Die Umfrage und alle Antworten werden gelöscht.'),
                   confirmLabel: t('Löschen'),

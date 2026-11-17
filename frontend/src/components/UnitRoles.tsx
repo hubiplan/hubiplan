@@ -120,6 +120,7 @@ export function UnitRolesTable({
 /** Rückfrage vor dem Beenden einer Amtszeit (endet heute). */
 export function confirmEndHolder(role: UnitRole, holder: UnitHolder) {
   return confirmDialog({
+    final: false,
     title: t('Rolle „{name}“ von {name2} beenden?', { name: role.name, name2: holder.name }),
     message: t('Die Amtszeit endet heute und bleibt in der Mitgliederakte erhalten.'),
     confirmLabel: t('Beenden'),

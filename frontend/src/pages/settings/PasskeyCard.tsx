@@ -153,6 +153,7 @@ export function PasskeyCard() {
   function remove(id: number, label: string) {
     void run(async () => {
       const ok = await confirmDialog({
+        final: true,
         title: t('Passkey entfernen?'),
         message: t(
           '„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.',

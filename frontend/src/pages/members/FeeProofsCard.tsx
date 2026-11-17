@@ -52,6 +52,7 @@ export function FeeProofsCard({
 
   async function remove(a: Assignment) {
     const ok = await confirmDialog({
+      final: true,
       title: t('„{name}“ entfernen?', { name: a.discount_name }),
       message: t(
         'Nur für falsche Einträge. Endet die Ermäßigung, besser ein Ende eintragen; dann bleibt der Verlauf erhalten.',

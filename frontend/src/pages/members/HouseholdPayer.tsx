@@ -79,6 +79,7 @@ function PayerDetails({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Zahler entfernen?'),
       message: t(
         'Die Beiträge gehen dann wieder einzeln an die Mitglieder. Schon erstellte Rechnungen bleiben.',

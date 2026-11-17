@@ -516,6 +516,7 @@ function RunCard({
             onClick={async () => {
               if (
                 await confirmDialog({
+                  final: false,
                   title: t('Beitragslauf {label} mit allen Entwürfen löschen?', {
                     label: run.label,
                   }),

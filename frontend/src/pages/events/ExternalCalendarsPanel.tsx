@@ -384,6 +384,7 @@ function ExternalCard({
             onClick={async () => {
               if (
                 await confirmDialog({
+                  final: false,
                   title: t('Fremden Kalender „{name}“ entfernen?', { name: cal.name }),
                   message: t('Alle übernommenen Termine verschwinden aus dem Kalender.'),
                   confirmLabel: t('Entfernen'),

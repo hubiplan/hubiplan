@@ -129,6 +129,7 @@ export function BudgetPage({ canEdit }: { canEdit: boolean }) {
   async function copy(source: 'plan' | 'actual') {
     if (r.lines.length > 0) {
       const ok = await confirmDialog({
+        final: false,
         title: t('Plan ersetzen?'),
         message: t('Die bisherigen Zeilen für {y} werden durch die Werte von {p} ersetzt.', {
           y: r.label,
@@ -200,6 +201,7 @@ export function BudgetPage({ canEdit }: { canEdit: boolean }) {
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Haushaltsplan {y} löschen?', { y: r.label }),
       message: t('Alle Planzeilen dieses Jahres werden gelöscht. Die Buchungen bleiben.'),
       confirmLabel: t('Löschen'),

@@ -188,6 +188,7 @@ export function PortalMandate({ accessId }: { accessId: number }) {
   async function revoke() {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Lastschriftmandat widerrufen?'),
         message: t('Beiträge musst du dann überweisen.'),
         confirmLabel: t('Widerrufen'),

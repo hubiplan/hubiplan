@@ -109,6 +109,7 @@ export function AvailabilityPage() {
                   if (
                     !(await confirmLeave()) ||
                     !(await confirmDialog({
+                      final: true,
                       message: t('Abwesenheit entfernen?'),
                       confirmLabel: t('Entfernen'),
                     }))
@@ -202,6 +203,7 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
                 if (
                   !(await confirmLeave()) ||
                   !(await confirmDialog({
+                    final: true,
                     message: t('Abwesenheit entfernen?'),
                     confirmLabel: t('Entfernen'),
                   }))

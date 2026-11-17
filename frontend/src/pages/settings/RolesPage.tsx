@@ -127,6 +127,7 @@ function confirmAssignedRoleRemoval(role: Role): Promise<boolean> {
         )
       : undefined
   return confirmDialog({
+    final: true,
     title: t('Rolle „{name}“ löschen?', { name: role.name }),
     message,
     confirmLabel: t('Löschen'),
@@ -383,6 +384,7 @@ function AssignmentRow({
 
   async function resetMfa() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Zwei-Faktor-Anmeldung von {who} zurücksetzen?', { who }),
       message:
         t('Nur, wenn die Person ihr Handy und ihre Wiederherstellungscodes verloren hat und du ') +
@@ -410,6 +412,7 @@ function AssignmentRow({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Amtszeit löschen?'),
       message:
         t('{who} verliert die Rolle „{role_name}“, und die Amtszeit verschwindet aus der ', {

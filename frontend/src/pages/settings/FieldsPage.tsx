@@ -387,6 +387,7 @@ function FieldForm({
     // Benutzte Unterfelder nur nach Rückfrage (die Werte gehen verloren)
     if (field?.in_use && sub.key && field.subfields.some((s) => s.key === sub.key)) {
       const ok = await confirmDialog({
+        final: false,
         title: t('Unterfeld „{label}“ entfernen?', { label: sub.label }),
         message: partners
           ? t(

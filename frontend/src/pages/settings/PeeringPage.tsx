@@ -164,6 +164,7 @@ function MoveCard({ onMoved }: { onMoved: () => void }) {
   async function announce() {
     if (!target) return
     const ok = await confirmDialog({
+      final: true,
       title: t('Umzug melden?'),
       message:
         t('Alle Gegenstellen koppeln sich danach mit der neuen Instanz. Diese Instanz nimmt für ') +
@@ -507,6 +508,7 @@ function CollectiveExit({ spin, onDone }: { spin: SpinOff; onDone: () => void })
     if (!members) return
     const leaving = members.filter((m) => !keep[m.id]).length
     const ok = await confirmDialog({
+      final: false,
       title: t('Sammelaustritt ausführen?'),
       message:
         t('{leaving} Mitglieder treten zum {x} mit Grund „Wechsel“ aus. ', {
@@ -797,6 +799,7 @@ function PacketToggles({
 /** Prüfliste vor der namentlichen Meldung (Konzept 6.1). */
 function confirmNamed(): Promise<boolean> {
   return confirmDialog({
+    final: false,
     message:
       t('Namentliche Meldung: Name, Vorname, Geburtsdatum, Verbandsnummer, Mitgliedsart und ') +
       t('Zeiträume gehen an die Einheit darüber (nie Anschrift, Kontakt, Bankdaten, Fotos). ') +
@@ -829,6 +832,7 @@ function CouplingCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
 
   async function end() {
     const ok = await confirmDialog({
+      final: true,
       message: t(
         'Kopplung mit „{name}“ lösen? Übermittelte Kopien werden auf beiden Seiten entfernt; Rechnungen bleiben.',
         { name: coupling.remote.name },

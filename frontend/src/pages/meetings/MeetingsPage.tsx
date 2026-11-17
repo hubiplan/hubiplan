@@ -571,6 +571,7 @@ function MeetingDetail({
               onClick={() =>
                 run(async () => {
                   const yes = await confirmDialog({
+                    final: false,
                     title: t('Versammlung absagen?'),
                     message: t('Der Termin bleibt im Kalender und wird als abgesagt gezeigt.'),
                     confirmLabel: tc('meeting', 'Absagen'),
@@ -625,6 +626,7 @@ function MeetingDetail({
               onClick={() =>
                 run(async () => {
                   const yes = await confirmDialog({
+                    final: true,
                     title: t('Versammlung löschen?'),
                     message: t('Termin und Tagesordnung werden ebenfalls gelöscht.'),
                     confirmLabel: t('Löschen'),
@@ -1092,6 +1094,7 @@ function AgendaEditor({
                     if (
                       item.id &&
                       !(await confirmDialog({
+                        final: true,
                         title: t('Tagesordnungspunkt entfernen?'),
                         message: t(
                           '„{title}“ wird mit seiner Erläuterung gelöscht. Unterpunkte bleiben als eigene Punkte stehen.',
@@ -1204,6 +1207,7 @@ function KindsCard({
                         onClick={async () => {
                           setMessage('')
                           const yes = await confirmDialog({
+                            final: true,
                             title: t('Art „{name}“ löschen?', { name: k.name }),
                             confirmLabel: t('Löschen'),
                           })

@@ -212,6 +212,7 @@ export function EventCard({
                 disabled={busy}
                 onClick={async () => {
                   const ok = await confirmDialog({
+                    final: false,
                     title: t('Verknüpfung lösen'),
                     message: t(
                       'Den Wettbewerb vom Termin „{title}“ lösen? Der Termin bleibt im Kalender.',

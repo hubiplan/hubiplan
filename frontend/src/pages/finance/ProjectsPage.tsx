@@ -414,6 +414,7 @@ function ProjectDetail() {
   async function remove() {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('„{name}“ löschen?', { name: d.name }),
         message: t(
           'Verknüpfte Termine bleiben im Kalender. Zugeordnete Buchungen müssen vorher gelöst werden.',
@@ -1041,6 +1042,7 @@ function SeriesPage() {
   async function remove(s: ProjectSeries) {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Reihe „{name}“ löschen?', { name: s.name }),
         message: t('Die Veranstaltungen und ihre Buchungen bleiben erhalten.'),
         confirmLabel: t('Löschen'),

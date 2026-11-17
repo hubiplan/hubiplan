@@ -186,6 +186,7 @@ export function QualificationTypesPage() {
 
   async function remove(k: QualificationType) {
     const ok = await confirmDialog({
+      final: true,
       title: t('„{name}“ löschen?', { name: k.name }),
       message: t('Die Qualifikation ist bei keinem Mitglied eingetragen.'),
       confirmLabel: t('Löschen'),

@@ -314,6 +314,7 @@ export function ObligationsPage() {
 
   const remove = async (o: Obligation) => {
     const yes = await confirmDialog({
+      final: true,
       message: t('Pflicht „{name}“ mit ihrem Verlauf löschen?', { name: o.title }),
       confirmLabel: t('Löschen'),
     })

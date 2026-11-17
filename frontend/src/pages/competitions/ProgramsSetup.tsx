@@ -165,6 +165,7 @@ function ProgramCard({
   async function remove() {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Schießdurchgang löschen'),
         message: t('Den ungenutzten Durchgang „{name}“ löschen?', { name: program.name }),
         confirmLabel: t('Löschen'),

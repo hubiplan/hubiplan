@@ -219,6 +219,7 @@ function TwoFactorCard() {
 
   async function regenerate() {
     const yes = await confirmDialog({
+      final: true,
       title: t('Neue Wiederherstellungscodes erzeugen?'),
       message: t('Die bisherigen Codes gelten danach nicht mehr.'),
       confirmLabel: t('Neue Codes erzeugen'),

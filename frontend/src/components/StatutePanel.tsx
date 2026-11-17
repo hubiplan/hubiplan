@@ -158,6 +158,7 @@ export function StatutePanel({
                     onClick={async () => {
                       if (
                         await confirmDialog({
+                          final: true,
                           title: t('Fassung vom {x} löschen?', { x: formatDate(v.valid_from) }),
                           confirmLabel: t('Löschen'),
                         })

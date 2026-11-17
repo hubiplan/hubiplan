@@ -88,6 +88,7 @@ export function SocialDrafts() {
                 onClick={() =>
                   void (async () => {
                     const ok = await confirmDialog({
+                      final: true,
                       title: t('Entwurf löschen?'),
                       confirmLabel: t('Löschen'),
                       danger: true,

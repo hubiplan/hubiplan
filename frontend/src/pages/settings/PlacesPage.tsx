@@ -270,6 +270,7 @@ export function PlacesPage() {
   const remove = async (place: Place) => {
     const rooms = roomsOf(place.id).length
     const yes = await confirmDialog({
+      final: true,
       message: place.parent
         ? t(
             'Raum „{name}“ löschen? Termine und Wettbewerbe mit diesem Raum behalten ihre Angaben.',

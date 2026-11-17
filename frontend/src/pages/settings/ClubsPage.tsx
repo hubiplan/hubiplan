@@ -29,6 +29,7 @@ export function ClubsPage() {
   async function setActive(club: FederationClub, active: boolean) {
     if (!active) {
       const ok = await confirmDialog({
+        final: false,
         title: t('„{name}“ löschen?', { name: club.name }),
         message:
           t('{Nom} wird deaktiviert: Danach kann sich dort niemand mehr anmelden, der ', {

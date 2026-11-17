@@ -593,6 +593,7 @@ function FolderView({
     }
     if (
       await confirmDialog({
+        final: false,
         title: t('Ordner „{name}“ löschen?', { name: folder.name }),
         confirmLabel: t('Löschen'),
       })
@@ -854,6 +855,7 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
                       onClick={async () => {
                         if (
                           await confirmDialog({
+                            final: true,
                             title: t('Fassung „{name}“ löschen?', { name: v.name }),
                             confirmLabel: t('Löschen'),
                           })
@@ -953,6 +955,7 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
               onClick={async () => {
                 if (
                   await confirmDialog({
+                    final: false,
                     title: t('„{title}“ löschen?', { title: doc.title }),
                     message: t('Das Dokument kommt in den Papierkorb und bleibt dort 30 Tage.'),
                     confirmLabel: t('In den Papierkorb'),
@@ -1037,6 +1040,7 @@ function TrashPanel({ base }: { base: DocBase }) {
                   onClick={async () => {
                     if (
                       await confirmDialog({
+                        final: true,
                         title: t('„{title}“ endgültig löschen?', { title: d.title }),
                         message: t('Das lässt sich nicht rückgängig machen.'),
                         confirmLabel: t('Endgültig löschen'),

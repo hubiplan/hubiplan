@@ -31,6 +31,7 @@ export function RemoteLoginCard() {
   async function unlink(id: number, url: string) {
     if (
       !(await confirmDialog({
+        final: false,
         message: t('Verknüpfung mit {x} lösen?', { x: host(url) }),
         confirmLabel: t('Lösen'),
       }))
@@ -48,6 +49,7 @@ export function RemoteLoginCard() {
   async function forget(id: number, url: string) {
     if (
       !(await confirmDialog({
+        final: false,
         message: t('{x} aus der Einheitenauswahl entfernen?', { x: host(url) }),
         confirmLabel: t('Entfernen'),
       }))

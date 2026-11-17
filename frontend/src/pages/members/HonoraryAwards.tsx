@@ -253,6 +253,7 @@ export function HonoraryAwards({
 
   async function remove(a: HonoraryAward) {
     const ok = await confirmDialog({
+      final: false,
       title: t('„{title_name}“ löschen?', { title_name: a.title_name }),
       message: t(
         'Nur für falsche Einträge. Endet die Ehrung, besser „beenden“ wählen, dann bleibt sie im Verlauf.',

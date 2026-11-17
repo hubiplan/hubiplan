@@ -299,6 +299,7 @@ export function ScoresPage() {
                       onClick={async () => {
                         if (
                           !(await confirmDialog({
+                            final: true,
                             message: t('Eintrag entfernen?'),
                             confirmLabel: t('Entfernen'),
                           }))

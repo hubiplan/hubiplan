@@ -186,6 +186,7 @@ function TeamsCard({
                 className="button button-ghost"
                 onClick={async () => {
                   const ok = await confirmDialog({
+                    final: true,
                     title: t('Mannschaft entfernen'),
                     message: t('„{name}“ mit Platz und Wert entfernen?', { name: tm.name }),
                     confirmLabel: t('Entfernen'),

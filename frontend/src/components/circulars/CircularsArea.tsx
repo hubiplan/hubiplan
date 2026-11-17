@@ -55,6 +55,7 @@ function CircularList({ base, root }: { base: CircularBase; root: string }) {
   async function removeTemplate(id: number, name: string) {
     if (
       !(await confirmDialog({
+        final: true,
         message: t('Vorlage „{name}“ löschen?', { name }),
         confirmLabel: t('Löschen'),
       }))
@@ -390,7 +391,11 @@ function DraftEditor({
 
   async function remove() {
     if (
-      !(await confirmDialog({ message: t('Diesen Entwurf löschen?'), confirmLabel: t('Löschen') }))
+      !(await confirmDialog({
+        final: true,
+        message: t('Diesen Entwurf löschen?'),
+        confirmLabel: t('Löschen'),
+      }))
     )
       return
     await act(async () => {

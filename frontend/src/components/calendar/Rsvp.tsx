@@ -258,6 +258,7 @@ export function ResponsesPanel({
   async function remove(row: ResponseRow) {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Rückmeldung von {name} entfernen?', { name: row.name }),
         confirmLabel: t('Entfernen'),
       }))
