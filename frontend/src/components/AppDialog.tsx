@@ -7,9 +7,10 @@ export type ConfirmOptions = {
   /** Überschrift; ohne eigene Überschrift wird die Frage selbst zur Überschrift. */
   title?: string
   message?: string
-  confirmLabel?: string
+  /** Pflicht: Der Knopf nennt die Handlung („Entfernen“, „Jetzt abgleichen“), nie nur „Ja“. */
+  confirmLabel: string
   cancelLabel?: string
-  /** Rot hervorgehoben, z. B. für Löschen. Standard: true. */
+  /** Rot hervorgehoben. Standard: true; bei Fragen, die nichts löschen oder trennen, false. */
   danger?: boolean
 }
 
@@ -122,10 +123,10 @@ export function AppDialog({
 
   const confirmLabel =
     spec.kind === 'alert'
-      ? (spec.options.okLabel ?? 'OK')
+      ? (spec.options.okLabel ?? t('OK'))
       : spec.kind === 'choice'
         ? ''
-        : (spec.options.confirmLabel ?? (spec.kind === 'confirm' ? 'Ja' : 'OK'))
+        : (spec.options.confirmLabel ?? t('OK'))
   const cancelLabel =
     spec.kind === 'alert' || spec.kind === 'choice'
       ? null

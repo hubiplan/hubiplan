@@ -1326,15 +1326,27 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   border-color: var(--color-error);
 }
 
+/* Textknopf: wie ein Link an Farbe und Schriftstärke erkennbar, nicht nur am Mauszeiger
+   (UX-Audit 16.11. VW-19) */
 .link-button {
-  background: var(--color-button-bg);
+  background: transparent;
   border: 0;
   border-radius: var(--radius);
   padding: 0.15rem 0.35rem;
   font: inherit;
-  color: var(--color-text);
+  font-weight: 600;
+  color: var(--color-link);
   cursor: pointer;
   text-decoration: none;
+}
+
+.link-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-link) 12%, transparent);
+}
+
+.link-button:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
 }
 
 .tabs {
@@ -3430,7 +3442,8 @@ form.card > .save-status:first-child {
 
 .row-actions {
   display: inline-flex;
-  gap: 0.25rem;
+  /* VW-19: Bearbeiten und Löschen nicht nur 4 px auseinander */
+  gap: 0.6rem;
 }
 
 .icon-button {
@@ -7161,4 +7174,50 @@ html[dir='rtl'] body .search-input {
 }
 .quick-search > p {
   margin: 0.75rem 0 0;
+}
+
+/* --- UX-Audit VW-24: Fokus und Sprungziele nicht hinter festen Leisten --- */
+/* Der Browser rollt fokussierte Elemente und Sprungziele so weit, dass sie unter der klebenden
+   Kopfzeile und über der unteren Leiste samt schwebender Hauptaktion stehen (WCAG 2.4.11). */
+html {
+  scroll-padding-top: calc(var(--topbar-height, 3.5rem) + 0.5rem);
+}
+@media (max-width: 50rem) {
+  html {
+    scroll-padding-bottom: calc(4rem + var(--control-height) + 2.5rem);
+  }
+}
+/* Bei wenig Höhe (Querformat am Handy, 400 % Zoom) klebt die Kopfzeile nicht: Sie nähme sonst
+   einen großen Teil des Bildes ein. */
+@media (max-height: 30rem) {
+  .topbar {
+    position: static;
+  }
+  .sidebar {
+    top: 0;
+    height: 100vh;
+  }
+  html {
+    scroll-padding-top: 0.5rem;
+  }
+}
+
+/* --- UX-Audit VW-06: Zwischenüberschriften der Unterpunkte in der Seitenleiste --- */
+.sidebar-sub-heading {
+  padding: 0.55rem 0.8rem 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted, color-mix(in srgb, var(--sidebar-text) 70%, transparent));
+}
+.sidebar-sub-heading:first-child {
+  padding-top: 0.2rem;
+}
+
+/* --- UX-Audit VW-56: Reichweite der Liste „Letzte Schritte“ --- */
+.undo-history-note {
+  margin: 0.4rem 0 0.2rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }

@@ -1,9 +1,14 @@
-// Schnellsuche im Kopf (Design „Frisch“ D7): Seiten des Menüs und, wo erlaubt, Mitglieder.
+// Schnellsuche im Kopf (Design „Frisch“ D7): Seiten des Menüs, Termine des Kalenders und, wo
+// erlaubt, Mitglieder.
 // Öffnet mit dem Knopf im Kopf oder Strg+K / ⌘K. Pfeiltasten wählen, Eingabe öffnet, Esc schließt.
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { memberApi } from '../api/members.ts'
+import { eventApi } from '../api/events.ts'
+import type { CalendarBase, Occurrence } from '../api/events.ts'
+import { fold, matchEvents } from './quickSearchEvents.ts'
+import { addDays, berlin, formatDay, today } from './calendar/time.ts'
 import { Modal } from './Modal.tsx'
 import { t } from '../i18n/index.ts'
 
@@ -25,10 +30,9 @@ interface Hit {
 const MAC_SHORTCUT = '\u2318K'
 const MAX_PAGES = 8
 const MAX_MEMBERS = 6
-
-function fold(text: string): string {
-  return text.toLocaleLowerCase('de').normalize('NFD').replace(/[̀-ͯ]/g, '')
-}
+/** Zeitraum der Terminsuche: ein Monat zurück, gut ein Jahr voraus */
+const EVENTS_BACK = 31
+const EVENTS_AHEAD = 400
 
 /** Seiten, deren Name oder Bereich alle Suchwörter enthält; Treffer am Wortanfang zuerst. */
 export function matchPages(pages: QuickPage[], term: string): QuickPage[] {
@@ -55,11 +59,14 @@ function isTyping(target: EventTarget | null): boolean {
 export function QuickSearch({
   pages,
   memberOrg,
+  eventBase = null,
   onNavigate,
 }: {
   pages: QuickPage[]
   /** Einheit, deren Mitglieder die Person suchen darf; sonst null */
   memberOrg: number | null
+  /** Kalender des gewählten Bereichs, wenn die Person Termine sieht; sonst null */
+  eventBase?: CalendarBase | null
   /** Nach der Wahl eines Treffers, z. B. um das Handy-Menü zu schließen */
   onNavigate?: () => void
 }) {
@@ -107,6 +114,7 @@ export function QuickSearch({
         <QuickSearchDialog
           pages={pages}
           memberOrg={memberOrg}
+          eventBase={eventBase}
           onClose={() => setOpen(false)}
           onNavigate={onNavigate}
         />
@@ -118,17 +126,20 @@ export function QuickSearch({
 function QuickSearchDialog({
   pages,
   memberOrg,
+  eventBase,
   onClose,
   onNavigate,
 }: {
   pages: QuickPage[]
   memberOrg: number | null
+  eventBase: CalendarBase | null
   onClose: () => void
   onNavigate?: () => void
 }) {
   const navigate = useNavigate()
   const [term, setTerm] = useState('')
   const [members, setMembers] = useState<{ term: string; hits: Hit[] }>({ term: '', hits: [] })
+  const [events, setEvents] = useState<Occurrence[]>([])
   const [index, setIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listId = useId()
@@ -137,6 +148,23 @@ function QuickSearchDialog({
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  // Termine einmal beim Öffnen laden; gesucht wird dann ohne weitere Anfrage
+  useEffect(() => {
+    if (eventBase === null) return
+    let stale = false
+    eventApi
+      .list(eventBase, addDays(today(), -EVENTS_BACK), addDays(today(), EVENTS_AHEAD))
+      .then((list) => {
+        if (!stale) setEvents(list.items)
+      })
+      .catch(() => {
+        // ohne Termine bleibt die Suche nach Seiten und Mitgliedern
+      })
+    return () => {
+      stale = true
+    }
+  }, [eventBase])
 
   // Mitglieder erst ab zwei Zeichen und mit kurzer Pause suchen
   useEffect(() => {
@@ -178,7 +206,17 @@ function QuickSearchDialog({
     [pages, query],
   )
   const memberHits = memberOrg !== null && members.term === query ? members.hits : []
-  const hits = [...pageHits, ...memberHits]
+  const eventHits = useMemo<Hit[]>(
+    () =>
+      (query.length < 2 ? [] : matchEvents(events, query)).map((o) => ({
+        key: `e${o.key}`,
+        to: `/termine?termin=${o.event_id}&datum=${berlin(o.starts_at).date}`,
+        label: o.title,
+        detail: formatDay(berlin(o.starts_at).date),
+      })),
+    [events, query],
+  )
+  const hits = [...pageHits, ...eventHits, ...memberHits]
   const current = Math.min(index, Math.max(hits.length - 1, 0))
   const optionId = (i: number) => `${listId}-${i}`
 
@@ -199,6 +237,15 @@ function QuickSearchDialog({
       go(hits[current])
     }
   }
+
+  const searchLabel =
+    memberOrg !== null
+      ? eventBase !== null
+        ? t('Seite, Termin oder Mitglied suchen')
+        : t('Seite oder Mitglied suchen')
+      : eventBase !== null
+        ? t('Seite oder Termin suchen')
+        : t('Seite suchen')
 
   const group = (title: string, items: Hit[], offset: number) =>
     items.length > 0 && (
@@ -236,8 +283,8 @@ function QuickSearchDialog({
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={hits.length > 0 ? optionId(current) : undefined}
-          aria-label={memberOrg !== null ? t('Seite oder Mitglied suchen') : t('Seite suchen')}
-          placeholder={memberOrg !== null ? t('Seite oder Mitglied suchen …') : t('Seite suchen …')}
+          aria-label={searchLabel}
+          placeholder={`${searchLabel} …`}
           autoComplete="off"
           value={term}
           onChange={(e) => {
@@ -248,7 +295,8 @@ function QuickSearchDialog({
         />
         <ul className="quick-search-list" id={listId} role="listbox" aria-label={t('Treffer')}>
           {group(t('Seiten'), pageHits, 0)}
-          {group(t('Mitglieder'), memberHits, pageHits.length)}
+          {group(t('Termine'), eventHits, pageHits.length)}
+          {group(t('Mitglieder'), memberHits, pageHits.length + eventHits.length)}
         </ul>
         <p className="muted small" role="status">
           {query.length === 0

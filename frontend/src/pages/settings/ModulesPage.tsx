@@ -73,7 +73,14 @@ export function ModulesPage() {
             ? [t('Mit ausgeschaltet: {x}.', { x: extraOff.map(name).join(', ') })]
             : []),
         ]
-        if (!(await confirmDialog(parts.join(' ')))) return
+        if (
+          !(await confirmDialog({
+            message: parts.join(' '),
+            confirmLabel: t('Übernehmen'),
+            danger: false,
+          }))
+        )
+          return
       }
       const saved: OrgModules = await moduleApi.setOrg(org.id, wanted)
       load.setData(saved)

@@ -59,6 +59,7 @@ import { competitionFinishChecks } from '../../learning/checks.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { PlaceField } from '../../components/PlaceField.tsx'
+import { useSportText } from './words.ts'
 
 export function CompetitionsPage() {
   return (
@@ -161,6 +162,7 @@ function NewCompetition({
   onClose: () => void
   onCreated: (id: number) => void
 }) {
+  const sw = useSportText()
   const shooting = useActiveOrg().modules.includes('shooting')
   const form = useForm({
     title: '',
@@ -216,7 +218,7 @@ function NewCompetition({
             value={v.template}
             onChange={(e) => set('template', e.target.value)}
           >
-            <option value="schiessen">{t('Schießen mit Einzel- und Zugwertung')}</option>
+            <option value="schiessen">{sw('Schießen mit Einzel- und Zugwertung')}</option>
             <option value="einfach">{t('nur Einzelwertung')}</option>
             {shooting && <option value="vogel">{t('Vogelschießen mit Pfändern')}</option>}
             <option value="fremd">{t('Fremder Wettbewerb (eigene Plätze eintragen)')}</option>
@@ -236,7 +238,7 @@ function NewCompetition({
           {v.template === 'fremd' && (
             <Field
               label={t('Ausrichter')}
-              placeholder={t('z. B. Bürger-Schützenverein')}
+              placeholder={sw('z. B. Bürger-Schützenverein')}
               value={v.organizer}
               error={errors.organizer}
               onChange={(e) => set('organizer', e.target.value)}
@@ -256,6 +258,7 @@ function NewCompetition({
 }
 
 function CompetitionArea() {
+  const sw = useSportText()
   const org = useActiveOrg()
   const id = Number(useParams().id)
   const { data, error, reload, setData } = useLoad(
@@ -297,7 +300,7 @@ function CompetitionArea() {
               <div className="button-row">
                 {data.own && (
                   <a className="button button-ghost" href={`/stand/${org.id}/${id}`}>
-                    {t('Standmodus (Vollbild, Handy, offline)')}
+                    {sw('Standmodus (Vollbild, Handy, offline)')}
                   </a>
                 )}
                 {data.own &&
@@ -358,6 +361,7 @@ function CompetitionArea() {
 }
 
 export function PrintMenu({ org, comp }: { org: number; comp: CompetitionDetail }) {
+  const sw = useSportText()
   async function print() {
     const choices = !comp.own
       ? [{ value: 'pdf', label: t('Ergebnisliste') }]
@@ -370,17 +374,17 @@ export function PrintMenu({ org, comp }: { org: number; comp: CompetitionDetail 
         : [
             {
               value: 'schiessliste&sortierung=name',
-              label: t('Schießliste nach Name'),
-              hint: t('Zum Eintragen am Stand, erfasste Werte sind eingedruckt'),
+              label: sw('Schießliste nach Name'),
+              hint: sw('Zum Eintragen am Stand, erfasste Werte sind eingedruckt'),
             },
             {
               value: 'schiessliste&sortierung=einheit',
-              label: t('Schießliste nach Zug'),
-              hint: t('Je Zug eine Tabelle mit Feldern für die Zugwertung'),
+              label: sw('Schießliste nach Zug'),
+              hint: sw('Je Zug eine Tabelle mit Feldern für die Zugwertung'),
             },
             {
               value: 'schiessliste&leer=1',
-              label: t('Leere Schießliste'),
+              label: sw('Leere Schießliste'),
               hint: t('Ohne Namen, für Nachmeldungen'),
             },
           ]
@@ -389,7 +393,7 @@ export function PrintMenu({ org, comp }: { org: number; comp: CompetitionDetail 
         {
           value: 'startkarten&art=karten',
           label: t('Startkarten'),
-          hint: t('Vier Karten je Seite mit Startnummer und Kästchen für die Schüsse'),
+          hint: sw('Vier Karten je Seite mit Startnummer und Kästchen für die Schüsse'),
         },
         {
           value: 'startkarten&art=aufkleber',
@@ -436,6 +440,7 @@ function Setup({
   onChanged: (c: CompetitionDetail) => void
   reload: () => void
 }) {
+  const sw = useSportText()
   const navigate = useNavigate()
   const canManage = comp.can_manage && comp.status !== 'endgueltig'
   const [setupSection, setSetupSection] = useState('basic')
@@ -489,7 +494,7 @@ function Setup({
       ),
       choices: [
         { value: 'ergebnisse', label: t('Nur Ergebnisse löschen') },
-        { value: 'alles', label: t('Ergebnisse und Schützen löschen') },
+        { value: 'alles', label: sw('Ergebnisse und Schützen löschen') },
       ],
       cancelValue: '',
     })
@@ -514,7 +519,7 @@ function Setup({
   async function remove() {
     const ok = await confirmDialog({
       title: t('Wettbewerb löschen'),
-      message: t('„{title}“ mit allen Startern, Ergebnissen und Stechen löschen?', {
+      message: sw('„{title}“ mit allen Startern, Ergebnissen und Stechen löschen?', {
         title: comp.title,
       }),
       confirmLabel: t('Löschen'),
@@ -534,7 +539,12 @@ function Setup({
         {[
           ['basic', t('Grunddaten')],
           ...(comp.own
-            ? [['shooting', comp.form === 'vogel' ? t('Pfänder & Ablauf') : t('Schießbedingungen')]]
+            ? [
+                [
+                  'shooting',
+                  comp.form === 'vogel' ? t('Pfänder & Ablauf') : sw('Schießbedingungen'),
+                ],
+              ]
             : []),
           ...(comp.form !== 'vogel' ? [['scorings', t('Wertungen')]] : []),
           ['output', t('Ausgabe & Freigabe')],
@@ -576,7 +586,7 @@ function Setup({
               />
               <Field
                 label={t('Anlass')}
-                placeholder={t('z. B. Schützenfest')}
+                placeholder={t('z. B. Sommerfest')}
                 value={v.occasion}
                 error={errors.occasion}
                 onChange={(e) => set('occasion', e.target.value)}
@@ -696,10 +706,10 @@ function Setup({
                       onChange={(on) => set('fixed_order', on)}
                     />
                     <Field
-                      label={t('Schüsse insgesamt')}
+                      label={sw('Schüsse insgesamt')}
                       type="number"
                       min={1}
-                      hint={t('nur, wenn auf Papier gezählt wurde; live zählt der Standmodus')}
+                      hint={sw('nur, wenn auf Papier gezählt wurde; live zählt der Standmodus')}
                       value={v.total_shots ?? ''}
                       error={errors.total_shots}
                       onChange={(e) => set('total_shots', numOrNull(e.target.value))}
@@ -905,6 +915,7 @@ function ScoringCard({
   canManage: boolean
   onRemoved: () => void
 }) {
+  const sw = useSportText()
   const initial = {
     program: scoring.program,
     name: scoring.name,
@@ -967,6 +978,7 @@ function ScoringCard({
           'Vorhandene Ergebnisse aus Treffern werden mit den neuen Regeln berechnet. Manuelle Summen müssen geprüft werden. Die Änderung kann Ranglisten und Preisplätze verändern.',
         ),
         confirmLabel: t('Ändern und neu berechnen'),
+        danger: false,
       }))
     )
       return
@@ -982,7 +994,7 @@ function ScoringCard({
   async function remove() {
     const ok = await confirmDialog({
       title: t('Wertung löschen'),
-      message: t('„{name}“ mit allen Ergebnissen und Stechen löschen?', { name: scoring.name }),
+      message: sw('„{name}“ mit allen Ergebnissen und Stechen löschen?', { name: scoring.name }),
       confirmLabel: t('Löschen'),
     })
     if (!ok) return
@@ -1013,7 +1025,7 @@ function ScoringCard({
       </div>
       <p className="muted">
         {scoring.name}
-        {program ? ` · ${program.name} · ${program.shots ?? '–'} ${t('Schüsse')}` : ''}
+        {program ? ` · ${program.name} · ${program.shots ?? '–'} ${sw('Schüsse')}` : ''}
       </p>
       {single && (
         <p>
@@ -1022,8 +1034,8 @@ function ScoringCard({
               ? t('Summe der besten {n} Teiler; kleiner ist besser.', { n: v.counted_shots })
               : t('Der beste Teiler zählt; kleiner ist besser.')
             : v.counted_shots
-              ? t('Die besten {n} Schüsse zählen.', { n: v.counted_shots })
-              : t('Alle Schüsse zählen.')}
+              ? sw('Die besten {n} Schüsse zählen.', { n: v.counted_shots })
+              : sw('Alle Schüsse zählen.')}
         </p>
       )}
       <details>
@@ -1096,7 +1108,7 @@ function ScoringCard({
                     label={t('Anzahl der besten')}
                     type="number"
                     min={1}
-                    hint={t('Weniger Schützen: die Einheit wird nicht gewertet.')}
+                    hint={sw('Weniger Schützen: die Einheit wird nicht gewertet.')}
                     value={v.team_size ?? ''}
                     error={errors.team_size}
                     onChange={(e) => set('team_size', numOrNull(e.target.value))}
@@ -1107,7 +1119,7 @@ function ScoringCard({
               <>
                 {program ? (
                   <SelectField
-                    label={t('Grundlage: Schießdurchgang')}
+                    label={sw('Grundlage: Schießdurchgang')}
                     value={v.program ?? ''}
                     error={errors.program}
                     onChange={(e) => {
@@ -1128,7 +1140,7 @@ function ScoringCard({
                   </SelectField>
                 ) : (
                   <Field
-                    label={t('Schüsse je Schütze')}
+                    label={sw('Schüsse je Schütze')}
                     type="number"
                     min={1}
                     value={v.shots ?? ''}
@@ -1137,7 +1149,7 @@ function ScoringCard({
                   />
                 )}
                 <SelectField
-                  label={t('Welche Schüsse zählen?')}
+                  label={sw('Welche Schüsse zählen?')}
                   value={v.counted_shots === null ? 'all' : 'best'}
                   onChange={(e) =>
                     set(
@@ -1147,7 +1159,7 @@ function ScoringCard({
                   }
                 >
                   <option value="all">
-                    {v.method === 'teiler' ? t('Bester Teiler') : t('Alle Schüsse')}
+                    {v.method === 'teiler' ? t('Bester Teiler') : sw('Alle Schüsse')}
                   </option>
                   <option value="best">
                     {v.method === 'teiler' ? t('Summe der besten …') : t('Die besten …')}
@@ -1166,7 +1178,7 @@ function ScoringCard({
                 {!fromHits && (
                   <>
                     <Field
-                      label={t('Höchstwert je Schuss')}
+                      label={sw('Höchstwert je Schuss')}
                       inputMode="decimal"
                       value={v.max_per_shot ?? ''}
                       error={errors.max_per_shot}
@@ -1211,10 +1223,10 @@ function ScoringCard({
             />
             {!foreign && (
               <Field
-                label={t('Schüsse im Stechen (Vorschlag)')}
+                label={sw('Schüsse im Stechen (Vorschlag)')}
                 type="number"
                 min={1}
-                hint={t('beim Anlegen des Stechens vor Ort änderbar')}
+                hint={sw('beim Anlegen des Stechens vor Ort änderbar')}
                 value={v.shootoff_shots ?? ''}
                 error={errors.shootoff_shots}
                 onChange={(e) => set('shootoff_shots', numOrNull(e.target.value))}
@@ -1233,16 +1245,16 @@ function ScoringCard({
           </div>
           {!foreign && !unit && (
             <p className="muted small">
-              {t('Mit')} <Term k="comp_counted">{t('gewerteten Schüssen')}</Term>{' '}
+              {t('Mit')} <Term k="comp_counted">{sw('gewerteten Schüssen')}</Term>{' '}
               {t('und Höchstwert prüft HUBIplan jede Eingabe.')}
               {fromHits &&
                 (v.method === 'teiler'
                   ? t(
                       ' Teiler: kleiner ist besser, es zählt der beste Teiler (bei mehreren gewerteten Schüssen ihre Summe).',
                     )
-                  : t(' Höchstwert je Schuss {x}, {x2}.', {
+                  : sw(' Höchstwert je Schuss {x}, {x2}.', {
                       x: String(v.max_per_shot ?? '').replace('.', ','),
-                      x2: v.decimals ? t('mit Zehnteln') : t('ganze Ringe'),
+                      x2: v.decimals ? t('mit Zehnteln') : sw('ganze Ringe'),
                     }))}
             </p>
           )}

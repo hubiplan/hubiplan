@@ -44,6 +44,8 @@ export function TodoOwnership({
                 message: t(
                   'Die Übertragung umfasst alle geteilten Ausgaben und die künftige Fortsetzung. Private frühere Ausgaben müssen zuerst ausdrücklich geprüft werden.',
                 ),
+                confirmLabel: t('Übertragen'),
+                danger: false,
               }))
             )
               return

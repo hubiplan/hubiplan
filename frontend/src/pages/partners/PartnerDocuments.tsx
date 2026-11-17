@@ -94,7 +94,12 @@ export function PartnerDocuments({
                   type="button"
                   className="button button-danger"
                   onClick={async () => {
-                    if (!(await confirmDialog(t('Dokument „{name}“ entfernen?', { name: d.name }))))
+                    if (
+                      !(await confirmDialog({
+                        message: t('Dokument „{name}“ entfernen?', { name: d.name }),
+                        confirmLabel: t('Entfernen'),
+                      }))
+                    )
                       return
                     try {
                       await partnerApi.removeDocument(org.id, partner.id, d.id)

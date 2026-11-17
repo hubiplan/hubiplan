@@ -436,7 +436,13 @@ export function PracticePage() {
             <button
               className="button button-ghost"
               onClick={async () => {
-                if (!(await confirmLeave()) || !(await confirmDialog(t('Eintrag entfernen?'))))
+                if (
+                  !(await confirmLeave()) ||
+                  !(await confirmDialog({
+                    message: t('Eintrag entfernen?'),
+                    confirmLabel: t('Entfernen'),
+                  }))
+                )
                   return
                 try {
                   await api.del(`${base}rehearsal-items/${r.id}/`)

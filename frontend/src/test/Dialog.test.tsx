@@ -29,10 +29,10 @@ describe('App-eigene Rückfragen', () => {
 
   it('bricht mit Esc und Abbrechen ab', async () => {
     const user = userEvent.setup()
-    const first = confirmDialog('Foto löschen?')
+    const first = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen' })
     await user.keyboard('{Escape}')
     await expect(first).resolves.toBe(false)
-    const second = confirmDialog('Foto löschen?')
+    const second = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen' })
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
     await expect(second).resolves.toBe(false)
   })

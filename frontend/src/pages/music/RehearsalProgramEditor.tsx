@@ -188,9 +188,12 @@ function ProgramForm({ initial, ...props }: Props & { initial: Program }) {
               className="button button-ghost"
               onClick={async () => {
                 if (
-                  await confirmDialog(
-                    t('Eigenes Programm entfernen und die aktuelle Serienvorlage übernehmen?'),
-                  )
+                  await confirmDialog({
+                    message: t(
+                      'Eigenes Programm entfernen und die aktuelle Serienvorlage übernehmen?',
+                    ),
+                    confirmLabel: t('Vorlage übernehmen'),
+                  })
                 )
                   await save('inherit')
               }}

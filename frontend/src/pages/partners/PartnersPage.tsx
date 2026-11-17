@@ -450,7 +450,11 @@ function PartnerForm({
     ['leitweg_id', t('Leitweg-ID')],
   ]
   // VW-43: neu eingeblendetes Formular bekommt den Fokus und rückt ins Bild
-  const formRef = useRevealFocus<HTMLFormElement>(!partner)
+  const formRef = useRevealFocus<HTMLFormElement>(!partner, () => {
+    void confirmLeave().then((ok) => {
+      if (ok) onClose()
+    })
+  })
   return (
     <form
       className="card stack"
@@ -857,7 +861,13 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
                   type="button"
                   className="button button-danger"
                   onClick={async () => {
-                    if (!(await confirmDialog(t('Ansprechpartner entfernen?')))) return
+                    if (
+                      !(await confirmDialog({
+                        message: t('Ansprechpartner entfernen?'),
+                        confirmLabel: t('Entfernen'),
+                      }))
+                    )
+                      return
                     try {
                       await partnerApi.removeContact(org.id, partner.id, c.id)
                       setItems(items.filter((x) => x.id !== c.id))

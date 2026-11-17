@@ -15,6 +15,7 @@ import { QuickSearch } from './QuickSearch.tsx'
 import type { QuickPage } from './QuickSearch.tsx'
 import { portalSections } from '../pages/portal/sections.ts'
 import { displayName } from '../api/orgs.ts'
+import { calendarBase } from '../api/events.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoAccount } from '../api/peering.ts'
 import { useOrg } from '../org/OrgContext.tsx'
@@ -264,7 +265,13 @@ export function Layout() {
   // Persönliches im Kontomenü (UX-Audit 10.7); die Auswahl oben zeigt nur Verwaltungsbereiche
   const personal: PersonalArea[] = portal.map((p) => ({
     key: `p:${p.id}`,
-    title: portal.length > 1 ? p.club_display_name || p.club_name : undefined,
+    // Mehrere Zugänge (z. B. zwei Kinder im selben Verein): am Namen unterscheidbar (VW-25)
+    title:
+      portal.length > 1
+        ? `${p.member_kind === 'organization' ? (p.member_name ?? '') : p.first_name} · ${
+            p.club_display_name || p.club_name
+          }`
+        : undefined,
     links: portalSections(p).flatMap((s) => (s.account ? [{ to: s.to, label: s.account }] : [])),
   }))
   const portalInPicker = portal.filter((p) => activeKey === `p:${p.id}`)
@@ -310,6 +317,16 @@ export function Layout() {
   })
   const quickMemberOrg =
     active?.type === 'club' && visible.some((m) => m.id === 'mitglieder') ? active.id : null
+  // VW-59: Termine des gewählten Bereichs in der Schnellsuche, wenn der Kalender im Menü steht
+  const quickEventBase = !visible.some((m) => m.id === 'termine')
+    ? null
+    : active
+      ? calendarBase.org(active.id)
+      : activeDept
+        ? calendarBase.dept(activeDept.id)
+        : activePortal
+          ? calendarBase.portal(activePortal.id)
+          : null
   const currentModule = visible
     .filter((m) => modulePaths(m).some(matchesPath))
     .sort((a, b) => b.path.length - a.path.length)[0]
@@ -353,7 +370,14 @@ export function Layout() {
   // Lernhilfen nur in der Oberfläche der Bearbeitenden, nie im Mitgliederbereich
   const headerTools = (
     <>
-      {undoBase && !previewOrg && <UndoControls base={undoBase} />}
+      {undoBase && !previewOrg && (
+        <UndoControls
+          base={undoBase}
+          logTo={
+            active?.permissions.includes(PERM.auditView) ? '/einstellungen/protokoll' : undefined
+          }
+        />
+      )}
       {contextCount > 1 && (
         <label className="org-switch">
           <span className="sr-only">{t('Einheit wechseln')}</span>
@@ -426,7 +450,13 @@ export function Layout() {
                     <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
                   <div className="topbar-user">
-                    {!narrow && <QuickSearch pages={quickPages} memberOrg={quickMemberOrg} />}
+                    {!narrow && (
+                      <QuickSearch
+                        pages={quickPages}
+                        memberOrg={quickMemberOrg}
+                        eventBase={quickEventBase}
+                      />
+                    )}
                     {!narrow && headerTools}
                     {/* VW-02: auch am Handy erreichbar, dort nur als Zeichen mit Namen */}
                     <HelpButton compact={narrow} />
@@ -454,6 +484,7 @@ export function Layout() {
                       <QuickSearch
                         pages={quickPages}
                         memberOrg={quickMemberOrg}
+                        eventBase={quickEventBase}
                         onNavigate={choseInNav}
                       />
                       {headerTools}
@@ -633,7 +664,10 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
       <p>
         {overdue
           ? t('Zwei-Faktor-Anmeldung fehlt: Deine Verwaltungsrechte ruhen.')
-          : t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
+          : t(
+              'Zwei-Faktor-Anmeldung nötig ab {date}. Rundschreiben, Exporte und das Buchen in der Kasse ruhen schon jetzt.',
+              { date },
+            )}{' '}
         <NavLink to="/mein-konto/anmeldung#zwei-faktor">{t('Jetzt einrichten')}</NavLink>
       </p>
       <details>

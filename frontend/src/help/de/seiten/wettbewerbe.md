@@ -7,7 +7,7 @@ routen: [/wettbewerbe, /wettbewerbe/statistik]
 stichworte: [Schießen, Vogelschießen, Rangliste, Stechen, Ergebnis]
 ---
 
-Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebnisse und entscheidet Gleichstände im Stechen. Auch Vogelschießen mit Pfändern und fremde Wettbewerbe, bei denen ihr nur eure Plätze eintragt, gehören hierher. Vorläufige Ergebnisse werden erst mit „endgültig“ fest.
+Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebnisse und entscheidet Gleichstände im Stechen. Auch Vogelschießen mit Pfändern und fremde Wettbewerbe, bei denen ihr nur eure Plätze eintragt, gehören hierher. Vorläufige Ergebnisse werden erst mit „endgültig“ fest. Ist das Modul Schießsport nicht eingeschaltet, spricht die Seite neutral von Teilnehmenden, Wertungen, Entscheidungsrunde und Erfassung vor Ort statt von Schützen, Schüssen, Stechen und Standmodus; die Abläufe sind dieselben.
 
 ## Standmodus und Kamera
 

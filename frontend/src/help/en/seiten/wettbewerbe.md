@@ -7,7 +7,7 @@ routen: [/wettbewerbe, /wettbewerbe/statistik]
 stichworte: [shooting, bird shooting, ranking, shoot-off, result]
 ---
 
-Here you set up your own shooting competitions with individual and team scoring, record results and decide ties in a shoot-off. Bird shooting with prizes and external competitions where you only enter your places also belong here. Provisional results only become fixed when marked final.
+Here you set up your own shooting competitions with individual and team scoring, record results and decide ties in a shoot-off. Bird shooting with prizes and external competitions where you only enter your places also belong here. Provisional results only become fixed when marked final. If the shooting sports module is not switched on, the page speaks neutrally of participants, scores, tie-break and on-site entry instead of marksmen, shots, shoot-off and range mode; the procedures are the same.
 
 ## Stand mode and camera
 

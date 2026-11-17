@@ -240,11 +240,12 @@ function PayoutRuns() {
                 disabled={busy}
                 onClick={async () => {
                   if (
-                    await confirmDialog(
-                      t(
+                    await confirmDialog({
+                      message: t(
                         'Zahlungslauf aufheben? Bereits bei der Bank eingereichte Überweisungen müssen dort gesondert gestoppt werden. Bereits zugeordnete Buchungen bleiben erhalten.',
                       ),
-                    )
+                      confirmLabel: t('Zahlungslauf aufheben'),
+                    })
                   )
                     void act(() => api.post(`${url}${run.id}/`, { action: 'cancel' }))
                 }}

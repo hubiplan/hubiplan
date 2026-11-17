@@ -662,7 +662,13 @@ function AddressesCard() {
   }
 
   async function remove(id: number, host: string) {
-    if (!(await confirmDialog(t('Adresse „{x}“ entfernen?', { x: host })))) return
+    if (
+      !(await confirmDialog({
+        message: t('Adresse „{x}“ entfernen?', { x: host }),
+        confirmLabel: t('Entfernen'),
+      }))
+    )
+      return
     setBusy(true)
     setError(null)
     try {

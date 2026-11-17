@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { AppDevicesCard } from '../pages/settings/AppDevicesCard.tsx'
@@ -52,7 +52,9 @@ describe('App auf dem Telefon (Mein Konto)', () => {
     expect(document.querySelector('svg')).not.toBeNull()
 
     await user.click(screen.getByRole('button', { name: 'Abmelden' }))
-    await user.click(await screen.findByRole('button', { name: /OK|Ja|Bestätigen/ }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Abmelden' }),
+    )
     expect(await screen.findByText('Noch kein Gerät verbunden.')).toBeInTheDocument()
     expect(calls.map((c) => c.key)).toContain('DELETE /api/app/v1/devices/3/')
   })
