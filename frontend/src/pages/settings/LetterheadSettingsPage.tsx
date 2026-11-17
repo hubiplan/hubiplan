@@ -26,7 +26,7 @@ import {
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { TextArea } from './TextArea.tsx'
 import { LogoUpload } from './AppearancePage.tsx'
-import { formatDate } from '../../i18n/format.ts'
+import { formatDay } from '../../i18n/format.ts'
 import { t } from '../../i18n/index.ts'
 import { Why } from '../../learning/Aids.tsx'
 
@@ -718,7 +718,7 @@ function Proposals({
       {items.map((p) => (
         <div key={p.id} className="stack">
           <p className="muted small">
-            {p.via} · {t('verfällt am {date}', { date: formatDate(p.expires_at) })}
+            {p.via} · {t('verfällt am {date}', { date: formatDay(p.expires_at) })}
           </p>
           <dl>
             {Object.entries(p.texts).map(([key, value]) => (
