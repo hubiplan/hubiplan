@@ -13707,3 +13707,21 @@ msgstr "After the start, the result can only be protected more strictly."
 
 msgid "Anonyme Umfragen zeigen ihr Ergebnis erst nach dem Ende."
 msgstr "Anonymous surveys show their result only after the end."
+
+msgid "{where}: Die Satzung aus der Datei wird nicht übernommen."
+msgstr "{where}: The statutes from the file are not taken over."
+
+msgid "Für diesen Import fehlt das Recht „{code}“."
+msgstr "This import requires the permission “{code}”."
+
+msgid "{where}: {x1} {x2} gehört zu keiner Abteilung der Datei und kann nicht übernommen werden."
+msgstr "{where}: {x1} {x2} does not belong to any department in the file and cannot be taken over."
+
+msgid "Eine Zeile gehört zu keiner Abteilung der Datei."
+msgstr "A row does not belong to any department in the file."
+
+msgid "{x0}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{x0}: Only clubs can be imported below a unit."
+
+msgid "{where}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{where}: Only clubs can be imported below a unit."
