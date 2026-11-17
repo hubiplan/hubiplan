@@ -31,6 +31,7 @@ from django.utils.translation import gettext
 from access.catalog import (
     DEFAULT_MODULES,
     DEPARTMENT_CODES,
+    MEMBERS_EDIT,
     SWITCHABLE_MODULES,
     codes_for,
     from_legacy,
@@ -73,7 +74,10 @@ from . import dump
 from .permission_schema import policy as permission_policy
 from .tables import (
     DEPARTMENT_IMPORT_MODELS,
+    DEPARTMENT_IMPORT_PERMISSIONS,
+    DEPARTMENT_INTO_CLUB_MODELS,
     NOT_INCLUDED,
+    PUBLIC_MODELS,
     IdMap,
     check_cash_receipts,
     check_tables,
@@ -433,6 +437,23 @@ class Checker:
             where = f"{self.target.department_label} {data.get('name')}"
             for m in self.doc.get("memberships") or []:
                 self.check_membership(m, where)
+            into_club = not as_unit
+            if into_club and isinstance(self.doc.get("tables"), dict):
+                # Gesamtaudit 15.11., AZ-05: Die Satzung gehört dem Verein, nicht der Abteilung
+                dropped = [n for n in PUBLIC_MODELS if self.doc["tables"].pop(n, None)]
+                if dropped:
+                    self.p.warn(
+                        gettext("{where}: Die Satzung aus der Datei wird nicht übernommen.").format(
+                            where=where
+                        )
+                    )
+            if into_club:
+                for code in missing_department_permissions(
+                    self.doc, self.target, self.job.created_by
+                ):
+                    self.p.error(
+                        gettext("Für diesen Import fehlt das Recht „{code}“.").format(code=code)
+                    )
             if self.doc.get("tables"):
                 check_cash_receipts(self.doc["tables"], self.p.warn)
                 self.summary["table_rows"] += check_tables(
@@ -440,8 +461,9 @@ class Checker:
                     self.known,
                     self.p.errors,
                     where,
-                    allowed=DEPARTMENT_IMPORT_MODELS,
+                    allowed=DEPARTMENT_INTO_CLUB_MODELS if into_club else DEPARTMENT_IMPORT_MODELS,
                     per_class=self.classes,
+                    require_department=into_club,
                 )
             name = (self.job.options or {}).get("name") or data.get("name") or ""
             if as_unit:
@@ -594,6 +616,14 @@ class Checker:
                     ).format(where=where, count=len(data["peering"]))
                 )
         for c in data.get("clubs") or []:
+            if not isinstance(c, dict) or c.get("type") != Organization.Type.CLUB:
+                # Gesamtaudit 15.11., AZ-10: nur Vereine unter einer Einheit
+                self.p.error(
+                    gettext(
+                        "{where}: Unter einer Einheit lassen sich nur Vereine einlesen."
+                    ).format(where=where)
+                )
+                continue
             self.check_org(c)
         if data.get("tables"):
             check_cash_receipts(data.get("tables"), self.p.warn)
@@ -1056,6 +1086,16 @@ class Loader:
         org.contact_role = None
         locked_until = org.finance_locked_until
         org.finance_locked_until = None
+        if not self.by_platform:
+            # Gesamtaudit 15.11., AZ-10: Platzhalter ferner Einheiten legt nur die Plattform an;
+            # ein „ferner“ Verein wäre hier für niemanden bearbeitbar und nicht löschbar
+            org.is_remote = False
+        if not top and org.type != Organization.Type.CLUB:
+            raise ValidationError(
+                gettext("{x0}: Unter einer Einheit lassen sich nur Vereine einlesen.").format(
+                    x0=data.get("name") or ""
+                )
+            )
         if top and self.options.get("name"):
             org.name = self.options["name"].strip()
         org.is_active = True if top else bool(data.get("is_active", True))
@@ -1478,7 +1518,8 @@ class Loader:
                 self.ids,
                 self.files,
                 self.user,
-                allowed=DEPARTMENT_IMPORT_MODELS,
+                allowed=DEPARTMENT_INTO_CLUB_MODELS,
+                departments=set(self.ids.maps.get("department", {}).values()),
             )
         self.result["renumbered"] = self.assign_federation_numbers(scope, self.reported_persons())
         return dept
@@ -1601,10 +1642,38 @@ class Loader:
         add_board(org, email, self.invitations)
 
 
+def missing_department_permissions(doc: dict, club: Organization, user) -> list[str]:
+    """Rechte, die für eine Abteilungsdatei im Verein fehlen (Gesamtaudit 15.11., AZ-05).
+
+    Zusätzlich zu „Einstellungen“: Mitglieder bearbeiten für Mitgliedschaften, sonst das
+    Bearbeitungsrecht jedes Bereichs mit Zeilen in der Datei. Nur Rechtenamen, keine Inhalte."""
+    from access.permissions import permissions_in
+
+    needed = set()
+    if doc.get("memberships"):
+        needed.add(MEMBERS_EDIT)
+    for name, rows in (doc.get("tables") or {}).items():
+        code = DEPARTMENT_IMPORT_PERMISSIONS.get(str(name).split(".", 1)[0])
+        if rows and code:
+            needed.add(code)
+    have = permissions_in(user, club) if user is not None else set()
+    return sorted(needed - have)
+
+
 def run(job, user) -> dict:
     with rls_bypass():
         doc, files = open_file(job.file)
         preview = Checker(job, doc, files).check()
+        if preview["kind"] == "department":
+            # Wer den Import startet, braucht die Rechte (nicht nur, wer hochgeladen hat)
+            missing = missing_department_permissions(doc, job.organization, user)
+            if missing:
+                raise ValidationError(
+                    [
+                        gettext("Für diesen Import fehlt das Recht „{code}“.").format(code=code)
+                        for code in missing
+                    ]
+                )
     if preview["error_count"]:
         raise ValidationError(preview["errors"])
     with transaction.atomic(), rls_bypass():
