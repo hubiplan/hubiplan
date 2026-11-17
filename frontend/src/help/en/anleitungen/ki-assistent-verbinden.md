@@ -59,3 +59,5 @@ New images only become public once they are in a published text or section.
 You get an email for every new connection. A connection is valid for at most 30 days and ends after 14 days without use, and also when you change your password or lose the permission. You can disconnect it at any time under [My account › App & other instances](/mein-konto/app) with **Disconnect**.
 
 What you write to the assistant and what it reads goes to its provider. Do not put confidential data there. Without signing in, an assistant can only read the HUBIplan help at `/api/mcp/`.
+
+When you grant access, HUBIplan always shows where it goes and since when the assistant is registered here. If the link came by email or message and you did not start the connection yourself, decline, even for well-known assistants. To keep an assistant from running away, limits apply: at most 5 open upload links per person, images from addresses at most 20 per hour and 200 MB per day and unit, very long answers are shortened.

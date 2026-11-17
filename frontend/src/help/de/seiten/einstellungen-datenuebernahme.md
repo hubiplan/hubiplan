@@ -17,3 +17,5 @@ URLs müssen HTTP(S)-Adressen sein. Bei aktiviertem Virenscanner wird jede tats�
 übernommene innere Datei einzeln geprüft, auch wenn das äußere Archiv zu groß für
 den Uploadscan war. Bei verpflichtender Prüfung sind fehlender Scanner und zu große
 innere Dateien ein Abbruchgrund; ein Fehler verhindert den Datenimport.
+
+Exportiert ein Dachverband seine Vereine, enthält die Datei für die Vereine nur, was er mit seiner Freigabe auch in HUBIplan sieht: Stammdaten, Kontakt und Mitgliedschaften (mit Lesefreigabe), Mitgliedsarten und Untereinheiten. Fotos, eigene Zusatzfelder der Vereine, Ehrungen, Qualifikationen, Rollen samt Besetzungen, Briefbogen sowie Ablage, Versammlungen, Aufgaben, Helferpläne und Satzung der Vereine kommen nicht mit. Den vollständigen Umzug eines Vereins macht die Plattform.

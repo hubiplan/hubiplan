@@ -1140,9 +1140,9 @@ class ExternalCalendarSerializer(serializers.Serializer):
         for key, value in data.items():
             setattr(cal, key, value)
         if token:
-            cal.token = encrypt(token)
+            cal.token = encrypt(token, purpose="kalender")
         if secret is not None:
-            cal.secret = encrypt(secret.strip()) if secret.strip() else ""
+            cal.secret = encrypt(secret.strip(), purpose="kalender") if secret.strip() else ""
         if cal.kind != ExternalCalendar.Kind.VEREINSPLANER:
             cal.secret = ""
         return cal
