@@ -18,6 +18,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from core.tenancy import rls_bypass
+
 from .models import Membership
 
 README = """Auskunft über gespeicherte Daten (Art. 15 DSGVO)
@@ -202,9 +204,16 @@ def _addresses_of_others(membership: Membership, org_ids: list[int]) -> set[str]
     ):
         if access.user and access.user.email:
             others.add(access.user.email.lower())
-    for role in RoleAssignment.objects.filter(
-        organization_id__in=org_ids, user__isnull=False
-    ).select_related("user"):
+    # Ämter in Untereinheiten sieht der Vorstand des Vereins unter dem Zeilenschutz nicht; ihre
+    # Adressen zählten sonst nicht als „andere“ (Gesamtaudit 15.11., AZ-04). Fest auf die
+    # Einheiten der Auskunft eingegrenzt.
+    with rls_bypass():
+        roles = list(
+            RoleAssignment.objects.filter(
+                organization_id__in=org_ids, user__isnull=False
+            ).select_related("user")
+        )
+    for role in roles:
         if role.user.email:
             others.add(role.user.email.lower())
     return others
@@ -417,13 +426,17 @@ def _users(membership: Membership, org_ids: list[int]) -> list:
             "user_id", flat=True
         )
     )
-    ids.update(
-        RoleAssignment.objects.filter(
-            Q(membership=membership)
-            | Q(person_id=membership.person_id, organization_id__in=org_ids),
-            user__isnull=False,
-        ).values_list("user_id", flat=True)
-    )
+    # Ämter der Person auch in Untereinheiten (unter dem Zeilenschutz für den Vorstand des
+    # Vereins unsichtbar; Gesamtaudit 15.11., AZ-04). Fest auf diese Mitgliedschaft bzw. diese
+    # Person in den Einheiten der Auskunft eingegrenzt.
+    with rls_bypass():
+        ids.update(
+            RoleAssignment.objects.filter(
+                Q(membership=membership)
+                | Q(person_id=membership.person_id, organization_id__in=org_ids),
+                user__isnull=False,
+            ).values_list("user_id", flat=True)
+        )
     from django.contrib.auth import get_user_model
 
     return list(get_user_model().objects.filter(pk__in=ids).order_by("pk"))
@@ -462,11 +475,43 @@ def _account(user, org_ids: list[int]) -> dict:
         TodoShare,
     )
 
-    signature = StoredSignature.objects.filter(user=user).first()
-    own = Todo.objects.filter(owner=user, organization_id__in=org_ids, deleted_at__isnull=True)
-    shared_with = Todo.objects.filter(
-        shares__user=user, organization_id__in=org_ids, deleted_at__isnull=True
-    ).distinct()
+    # Diese Tabellen liegen je Konto unter dem Zeilenschutz: Der anfragende Vorstand sähe dort
+    # nur seine eigenen Zeilen, und die Auskunft behauptete „nichts vorhanden“ (Gesamtaudit
+    # 15.11., AZ-04). Jede Abfrage ist fest auf genau dieses Konto und, wo die Daten einer
+    # Einheit gehören, auf die Einheiten der Auskunft (org_ids) eingegrenzt.
+    with rls_bypass():
+        signature = StoredSignature.objects.filter(user=user).first()
+        own = list(
+            Todo.objects.filter(
+                owner=user, organization_id__in=org_ids, deleted_at__isnull=True
+            ).order_by("created_at")
+        )
+        shared_with = list(
+            Todo.objects.filter(
+                shares__user=user, organization_id__in=org_ids, deleted_at__isnull=True
+            )
+            .distinct()
+            .order_by("created_at")
+        )
+        nextcloud = list(
+            Account.objects.filter(user=user, organization_id__in=org_ids).select_related("client")
+        )
+        grants = list(
+            McpGrant.objects.filter(user=user, organization_id__in=org_ids).select_related("client")
+        )
+        letterheads = _rows(
+            LetterheadChoice.objects.filter(user=user, unit_id__in=org_ids), {"user", "unit"}
+        )
+        shares = TodoShare.objects.filter(user=user, organization_id__in=org_ids).count()
+        todo_prefs = _rows(TodoPreference.objects.filter(user=user))
+        reminder_configs = _rows(
+            TodoReminderConfig.objects.filter(user=user, organization_id__in=org_ids)
+        )
+        reminders = TodoReminder.objects.filter(user=user, organization_id__in=org_ids).count()
+        notices = TodoNotice.objects.filter(user=user, organization_id__in=org_ids).count()
+        music = _rows(
+            MusicReminderPreference.objects.filter(user=user, organization_id__in=org_ids)
+        )
 
     def todo(t, content: bool) -> dict:
         row = {
@@ -521,9 +566,7 @@ def _account(user, org_ids: list[int]) -> dict:
                 "letzte_anmeldung": a.last_login_at,
                 "von_hubiplan_deaktiviert": a.disabled_by_hubiplan,
             }
-            for a in Account.objects.filter(user=user, organization_id__in=org_ids).select_related(
-                "client"
-            )
+            for a in nextcloud
         ],
         "ki_assistenten": [
             {
@@ -534,33 +577,23 @@ def _account(user, org_ids: list[int]) -> dict:
                 "gültig_bis": g.expires_at,
                 "getrennt": g.revoked_at,
             }
-            for g in McpGrant.objects.filter(user=user, organization_id__in=org_ids).select_related(
-                "client"
-            )
+            for g in grants
         ],
         "andere_instanzen": [
             {"instanz": r.peer.base_url, "angelegt": r.created_at, "zuletzt": r.last_used_at}
             for r in RemoteAccount.objects.filter(user=user).select_related("peer")
         ],
-        "briefbogen": _rows(
-            LetterheadChoice.objects.filter(user=user, unit_id__in=org_ids), {"user", "unit"}
-        ),
+        "briefbogen": letterheads,
         "aufgaben": {
-            "eigene": [todo(t, t.shared) for t in own.order_by("created_at")],
-            "mit_dir_geteilt": [todo(t, True) for t in shared_with.order_by("created_at")],
-            "freigaben": TodoShare.objects.filter(user=user, organization_id__in=org_ids).count(),
-            "einstellungen": _rows(TodoPreference.objects.filter(user=user)),
-            "erinnerungen": _rows(
-                TodoReminderConfig.objects.filter(user=user, organization_id__in=org_ids)
-            ),
-            "geplante_erinnerungen": TodoReminder.objects.filter(
-                user=user, organization_id__in=org_ids
-            ).count(),
-            "hinweise": TodoNotice.objects.filter(user=user, organization_id__in=org_ids).count(),
+            "eigene": [todo(t, t.shared) for t in own],
+            "mit_dir_geteilt": [todo(t, True) for t in shared_with],
+            "freigaben": shares,
+            "einstellungen": todo_prefs,
+            "erinnerungen": reminder_configs,
+            "geplante_erinnerungen": reminders,
+            "hinweise": notices,
         },
-        "musik_erinnerungen": _rows(
-            MusicReminderPreference.objects.filter(user=user, organization_id__in=org_ids)
-        ),
+        "musik_erinnerungen": music,
     }
 
 
@@ -844,16 +877,22 @@ def build(membership: Membership, org) -> bytes:
 
     from qualifications.models import Qualification
 
+    # Verein und Untereinheiten (Gesamtaudit 15.11., PF-20). Qualifikationen einer Untereinheit
+    # sieht der Vorstand des Vereins unter dem Zeilenschutz nicht; die Abfrage grenzt selbst auf
+    # die Person und die Einheiten ein (AZ-04).
+    with rls_bypass():
+        quals = list(
+            Qualification.objects.filter(
+                organization_id__in=org_ids, person_id=membership.person_id
+            ).select_related("kind")
+        )
     files["qualifikationen.json"] = _dump(
         [
             {
                 "qualifikation": q.kind.name,
                 **_row(q, {"kind", "person", "organization", "created_by", "reminded_at"}),
             }
-            # Verein und Untereinheiten (Gesamtaudit 15.11., PF-20)
-            for q in Qualification.objects.filter(
-                organization_id__in=org_ids, person_id=membership.person_id
-            ).select_related("kind")
+            for q in quals
         ]
     )
 
