@@ -9,11 +9,17 @@ stichworte: [2FA, Authenticator, Handy, Code, TOTP, Sicherheit]
 Du brauchst eine Authenticator-App auf dem Handy, z. B. FreeOTP, Aegis oder Google Authenticator.
 
 1. Öffne [Anmeldung & Sicherheit](/mein-konto/anmeldung) unter **Mein Konto**.
-2. Scanne im Abschnitt **Zwei-Faktor-Anmeldung** den QR-Code mit der App.
+2. Scanne im Abschnitt **Zwei-Faktor-Anmeldung** den QR-Code mit der App. Richtest du am Handy ein, auf
+   dem die App läuft, tippe stattdessen auf **In Authenticator-App öffnen** oder kopiere den Schlüssel.
 3. Trage den **Code aus der App** ein, dazu **Dein Passwort zur Bestätigung**.
 4. Klicke auf **Aktivieren**.
 5. Bewahre die angezeigten **Wiederherstellungscodes** sicher auf, z. B. ausgedruckt. Jeder Code
-   hilft einmal, falls das Handy fehlt.
+   hilft einmal, falls das Handy fehlt. Mit **Codes kopieren** und **Als Textdatei speichern**
+   sicherst du sie gleich.
+
+Die Codes kannst du später im selben Abschnitt mit **Wiederherstellungscodes anzeigen** wieder
+ansehen. Sind sie verbraucht oder in falsche Hände geraten, erzeugst du mit **Neue Codes erzeugen**
+neue; die bisherigen gelten dann nicht mehr.
 
 ![Abschnitt „Zwei-Faktor-Anmeldung“ mit QR-Code](bild:konto-zwei-faktor)
 

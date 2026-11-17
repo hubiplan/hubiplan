@@ -28,7 +28,7 @@ import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { circularApi } from '../../api/circulars.ts'
 import { Modal } from '../Modal.tsx'
 import type { CloseGuard } from './EventForm.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export { Modal }
 
@@ -555,7 +555,7 @@ function OccurrencePanel({
                 const reason = await promptDialog({
                   title: t('Diesen Termin absagen?'),
                   label: t('Hinweis zur Absage (optional)'),
-                  confirmLabel: t('Absagen'),
+                  confirmLabel: tc('event', 'Absagen'),
                   danger: true,
                 })
                 if (reason === null) return

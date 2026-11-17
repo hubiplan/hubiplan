@@ -24,7 +24,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { flushAllForms, useDraftGuard } from '../../components/leaveGuard.ts'
-import { locale, t } from '../../i18n/index.ts'
+import { locale, t, tc } from '../../i18n/index.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
@@ -572,7 +572,7 @@ function MeetingDetail({
                   const yes = await confirmDialog({
                     title: t('Versammlung absagen?'),
                     message: t('Der Termin bleibt im Kalender und wird als abgesagt gezeigt.'),
-                    confirmLabel: t('Absagen'),
+                    confirmLabel: tc('meeting', 'Absagen'),
                   })
                   if (!yes) return
                   await meetingApi.update(base, sync.current(), { status: 'cancelled' })
@@ -580,7 +580,7 @@ function MeetingDetail({
                 })
               }
             >
-              {t('Absagen')}
+              {tc('meeting', 'Absagen')}
             </button>
           )}
           {(meeting.status === 'draft' || meeting.status === 'invited') && (

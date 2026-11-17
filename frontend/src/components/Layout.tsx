@@ -619,7 +619,7 @@ function MfaPlatformNotice() {
     <div className="alert alert-error mfa-hint" role="status">
       <p>
         {t('Die Plattform-Verwaltung ruht, bis du die Zwei-Faktor-Anmeldung einrichtest.')}{' '}
-        <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
+        <NavLink to="/mein-konto/anmeldung#zwei-faktor">{t('Jetzt einrichten')}</NavLink>
       </p>
     </div>
   )
@@ -633,7 +633,7 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
         {overdue
           ? t('Zwei-Faktor-Anmeldung fehlt: Deine Verwaltungsrechte ruhen.')
           : t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
-        <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
+        <NavLink to="/mein-konto/anmeldung#zwei-faktor">{t('Jetzt einrichten')}</NavLink>
       </p>
       <details>
         <summary>{t('Mehr erfahren')}</summary>

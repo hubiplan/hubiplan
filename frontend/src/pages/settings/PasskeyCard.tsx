@@ -128,7 +128,10 @@ export function PasskeyCard() {
       }
       setName('')
       setMessage(t('Der Passkey ist eingerichtet. Du kannst dich jetzt damit anmelden.'))
-      if (result.recoveryCodes) setRecoveryCodes(await api.getRecoveryCodes())
+      if (result.recoveryCodes) {
+        const codes = await api.getRecoveryCodes()
+        if (codes.kind === 'ok') setRecoveryCodes(codes.codes)
+      }
     })
   }
 

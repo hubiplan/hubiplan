@@ -9,6 +9,7 @@ import { useAuth } from '../auth/AuthContext.tsx'
 import { loginTarget, rememberedTarget } from '../auth/loginTarget.ts'
 import { autofillSupported, cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
 import { Logo } from '../components/Logo.tsx'
+import { Alert } from '../components/ui.tsx'
 import { PoweredBy } from '../components/PoweredBy.tsx'
 import { RemoteLoginChoices } from './VerbundLoginPages.tsx'
 import { t } from '../i18n/index.ts'
@@ -21,7 +22,7 @@ function passkeysDisabled(error: unknown): boolean {
 }
 
 export function LoginPage() {
-  const { user, setUser } = useAuth()
+  const { user, setUser, expired } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   // Nach der Anmeldung zur ursprünglich aufgerufenen Seite (sonst Startseite)
@@ -190,6 +191,13 @@ export function LoginPage() {
         {step === 'password' ? (
           <form noValidate onSubmit={(e) => submit(e, () => api.login(email.trim(), password))}>
             <h1>{t('Anmelden')}</h1>
+            {expired && (
+              <Alert kind="info">
+                {t(
+                  'Deine Sitzung ist abgelaufen. Bitte melde dich neu an, danach geht es an derselben Stelle weiter.',
+                )}
+              </Alert>
+            )}
             <label className="field">
               <span>{t('E-Mail-Adresse')}</span>
               <input

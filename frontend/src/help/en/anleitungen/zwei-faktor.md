@@ -9,11 +9,17 @@ stichworte: [2FA, authenticator, phone, code, TOTP, security]
 You need an authenticator app on your phone, for example FreeOTP, Aegis or Google Authenticator.
 
 1. Open [Sign-in & security](/mein-konto/anmeldung) under **My account**.
-2. In the **Two-factor authentication** section, scan the QR code with the app.
+2. In the **Two-factor authentication** section, scan the QR code with the app. If you set it up on
+   the phone that runs the app, tap **Open in authenticator app** instead or copy the key.
 3. Enter the **Code from the app** and **Your password for confirmation**.
 4. Click **Activate**.
 5. Keep the **Recovery codes** that appear in a safe place, for example printed. Each code
-   works once if you don't have your phone.
+   works once if you don't have your phone. **Copy codes** and **Save as text file** let you
+   store them straight away.
+
+You can view the codes again later in the same section with **Show recovery codes**. If they are
+used up or have fallen into the wrong hands, create new ones with **Generate new codes**; the
+previous ones then stop working.
 
 ![The “Two-factor authentication” section with the QR code](bild:konto-zwei-faktor)
 

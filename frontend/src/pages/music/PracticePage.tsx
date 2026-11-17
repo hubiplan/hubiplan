@@ -8,7 +8,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { LeadersPanel } from './LeadersPanel.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
 import { RehearsalProgramEditor } from './RehearsalProgramEditor.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
@@ -329,8 +329,8 @@ export function PracticePage() {
                 {canEdit && !o.cancelled && (
                   <span className="actions">
                     {[
-                      ['accepted', t('Zusagen')],
-                      ['declined', t('Absagen')],
+                      ['accepted', tc('action', 'Zusagen')],
+                      ['declined', tc('action', 'Absagen')],
                     ].map(([status, label]) => (
                       <button
                         key={status}

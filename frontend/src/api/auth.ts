@@ -143,14 +143,35 @@ export async function reauthenticate(password: string): Promise<ChangeResult> {
   return { kind: 'error', message: errorMessage(body, t('Passwort ist falsch.')) }
 }
 
-export async function getRecoveryCodes(): Promise<string[]> {
-  const { status, body } = await request<{ data?: { unused_codes?: string[] } }>(
+export type CodesResult =
+  { kind: 'ok'; codes: string[] } | { kind: 'reauthenticate' } | { kind: 'error'; message: string }
+
+function codesResult(
+  status: number,
+  body: AuthBody & { data?: { unused_codes?: string[] } },
+): CodesResult {
+  if (status === 200) return { kind: 'ok', codes: body.data?.unused_codes ?? [] }
+  // allauth zeigt die Codes nur nach frischer Passwortbestätigung
+  if (status === 401) return { kind: 'reauthenticate' }
+  return { kind: 'error', message: errorMessage(body, t('Das hat nicht geklappt.')) }
+}
+
+/** Noch nicht benutzte Wiederherstellungscodes; lassen sich jederzeit wieder anzeigen. */
+export async function getRecoveryCodes(): Promise<CodesResult> {
+  const { status, body } = await request<AuthBody & { data?: { unused_codes?: string[] } }>(
     'GET',
     `${BASE}/account/authenticators/recovery-codes`,
   )
-  // Fehler nicht als „keine Codes“ ausgeben (Gesamtaudit 30.10., WEB-F01)
-  if (status !== 200) throw new ApiError(status, body)
-  return body.data?.unused_codes ?? []
+  return codesResult(status, body)
+}
+
+/** Neue Codes erzeugen; die bisherigen gelten danach nicht mehr. */
+export async function regenerateRecoveryCodes(): Promise<CodesResult> {
+  const { status, body } = await request<AuthBody & { data?: { unused_codes?: string[] } }>(
+    'POST',
+    `${BASE}/account/authenticators/recovery-codes`,
+  )
+  return codesResult(status, body)
 }
 
 // --- Passkeys (konzepte/passkey-anmeldung.md) ---
