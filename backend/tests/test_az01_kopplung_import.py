@@ -151,8 +151,19 @@ def test_plattform_kopplung_ruht_bis_zur_bestaetigung(api, orgs, club_c, board_c
         assert coupling.options["move"]["import"] is True
         assert coupling.options["move"]["fingerprint"] == "2" * 40
         assert coupling.options["move"]["previous"] == Coupling.State.ACTIVE
-        # Bis zur Bestätigung geht nichts hinaus
+        # Bis zur Bestätigung geht nichts hinaus, nichts herein, kein Abgleich
+        monkeypatch.setattr(transport, "call", lambda *a, **k: pytest.fail("Gegenstelle angefragt"))
+        platform = PlatformSettings.load()
+        platform.peering_enabled = True  # auch bei eingeschaltetem Verbund
+        platform.save()
         assert services.sync(coupling) == 0
+        services.deliver(coupling.pk)
+        assert services.reconcile(coupling) == []
+        with pytest.raises(services.Refused) as refused:
+            services._receive(
+                coupling, {"kind": "unit", "seq": 1, "msg_id": str(uuid.uuid4()), "data": {}}
+            )
+        assert refused.value.status == 423
         assert not Message.objects.filter(coupling=coupling).exists()
 
 
