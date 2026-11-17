@@ -128,7 +128,7 @@ def create(org, user, data: dict) -> CashCount:
         )
     if reason := services.fixed_on(org, date, timezone.now()):
         raise ValidationError({"date": "Die Kasse ist an diesem Tag festgeschrieben" + reason})
-    services.ensure_open(org, date=date)
+    services.ensure_bookable(org, date)
     counted_by = str(data.get("counted_by") or "").strip()[:200]
     if not counted_by:
         raise ValidationError({"counted_by": gettext("Bitte angeben, wer gezählt hat.")})

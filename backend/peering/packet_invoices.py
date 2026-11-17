@@ -295,7 +295,7 @@ def report_paid(remote: RemoteInvoice, *, date, account=None, category=None, use
             raise ValidationError(gettext("Bitte eine Kategorie wählen."))
         if not category.allows(Booking.Kind.EXPENSE):
             raise ValidationError(gettext("Die Kategorie ist nicht für Ausgaben vorgesehen."))
-        finance_services.ensure_open(org, date=date)
+        finance_services.ensure_bookable(org, date)
         year = org.fiscal_year_of(date)
         booking = Booking(
             organization=org,

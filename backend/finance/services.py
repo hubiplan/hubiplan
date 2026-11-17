@@ -84,6 +84,28 @@ def ensure_open(org, *, date: datetime.date | None = None, year: int | None = No
         )
 
 
+def ensure_not_locked(org, date: datetime.date) -> None:
+    """Fehler, wenn das Datum in der festgeschriebenen Kasse liegt („Festschreiben bis“).
+
+    Gesamtaudit 15.11., PUB-08: Neue Buchungen und Datumsänderungen in einen schon geprüften
+    Zeitraum hinein waren möglich. Dahinter steht ein Trigger der Datenbank (finance 0037)."""
+    if org.finance_locked_until and date <= org.finance_locked_until:
+        raise ValidationError(
+            gettext(
+                "Die Kasse ist bis {x:%d.%m.%Y} festgeschrieben. Buchungen in diesem Zeitraum "
+                "sind nicht mehr möglich; bitte mit heutigem Datum buchen."
+            ).format(x=org.finance_locked_until)
+        )
+
+
+def ensure_bookable(org, date: datetime.date) -> None:
+    """Darf mit diesem Datum gebucht werden? Geschäftsjahr offen und Datum nach „Kasse
+    festgeschrieben bis“. Für jeden Weg, der eine Buchung anlegt (Gesamtaudit 15.11., PUB-08):
+    So kommt die verständliche Meldung, bevor der Trigger der Datenbank abweist."""
+    ensure_open(org, date=date)
+    ensure_not_locked(org, date)
+
+
 def lock_years_from(org, first: int) -> None:
     """Geteilte Jahressperre für alle Geschäftsjahre ab ``first`` bis zum laufenden."""
     if not connection.in_atomic_block:
@@ -581,7 +603,7 @@ def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = T
     remove_booking_donation(booking.pk)
     org = booking.organization
     today = timezone.localdate()
-    ensure_open(org, date=today)
+    ensure_bookable(org, today)
     year = org.fiscal_year_of(today)
     counter = Booking(
         organization=org,
@@ -877,6 +899,7 @@ def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
     booking = Booking.objects.select_for_update().select_related("organization").get(pk=booking.pk)
     org = booking.organization
     ensure_open(org, year=booking.year)
+    ensure_not_locked(org, booking.date)
     blocker = split_blocker(booking)
     if blocker:
         raise ValidationError(blocker)
