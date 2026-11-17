@@ -26,6 +26,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading, SaveStatus } from '../../components/ui.tsx'
 import './materials.css'
 import { PageNav } from '../../components/ListControls.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 // Bestand: Material oder Infrastruktur (Schießstand, Schützenhaus, Vereinsheim)
 interface Stock {
@@ -54,8 +55,7 @@ export function MaterialsPage({ kind = 'material' }: { kind?: StockKind }) {
         ? !!activeDept?.material_enabled
         : !!activeDept?.infrastructure_enabled
   const area = kind === 'facility' ? 'infrastructure' : 'material'
-  if (!has(area) || !permissions.includes(`${area}.view`))
-    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+  if (!has(area) || !permissions.includes(`${area}.view`)) return <NoAccessPage reason="right" />
   const prefix = active ? `/api/orgs/${active.id}/` : `/api/depts/${activeDept!.id}/`
   const stock: Stock = {
     kind,
@@ -87,7 +87,7 @@ export function MaterialsPage({ kind = 'material' }: { kind?: StockKind }) {
             editable ? (
               <ItemForm stock={stock} base={base} />
             ) : (
-              <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+              <NoAccessPage reason="right" embedded />
             )
           }
         />

@@ -1,33 +1,40 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { t } from '../i18n/index.ts'
+import { NoWorkspaceError } from '../org/OrgContext.tsx'
+import { NoAccessPage } from '../pages/NoticePages.tsx'
 
 /** Fängt Fehler beim Laden oder Anzeigen einer Seite ab (z. B. nach einem Update fehlt ein
  * altes Seitenmodul), statt die ganze Oberfläche leer zu lassen (Gesamtaudit 30.10.).
  * ``resetKey`` (Pfad) setzt den Fehler beim Seitenwechsel zurück. */
 export class PageErrorBoundary extends Component<
   { resetKey: string; children: ReactNode },
-  { failed: boolean; key: string }
+  { failed: boolean; workspace: boolean; key: string }
 > {
-  state = { failed: false, key: this.props.resetKey }
+  state = { failed: false, workspace: false, key: this.props.resetKey }
 
-  static getDerivedStateFromError() {
-    return { failed: true }
+  static getDerivedStateFromError(error: unknown) {
+    return { failed: true, workspace: error instanceof NoWorkspaceError }
   }
 
   static getDerivedStateFromProps(
     props: { resetKey: string },
-    state: { failed: boolean; key: string },
+    state: { failed: boolean; workspace: boolean; key: string },
   ) {
-    return props.resetKey !== state.key ? { failed: false, key: props.resetKey } : null
+    return props.resetKey !== state.key
+      ? { failed: false, workspace: false, key: props.resetKey }
+      : null
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    if (error instanceof NoWorkspaceError) return
     console.error('Seite ließ sich nicht anzeigen', error, info.componentStack)
   }
 
   render() {
     if (!this.state.failed) return this.props.children
+    // Seite setzt einen anderen Arbeitsbereich voraus: kein Ladefehler, sondern „Kein Zugriff“
+    if (this.state.workspace) return <NoAccessPage reason="workspace" />
     return (
       <div className="alert alert-error" role="alert">
         <p>

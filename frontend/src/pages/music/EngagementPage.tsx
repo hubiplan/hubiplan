@@ -8,6 +8,7 @@ import { Alert, Field } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { MusicHeader } from './MusicLayout.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 type Document = {
   id: number
@@ -26,7 +27,7 @@ export function EngagementPage({ performance }: { performance: number }) {
   return org.modules.includes('finance') && org.permissions.includes('finance.view') ? (
     <EngagementEditor performance={performance} />
   ) : (
-    <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    <NoAccessPage reason="right" embedded />
   )
 }
 

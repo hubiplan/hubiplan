@@ -2783,6 +2783,14 @@ button.tab.active {
   display: inline-flex;
   /* lange Beschriftungen brechen auf schmalen Bildschirmen im Segment um */
   max-width: 100%;
+  /* VW-40: reicht auch das nicht (320 px), stehen die Segmente untereinander */
+  flex-wrap: wrap;
+}
+.recipient-filter {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  margin-bottom: 0.5rem;
 }
 .segmented .button {
   border-radius: 0;

@@ -178,11 +178,15 @@ export function useOrg(): OrgState {
   return ctx
 }
 
+/** Seite braucht einen anderen Arbeitsbereich: PageErrorBoundary zeigt dafür „Kein Zugriff“
+ * statt eines Ladefehlers (UX-Audit 16.11. VW-09 c). */
+export class NoWorkspaceError extends Error {}
+
 /** Aktive Organisation; nur in Seiten verwenden, die eine voraussetzen. */
 // oxlint-disable-next-line react/only-export-components
 export function useActiveOrg(): OrgSummary {
   const { active } = useOrg()
-  if (!active) throw new Error(t('Keine aktive Organisation.'))
+  if (!active) throw new NoWorkspaceError(t('Keine aktive Organisation.'))
   return active
 }
 
@@ -190,7 +194,7 @@ export function useActiveOrg(): OrgSummary {
 // oxlint-disable-next-line react/only-export-components
 export function useActiveDept(): DeptSummary {
   const { activeDept } = useOrg()
-  if (!activeDept) throw new Error(t('Keine aktive Abteilung.'))
+  if (!activeDept) throw new NoWorkspaceError(t('Keine aktive Abteilung.'))
   return activeDept
 }
 

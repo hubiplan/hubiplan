@@ -10,6 +10,7 @@ import { Alert, Field } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 type Payee = { holder: string; iban: string; bic: string }
 type Run = {
@@ -40,11 +41,7 @@ export function PayoutRunsPage() {
     org.modules.includes('finance') &&
     org.permissions.includes('finance.view') &&
     org.permissions.includes('events.view')
-  return allowed ? (
-    <PayoutRuns />
-  ) : (
-    <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
-  )
+  return allowed ? <PayoutRuns /> : <NoAccessPage reason="right" embedded />
 }
 
 function PayoutRuns() {

@@ -141,7 +141,9 @@ describe('Belegung', () => {
 
   it('verlangt ein Leserecht', async () => {
     show(['members.view'])
-    expect(await screen.findByText('Dafür fehlt dir die Berechtigung.')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Kein Zugriff in diesem Arbeitsbereich' }),
+    ).toBeInTheDocument()
   })
 
   it('bestätigt die Ausgabe einer Ausleihe', async () => {

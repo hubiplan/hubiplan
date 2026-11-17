@@ -6,8 +6,20 @@ import { usePageTitle } from '../components/pageTitle.ts'
 import { t } from '../i18n/index.ts'
 import { AppOpenLink } from '../components/AppOpenLink.tsx'
 
-export function NoAccessPage({ reason }: { reason: 'right' | 'workspace' }) {
-  usePageTitle(t('Kein Zugriff'))
+/**
+ * Eine Karte für jeden Fall von „kein Zugriff“ (UX-Audit 16.11. VW-09, VW-35): fehlendes Recht,
+ * ausgeschaltetes Modul oder falscher Arbeitsbereich, immer mit Überschrift und Ausweg.
+ * `embedded`: innerhalb einer Seite mit eigenem Kopf (Überschrift zweiter Ebene, Titel bleibt).
+ */
+export function NoAccessPage({
+  reason,
+  embedded = false,
+}: {
+  reason: 'right' | 'workspace'
+  embedded?: boolean
+}) {
+  usePageTitle(embedded ? null : t('Kein Zugriff'))
+  const Heading = embedded ? 'h2' : 'h1'
   const { active, activeDept, activePortal } = useOrg()
   const current = active
     ? displayName(active)
@@ -17,8 +29,8 @@ export function NoAccessPage({ reason }: { reason: 'right' | 'workspace' }) {
         ? t('Meine Daten ({x})', { x: activePortal.club_display_name || activePortal.club_name })
         : null
   return (
-    <section className="card">
-      <h1>{t('Kein Zugriff in diesem Arbeitsbereich')}</h1>
+    <section className="card" data-testid="kein-zugriff">
+      <Heading>{t('Kein Zugriff in diesem Arbeitsbereich')}</Heading>
       <p>
         {reason === 'right'
           ? t('Für diese Seite fehlt dir im aktuellen Arbeitsbereich das nötige Recht.')

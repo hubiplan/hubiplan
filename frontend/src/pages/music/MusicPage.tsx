@@ -21,6 +21,7 @@ import { AvailabilityPage } from './AvailabilityPage.tsx'
 import { PerformanceOverview } from './PerformanceOverview.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; partners: Row[] }
@@ -50,7 +51,7 @@ const statuses: [string, string][] = [
 export function MusicPage() {
   const org = useActiveOrg()
   if (!org.modules.includes('music') || !org.permissions.includes('music.view'))
-    return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    return <NoAccessPage reason="right" />
   return (
     <MusicLayout>
       <MusicRoute />
@@ -111,7 +112,7 @@ function MusicRoute() {
     return org.modules.includes('scores') && org.permissions.includes('scores.view') ? (
       <ScoresPage key={org.id} />
     ) : (
-      <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+      <NoAccessPage reason="right" embedded />
     )
   if (area === 'proben') return <PracticePage key={org.id} />
   if (area === 'vorlagen') return <EnsembleTemplatesPage key={org.id} />
@@ -739,7 +740,7 @@ function Editor({
 export function ScoresOnlyPage() {
   const org = useActiveOrg()
   if (!org.modules.includes('scores') || !org.permissions.includes('scores.view'))
-    return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    return <NoAccessPage reason="right" />
   return (
     <MusicLayout>
       <ScoresPage key={org.id} />

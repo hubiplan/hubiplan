@@ -21,6 +21,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './helpers.css'
 import { PlaceField } from '../../components/PlaceField.tsx'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -60,7 +61,7 @@ export function HelpersPage() {
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
   const enabled = active ? active.modules.includes('helpers') : !!activeDept?.helpers_enabled
   if (!enabled || !permissions.includes(PERM.helpersView)) {
-    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+    return <NoAccessPage reason="right" />
   }
   const base = active ? `/api/orgs/${active.id}/helpers/` : `/api/depts/${activeDept!.id}/helpers/`
   return (

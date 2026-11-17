@@ -36,13 +36,13 @@ export function termsIn(
     .slice(0, MAX_TERMS)
 }
 
-export function HelpButton() {
+export function HelpButton({ compact = false }: { compact?: boolean }) {
   const help = useHelp()
   if (!help) return null
   return (
     <button
       type="button"
-      className="button button-ghost help-button"
+      className={`button button-ghost help-button${compact ? ' help-button-compact' : ''}`}
       aria-label={t('Hilfe zu dieser Seite')}
       title={t('Hilfe zu dieser Seite')}
       aria-expanded={help.panelOpen}

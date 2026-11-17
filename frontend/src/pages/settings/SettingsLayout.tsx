@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { settingsItems } from './items.ts'
 import { t } from '../../i18n/index.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 export function SettingsLayout() {
   const { active } = useOrg()
@@ -13,12 +14,12 @@ export function SettingsLayout() {
 
   // Persönliche Einstellungen stehen unter „Mein Konto“ (/mein-konto),
   // hier nur die Einstellungen der gewählten Organisation.
-  if (!active) return <Navigate to="/" replace />
+  if (!active) return <NoAccessPage reason="workspace" />
 
   const items = settingsItems(active)
 
   if (location.pathname.replace(/\/$/, '') === '/einstellungen') {
-    if (items.length === 0) return <Navigate to="/" replace />
+    if (items.length === 0) return <NoAccessPage reason="right" />
     return <Navigate to={items[0].to} replace />
   }
 

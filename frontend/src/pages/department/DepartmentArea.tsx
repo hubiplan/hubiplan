@@ -205,34 +205,37 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
           <p className="muted small">
             {data.count} {t('Mitglieder')}
           </p>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{t('Name')}</th>
-                <th>{t('Geburtsdatum')}</th>
-                <th>
-                  <Term k="member_type">{t('Mitgliedsart')}</Term>
-                </th>
-                <th>{t('E-Mail')}</th>
-                <th>{t('Telefon')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.results.map((r) => (
-                <tr key={r.id}>
-                  <td>
-                    <Link to={`/abteilung/mitglied/${r.id}`}>
-                      {r.last_name}, {r.first_name}
-                    </Link>
-                  </td>
-                  <td>{formatDate(r.birth_date)}</td>
-                  <td>{r.member_type ?? '–'}</td>
-                  <td>{r.email || '–'}</td>
-                  <td>{r.phone || '–'}</td>
+          {/* VW-40: breite Tabelle rollt in der Karte, nicht die ganze Seite */}
+          <div className="table-scroll">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>{t('Name')}</th>
+                  <th>{t('Geburtsdatum')}</th>
+                  <th>
+                    <Term k="member_type">{t('Mitgliedsart')}</Term>
+                  </th>
+                  <th>{t('E-Mail')}</th>
+                  <th>{t('Telefon')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.results.map((r) => (
+                  <tr key={r.id}>
+                    <td>
+                      <Link to={`/abteilung/mitglied/${r.id}`}>
+                        {r.last_name}, {r.first_name}
+                      </Link>
+                    </td>
+                    <td>{formatDate(r.birth_date)}</td>
+                    <td>{r.member_type ?? '–'}</td>
+                    <td>{r.email || '–'}</td>
+                    <td>{r.phone || '–'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {pages > 1 && (
             <PageNav
               prevDisabled={page <= 1}

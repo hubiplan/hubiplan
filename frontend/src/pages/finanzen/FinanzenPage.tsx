@@ -41,6 +41,7 @@ import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { ExpensesArea } from '../expenses/ExpensesPage.tsx'
 import { expenseTabs } from '../expenses/format.ts'
 import { t } from '../../i18n/index.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 
 /**
  * Rahmen eines Finanzbereichs: Seitenkopf mit h1 und Pfad aus dem Menü, samt Arbeitsgruppe
@@ -70,7 +71,7 @@ const home = <Navigate to="/finanzen" replace />
 export function FinanzenPage() {
   const org = useActiveOrg()
   const a = financeAccess(org)
-  if (!a.finance && !a.billing && !a.expenses) return <Navigate to="/" replace />
+  if (!a.finance && !a.billing && !a.expenses) return <NoAccessPage reason="right" />
   return (
     <Routes>
       <Route
