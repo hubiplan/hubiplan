@@ -124,6 +124,14 @@ class BusinessPartner(models.Model):
     class Meta:
         ordering = ["pk"]
         verbose_name = gettext_lazy("Geschäftspartner")
+        constraints = [
+            # Gesamtaudit 15.11., PF-25: keine doppelte Partnernummer je Einheit
+            models.UniqueConstraint(
+                fields=["organization", "number"],
+                condition=~models.Q(number=""),
+                name="partner_nummer_eindeutig",
+            )
+        ]
 
     def __str__(self):
         return self.name

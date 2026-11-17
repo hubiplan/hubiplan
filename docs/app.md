@@ -129,7 +129,7 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 
 | Methode und Pfad | Zweck |
 |---|---|
-| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version`, `url`, `push` |
+| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version` (Android, für ältere Fassungen), `min_app_versions` (je Plattform: `android` = versionCode, `ios` = Buildnummer; Gesamtaudit 15.11., APP-11), `url`, `push`. Beim Verbinden (`pair/`) antwortet der Server einer zu alten App mit 426 `app_too_old`, ohne den Code zu verbrauchen |
 | `GET /api/app/v1/me/` | Konto, dieses Gerät, Zugänge (`portal`, je mit `theme`: Farben und Wappen der Einheit; `member_kind` `person`/`organization` und `member_name`: bei Ansprechpartnern einer Organisation steht deren Name dort, `first_name`/`last_name` sind die des Ansprechpartners) |
 | `GET /api/app/v1/devices/` | eigene Geräte (`current` = dieses Gerät) |
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |
