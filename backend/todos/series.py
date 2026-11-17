@@ -17,8 +17,13 @@ from .models import Todo, TodoAttachment, TodoReminderConfig, TodoSeries, TodoSh
 from .reminders import deadline, sync
 
 
-def lock_task(user, scope, pk, *, deleted=False):
+def lock_task(user, scope, pk, *, deleted=False, allowed=None):
+    """Sichtbare Aufgabe sperren. ``allowed(todo)`` ist die Schreibprüfung des Aufrufers:
+    Findet die Sperre nichts, obwohl die Aufgabe sichtbar ist, und verneint sie das
+    Schreibrecht, antwortet die Anfrage mit 403 statt 404."""
+    from django.http import Http404
     from django.shortcuts import get_object_or_404
+    from rest_framework.exceptions import PermissionDenied
 
     from .access import visible
 
@@ -38,7 +43,18 @@ def lock_task(user, scope, pk, *, deleted=False):
     if metadata.series_id:
         with rls_bypass():
             TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)
-    return get_object_or_404(qs.select_for_update(), pk=pk)
+    try:
+        return get_object_or_404(qs.select_for_update(), pk=pk)
+    except Http404:
+        # FOR UPDATE wendet unter dem Zeilenschutz zusätzlich die Schreibregel an; wer nur
+        # lesen darf, findet hier keine Zeile (Gesamtaudit 15.11., AZ-04). Ohne Sperre und
+        # ohne Systemrechte erneut unter der Sicht der Anfrage laden: sichtbar, aber nicht
+        # beschreibbar ist 403. Unsichtbare Aufgaben bleiben 404.
+        if allowed is not None:
+            current = qs.filter(pk=pk).first()
+            if current is not None and not allowed(current):
+                raise PermissionDenied() from None
+        raise
 
 
 def require_series_edit(todo, user, scope):

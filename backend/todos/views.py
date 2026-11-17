@@ -220,14 +220,17 @@ class TodoDetailView(TodoScopeMixin, APIView):
         deleted = bool(request.data.get("deleted") is False)
         from .series import lock_task
 
-        todo = lock_task(request.user, self.scope, pk, deleted=deleted)
+        def allowed(todo):
+            taking_over = request.data.get("owner") == request.user.pk and can_take_over(
+                todo, request.user, self.scope
+            )
+            return can_edit(todo, request.user, self.scope) or taking_over
+
+        todo = lock_task(request.user, self.scope, pk, deleted=deleted, allowed=allowed)
         from .remote import refresh_common
 
         todo = refresh_common(todo)
-        taking_over = request.data.get("owner") == request.user.pk and can_take_over(
-            todo, request.user, self.scope
-        )
-        if not can_edit(todo, request.user, self.scope) and not taking_over:
+        if not allowed(todo):
             raise PermissionDenied()
         serializer = TodoInput(data=request.data)
         serializer.is_valid(raise_exception=True)

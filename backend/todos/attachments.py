@@ -117,7 +117,12 @@ class AttachmentScope(TodoScopeMixin):
         from .series import lock_task
 
         todo = (
-            lock_task(request.user, self.scope, pk)
+            lock_task(
+                request.user,
+                self.scope,
+                pk,
+                allowed=lambda current: can_edit(current, request.user, self.scope),
+            )
             if write
             else get_object_or_404(visible(request.user, self.scope), pk=pk)
         )

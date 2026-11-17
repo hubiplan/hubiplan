@@ -14,7 +14,7 @@ from .factories import give_role, make_user
 from .test_todos import create, url
 from .test_todos import patch as change
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.usefixtures("anfragen_unter_app_rolle")]
 
 
 @pytest.fixture
