@@ -1,5 +1,5 @@
 // KI-Assistent mit dem HUBIplan-Konto verbinden (erfundene Daten).
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -149,7 +149,11 @@ describe('Mein Konto › KI-Assistenten', () => {
     expect(screen.getByText('Testassistent')).toBeInTheDocument()
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Trennen' }))
-    await user.click(await screen.findByRole('button', { name: /OK|Ja|Bestätigen/ }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', {
+        name: 'Verbindung trennen',
+      }),
+    )
     expect(await screen.findByText('Noch kein Assistent verbunden.')).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'DELETE /api/me/mcp/4/')).toBe(true)
   })

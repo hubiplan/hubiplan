@@ -27,7 +27,13 @@ export function McpConnectionsCard() {
   if (!data.enabled) return null
 
   async function disconnect(c: McpConnection) {
-    if (!(await confirmDialog(t('Verbindung zu „{name}“ trennen?', { name: c.client })))) return
+    if (
+      !(await confirmDialog({
+        message: t('Verbindung zu „{name}“ trennen?', { name: c.client }),
+        confirmLabel: t('Verbindung trennen'),
+      }))
+    )
+      return
     setError(null)
     try {
       await mcpApi.disconnect(c.id)

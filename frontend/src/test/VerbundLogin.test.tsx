@@ -1,5 +1,5 @@
 // Anmelden über eine gekoppelte Instanz (erfundene Daten).
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -236,7 +236,9 @@ describe('Anmelden über andere Instanz', () => {
       next: '/mein-konto/app',
     })
     await user.click(screen.getByRole('button', { name: 'Lösen' }))
-    await user.click(await screen.findByRole('button', { name: /OK|Ja|Bestätigen/ }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Lösen' }),
+    )
     await waitFor(() =>
       expect(calls.some((c) => c.key === 'DELETE /api/peering/sso/links/4/')).toBe(true),
     )

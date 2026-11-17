@@ -7162,3 +7162,29 @@ html[dir='rtl'] body .search-input {
 .quick-search > p {
   margin: 0.75rem 0 0;
 }
+
+/* --- UX-Audit VW-24: Fokus und Sprungziele nicht hinter festen Leisten --- */
+/* Der Browser rollt fokussierte Elemente und Sprungziele so weit, dass sie unter der klebenden
+   Kopfzeile und über der unteren Leiste samt schwebender Hauptaktion stehen (WCAG 2.4.11). */
+html {
+  scroll-padding-top: calc(var(--topbar-height, 3.5rem) + 0.5rem);
+}
+@media (max-width: 50rem) {
+  html {
+    scroll-padding-bottom: calc(4rem + var(--control-height) + 2.5rem);
+  }
+}
+/* Bei wenig Höhe (Querformat am Handy, 400 % Zoom) klebt die Kopfzeile nicht: Sie nähme sonst
+   einen großen Teil des Bildes ein. */
+@media (max-height: 30rem) {
+  .topbar {
+    position: static;
+  }
+  .sidebar {
+    top: 0;
+    height: 100vh;
+  }
+  html {
+    scroll-padding-top: 0.5rem;
+  }
+}

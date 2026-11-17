@@ -41,6 +41,8 @@ Seit dem UX-Audit vom 16.11.2026 (X-05, VW-22, VW-23, VW-26) gilt für die Verwa
 | Seite verlassen mit offenen Eingaben | Rückfrage in der App und im Browser | `useDraftGuard`, `useChangesGuard` |
 | Löschen, das sich zurücknehmen lässt (Papierkorb, Rückgängig) | ohne Rückfrage, mit Hinweis und „Rückgängig“ | `undo.ts`, siehe [rueckgaengig.md](rueckgaengig.md) |
 | Löschen, das sich nicht zurücknehmen lässt | Rückfrage mit Handlungsverb auf dem Knopf und der Folge im Text („lässt sich nicht rückgängig machen“) | `confirmDialog` mit `confirmLabel` |
+| Rückfrage, die nichts löscht oder trennt („Jetzt abgleichen?“, „Auf der Webseite zeigen?“) | Knopf nennt die Handlung, nicht rot | `confirmDialog` mit `confirmLabel` (Pflicht) und `danger: false` |
+| Formular, das unter einer Liste eingeblendet wird | Fokus im ersten Feld, Escape schließt wie „Abbrechen“ | `useRevealFocus(aktiv, schliessen)` |
 | Sitzung läuft ab | Vorwarnung; nach Ablauf bleiben die Eingaben stehen | `SessionWatch` |
 
 Jede Formularseite zeigt entweder den Speicherstand oder genau einen Primärknopf, nie keins von

@@ -916,6 +916,7 @@ function AssignForm({
           title: t('Trotzdem einteilen?'),
           message: errorMessage(err),
           confirmLabel: t('Trotzdem einteilen'),
+          danger: false,
         })
         if (!yes) return
         await assign({ ...data, force: true })

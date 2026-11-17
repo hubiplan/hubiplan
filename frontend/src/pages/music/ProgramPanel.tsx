@@ -253,7 +253,12 @@ export function ProgramPanel({ performance }: { performance: number }) {
                 className="button button-ghost"
                 disabled={busy}
                 onClick={async () => {
-                  if (await confirmDialog(t('Eintrag entfernen?')))
+                  if (
+                    await confirmDialog({
+                      message: t('Eintrag entfernen?'),
+                      confirmLabel: t('Entfernen'),
+                    })
+                  )
                     void act({ action: 'delete', id: e.id }).catch(() => {})
                 }}
               >

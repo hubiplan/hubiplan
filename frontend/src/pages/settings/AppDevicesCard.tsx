@@ -93,9 +93,12 @@ export function AppDevicesCard() {
 
   async function remove(device: AppDevice) {
     if (
-      !(await confirmDialog(
-        t('„{name}“ abmelden? Die App dort muss neu verbunden werden.', { name: device.name }),
-      ))
+      !(await confirmDialog({
+        message: t('„{name}“ abmelden? Die App dort muss neu verbunden werden.', {
+          name: device.name,
+        }),
+        confirmLabel: t('Abmelden'),
+      }))
     )
       return
     setError(null)

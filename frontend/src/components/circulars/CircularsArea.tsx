@@ -709,7 +709,10 @@ function SentView({
             open,
           }) + t('ankam; sie kann dann doppelt ankommen.')
         : t('{open} fehlgeschlagene E-Mails erneut senden?', { open })
-    if (!(await confirmDialog({ message: question, confirmLabel: t('Erneut senden') }))) return
+    if (
+      !(await confirmDialog({ message: question, confirmLabel: t('Erneut senden'), danger: false }))
+    )
+      return
     try {
       await circularApi.resend(base, circular.id)
       setError(null)

@@ -29,7 +29,13 @@ export function RemoteLoginCard() {
   }
 
   async function unlink(id: number, url: string) {
-    if (!(await confirmDialog(t('Verknüpfung mit {x} lösen?', { x: host(url) })))) return
+    if (
+      !(await confirmDialog({
+        message: t('Verknüpfung mit {x} lösen?', { x: host(url) }),
+        confirmLabel: t('Lösen'),
+      }))
+    )
+      return
     setError(null)
     try {
       await ssoApi.unlink(id)
@@ -40,7 +46,12 @@ export function RemoteLoginCard() {
   }
 
   async function forget(id: number, url: string) {
-    if (!(await confirmDialog(t('{x} aus der Einheitenauswahl entfernen?', { x: host(url) }))))
+    if (
+      !(await confirmDialog({
+        message: t('{x} aus der Einheitenauswahl entfernen?', { x: host(url) }),
+        confirmLabel: t('Entfernen'),
+      }))
+    )
       return
     setError(null)
     try {

@@ -207,7 +207,13 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
                   type="button"
                   className="button button-danger"
                   onClick={async () => {
-                    if (!(await confirmDialog(t('Vereinbarung entfernen?')))) return
+                    if (
+                      !(await confirmDialog({
+                        message: t('Vereinbarung entfernen?'),
+                        confirmLabel: t('Entfernen'),
+                      }))
+                    )
+                      return
                     try {
                       await partnerApi.removeAgreement(org.id, partner.id, a.id)
                       setItems(list.filter((x) => x.id !== a.id))

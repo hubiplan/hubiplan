@@ -446,6 +446,7 @@ function ImportWizard({
                   await confirmDialog({
                     title: t('Import vollständig rückgängig machen?'),
                     confirmLabel: t('Rückgängig machen'),
+                    danger: false,
                   })
                 ) {
                   void run(() => exchangeApi.undo(orgId, job.id))

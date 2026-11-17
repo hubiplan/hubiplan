@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { PERM } from './api/orgs.ts'
+import type { OrgSummary } from './api/orgs.ts'
 import { RequireAuth, RequireAuthOrOffline } from './auth/RequireAuth.tsx'
 import { Layout } from './components/Layout.tsx'
 import { PublicShell } from './components/ImprintFooter.tsx'
@@ -229,16 +230,22 @@ function RequireOrg({
   children: ReactNode
 }) {
   const { active, can } = useOrg()
-  if (!active) return <NoAccessPage reason="workspace" />
-  if (module && !active.modules.includes(module)) return <NoAccessPage reason="right" />
   const needed = typeof permission === 'string' ? [permission] : permission
-  if (needed && !needed.some((p) => can(p))) return <NoAccessPage reason="right" />
+  const need = {
+    kind: 'org' as const,
+    allows: (o: OrgSummary) =>
+      (!module || o.modules.includes(module)) &&
+      (!needed || needed.some((p) => o.permissions.includes(p))),
+  }
+  if (!active) return <NoAccessPage reason="workspace" need={need} />
+  if (module && !active.modules.includes(module)) return <NoAccessPage reason="right" need={need} />
+  if (needed && !needed.some((p) => can(p))) return <NoAccessPage reason="right" need={need} />
   return <>{children}</>
 }
 
 function RequireDept({ children }: { children: ReactNode }) {
   const { activeDept } = useOrg()
-  if (!activeDept) return <NoAccessPage reason="workspace" />
+  if (!activeDept) return <NoAccessPage reason="workspace" need={{ kind: 'dept' }} />
   return <>{children}</>
 }
 

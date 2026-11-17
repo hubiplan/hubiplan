@@ -149,6 +149,7 @@ function ProgramCard({
           { n: linked.length },
         ),
         confirmLabel: t('Ändern und neu berechnen'),
+        danger: false,
       }))
     )
       return

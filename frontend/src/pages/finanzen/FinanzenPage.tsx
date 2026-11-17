@@ -41,6 +41,7 @@ import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { ExpensesArea } from '../expenses/ExpensesPage.tsx'
 import { expenseTabs } from '../expenses/format.ts'
 import { t } from '../../i18n/index.ts'
+import type { OrgSummary } from '../../api/orgs.ts'
 import { NoAccessPage } from '../NoticePages.tsx'
 
 /**
@@ -71,7 +72,13 @@ const home = <Navigate to="/finanzen" replace />
 export function FinanzenPage() {
   const org = useActiveOrg()
   const a = financeAccess(org)
-  if (!a.finance && !a.billing && !a.expenses) return <NoAccessPage reason="right" />
+  if (!a.finance && !a.billing && !a.expenses) {
+    const allows = (o: OrgSummary) => {
+      const x = financeAccess(o)
+      return x.finance || x.billing || x.expenses
+    }
+    return <NoAccessPage reason="right" need={{ kind: 'org', allows }} />
+  }
   return (
     <Routes>
       <Route
