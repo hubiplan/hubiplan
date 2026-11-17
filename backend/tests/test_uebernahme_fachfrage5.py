@@ -22,6 +22,7 @@ from todos.models import TodoCleanupSetting
 from website.models import DesignVersion, Website
 from website.social_models import SocialDraft
 
+from .factories import make_website
 from .test_audit_3110_daten_umzug import run_import
 from .test_datatransfer import (  # noqa: F401
     _eager,
@@ -78,9 +79,7 @@ def test_restliche_vereinsdaten_ziehen_mit(api, club_c, board_c, platform_admin)
             aliases=["vorstand-verein-c"],
             pattern=pattern,
         )
-        site = Website.objects.filter(organization=club).first() or Website.objects.create(
-            organization=club
-        )
+        site = Website.objects.filter(organization=club).first() or make_website(club)
         DesignVersion.objects.create(
             organization=club,
             website=site,

@@ -6,6 +6,7 @@ import pytest
 
 from competitions.models import AwardGrant, Competition, Placing, Prize, Score, Scoring, Starter
 from competitions.statistics import competition_statistics
+from core.tenancy import rls_bypass
 
 from .factories import give_role, make_member, make_user
 from .test_wettbewerbe import club  # noqa: F401
@@ -18,6 +19,8 @@ def people(club):  # noqa: F811
     return [make_member(club, "Anna", "Weber"), make_member(club, "Bernd", "Müller")]
 
 
+# Testvorbereitung unter rls_bypass (Gesamtaudit 15.11., AZ-04)
+@rls_bypass()
 def add_competition(club, people, values, *, date="2026-06-01", status="endgueltig", **scoring):  # noqa: F811
     comp = Competition.objects.create(
         organization=club, title=f"Schießen {date}", date=date, status=status, discipline="LG 10 m"

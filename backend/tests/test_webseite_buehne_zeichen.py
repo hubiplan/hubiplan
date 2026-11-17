@@ -6,9 +6,9 @@ from django.test import Client
 
 from website import style
 from website.home import normalize, skeleton
-from website.models import DEFAULT_HOME_OFF, HOME_SECTIONS, Website, WebsiteImage
+from website.models import DEFAULT_HOME_OFF, HOME_SECTIONS, WebsiteImage
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "buehne-a"
@@ -24,8 +24,8 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(
-        organization=club,
+    return make_website(
+        club,
         public_key=KEY,
         state="public",
         privacy_mode="link",

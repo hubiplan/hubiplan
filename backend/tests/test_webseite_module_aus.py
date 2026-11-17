@@ -9,9 +9,8 @@ from django.test import Client
 
 from access.models import Role, RoleAssignment
 from music.models import Musician, Piece, Skill
-from website.models import Website
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "module-aus"
@@ -38,7 +37,7 @@ def payload(org, api):
 
 def test_bausteine_abgeschalteter_module_fehlen_in_der_verwaltung(orgs, api):
     org = club_with(orgs)
-    Website.objects.create(organization=org, public_key=KEY, state="public")
+    make_website(org, public_key=KEY, state="public")
     data = payload(org, api)
     gone = {"events", "honors", "results", "repertoire", "bookings", "history", "posts"}
     assert not gone & set(data["block_labels"])
@@ -49,7 +48,7 @@ def test_bausteine_abgeschalteter_module_fehlen_in_der_verwaltung(orgs, api):
 
 def test_bausteine_eingeschalteter_module_bleiben(orgs, api):
     org = club_with(orgs, "events", "honors", "competitions", "scores", "chronicle")
-    Website.objects.create(organization=org, public_key=KEY, state="public")
+    make_website(org, public_key=KEY, state="public")
     data = payload(org, api)
     assert {"events", "honors", "results", "repertoire", "history"} <= set(data["block_labels"])
     assert {"events", "honors", "results"} <= set(data["home_labels"])
@@ -57,7 +56,7 @@ def test_bausteine_eingeschalteter_module_bleiben(orgs, api):
 
 def test_instrument_nur_mit_musikmodul(orgs):
     org = club_with(orgs, "events", "music", "scores")
-    Website.objects.create(organization=org, public_key=KEY, state="public", show_instrument=True)
+    make_website(org, public_key=KEY, state="public", show_instrument=True)
     m = make_member(org, "Dora", "Dirigent")
     role = Role.objects.create(organization=org, name="Dirigentin", on_website=True)
     RoleAssignment.objects.create(
@@ -75,9 +74,7 @@ def test_instrument_nur_mit_musikmodul(orgs):
 
 def test_repertoire_mit_notenarchiv_ohne_musik(orgs):
     org = club_with(orgs, "scores")
-    Website.objects.create(
-        organization=org, public_key=KEY, state="public", blocks={"repertoire": True}
-    )
+    make_website(org, public_key=KEY, state="public", blocks={"repertoire": True})
     Piece.objects.create(organization=org, title="Marsch (erfunden)", on_website=True)
     assert [p["title"] for p in public("repertoire/").json()["pieces"]] == ["Marsch (erfunden)"]
     org.enabled_modules = ["members", "website"]

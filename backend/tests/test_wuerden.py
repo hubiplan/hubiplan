@@ -10,9 +10,8 @@ from openpyxl import Workbook
 from honors.models import Companion, Dignity, Reign, ReignPhoto
 from organizations.models import Department
 from website import services
-from website.models import Website
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, make_website
 from .test_webseite_inhalte import png
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -384,7 +383,7 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "honors"]
     org.save()
-    return Website.objects.create(organization=org, public_key="schluessel-w", state="public")
+    return make_website(org, public_key="schluessel-w", state="public")
 
 
 class TestOeffentlich:

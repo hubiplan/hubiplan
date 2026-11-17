@@ -105,6 +105,7 @@ def test_gegenstelle_zu_alt_bekommt_keine_organisationen(net, world, firma):
     assert "Musterbau GmbH – Niederlassung Musterstadt" in register(upper)
 
 
+@pytest.mark.usefixtures("anfragen_unter_app_rolle")  # wie im Betrieb (AZ-04)
 def test_gleichnamige_organisation_wird_klaerfall(net, world, firma):
     from organizations.models import Organization  # noqa: F401
 

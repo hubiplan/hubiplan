@@ -13,6 +13,7 @@ from organizations.models import Department, Organization
 from website.models import Website
 from website.social_models import SocialFeed, SocialPost
 
+from .factories import make_website
 from .test_datatransfer import (  # noqa: F401
     _eager,
     _on_commit_now,
@@ -109,9 +110,7 @@ class TestD3103SocialMedia:
     def test_beitraege_ohne_zugangsdaten(self, api, club_c, board_c, platform_admin):
         club = club_c["club"]
         with tenant_context(club.pk):
-            site = Website.objects.filter(organization=club).first() or Website.objects.create(
-                organization=club
-            )
+            site = Website.objects.filter(organization=club).first() or make_website(club)
             feed = SocialFeed.objects.create(
                 organization=club,
                 website=site,

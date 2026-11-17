@@ -10,9 +10,9 @@ from django.utils import timezone
 from core.tenancy import rls_bypass
 from events.models import Event
 from website import content
-from website.models import Website, WebsiteImage
+from website.models import WebsiteImage
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "g6-a"
@@ -28,8 +28,8 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(
-        organization=club,
+    return make_website(
+        club,
         public_key=KEY,
         state="public",
         privacy_mode="link",

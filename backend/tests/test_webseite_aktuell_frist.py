@@ -11,10 +11,10 @@ from django.utils import timezone
 from competitions.models import Competition
 from website.content_models import GalleryAlbum, GalleryItem
 from website.home import normalize
-from website.models import DEFAULT_HOME_OFF, HOME_SECTIONS, Website, WebsiteImage
+from website.models import DEFAULT_HOME_OFF, HOME_SECTIONS, WebsiteImage
 from website.social_models import SocialFeed, SocialPost
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 KEY = "frist-a"
@@ -30,8 +30,8 @@ def club(orgs):
 
 @pytest.fixture
 def site(club):
-    return Website.objects.create(
-        organization=club,
+    return make_website(
+        club,
         public_key=KEY,
         state="public",
         privacy_mode="link",

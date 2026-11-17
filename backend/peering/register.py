@@ -543,19 +543,25 @@ def decide_correction(rm: RemoteMember, apply: bool) -> RemoteMember:
     from django.core.exceptions import ValidationError
 
     from changes.tracking import suppress
+    from core.tenancy import unit_context
 
     proposal = (rm.data or {}).get(CORRECTION)
     if not proposal or rm.membership_id is None:
         raise ValidationError(gettext("Keine offene Berichtigung."))
     if apply:
-        person = rm.membership.person
-        fields = []
-        for f, value in proposal.items():
-            if f not in (*IDENTITY, "name_suffix"):
-                continue
-            setattr(person, f, datetime.date.fromisoformat(value) if f == "birth_date" else value)
-            fields.append(f)
-        with suppress():
+        # Die Mitgliedschaft gehört dem Platzhalter des Vereins; im Kontext des Dachverbands
+        # wäre sie unter dem Zeilenschutz unsichtbar (Fehler 500; Gesamtaudit 15.11., AZ-04).
+        # Wie beim Eingang der Meldung im Bereich des Platzhalters.
+        with suppress(), unit_context(rm.coupling.remote_unit_id):
+            person = rm.membership.person
+            fields = []
+            for f, value in proposal.items():
+                if f not in (*IDENTITY, "name_suffix"):
+                    continue
+                setattr(
+                    person, f, datetime.date.fromisoformat(value) if f == "birth_date" else value
+                )
+                fields.append(f)
             person.save(update_fields=[*fields, "updated_at"])
     rm.data = {k: v for k, v in (rm.data or {}).items() if k != CORRECTION}
     rm.save(update_fields=["data", "updated_at"])
@@ -567,6 +573,7 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
     from django.core.exceptions import ValidationError
 
     from changes.tracking import suppress
+    from core.tenancy import unit_context
     from members.models import Person
 
     if rm.status != RemoteMember.Status.UNCLEAR:
@@ -583,7 +590,10 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
         person = Person.objects.get(pk=person_id, scope=federation)
     else:
         person = _new_person(federation, row)
-    with suppress():
+    # Die Mitgliedschaft gehört dem Platzhalter des Vereins (Verbandsbereich oben), wie beim
+    # Eingang der Meldung (packet_members.apply). Im Kontext des Dachverbands verletzte das
+    # Anlegen den Zeilenschutz; die Entscheidung endete mit Fehler 500 (Gesamtaudit 15.11., AZ-04).
+    with suppress(), unit_context(coupling.remote_unit_id):
         _import(coupling, federation, row, rm, person=person)
     send_numbers(coupling)
     rm.refresh_from_db()

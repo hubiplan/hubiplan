@@ -19,7 +19,7 @@ from organizations.models import Department
 from website import social
 from website.models import SocialFeed, SocialPost, SocialPostImage, Website, WebsiteDomain
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, make_website
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -126,7 +126,7 @@ def setup(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "social"]
     org.save()
-    site = Website.objects.create(organization=org, public_key="schluessel-a", state="public")
+    site = make_website(org, public_key="schluessel-a", state="public")
     WebsiteDomain.objects.create(organization=org, website=site, hostname="www.verein-a.example")
     admin = make_user("webseite@example.org")
     give_role(admin, org, permissions=["website.manage"], name="Webseite")

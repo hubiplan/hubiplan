@@ -5,7 +5,8 @@ import pytest
 from django.test import Client
 
 from honors.models import Dignity, Reign
-from website.models import Website
+
+from .factories import make_website
 
 JSON = "application/json"
 
@@ -17,8 +18,8 @@ def site(orgs):
     org = orgs["a"]
     org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
-    return Website.objects.create(
-        organization=org,
+    return make_website(
+        org,
         public_key="schluessel-n",
         state="public",
         privacy_text="Datenschutz (erfunden)",

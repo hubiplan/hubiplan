@@ -11,8 +11,9 @@ from bookings.models import Booking
 from bookings.services import rebuild
 from materials.models import MaterialItem
 from website import menu
-from website.models import Website
 from website.public import SiteView
+
+from .factories import make_website
 
 pytestmark = pytest.mark.django_db
 KEY = "belegung-a"
@@ -29,7 +30,7 @@ def setup(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "website", "infrastructure", "bookings"]
     org.save()
-    site = Website.objects.create(organization=org, public_key=KEY, state="public")
+    site = make_website(org, public_key=KEY, state="public")
     house = MaterialItem.objects.create(
         organization=org,
         kind="facility",
