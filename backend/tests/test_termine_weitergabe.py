@@ -38,6 +38,8 @@ def dept_base(dept) -> str:
     return f"/api/depts/{dept.pk}/"
 
 
+# Wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
+@pytest.mark.usefixtures("anfragen_unter_app_rolle")
 class TestVoreinstellung:
     def test_wie_bisher(self, cal, zug):
         assert zug.events_share_up and zug.events_share_down
