@@ -68,12 +68,28 @@ def period_count(period: str) -> int:
     return {"month": 12, "quarter": 4}.get(period, 1)
 
 
-def _bookings(orgs, start: datetime.date, last: datetime.date):
-    return (
-        Booking.objects.filter(organization__in=orgs, date__gte=start, date__lte=last)
+def _bookings_of(org, start: datetime.date, last: datetime.date) -> list:
+    return list(
+        Booking.objects.filter(organization=org, date__gte=start, date__lte=last)
         .exclude(kind=Booking.Kind.TRANSFER)
         .select_related("category", "cancels__category")
     )
+
+
+def _bookings(orgs, start: datetime.date, last: datetime.date) -> list:
+    """Buchungen der Einheit und ihrer Untereinheiten mit eigener Kasse.
+
+    Untereinheiten werden strikt in ihrem eigenen Bereich gelesen, wie im Steuerbericht
+    (tax._totals_of): Im Kontext des Vereins blieben ihre Buchungen unter dem Zeilenschutz
+    unsichtbar, und die Voranmeldung fiel zu niedrig aus (Gesamtaudit 15.11., AZ-04)."""
+    from core.tenancy import unit_context
+
+    first, *units = orgs
+    rows = _bookings_of(first, start, last)
+    for unit in units:
+        with unit_context(unit.pk):
+            rows += _bookings_of(unit, start, last)
+    return rows
 
 
 def totals(orgs, start: datetime.date, last: datetime.date) -> dict:
