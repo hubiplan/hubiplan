@@ -7,14 +7,17 @@ from django.test import Client
 
 from admission.models import KioskLink
 
-from .test_mitgliedsantrag import club, submit  # noqa: F401
+from .test_mitgliedsantrag import club, leichte_aufgabe, submit  # noqa: F401
 
 pytestmark = pytest.mark.django_db
 
 
 def test_hoechstens_drei_bestaetigungsmails_je_adresse(club):  # noqa: F811
     mail.outbox.clear()
-    antworten = [submit(club["key"]) for _ in range(5)]
+    # Wie ein Angreifer: je Antrag andere Namen, gleiche Empfängeradresse
+    antworten = [
+        submit(club["key"], last_name=f"Muster{i}", first_name=f"Max{i}") for i in range(5)
+    ]
     assert {r.status_code for r in antworten} == {201}
     assert len({frozenset(r.json()) for r in antworten}) == 1  # Antwort immer gleich
     an = [m for m in mail.outbox if "max.muster@example.org" in m.to]
