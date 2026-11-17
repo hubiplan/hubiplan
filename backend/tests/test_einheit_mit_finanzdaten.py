@@ -73,7 +73,7 @@ def test_einheit_mit_eigenen_buchungen_bleibt(c, club, unit):
     assert Department.objects.filter(pk=unit.pk).exists()
 
 
-def test_einheit_mit_zugeordneten_buchungen_des_vereins_bleibt(c, club, rls):
+def test_einheit_mit_zugeordneten_buchungen_des_vereins_bleibt(c, club):
     zug = Department.objects.create(organization=club, name="Jägerzug", founding_year=1950)
     _booking(club, department=zug)
     resp = c.delete(f"/api/orgs/{club.pk}/departments/{zug.pk}/")
