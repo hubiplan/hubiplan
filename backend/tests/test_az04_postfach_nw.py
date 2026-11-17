@@ -21,7 +21,7 @@ from feeproofs import notify
 from feeproofs.models import FeeProof, ProofDiscount
 
 from .test_beitragsnachweise import JAHR, anna_portal, bescheinigung, rabatt, stichtag  # noqa: F401
-from .test_m9_billing import c, club, setup  # noqa: F401
+from .test_m9_billing import base, c, club, setup  # noqa: F401
 from .test_rechnungspostfach import (  # noqa: F401
     address,
     checks,
