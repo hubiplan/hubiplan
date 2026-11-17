@@ -108,7 +108,7 @@ def plain_values(qs, *paths: str):
         Cast(F(path), output_field=TextField()) if enc else path
         for path, enc in zip(paths, secret, strict=True)
     ]
-    for row in qs.order_by().values_list("pk", *columns).iterator():
+    for row in qs.order_by().values_list("pk", *columns):
         out = [row[0]]
         for value, field, enc in zip(row[1:], fields, secret, strict=True):
             if enc and value is not None:
