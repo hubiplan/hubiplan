@@ -83,6 +83,7 @@ export function ClosingsPage() {
   async function confirmReopen(year: number, label: string) {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Abschluss {label} aufheben?', { label }),
         message: t('Du bestätigst den Antrag als zweite Person. Danach ist das Jahr wieder offen.'),
         confirmLabel: t('Bestätigen und aufheben'),
@@ -111,6 +112,7 @@ export function ClosingsPage() {
   async function purge(year: number, label: string, records: boolean) {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Geschäftsjahr {label} bereinigen?', { label }),
         message: records
           ? t('Die Aufbewahrungsfrist ist abgelaufen. Belegdateien und PDFs werden gelöscht; ') +

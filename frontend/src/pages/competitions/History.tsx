@@ -605,6 +605,7 @@ export function TrophiesPage() {
 
   async function remove(tr: Trophy) {
     const ok = await confirmDialog({
+      final: true,
       title: t('Wanderpokal löschen'),
       message: t('„{name}“ löschen? Die Inhaber bleiben als Titel erhalten.', { name: tr.name }),
       confirmLabel: t('Löschen'),

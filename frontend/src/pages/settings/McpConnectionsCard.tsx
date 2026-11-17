@@ -29,6 +29,7 @@ export function McpConnectionsCard() {
   async function disconnect(c: McpConnection) {
     if (
       !(await confirmDialog({
+        final: true,
         message: t('Verbindung zu „{name}“ trennen?', { name: c.client }),
         confirmLabel: t('Verbindung trennen'),
       }))

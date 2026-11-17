@@ -78,6 +78,7 @@ export function DraftBar({
 
   async function discard() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Entwurf verwerfen?'),
       message: t('Die Gestaltung bleibt, wie sie veröffentlicht ist.'),
       confirmLabel: t('Verwerfen'),

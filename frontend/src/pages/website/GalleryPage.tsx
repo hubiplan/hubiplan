@@ -319,6 +319,7 @@ function AlbumEditor({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Album „{name}“ löschen?', { name: data?.title ?? '' }),
       message: subAlbums.length
         ? t('Die Unteralben werden mit gelöscht. Die Bilder bleiben in der Bilderverwaltung.')

@@ -265,6 +265,7 @@ function PollRow({
               if (
                 missing > 0 &&
                 !(await confirmDialog({
+                  final: true,
                   title: t('Abstimmung beenden?'),
                   message: t('{n} Stimmen fehlen noch. Danach kann niemand mehr abstimmen.', {
                     n: missing,

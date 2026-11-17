@@ -209,6 +209,7 @@ function DepartmentSettingsPage() {
   async function remove(dep: Department) {
     const own = ownTerms(dep, tmx)
     const ok = await confirmDialog({
+      final: false,
       title: t('„{name}“ löschen?', { name: dep.name }),
       message: fillTerms(
         t('Nur möglich, solange {diesem} keine Mitglieder und Rolleninhaber zugeordnet sind ') +
@@ -562,6 +563,7 @@ function DepartmentCard({
     const count = below(dep.id, units).filter((u) => u.is_active).length
     if (!on && count) {
       const ok = await confirmDialog({
+        final: false,
         title: t('„{name}“ stilllegen?', { name: dep.name }),
         message: tn(
           'Damit wird auch 1 Untereinheit darunter stillgelegt. Wird sie wieder aktiv, kommt diese mit zurück.',

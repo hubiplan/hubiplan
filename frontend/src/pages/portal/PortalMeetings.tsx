@@ -168,6 +168,7 @@ function Motions({
                   aria-label={t('Antrag zurückziehen: {title}', { title: m.title })}
                   onClick={async () => {
                     const yes = await confirmDialog({
+                      final: true,
                       title: t('Antrag zurückziehen?'),
                       message: m.title,
                       confirmLabel: t('Zurückziehen'),

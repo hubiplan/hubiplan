@@ -399,6 +399,7 @@ export function RoleForm({
     const ok = confirmDelete
       ? await confirmDelete()
       : await confirmDialog({
+          final: true,
           title: t('Rolle „{name}“ löschen?', { name: role.name }),
           confirmLabel: t('Löschen'),
         })

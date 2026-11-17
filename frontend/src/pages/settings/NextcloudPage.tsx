@@ -276,6 +276,7 @@ function ClientCard({
   async function renew() {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Neues Geheimnis erzeugen?'),
         message: t(
           'Das bisherige Geheimnis gilt sofort nicht mehr. Bis das neue in der Nextcloud eingetragen ist, kann sich dort niemand mit HUBIplan anmelden.',
@@ -294,6 +295,7 @@ function ClientCard({
   async function remove() {
     if (
       !(await confirmDialog({
+        final: false,
         title: t('Nextcloud-Anmeldung entfernen?'),
         message: t(
           'Danach kann sich niemand mehr mit dem HUBIplan-Konto bei dieser Nextcloud anmelden. Konten und Dateien in der Nextcloud bleiben.',

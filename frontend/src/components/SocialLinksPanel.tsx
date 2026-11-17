@@ -47,7 +47,7 @@ export function SocialLinksPanel({ orgId, editable }: { orgId: number; editable:
       kind_label: link.kind_label,
       display: link.display,
     })
-    if (!(await confirmDialog({ title, confirmLabel: t('Entfernen') }))) return
+    if (!(await confirmDialog({ final: false, title, confirmLabel: t('Entfernen') }))) return
     await run(() => orgApi.deleteSocialLink(orgId, link.id))
   }
 

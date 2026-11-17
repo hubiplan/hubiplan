@@ -350,6 +350,7 @@ function WebsiteAdmin({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Webseite entfernen?'),
       message: t(
         'Einstellungen, Domains und Vorschau-Links werden gelöscht. Die Daten in HUBIplan (Mitglieder, Termine, Einwilligungen) bleiben erhalten.',

@@ -353,6 +353,7 @@ function RunCard({
                 onClick={async () => {
                   if (
                     await confirmDialog({
+                      final: true,
                       title: t('Lastschriftlauf verwerfen?'),
                       message: t('Die Rechnungen bleiben offen.'),
                       confirmLabel: t('Verwerfen'),
@@ -400,6 +401,7 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
   async function revoke(m: Mandate) {
     if (
       !(await confirmDialog({
+        final: true,
         title: t('Mandat {reference} als widerrufen markieren?', { reference: m.reference }),
         confirmLabel: t('Widerrufen'),
       }))

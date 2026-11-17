@@ -3,16 +3,24 @@ import { useId, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { t } from '../i18n/index.ts'
 
-export type ConfirmOptions = {
+type ConfirmBase = {
   /** Überschrift; ohne eigene Überschrift wird die Frage selbst zur Überschrift. */
   title?: string
   message?: string
   /** Pflicht: Der Knopf nennt die Handlung („Entfernen“, „Jetzt abgleichen“), nie nur „Ja“. */
   confirmLabel: string
   cancelLabel?: string
-  /** Rot hervorgehoben. Standard: true; bei Fragen, die nichts löschen oder trennen, false. */
-  danger?: boolean
 }
+
+/**
+ * Rote Rückfragen (Standard) sagen, ob sich die Handlung zurücknehmen lässt:
+ * `final: true` – weder „Rückgängig“ noch Papierkorb; der Dialog ergänzt den Satz
+ * „Das lässt sich nicht rückgängig machen.“ `final: false` – es gibt einen Rückweg
+ * (Rückgängig, Papierkorb, erneut einrichten) oder der Text nennt die Folge selbst.
+ * Fragen, die nichts löschen oder trennen, sind `danger: false`.
+ */
+export type ConfirmOptions = ConfirmBase &
+  ({ danger: false; final?: boolean } | { danger?: true; final: boolean })
 
 export type PromptOptions = {
   title: string
@@ -75,6 +83,11 @@ export function AppDialog({
   )
 
   const title = options.title ?? options.message ?? ''
+  const finalText = t('Das lässt sich nicht rückgängig machen.')
+  const addFinal =
+    spec.kind === 'confirm' &&
+    spec.options.final === true &&
+    !(spec.options.message ?? '').includes(finalText)
   const message = options.title ? options.message : undefined
   const danger =
     (spec.kind === 'confirm' || spec.kind === 'prompt') &&
@@ -139,16 +152,18 @@ export function AppDialog({
         role={spec.kind === 'prompt' ? 'dialog' : 'alertdialog'}
         aria-modal="true"
         aria-labelledby={titleId}
-        aria-describedby={message ? messageId : undefined}
+        aria-describedby={message || addFinal ? messageId : undefined}
         ref={ref}
         onKeyDown={onKeyDown}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <form onSubmit={submit}>
           <h2 id={titleId}>{title}</h2>
-          {message && (
+          {(message || addFinal) && (
             <p id={messageId} className="app-dialog-message">
               {message}
+              {message && addFinal ? ' ' : ''}
+              {addFinal && <span data-testid="dialog-final">{finalText}</span>}
             </p>
           )}
           {spec.kind === 'prompt' && (

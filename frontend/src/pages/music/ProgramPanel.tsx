@@ -255,6 +255,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
                 onClick={async () => {
                   if (
                     await confirmDialog({
+                      final: true,
                       message: t('Eintrag entfernen?'),
                       confirmLabel: t('Entfernen'),
                     })

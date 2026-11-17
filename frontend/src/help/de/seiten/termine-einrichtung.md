@@ -17,7 +17,7 @@ Hier legt ihr fest, wie der Kalender der Einheit arbeitet. Die Punkte stehen als
 
 ## Kategorien
 
-Kategorien ordnen die Termine, etwa „Training“, „Fest“ oder „Versammlung“. Jede Kategorie hat eine Farbe und ein Kürzel, an denen man sie im Kalender erkennt. Eine Kategorie, die noch Termine hat, lässt sich nicht löschen.
+Kategorien ordnen die Termine, etwa „Training“, „Fest“ oder „Versammlung“. Jede Kategorie hat eine Farbe und ein Kürzel, an denen man sie im Kalender erkennt. Eine Kategorie, die noch Termine hat, lässt sich nicht löschen. Gelöscht wird ohne Rückfrage; „Rückgängig“ in der Kopfleiste holt die Kategorie zurück.
 
 ## Fremde Kalender
 

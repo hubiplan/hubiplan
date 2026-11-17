@@ -755,6 +755,7 @@ function BookingForm({
     if (
       !booking ||
       !(await confirmDialog({
+        final: false,
         title: t('Buchung {display_number} löschen?', { display_number: booking.display_number }),
         message: t('Löschen geht nur am Tag der Erfassung. Danach bitte stornieren.'),
         confirmLabel: t('Löschen'),
@@ -1269,7 +1270,13 @@ function Receipts({
     // Gerade hochgeladen: löschen (Fehlgriff); sonst nur ausblenden
     const recent = justUploaded(r.created_at) && !booking.fixed
     if (!recent) return hide(r.id)
-    if (!(await confirmDialog({ title: t('Beleg entfernen?'), confirmLabel: t('Entfernen') })))
+    if (
+      !(await confirmDialog({
+        final: true,
+        title: t('Beleg entfernen?'),
+        confirmLabel: t('Entfernen'),
+      }))
+    )
       return
     try {
       await financeApi.deleteReceipt(orgId, r.id)

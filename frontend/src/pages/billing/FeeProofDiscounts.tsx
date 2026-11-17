@@ -126,6 +126,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
 
   async function remove(d: ProofDiscount) {
     const ok = await confirmDialog({
+      final: true,
       title: t('„{name}“ löschen?', { name: d.name }),
       confirmLabel: t('Löschen'),
     })

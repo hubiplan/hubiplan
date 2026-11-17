@@ -566,6 +566,7 @@ function MembershipTab({
                       onClick={async () => {
                         if (
                           await confirmDialog({
+                            final: false,
                             title: t('Diesen Zeitraum löschen?'),
                             confirmLabel: t('Löschen'),
                           })

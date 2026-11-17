@@ -702,6 +702,7 @@ function PartnerForm({
             disabled={busy}
             onClick={async () => {
               const yes = await confirmDialog({
+                final: true,
                 message: t(
                   'Geschäftspartner „{name}“ löschen? Das geht nur, solange er nirgends verwendet wird.',
                   { name: partner.name },
@@ -765,6 +766,7 @@ function PartnerForm({
                 const other = others.find((o) => o.id === Number(mergeWith))
                 if (!other) return
                 const yes = await confirmDialog({
+                  final: true,
                   message: t('„{other}“ in „{name}“ übernehmen und danach löschen?', {
                     other: other.name,
                     name: partner.name,
@@ -863,6 +865,7 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
                   onClick={async () => {
                     if (
                       !(await confirmDialog({
+                        final: true,
                         message: t('Ansprechpartner entfernen?'),
                         confirmLabel: t('Entfernen'),
                       }))

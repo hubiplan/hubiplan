@@ -418,6 +418,7 @@ function PlanDetail({
             disabled={busy}
             onClick={async () => {
               const yes = await confirmDialog({
+                final: true,
                 title: t('Dienstplan löschen?'),
                 message: t('Dienste, Schichten und Einteilungen werden ebenfalls gelöscht.'),
                 confirmLabel: t('Löschen'),
@@ -633,6 +634,7 @@ function DutyCard({
             className="button button-ghost"
             onClick={async () => {
               const yes = await confirmDialog({
+                final: true,
                 title: t('Dienst „{name}“ löschen?', { name: duty.name }),
                 message: t('Die Schichten werden ebenfalls gelöscht.'),
                 confirmLabel: t('Löschen'),

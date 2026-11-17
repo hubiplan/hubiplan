@@ -130,6 +130,7 @@ async function revert(base: string, setId: string, task?: number): Promise<strin
         x: (res.body.problems ?? []).join(' '),
       }),
       confirmLabel: t('Trotzdem zurücknehmen'),
+      final: false,
     })
     if (!ok) return null
     res = await request<UndoResponse>('POST', url, { force: true })

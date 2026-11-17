@@ -81,6 +81,7 @@ function ReignsPanel() {
 
   async function remove(r: Reign) {
     const ok = await confirmDialog({
+      final: false,
       title: t('Regentschaft löschen?'),
       message: t('{dignity_name} {period_text}: {display_name}', {
         dignity_name: r.dignity_name,
@@ -422,6 +423,7 @@ function ReignForm({
     if (
       file === null &&
       !(await confirmDialog({
+        final: true,
         title: t('Foto entfernen?'),
         message: t('Das Foto wird aus der Chronik gelöscht.'),
         confirmLabel: t('Entfernen'),
@@ -777,6 +779,7 @@ function DignitiesPanel() {
   async function remove(d: Dignity) {
     setMessage(null)
     const ok = await confirmDialog({
+      final: true,
       title: t('Würde löschen?'),
       message:
         d.reign_count > 0

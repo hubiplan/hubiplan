@@ -13,6 +13,7 @@ describe('App-eigene Rückfragen', () => {
       title: 'Rolle „Oberleutnant“ entfernen?',
       message: 'Die Rolle verschwindet aus dem Zug.',
       confirmLabel: 'Entfernen',
+      final: false,
     })
     const dialog = screen.getByRole('alertdialog', { name: 'Rolle „Oberleutnant“ entfernen?' })
     expect(dialog).toHaveAccessibleDescription('Die Rolle verschwindet aus dem Zug.')
@@ -29,17 +30,21 @@ describe('App-eigene Rückfragen', () => {
 
   it('bricht mit Esc und Abbrechen ab', async () => {
     const user = userEvent.setup()
-    const first = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen' })
+    const first = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen', final: false })
     await user.keyboard('{Escape}')
     await expect(first).resolves.toBe(false)
-    const second = confirmDialog({ message: 'Foto löschen?', confirmLabel: 'Löschen' })
+    const second = confirmDialog({
+      message: 'Foto löschen?',
+      confirmLabel: 'Löschen',
+      final: false,
+    })
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
     await expect(second).resolves.toBe(false)
   })
 
   it('hält den Fokus im Dialog', async () => {
     const user = userEvent.setup()
-    const result = confirmDialog({ title: 'Löschen?', confirmLabel: 'Löschen' })
+    const result = confirmDialog({ title: 'Löschen?', confirmLabel: 'Löschen', final: false })
     const cancel = screen.getByRole('button', { name: 'Abbrechen' })
     const ok = screen.getByRole('button', { name: 'Löschen' })
     await user.tab()

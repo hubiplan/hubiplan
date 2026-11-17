@@ -25,6 +25,7 @@ export function PhotoSamplesCard({ org }: { org: number }) {
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Ausschnitte löschen'),
       message: t('Alle {count} gesammelten Spiegelausschnitte endgültig löschen?', {
         count: data?.count,

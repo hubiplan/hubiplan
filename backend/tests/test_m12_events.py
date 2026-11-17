@@ -237,6 +237,24 @@ class TestKategorien:
         assert c.delete(f"{base}{cat}/").status_code == 204
         assert Event.objects.get(pk=ev["id"]).category is None
 
+    def test_loeschen_laesst_sich_zuruecknehmen(self, cal, board_a, api):
+        """Die Oberfläche löscht Kategorien ohne Rückfrage; dafür muss „Rückgängig“ greifen."""
+        c = api(board_a)
+        base = f"{org_base(cal['a'])}events/categories/"
+        cat = c.post(base, {"name": "Versammlung", "color": "#123456"}, content_type=JSON).json()[
+            "id"
+        ]
+        ev = create(c, org_base(cal["a"]), category=cat)
+        resp = c.delete(f"{base}{cat}/")
+        assert resp.status_code == 204
+        assert resp["X-Change-Undoable"] == "1"
+        assert resp["X-Change-Kind"] == "delete"
+        undo = c.post(
+            f"{org_base(cal['a'])}changes/{resp['X-Change-Set']}/undo/", {}, content_type=JSON
+        )
+        assert undo.status_code == 200, undo.content
+        assert Event.objects.get(pk=ev["id"]).category_id == cat
+
 
 class TestSichtbarkeit:
     @pytest.fixture

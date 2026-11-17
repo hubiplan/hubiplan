@@ -472,6 +472,7 @@ function FeedCard({
                   onClick={async () => {
                     if (
                       await confirmDialog({
+                        final: true,
                         message: t(
                           'Verbindung trennen? Der Zugang und alle abgerufenen Beiträge mit Bildern werden gelöscht.',
                         ),
@@ -493,6 +494,7 @@ function FeedCard({
                 onClick={async () => {
                   if (
                     await confirmDialog({
+                      final: true,
                       message: t('{title} mit allen Beiträgen löschen?', { title }),
                       confirmLabel: t('Löschen'),
                     })

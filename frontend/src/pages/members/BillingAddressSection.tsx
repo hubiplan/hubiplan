@@ -60,6 +60,7 @@ export function BillingAddressSection({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Rechnungsangaben entfernen?'),
       message: t('Rechnungen gehen dann wieder an die Anschrift des Mitglieds.'),
       confirmLabel: t('Entfernen'),

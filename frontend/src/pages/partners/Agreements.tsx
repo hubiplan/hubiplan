@@ -209,6 +209,7 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
                   onClick={async () => {
                     if (
                       !(await confirmDialog({
+                        final: true,
                         message: t('Vereinbarung entfernen?'),
                         confirmLabel: t('Entfernen'),
                       }))

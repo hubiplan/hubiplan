@@ -477,6 +477,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
 
   async function close() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Prüfung abschließen?'),
       message: t(
         'Danach lässt sich nichts mehr abhaken. Der Prüfbericht steht als PDF bereit; wieder öffnen geht nur mit Grund.',
@@ -497,6 +498,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Prüfauftrag löschen?'),
       message: t('Der Prüfauftrag {y} wird gelöscht.', { y: audit!.label }),
       confirmLabel: t('Löschen'),

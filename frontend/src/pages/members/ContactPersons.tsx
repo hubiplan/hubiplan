@@ -48,6 +48,7 @@ export function ContactPersons({
 
   async function remove(c: ContactPerson) {
     const ok = await confirmDialog({
+      final: false,
       title: t('{name} als Ansprechpartner entfernen?', { name: c.display_name }),
       message: t(
         'Name und Kontaktdaten des Ansprechpartners werden gelöscht. In Rechnungen und Protokollen bleibt der Name stehen.',

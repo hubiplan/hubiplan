@@ -75,7 +75,11 @@ export function useImageUpload() {
 
 /** Löschen mit Rückfrage; wird das Bild verwendet, nennt die zweite Rückfrage die Stellen. */
 export async function removeImage(orgId: number, image: WebsiteImage): Promise<boolean> {
-  const ok = await confirmDialog({ title: t('Bild löschen?'), confirmLabel: t('Löschen') })
+  const ok = await confirmDialog({
+    title: t('Bild löschen?'),
+    confirmLabel: t('Löschen'),
+    final: true,
+  })
   if (!ok) return false
   try {
     await contentApi.removeImage(orgId, image.id)
@@ -86,6 +90,7 @@ export async function removeImage(orgId: number, image: WebsiteImage): Promise<b
       title: t('Bild trotzdem löschen?'),
       message: err.message,
       confirmLabel: t('Trotzdem löschen'),
+      final: true,
     })
     if (!again) return false
     await contentApi.removeImage(orgId, image.id, true)

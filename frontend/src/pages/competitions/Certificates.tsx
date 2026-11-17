@@ -140,6 +140,7 @@ function TemplateCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Vorlage löschen'),
       message: t('„{name}“ löschen?', { name: tpl.name }),
       confirmLabel: t('Löschen'),

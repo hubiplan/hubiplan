@@ -554,6 +554,7 @@ export function HomeBuilder({
 
   async function remove(s: HomeSection) {
     const ok = await confirmDialog({
+      final: false,
       title: t('Abschnitt löschen?'),
       message: page
         ? t('„{x}“ verschwindet von der Seite, sobald du sie veröffentlichst.', {

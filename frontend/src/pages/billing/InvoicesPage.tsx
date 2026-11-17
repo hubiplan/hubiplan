@@ -707,6 +707,7 @@ function InvoiceDetail({
                         onClick={async () => {
                           if (
                             await confirmDialog({
+                              final: true,
                               title: t('Zahlung entfernen?'),
                               message: t(
                                 'Die Zahlung und ihre Buchung in der Kasse werden entfernt.',
@@ -791,7 +792,11 @@ function InvoiceDetail({
               disabled={busy}
               onClick={async () => {
                 if (
-                  await confirmDialog({ title: t('Entwurf löschen?'), confirmLabel: t('Löschen') })
+                  await confirmDialog({
+                    final: false,
+                    title: t('Entwurf löschen?'),
+                    confirmLabel: t('Löschen'),
+                  })
                 )
                   void act(() => billingApi.deleteInvoice(org.id, inv.id), '', true)
               }}

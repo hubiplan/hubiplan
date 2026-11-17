@@ -256,6 +256,7 @@ function HouseholdCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: false,
       title: t('„{name}“ löschen?', { name: household.name }),
       message: t('Frühere Zugehörigkeiten werden mit gelöscht.'),
       confirmLabel: t('Löschen'),

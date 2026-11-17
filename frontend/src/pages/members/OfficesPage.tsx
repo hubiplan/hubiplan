@@ -114,6 +114,7 @@ function HoldersPanel() {
 
   async function remove(r: Row) {
     const ok = await confirmDialog({
+      final: false,
       title: t('Eintrag löschen?'),
       message: t('{x} {x2}: {name}', { x: officeLabel(r.office), x2: periodText(r), name: r.name }),
       confirmLabel: t('Löschen'),

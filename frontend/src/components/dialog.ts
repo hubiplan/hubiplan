@@ -75,6 +75,7 @@ export function confirmRoleRemoval(name: string, holders: string[] | number): Pr
         ? t('{names} hat diese Rolle.', { names: holders.join(', ') })
         : t('{names} haben diese Rolle.', { names: holders.join(', ') })
   return confirmDialog({
+    final: true,
     title: t('Rolle „{name}“ entfernen?', { name }),
     message:
       count > 0

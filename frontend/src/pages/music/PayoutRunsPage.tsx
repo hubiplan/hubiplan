@@ -241,6 +241,7 @@ function PayoutRuns() {
                 onClick={async () => {
                   if (
                     await confirmDialog({
+                      final: false,
                       message: t(
                         'Zahlungslauf aufheben? Bereits bei der Bank eingereichte Überweisungen müssen dort gesondert gestoppt werden. Bereits zugeordnete Buchungen bleiben erhalten.',
                       ),

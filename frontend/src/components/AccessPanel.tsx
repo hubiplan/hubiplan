@@ -143,6 +143,7 @@ export function AccessPanel({
               onClick={async () => {
                 if (
                   await confirmDialog({
+                    final: false,
                     title: t('Mitgliederbereich sperren?'),
                     message: t(
                       'Die Person kommt danach nicht mehr in den Mitgliederbereich. Rollen mit Rechten behalten ihr Konto.',

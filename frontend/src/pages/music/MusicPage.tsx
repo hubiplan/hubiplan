@@ -548,6 +548,7 @@ function MusicWorkspace() {
                     onClick={async () => {
                       if (
                         !(await confirmDialog({
+                          final: true,
                           message: t('Eintrag entfernen?'),
                           confirmLabel: t('Entfernen'),
                         }))

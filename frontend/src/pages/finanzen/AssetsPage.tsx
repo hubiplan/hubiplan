@@ -258,6 +258,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
 
   async function remove(asset: FixedAsset) {
     const ok = await confirmDialog({
+      final: false,
       title: t('Anlage löschen?'),
       message: t('„{name}“ wird aus dem Anlagenverzeichnis gelöscht. Buchungen bleiben.', {
         name: asset.name,

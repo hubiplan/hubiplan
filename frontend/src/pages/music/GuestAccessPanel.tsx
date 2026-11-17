@@ -46,6 +46,7 @@ export function GuestAccessPanel({
     if (
       (action === 'revoke' || action === 'rotate') &&
       !(await confirmDialog({
+        final: true,
         message:
           action === 'revoke'
             ? t('Diesen Einladungslink widerrufen?')

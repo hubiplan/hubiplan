@@ -33,6 +33,7 @@ export function PrivacyPublish({
 
   async function publish() {
     const ok = await confirmDialog({
+      final: false,
       title: t('Datenschutzhinweise veröffentlichen?'),
       message: open.length
         ? t(

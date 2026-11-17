@@ -17,7 +17,7 @@ Here you set how the unit's calendar works. The items are tabs next to each othe
 
 ## Categories
 
-Categories organise events, such as “Training”, “Festival” or “Meeting”. Each category has a colour and an abbreviation by which you recognise it in the calendar. A category that still has events cannot be deleted.
+Categories organise events, such as “Training”, “Festival” or “Meeting”. Each category has a colour and an abbreviation by which you recognise it in the calendar. A category that still has events cannot be deleted. Deleting happens without a confirmation; “Undo” in the top bar brings the category back.
 
 ## External calendars
 

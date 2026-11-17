@@ -30,7 +30,13 @@ export function SignatureCard() {
   }
 
   async function remove() {
-    if (!(await confirmDialog({ title: t('Unterschrift löschen?'), confirmLabel: t('Löschen') })))
+    if (
+      !(await confirmDialog({
+        final: true,
+        title: t('Unterschrift löschen?'),
+        confirmLabel: t('Löschen'),
+      }))
+    )
       return
     try {
       await signatureApi.remove()

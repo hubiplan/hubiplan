@@ -349,6 +349,7 @@ function ClaimDetail({
                   disabled={busy}
                   onClick={async () => {
                     const yes = await confirmDialog({
+                      final: true,
                       title:
                         claim.status === 'draft' && !claim.number
                           ? t('Entwurf löschen?')

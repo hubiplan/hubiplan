@@ -251,6 +251,7 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
 
   async function remove(d: Donation) {
     const ok = await confirmDialog({
+      final: false,
       title: t('Zuwendung löschen?'),
       message: t('{x} von {donor_name} am {x2}', {
         x: euro(d.amount),

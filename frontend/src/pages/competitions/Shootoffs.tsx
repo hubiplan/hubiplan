@@ -219,6 +219,7 @@ function ShootOffCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Stechen entfernen'),
       message: t('{number}. Stechen mit allen Werten entfernen?', { number: so.number }),
       confirmLabel: t('Entfernen'),

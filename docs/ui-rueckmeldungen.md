@@ -40,7 +40,8 @@ Seit dem UX-Audit vom 16.11.2026 (X-05, VW-22, VW-23, VW-26) gilt für die Verwa
 | Dialog mit Eingaben | Esc, „Schließen“ und der Klick daneben fragen nach einer Eingabe „Eingaben verwerfen?“; ohne Eingabe schließen sie sofort | `Modal` (Standard), `beforeClose` für eigene Regeln, `guard={false}` nur für Suchfelder |
 | Seite verlassen mit offenen Eingaben | Rückfrage in der App und im Browser | `useDraftGuard`, `useChangesGuard` |
 | Löschen, das sich zurücknehmen lässt (Papierkorb, Rückgängig) | ohne Rückfrage, mit Hinweis und „Rückgängig“ | `undo.ts`, siehe [rueckgaengig.md](rueckgaengig.md) |
-| Löschen, das sich nicht zurücknehmen lässt | Rückfrage mit Handlungsverb auf dem Knopf und der Folge im Text („lässt sich nicht rückgängig machen“) | `confirmDialog` mit `confirmLabel` |
+| Löschen, das sich nicht zurücknehmen lässt | Rückfrage mit Handlungsverb auf dem Knopf; den Satz „Das lässt sich nicht rückgängig machen.“ ergänzt der Dialog | `confirmDialog` mit `confirmLabel` und `final: true` |
+| Rote Rückfrage mit Rückweg (Papierkorb, Sperren, erneut einrichten) oder mit der Folge im Text | Rückfrage ohne den Zusatz; der Text nennt Rückweg oder Folge | `confirmDialog` mit `final: false`; `final` ist bei roten Rückfragen Pflicht (`UxAudit1116Rueckfragen.test.tsx`) |
 | Rückfrage, die nichts löscht oder trennt („Jetzt abgleichen?“, „Auf der Webseite zeigen?“) | Knopf nennt die Handlung, nicht rot | `confirmDialog` mit `confirmLabel` (Pflicht) und `danger: false` |
 | Formular, das unter einer Liste eingeblendet wird | Fokus im ersten Feld, Escape schließt wie „Abbrechen“ | `useRevealFocus(aktiv, schliessen)` |
 | Sitzung läuft ab | Vorwarnung; nach Ablauf bleiben die Eingaben stehen | `SessionWatch` |

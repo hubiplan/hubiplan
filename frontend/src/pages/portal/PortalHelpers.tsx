@@ -42,6 +42,7 @@ export function PortalHelpers({ accessId }: { accessId: number }) {
   }
   const cancel = async (assignment: number, label: string) => {
     const yes = await confirmDialog({
+      final: false,
       title: t('Dienst absagen?'),
       message: label,
       confirmLabel: t('Dienst absagen'),

@@ -535,6 +535,7 @@ function MailboxCard({ canEdit }: { canEdit: boolean }) {
   }
   async function renew() {
     const yes = await confirmDialog({
+      final: true,
       title: t('Neue Adresse vergeben?'),
       message: t(
         'Mails an die bisherige Adresse kommen dann nicht mehr im Rechnungseingang an. Teile die neue Adresse allen Lieferanten mit.',

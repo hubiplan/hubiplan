@@ -183,6 +183,7 @@ export function QualificationsCard({
 
   async function remove(q: Qualification) {
     const ok = await confirmDialog({
+      final: true,
       title: t('„{name}“ löschen?', { name: q.kind_name }),
       message: t('Nur für falsche Einträge. Bei einer Verlängerung besser „verlängern“ wählen.'),
       confirmLabel: t('Löschen'),

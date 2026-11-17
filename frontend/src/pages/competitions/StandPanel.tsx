@@ -358,6 +358,7 @@ export function StandPanel({
   async function clearValue(s: Starter) {
     if (!scoring) return
     const ok = await confirmDialog({
+      final: true,
       title: t('Wert löschen'),
       message: t('Den Wert von {name} löschen? {name2} steht danach wieder unter „Noch offen“.', {
         name: s.name,
@@ -381,6 +382,7 @@ export function StandPanel({
 
   async function removeStarter(s: Starter) {
     const ok = await confirmDialog({
+      final: true,
       title: t('Aus dem Wettbewerb entfernen'),
       message: t('{name} mit allen Werten aus dem Wettbewerb entfernen?', { name: s.name }),
       confirmLabel: t('Entfernen'),

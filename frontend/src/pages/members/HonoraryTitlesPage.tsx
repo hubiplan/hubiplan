@@ -66,6 +66,7 @@ export function HonoraryTitlesPage() {
     }
     if (usage.deletable) {
       const ok = await confirmDialog({
+        final: false,
         title: t('„{name}“ löschen?', { name: title.name }),
         message: t('Die Ehrung wurde noch nie verliehen.'),
         confirmLabel: t('Löschen'),

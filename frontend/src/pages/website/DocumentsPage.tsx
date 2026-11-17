@@ -149,6 +149,7 @@ function DocumentRow({ doc, onChanged }: { doc: WebsiteDocument; onChanged: () =
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Dokument löschen?'),
       message: t('„{x}“ verschwindet von der Webseite und aus HUBIplan.', { x: doc.title }),
       confirmLabel: t('Löschen'),

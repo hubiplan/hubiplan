@@ -537,6 +537,7 @@ function WithdrawnCard({
 }) {
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Meldung löschen'),
       message: t(
         'Die Meldung mit allen Mannschaften, Personen und {x1} Fassungen löschen? Die Ausschreibung bleibt erhalten.',
@@ -701,6 +702,7 @@ function TeamCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Mannschaft entfernen'),
       message: t('„{x1}“ mit {x2} Personen aus der Meldung nehmen?', {
         x1: team.name,
@@ -1181,6 +1183,7 @@ function SubmitCard({
 
   async function discard() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Entwurf verwerfen'),
       message:
         entry.versions.length > 0
@@ -1539,6 +1542,7 @@ function CallEditor({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Ausschreibung löschen'),
       message: t('„{x1}“ samt Entwurf löschen?', { x1: call.title }),
       confirmLabel: t('Löschen'),
@@ -1927,6 +1931,7 @@ function BlockCard({
 
   async function remove() {
     const ok = await confirmDialog({
+      final: true,
       title: t('Baustein entfernen'),
       message: t('„{x1}“ samt den Einträgen der Meldung entfernen?', { x1: block.label }),
       confirmLabel: t('Entfernen'),

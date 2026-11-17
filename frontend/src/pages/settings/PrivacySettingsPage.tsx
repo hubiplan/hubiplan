@@ -117,6 +117,7 @@ export function MemberPrivacyEditor({
                       if (
                         v.privacy_text.trim() &&
                         !(await confirmDialog({
+                          final: true,
                           title: t('Datenschutzhinweise neu erzeugen?'),
                           message: t(
                             'Der bisherige Text wird ersetzt. Eigene Ergänzungen bitte vorher sichern.',

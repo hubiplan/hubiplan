@@ -151,6 +151,7 @@ export function ScoreFoldersPanel({
                   onClick={async () => {
                     if (
                       await confirmDialog({
+                        final: true,
                         message: t('Mappe „{name}“ löschen?', { name: f.name }),
                         confirmLabel: t('Löschen'),
                       })
@@ -245,6 +246,7 @@ function FolderItems({
                     onClick={async () => {
                       if (
                         await confirmDialog({
+                          final: true,
                           message: t('„{title}“ aus der Mappe entfernen?', { title: i.title }),
                           confirmLabel: t('Entfernen'),
                         })
