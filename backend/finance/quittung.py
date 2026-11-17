@@ -194,7 +194,7 @@ def finalize(receipt: CashReceipt, user, *, confirmed: bool, signed_at=None) -> 
     if signed_at is not None:
         when = _when(signed_at)
     date = timezone.localdate(when)
-    services.ensure_open(org, date=date)
+    services.ensure_bookable(org, date)
     year = org.fiscal_year_of(date)
     if receipt.invoice_id:
         payment = billing_services.add_payment(
@@ -268,7 +268,7 @@ def cancel(receipt: CashReceipt, user, reason: str) -> CashReceipt:
     Booking.objects.select_for_update().filter(pk=original.pk).first()
     services.remove_booking_donation(original.pk)
     today = timezone.localdate()
-    services.ensure_open(org, date=today)
+    services.ensure_bookable(org, today)
     # Abgeschlossenes Ursprungsjahr: Gegenbeleg im laufenden Jahr, das alte Jahr bleibt
     old_year_closed = services.is_closed(org, original.year)
     if receipt.payment_id:

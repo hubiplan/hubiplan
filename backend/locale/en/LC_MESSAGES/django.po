@@ -12524,6 +12524,7 @@ msgstr "Each number only once."
 
 msgid "Unbekannte Zahl."
 msgstr "Unknown number."
+
 msgid "Auf der Webseite erscheinen nur Anhänge öffentlicher Termine."
 msgstr "Only attachments of public events appear on the website."
 
@@ -13786,6 +13787,7 @@ msgstr "Enough images have been fetched from addresses for today or this hour. P
 
 msgid "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte Bilder löschen oder die Plattform um mehr Platz bitten."
 msgstr "The storage for website images is full ({mb} MB). Please delete images no longer used or ask the platform for more space."
+
 msgid "Die Instanz meldet andere Schlüssel als die Datei."
 msgstr "The instance reports different keys than the file."
 
@@ -13815,6 +13817,9 @@ msgstr "{where}: {count} federation link(s) will be taken over and stay on hold 
 
 msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
 msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Die Kasse ist bis {x:%d.%m.%Y} festgeschrieben. Buchungen in diesem Zeitraum sind nicht mehr möglich; bitte mit heutigem Datum buchen."
+msgstr "The cash book is locked until {x:%d/%m/%Y}. Bookings in this period are no longer possible; please book with today's date."
 
 # Beitragsnachweise (feeproofs)
 msgid "Zu viele Versuche. Bitte später noch einmal."
