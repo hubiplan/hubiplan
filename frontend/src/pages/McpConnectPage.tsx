@@ -11,6 +11,7 @@ import { useAuth } from '../auth/AuthContext.tsx'
 import { errorMessage } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
 import { Alert } from '../components/ui.tsx'
+import { formatDayTime } from '../i18n/format.ts'
 import { t } from '../i18n/index.ts'
 
 export function McpConnectPage() {
@@ -89,6 +90,22 @@ export function McpConnectPage() {
             <p className="muted small">
               {t('Der Assistent nennt sich „{name}“.', { name: info.client })}
             </p>
+            {info.client_registered_at && (
+              <p className="muted small">
+                {t('Hier angemeldet am {date}.', {
+                  date: formatDayTime(info.client_registered_at),
+                })}
+              </p>
+            )}
+            {info.redirect_kind === 'bekannt' && !info.connected_before && (
+              // Auch bei bekannten Assistenten (Gesamtaudit 15.11., MCP-08): Ein Angreifer kann
+              // dort einen eigenen Zugang anlegen und den Link verschicken
+              <Alert kind="info">
+                {t(
+                  'Hast du die Verbindung gerade selbst in deinem KI-Assistenten gestartet? Kam der Link per Mail oder Nachricht, lehne ab.',
+                )}
+              </Alert>
+            )}
             {info.redirect_kind !== 'bekannt' && !info.connected_before && (
               <Alert kind={info.redirect_kind === 'rechner' ? 'info' : 'error'}>
                 {info.redirect_kind === 'rechner'

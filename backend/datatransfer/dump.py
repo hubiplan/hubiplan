@@ -324,10 +324,20 @@ class Packer:
 
 
 class Dumper:
-    def __init__(self, *, with_files: bool, member_data_for: callable, finance_for: callable):
+    def __init__(
+        self,
+        *,
+        with_files: bool,
+        member_data_for: callable,
+        finance_for: callable,
+        limited_for: callable = lambda o: False,
+    ):
         self.packer = Packer(with_files)
         self.member_data_for = member_data_for
         self.finance_for = finance_for
+        # Gesamtaudit 15.11., AZ-06 (Fachfrage FF-18): Vereine im Export eines Dachverbands nur
+        # im Umfang, den der Zeilenschutz dem Dachverband zeigt
+        self.limited_for = limited_for
         self.shared_contacts = (
             PlatformSettings.load().person_data_mode == PlatformSettings.PersonData.SHARED
         )
@@ -347,6 +357,10 @@ class Dumper:
     # --- Bausteine ---
 
     def roles(self, org: Organization) -> tuple[list, list]:
+        if self.limited_for(org):
+            # Rollen und Besetzungen der Vereine zeigt der Zeilenschutz dem Dachverband nicht
+            # (Gesamtaudit 15.11., AZ-06)
+            return [], []
         roles = list(Role.objects.filter(organization=org).order_by("name"))
         self.counts["roles"] += len(roles)
         role_data = [
@@ -367,6 +381,9 @@ class Dumper:
         ]
         assignments = []
         member_data = self.member_data_for(org)
+        if self.limited_for(org):
+            # Rollenbesetzungen (mit Konto-E-Mails) sieht der Dachverband nicht
+            return role_data, assignments
         for a in (
             RoleAssignment.objects.filter(organization=org, role__department__isnull=True)
             .select_related("user")
@@ -405,7 +422,10 @@ class Dumper:
 
     def fields(self, org: Organization) -> list:
         result = []
-        for d in FieldDefinition.objects.filter(organization=org):
+        definitions = FieldDefinition.objects.filter(organization=org)
+        if self.limited_for(org):
+            definitions = definitions.filter(federation_wide=True)
+        for d in definitions:
             self.field_ids.add(d.pk)
             result.append(
                 {
@@ -433,6 +453,7 @@ class Dumper:
         self, dept: Department, with_holders: bool = True, tables: dict | None = None
     ) -> dict:
         self.counts["departments"] += 1
+        limited = self.limited_for(dept.organization)
         data = {
             "id": dept.pk,
             # Übergeordnete Untereinheit (leer: direkt unter der Einheit)
@@ -458,10 +479,14 @@ class Dumper:
                         ).exclude(name="")
                     ],
                 }
-                for r in DepartmentRole.objects.filter(department=dept)
+                for r in (
+                    DepartmentRole.objects.none()
+                    if limited
+                    else DepartmentRole.objects.filter(department=dept)
+                )
             ],
             "imprint": imprint_data(dept),
-            "letterhead": letterhead_data(dept, self.packer),
+            "letterhead": None if limited else letterhead_data(dept, self.packer),
         }
         if tables:
             # Kasse, Rechnungen, Belege … des eigenen Arbeitsbereichs (Audit 31.10. D31-01)
@@ -484,7 +509,7 @@ class Dumper:
             key=lambda h: (h.valid_from, h.pk),
         )
         photo = None
-        if self.packer.with_files:
+        if self.packer.with_files and not self.limited_for(club):
             photo = next(
                 (p for p in m.photos.all() if p.status == MemberPhoto.Status.APPROVED), None
             )
@@ -511,7 +536,11 @@ class Dumper:
                 {"member_type": t.member_type_id, **period(t)} for t in m.type_assignments.all()
             ],
             "departments": [{"department": d.department_id, **period(d)} for d in departments],
-            "department_roles": [{"role": h.role_id, **period(h)} for h in holders],
+            "department_roles": (
+                []
+                if self.limited_for(club)
+                else [{"role": h.role_id, **period(h)} for h in holders]
+            ),
             "photo": (
                 {
                     "image": self.packer.add(photo.image, "photos"),
@@ -549,7 +578,7 @@ class Dumper:
             "id": org.pk,
             "uuid": str(org.uuid),
             **values(org, ORG_FIELDS),
-            "contact_role": org.contact_role_id,
+            "contact_role": None if self.limited_for(org) else org.contact_role_id,
             "logo": self.packer.add(org.logo, "logos"),
             "logo_dark": self.packer.add(org.logo_dark, "logos"),
             "roles": roles,
@@ -557,7 +586,7 @@ class Dumper:
             "fields": self.fields(org),
             "imprint": imprint_data(org),
             "social_links": social_data(org),
-            "letterhead": letterhead_data(org, self.packer),
+            "letterhead": None if self.limited_for(org) else letterhead_data(org, self.packer),
         }
         if not org.is_remote:
             # Verbund: offene Kopplungen ziehen beim Umzug mit (ohne Schlüssel dieser Instanz)
@@ -575,7 +604,11 @@ class Dumper:
             data["departments"] = [
                 self.department(
                     units[pk],
-                    tables=self.tables(
+                    # Dachverband: Abteilungstabellen der Vereine zeigt ihm der Zeilenschutz
+                    # nicht (Gesamtaudit 15.11., AZ-06)
+                    tables=None
+                    if self.limited_for(org)
+                    else self.tables(
                         units[pk], everything=self.finance_for(org), members=bool(member_data)
                     ),
                 )
@@ -592,8 +625,15 @@ class Dumper:
                 if member_data
                 else []
             )
-        # Kasse und Beiträge nur mit Recht darauf, Satzungen immer
-        tables = self.tables(org, everything=self.finance_for(org), members=bool(member_data))
+        # Kasse und Beiträge nur mit Recht darauf, Satzungen immer (außer für Vereine im
+        # Export eines Dachverbands)
+        # Dachverband: keine Tabellen der Vereine, auch nicht die Satzung (Zeilenschutz,
+        # Gesamtaudit 15.11., AZ-06)
+        tables = (
+            {}
+            if self.limited_for(org)
+            else self.tables(org, everything=self.finance_for(org), members=bool(member_data))
+        )
         if tables:
             data["tables"] = tables
         if org.type == Organization.Type.FEDERATION and org.direct_members:
@@ -686,11 +726,17 @@ def export_organization(org: Organization, *, with_files: bool, by_platform: boo
     def finance_for(o: Organization) -> bool:
         return o.type != Organization.Type.PLATFORM and (by_platform or o.pk == org.pk)
 
+    def limited_for(o: Organization) -> bool:
+        return not by_platform and o.pk != org.pk
+
     from todos.exports import for_actor
 
     with consistent_snapshot(), rls_bypass(), for_actor(actor):
         dumper = Dumper(
-            with_files=with_files, member_data_for=member_data_for, finance_for=finance_for
+            with_files=with_files,
+            member_data_for=member_data_for,
+            finance_for=finance_for,
+            limited_for=limited_for,
         )
         doc = _header("organization", org, with_files)
         body = dumper.organization(org)

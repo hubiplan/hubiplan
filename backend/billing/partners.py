@@ -615,6 +615,15 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         upload = request.FILES.get("file")
         if not upload or upload.size > 5 * 1024 * 1024:
             raise serializers.ValidationError({"file": gettext("Bitte eine Excel-Datei wählen.")})
+        from exchange.reading import ReadError, _check_zip
+
+        try:
+            # Entpackte Größe vor dem Lesen begrenzen wie beim Mitgliederimport (Gesamtaudit
+            # 15.11., PUB-09): openpyxl lädt die gemeinsamen Texte vollständig in den Speicher
+            _check_zip(upload)
+        except ReadError as exc:
+            raise serializers.ValidationError({"file": str(exc)}) from exc
+        upload.seek(0)
         try:
             book = load_workbook(upload, read_only=True, data_only=True)
         except Exception as exc:  # noqa: BLE001 – jede kaputte Datei gleich melden

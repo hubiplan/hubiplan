@@ -1082,17 +1082,37 @@ function MoveConfirm({ coupling, onChange }: { coupling: Coupling; onChange: () 
 
   return (
     <div className="move-confirm">
-      <Alert kind="info">
-        {coupling.remote.name} {t('meldet einen Umzug von')} <strong>{move.from}</strong>{' '}
-        {t('nach')} <strong>{move.base_url}</strong>
-        {move.country && t(' (Server in {x0})', { x0: move.country })}
-        {t('. Bis zur Bestätigung ruht die Kopplung, es gehen keine Daten hinaus.')}
-      </Alert>
+      {move.import ? (
+        <Alert kind="info">
+          {t('Die Kopplung mit {x0} kam mit der Vereinsdatei. Gegenstelle:', {
+            x0: coupling.remote.name,
+          })}{' '}
+          <strong>{move.base_url}</strong>
+          {move.country && t(' (Server in {x0})', { x0: move.country })}
+          {t(
+            '. Bis zur Bestätigung ruht die Kopplung, es gehen keine Daten hinaus und keine herein.',
+          )}
+        </Alert>
+      ) : (
+        <Alert kind="info">
+          {coupling.remote.name} {t('meldet einen Umzug von')} <strong>{move.from}</strong>{' '}
+          {t('nach')} <strong>{move.base_url}</strong>
+          {move.country && t(' (Server in {x0})', { x0: move.country })}
+          {t('. Bis zur Bestätigung ruht die Kopplung, es gehen keine Daten hinaus.')}
+        </Alert>
+      )}
       <p>
-        {t('Fingerabdruck der neuen Instanz:')} <code>{move.fingerprint}</code>
-        {t(
-          '. Lass ihn dir von der anderen Seite auf anderem Weg (Telefon, Mail) nennen und gib ihn hier ein. Wenn ihr nichts von einem Umzug wisst: ablehnen.',
-        )}
+        {move.import
+          ? t('Fingerabdruck der anderen Instanz:')
+          : t('Fingerabdruck der neuen Instanz:')}{' '}
+        <code>{move.fingerprint}</code>
+        {move.import
+          ? t(
+              '. Lass ihn dir von der anderen Seite auf anderem Weg (Telefon, Mail) nennen und gib ihn hier ein. Kennt die andere Seite diese Kopplung nicht: ablehnen.',
+            )
+          : t(
+              '. Lass ihn dir von der anderen Seite auf anderem Weg (Telefon, Mail) nennen und gib ihn hier ein. Wenn ihr nichts von einem Umzug wisst: ablehnen.',
+            )}
       </p>
       <label className="field">
         <span>{t('Fingerabdruck von der anderen Seite')}</span>
@@ -1111,7 +1131,7 @@ function MoveConfirm({ coupling, onChange }: { coupling: Coupling; onChange: () 
           disabled={busy || !fingerprint.trim()}
           onClick={() => void run(() => peeringApi.confirmMove(org.id, coupling.id, fingerprint))}
         >
-          {t('Umzug bestätigen')}
+          {move.import ? t('Kopplung bestätigen') : t('Umzug bestätigen')}
         </button>
         <button
           type="button"
