@@ -935,6 +935,9 @@ def publish_draft(website: Website, user, org) -> None:
     draft = clean_draft(website, website.draft)
     if not draft:
         raise ValidationError({"draft": [gettext("Es gibt keine Änderungen zum Veröffentlichen.")]})
+    from .search import forget_index
+
+    forget_index(website.pk)  # Startseite und Abschnitte neu durchsuchen (WEB-06)
     before = live_design(website)
     if not website.design_versions.exists():
         # Erste Veröffentlichung: der bisherige Stand bleibt zum Zurückholen

@@ -34,8 +34,15 @@ USERNAME_RE = re.compile(r"^[a-z0-9][a-z0-9._@-]{0,63}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def parse_usernames(text: str) -> list[tuple[str, str, str]]:
-    """Zeilen „E-Mail = Benutzername“ → (E-Mail, Name, Fehler). Leer und # wird übersprungen."""
+# Konten der Nextcloud-Verwaltung: nie über HUBIplan zuordnen (Gesamtaudit 15.11., AUTH-07;
+# docs/nextcloud.md). Dazu kommt das Dienstkonto des jeweiligen Dienstes.
+NEVER_USERNAMES = frozenset({"admin", "root", "administrator"})
+
+
+def parse_usernames(text: str, blocked=frozenset()) -> list[tuple[str, str, str]]:
+    """Zeilen „E-Mail = Benutzername“ → (E-Mail, Name, Fehler). Leer und # wird übersprungen.
+
+    Fehler „blocked“: Verwaltungs- oder Dienstkonto, das nie zugeordnet wird."""
     out: list[tuple[str, str, str]] = []
     for line in str(text or "").splitlines():
         line = line.strip()
@@ -48,6 +55,8 @@ def parse_usernames(text: str) -> list[tuple[str, str, str]]:
             out.append((email, name, "email"))
         elif not USERNAME_RE.match(name):
             out.append((email, name, "name"))
+        elif name in NEVER_USERNAMES or name in blocked:
+            out.append((email, name, "blocked"))
         else:
             out.append((email, name, ""))
     return out
@@ -169,9 +178,19 @@ class Client(models.Model):
     def groups_for_role(self, role_id: int) -> list[str]:
         return clean_groups((self.role_groups or {}).get(str(role_id)))
 
+    def blocked_usernames(self) -> frozenset[str]:
+        """Benutzernamen, die nie zugeordnet werden: Verwaltung und Dienstkonto."""
+        service = (self.service_user or "").strip().lower()
+        return NEVER_USERNAMES | ({service} if service else set())
+
     def username_map(self) -> dict[str, str]:
-        """E-Mail (klein) → Benutzername aus ``usernames``; ungültige Zeilen fallen weg."""
-        return {email: name for email, name, error in parse_usernames(self.usernames) if not error}
+        """E-Mail (klein) → Benutzername aus ``usernames``; ungültige und gesperrte Zeilen
+        fallen weg (Gesamtaudit 15.11., AUTH-07)."""
+        return {
+            email: name
+            for email, name, error in parse_usernames(self.usernames, self.blocked_usernames())
+            if not error
+        }
 
     @property
     def redirect_uris(self) -> list[str]:

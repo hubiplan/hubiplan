@@ -510,6 +510,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         from admission.open_tasks import application_tasks
         from entries.open_tasks import entry_tasks
         from expenses.views import review_tasks as expense_tasks
+        from feeproofs.open_tasks import proof_tasks
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
         from obligations.open_tasks import obligation_tasks
@@ -536,6 +537,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
                 ),
             ),
             ("members", lambda: qualification_tasks(org, perms)),
+            ("members", lambda: proof_tasks(org, perms)),
             ("events", lambda: event_tasks(org, perms)),
             (
                 "finance",

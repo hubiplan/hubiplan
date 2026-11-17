@@ -51,6 +51,10 @@ export interface FeeRunInput {
     multi_units?: number
     /** Beitrag über einen Haushalt, der noch keinen Zahler hat (H2) */
     household_without_payer?: number
+    /** Beitragsnachweise: normaler Beitrag mangels Nachweis, vorläufig ermäßigt, ungeprüft */
+    proofs_regular?: number
+    proofs_provisional?: number
+    proofs_unreviewed?: number
   }
 }
 
@@ -131,6 +135,40 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
         ),
         fix: t('Zahler unter Mitglieder › Haushalte und Firmen eintragen.'),
         to: '/mitglieder/haushalte',
+      })
+    if ((c.proofs_unreviewed ?? 0) > 0)
+      items.push({
+        key: 'fee_proofs_unreviewed',
+        ok: false,
+        text: tn(
+          '{n} Nachweis für einen ermäßigten Beitrag ist noch nicht geprüft; bis dahin gilt die Ermäßigung.',
+          '{n} Nachweise für ermäßigte Beiträge sind noch nicht geprüft; bis dahin gilt die Ermäßigung.',
+          c.proofs_unreviewed ?? 0,
+        ),
+        fix: t('Nachweise unter Mitglieder › Beitragsnachweise prüfen.'),
+        to: '/mitglieder/beitragsnachweise',
+      })
+    if ((c.proofs_regular ?? 0) > 0)
+      items.push({
+        key: 'fee_proofs_regular',
+        ok: true,
+        info: true,
+        text: tn(
+          '{n} Mitglied hat bis zur Frist keinen Nachweis gebracht und zahlt den normalen Beitrag.',
+          '{n} Mitglieder haben bis zur Frist keinen Nachweis gebracht und zahlen den normalen Beitrag.',
+          c.proofs_regular ?? 0,
+        ),
+      })
+    if ((c.proofs_provisional ?? 0) > 0)
+      items.push({
+        key: 'fee_proofs_provisional',
+        ok: true,
+        info: true,
+        text: tn(
+          '{n} Mitglied ist vorläufig ermäßigt, weil die Frist für den Nachweis noch läuft. Ein späterer Nachweis oder sein Fehlen ändert die Rechnung nicht mehr.',
+          '{n} Mitglieder sind vorläufig ermäßigt, weil die Frist für den Nachweis noch läuft. Ein späterer Nachweis oder sein Fehlen ändert die Rechnungen nicht mehr.',
+          c.proofs_provisional ?? 0,
+        ),
       })
     if (c.open_change_requests > 0)
       items.push({

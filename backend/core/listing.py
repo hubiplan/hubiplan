@@ -40,6 +40,29 @@ class ListPagination(PageNumberPagination):
         }
 
 
+# Gesamtaudit 15.11., PF-28: lange Listen (Versandprotokoll, Rückmeldungen) seitenweise, wenn
+# der Aufrufer ``?seite=`` mitschickt. Ohne den Parameter wie bisher alles (ältere Apps).
+PAGE_SIZE = 200
+
+
+def page_of(params, items):
+    """``(Ausschnitt, Seitenangaben)``; ohne ``seite`` ``(items, None)``.
+
+    ``items`` darf ein QuerySet sein (dann wird nur der Ausschnitt geladen) oder eine Liste."""
+    raw = params.get("seite")
+    if raw is None:
+        return items, None
+    try:
+        page = max(1, int(raw))
+    except (TypeError, ValueError):
+        page = 1
+    total = items.count() if isinstance(items, QuerySet) else len(items)
+    start = (page - 1) * PAGE_SIZE
+    pages = max(1, -(-total // PAGE_SIZE))
+    meta = {"page": page, "pages": pages, "total": total, "more": start + PAGE_SIZE < total}
+    return items[start : start + PAGE_SIZE], meta
+
+
 def _date(value: str | None) -> datetime.date | None:
     try:
         return datetime.date.fromisoformat(value) if value else None

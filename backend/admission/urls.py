@@ -38,6 +38,11 @@ public_patterns = [
         name="join-sign",
     ),
     path(
+        "public/join/application/<str:token>/fee-proof/",
+        public_views.FeeProofView.as_view(),
+        name="join-fee-proof",
+    ),
+    path(
         "public/join/application/<str:token>/pdf/",
         public_views.PdfView.as_view(),
         name="join-pdf",

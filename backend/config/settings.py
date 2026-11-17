@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "expenses",
     "obligations",
     "qualifications",
+    "feeproofs",
     "places",
     "admission",
     "django.contrib.admin",
@@ -353,6 +354,15 @@ CELERY_BEAT_SCHEDULE = {
     "qualifikationen-erinnerungen": {
         "task": "qualifications.tasks.send_reminders",
         "schedule": crontab(minute=20, hour="1,7,13,19"),
+    },
+    # Ermäßigung mit Nachweis: Erinnerungen und Mitteilungen, danach Aufräumen
+    "beitragsnachweise-hinweise": {
+        "task": "feeproofs.tasks.send_notices",
+        "schedule": crontab(minute=40, hour="9,17"),
+    },
+    "beitragsnachweise-aufraeumen": {
+        "task": "feeproofs.tasks.cleanup",
+        "schedule": taeglich(2, 50),
     },
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
     "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": taeglich(2, 25)},

@@ -91,7 +91,7 @@ def _call(params: dict, ctx: Context, server: Server) -> dict:
         result, failed = str(exc), True
     # Werkzeuge liefern Text oder schon fertige Inhaltsteile (z. B. ein Bild und Text)
     content = result if isinstance(result, list) else [{"type": "text", "text": result}]
-    content = [_clean(part) for part in content]
+    content = [_cap(_clean(part)) for part in content]
     if tool.scope is not None and not failed:
         # Gesamtaudit 15.11., MCP-03: Vereinsinhalte stammen von Personen und fremden Quellen
         content.append({"type": "text", "text": str(UNTRUSTED)})
@@ -106,6 +106,23 @@ UNTRUSTED = gettext_lazy(
 # Unsichtbare Steuerzeichen, mit denen sich Anweisungen verstecken lassen: Unicode-Tags,
 # Richtungszeichen (Bidi) und Zeichen ohne Breite
 HIDDEN = re.compile("[\U000e0000-\U000e007f\u202a-\u202e\u2066-\u2069\u200b-\u200f\u2060\ufeff]")
+
+
+# Gesamtaudit 15.11., MCP-09: Antworten der Werkzeuge begrenzen (Kosten, Kontextfenster)
+MAX_TEXT = 100_000
+CUT = gettext_lazy(
+    "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder "
+    "mit Suchwort.]"
+)
+
+
+def _cap(part):
+    if isinstance(part, dict) and part.get("type") == "text" and isinstance(part.get("text"), str):
+        text = part["text"]
+        if len(text.encode()) > MAX_TEXT:
+            cut = text.encode()[:MAX_TEXT].decode(errors="ignore")
+            return {**part, "text": cut + "\n\n" + str(CUT)}
+    return part
 
 
 def _clean(part):

@@ -818,11 +818,12 @@ class TestSatzung:
         c = api(board_a)
         base = f"/api/orgs/{orgs['a'].pk}"
         job = upload(c, base, content, filename="zug.zip")
+        # Gesamtaudit 15.11., AZ-05: Die Satzung bleibt draußen, die Vorschau sagt es
+        assert any("Satzung" in w for w in job["preview"]["warnings"]), job["preview"]
         c.post(f"{base}/datatransfer/imports/{job['id']}/run/")
         assert c.get(f"{base}/datatransfer/imports/{job['id']}/").json()["status"] == "done"
         with rls_bypass():
-            version = StatuteVersion.objects.get(organization=orgs["a"])
-            assert version.department.name == "1. Zug"
+            assert not StatuteVersion.objects.filter(organization=orgs["a"]).exists()
 
 
 class TestKurzname:
