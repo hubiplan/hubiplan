@@ -1,7 +1,7 @@
 """Mitgliederliste: entschlüsselte Namen im Arbeitsspeicher (Gesamtaudit 15.11., PF-24).
 
-Jede Seite und jede Suche entschlüsselte alle Namen der Einheit neu. Jetzt hält ein kleiner
-Zwischenspeicher je Prozess die entschlüsselten Werte, Schlüssel ist das Chiffrat. Namen bleiben
+Jede Suche entschlüsselte alle Namen der Einheit neu. Jetzt hält ein kleiner Zwischenspeicher
+je Prozess die entschlüsselten Werte für die Suche, Schlüssel ist das Chiffrat. Namen bleiben
 in der Datenbank vollständig verschlüsselt (Fachfrage F1). Erfundene Daten.
 """
 
@@ -53,7 +53,7 @@ def test_wie_ohne_zwischenspeicher(verein):
 
 def test_nur_chiffrat_als_schluessel(verein):
     club, c = verein
-    assert c.get(f"/api/orgs/{club.pk}/members/").status_code == 200
+    assert c.get(f"/api/orgs/{club.pk}/members/?suche=Muster").status_code == 200
     keys = list(personsearch.PLAIN.items)
     assert keys
     for _label, _attname, value in keys:

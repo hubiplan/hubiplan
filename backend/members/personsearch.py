@@ -4,8 +4,9 @@ Es werden nur die Such-/Sortierspalten geladen. Das zurückgegebene QuerySet beh
 Annotationen, Fachfilter und Beziehungen; seine Reihenfolge enthält nur Zeilen-IDs.
 Keine zusätzliche Freigabe von Personen außerhalb der Kandidaten.
 
-Entschlüsselte Namen (Gesamtaudit 15.11., PF-24): Jede Seite der Mitgliederliste entschlüsselte
-alle Namen der Einheit neu. Ein kleiner Zwischenspeicher je Prozess hält entschlüsselte Werte,
+Entschlüsselte Namen (Gesamtaudit 15.11., PF-24): Jede Suche entschlüsselte alle Namen der
+Einheit neu. Ein kleiner Zwischenspeicher je Prozess hält entschlüsselte Werte für die Suche
+(die Sortierung bleibt beim direkten Abruf, dort war er nach Messung nicht schneller),
 Schlüssel ist das Chiffrat selbst (mit Feld): Ändert sich ein Name, ändert sich das Chiffrat,
 und der alte Eintrag wird nie wieder getroffen. Nur im Arbeitsspeicher, nie in Redis, Logs oder
 Fehlermeldungen; feste Obergrenze und Ablaufzeit, damit gelöschte oder anonymisierte Namen nicht
@@ -228,7 +229,7 @@ def ordered(qs, *ordering, limit=None, lazy=False):
             desc = term.descending
             nulls_first = bool(term.nulls_first or (desc and not term.nulls_last))
         terms.append((field, desc, nulls_first))
-    rows = list(plain_values(qs, *(field for field, _, _ in terms)))
+    rows = list(qs.order_by().values_list("pk", *(field for field, _, _ in terms)))
     # DISTINCT mit Beziehungen darf dieselbe Eingangszeile nicht vervielfachen.
     rows = list({row[0]: row for row in rows}.values())
     rows.sort(key=lambda row: row[0])
