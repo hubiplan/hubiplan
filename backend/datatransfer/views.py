@@ -300,6 +300,7 @@ class OrgImportView(_ImportPermission, OrgScopedMixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int):
+        step_up.require(request)  # Gesamtaudit 15.11., AZ-11
         options = ImportOptions(data=request.data)
         options.is_valid(raise_exception=True)
         job = start_import(
@@ -326,6 +327,7 @@ class OrgImportRunView(_ImportPermission, OrgJobMixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
+        step_up.require(request)
         return Response(job_data(run_import(self.job())))
 
 
@@ -397,6 +399,7 @@ class DeptExportView(DepartmentScopedMixin, APIView):
 
     @transaction.atomic
     def post(self, request, dept_id: int):
+        step_up.require(request)  # Gesamtaudit 15.11., AZ-11
         data = ExportRequest(data=request.data)
         data.is_valid(raise_exception=True)
         job = start_export(
@@ -491,6 +494,7 @@ class PlatformImportView(APIView):
 
     @transaction.atomic
     def post(self, request):
+        step_up.require(request)
         options = ImportOptions(data=request.data)
         options.is_valid(raise_exception=True)
         job = start_import(
@@ -517,4 +521,5 @@ class PlatformImportRunView(PlatformJobMixin, APIView):
 
     @transaction.atomic
     def post(self, request, pk: int):
+        step_up.require(request)
         return Response(job_data(run_import(self.job())))

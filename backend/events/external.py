@@ -447,11 +447,13 @@ def fetch_ical(url: str) -> list[Item]:
 def fetch(cal: ExternalCalendar) -> list[Item]:
     from accounts.mfa import decrypt
 
-    token = decrypt(cal.token) if cal.token else ""
+    token = decrypt(cal.token, purpose="kalender") if cal.token else ""
     if not token:
         raise ExternalError(gettext("Es ist kein Zugang hinterlegt."))
     if cal.kind == ExternalCalendar.Kind.VEREINSPLANER:
-        return fetch_vereinsplaner(token, decrypt(cal.secret) if cal.secret else "")
+        return fetch_vereinsplaner(
+            token, decrypt(cal.secret, purpose="kalender") if cal.secret else ""
+        )
     return fetch_ical(token)
 
 
@@ -461,8 +463,8 @@ def source_of(cal: ExternalCalendar) -> tuple[str, str, str]:
 
     return (
         cal.kind,
-        decrypt(cal.token) if cal.token else "",
-        decrypt(cal.secret) if cal.secret else "",
+        decrypt(cal.token, purpose="kalender") if cal.token else "",
+        decrypt(cal.secret, purpose="kalender") if cal.secret else "",
     )
 
 

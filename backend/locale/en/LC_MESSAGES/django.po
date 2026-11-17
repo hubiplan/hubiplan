@@ -13740,3 +13740,69 @@ msgstr "The sign-in email of your HUBIplan account is now {new}."
 
 msgid "Hallo {name},\n\n{text}\n\nZeit: {when} Uhr\n\nWarst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.\n"
 msgstr "Hello {name},\n\n{text}\n\nTime: {when}\n\nIf this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.\n"
+
+msgid "{where}: Die Satzung aus der Datei wird nicht übernommen."
+msgstr "{where}: The statutes from the file are not taken over."
+
+msgid "Für diesen Import fehlt das Recht „{code}“."
+msgstr "This import requires the permission “{code}”."
+
+msgid "{where}: {x1} {x2} gehört zu keiner Abteilung der Datei und kann nicht übernommen werden."
+msgstr "{where}: {x1} {x2} does not belong to any department in the file and cannot be taken over."
+
+msgid "Eine Zeile gehört zu keiner Abteilung der Datei."
+msgstr "A row does not belong to any department in the file."
+
+msgid "{x0}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{x0}: Only clubs can be imported below a unit."
+
+msgid "{where}: Unter einer Einheit lassen sich nur Vereine einlesen."
+msgstr "{where}: Only clubs can be imported below a unit."
+
+
+msgid "[Antwort gekürzt: zu lang. Bitte enger fragen, z. B. nur einen Text, eine Seite oder mit Suchwort.]"
+msgstr "[Answer shortened: too long. Please ask more narrowly, e.g. for one text, one page or with a search word.]"
+
+msgid "Es gibt schon {n} offene Hochladelinks von dir. Bitte erst diese nutzen oder ablaufen lassen."
+msgstr "You already have {n} open upload links. Please use them first or let them expire."
+
+msgid "Für heute bzw. diese Stunde sind genug Bilder über Adressen geholt. Bitte später erneut oder einen Hochladelink nutzen."
+msgstr "Enough images have been fetched from addresses for today or this hour. Please try again later or use an upload link."
+
+msgid "Der Speicher für Webseitenbilder ist voll ({mb} MB). Bitte nicht mehr genutzte Bilder löschen oder die Plattform um mehr Platz bitten."
+msgstr "The storage for website images is full ({mb} MB). Please delete images no longer used or ask the platform for more space."
+msgid "Die Instanz meldet andere Schlüssel als die Datei."
+msgstr "The instance reports different keys than the file."
+
+msgid "Eine Kopplung in der Datei ist unvollständig und wurde übergangen."
+msgstr "A link in the file is incomplete and was skipped."
+
+msgid "Die Kopplung mit „{name}“ läuft auf dieser Instanz und wurde übergangen."
+msgstr "The link with “{name}” runs on this instance and was skipped."
+
+msgid "{url} ist hier mit einem anderen Schlüssel bekannt; übergangen."
+msgstr "{url} is known here with a different key; skipped."
+
+msgid "Kopplung mit „{name}“ übergangen: {reason}"
+msgstr "Link with “{name}” skipped: {reason}"
+
+msgid "Platzhalter für „{name}“ fehlt; Kopplung übergangen."
+msgstr "Placeholder for “{name}” is missing; link skipped."
+
+msgid "Es gibt hier schon eine Einheit darüber; Kopplung übergangen."
+msgstr "There is already a unit above here; link skipped."
+
+msgid "Kopplungen aus der Datei übernimmt nur die Plattform; „{name}“: {count} übergangen."
+msgstr "Only the platform takes over links from the file; “{name}”: {count} skipped."
+
+msgid "{where}: {count} Kopplung(en) im Verbund werden übernommen und ruhen, bis ein Vorstand den Fingerabdruck der anderen Instanz bestätigt."
+msgstr "{where}: {count} federation link(s) will be taken over and stay on hold until a board member confirms the fingerprint of the other instance."
+
+msgid "{where}: {count} Kopplung(en) im Verbund werden nicht übernommen; das kann nur die Plattform."
+msgstr "{where}: {count} federation link(s) will not be taken over; only the platform can do that."
+
+msgid "Zu viele Suchanfragen."
+msgstr "Too many searches."
+
+msgid "Bitte die App aktualisieren, diese Version wird von HUBIplan nicht mehr unterstützt."
+msgstr "Please update the app; HUBIplan no longer supports this version."

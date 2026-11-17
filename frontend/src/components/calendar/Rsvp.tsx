@@ -230,9 +230,11 @@ export function ResponsesPanel({
   note?: string
 }) {
   const tm = useTerms()
+  // Seitenweise zu je 200 (Gesamtaudit 15.11., PF-28); „Weitere laden“ holt die nächste
+  const [pages, setPages] = useState(1)
   const { data, error, reload } = useLoad(
-    () => eventApi.responses(base, event.id),
-    [base, event.id],
+    () => eventApi.responsePages(base, event.id, pages),
+    [base, event.id, pages],
   )
   const [filter, setFilter] = useState('')
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
@@ -383,10 +385,19 @@ export function ResponsesPanel({
           </table>
         </div>
       )}
+      {data.page?.more && (
+        <button type="button" className="button" onClick={() => setPages((n) => n + 1)}>
+          {t('Weitere laden ({n} von {total})', {
+            n: data.items.length + data.open.length,
+            total:
+              data.summary.yes + data.summary.no + (data.summary.maybe ?? 0) + data.summary.open,
+          })}
+        </button>
+      )}
       {data.open.length > 0 && (
         <details className="responses-open">
           <summary>
-            {t('Noch keine Rückmeldung ({n})', { n: data.open.length })}
+            {t('Noch keine Rückmeldung ({n})', { n: data.summary.open })}
             {canEnter && t(' – hier für Mitglieder ohne Zugang eintragen')}
           </summary>
           <Field

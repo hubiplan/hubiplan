@@ -15,7 +15,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from core.tenancy import rls_bypass
 from organizations.models import Organization
-from peering import identity, services
+from peering import identity, moving, services
 from peering.models import Coupling, RemoteMember
 
 from .factories import give_role, make_member, make_user
@@ -102,6 +102,14 @@ class TestUmzug:
         assert new_club.uuid == unit_uuid
         new_coupling = Coupling.objects.get(local_unit=new_club)
         assert new_coupling.direction == "parent" and new_coupling.peer.base_url == VERBAND
+        # Gesamtaudit 15.11., AZ-01: Auch die neue Instanz wartet, bis ein Vorstand den
+        # Fingerabdruck des Dachverbands bestätigt
+        assert new_coupling.state == "moving" and new_coupling.options["move"]["import"]
+        with net.on(VERBAND):
+            fed_fingerprint = identity.identity().fingerprint
+        with net.on(NEU):
+            new_coupling = moving.confirm_move(new_coupling, fed_fingerprint, None)
+        assert new_coupling.state == "active"
         lower = moved_world["lower"]
         lower.refresh_from_db()
         assert lower.state == "moved"

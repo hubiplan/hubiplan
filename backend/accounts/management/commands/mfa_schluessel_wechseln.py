@@ -1,5 +1,7 @@
 """2FA-Geheimnisse mit dem ersten Schlüssel aus MFA_ENCRYPTION_KEYS neu verschlüsseln."""
 
+from functools import partial
+
 from allauth.mfa.models import Authenticator
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -17,7 +19,7 @@ class Command(BaseCommand):
         changed = 0
         with transaction.atomic(), rls_bypass():
             for item in Authenticator.objects.select_for_update():
-                data = transform_data(item.type, item.data, rotate)
+                data = transform_data(item.type, item.data, partial(rotate, purpose="mfa"))
                 if data != item.data:
                     item.data = data
                     item.save(update_fields=["data"])
