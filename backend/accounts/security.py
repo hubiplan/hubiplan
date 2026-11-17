@@ -92,6 +92,7 @@ def connect() -> None:
         signal.connect(_on_security_change, dispatch_uid=f"revoke-links-{id(signal)}")
     for signal in (mfa_signals.authenticator_removed, mfa_signals.authenticator_reset):
         signal.connect(_on_mfa_removed, dispatch_uid=f"revoke-links-{id(signal)}")
-    from . import passkeys
+    from . import hinweismail, passkeys
 
     passkeys.connect()
+    hinweismail.connect()
