@@ -591,10 +591,12 @@ class Dumper:
             data["departments"] = [
                 self.department(
                     units[pk],
-                    tables=self.tables(
-                        units[pk],
-                        everything=self.finance_for(org),
-                        members=bool(member_data) and not self.limited_for(org),
+                    # Dachverband: Abteilungstabellen der Vereine zeigt ihm der Zeilenschutz
+                    # nicht (Gesamtaudit 15.11., AZ-06)
+                    tables=None
+                    if self.limited_for(org)
+                    else self.tables(
+                        units[pk], everything=self.finance_for(org), members=bool(member_data)
                     ),
                 )
                 for pk in UnitTree.of(org.pk).ordered()
@@ -610,11 +612,14 @@ class Dumper:
                 if member_data
                 else []
             )
-        # Kasse und Beiträge nur mit Recht darauf, Satzungen immer
-        tables = self.tables(
-            org,
-            everything=self.finance_for(org),
-            members=bool(member_data) and not self.limited_for(org),
+        # Kasse und Beiträge nur mit Recht darauf, Satzungen immer (außer für Vereine im
+        # Export eines Dachverbands)
+        # Dachverband: keine Tabellen der Vereine, auch nicht die Satzung (Zeilenschutz,
+        # Gesamtaudit 15.11., AZ-06)
+        tables = (
+            {}
+            if self.limited_for(org)
+            else self.tables(org, everything=self.finance_for(org), members=bool(member_data))
         )
         if tables:
             data["tables"] = tables

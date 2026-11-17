@@ -8,6 +8,7 @@ unter der Rolle der Anwendung auch sieht. Erfundene Daten.
 
 import datetime
 import json
+import uuid
 
 import pytest
 from django.core.files.base import ContentFile
@@ -15,9 +16,10 @@ from django.core.files.base import ContentFile
 from core.tenancy import rls_bypass, set_rls, tenant_context
 from customfields.models import FieldDefinition, FieldValue
 from datatransfer import dump
-from datatransfer.tables import MEMBER_MODELS
-from members.models import HonoraryTitle, Membership
+from documents.models import Folder
+from members.models import HonoraryTitle, Membership, MemberType
 from members.photo_models import MemberPhoto
+from organizations.models import Department
 
 from .factories import give_role, make_member, make_user
 from .test_datatransfer import as_doc
@@ -50,6 +52,13 @@ def verband(orgs, settings, tmp_path):
             status=MemberPhoto.Status.APPROVED,
         )
         HonoraryTitle.objects.create(organization=club, name="Ehrenmitglied")
+        zug = Department.objects.create(
+            self_managed=True, organization=club, name="1. Zug", founding_year=1950
+        )
+        Folder.objects.create(
+            organization=club, department=zug, name="Zugakten", public_key=uuid.uuid4().hex
+        )
+        Folder.objects.create(organization=club, name="Vereinsakten", public_key=uuid.uuid4().hex)
     return {"fed": fed, "club": club, "erika": erika}
 
 
@@ -62,20 +71,27 @@ def test_export_nur_im_umfang_des_zeilenschutzes(verband):
     content, _name, _counts = dump.export_organization(fed, with_files=True, by_platform=False)
     doc = as_doc(content)
     data = _club(doc, club.pk)
-    # Was der Dachverband unter dem Zeilenschutz sieht
+    # Jede exportierte Zeile des Vereins sieht der Dachverband auch unter dem Zeilenschutz
+    exported = {
+        Membership: {m["id"] for m in data["memberships"]},
+        Department: {d["id"] for d in data["departments"]},
+        MemberType: {t["id"] for t in data["member_types"]},
+    }
     with app_role():
         set_rls(fed.pk, None, scope_id=fed.pk, fed_access="read")
-        visible = set(Membership.objects.filter(organization=club).values_list("pk", flat=True))
+        for model, ids in exported.items():
+            assert ids, model
+            visible = set(model.objects.filter(pk__in=ids).values_list("pk", flat=True))
+            assert ids == visible, model
+        assert not Folder.objects.filter(organization=club).exists()  # Ablage: unsichtbar
         set_rls()
-    exported = {m["id"] for m in data["memberships"]}
-    assert exported and exported <= visible
+    # Tabellen der Fachmodule (Ablage, Versammlungen, Aufgaben, Satzung …) entfallen ganz
+    assert not data.get("tables")
+    assert all(not d.get("tables") for d in data["departments"])
     # Was entfällt
     assert all(m["photo"] is None for m in data["memberships"])
     assert data["fields"] == []
     assert data["role_assignments"] == []
-    assert not set(data.get("tables") or {}) & MEMBER_MODELS
-    for dept in data["departments"]:
-        assert not set(dept.get("tables") or {}) & MEMBER_MODELS
     values = [v for p in doc["persons"] for v in p["field_values"]]
     assert values == []
     assert "vorstand-umfang@example.org" not in json.dumps(data)
@@ -89,5 +105,8 @@ def test_plattform_bekommt_weiter_alles(verband):
     assert [f["key"] for f in data["fields"]] == ["schuh"]
     assert data["role_assignments"]
     assert "members.honorarytitle" in (data.get("tables") or {})
+    assert "documents.folder" in (data.get("tables") or {}) or any(
+        "documents.folder" in (d.get("tables") or {}) for d in data["departments"]
+    )
     with rls_bypass():
         assert Membership.objects.filter(organization=club).exists()
