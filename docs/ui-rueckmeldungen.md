@@ -42,6 +42,7 @@ Seit dem UX-Audit vom 16.11.2026 (X-05, VW-22, VW-23, VW-26) gilt für die Verwa
 | Löschen, das sich zurücknehmen lässt (Papierkorb, Rückgängig) | ohne Rückfrage, mit Hinweis und „Rückgängig“ | `undo.ts`, siehe [rueckgaengig.md](rueckgaengig.md) |
 | Löschen, das sich nicht zurücknehmen lässt | Rückfrage mit Handlungsverb auf dem Knopf; den Satz „Das lässt sich nicht rückgängig machen.“ ergänzt der Dialog | `confirmDialog` mit `confirmLabel` und `final: true` |
 | Rote Rückfrage mit Rückweg (Papierkorb, Sperren, erneut einrichten) oder mit der Folge im Text | Rückfrage ohne den Zusatz; der Text nennt Rückweg oder Folge | `confirmDialog` mit `final: false`; `final` ist bei roten Rückfragen Pflicht (`UxAudit1116Rueckfragen.test.tsx`) |
+| Liste als einfache Tabelle mit mehr als 20 möglichen Zeilen | Suchfeld über der Tabelle; für Sortieren, Filter und Seiten `DataTable`, für sehr lange Listen die serverseitige Suche | `useRowSearch` (`components/RowSearch.tsx`), Ausnahmen in `UxAudit1116Tabellen.test.tsx` |
 | Rückfrage, die nichts löscht oder trennt („Jetzt abgleichen?“, „Auf der Webseite zeigen?“) | Knopf nennt die Handlung, nicht rot | `confirmDialog` mit `confirmLabel` (Pflicht) und `danger: false` |
 | Formular, das unter einer Liste eingeblendet wird | Fokus im ersten Feld, Escape schließt wie „Abbrechen“ | `useRevealFocus(aktiv, schliessen)` |
 | Sitzung läuft ab | Vorwarnung; nach Ablauf bleiben die Eingaben stehen | `SessionWatch` |

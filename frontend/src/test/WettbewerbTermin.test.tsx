@@ -54,7 +54,10 @@ const detail = {
 }
 
 function renderAt(path: string, routes: Parameters<typeof fakeApi>[0]) {
-  const org = testOrg({ permissions: ['competitions.manage'], modules: ['competitions'] })
+  const org = testOrg({
+    permissions: ['competitions.manage'],
+    modules: ['competitions', 'shooting'],
+  })
   const calls = fakeApi({
     [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
     'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),

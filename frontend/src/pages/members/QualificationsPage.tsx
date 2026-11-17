@@ -1,5 +1,6 @@
 // Mitglieder › Qualifikationen: maßgebliche Nachweise aller aktuellen Mitglieder, wahlweise nur
 // abgelaufene und bald ablaufende, je Art filterbar. Der Link aus „Zu erledigen“ setzt die Filter.
+import { useRowSearch } from '../../components/RowSearch.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
 import { qualificationApi } from '../../api/qualifications.ts'
@@ -19,6 +20,11 @@ export function QualificationsPage() {
   const rows = useLoad(
     () => qualificationApi.overview(org.id, { stand, art }),
     [org.id, stand, art],
+  )
+  const search = useRowSearch(
+    rows.data ?? [],
+    (r) => `${r.last_name} ${r.first_name} ${r.kind_name}`,
+    t('Qualifikationen'),
   )
   const canSetup = org.permissions.includes(PERM.orgEdit)
 
@@ -74,6 +80,7 @@ export function QualificationsPage() {
         </div>
       ) : (
         <div className="card table-scroll">
+          {search.field}
           <table className="table">
             <thead>
               <tr>
@@ -84,7 +91,7 @@ export function QualificationsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.data.map((r) => (
+              {search.shown.map((r) => (
                 <tr key={r.id}>
                   <td>
                     <Link to={`/mitglieder/${r.member}`}>

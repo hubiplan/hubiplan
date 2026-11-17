@@ -81,6 +81,7 @@ export function CompetitionsPage() {
 function CompetitionList() {
   const org = useActiveOrg()
   const navigate = useNavigate()
+  const sw = useSportText()
   const canManage = org.permissions.includes(PERM.competitionsManage)
   const { data, error, reload } = useLoad(() => competitionsApi.list(org.id), [org.id])
   const [creating, setCreating] = useState(false)
@@ -89,7 +90,7 @@ function CompetitionList() {
     <section>
       <PageHeader name={t('Wettbewerbe')} />
       <p className="muted">
-        {t(
+        {sw(
           'Eigene Schießen mit Einzel- und Zugwertung und Stechen, Vogelschießen mit Pfändern, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.',
         )}
       </p>

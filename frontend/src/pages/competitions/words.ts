@@ -129,6 +129,24 @@ const WORDS = {
     (p) => t('Je Zug eine Tabelle mit Feldern für die Zugwertung', p),
     (p) => t('Je Untereinheit eine Tabelle mit Feldern für die Gruppenwertung', p),
   ],
+  ['Eigene Schießen mit Einzel- und Zugwertung und Stechen, Vogelschießen mit Pfändern, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.']:
+    [
+      (p) =>
+        t(
+          'Eigene Schießen mit Einzel- und Zugwertung und Stechen, Vogelschießen mit Pfändern, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.',
+          p,
+        ),
+      (p) =>
+        t(
+          'Eigene Wettbewerbe mit Einzel- und Gruppenwertung und Entscheidungsrunde, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.',
+          p,
+        ),
+    ],
+  ['Schießen beenden']: [(p) => t('Schießen beenden', p), (p) => t('Wettbewerb beenden', p)],
+  [' · Schießen beendet, Ergebnisse vorläufig.']: [
+    (p) => t(' · Schießen beendet, Ergebnisse vorläufig.', p),
+    (p) => t(' · Wettbewerb beendet, Ergebnisse vorläufig.', p),
+  ],
 } satisfies Record<string, Pair>
 
 export type SportKey = keyof typeof WORDS
