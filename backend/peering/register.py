@@ -567,6 +567,7 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
     from django.core.exceptions import ValidationError
 
     from changes.tracking import suppress
+    from core.tenancy import unit_context
     from members.models import Person
 
     if rm.status != RemoteMember.Status.UNCLEAR:
@@ -583,7 +584,10 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
         person = Person.objects.get(pk=person_id, scope=federation)
     else:
         person = _new_person(federation, row)
-    with suppress():
+    # Die Mitgliedschaft gehört dem Platzhalter des Vereins (Verbandsbereich oben), wie beim
+    # Eingang der Meldung (packet_members.apply). Im Kontext des Dachverbands verletzte das
+    # Anlegen den Zeilenschutz; die Entscheidung endete mit Fehler 500 (Gesamtaudit 15.11., AZ-04).
+    with suppress(), unit_context(coupling.remote_unit_id):
         _import(coupling, federation, row, rm, person=person)
     send_numbers(coupling)
     rm.refresh_from_db()

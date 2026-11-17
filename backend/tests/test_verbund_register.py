@@ -190,6 +190,8 @@ class TestKlaerfaelle:
             resp = api(lesen).post(f"{base}/members/{rm.pk}/resolve/", {}, content_type=JSON)
             assert resp.status_code == 403
 
+    # Klärfall entscheiden wie im Betrieb unter dem Zeilenschutz (Gesamtaudit 15.11., AZ-04)
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_andere_person(self, net, world, members):
         local = self.local_anna(net, world)
         lower, upper = named(net, world)
@@ -273,6 +275,7 @@ class TestFremdeVerbandsnummer:
                 person=local.person, organization=upper.remote_unit
             ).exists()
 
+    @pytest.mark.usefixtures("anfragen_unter_app_rolle")
     def test_berichtigung_geteilter_person_braucht_freigabe(self, net, world, members):
 
         with net.on(VERBAND):
