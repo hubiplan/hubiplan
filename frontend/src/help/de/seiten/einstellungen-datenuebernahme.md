@@ -17,3 +17,5 @@ URLs müssen HTTP(S)-Adressen sein. Bei aktiviertem Virenscanner wird jede tats�
 übernommene innere Datei einzeln geprüft, auch wenn das äußere Archiv zu groß für
 den Uploadscan war. Bei verpflichtender Prüfung sind fehlender Scanner und zu große
 innere Dateien ein Abbruchgrund; ein Fehler verhindert den Datenimport.
+
+Eine Untereinheit aus einer Datei einzulesen braucht neben „Einstellungen“ die Bearbeitungsrechte der Bereiche, die die Datei enthält, etwa „Mitglieder bearbeiten“ für Mitgliedschaften oder „Ablage bearbeiten“ für Ordner und Dokumente. Fehlt eines, nennt die Prüfung die fehlenden Rechte. Alle Zeilen der Datei müssen zur neuen Untereinheit gehören; die Satzung aus der Datei kommt nicht mit, sie gehört dem Verein. Import, Export einer Untereinheit und Kopplungen im Verbund verlangen eine frische Bestätigung mit dem zweiten Faktor.
