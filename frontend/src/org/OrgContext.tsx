@@ -9,6 +9,7 @@ import { applyTheme } from '../theme/theme.ts'
 import { usePlatform } from '../theme/platform.ts'
 import type { DatePrecision } from '../components/forms.ts'
 import { t } from '../i18n/index.ts'
+import { NoWorkspaceError } from './noWorkspace.ts'
 
 const STORAGE_KEY = 'hubiplan.aktiveOrganisation'
 
@@ -177,10 +178,6 @@ export function useOrg(): OrgState {
   if (!ctx) throw new Error(t('useOrg muss innerhalb von OrgProvider genutzt werden.'))
   return ctx
 }
-
-/** Seite braucht einen anderen Arbeitsbereich: PageErrorBoundary zeigt dafür „Kein Zugriff“
- * statt eines Ladefehlers (UX-Audit 16.11. VW-09 c). */
-export class NoWorkspaceError extends Error {}
 
 /** Aktive Organisation; nur in Seiten verwenden, die eine voraussetzen. */
 // oxlint-disable-next-line react/only-export-components

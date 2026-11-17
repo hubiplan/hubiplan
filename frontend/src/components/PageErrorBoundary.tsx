@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { t } from '../i18n/index.ts'
-import { NoWorkspaceError } from '../org/OrgContext.tsx'
+import { NoWorkspaceError } from '../org/noWorkspace.ts'
 import { NoAccessPage } from '../pages/NoticePages.tsx'
 
 /** Fängt Fehler beim Laden oder Anzeigen einer Seite ab (z. B. nach einem Update fehlt ein
