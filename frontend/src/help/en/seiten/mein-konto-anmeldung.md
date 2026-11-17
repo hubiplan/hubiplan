@@ -37,3 +37,8 @@ the club. A Nextcloud account you sign in to through HUBIplan is deactivated if 
 If your account has had no access for 90 days (no member access, no role), HUBIplan deletes it
 automatically. You receive an email two weeks before. If you get access again before then, the
 account is kept.
+
+A sign-in in the browser lasts twelve hours. Ten minutes before, HUBIplan asks; **Stay signed in**
+lets you keep working without interruption. If the session has already expired, the page stays as
+it is with your input: sign in again with **Sign in in a new tab**, come back and choose
+**I am signed in again**.

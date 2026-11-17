@@ -15,6 +15,7 @@ import { BlockedGuide, GuideNotes, HelpContacts, ShowMe } from './HelpExtras.tsx
 import { HelpMarkdown, HelpSections } from './HelpMarkdown.tsx'
 import { itemLabel, placeOf } from './menu.ts'
 import './help.css'
+import { helpShortcutEnabled } from './shortcut.ts'
 
 /** Höchstens so viele Begriffe zeigt die Leiste zu einer Seite. */
 const MAX_TERMS = 6
@@ -47,7 +48,7 @@ export function HelpButton({ compact = false }: { compact?: boolean }) {
       title={t('Hilfe zu dieser Seite')}
       aria-expanded={help.panelOpen}
       aria-controls="seitenhilfe"
-      aria-keyshortcuts="?"
+      aria-keyshortcuts={helpShortcutEnabled() ? '?' : undefined}
       onClick={() => help.setPanelOpen(!help.panelOpen)}
     >
       <span aria-hidden="true" className="help-button-mark">

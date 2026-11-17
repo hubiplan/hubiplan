@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { appearanceApi } from '../../api/appearance.ts'
 import { errorMessage } from '../../components/forms.ts'
-import { Alert, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, SelectField } from '../../components/ui.tsx'
+import { helpShortcutEnabled, setHelpShortcutEnabled } from '../../help/shortcut.ts'
 import { t } from '../../i18n/index.ts'
 import { colorSchemeChoice, setColorSchemeChoice } from '../../theme/colorScheme.ts'
 import type { ColorSchemeChoice } from '../../theme/colorScheme.ts'
@@ -10,6 +11,7 @@ import type { ColorSchemeChoice } from '../../theme/colorScheme.ts'
 export function AppearanceCard() {
   const [value, setValue] = useState<ColorSchemeChoice>(colorSchemeChoice())
   const [busy, setBusy] = useState(false)
+  const [shortcut, setShortcut] = useState(helpShortcutEnabled())
   const [error, setError] = useState<string | null>(null)
 
   async function choose(next: ColorSchemeChoice) {
@@ -47,6 +49,16 @@ export function AppearanceCard() {
         <option value="dark">{t('Dunkel')}</option>
         <option value="auto">{t('Wie Gerät')}</option>
       </SelectField>
+      {/* VW-03: Einzeltasten-Kürzel abschaltbar (WCAG 2.1.4) */}
+      <Checkbox
+        label={t('Taste „?“ öffnet die Hilfe zu dieser Seite')}
+        checked={shortcut}
+        onChange={(on) => {
+          setHelpShortcutEnabled(on)
+          setShortcut(on)
+        }}
+        hint={t('Gilt in diesem Browser. Ausschalten hilft, wenn du mit Spracheingabe arbeitest.')}
+      />
       {error && <Alert kind="error">{error}</Alert>}
     </div>
   )

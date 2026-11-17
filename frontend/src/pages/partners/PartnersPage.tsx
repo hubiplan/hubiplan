@@ -40,6 +40,7 @@ import { Agreements } from './Agreements.tsx'
 import { MailingCard } from './MailingCard.tsx'
 import { PartnerDocuments } from './PartnerDocuments.tsx'
 import { kindLabel, partnerAccess, roleLabel } from './access.ts'
+import { useRevealFocus } from '../../components/revealFocus.ts'
 
 const emptyPartner = (): PartnerInput => ({
   kind: 'company',
@@ -448,9 +449,12 @@ function PartnerForm({
     ['tax_number', t('Steuernummer')],
     ['leitweg_id', t('Leitweg-ID')],
   ]
+  // VW-43: neu eingeblendetes Formular bekommt den Fokus und rückt ins Bild
+  const formRef = useRevealFocus<HTMLFormElement>(!partner)
   return (
     <form
       className="card stack"
+      ref={formRef}
       onSubmit={async (e) => {
         e.preventDefault()
         if (partner) return

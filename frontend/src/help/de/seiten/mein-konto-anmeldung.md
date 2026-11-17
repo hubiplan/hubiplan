@@ -39,3 +39,8 @@ verlangen kannst du nur beim Verein. Ein Nextcloud-Konto, mit dem du dich über 
 Hat dein Konto 90 Tage lang keinen Zugang mehr (kein Mitgliederzugang, keine Rolle), löscht
 HUBIplan es von selbst. Zwei Wochen vorher bekommst du eine Mail. Bekommst du vorher wieder einen
 Zugang, bleibt das Konto.
+
+Eine Anmeldung im Browser gilt zwölf Stunden. Zehn Minuten vorher fragt HUBIplan nach; mit
+**Angemeldet bleiben** arbeitest du ohne Unterbrechung weiter. Ist die Anmeldung schon abgelaufen,
+bleibt die Seite mit deinen Eingaben stehen: Melde dich über **In neuem Tab anmelden** neu an,
+komm zurück und wähle **Ich bin wieder angemeldet**.

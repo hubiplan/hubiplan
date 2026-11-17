@@ -26,6 +26,7 @@ import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { PageNav } from '../../components/ListControls.tsx'
+import { useRevealFocus } from '../../components/revealFocus.ts'
 
 export function StatusBadge({
   row,
@@ -1160,10 +1161,12 @@ function InvoiceForm({
   }
 
   const total = filled.reduce((sum, l) => sum + (Number(parseAmount(l.amount)) || 0), 0)
+  // VW-43: neu eingeblendetes Formular bekommt den Fokus und rückt ins Bild
+  const formRef = useRevealFocus<HTMLFormElement>(!invoice)
   const incomplete = Object.keys(lineErrors).length > 0
 
   return (
-    <form className="card card-wide" onSubmit={save}>
+    <form className="card card-wide" onSubmit={save} ref={formRef}>
       <h2>{invoice ? t('Entwurf bearbeiten') : t('Neue Rechnung')}</h2>
       {invoice && <SaveStatus auto={auto} />}
       <p className="muted small">

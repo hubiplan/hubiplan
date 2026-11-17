@@ -7,6 +7,7 @@ import type { AutoSave, SaveState } from './forms.ts'
 import { t } from '../i18n/index.ts'
 import { TileIcon } from './icons.tsx'
 import type { TileIconName } from './icons.tsx'
+import { useAnnounce } from './announce.ts'
 
 /**
  * Beschriftung, Hinweis und Fehler eines Feldes. Hinweis und Fehler hängen per
@@ -284,11 +285,10 @@ export function LoadError({ message, onRetry }: { message: string; onRetry?: () 
  * `small` für Ladezeilen in Kacheln und Listen.
  */
 export function Loading({ small = false }: { small?: boolean }) {
-  return (
-    <p className={small ? 'muted small loading' : 'muted loading'} aria-live="polite">
-      {t('Wird geladen …')}
-    </p>
-  )
+  // Ansage über die dauerhaft vorhandene Region (VW-29): eine Zeile, die erst mit ihrem Text
+  // entsteht, sagen Screenreader nicht verlässlich an
+  useAnnounce(t('Wird geladen …'))
+  return <p className={small ? 'muted small loading' : 'muted loading'}>{t('Wird geladen …')}</p>
 }
 
 /**

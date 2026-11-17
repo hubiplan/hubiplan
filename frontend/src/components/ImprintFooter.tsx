@@ -5,7 +5,7 @@ import { displayName } from '../api/orgs.ts'
 import { useOrg } from '../org/OrgContext.tsx'
 import { PublicImprintContext } from './publicImprint.ts'
 import type { PublicImprintTarget } from './publicImprint.ts'
-import { formatTitle } from './pageTitle.ts'
+import { formatTitle, useTitleOverride } from './pageTitle.ts'
 import { usePlatform } from '../theme/platform.ts'
 import { t } from '../i18n/index.ts'
 
@@ -33,6 +33,16 @@ const PUBLIC_TITLES: [string, string][] = [
   ['/foto', t('Foto hochladen')],
   ['/bilder-hochladen', t('Bilder für die Webseite')],
   ['/rundschreiben/abmelden', t('Rundschreiben abbestellen')],
+  ['/rundschreiben/bestaetigen', t('Empfang bestätigen')],
+  ['/rueckmeldung', t('Rückmeldung zum Termin')],
+  ['/umfrage', t('Umfrage')],
+  ['/auslage', t('Auslage einreichen')],
+  ['/nachweis', t('Nachweis einreichen')],
+  ['/mitglied-werden', t('Mitglied werden')],
+  ['/antrag', t('Stand des Antrags')],
+  ['/verbund', t('Anmeldung im Verbund')],
+  ['/ki/verbinden', t('KI-Assistent verbinden')],
+  ['/oidc/anmelden', t('Anmelden')],
   ['/ausweis', t('Mitgliedsausweis')],
   ['/impressum', t('Impressum')],
   ['/datenschutz', t('Datenschutz')],
@@ -45,9 +55,11 @@ export function PublicShell() {
   const { pathname } = useLocation()
   const title = PUBLIC_TITLES.find(([prefix]) => pathname.startsWith(prefix))?.[1]
   const instance = usePlatform().name
+  // Seiten mit eigenem Titel (usePageTitle, z. B. „App verbinden“) gehen vor
+  const override = useTitleOverride()
   useEffect(() => {
-    document.title = formatTitle(title)
-  }, [title, instance])
+    document.title = formatTitle(override ?? title)
+  }, [override, title, instance])
   return (
     <PublicImprintContext.Provider value={setUnit}>
       <div className="public-shell">

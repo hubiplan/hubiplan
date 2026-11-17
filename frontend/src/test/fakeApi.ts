@@ -2,6 +2,8 @@ import { vi } from 'vitest'
 
 // Standardantworten, falls ein Test sie nicht selbst festlegt
 const DEFAULTS: Record<string, Handler> = {
+  // Laufzeit der Anmeldung: ohne eigene Angabe noch lange gültig (keine Vorwarnung)
+  'GET /api/me/session/': () => ({ status: 200, body: { expires_in: 43200 } }),
   'GET /api/me/appearance/': () => ({ status: 200, body: { color_scheme: 'auto' } }),
   'GET /api/me/home-actions/': () => ({ status: 200, body: { hidden: [] } }),
   'GET /api/me/todos/export/': () => ({ status: 200, body: { tasks: [] } }),
