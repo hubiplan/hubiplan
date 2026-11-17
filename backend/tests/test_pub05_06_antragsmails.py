@@ -17,7 +17,8 @@ def test_hoechstens_drei_bestaetigungsmails_je_adresse(club):  # noqa: F811
     mail.outbox.clear()
     # Wie ein Angreifer: je Antrag andere Namen, gleiche Empfängeradresse
     antworten = [
-        submit(club["key"], last_name=f"Muster{i}", first_name=f"Max{i}") for i in range(5)
+        submit(club["key"], last_name=f"Muster-{n}", first_name=n)
+        for n in ("Anna", "Bert", "Clara", "Dieter", "Emil")
     ]
     assert {r.status_code for r in antworten} == {201}, [r.content for r in antworten]
     assert len({frozenset(r.json()) for r in antworten}) == 1  # Antwort immer gleich
