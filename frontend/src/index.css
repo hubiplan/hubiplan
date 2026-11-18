@@ -6489,6 +6489,13 @@ label:has(> .file-input:focus-visible) {
 .style-hint {
   margin-top: 0.2rem;
 }
+/* Lesbarkeitshinweis am Regler (UX-Audit WS-15) */
+.style-warn {
+  margin: 0.2rem 0 0;
+  padding: 0.35rem 0.6rem;
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-warning-bg);
+}
 .style-more {
   font: inherit;
   font-size: 0.9rem;

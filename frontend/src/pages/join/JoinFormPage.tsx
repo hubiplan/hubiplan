@@ -464,6 +464,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                 </p>
               )}
               {s.thanks && <p className="rsvp-public-text">{s.thanks}</p>}
+              <BackToWebsite schema={s} />
             </>
           )}
         </div>
@@ -477,8 +478,10 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
   return (
     <main className="login-page">
       <form className="card public-photo stack-sm join-form" onSubmit={next} noValidate>
+        {/* Wappen, Name und Rückweg zur Webseite des Vereins (UX-Audit WS-09/X-08) */}
+        {!kiosk && <BackToWebsite schema={s} />}
         <div className="login-logo">
-          <Logo name={s.organization} logoUrl={null} />
+          <Logo name={s.organization} logoUrl={s.logo_url ?? null} />
         </div>
         <h1 ref={heading} tabIndex={-1}>
           {t('Mitglied werden')} · {s.organization}
@@ -1101,5 +1104,18 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
         {!kiosk && <LanguageSwitch />}
       </form>
     </main>
+  )
+}
+
+/** Link zurück zur öffentlichen Webseite des Vereins, wenn es eine gibt (UX-Audit WS-09/X-08) */
+function BackToWebsite({ schema }: { schema: JoinSchema }) {
+  if (!schema.website_url) return null
+  return (
+    <p className="small join-back">
+      <a href={schema.website_url}>
+        <span aria-hidden="true">← </span>
+        {t('Zurück zur Webseite von {x}', { x: schema.organization })}
+      </a>
+    </p>
   )
 }

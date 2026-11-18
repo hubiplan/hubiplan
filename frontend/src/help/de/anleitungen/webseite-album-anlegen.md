@@ -15,6 +15,6 @@ stichworte: [Galerie, Album, Fotos, Bilder, Sommerfest]
 5. Wähle das Titelbild.
 6. Kreuze **Auf der Webseite zeigen** an.
 
-Zeige Fotos mit erkennbaren Personen nur mit deren Einwilligung. Der Bereich Galerie muss unter Menü und Bausteine eingeschaltet sein.
+Zeige Fotos mit erkennbaren Personen nur mit deren Einwilligung. Der Bereich Galerie muss unter Menü und Seiten eingeschaltet sein.
 
 ![Ausgangspunkt: Fotoalbum in der Galerie anlegen](bild:webseite-album-anlegen)

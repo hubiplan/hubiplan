@@ -26,7 +26,7 @@ stichworte:
 
 Everyone edits the home page in one place: whoever manages the website puts it together here and changes the content; people who may only “Edit content” change the content of the existing sections. The **Preview** on the right shows the website with the draft.
 
-Under **Home** you build the home page from sections and see every change straight away in the preview. The existing sections (such as welcome text, upcoming events, majesties) exist once each; you switch them on and off.
+Under **Home** you build the home page from sections and see every change straight away in the preview. The fixed sections (such as welcome text, upcoming events, title holders) exist once each; you switch them on and off.
 
 ## Available sections
 
@@ -57,12 +57,12 @@ Under **Home** you build the home page from sections and see every change straig
 - **Two columns** (two blocks of text side by side, one below the other on phones)
 - **Table** (one to six columns with a header row)
 - **Timeline** (your own milestones with a time, independent of the chronicle)
-- **Festival programme** (programme items with day and time; consecutive entries with the same day appear under one heading)
+- **Programme** (programme items with day and time; consecutive entries with the same day appear under one heading)
 - **Notice box** (info, caution or success, permanent)
 - **Expandable sections** (headings with text to expand)
 - **Images** (one to eight images of your own with captions, enlarged on click; a single image spans the whole width, with **Full width** from edge to edge)
 - **Download list** (up to ten published files from Website › Documents)
-- **Majesties of a unit**
+- **Title holders of a unit**
 - **Results of a competition** (winners and standings of a chosen, published competition)
 - **Gallery overview** (the first albums of the gallery)
 - **Latest posts** (from Instagram and Facebook)

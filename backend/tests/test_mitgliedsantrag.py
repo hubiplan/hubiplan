@@ -142,6 +142,24 @@ class TestFormular:
         assert data["challenge"]["token"]
         assert schema(club["key"], lang="en")["types"][0]["label"] in ("Active", "Aktiv im Zug")
 
+    def test_rueckweg_zur_webseite(self, club, settings):
+        # UX-Audit WS-09/X-08: Wappen und Rückweg zur Webseite des Vereins
+        settings.WEBSITE_PUBLIC_URL = ""
+        data = schema(club["key"])
+        assert data["website_url"] is None and "logo_url" in data
+        from website.models import WebsiteDomain
+
+        site = make_website(club["org"], public_key="schluessel-j", state="public")
+        with rls_bypass():
+            WebsiteDomain.objects.create(
+                organization=club["org"], website=site, hostname="sv-musterstadt.example"
+            )
+        assert schema(club["key"])["website_url"] == "https://sv-musterstadt.example/"
+        site.state = "maintenance"
+        with rls_bypass():
+            site.save()
+        assert schema(club["key"])["website_url"] is None
+
     def test_aus_heisst_404(self, club):
         form = ApplicationForm.objects.get(organization=club["org"])
         form.enabled = False

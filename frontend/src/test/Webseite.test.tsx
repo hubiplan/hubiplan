@@ -238,6 +238,39 @@ describe('Webseite', () => {
     )
   })
 
+  it('öffnet nach der Wahl einer Art gleich den Editor, ohne leeren Abschnitt (UX-Audit WS-17)', async () => {
+    const home = [{ key: 'greeting', on: true }]
+    const withHome = {
+      ...data(website('public', { home_sections: home, draft: {} })),
+      home_labels: { greeting: 'Willkommenstext' },
+      home_kinds: { text: 'Text' },
+      home_choices: { roles: [], albums: [], events: [] },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: withHome }),
+        [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
+      },
+      '/webseite/startseite',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Abschnitt hinzufügen' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    await user.click(within(dialog).getByRole('button', { name: /^Text\s*Überschrift und Text/ }))
+    const editor = await screen.findByRole('dialog', { name: 'Text' })
+    // Das erste Feld hat den Fokus, gespeichert ist noch nichts
+    await waitFor(() =>
+      expect(document.activeElement).toBe(within(editor).getByLabelText('Überschrift (optional)')),
+    )
+    await new Promise((r) => setTimeout(r, 1200))
+    expect(calls.filter((c) => c.key === `PUT ${base}`)).toHaveLength(0)
+    // Schließen ohne Eingabe verwirft den neuen Abschnitt
+    await user.click(within(editor).getByRole('button', { name: 'Schließen' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.queryByText(/Überschrift und Text/)).toBeNull()
+    expect(calls.filter((c) => c.key === `PUT ${base}`)).toHaveLength(0)
+  })
+
   it('legt häufige Fragen und eine Anfahrt an (neue Abschnittsarten)', async () => {
     const withHome = {
       ...data(website('public', { home_sections: [{ key: 'greeting', on: true }], draft: {} })),
@@ -918,6 +951,37 @@ describe('Webseite', () => {
     expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
   })
 
+  it('warnt am Regler vor schwer lesbarer Fraktur (UX-Audit WS-15)', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const body = {
+      ...data(
+        website('public', {
+          design: 'classic',
+          color_roles: {},
+          style: { heading_font: 'fraktur' },
+          draft: {},
+        }),
+      ),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false }],
+      style_catalog: { options: { heading_font: ['text', 'fraktur'] }, locks: {} },
+    }
+    renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`POST ${base}preview/`]: () => ({
+          status: 200,
+          body: { token: 't', url: 'https://www.beispiel.test/vorschau?schluessel=t' },
+        }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/feinabstimmung/schrift',
+    )
+    expect(await screen.findByText(/Fraktur ist für viele schwer lesbar/)).toHaveAttribute(
+      'role',
+      'note',
+    )
+  })
+
   it('heftet die Leiste mit offenen Änderungen in Menü und Bereiche oben an', async () => {
     const body = data(website('public', { draft: { style: { font: 'modern' } } }))
     renderApp({ [`GET ${base}`]: () => ({ status: 200, body }) }, '/webseite/aufbau')
@@ -927,7 +991,7 @@ describe('Webseite', () => {
     const bar = text.closest('.draft-bar') as HTMLElement
     expect(bar).toHaveClass('draft-bar-sticky')
     // Steht vor der ersten Karte, nicht mitten zwischen den Karten
-    const first = screen.getByRole('heading', { name: 'Bausteine' })
+    const first = screen.getByRole('heading', { name: 'Seiten' })
     expect(bar.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     // „Veröffentlichen“ ist der Hauptknopf, „Verwerfen“ der Nebenknopf
     expect(screen.getByRole('button', { name: 'Veröffentlichen' })).toHaveClass('button-primary')
@@ -990,7 +1054,7 @@ describe('Webseite', () => {
         [],
         ['events'],
       )
-      await screen.findByRole('heading', { name: 'Bausteine' })
+      await screen.findByRole('heading', { name: 'Seiten' })
       // Der Block „Startseite“ ohne Funktion ist weg
       expect(screen.queryByRole('heading', { name: 'Startseite' })).not.toBeInTheDocument()
       // Weder Einheiten darunter noch darüber: der ganze Block entfällt

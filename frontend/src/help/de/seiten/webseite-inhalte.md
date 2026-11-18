@@ -16,7 +16,7 @@ Unter **Abschnitte der Seite** baust du eine Textseite wie die Startseite aus Ab
 
 ## Seiten der Untereinheiten aus Abschnitten
 
-Auch beim Text einer Untereinheit (Zug, Abteilung, Musikzug, Mannschaft) gibt es **Abschnitte der Seite**. Neben dem „Text der Seite“ (Bild, Text und Bilderkarussell) stehen dort die festen Blöcke „Kontakt“, „Eigene Homepage“, „Majestäten“, „Nächste Termine“, „Aktuelles (Beiträge)“ und „Folgt uns“. Du ziehst sie in eine andere Reihenfolge oder blendest sie mit dem Haken aus. Davor und danach fügst du eigene Abschnitte ein, etwa **Text mit Bild**, **Bilder**, ein **Zitat**, **Häufige Fragen**, **Öffnungs- und Trainingszeiten**, ein **Video als Link** oder die **Majestäten einer Untereinheit**. Ohne Änderungen sieht die Seite aus wie bisher.
+Auch beim Text einer Untereinheit (Zug, Abteilung, Musikzug, Mannschaft) gibt es **Abschnitte der Seite**. Neben dem „Text der Seite“ (Bild, Text und Bilderkarussell) stehen dort die festen Blöcke „Kontakt“, „Eigene Homepage“, „Würdenträger“, „Nächste Termine“, „Aktuelles (Beiträge)“ und „Folgt uns“. Du ziehst sie in eine andere Reihenfolge oder blendest sie mit dem Haken aus. Davor und danach fügst du eigene Abschnitte ein, etwa **Text mit Bild**, **Bilder**, ein **Zitat**, **Häufige Fragen**, **Öffnungs- und Trainingszeiten**, ein **Video als Link** oder die **Würdenträger einer Untereinheit**. Ohne Änderungen sieht die Seite aus wie bisher.
 
 ## Bildplatz ohne Bild
 

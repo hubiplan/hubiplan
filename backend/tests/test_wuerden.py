@@ -622,7 +622,8 @@ class TestMehrzahl:
     def test_bezeichnung_im_menue(self, orgs, site, koenig):
         org = orgs["a"]
         info = lambda: Client().get("/api/public/site/v1/schluessel-w/").json()  # noqa: E731
-        assert info()["honors_label"] == "Majestäten"  # noch keine Regentschaft
+        # Ohne Schießsport vereinsneutral (UX-Audit WS-12)
+        assert info()["honors_label"] == "Würdenträger"  # noch keine Regentschaft
         Reign.objects.create(organization=org, dignity=koenig, year=1950, name="Michael Schmitz")
         assert info()["honors_label"] == "König"
         Reign.objects.create(organization=org, dignity=koenig, year=1960, name="Michael Weber")
@@ -634,4 +635,9 @@ class TestMehrzahl:
         assert honors["dignities"][0]["name_plural"] == "Schützenkönige"
         prinz = Dignity.objects.create(organization=org, name="Prinz")
         Reign.objects.create(organization=org, dignity=prinz, year=1960, name="Paul Prinz")
+        assert info()["honors_label"] == "Würdenträger"
+        org.enabled_modules = [*org.enabled_modules, "competitions", "shooting"]
+        org.save()
         assert info()["honors_label"] == "Majestäten"
+        info_data = info()
+        assert info_data["content_language"] == "de"

@@ -44,6 +44,7 @@ RESERVED_SLUGS = frozenset(
         "zuege",
         "einheiten",
         "majestaeten",
+        "wuerden",
         "chronik",
         "aemter",
         "kontakt",
