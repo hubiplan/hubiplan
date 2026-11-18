@@ -1,17 +1,20 @@
 // Verbindliche Anmeldung mit Teilnahmegebühr am Termin (konzepte/veranstaltungen-anmeldung-gebuehr.md,
-// Stufen A1/A2): Verwaltung richtet Tarife und Preisstufen ein und sieht alle Anmeldungen,
-// Mitglieder melden sich und ihre Familie an.
+// Stufen A1–A3): Verwaltung richtet Tarife, Preisstufen, Warteliste und Stornostaffel ein und
+// sieht alle Anmeldungen, Mitglieder melden sich und ihre Familie an und ab.
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CalendarBase, EventDetail } from '../../api/events.ts'
 import { registrationApi } from '../../api/registrations.ts'
 import type {
   BoardRegistrations,
+  CancelRule,
   PaidState,
+  Participant,
   Price,
   PriceInput,
   Registration,
   SetupInput,
+  SubstituteInput,
 } from '../../api/registrations.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
 import type { PickedMember } from '../../api/members.ts'
@@ -19,9 +22,10 @@ import { errorMessage, useLoad } from '../forms.ts'
 import { Alert, Checkbox, Field, Loading, SelectField } from '../ui.tsx'
 import { MemberPicker } from '../MemberPicker.tsx'
 import { useRowSearch } from '../RowSearch.tsx'
-import { confirmDialog, promptDialog } from '../dialog.ts'
+import { confirmDialog } from '../dialog.ts'
+import { CancelPanel, SubstitutePanel } from './RegistrationCancel.tsx'
 import { berlin, formatDay, toApi } from './time.ts'
-import { lang, t } from '../../i18n/index.ts'
+import { lang, t, tc } from '../../i18n/index.ts'
 
 const PAID: Record<PaidState, () => string> = {
   free: () => t('kostenlos'),
@@ -29,11 +33,17 @@ const PAID: Record<PaidState, () => string> = {
   partly: () => t('teilweise bezahlt'),
   paid: () => t('bezahlt'),
   cancelled: () => t('abgemeldet'),
+  waiting: () => t('Warteliste'),
 }
 
 function PaidBadge({ state }: { state: PaidState }) {
   const cls = state === 'paid' ? 'badge badge-yes' : state === 'open' ? 'badge badge-open' : 'badge'
   return <span className={cls}>{PAID[state]()}</span>
+}
+
+/** Liegt der Zeitpunkt noch in der Zukunft? */
+function stillFree(iso: string): boolean {
+  return Date.parse(iso) > Date.now()
 }
 
 function priceName(p: Price): string {
@@ -109,10 +119,12 @@ function RegistrationTable({
   rows,
   canEdit,
   onCancel,
+  onSubstitute,
 }: {
   rows: Registration[]
   canEdit: boolean
   onCancel: (reg: Registration) => void
+  onSubstitute: (reg: Registration, p: Participant) => void
 }) {
   const search = useRowSearch(
     rows,
@@ -148,7 +160,18 @@ function RegistrationTable({
                 <td>
                   {reg.participants.map((p) => (
                     <div key={p.id}>
-                      {p.name} <span className="muted small">{p.price_name}</span>
+                      {p.status === 'cancelled' ? <s>{p.name}</s> : p.name}{' '}
+                      <span className="muted small">{p.price_name}</span>
+                      {canEdit && reg.status !== 'cancelled' && p.status === 'active' && (
+                        <button
+                          type="button"
+                          className="button button-ghost small"
+                          aria-label={t('Ersatzperson für {name}', { name: p.name })}
+                          onClick={() => onSubstitute(reg, p)}
+                        >
+                          {t('Ersatzperson')}
+                        </button>
+                      )}
                     </div>
                   ))}
                   {reg.note && <div className="muted small">{reg.note}</div>}
@@ -156,9 +179,25 @@ function RegistrationTable({
                 <td>
                   {euro(reg.total)}
                   {reg.invoice && <div className="muted small">{reg.invoice.number}</div>}
+                  {Number(reg.cancel_fee) > 0 && (
+                    <div className="muted small">
+                      {t('Stornogebühr {fee}', { fee: euro(reg.cancel_fee) })}
+                      {reg.fee_invoice ? ` · ${reg.fee_invoice.number}` : ''}
+                    </div>
+                  )}
                 </td>
                 <td>
                   <PaidBadge state={reg.paid_state} />
+                  {reg.waitlist_position !== null && (
+                    <div className="muted small">
+                      {t('Platz {n}', { n: reg.waitlist_position })}
+                    </div>
+                  )}
+                  {reg.moved_up_at && (
+                    <div className="muted small">
+                      {t('nachgerückt am {when}', { when: when(reg.moved_up_at) })}
+                    </div>
+                  )}
                 </td>
                 <td>
                   {canEdit && reg.status !== 'cancelled' && (
@@ -167,7 +206,7 @@ function RegistrationTable({
                       className="button button-ghost"
                       onClick={() => onCancel(reg)}
                     >
-                      {t('Abmelden')}
+                      {tc('anmeldung', 'Abmelden')}
                     </button>
                   )}
                 </td>
@@ -201,6 +240,8 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
   const [terms, setTerms] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
+  const [cancelling, setCancelling] = useState<Registration | null>(null)
+  const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
@@ -246,9 +287,12 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
       setPicks(null)
       setNote('')
       setTerms(false)
+      const waiting = next.mine[0]?.status === 'waiting'
       setMessage({
         kind: 'success',
-        text: t('Angemeldet. Die Bestätigung kommt per E-Mail.'),
+        text: waiting
+          ? t('Du stehst auf der Warteliste. Die Bestätigung kommt per E-Mail.')
+          : t('Angemeldet. Die Bestätigung kommt per E-Mail.'),
       })
     } catch (err) {
       setMessage({ kind: 'error', text: errorMessage(err) })
@@ -257,28 +301,18 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
     }
   }
 
-  async function cancel(reg: Registration) {
-    if (
-      !(await confirmDialog({
-        final: false,
-        title: t('Anmeldung {number} abmelden?', { number: reg.number }),
-        message:
-          reg.paid_state === 'paid' || reg.paid_state === 'partly'
-            ? t('Die Rechnung wird storniert; den gezahlten Betrag erstattet der Verein.')
-            : t('Die Rechnung wird storniert.'),
-        confirmLabel: t('Abmelden'),
-      }))
-    )
-      return
-    setBusy(true)
-    try {
-      setData(await registrationApi.cancelMine(base, event.id, reg.id))
-      setPicks(null)
-    } catch (err) {
-      setMessage({ kind: 'error', text: errorMessage(err) })
-    } finally {
-      setBusy(false)
-    }
+  async function cancel(reg: Registration, participants: number[]) {
+    setData(await registrationApi.cancelMine(base, event.id, reg.id, participants))
+    setPicks(null)
+    setCancelling(null)
+    setMessage({ kind: 'success', text: t('Abgemeldet. Die Bestätigung kommt per E-Mail.') })
+  }
+
+  async function replace(reg: Registration, p: Participant, choice: SubstituteInput) {
+    setData(await registrationApi.substituteMine(base, event.id, reg.id, p.id, choice))
+    setReplacing(null)
+    setPicks(null)
+    setMessage({ kind: 'success', text: t('Ersatzperson eingetragen.') })
   }
 
   const ready =
@@ -303,13 +337,65 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
               <PaidBadge state={reg.paid_state} />
             )}
           </div>
+          {reg.waitlist_position !== null && (
+            <p className="muted small">
+              {t(
+                'Du stehst auf Platz {n} der Warteliste. Wird ein Platz frei, rückst du automatisch verbindlich nach und bekommst die Rechnung per E-Mail.',
+                { n: reg.waitlist_position },
+              )}
+            </p>
+          )}
+          {reg.free_cancel_until &&
+            reg.status === 'registered' &&
+            stillFree(reg.free_cancel_until) && (
+              <p className="muted small">
+                {t('Nachgerückt: Bis {when} kannst du dich kostenfrei abmelden.', {
+                  when: when(reg.free_cancel_until),
+                })}
+              </p>
+            )}
           <ul className="plain-list">
             {reg.participants.map((p) => (
               <li key={p.id}>
-                {p.name}: {p.price_name}, {euro(p.amount)}
+                {p.status === 'cancelled' ? <s>{p.name}</s> : p.name}: {p.price_name},{' '}
+                {euro(p.amount)}
+                {p.status === 'active' && reg.can_substitute && (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      className="button button-ghost small"
+                      aria-label={t('Ersatzperson für {name}', { name: p.name })}
+                      onClick={() => setReplacing({ reg, p })}
+                    >
+                      {t('Ersatzperson')}
+                    </button>
+                  </>
+                )}
               </li>
             ))}
           </ul>
+          {replacing?.reg.id === reg.id && (
+            <SubstitutePanel
+              participant={replacing.p}
+              offer={offer}
+              family={data.persons.filter((x) => !x.registered)}
+              onConfirm={(choice) => replace(reg, replacing.p, choice)}
+              onClose={() => setReplacing(null)}
+            />
+          )}
+          {Number(reg.cancel_fee) > 0 && (
+            <p className="muted small">
+              {t('Stornogebühr {fee}', { fee: euro(reg.cancel_fee) })}
+              {reg.fee_invoice
+                ? ` · ${t('Rechnung {number} über {total}, zahlbar bis {due}', {
+                    number: reg.fee_invoice.number,
+                    total: euro(reg.fee_invoice.total),
+                    due: formatDay(reg.fee_invoice.due_date, false),
+                  })}`
+                : ''}
+            </p>
+          )}
           {reg.invoice && reg.status !== 'cancelled' && (
             <p className="muted small">
               {t('Rechnung {number} über {total}, zahlbar bis {due}', {
@@ -319,138 +405,155 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
               })}
             </p>
           )}
-          {reg.status !== 'cancelled' && data.can_cancel && (
-            <div className="button-row">
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={busy}
-                onClick={() => void cancel(reg)}
-              >
-                {t('Abmelden')}
-              </button>
-            </div>
+          {cancelling?.id === reg.id ? (
+            <CancelPanel
+              reg={reg}
+              offer={offer}
+              board={false}
+              quote={(ids) => registrationApi.quote(base, event.id, reg.id, ids)}
+              onConfirm={(choice) => cancel(reg, choice.participants)}
+              onClose={() => setCancelling(null)}
+            />
+          ) : (
+            reg.status !== 'cancelled' &&
+            (reg.can_cancel ?? data.can_cancel) && (
+              <div className="button-row">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  disabled={busy}
+                  onClick={() => setCancelling(reg)}
+                >
+                  {tc('anmeldung', 'Abmelden')}
+                </button>
+              </div>
+            )
           )}
         </div>
       ))}
-      {offer.state === 'open' && (rows.length > 0 || offer.guests_allowed) && (
-        <div className="stack-sm">
-          <h4>{t('Anmelden')}</h4>
-          {rows.map((r, i) => (
-            <div key={i} className="stack-sm">
-              {r.membership_id ? (
-                <Checkbox
-                  label={r.name}
-                  checked={r.checked}
-                  onChange={(x) => update(i, { checked: x })}
-                />
-              ) : (
-                <div className="button-row">
-                  <Field
-                    label={t('Name des Gastes')}
-                    value={r.name}
-                    maxLength={200}
-                    onChange={(e) => update(i, { name: e.target.value })}
+      {(offer.state === 'open' || (offer.state === 'full' && offer.waitlist)) &&
+        (rows.length > 0 || offer.guests_allowed) && (
+          <div className="stack-sm">
+            <h4>{t('Anmelden')}</h4>
+            {rows.map((r, i) => (
+              <div key={i} className="stack-sm">
+                {r.membership_id ? (
+                  <Checkbox
+                    label={r.name}
+                    checked={r.checked}
+                    onChange={(x) => update(i, { checked: x })}
                   />
-                  <button
-                    type="button"
-                    className="button button-ghost"
-                    onClick={() => setPicks(rows.filter((_, j) => j !== i))}
+                ) : (
+                  <div className="button-row">
+                    <Field
+                      label={t('Name des Gastes')}
+                      value={r.name}
+                      maxLength={200}
+                      onChange={(e) => update(i, { name: e.target.value })}
+                    />
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      onClick={() => setPicks(rows.filter((_, j) => j !== i))}
+                    >
+                      {t('Entfernen')}
+                    </button>
+                  </div>
+                )}
+                {r.checked && (
+                  <SelectField
+                    label={t('Tarif')}
+                    value={String(r.price_id)}
+                    onChange={(e) =>
+                      update(i, { price_id: e.target.value ? Number(e.target.value) : '' })
+                    }
                   >
-                    {t('Entfernen')}
-                  </button>
-                </div>
-              )}
-              {r.checked && (
-                <SelectField
-                  label={t('Tarif')}
-                  value={String(r.price_id)}
-                  onChange={(e) =>
-                    update(i, { price_id: e.target.value ? Number(e.target.value) : '' })
+                    <option value="">{t('bitte wählen …')}</option>
+                    {pricesFor(r).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {priceName(p)} – {euro(p.current?.amount)}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
+                {r.checked &&
+                  (r.needsBirth || !r.membership_id) &&
+                  prices.find(
+                    (p) => p.id === r.price_id && (p.age_from !== null || p.age_to !== null),
+                  ) && (
+                    <Field
+                      label={t('Geburtsdatum')}
+                      type="date"
+                      value={r.birth_date}
+                      onChange={(e) => update(i, { birth_date: e.target.value })}
+                    />
+                  )}
+              </div>
+            ))}
+            {offer.guests_allowed && rows.length < offer.max_persons && (
+              <div className="button-row">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() =>
+                    setPicks([
+                      ...rows,
+                      {
+                        membership_id: null,
+                        name: '',
+                        price_id: '',
+                        birth_date: '',
+                        checked: true,
+                        needsBirth: true,
+                      },
+                    ])
                   }
                 >
-                  <option value="">{t('bitte wählen …')}</option>
-                  {pricesFor(r).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {priceName(p)} – {euro(p.current?.amount)}
-                    </option>
-                  ))}
-                </SelectField>
-              )}
-              {r.checked &&
-                (r.needsBirth || !r.membership_id) &&
-                prices.find(
-                  (p) => p.id === r.price_id && (p.age_from !== null || p.age_to !== null),
-                ) && (
-                  <Field
-                    label={t('Geburtsdatum')}
-                    type="date"
-                    value={r.birth_date}
-                    onChange={(e) => update(i, { birth_date: e.target.value })}
-                  />
-                )}
-            </div>
-          ))}
-          {offer.guests_allowed && rows.length < offer.max_persons && (
+                  <span aria-hidden="true">+</span> {t('Gast hinzufügen')}
+                </button>
+              </div>
+            )}
+            <Field
+              label={t('Bemerkung (optional)')}
+              value={note}
+              maxLength={500}
+              onChange={(e) => setNote(e.target.value)}
+            />
+            {offer.terms && (
+              <>
+                <details>
+                  <summary>{t('Teilnahmebedingungen')}</summary>
+                  <p className="event-description">{offer.terms}</p>
+                </details>
+                <Checkbox
+                  label={t('Ich habe die Teilnahmebedingungen gelesen und akzeptiere sie.')}
+                  checked={terms}
+                  onChange={setTerms}
+                />
+              </>
+            )}
+            <p>
+              {t('Summe: {sum}', { sum: euro(sum) })}{' '}
+              <span className="muted small">
+                {t('Abmelden ist bis {when} möglich.', { when: when(offer.closes_at) })}
+              </span>
+            </p>
             <div className="button-row">
               <button
                 type="button"
-                className="button button-ghost"
-                onClick={() =>
-                  setPicks([
-                    ...rows,
-                    {
-                      membership_id: null,
-                      name: '',
-                      price_id: '',
-                      birth_date: '',
-                      checked: true,
-                      needsBirth: true,
-                    },
-                  ])
-                }
+                className="button"
+                disabled={busy || !ready}
+                onClick={() => void submit()}
               >
-                <span aria-hidden="true">+</span> {t('Gast hinzufügen')}
+                {offer.state === 'full'
+                  ? t('Auf die Warteliste')
+                  : sum > 0
+                    ? t('Zahlungspflichtig anmelden')
+                    : t('Verbindlich anmelden')}
               </button>
             </div>
-          )}
-          <Field
-            label={t('Bemerkung (optional)')}
-            value={note}
-            maxLength={500}
-            onChange={(e) => setNote(e.target.value)}
-          />
-          {offer.terms && (
-            <>
-              <details>
-                <summary>{t('Teilnahmebedingungen')}</summary>
-                <p className="event-description">{offer.terms}</p>
-              </details>
-              <Checkbox
-                label={t('Ich habe die Teilnahmebedingungen gelesen und akzeptiere sie.')}
-                checked={terms}
-                onChange={setTerms}
-              />
-            </>
-          )}
-          <p>
-            {t('Summe: {sum}', { sum: euro(sum) })}{' '}
-            <span className="muted small">
-              {t('Abmelden ist bis {when} möglich.', { when: when(offer.closes_at) })}
-            </span>
-          </p>
-          <div className="button-row">
-            <button
-              type="button"
-              className="button"
-              disabled={busy || !ready}
-              onClick={() => void submit()}
-            >
-              {sum > 0 ? t('Zahlungspflichtig anmelden') : t('Verbindlich anmelden')}
-            </button>
           </div>
-        </div>
-      )}
+        )}
     </Card>
   )
 }
@@ -464,7 +567,8 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   )
   const [editing, setEditing] = useState(false)
   const [adding, setAdding] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState<Registration | null>(null)
+  const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
   const offer = data.offer
@@ -509,25 +613,11 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
       </Card>
     ) : null
 
-  async function cancel(reg: Registration) {
-    const reason = await promptDialog({
-      title: t('Anmeldung {number} abmelden?', { number: reg.number }),
-      label: t('Grund (optional, steht auf der Stornorechnung)'),
-      confirmLabel: t('Abmelden'),
-      danger: true,
-    })
-    if (reason === null) return
-    try {
-      setData(await registrationApi.cancel(base, event.id, reg.id, reason))
-    } catch (err) {
-      setMessage(errorMessage(err))
-    }
-  }
+  const orgId = Number(/\/api\/orgs\/(\d+)\//.exec(base)?.[1] ?? 0)
 
   const s = data.summary
   return (
     <Card title={t('Anmeldungen')}>
-      {message && <Alert kind="error">{message}</Alert>}
       <p>
         {offer.state_text}{' '}
         {offer.capacity !== null &&
@@ -546,6 +636,9 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             paid: euro(s.paid),
             open: euro(s.open),
           })}
+          {s.waiting > 0 && ` · ${t('{n} auf der Warteliste', { n: s.waiting })}`}
+          {Number(s.fees) > 0 && ` · ${t('Stornogebühren {fees}', { fees: euro(s.fees) })}`}
+          {Number(s.refund) > 0 && ` · ${t('zu erstatten {refund}', { refund: euro(s.refund) })}`}
         </p>
       )}
       <div className="button-row">
@@ -576,11 +669,53 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           }}
         />
       )}
+      {cancelling && (
+        <CancelPanel
+          key={cancelling.id}
+          reg={cancelling}
+          offer={offer}
+          board
+          quote={(ids) => registrationApi.quote(base, event.id, cancelling.id, ids)}
+          onConfirm={async (choice) => {
+            setData(await registrationApi.cancel(base, event.id, cancelling.id, choice))
+            setCancelling(null)
+          }}
+          onClose={() => setCancelling(null)}
+        />
+      )}
+      {replacing && (
+        <SubstitutePanel
+          key={replacing.p.id}
+          participant={replacing.p}
+          offer={offer}
+          orgId={orgId}
+          onConfirm={async (choice) => {
+            setData(
+              await registrationApi.substitute(
+                base,
+                event.id,
+                replacing.reg.id,
+                replacing.p.id,
+                choice,
+              ),
+            )
+            setReplacing(null)
+          }}
+          onClose={() => setReplacing(null)}
+        />
+      )}
       {data.registrations.length > 0 && (
         <RegistrationTable
           rows={data.registrations}
           canEdit={data.can_edit}
-          onCancel={(reg) => void cancel(reg)}
+          onCancel={(reg) => {
+            setReplacing(null)
+            setCancelling(reg)
+          }}
+          onSubstitute={(reg, p) => {
+            setCancelling(null)
+            setReplacing({ reg, p })
+          }}
         />
       )}
       {!data.registrations.length && <p className="muted small">{t('Noch keine Anmeldungen.')}</p>}
@@ -799,7 +934,12 @@ function SetupForm({
     due_days: String(offer?.due_days ?? 14),
     category: offer?.category ? String(offer.category) : '',
     terms: offer?.terms ?? '',
+    waitlist: offer?.waitlist ?? false,
+    substitute_allowed: offer?.substitute_allowed ?? true,
+    cancel_fee_fixed: offer?.cancel_fee_fixed ? offer.cancel_fee_fixed.replace('.', ',') : '',
+    expire_unpaid_days: offer?.expire_unpaid_days ? String(offer.expire_unpaid_days) : '',
   })
+  const [rules, setRules] = useState<CancelRule[]>(offer?.cancel_rules ?? [])
   const [prices, setPrices] = useState<PriceInput[]>(
     offer
       ? offer.prices.map((p) => ({
@@ -841,6 +981,11 @@ function SetupForm({
       due_days: Number(v.due_days) || 0,
       category: v.category ? Number(v.category) : null,
       terms: v.terms,
+      waitlist: v.waitlist,
+      substitute_allowed: v.substitute_allowed,
+      cancel_rules: rules.filter((x) => x.days > 0),
+      cancel_fee_fixed: v.cancel_fee_fixed.trim() ? parseAmount(v.cancel_fee_fixed) || '0' : null,
+      expire_unpaid_days: num(v.expire_unpaid_days),
       prices: prices.map((p, i) => ({
         ...p,
         steps: p.steps.map((s, k) => ({
@@ -968,6 +1113,88 @@ function SetupForm({
           onChange={(e) => setV({ ...v, terms: e.target.value })}
         />
       </label>
+      <h4>{t('Warteliste und Abmeldung')}</h4>
+      <Checkbox
+        label={t('Warteliste, wenn alle Plätze vergeben sind')}
+        hint={t(
+          'Wird ein Platz frei, rückt die nächste Anmeldung automatisch verbindlich nach und bekommt die Rechnung. Nachgerückte können sich 48 Stunden lang kostenfrei abmelden.',
+        )}
+        checked={v.waitlist}
+        onChange={(x) => setV({ ...v, waitlist: x })}
+      />
+      <Checkbox
+        label={t('Mitglieder dürfen eine Ersatzperson eintragen')}
+        hint={t('zum selben Tarif und Preis; die Rechnung bleibt')}
+        checked={v.substitute_allowed}
+        onChange={(x) => setV({ ...v, substitute_allowed: x })}
+      />
+      <p className="muted small">
+        {t(
+          'Stornogebühren nach den Teilnahmebedingungen: Prozent des Betrags, wenn weniger als die genannten Tage bis zum Beginn bleiben. Ohne Stufen ist das Abmelden bis zum Anmeldeschluss kostenfrei. Rückt jemand von der Warteliste nach oder wird der Termin abgesagt, entfällt die Gebühr.',
+        )}
+      </p>
+      {rules.map((rule, i) => (
+        <div key={i} className="form-grid">
+          <Field
+            label={t('weniger als … Tage vorher')}
+            type="number"
+            min={1}
+            max={365}
+            value={rule.days || ''}
+            onChange={(e) =>
+              setRules(rules.map((x, j) => (j === i ? { ...x, days: Number(e.target.value) } : x)))
+            }
+          />
+          <Field
+            label={t('Gebühr in Prozent')}
+            type="number"
+            min={0}
+            max={100}
+            value={rule.percent}
+            onChange={(e) =>
+              setRules(
+                rules.map((x, j) => (j === i ? { ...x, percent: Number(e.target.value) } : x)),
+              )
+            }
+          />
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setRules(rules.filter((_, j) => j !== i))}
+          >
+            {t('Stufe entfernen')}
+          </button>
+        </div>
+      ))}
+      <div className="button-row">
+        {rules.length < 6 && (
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setRules([...rules, { days: 0, percent: 50 }])}
+          >
+            <span aria-hidden="true">+</span> {t('Stufe für Stornogebühr')}
+          </button>
+        )}
+      </div>
+      <div className="form-grid">
+        <Field
+          label={t('Bearbeitungsgebühr bei Abmeldung in € (optional)')}
+          inputMode="decimal"
+          hint={t('kommt dazu, sobald eine Stufe greift; ohne Stufen bei jeder Abmeldung')}
+          value={v.cancel_fee_fixed}
+          onChange={(e) => setV({ ...v, cancel_fee_fixed: e.target.value })}
+        />
+        <Field
+          label={t('Unbezahlte Anmeldungen verfallen … Tage vor Beginn (optional)')}
+          type="number"
+          min={1}
+          max={90}
+          hint={t('leer: nie; der Platz geht dann an die Warteliste')}
+          value={v.expire_unpaid_days}
+          onChange={(e) => setV({ ...v, expire_unpaid_days: e.target.value })}
+        />
+      </div>
       <h4>{t('Tarife')}</h4>
       {prices.map((p, i) => (
         <fieldset key={i} className="card stack-sm">

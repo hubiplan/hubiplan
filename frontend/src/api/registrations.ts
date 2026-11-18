@@ -4,7 +4,7 @@ import { api } from './client.ts'
 import type { CalendarBase } from './events.ts'
 
 export type RegistrationState = 'not_yet' | 'open' | 'closed' | 'full' | 'cancelled'
-export type PaidState = 'free' | 'open' | 'partly' | 'paid' | 'cancelled'
+export type PaidState = 'free' | 'open' | 'partly' | 'paid' | 'cancelled' | 'waiting'
 export type Applies = 'all' | 'members' | 'guests'
 
 /** Kurzer Stand am Termin (EventDetail.registration) */
@@ -67,6 +67,26 @@ export interface Offer {
   category: number | null
   terms: string
   prices: Price[]
+  waitlist: boolean
+  waiting: number
+  substitute_allowed: boolean
+  cancel_rules: CancelRule[]
+  cancel_fee_fixed: string | null
+  expire_unpaid_days: number | null
+}
+
+/** Stornostaffel: „weniger als {days} Tage vorher: {percent} %“ */
+export interface CancelRule {
+  days: number
+  percent: number
+}
+
+/** Vorschau der Stornogebühr */
+export interface FeeQuote {
+  base: string
+  percent: number
+  fee: string
+  free_reason: '' | 'waitlist' | 'moved_up' | 'event_cancelled' | 'waived' | 'replaced'
 }
 
 export interface Participant {
@@ -79,24 +99,34 @@ export interface Participant {
   status: 'active' | 'cancelled'
 }
 
+export interface InvoiceBrief {
+  id: number
+  number: string
+  status: string
+  total: string
+  paid: string
+  due_date: string
+}
+
 export interface Registration {
   id: number
   number: string
-  status: 'registered' | 'cancelled'
+  status: 'registered' | 'waiting' | 'cancelled'
   name: string
   total: string
   paid_state: PaidState
   created_at: string
   cancelled_at: string | null
   participants: Participant[]
-  invoice: {
-    id: number
-    number: string
-    status: string
-    total: string
-    paid: string
-    due_date: string
-  } | null
+  invoice: InvoiceBrief | null
+  waitlist_position: number | null
+  moved_up_at: string | null
+  free_cancel_until: string | null
+  cancel_fee: string
+  fee_invoice: InvoiceBrief | null
+  // nur im Mitgliederbereich
+  can_cancel?: boolean
+  can_substitute?: boolean
   // nur für die Verwaltung
   membership_id?: number | null
   email?: string
@@ -111,7 +141,16 @@ export interface Registration {
 export interface BoardRegistrations {
   event_id: number
   offer: Offer | null
-  summary?: { registrations: number; persons: number; total: string; paid: string; open: string }
+  summary?: {
+    registrations: number
+    persons: number
+    waiting: number
+    total: string
+    paid: string
+    open: string
+    fees: string
+    refund: string
+  }
   can_edit: boolean
   can_set_prices: boolean
   registrations: Registration[]
@@ -154,7 +193,24 @@ export interface SetupInput {
   due_days: number
   category: number | null
   terms: string
+  waitlist: boolean
+  substitute_allowed: boolean
+  cancel_rules: CancelRule[]
+  cancel_fee_fixed: string | null
+  expire_unpaid_days: number | null
   prices: PriceInput[]
+}
+
+export interface CancelInput {
+  reason?: string
+  participants?: number[] | null
+  waive?: boolean
+}
+
+export interface SubstituteInput {
+  membership_id?: number | null
+  name?: string
+  birth_date?: string | null
 }
 
 export interface PersonInput {
@@ -184,8 +240,23 @@ export const registrationApi = {
       persons: PersonInput[]
     },
   ) => api.post<BoardRegistrations>(`${url(base, eventId)}list/`, data),
-  cancel: (base: CalendarBase, eventId: number, regId: number, reason = '') =>
-    api.post<BoardRegistrations>(`${url(base, eventId)}${regId}/cancel/`, { reason }),
+  cancel: (base: CalendarBase, eventId: number, regId: number, data: CancelInput = {}) =>
+    api.post<BoardRegistrations>(`${url(base, eventId)}${regId}/cancel/`, data),
+  quote: (base: CalendarBase, eventId: number, regId: number, participants: number[] = []) =>
+    api.get<FeeQuote>(
+      `${url(base, eventId)}${regId}/cancel/${participants.length ? `?participants=${participants.join(',')}` : ''}`,
+    ),
+  substitute: (
+    base: CalendarBase,
+    eventId: number,
+    regId: number,
+    participantId: number,
+    data: SubstituteInput,
+  ) =>
+    api.post<BoardRegistrations>(
+      `${url(base, eventId)}${regId}/participants/${participantId}/`,
+      data,
+    ),
   exportUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}export/`,
   member: (base: CalendarBase, eventId: number) => api.get<MemberRegistrations>(url(base, eventId)),
   register: (
@@ -193,6 +264,20 @@ export const registrationApi = {
     eventId: number,
     data: { persons: PersonInput[]; note: string; terms_accepted: boolean },
   ) => api.post<MemberRegistrations>(url(base, eventId), data),
-  cancelMine: (base: CalendarBase, eventId: number, regId: number) =>
-    api.post<MemberRegistrations>(`${url(base, eventId)}${regId}/cancel/`, {}),
+  cancelMine: (base: CalendarBase, eventId: number, regId: number, participants: number[] = []) =>
+    api.post<MemberRegistrations>(
+      `${url(base, eventId)}${regId}/cancel/`,
+      participants.length ? { participants } : {},
+    ),
+  substituteMine: (
+    base: CalendarBase,
+    eventId: number,
+    regId: number,
+    participantId: number,
+    data: SubstituteInput,
+  ) =>
+    api.post<MemberRegistrations>(
+      `${url(base, eventId)}${regId}/participants/${participantId}/`,
+      data,
+    ),
 }
