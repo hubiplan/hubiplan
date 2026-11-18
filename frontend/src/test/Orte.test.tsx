@@ -222,4 +222,34 @@ describe('Orte', () => {
     await waitFor(() => expect(field).toHaveAttribute('list'))
     expect(screen.queryByRole('button', { name: 'Als Ort speichern' })).not.toBeInTheDocument()
   })
+
+  it('speichert einen vorhandenen Ort beim Bearbeiten automatisch, ohne Knopf „Speichern“', async () => {
+    const api = show('/einstellungen/orte', ['org.edit', 'events.manage'], {
+      'PATCH /api/orgs/7/places/1/': (init?: RequestInit) => ({
+        status: 200,
+        body: place({ ...schuetzenhaus, ...JSON.parse(String(init?.body ?? '{}')) }),
+      }),
+    })
+    await screen.findByText('Schützenhaus')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Bearbeiten' })[0])
+    // VW-22: kein Knopf „Speichern“, dafür Zustand und „Schließen“
+    expect(screen.queryByRole('button', { name: 'Speichern' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Abbrechen' })).not.toBeInTheDocument()
+    fireEvent.change(screen.getAllByLabelText('Anschrift')[0], {
+      target: { value: 'Musterweg 2, 12345 Musterstadt' },
+    })
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'PATCH /api/orgs/7/places/1/')).toBe(true),
+      { timeout: 3000 },
+    )
+    const call = api.find((c) => c.key === 'PATCH /api/orgs/7/places/1/')!
+    expect(JSON.parse(String(call.init?.body))).toMatchObject({
+      name: 'Schützenhaus',
+      address: 'Musterweg 2, 12345 Musterstadt',
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Schließen' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Schließen' })).not.toBeInTheDocument(),
+    )
+  })
 })

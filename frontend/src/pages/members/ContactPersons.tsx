@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { GENDERS, memberApi } from '../../api/members.ts'
 import type { ContactPerson, ContactPersonInput, Gender, MemberRow } from '../../api/members.ts'
 import { ApiError } from '../../api/client.ts'
-import { errorMessage, formatDate } from '../../components/forms.ts'
+import { errorMessage, formatDate, useAutoSave } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Segmented } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { TitleField } from '../../components/TitleField.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -209,8 +209,8 @@ function ContactForm({
   const set = <K extends keyof typeof v>(key: K, value: (typeof v)[K]) =>
     setV((old) => ({ ...old, [key]: value }))
 
-  async function save(ev: FormEvent) {
-    ev.preventDefault()
+  /** Eingaben als Anfrage; null, solange ein verknüpftes Mitglied fehlt */
+  function inputOf(): ContactPersonInput | null {
     const data: ContactPersonInput = {
       function: v.function,
       since: v.since || null,
@@ -221,10 +221,7 @@ function ContactForm({
     }
     if (linked) {
       const member = picked?.id ?? linkedAtStart
-      if (!member) {
-        setErrors({ member: t('Bitte ein Mitglied auswählen.') })
-        return
-      }
+      if (!member) return null
       data.member = member
     } else {
       Object.assign(data, {
@@ -237,10 +234,41 @@ function ContactForm({
         phone: v.phone,
       })
     }
+    return data
+  }
+
+  // Vorhandener Ansprechpartner: Änderungen speichern automatisch (UX-Audit 16.11. VW-22).
+  // Die Akte lädt erst beim Schließen neu, damit das Formular beim Tippen stehen bleibt.
+  const changed = useRef(false)
+  const latestInput = useRef(inputOf)
+  useEffect(() => {
+    latestInput.current = inputOf
+  })
+  const auto = useAutoSave(
+    { values: { ...v, linked, member: picked?.id ?? linkedAtStart }, setErrors },
+    async () => {
+      const data = latestInput.current()
+      if (!data || !contact) return
+      await memberApi.updateContact(orgId, memberId, contact.id, data)
+      changed.current = true
+    },
+    {
+      enabled:
+        !!contact && (linked ? !!(picked?.id ?? linkedAtStart) : v.last_name.trim().length > 0),
+    },
+  )
+
+  async function save(ev: FormEvent) {
+    ev.preventDefault()
+    if (contact) return
+    const data = inputOf()
+    if (!data) {
+      setErrors({ member: t('Bitte ein Mitglied auswählen.') })
+      return
+    }
     setBusy(true)
     try {
-      if (contact) await memberApi.updateContact(orgId, memberId, contact.id, data)
-      else await memberApi.addContact(orgId, memberId, data)
+      await memberApi.addContact(orgId, memberId, data)
       onDone(true)
     } catch (err) {
       setErrors(
@@ -377,12 +405,30 @@ function ContactForm({
             'Den Mitgliederzugang richtet ihr je Ansprechpartner im Reiter „Rollen und Konto“ ein.',
           )}
         </p>
-        <div className="actions">
-          <button type="submit">{t('Speichern')}</button>{' '}
-          <button type="button" className="link-button" onClick={() => onDone(false)}>
-            {t('Abbrechen')}
-          </button>
-        </div>
+        {contact ? (
+          <>
+            <SaveStatus auto={auto} />
+            <div className="actions">
+              <button
+                type="button"
+                className="button"
+                onClick={async () => {
+                  // Schließt erst, wenn alles gespeichert ist
+                  if (await auto.flush()) onDone(changed.current)
+                }}
+              >
+                {t('Schließen')}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="actions">
+            <button type="submit">{t('Speichern')}</button>{' '}
+            <button type="button" className="link-button" onClick={() => onDone(false)}>
+              {t('Abbrechen')}
+            </button>
+          </div>
+        )}
       </fieldset>
     </form>
   )

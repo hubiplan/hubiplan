@@ -3,9 +3,9 @@ import type { FormEvent } from 'react'
 import { ApiError } from '../../api/client.ts'
 import { memberApi } from '../../api/members.ts'
 import type { BillingAddress, MemberDetail } from '../../api/members.ts'
-import { errorMessage } from '../../components/forms.ts'
+import { errorMessage, useAutoSave } from '../../components/forms.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert, Field } from '../../components/ui.tsx'
+import { Alert, Field, SaveStatus } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 const EMPTY: BillingAddress = {
@@ -37,11 +37,20 @@ export function BillingAddressSection({
   const [v, setV] = useState<BillingAddress>(current ?? EMPTY)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
+  // Vorhandene Rechnungsangaben speichern automatisch; das erste Festlegen bleibt ein Knopf
+  const [autoSaving, setAutoSaving] = useState(false)
   const set = (key: keyof BillingAddress, value: string) =>
     setV((old) => ({ ...old, [key]: value }))
+  const auto = useAutoSave(
+    { values: v, setErrors, setValues: setV },
+    async (_changes, values) =>
+      onSaved(await memberApi.setBillingAddress(orgId, member.id, values)),
+    { enabled: editing && autoSaving },
+  )
 
   async function save(ev: FormEvent) {
     ev.preventDefault()
+    if (autoSaving) return
     setBusy(true)
     try {
       onSaved(await memberApi.setBillingAddress(orgId, member.id, v))
@@ -120,6 +129,7 @@ export function BillingAddressSection({
                 className="button"
                 onClick={() => {
                   setV(current ?? EMPTY)
+                  setAutoSaving(!!current)
                   setEditing(true)
                 }}
               >
@@ -205,12 +215,30 @@ export function BillingAddressSection({
                 onChange={(ev) => set('leitweg_id', ev.target.value)}
               />
             </div>
-            <div className="actions">
-              <button type="submit">{t('Speichern')}</button>{' '}
-              <button type="button" className="link-button" onClick={() => setEditing(false)}>
-                {t('Abbrechen')}
-              </button>
-            </div>
+            {autoSaving ? (
+              <>
+                <SaveStatus auto={auto} />
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={async () => {
+                      // Schließt erst, wenn alles gespeichert ist
+                      if (await auto.flush()) setEditing(false)
+                    }}
+                  >
+                    {t('Schließen')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="actions">
+                <button type="submit">{t('Speichern')}</button>{' '}
+                <button type="button" className="link-button" onClick={() => setEditing(false)}>
+                  {t('Abbrechen')}
+                </button>
+              </div>
+            )}
           </fieldset>
         </form>
       )}

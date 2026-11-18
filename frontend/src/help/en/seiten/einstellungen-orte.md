@@ -27,4 +27,5 @@ Here you save places that come up again and again, such as the clubhouse, sports
 - When you choose a saved place in a form, HUBIplan copies its name and address. Later changes here do not change earlier entries.
 - If you type a new place in a form, **Save as place** saves it right away. If it starts with a saved place and a comma, e.g. “Community centre, Kitchen”, the button says **Save as room** and adds the room there.
 - A club also sees the places of its federation, a sub-unit those of its club. Only the owner can change or delete them.
+- **Edit** opens a place or room. HUBIplan saves changes automatically; **Close** folds the form away again. Only new places and rooms are added with a button.
 - Places you no longer need are removed from the choice with **Edit** and the **Active (offered in forms)** box, without deleting them.

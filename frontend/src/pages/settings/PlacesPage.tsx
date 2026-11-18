@@ -5,9 +5,9 @@ import { useState } from 'react'
 import { placeApi } from '../../api/places.ts'
 import type { Place, PlaceInput, PlaceSuggestion } from '../../api/places.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
 import { forgetPlaces } from '../../components/places.ts'
-import { Alert, Checkbox, Field, LoadError, Loading } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { TextArea } from './TextArea.tsx'
@@ -73,13 +73,18 @@ function PlaceForm({
   initial,
   submitLabel,
   onSubmit,
+  onAutoSave,
   onCancel,
   buildings = [],
   showActive = false,
 }: {
   initial: Draft
-  submitLabel: string
-  onSubmit: (input: PlaceInput) => Promise<void>
+  /** Neuanlage: Beschriftung des Knopfs */
+  submitLabel?: string
+  /** Neuanlage: speichert erst mit dem Knopf */
+  onSubmit?: (input: PlaceInput) => Promise<void>
+  /** Vorhandener Ort: Änderungen speichern automatisch; statt „Abbrechen“ steht „Schließen“ */
+  onAutoSave?: (input: PlaceInput) => Promise<void>
   onCancel?: () => void
   /** Eigene Orte, in die dieser als Raum gehören kann (leer: keine Auswahl) */
   buildings?: Place[]
@@ -88,13 +93,21 @@ function PlaceForm({
   const [d, setD] = useState(initial)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [, setErrors] = useState<Record<string, string>>({})
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setD({ ...d, [key]: value })
   const room = !!d.parent
+  // Der Server bekommt immer den ganzen Ort: Raum und eigener Ort haben verschiedene Felder
+  const auto = useAutoSave(
+    { values: d, setErrors, setValues: setD },
+    (_changes, values) => onAutoSave!(inputOf(values)),
+    { enabled: !!onAutoSave && !!d.name.trim() },
+  )
   return (
     <form
       className="stack"
       onSubmit={async (e) => {
         e.preventDefault()
+        if (!onSubmit) return
         setBusy(true)
         setError(null)
         try {
@@ -183,16 +196,34 @@ function PlaceForm({
         />
       )}
       {error && <Alert kind="error">{error}</Alert>}
-      <div className="button-row">
-        <button type="submit" className="button button-primary" disabled={busy}>
-          {submitLabel}
-        </button>
-        {onCancel && (
-          <button type="button" className="button" onClick={onCancel}>
-            {t('Abbrechen')}
+      {onAutoSave ? (
+        <>
+          <SaveStatus auto={auto} />
+          <div className="button-row">
+            <button
+              type="button"
+              className="button"
+              onClick={async () => {
+                // Schließt erst, wenn alles gespeichert ist
+                if (await auto.flush()) onCancel?.()
+              }}
+            >
+              {t('Schließen')}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="button-row">
+          <button type="submit" className="button button-primary" disabled={busy}>
+            {submitLabel}
           </button>
-        )}
-      </div>
+          {onCancel && (
+            <button type="button" className="button" onClick={onCancel}>
+              {t('Abbrechen')}
+            </button>
+          )}
+        </div>
+      )}
     </form>
   )
 }
@@ -305,16 +336,12 @@ export function PlacesPage() {
       <li key={p.id}>
         <PlaceForm
           initial={draftOf(p)}
-          submitLabel={t('Speichern')}
           showActive
           buildings={
             roomsOf(p.id).length ? [] : buildings.filter((b) => b.id !== p.id && b.is_active)
           }
           onCancel={() => setEditing(null)}
-          onSubmit={async (input) => {
-            replace(await placeApi.update(base, p.id, input))
-            setEditing(null)
-          }}
+          onAutoSave={async (input) => replace(await placeApi.update(base, p.id, input))}
         />
       </li>
     ) : (
