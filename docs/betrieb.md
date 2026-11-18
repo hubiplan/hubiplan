@@ -1303,7 +1303,7 @@ Abgleich gilt nichts als veröffentlicht. Wer eigene Änderungen betreibt, setzt
 [echtbetrieb.md](echtbetrieb.md)). Nur für reine Testserver mit erfundenen Daten überspringt
 `HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT=1 deploy/deploy.sh …` die Prüfung mit einer Warnung und
 dem Vermerk `(unveroeffentlicht-erlaubt)` im Rollout-Protokoll; auf Servern, die andere nutzen,
-nie setzen. `deploy/zurueck.sh` ist nicht betroffen (die vorige Fassung war beim Ausrollen
+nie setzen. Ist das öffentliche Repository einmal nicht erreichbar, erlaubt nur dieser Schalter (mit Warnung und Vermerk im Protokoll) ein Notfall-Ausrollen; der Stand ist danach umgehend zu veröffentlichen. `deploy/zurueck.sh` ist nicht betroffen (die vorige Fassung war beim Ausrollen
 schon geprüft), ebenso Releases über `release-ausrollen.sh` und das Selbstupdate (veröffentlichte
 Tags).
 

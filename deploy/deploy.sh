@@ -74,7 +74,7 @@ fi
 QUELLE=""
 if [ "${HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT:-}" != 1 ]; then
     if ! QUELLE=$("$SSH" "${SSH_ARGS[@]}" "$HOST" \
-        "if ${SUDO}test -f '$DIR/.env'; then ${SUDO}sed -n 's/^HUBIPLAN_SOURCE_URL=//p' '$DIR/.env'; fi"); then
+        "if ${SUDO}test -f '$DIR/.env'; then ${SUDO}sed -n 's/^HUBIPLAN_SOURCE_URL=//p' '$DIR/.env'; fi" < /dev/null); then
         echo "Abbruch: HUBIPLAN_SOURCE_URL auf $HOST nicht lesbar; Veröffentlichung nicht prüfbar." >&2
         exit 1
     fi
