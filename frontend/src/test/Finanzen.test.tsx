@@ -42,7 +42,7 @@ const overview = {
 }
 
 function subnav() {
-  const nav = screen.getByRole('navigation', { name: 'Module' })
+  const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
   return within(nav)
 }
 

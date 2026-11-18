@@ -66,7 +66,7 @@ describe('Abteilungsbezeichnung', () => {
     )
     // Alte Adresse unter Einstellungen führt zum eigenen Menüpunkt „Züge“ (Ralf 2026-10-30)
     expect(await screen.findByRole('heading', { level: 1, name: 'Züge' })).toBeInTheDocument()
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(nav.getByRole('link', { name: 'Züge' })).toHaveAttribute('href', '/untereinheiten')
     expect(screen.queryByRole('heading', { name: 'Einstellungen' })).not.toBeInTheDocument()
     await userEvent.click(await screen.findByRole('button', { name: '1. Zug bearbeiten' }))

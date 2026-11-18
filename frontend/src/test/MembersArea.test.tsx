@@ -54,7 +54,7 @@ describe('Mitglieder: Unterpunkte', () => {
       'GET /api/orgs/7/member-types/': () => ({ status: 200, body: [] }),
     })
     renderApp('/mitglieder/einrichtung')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     const labels = [
       'Mitgliederliste',
       'Entwicklung',
@@ -84,7 +84,7 @@ describe('Mitglieder: Unterpunkte', () => {
       'GET /api/orgs/7/member-types/': () => ({ status: 200, body: [] }),
     })
     renderApp('/mitglieder/einrichtung/mitgliedsarten')
-    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Einrichtung' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Import' })).not.toBeInTheDocument()
   })
@@ -113,7 +113,7 @@ describe('Mitglieder: Unterpunkte', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Änderungen und Wechsel' }),
     ).toBeInTheDocument()
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Datenänderungen' })).toBeInTheDocument()
   })
 
@@ -126,7 +126,7 @@ describe('Mitglieder: Unterpunkte', () => {
     renderApp('/einstellungen/organisation')
     await screen.findByRole('heading', { name: 'Organisation' })
     // Unterpunkte der Einstellungen stehen in der Seitenleiste (UX-Audit 31.10. W09)
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(await nav.findByRole('link', { name: 'Organisation' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Mitgliedsarten' })).not.toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Zusatzfelder' })).not.toBeInTheDocument()

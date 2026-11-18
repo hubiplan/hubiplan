@@ -24,7 +24,7 @@ describe('W-10: ohne Netz sofort Bescheid geben', () => {
       window.dispatchEvent(new Event('offline'))
     })
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Keine Verbindung. Änderungen werden gespeichert, sobald die Verbindung wieder da ist.',
+      'Keine Verbindung. Seiten lassen sich gerade nicht laden; noch nicht gespeicherte Änderungen werden nachgeholt, sobald die Verbindung wieder da ist.',
     )
     act(() => {
       setOnline(true)

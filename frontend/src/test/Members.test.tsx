@@ -981,7 +981,9 @@ describe('Dachverband', () => {
     })
     renderAt('/')
     await screen.findByRole('heading', { name: 'Testbund' })
-    expect(screen.getByRole('navigation', { name: 'Module' })).not.toHaveTextContent('Mitglieder')
+    expect(screen.getByRole('navigation', { name: 'Hauptmenü' })).not.toHaveTextContent(
+      'Mitglieder',
+    )
   })
 })
 

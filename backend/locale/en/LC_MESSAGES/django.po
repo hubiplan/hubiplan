@@ -4336,6 +4336,13 @@ msgstr "A separation has already been prepared for this sub-unit."
 msgid "Bitte einen Weg wählen."
 msgstr "Please choose a way."
 
+#, python-format
+msgid "Bitte vorher bestätigen: %(punkte)s"
+msgstr "Please confirm first: %(punkte)s"
+
+msgid "Der Vorschau-Schlüssel ist ungültig oder abgelaufen."
+msgstr "The preview key is invalid or has expired."
+
 msgid ""
 "Die Ausgliederung ist schon angefragt. Bitte die Kopplung unter Verbund "
 "ablehnen."

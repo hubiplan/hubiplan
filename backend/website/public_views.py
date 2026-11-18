@@ -405,7 +405,8 @@ class PreviewView(_Public):
         self.preview = True
         if result is None:
             return self.respond(
-                {"detail": "Der Vorschau-Schlüssel ist ungültig oder abgelaufen."}, status=403
+                {"detail": gettext("Der Vorschau-Schlüssel ist ungültig oder abgelaufen.")},
+                status=403,
             )
         session, until = result
         return self.respond({"session": session, "until": until})

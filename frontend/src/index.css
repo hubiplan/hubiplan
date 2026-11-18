@@ -960,6 +960,9 @@ button.tab.active {
 /* Name der Gruppe über ihren Bereichen (Alltag, Verein, Kommunikation, Verwaltung) */
 .sidebar-group-label {
   display: block;
+  margin: 0;
+  line-height: 1.4;
+  font-family: inherit;
   padding: 0.2rem 0.75rem 0.15rem;
   font-size: 0.8rem;
   font-weight: 600;
@@ -3828,6 +3831,10 @@ form.card > .save-status:first-child {
 }
 
 .site-footer a {
+  /* Zielgröße mindestens 24 px (UX-Audit 16.11. VW-42, WCAG 2.5.8) */
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
   color: var(--color-text-muted);
 }
 

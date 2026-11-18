@@ -25,7 +25,9 @@ export function OfflineBanner() {
   if (online) return null
   return (
     <div className="alert alert-error offline-banner" role="status">
-      {t('Keine Verbindung. Änderungen werden gespeichert, sobald die Verbindung wieder da ist.')}
+      {t(
+        'Keine Verbindung. Seiten lassen sich gerade nicht laden; noch nicht gespeicherte Änderungen werden nachgeholt, sobald die Verbindung wieder da ist.',
+      )}
     </div>
   )
 }

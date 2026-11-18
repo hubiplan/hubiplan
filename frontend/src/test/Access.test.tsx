@@ -434,7 +434,7 @@ describe('Persönliches im Kontomenü', () => {
     const menu = screen.getByRole('navigation', { name: 'Mein Konto' })
     expect(within(menu).getByText('Mein Bereich')).toBeInTheDocument()
     await user.click(within(menu).getByRole('button', { name: 'Mein Ausweis' }))
-    const nav = await screen.findByRole('navigation', { name: 'Module' })
+    const nav = await screen.findByRole('navigation', { name: 'Hauptmenü' })
     expect(await within(nav).findByRole('link', { name: 'Ausweis' })).toHaveAttribute(
       'aria-current',
       'page',

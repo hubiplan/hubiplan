@@ -83,7 +83,7 @@ describe('Veranstaltungen', () => {
     const link = await screen.findByRole('link', { name: 'Schützenfest 2025' })
     expect(link).toHaveAttribute('href', '/finanzen/veranstaltungen/5')
     expect(screen.getByText('-399,50 €')).toBeInTheDocument()
-    const nav = within(screen.getByRole('navigation', { name: 'Module' }))
+    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
     expect(nav.getByRole('link', { name: 'Veranstaltungen' })).toBeInTheDocument()
   })
 

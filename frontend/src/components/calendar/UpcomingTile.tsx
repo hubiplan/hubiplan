@@ -25,6 +25,9 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
   const data = loaded?.base === base ? loaded : null
   const [creating, setCreating] = useState<CalendarBase | null>(null)
   const items = (data?.items ?? []).slice(0, 5)
+  // Termine mehrerer Einheiten: die Einheit dazu nennen, sonst stehen gleichnamige Termine
+  // ununterscheidbar untereinander (UX-Audit 16.11. VW-44)
+  const showOwner = new Set(items.map((o) => o.owner)).size > 1
   return (
     <div className="card tile upcoming-overview">
       <div className="task-overview-head">
@@ -59,6 +62,9 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
                     )}{' '}
                     <RsvpBadge o={o} />
                   </div>
+                  {showOwner && o.owner && (
+                    <span className="muted small upcoming-owner">{o.owner}</span>
+                  )}
                 </div>
               </li>
             )

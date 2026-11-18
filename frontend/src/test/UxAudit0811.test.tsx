@@ -64,7 +64,7 @@ describe('W-01: Menüpunkte ohne Recht', () => {
       modules: ['members', 'finance', 'billing', 'events'],
     })
     renderApp('/', org)
-    const nav = await screen.findByRole('navigation', { name: 'Module' })
+    const nav = await screen.findByRole('navigation', { name: 'Hauptmenü' })
     expect(await within(nav).findByRole('link', { name: 'Finanzen' })).toBeVisible()
     expect(within(nav).queryByRole('link', { name: 'Einstellungen' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'Nächste Termine' })).toBeNull()

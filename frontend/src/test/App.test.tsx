@@ -158,7 +158,7 @@ describe('Layout', () => {
     })
     renderApp()
     expect(await screen.findByRole('heading', { name: 'TV Beispielhausen' })).toBeInTheDocument()
-    const nav = screen.getByRole('navigation', { name: 'Module' })
+    const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).toHaveTextContent('Mitglieder')
     expect(nav).toHaveTextContent('Einstellungen')
     expect(nav).not.toHaveTextContent('Plattform')
@@ -190,7 +190,7 @@ describe('Layout', () => {
     expect(tabs).not.toHaveTextContent('Mein Konto')
     const user = userEvent.setup()
     // Oben rechts ein Aufklappmenü mit den Unterseiten, nichts in der Seitenleiste
-    const nav = screen.getByRole('navigation', { name: 'Module' })
+    const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).not.toHaveTextContent('Mein Konto')
     const button = screen.getByRole('button', { name: /Mein Konto/ })
     expect(button).toHaveAttribute('aria-expanded', 'false')
@@ -208,7 +208,9 @@ describe('Layout', () => {
     await user.click(within(menu).getByRole('link', { name: 'Profil' }))
     expect(await screen.findByRole('heading', { name: 'Profil' })).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Mein Konto' })).not.toBeInTheDocument()
-    expect(screen.getByRole('navigation', { name: 'Module' })).not.toHaveTextContent('Mein Konto')
+    expect(screen.getByRole('navigation', { name: 'Hauptmenü' })).not.toHaveTextContent(
+      'Mein Konto',
+    )
     expect(screen.queryByRole('heading', { name: 'Passwort ändern' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /Mein Konto/ }))
     await user.keyboard('{Escape}')
@@ -233,7 +235,7 @@ describe('Layout', () => {
     })
     renderApp()
     await screen.findByRole('heading', { name: 'TV Beispielhausen' })
-    const nav = screen.getByRole('navigation', { name: 'Module' })
+    const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).not.toHaveTextContent('Mitglieder')
   })
 

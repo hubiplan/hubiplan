@@ -201,9 +201,7 @@ export function useStandStore(
     } catch (err) {
       if (!valid()) return
       setOnline(!isStandNetworkError(err))
-      setSyncError(
-        errorMessage(err) === 'Der Server ist nicht erreichbar.' ? null : errorMessage(err),
-      )
+      setSyncError(isStandNetworkError(err) ? null : errorMessage(err))
     } finally {
       syncing.current = false
     }
