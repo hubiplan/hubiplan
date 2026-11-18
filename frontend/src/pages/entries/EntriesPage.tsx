@@ -78,7 +78,8 @@ function CallList() {
         )}
       </p>
       {error && <LoadError message={error} onRetry={reload} />}
-      {!creating && (
+      {/* Ohne Ausschreibungen steht der Knopf nur im leeren Kasten, nicht doppelt */}
+      {!creating && (data?.length ?? 0) > 0 && (
         <div className="button-row">
           <button type="button" className="button" onClick={() => setCreating(true)}>
             {t('Neue Ausschreibung erfassen')}
