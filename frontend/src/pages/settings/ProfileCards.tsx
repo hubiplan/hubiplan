@@ -61,7 +61,8 @@ function DeleteAccountCard({ data }: { data: AccountData }) {
       {blockers.length > 0 ? (
         <Alert kind="info">
           {t('Du hast noch Ämter in: {names}. Bitte lass sie zuerst beenden.', {
-            names: blockers.join(', '),
+            // „e.V.“ am Ende ergäbe sonst zwei Punkte (UX-Audit 16.11. VW-53)
+            names: blockers.join(', ').replace(/\.$/, ''),
           })}
         </Alert>
       ) : open ? (
