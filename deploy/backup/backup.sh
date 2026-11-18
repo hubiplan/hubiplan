@@ -20,8 +20,13 @@ set -eu
 # eine unvollständige Datei als Backup gilt
 set -o pipefail
 : "${BACKUP_HMAC_KEY:?BACKUP_HMAC_KEY fehlt}"
-# Kopie an den zweiten Ort (zweitort_kopieren), liegt neben diesem Skript
-. "$(dirname "$0")/zweitort.sh"
+# Kopie an den zweiten Ort (zweitort_kopieren): neben diesem Skript, sonst im Abbild unter
+# /usr/local/bin (z. B. wenn ein Test eine veränderte Kopie von backup.sh anderswo ausführt)
+ZWEITORT_SH="$(dirname "$0")/zweitort.sh"
+[ -r "$ZWEITORT_SH" ] || ZWEITORT_SH=/usr/local/bin/zweitort.sh
+[ -r "$ZWEITORT_SH" ] || { echo "FEHLER: zweitort.sh fehlt" >&2; exit 1; }
+# shellcheck source=deploy/backup/zweitort.sh
+. "$ZWEITORT_SH"
 
 DIR="${BACKUP_DIR:-/backups}"
 DATA_KEY_FILE="${BACKUP_DATA_KEY_FILE:-/run/secrets/datenschluessel}"
