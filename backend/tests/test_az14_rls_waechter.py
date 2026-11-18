@@ -38,8 +38,6 @@ OHNE_RLS_KONTO = {
     "accounts_user_groups": "Django-Gruppen; von HUBIplan nicht genutzt",
     "accounts_user_user_permissions": "Django-Rechte; von HUBIplan nicht genutzt",
     "django_admin_log": "Protokoll des Django-Admins (standardmäßig aus, nur Superuser mit 2FA)",
-    "circulars_mailinglist_senders": "Zwischentabelle Verteiler ↔ Absender; Zugriff nur über "
-    "den Verteiler der Einheit, der Zeilenschutz hat",
 }
 
 FREMDSCHLUESSEL = """
