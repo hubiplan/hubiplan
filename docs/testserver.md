@@ -326,6 +326,11 @@ Rollenwechsel zählt in keiner Abfragezählung. Ausnahmen nur mit
 `@pytest.mark.ohne_app_rolle(grund="…")`; `tests/test_az04_app_rolle_waechter.py` prüft,
 dass jede Ausnahme begründet ist, und zählt sie.
 
+Die Test-Datenbank startet `scripts/test.sh` mit `max_locks_per_transaction=256` (statt 64):
+Das Aufräumen nach Tests mit `transaction=True` leert alle Tabellen in einer Transaktion und
+brauchte unter Last mehr Sperren („out of shared memory“). Das gilt nur für die Tests; die
+Server bleiben unverändert.
+
 ## Vereinswebseite (hubiplan-website)
 
 Die Vereinsseite aus dem Repository `hubiplan-website` läuft auf dem Testserver als eigener
