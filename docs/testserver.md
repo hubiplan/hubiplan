@@ -44,6 +44,11 @@ DEPLOY_HOST=deploy@test.example.org DEPLOY_SUDO=1 deploy/deploy.sh  # erst nach 
 `~/.local/state/hubiplan/tested-trees`. `deploy/deploy.sh` bricht ab, wenn der Stand dort
 fehlt. Ein Merge-Commit mit unverändertem Inhalt gilt als getestet.
 
+Außerdem muss der Commit im öffentlichen Repository liegen (AGPL § 13, siehe
+[betrieb.md](betrieb.md#ausrollen-mit-rückweg)); sonst bricht `deploy/deploy.sh` ab, auch wenn
+GitHub nicht erreichbar ist. Einen nicht gepushten Zwischenstand nur auf den Testserver:
+`HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT=1 deploy/deploy.sh <commit>` (mit Warnung).
+
 ### Merge-Zug (Regel für alle Threads in hubiplan)
 
 hubiplan-PRs werden **nacheinander** gegen den aktuellen main getestet und gleich danach gemergt.

@@ -1292,6 +1292,21 @@ vorhandenen `.env`) und baut dort die Images, während die laufende Fassung weit
 Scheitert das Bauen, bleibt der Server unverändert. Danach tauscht `server-setup.sh` die
 Ordner (`/opt/hubiplan` → `/opt/hubiplan.vorher`) und startet.
 
+Ausgerollt wird nur ein veröffentlichter Stand (AGPL § 13): Die Seite `/lizenz` verlinkt den
+Quellcode genau des laufenden Commits unter `HUBIPLAN_SOURCE_URL`. Vor dem Ausrollen prüft
+`deploy.sh` daher mit `deploy/veroeffentlicht.sh`, ob der Commit von einem Branch oder Tag
+dieses Repositorys aus erreichbar ist (Adresse aus der `.env` des Servers, sonst der Standard
+aus `docker-compose.server.yml`). Fehlt er dort, bricht es mit „… nicht enthalten“ ab: erst
+pushen, dann ausrollen. Ist das Repository nicht erreichbar, bricht es ebenfalls ab; ohne
+Abgleich gilt nichts als veröffentlicht. Wer eigene Änderungen betreibt, setzt
+`HUBIPLAN_SOURCE_URL` auf sein eigenes öffentliches Repository (siehe
+[echtbetrieb.md](echtbetrieb.md)). Nur für reine Testserver mit erfundenen Daten überspringt
+`HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT=1 deploy/deploy.sh …` die Prüfung mit einer Warnung und
+dem Vermerk `(unveroeffentlicht-erlaubt)` im Rollout-Protokoll; auf Servern, die andere nutzen,
+nie setzen. `deploy/zurueck.sh` ist nicht betroffen (die vorige Fassung war beim Ausrollen
+schon geprüft), ebenso Releases über `release-ausrollen.sh` und das Selbstupdate (veröffentlichte
+Tags).
+
 Es läuft immer nur ein Ausrollen je Server: `deploy.sh` legt zu Beginn die Sperre
 `/opt/hubiplan.sperre` an (mit Fassung, Zeit und Rechner in `lauf`) und entfernt sie am Ende,
 auch nach einem Fehler. Ein zweiter Lauf bricht ab und zeigt, wer gerade ausrollt. Bleibt die
