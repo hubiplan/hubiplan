@@ -10,7 +10,7 @@ import { PageSlotProvider } from './PageHeader.tsx'
 import { confirmLeave } from './leaveGuard.ts'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
-import { GROUP_LABELS, modules } from '../modules.tsx'
+import { GROUP_LABELS, bottomNavIds, modules } from '../modules.tsx'
 import { QuickSearch } from './QuickSearch.tsx'
 import type { QuickPage } from './QuickSearch.tsx'
 import { portalSections } from '../pages/portal/sections.ts'
@@ -278,12 +278,13 @@ export function Layout() {
 
   const ws = { dept: activeDept, portal: activePortal }
   const visible = modules.filter((m) => m.visible(active, ws))
-  // Untere Leiste auf dem Handy: Start, Termine und für die Verwaltung Mitglieder, sonst
-  // Mein Bereich; höchstens drei Bereiche plus „Mehr“
-  const bottomNav = ['start', 'termine', 'mitglieder', 'mein-bereich']
+  // Untere Leiste auf dem Handy: drei Bereiche nach der Rolle plus „Mehr“ (VW-32)
+  const bottomNav = bottomNavIds(
+    visible.map((m) => m.id),
+    active?.home_focus,
+  )
     .map((id) => visible.find((m) => m.id === id))
     .filter((m): m is (typeof visible)[number] => !!m)
-    .slice(0, 3)
   // Aufeinanderfolgende Bereiche derselben Gruppe (VW-28)
   const navGroups: { group: (typeof modules)[number]['group']; items: typeof visible }[] = []
   for (const m of visible) {

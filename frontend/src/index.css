@@ -2120,15 +2120,19 @@ li.tile-entry-today {
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
+/* Auf der getönten Fläche Textfarbe statt Vereinsfarbe: Rot auf Rosa lag bei 4,4 : 1
+   (UX-Audit 16.11., VW-41). Hervorgehoben wird über Rand, Fläche und Schriftstärke. */
+li.tile-entry-today .tile-entry-title,
 .tile-entry-today .tile-entry-meta > span:first-child {
-  color: var(--color-link);
+  color: var(--color-text);
   font-weight: 600;
 }
+/* Name der Einheit bricht um statt mit „…“ zu enden, auch bei 320 px (UX-Audit 16.11., VW-45) */
 .tile-entry-meta > .tile-entry-org {
   flex: 0 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .spaced {

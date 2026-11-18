@@ -447,3 +447,25 @@ export const modules: AppModule[] = [
     visible: (org) => !!org && org.permissions.includes(PERM.platformManage),
   },
 ]
+
+/** Nie in der unteren Leiste: selten gebraucht und im Menü unter „Mehr“ gut zu finden. */
+const BOTTOM_NAV_NEVER = new Set(['einstellungen', 'plattform'])
+
+/**
+ * Untere Leiste auf dem Handy (UX-Audit 16.11., VW-32): Start und zwei Bereiche, zuerst nach
+ * dem Schwerpunkt der Rolle (Kasse: Finanzen, Schriftführung: Versammlungen), dann Termine,
+ * Mitglieder und Mein Bereich, danach der Reihe nach, was die Rolle sonst sehen darf. So hat
+ * jede Rolle drei Bereiche plus „Mehr“.
+ */
+export function bottomNavIds(visibleIds: string[], focus: string[] | undefined): string[] {
+  const preferred = [
+    ...(focus?.includes('finance') ? ['finanzen'] : []),
+    ...(focus?.includes('minutes') ? ['versammlungen'] : []),
+    'termine',
+    'mitglieder',
+    'mein-bereich',
+  ]
+  const rest = visibleIds.filter((id) => id !== 'start' && !BOTTOM_NAV_NEVER.has(id))
+  const ordered = ['start', ...preferred.filter((id) => rest.includes(id)), ...rest]
+  return [...new Set(ordered)].filter((id) => id === 'start' || visibleIds.includes(id)).slice(0, 3)
+}

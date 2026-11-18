@@ -428,7 +428,10 @@ export function EventForm({
           error={errors.visibility}
           hint={
             v.visibility === 'public'
-              ? t('Auch ohne Anmeldung, z. B. auf der Webseite.')
+              ? // X-12: beide Wirkungen getrennt nennen, Webseite und Mitglieder
+                t(
+                  'Auf der Webseite und ohne Anmeldung zu sehen. In HUBIplan sehen ihn die Mitglieder dieser Ebene, andere Einheiten nur, wenn er weitergegeben wird (Weitere Einstellungen).',
+                )
               : v.visibility === 'board'
                 ? t('Nur Vorstandsrollen dieser Ebene.')
                 : t('Alle Mitglieder dieser Ebene.')
