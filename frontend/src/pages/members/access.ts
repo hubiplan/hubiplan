@@ -72,7 +72,8 @@ function extras(org: OrgSummary): NavItem[] {
     ...(org.modules.includes('qualifications')
       ? [{ to: '/mitglieder/qualifikationen', label: t('Qualifikationen') }]
       : []),
-    ...(org.modules.includes('billing')
+    // Nur mit eingerichteter Ermäßigung mit Nachweis (Finanzen › Beitragssätze)
+    ...(org.modules.includes('billing') && org.fee_proofs_enabled
       ? [{ to: '/mitglieder/beitragsnachweise', label: t('Beitragsnachweise') }]
       : []),
     ...(org.modules.includes('awards')

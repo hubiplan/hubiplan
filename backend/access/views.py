@@ -573,7 +573,20 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "registered": bool(imprint.registered) and org.type != Organization.Type.PLATFORM,
         # Schalter „steuerbegünstigt mit eigenem Bescheid“ (Zuwendungsbestätigungen)
         "donations_enabled": _donations_enabled(org),
+        # Menüpunkt Mitglieder › Beitragsnachweise nur mit eingerichteter Ermäßigung mit Nachweis
+        "fee_proofs_enabled": _fee_proofs_enabled(org),
     }
+
+
+def _fee_proofs_enabled(org: Organization) -> bool:
+    from core.tenancy import tenant_context
+    from feeproofs.models import ProofDiscount
+    from feeproofs.services import module_on
+
+    if not module_on(org):
+        return False
+    with tenant_context(org.pk):
+        return ProofDiscount.objects.filter(organization=org, is_archived=False).exists()
 
 
 def _donations_enabled(org: Organization) -> bool:
