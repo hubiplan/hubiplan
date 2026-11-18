@@ -28,7 +28,7 @@ Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei 
 
 ## Rundschreiben zu einem Termin
 
-Ein Rundschreiben zu einem Termin legst du im geöffneten Termin mit **Rundschreiben dazu schreiben** in der Knopfleiste an; danach steht es dort unter **Zu diesem Termin**. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung.
+Ein Rundschreiben zu einem Termin legst du im geöffneten Termin mit **Rundschreiben dazu schreiben** in der Knopfleiste an; danach steht es dort unter **Zu diesem Termin**. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung. Bei einem Termin mit Anmeldung geht ein Infoschreiben an die Angemeldeten, auch an Gäste (siehe Termine).
 
 ## Empfangen
 

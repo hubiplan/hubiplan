@@ -174,6 +174,7 @@ export interface EventDetail {
   location: string
   address: string
   directions?: string
+  programme?: string
   latitude?: number | null
   longitude?: number | null
   map_links?: MapLinks
@@ -237,6 +238,7 @@ export interface EventInput {
   location: string
   address: string
   directions: string
+  programme?: string
   latitude: number | null
   longitude: number | null
   category: number | null

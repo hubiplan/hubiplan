@@ -14471,3 +14471,6 @@ msgstr "Please give a reason when waiving the fee."
 
 msgid "Platz"
 msgstr "Place"
+
+msgid "Angemeldete des Termins"
+msgstr "Registrants of the event"

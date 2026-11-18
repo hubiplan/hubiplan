@@ -255,9 +255,13 @@ function EventActions({
             disabled={circular.busy}
             onClick={() => void circular.write()}
           >
-            {event.circulars?.length
-              ? t('Weiteres Rundschreiben dazu schreiben')
-              : t('Rundschreiben dazu schreiben')}
+            {event.registration?.enabled
+              ? event.circulars?.length
+                ? t('Weiteres Infoschreiben an Angemeldete')
+                : t('Infoschreiben an Angemeldete')
+              : event.circulars?.length
+                ? t('Weiteres Rundschreiben dazu schreiben')
+                : t('Rundschreiben dazu schreiben')}
           </button>
         )}
         {event.can_circular && event.rsvp.enabled && (
@@ -733,6 +737,12 @@ export function EventDialog({
             )}
           </dl>
           {data.description && <p className="event-description">{data.description}</p>}
+          {data.programme && (
+            <section className="stack-sm">
+              <h3 className="event-card-title">{t('Ablauf')}</h3>
+              <p className="event-description">{data.programme}</p>
+            </section>
+          )}
           <EventActions
             base={base}
             event={data}

@@ -233,25 +233,7 @@ def start_sending(circular: Circular, user) -> dict[str, int]:
         )
     rcp.fill_values(circular, selection, used_placeholders(circular))
     now = timezone.now()
-    rows = []
-    for c in chosen:
-        rows.append(
-            CircularRecipient(
-                organization_id=circular.organization_id,
-                circular=circular,
-                club=c.club,
-                membership_id=c.membership_id,
-                user_id=c.user_id,
-                first_name=c.first_name[:100],
-                last_name=c.last_name[:100],
-                # Bei der App bleibt die Mail als Ersatz, falls kein Push ankommt
-                email=c.email if c.channel in ("mail", "app") else "",
-                address=c.address,
-                values=c.values,
-                channel=c.channel,
-                status=INITIAL_STATUS[c.channel],
-            )
-        )
+    rows = recipient_rows(circular, chosen)
     CircularRecipient.objects.bulk_create(rows, batch_size=500)
     counts = {
         ch: sum(1 for r in rows if r.channel == ch) for ch in ("app", "mail", "letter", "portal")
@@ -273,6 +255,74 @@ def start_sending(circular: Circular, user) -> dict[str, int]:
     else:
         _after_sending(circular)
     return counts
+
+
+def recipient_rows(circular: Circular, chosen) -> list[CircularRecipient]:
+    rows = []
+    for c in chosen:
+        rows.append(
+            CircularRecipient(
+                organization_id=circular.organization_id,
+                circular=circular,
+                club=c.club,
+                membership_id=c.membership_id,
+                registration_id=c.registration_id,
+                user_id=c.user_id,
+                first_name=c.first_name[:100],
+                last_name=c.last_name[:100],
+                # Bei der App bleibt die Mail als Ersatz, falls kein Push ankommt
+                email=c.email if c.channel in ("mail", "app") else "",
+                address=c.address,
+                values=c.values,
+                channel=c.channel,
+                status=INITIAL_STATUS[c.channel],
+            )
+        )
+    return rows
+
+
+def send_to_latecomer(registration_id: int) -> int:
+    """Schon verschickte Infoschreiben zum Termin an eine spätere Anmeldung (A5, Schalter
+    „an Nachzügler mitschicken“, Vorgabe an). Gibt die Zahl der Infoschreiben zurück."""
+    from registrations.models import Registration
+
+    done = 0
+    with rls_bypass():
+        reg = (
+            Registration.objects.select_related("setup__event")
+            .filter(pk=registration_id, status=Registration.Status.REGISTERED)
+            .first()
+        )
+        if reg is None:
+            return 0
+        sent = (
+            Circular.objects.filter(
+                event=reg.setup.event,
+                audience=Circular.Audience.REGISTERED,
+                status__in=[Circular.Status.SENDING, Circular.Status.SENT],
+            )
+            .exclude(recipients__registration=reg)
+            .select_related("organization", "department", "event")
+            .order_by("sent_at", "pk")
+        )
+        for circular in sent:
+            if (circular.filters or {}).get("latecomers") is False:
+                continue
+            selection = rcp.select(circular, only_registration=reg.pk)
+            if not selection.chosen:
+                continue
+            rcp.fill_values(circular, selection, used_placeholders(circular))
+            rows = recipient_rows(circular, selection.chosen)
+            with transaction.atomic():
+                CircularRecipient.objects.bulk_create(rows)
+                if any(r.status == CircularRecipient.Status.PENDING for r in rows):
+                    Circular.objects.filter(pk=circular.pk).update(status=Circular.Status.SENDING)
+                    from .tasks import send_circular
+
+                    pk = circular.pk
+                    transaction.on_commit(lambda pk=pk: send_circular.delay(pk))
+            done += 1
+    return done
 
 
 INITIAL_STATUS = {

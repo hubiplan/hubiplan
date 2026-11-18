@@ -19,6 +19,15 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
 - ``event_responses``  nur bei einem Rundschreiben zu einem Termin (``Circular.event``):
   Eingeladene mit dieser Rückmeldung (``open`` = noch keine, ``yes``, ``no``, ``maybe``)
 
+Angemeldete eines Termins (``audience`` = ``registered``, nur mit ``Circular.event`` und
+verbindlicher Anmeldung, Infoschreiben A5): eine Zeile je Anmeldung, auch Gäste ohne
+Mitgliedschaft, mit
+
+- ``registration_states``  ``registered`` (angemeldet, Vorgabe) und/oder ``waiting`` (Warteliste)
+- ``registration_paid``    ``paid`` (bezahlt oder kostenlos) und/oder ``open`` (noch offen)
+- ``registration_prices``  nur Anmeldungen mit einer Person in diesen Tarifen
+- ``latecomers``           spätere Anmeldungen bekommen das Infoschreiben mit (Vorgabe ja)
+
 Rundschreiben zu einem Termin gehen nur an die Eingeladenen des Termins
 (``events.rsvp.invited``); die übrigen Angaben schränken weiter ein.
 
@@ -110,6 +119,8 @@ class Candidate:
     merged_into: str = ""
     # im gemeinsamen Schreiben: alle Personen (Titel, Vorname, Name, Geschlecht)
     household_people: list[tuple[str, str, str, str]] = field(default_factory=list)
+    # Infoschreiben an Angemeldete: die Anmeldung (auch ohne Mitgliedschaft)
+    registration_id: int | None = None
 
     @property
     def channel(self) -> str | None:
@@ -451,6 +462,80 @@ def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Cand
 
 
 EVENT_RESPONSES = ("open", "yes", "no", "maybe")
+REGISTRATION_STATES = ("registered", "waiting")
+REGISTRATION_PAID = ("paid", "open")
+
+
+def _split_name(name: str) -> tuple[str, str]:
+    """„Greta Gast“ → („Greta“, „Gast“); ein einzelnes Wort bleibt der Name."""
+    parts = name.strip().rsplit(" ", 1)
+    return (parts[0], parts[1]) if len(parts) == 2 else ("", parts[0])
+
+
+def registration_rows(circular: Circular, filters: dict, only: int | None = None):
+    """Anmeldungen zum Termin des Rundschreibens nach der Auswahl."""
+    from registrations import services as registrations
+    from registrations.models import Participant, Registration
+
+    setup = registrations.setup_of(circular.event) if circular.event_id else None
+    if setup is None:
+        return []
+    wanted = filters.get("registration_states") or ["registered"]
+    states = [s for s in wanted if s in REGISTRATION_STATES]
+    qs = (
+        Registration.objects.filter(setup=setup, status__in=states or ["registered"])
+        .select_related("invoice", "membership__person")
+        .prefetch_related("participants")
+        .order_by("created_at", "pk")
+    )
+    if only is not None:
+        qs = qs.filter(pk=only)
+    prices = as_ints(filters.get("registration_prices"))
+    if prices:
+        qs = qs.filter(
+            participants__price_id__in=prices, participants__status=Participant.Status.ACTIVE
+        ).distinct()
+    paid = [p for p in filters.get("registration_paid") or [] if p in REGISTRATION_PAID]
+    rows = []
+    for reg in qs[:MAX_RECIPIENTS]:
+        state = registrations.paid_state(reg)
+        if paid and len(paid) == 1:
+            settled = state in ("paid", "free")
+            if (paid[0] == "paid") != settled:
+                continue
+        rows.append(reg)
+    return rows
+
+
+def registration_candidates(circular: Circular, only: int | None = None) -> list[Candidate]:
+    """Eine Zeile je Anmeldung: Mitglied mit seinen Daten, sonst die Angaben der Anmeldung."""
+    club = circular.organization
+    filters = dict(circular.filters or {})
+    result = []
+    for reg in registration_rows(circular, filters, only):
+        person = reg.membership.person if reg.membership_id else None
+        if person is not None and not person.is_organization:
+            first, last = person.first_name, person.last_name
+            gender, title = person.gender, person.title
+        else:
+            first, last = _split_name(reg.name)
+            gender, title = "", ""
+        address = "\n".join(x for x in [reg.name, (reg.address or "").strip()] if x)
+        result.append(
+            Candidate(
+                key=f"r{reg.pk}",
+                club=club,
+                first_name=first,
+                last_name=last,
+                gender=gender,
+                title=title,
+                email=(reg.email or "").strip(),
+                address=address if (reg.address or "").strip() else "",
+                membership_id=reg.membership_id,
+                registration_id=reg.pk,
+            )
+        )
+    return result
 
 
 def event_base(circular: Circular, base, filters: dict):
@@ -720,10 +805,13 @@ class Selection:
         }
 
 
-def select(circular: Circular) -> Selection:
+def select(circular: Circular, only_registration: int | None = None) -> Selection:
+    """Empfänger nach der Auswahl; ``only_registration``: nur diese Anmeldung (Nachzügler)."""
     org = circular.organization
     jubilees: dict[int, int] = {}
-    if org.type == Organization.Type.FEDERATION:
+    if only_registration is not None:
+        candidates = registration_candidates(circular, only=only_registration)
+    elif org.type == Organization.Type.FEDERATION:
         if circular.audience == Circular.Audience.BOARDS:
             candidates = federation_board_candidates(circular)
         else:
@@ -732,6 +820,8 @@ def select(circular: Circular) -> Selection:
         candidates = department_role_candidates(circular)
     elif circular.audience == Circular.Audience.ROLES:
         candidates = club_role_candidates(circular)
+    elif circular.audience == Circular.Audience.REGISTERED:
+        candidates = registration_candidates(circular)
     else:
         candidates, jubilees = club_candidates(circular)
     exclude = {k for k in (circular.filters or {}).get("exclude") or [] if isinstance(k, str)}
@@ -858,6 +948,7 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
             ):
                 years[m.pk] = Duration.of(club_ranges(m), on, m.organization.date_precision).years
     dept_name = circular.department.name if circular.department_id else ""
+    regs = _registration_values(selection) if used & REGISTRATION_PLACEHOLDERS else {}
     for c in selection.candidates:
         c.values = {
             "Vorname": (
@@ -878,4 +969,33 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
                 if c.membership_id in selection.jubilees
                 else ""
             ),
+            **regs.get(c.registration_id, {}),
         }
+
+
+REGISTRATION_PLACEHOLDERS = {"Anmeldenummer", "Personen", "Offener Betrag"}
+
+
+def _registration_values(selection: Selection) -> dict[int, dict[str, str]]:
+    from decimal import Decimal
+
+    from billing.services import _euro
+    from registrations.models import Participant, Registration
+
+    ids = [c.registration_id for c in selection.candidates if c.registration_id]
+    out = {}
+    for reg in Registration.objects.filter(pk__in=ids).select_related("invoice"):
+        persons = [
+            f"{p.name} ({p.price_name})"
+            for p in reg.participants.all()
+            if p.status == Participant.Status.ACTIVE
+        ]
+        due = Decimal(0)
+        if reg.invoice is not None and reg.invoice.status == "open":
+            due = reg.invoice.outstanding
+        out[reg.pk] = {
+            "Anmeldenummer": reg.display_number,
+            "Personen": ", ".join(persons),
+            "Offener Betrag": _euro(due),
+        }
+    return out

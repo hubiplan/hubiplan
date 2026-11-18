@@ -221,6 +221,7 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "location": event.location,
         "address": event.address,
         "directions": event.directions,
+        "programme": event.programme,
         "latitude": float(event.latitude) if event.latitude is not None else None,
         "longitude": float(event.longitude) if event.longitude is not None else None,
         "map_links": maps.for_event(event),

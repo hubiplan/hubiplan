@@ -61,7 +61,14 @@ FILTER_LIST_KEYS = (
 )
 FILTER_KEY_LISTS = ("include", "exclude", "role_names")
 FILTER_INT_KEYS = ("age_min", "age_max", "jubilee_year")
-FILTER_BOOL_KEYS = ("board", "reported", "organizations_any_age", "households_merge")
+FILTER_BOOL_KEYS = (
+    "board",
+    "reported",
+    "organizations_any_age",
+    "households_merge",
+    # Infoschreiben an Angemeldete: spätere Anmeldungen bekommen es mit (A5)
+    "latecomers",
+)
 
 
 def user_name(user) -> str:
@@ -93,6 +100,15 @@ def clean_filters(value) -> dict:
     for key in FILTER_BOOL_KEYS:
         if key in value:
             out[key] = bool(value[key])
+    for key, allowed in (
+        ("registration_states", rcp.REGISTRATION_STATES),
+        ("registration_paid", rcp.REGISTRATION_PAID),
+    ):
+        if key in value:
+            items = value[key] if isinstance(value[key], list) else []
+            out[key] = [r for r in allowed if r in items]
+    if "registration_prices" in value:
+        out["registration_prices"] = sorted(set(rcp.as_ints(value["registration_prices"])))
     if "event_responses" in value:
         items = value["event_responses"] if isinstance(value["event_responses"], list) else []
         out["event_responses"] = [r for r in rcp.EVENT_RESPONSES if r in items]
@@ -164,6 +180,11 @@ class CircularWriteSerializer(serializers.ModelSerializer):
 
     def validate_audience(self, value):
         org = self.context["org"]
+        if value == Circular.Audience.REGISTERED:
+            # Nur Infoschreiben zu einem Termin mit Anmeldung (entsteht am Termin)
+            if self.instance is not None and self.instance.event_id:
+                return value
+            return Circular.Audience.MEMBERS
         if org.type != Organization.Type.FEDERATION:
             # Abteilungen schreiben nur an ihre Mitglieder
             if value in (
@@ -587,6 +608,8 @@ def event_text(event, reminder: bool = False) -> tuple[str, str]:
         lines.append(f"- Route: [OpenStreetMap]({found['osm']}) · [Google Maps]({found['google']})")
     if event.description.strip():
         lines += ["", event.description.strip()[:5000]]
+    if event.programme.strip():
+        lines += ["", "**Ablauf**", event.programme.strip()[:5000]]
     if event.rsvp_enabled:
         lines.append("")
         if event.rsvp_deadline:
@@ -666,12 +689,22 @@ class _FromEvent(APIView):
         filters: dict = {}
         if reminder:
             filters["event_responses"] = ["open", "maybe"] if event.rsvp_maybe else ["open"]
+        audience = Circular.Audience.MEMBERS
+        from registrations import services as registrations
+
+        if registrations.module_on(self.org) and registrations.setup_of(event) is not None:
+            # Termin mit verbindlicher Anmeldung: Infoschreiben an die Angemeldeten (A5)
+            audience = Circular.Audience.REGISTERED
+            filters = {"registration_states": ["registered"], "latecomers": True}
         subject, body = event_text(event, reminder)
+        if audience == Circular.Audience.REGISTERED:
+            subject = f"Informationen: {subject}"[:200]
+            body = body.replace("wir laden dich herzlich ein:", "hier die Informationen zu", 1)
         circular = Circular.objects.create(
             organization=self.org,
             department=self.dept,
             kind=Circular.Kind.NOTICE,
-            audience=Circular.Audience.MEMBERS,
+            audience=audience,
             subject=subject,
             body=body,
             filters=filters,

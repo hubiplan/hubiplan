@@ -16,7 +16,7 @@ export function baseUrl(b: CircularBase): string {
 
 export type CircularKind = 'info' | 'notice' | 'short'
 export type Channel = 'app' | 'mail' | 'letter' | 'portal'
-export type CircularAudience = 'members' | 'boards' | 'departments' | 'roles'
+export type CircularAudience = 'members' | 'boards' | 'departments' | 'roles' | 'registered'
 export type CircularStatus = 'draft' | 'sending' | 'sent'
 export type EventResponseFilter = 'open' | 'yes' | 'no' | 'maybe'
 
@@ -47,6 +47,14 @@ export interface CircularFilters {
   households_merge?: boolean
   /** Rundschreiben zu einem Termin: nur Eingeladene mit dieser Rückmeldung */
   event_responses?: EventResponseFilter[]
+  /** An Angemeldete eines Termins: Stand der Anmeldung (leer = alle aktiven) */
+  registration_states?: ('registered' | 'waiting')[]
+  /** An Angemeldete: nur bezahlte oder nur offene Anmeldungen (leer = alle) */
+  registration_paid?: ('paid' | 'open')[]
+  /** An Angemeldete: nur Anmeldungen mit diesen Tarifen */
+  registration_prices?: number[]
+  /** Spätere Anmeldungen bekommen das Schreiben nachgeschickt */
+  latecomers?: boolean
   /** Listen im Modus „nur ausgewählte“; leer heißt dort niemand statt alle. */
   selected?: (
     | 'member_types'

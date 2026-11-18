@@ -94,6 +94,8 @@ class Event(models.Model):
     directions = models.TextField(
         "Anfahrt und Hinweise", max_length=1000, blank=True, db_default=""
     )
+    # Ablauf oder Programm (Infoschreiben an Angemeldete, A5)
+    programme = models.TextField("Ablauf", max_length=5000, blank=True, db_default="")
     latitude = models.DecimalField(
         "Breite",
         max_digits=8,

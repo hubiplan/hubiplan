@@ -10039,7 +10039,6 @@
   "bis {b} Jahre": "up to {b} years",
   "{n} Plätze frei": "{n} places left",
   "Angemeldet. Die Bestätigung kommt per E-Mail.": "Registered. The confirmation will arrive by email.",
-  "Anmeldung {number} abmelden?": "Cancel registration {number}?",
   "Die Rechnung wird storniert; den gezahlten Betrag erstattet der Verein.": "The invoice will be cancelled; the club will refund the amount paid.",
   "Die Rechnung wird storniert.": "The invoice will be cancelled.",
   "Anmeldung": "Registration",
@@ -10144,5 +10143,18 @@
   "Ausgewählte abmelden": "Cancel selected",
   "Tarif und Preis bleiben, die Rechnung auch: {price}, {amount}": "Rate and price stay, and so does the invoice: {price}, {amount}",
   "ein Gast (Name eingeben)": "a guest (enter name)",
-  "Ersatzperson eintragen": "Enter substitute"
+  "Ersatzperson eintragen": "Enter substitute",
+  "Weiteres Infoschreiben an Angemeldete": "Another information letter to registrants",
+  "Infoschreiben an Angemeldete": "Information letter to registrants",
+  "Ablauf": "Programme",
+  "Ablauf oder Programm (optional)": "Schedule or programme (optional)",
+  "z. B. 10:00 Treffen am Bahnhof, 12:00 Mittagessen": "e.g. 10:00 meet at the station, 12:00 lunch",
+  "Steht im Termin und kommt in Rundschreiben und Infoschreiben zum Termin.": "Shown in the event and included in circulars and information letters about the event.",
+  "Angemeldete des Termins": "Registrants of the event",
+  "angemeldet": "registered",
+  "auf der Warteliste": "on the waiting list",
+  "An die Angemeldeten von „{title}“": "To the registrants of “{title}”",
+  "Geht an die Person, die angemeldet hat, auch an Gäste ohne Mitgliedschaft. Ohne Häkchen an alle Anmeldungen, sonst nur an die gewählten:": "Goes to the person who registered, including guests without a membership. With nothing ticked it goes to all registrations, otherwise only to the ones chosen:",
+  "Spätere Anmeldungen bekommen das Schreiben nachgeschickt": "Send the letter to later registrations too",
+  "auch wer von der Warteliste nachrückt": "including those who move up from the waiting list"
 }

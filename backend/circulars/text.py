@@ -27,6 +27,9 @@ PLACEHOLDERS: dict[str, str] = {
     "Haushalt": "Name des Haushalts, z. B. „Familie Muster“ (sonst leer)",
     "Mitgliedsjahre": "volle Jahre im Verein",
     "Jubiläumsjahre": "Jubiläum im gewählten Jahr (nur mit Auswahl „Jubilare“)",
+    "Anmeldenummer": "Nummer der Anmeldung (nur an Angemeldete eines Termins)",
+    "Personen": "angemeldete Personen mit Tarif (nur an Angemeldete eines Termins)",
+    "Offener Betrag": "noch zu zahlen (nur an Angemeldete eines Termins)",
 }
 
 PLACEHOLDER_RE = re.compile(r"\{([^{}\s][^{}]{0,40})\}")

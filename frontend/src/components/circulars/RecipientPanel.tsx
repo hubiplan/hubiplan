@@ -137,6 +137,68 @@ function EventRecipients({
   )
 }
 
+/** Infoschreiben zu einem Termin mit Anmeldung: an die Angemeldeten, wahlweise nach Stand. */
+function RegisteredRecipients({
+  event,
+  filters,
+  onFilters,
+}: {
+  event: CircularEvent
+  filters: CircularFilters
+  onFilters: (patch: Partial<CircularFilters>) => void
+}) {
+  const states = filters.registration_states ?? []
+  const paid = filters.registration_paid ?? []
+  const stateLabels: ['registered' | 'waiting', string][] = [
+    ['registered', t('angemeldet')],
+    ['waiting', t('auf der Warteliste')],
+  ]
+  const paidLabels: ['paid' | 'open', string][] = [
+    ['paid', t('bezahlt')],
+    ['open', t('noch offen')],
+  ]
+  return (
+    <fieldset className="stack-sm">
+      <legend>{t('An die Angemeldeten von „{title}“', { title: event.title })}</legend>
+      <p className="muted small">
+        {t(
+          'Geht an die Person, die angemeldet hat, auch an Gäste ohne Mitgliedschaft. Ohne Häkchen an alle Anmeldungen, sonst nur an die gewählten:',
+        )}
+      </p>
+      {stateLabels.map(([value, label]) => (
+        <Checkbox
+          key={value}
+          label={label}
+          checked={states.includes(value)}
+          onChange={(on) =>
+            onFilters({
+              registration_states: on ? [...states, value] : states.filter((v) => v !== value),
+            })
+          }
+        />
+      ))}
+      {paidLabels.map(([value, label]) => (
+        <Checkbox
+          key={value}
+          label={label}
+          checked={paid.includes(value)}
+          onChange={(on) =>
+            onFilters({
+              registration_paid: on ? [...paid, value] : paid.filter((v) => v !== value),
+            })
+          }
+        />
+      ))}
+      <Checkbox
+        label={t('Spätere Anmeldungen bekommen das Schreiben nachgeschickt')}
+        hint={t('auch wer von der Warteliste nachrückt')}
+        checked={filters.latecomers === true}
+        onChange={(on) => onFilters({ latecomers: on })}
+      />
+    </fieldset>
+  )
+}
+
 /** So viele Empfänger zeigt die Liste, bevor „Alle anzeigen“ gewählt wird (VW-58) */
 const RECIPIENTS_SHOWN = 20
 
@@ -248,7 +310,12 @@ export function RecipientPanel({
         </p>
       ) : (
         <>
-          {event && <EventRecipients event={event} filters={filters} onFilters={onFilters} />}
+          {event && audience === 'registered' && (
+            <RegisteredRecipients event={event} filters={filters} onFilters={onFilters} />
+          )}
+          {event && audience !== 'registered' && (
+            <EventRecipients event={event} filters={filters} onFilters={onFilters} />
+          )}
           {audience === 'roles' ? (
             <>
               <p className="muted small">
@@ -318,7 +385,7 @@ export function RecipientPanel({
                 />
               </div>
             </>
-          ) : federation ? (
+          ) : audience === 'registered' ? null : federation ? (
             <>
               <CheckList
                 field="clubs"

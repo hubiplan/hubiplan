@@ -29,6 +29,8 @@ interface Values {
   /** Untereinheit, für die der Termin gilt; '' = die Einheit selbst */
   unit: string
   description: string
+  /** Ablauf oder Programm (Infoschreiben an Angemeldete) */
+  programme: string
   location: string
   address: string
   directions: string
@@ -73,6 +75,7 @@ function initial(event: EventDetail | null, date: string): Values {
       title: '',
       unit: '',
       description: '',
+      programme: '',
       location: '',
       address: '',
       directions: '',
@@ -113,6 +116,7 @@ function initial(event: EventDetail | null, date: string): Values {
     title: event.title,
     unit: event.department_id ? String(event.department_id) : '',
     description: event.description,
+    programme: event.programme ?? '',
     location: event.location,
     address: event.address,
     directions: event.directions ?? '',
@@ -152,6 +156,7 @@ function toInput(v: Values, withUnit = false): EventInput {
     ...(withUnit ? { department_id: v.unit ? Number(v.unit) : null } : {}),
     title: v.title,
     description: v.description,
+    programme: v.programme,
     location: v.location,
     address: v.address,
     directions: v.directions,
@@ -455,6 +460,22 @@ export function EventForm({
           onChange={(e) => set('description', e.target.value)}
         />
       </label>
+      <details className="subcard stack-sm" open={!!v.programme}>
+        <summary>{t('Ablauf')}</summary>
+        <label className="field">
+          <span>{t('Ablauf oder Programm (optional)')}</span>
+          <textarea
+            rows={4}
+            value={v.programme}
+            maxLength={5000}
+            placeholder={t('z. B. 10:00 Treffen am Bahnhof, 12:00 Mittagessen')}
+            onChange={(e) => set('programme', e.target.value)}
+          />
+        </label>
+        <p className="muted small">
+          {t('Steht im Termin und kommt in Rundschreiben und Infoschreiben zum Termin.')}
+        </p>
+      </details>
       <div className="grid-3">
         <SelectField
           label={t('Wiederholung')}
