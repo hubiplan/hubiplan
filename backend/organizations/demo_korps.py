@@ -255,6 +255,10 @@ def _units(club) -> dict[str, Department]:
                 "department_label_plural_en": "Platoons",
             },
         )
+        # Ältere Demostände ohne englische Bezeichnung nachziehen (UX-Audit 16.11., VW-46)
+        if not unit.department_label_en:
+            unit.department_label_en, unit.department_label_plural_en = "Platoon", "Platoons"
+            unit.save(update_fields=["department_label_en", "department_label_plural_en"])
         korps[name] = unit
         for position, (role, perms) in enumerate(KORPS_ROLES, start=1):
             DepartmentRole.objects.get_or_create(
@@ -278,6 +282,9 @@ def _units(club) -> dict[str, Department]:
                     "label_plural_en": "Platoons",
                 },
             )
+            if not zug.label_en:
+                zug.label_en, zug.label_plural_en = "Platoon", "Platoons"
+                zug.save(update_fields=["label_en", "label_plural_en"])
             for position, role in enumerate(ZUG_ROLES, start=1):
                 DepartmentRole.objects.get_or_create(
                     organization=club, department=zug, name=role, defaults={"position": position}

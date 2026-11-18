@@ -167,6 +167,8 @@
   --color-brand-soft: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
   --color-brand-softer: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  /* Seitenleiste abgedunkelt statt kräftig (VW-47): sidebarColorDark(Hubi-Grün) */
+  --sidebar-bg: #10342c;
 }
 
 /*

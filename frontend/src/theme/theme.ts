@@ -190,6 +190,16 @@ export function sidebarColor(primary: string): string {
 }
 
 /**
+ * Seitenleiste im dunklen Modus: die Vereinsfarbe nur als Tönung eines dunklen Grunds, damit die
+ * Leiste neben dem dunklen Inhalt nicht blendet und trotzdem erkennbar die Vereinsfarbe trägt
+ * (UX-Audit 16.11., VW-47). Schrift und markierter Punkt bleiben bei mindestens 4,5 : 1.
+ */
+export const SIDEBAR_DARK_BASE = '#141a18'
+export function sidebarColorDark(primary: string): string {
+  return sidebarColor(blend(primary, SIDEBAR_DARK_BASE, 0.4))
+}
+
+/**
  * Gedämpfte Schrift der Seitenleiste (Gruppen- und Zwischenüberschriften): 70 % Deckkraft,
  * bei hellen Vereinsfarben so viel kräftiger wie nötig für 4,5 : 1 (WCAG 1.4.3, W-15).
  */
@@ -400,7 +410,7 @@ export function themeVars(theme: ThemeColors, scheme: Scheme = 'light'): ThemeVa
   const dark = scheme === 'dark'
   const button = (dark ? buttonColorsDark : buttonColors)(theme.primary, theme.on_primary)
   let link = (dark ? linkColorDark : linkColor)(theme.primary)
-  const sidebar = sidebarColor(theme.primary)
+  const sidebar = dark ? sidebarColorDark(theme.primary) : sidebarColor(theme.primary)
   // Farbrollen nur im hellen Modus; im dunklen bleiben Grund, Flächen und Text aus theme.css
   const roles: Partial<Record<(typeof ROLE_VARS)[number], string>> = {}
   if (!dark && theme.palette_roles_in_app && theme.palette && theme.palette_roles) {
