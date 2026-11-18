@@ -160,8 +160,10 @@ Get-Content -Raw deploy/hestia/hubiplan-restic-backup.sh | ssh deploy@server.exa
 
 Die lokalen Wiederherstellungsunterlagen enthalten das tatsächliche Sicherungsziel,
 Zugänge, Schlüsselverwahrung, Aufbewahrung und Zuständigkeiten. Private Schlüssel und
-Passwörter gehören nicht ins Repository. Zusätzlichen Schutz gegen das Löschen der Kopie
-bieten unabhängig verwaltete Snapshots oder ein unveränderbarer Sicherungsort.
+Passwörter gehören nicht ins Repository. Gegen das Löschen der Kopie durch einen
+übernommenen Server: Snapshots am Speicher, die der Server nicht löschen kann, mindestens
+30 Tage (empfohlen), oder ein rest-server mit `--append-only` und `RESTIC_AUFBEWAHRUNG=aus`;
+Einzelheiten in [betrieb.md](betrieb.md#zweiter-ort-gegen-löschen-schützen).
 
 Das beim Einrichten erzeugte restic-Passwort steht standardmäßig in
 `/root/.config/restic/hubiplan.pass`. Zusätzlich außerhalb des Servers sicher verwahren;
@@ -352,13 +354,14 @@ Die Mail liegt am Sicherungsort nur mit dem restic-Passwort verschlüsselt (die
 HUBIplan-Sicherungen zusätzlich mit age). Das restic-Passwort deshalb wie den age-Schlüssel
 außerhalb des Servers verwahren, im Passwortmanager und offline.
 
-- **Zweiter Ort:** ein eigener SFTP-Zugang nur für diesen Server (z. B. Unterkonto einer
-  Storage Box). Keine Sicherung nur beim Anbieter des Servers selbst.
-- **Dritte Kopie, unveränderbar:** Ein übernommener Server kann mit seinem Zugang auch die
-  restic-Kopie löschen. Dagegen hilft ein Ort, auf den der Server nicht löschend zugreift,
-  zum Beispiel vom Anbieter des Speichers verwaltete Snapshots, die der Unterzugang nicht
-  ändern kann, oder ein Speicher mit Object Lock. Das richtet das Skript nicht ein; Ziel und
-  Aufbewahrung gehören in die privaten Wiederherstellungsunterlagen.
+- **Zweiter Ort:** ein eigener SFTP- oder rest-server-Zugang nur für diesen Server (z. B.
+  Unterkonto eines Speichers). Keine Sicherung nur beim Anbieter des Servers selbst.
+- **Unveränderbare Stufe:** Ein übernommener Server kann mit seinem Zugang auch die
+  restic-Kopie löschen. Dagegen helfen Snapshots am Speicher, die der Unterzugang nicht
+  ändern kann, mindestens 30 Tage (empfohlen), oder ein rest-server mit `--append-only`
+  (siehe [betrieb.md](betrieb.md#zweiter-ort-gegen-löschen-schützen)). Die Snapshots richtet
+  das Skript nicht ein; Ziel und Aufbewahrung gehören in die privaten
+  Wiederherstellungsunterlagen.
 - **Wiederherstellung eines Postfachs** (als root, damit Eigentümer und Rechte erhalten
   bleiben; Repository wie in der eigenen Einrichtung):
 

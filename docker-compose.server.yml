@@ -32,7 +32,8 @@ x-backend-env: &backend-env
   EINVOICE_GATEWAYS: ${EINVOICE_GATEWAYS:-}
   EINVOICE_GATEWAY_TOKENS: ${EINVOICE_GATEWAY_TOKENS:-}
   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY fehlt in .env}
-  # Verschlüsselt die 2FA-Geheimnisse in der Datenbank (liegt nicht im Backup)
+  # Verschlüsselt die 2FA-Geheimnisse in der Datenbank (nicht im Anwendungsbackup; die
+  # optionale restic-Kopie enthält die .env, siehe docs/betrieb.md)
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY fehlt in .env}
   # Schlüsselwechsel: MFA_ENCRYPTION_KEYS=neu,alt (hat Vorrang, siehe docs/betrieb.md)
   MFA_ENCRYPTION_KEYS: ${MFA_ENCRYPTION_KEYS:-}
@@ -308,6 +309,8 @@ services:
       BACKUP_TIME: ${BACKUP_TIME:-03:15}
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
       BACKUP_REMOTE: ${BACKUP_REMOTE:-}
+      # 1: Kopie ohne --delete (Ziel mit rrsync -wo -no-del, siehe docs/betrieb.md)
+      BACKUP_REMOTE_ANHAENGEND: ${BACKUP_REMOTE_ANHAENGEND:-0}
       TZ: Europe/Berlin
     # Gruppe der App (UID/GID 1000): liest auch Schlüsseldateien mit Rechten 0640
     group_add: ["1000"]
