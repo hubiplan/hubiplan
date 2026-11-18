@@ -427,9 +427,12 @@ if [ "$RUN_BACKEND" = 1 ]; then
     docker network create "$ID" > /dev/null
     # Dasselbe festgeschriebene Datenbank-Image wie auf dem Server (docker-compose.server.yml)
     PG_IMAGE=$(git show "$REF:docker-compose.server.yml" | grep -m1 -oE 'image: postgres:[0-9][^ ]*' | cut -d' ' -f2)
+    # max_locks_per_transaction: Das Aufräumen nach transaction=True-Tests leert alle Tabellen
+    # in einer Transaktion; mit der Standardgrenze (64) reicht der Sperrspeicher unter Last nicht
+    # („out of shared memory“). Nur für die Test-Datenbank, Server bleiben unverändert.
     docker run -d --name "$ID-db" --network "$ID" "$CPUS" --tmpfs /var/lib/postgresql \
         -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
-        "$PG_IMAGE" -c max_connections=200 > /dev/null
+        "$PG_IMAGE" -c max_connections=200 -c max_locks_per_transaction=256 > /dev/null
     until docker exec "$ID-db" pg_isready -U test > /dev/null 2>&1; do sleep 1; done
     # App-Rolle vorab anlegen, damit parallele Test-Datenbanken nicht darum konkurrieren
     docker exec "$ID-db" psql -q -U test -d test -c \
