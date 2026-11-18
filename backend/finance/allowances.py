@@ -166,21 +166,28 @@ def _person_of(entry: dict, memberships: dict) -> tuple[str, str, object]:
     return (*_free_text(entry["name"] or ""), None)
 
 
-def _board_people(orgs, year: int) -> set[int]:
-    """Personen (Akten) mit Vorstandsrolle irgendwann im Kalenderjahr."""
+def _board_people(org, orgs, year: int) -> set[int]:
+    """Personen (Akten) mit Vorstandsrolle irgendwann im Kalenderjahr.
+
+    Die Rollenzuordnungen einer Untereinheit mit eigenem Arbeitsbereich sieht der Verein
+    unter dem Zeilenschutz nicht; sie werden wie die Buchungen in deren Bereich gelesen."""
     from access.models import RoleAssignment
 
     first, last = datetime.date(year, 1, 1), datetime.date(year, 12, 31)
-    return set(
-        RoleAssignment.objects.filter(
-            organization__in=orgs,
-            role__is_board=True,
-            person__isnull=False,
-            valid_from__lte=last,
+
+    def read(units):
+        return list(
+            RoleAssignment.objects.filter(
+                organization__in=units,
+                role__is_board=True,
+                person__isnull=False,
+                valid_from__lte=last,
+            )
+            .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=first))
+            .values_list("person_id", flat=True)
         )
-        .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=first))
-        .values_list("person_id", flat=True)
-    )
+
+    return set(_per_unit(org, orgs, read))
 
 
 def _orgs(org):
@@ -249,7 +256,7 @@ def _music_unassigned(rows: list[Decimal]) -> dict | None:
 def report(org, year: int) -> dict:
     limit = limits(year)
     orgs, root = _orgs(org)
-    board = _board_people(orgs, year)
+    board = _board_people(org, orgs, year)
     people: dict[str, dict] = {}
 
     def add(key, name, membership, kind, row):

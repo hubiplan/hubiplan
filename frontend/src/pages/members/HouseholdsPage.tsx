@@ -578,35 +578,62 @@ function Suggestions({
         <Alert kind="error">{error}</Alert>
       ) : !data ? (
         <Loading small />
-      ) : data.length === 0 ? (
-        <p className="muted">{t('Keine Vorschläge.')}</p>
       ) : (
-        <ul className="item-list">
-          {data.map((s) => (
-            <li key={`${s.street}-${s.postal_code}-${s.city}`} className="item-row">
-              <div className="item-row-info">
-                <strong>{s.name}</strong>
-                <span className="muted small">
-                  {' '}
-                  {[s.street, `${s.postal_code} ${s.city}`.trim()].filter(Boolean).join(', ')}
-                </span>
-                <br />
-                {s.members.map((m) => `${m.first_name} ${m.last_name}`).join(', ')}
-                {s.members.some((m) => m.household !== null) && (
-                  <span className="muted small">
-                    {' '}
-                    · {t('teils schon in einem anderen Haushalt')}
-                  </span>
+        <>
+          {data.suggestions.length === 0 ? (
+            <p className="muted">{t('Keine Vorschläge.')}</p>
+          ) : (
+            <ul className="item-list">
+              {data.suggestions.map((s) => (
+                <li key={`${s.street}-${s.postal_code}-${s.city}`} className="item-row">
+                  <div className="item-row-info">
+                    <strong>{s.name}</strong>
+                    <span className="muted small">
+                      {' '}
+                      {[s.street, `${s.postal_code} ${s.city}`.trim()].filter(Boolean).join(', ')}
+                    </span>
+                    <br />
+                    {s.members.map((m) => `${m.first_name} ${m.last_name}`).join(', ')}
+                    {s.members.some((m) => m.household !== null) && (
+                      <span className="muted small">
+                        {' '}
+                        · {t('teils schon in einem anderen Haushalt')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="button-row">
+                    <button type="button" className="button" onClick={() => void create(s)}>
+                      {t('Als Haushalt anlegen')}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {data.missing_address.length > 0 && (
+            <details>
+              <summary>
+                {t(
+                  '{count} Mitglieder ohne vollständige Anschrift (fehlt oder Platzhalter wie „00000 UNBEKANNT“) werden nicht vorgeschlagen.',
+                  { count: data.missing_address.length },
                 )}
-              </div>
-              <div className="button-row">
-                <button type="button" className="button" onClick={() => void create(s)}>
-                  {t('Als Haushalt anlegen')}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </summary>
+              <p className="muted small">
+                {t('Trage die Anschrift in der Mitgliederakte nach, dann erscheinen sie hier.')}
+              </p>
+              <p>
+                {data.missing_address.map((m, i) => (
+                  <span key={m.id}>
+                    {i > 0 && ', '}
+                    <Link to={`/mitglieder/${m.id}`}>
+                      {m.first_name} {m.last_name}
+                    </Link>
+                  </span>
+                ))}
+              </p>
+            </details>
+          )}
+        </>
       )}
     </section>
   )

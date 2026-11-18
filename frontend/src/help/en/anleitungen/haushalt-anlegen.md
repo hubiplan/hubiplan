@@ -9,7 +9,7 @@ stichworte: [family, household, family fee, joint letter, payer]
 ---
 
 1. Open [Households and companies](/mitglieder/haushalte).
-2. Click **Find suggestions**; HUBIplan shows members with the same address.
+2. Click **Find suggestions**; HUBIplan shows members with the same address. Missing addresses and placeholders such as “00000 UNKNOWN” do not count; these members are listed below so you can add their address.
 3. Accept a suggestion with **Create as household**, or click **Create household** and enter a name.
 4. Use **Add member** to add further members and choose **Adult** or **Child**.
 5. Under **Payer and mandate**, enter who pays the family's fees.
