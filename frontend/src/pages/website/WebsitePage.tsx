@@ -803,16 +803,17 @@ function WebsiteAdmin({
         />
       )}
       {settings(
-        t('Bausteine'),
+        // Ein Begriff je Sache (UX-Audit WS-15): feste Bereiche heißen „Seiten“
+        t('Seiten'),
         <>
           <p className="muted small">
             {t(
-              'Welche Bereiche die Webseite zeigt, in der Reihenfolge des Menüs. Mit dem Stift gibst du einem Baustein einen eigenen Namen für Menü und Überschrift.',
+              'Welche Seiten die Webseite zeigt, in der Reihenfolge des Menüs. Mit dem Stift gibst du einer Seite einen eigenen Namen für Menü und Überschrift.',
             )}
           </p>
           <p className="muted small">
             {t(
-              'Reihenfolge, Namen, Links und Knopf des Menüs kommen in den Entwurf und erscheinen erst nach „Veröffentlichen“. Die Häkchen (Baustein an oder aus) gelten sofort.',
+              'Reihenfolge, Namen, Links und Knopf des Menüs kommen in den Entwurf und erscheinen erst nach „Veröffentlichen“. Die Häkchen (Seite an oder aus) gelten sofort.',
             )}
           </p>
           {website.menu_items && (

@@ -1004,7 +1004,7 @@ function DignityForm({
           placeholder={dignity?.web_slug || undefined}
           error={errors.web_slug}
           hint={t(
-            'Leer: aus der Mehrzahl, z. B. /majestaeten/hubertuskoenige/. Frühere Adressen leiten weiter.',
+            'Leer: aus der Mehrzahl, z. B. /wuerden/hubertuskoenige/. Frühere Adressen leiten weiter.',
           )}
           onChange={(e) => set('web_slug', e.target.value)}
         />

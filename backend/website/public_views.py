@@ -188,6 +188,9 @@ class SiteInfoView(_Public):
             "allow_indexing": site.site.allow_indexing and self.state == Website.State.PUBLIC,
             # Sprache der festen Texte (hubiplan-website, W1); Standard Deutsch
             "language": site.site.language,
+            # Sprache der Vereinsinhalte (Vereinssprache); die Webseite zeichnet Inhaltsblöcke
+            # mit lang aus, wenn sie von der Rahmensprache abweicht (UX-Audit WS-11)
+            "content_language": org.language,
             "hubiplan_imprint": imprint.page_urls(org),
         }
         if not self.visible:

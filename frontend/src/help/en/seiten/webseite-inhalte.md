@@ -15,7 +15,7 @@ Under **Page sections** you build a text page from sections, like the home page.
 
 ## Sub-unit pages from sections
 
-The text of a sub-unit (platoon, department, band, team) also has **Page sections**. Besides the “Page text” (image, text and picture carousel), it lists the fixed blocks “Contact”, “Own homepage”, “Royalty”, “Upcoming events”, “News (posts)” and “Follow us”. Drag them into a different order or hide them with the tick box. Before and after them you can add your own sections, such as **Text with image**, **Images**, a **Quote**, **Frequently asked questions**, **Opening and training hours**, a **Video as a link** or the **Majesties of a unit**. Without changes the page looks as before.
+The text of a sub-unit (platoon, department, band, team) also has **Page sections**. Besides the “Page text” (image, text and picture carousel), it lists the fixed blocks “Contact”, “Own homepage”, “Title holders”, “Upcoming events”, “News (posts)” and “Follow us”. Drag them into a different order or hide them with the tick box. Before and after them you can add your own sections, such as **Text with image**, **Images**, a **Quote**, **Frequently asked questions**, **Opening and training hours**, a **Video as a link** or the **Title holders of a unit**. Without changes the page looks as before.
 
 ## Picture slot without a picture
 

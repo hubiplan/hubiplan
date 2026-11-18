@@ -222,6 +222,23 @@ def company_of(form: ApplicationForm, token: str):
     return invite[0] if invite else None
 
 
+def _club_frame(org, request) -> dict:
+    """Logo der Einheit (geerbt wie in der Anmeldung) und Adresse ihrer öffentlichen Webseite."""
+    from organizations.theme import effective_theme
+    from website.models import Website
+    from website.views import site_url
+
+    logo = effective_theme(org.ancestors())["logo_url"]
+    if logo and request is not None and logo.startswith("/"):
+        logo = request.build_absolute_uri(logo)
+    site = (
+        Website.objects.filter(organization=org, state=Website.State.PUBLIC)
+        .prefetch_related("domains")
+        .first()
+    )
+    return {"logo_url": logo or None, "website_url": site_url(site) if site else None}
+
+
 def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = "") -> dict:
     org = form.organization
     sepa, mandate = sepa_state(form)
@@ -240,6 +257,8 @@ def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = 
                 preselect = u.pk
     return {
         "organization": org.name,
+        # Wappen und Rückweg zur Webseite des Vereins (UX-Audit WS-09/X-08)
+        **_club_frame(org, request),
         "language": language,
         "languages": available(),
         "intro": services.text_of(form, "intro", language),

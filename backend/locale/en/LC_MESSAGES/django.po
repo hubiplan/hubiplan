@@ -12930,8 +12930,8 @@ msgstr "Contact"
 msgid "Eigene Homepage"
 msgstr "Own homepage"
 
-msgid "Majestäten"
-msgstr "Royalty"
+msgid "Würdenträger"
+msgstr "Title holders"
 
 msgid "Nächste Termine"
 msgstr "Upcoming events"

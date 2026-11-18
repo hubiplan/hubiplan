@@ -963,7 +963,8 @@ class SiteView:
                 d for d in self._with_reigns(qs, origins).order_by("pk") if self.dignity_on(d)
             ]
         if len(dignities) != 1:
-            return "Majestäten"
+            # Vereinsneutral, außer mit Schießsport (UX-Audit WS-12)
+            return "Majestäten" if module_on(self.site.organization, "shooting") else "Würdenträger"
         dignity = dignities[0]
         return dignity.plural if dignity.reign_count > 1 else dignity.name
 

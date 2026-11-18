@@ -28,7 +28,7 @@ const ALL: NavItem[] = [
   { to: '/webseite/gestaltung', label: t('Design und Farben'), section: design },
   { to: '/webseite/feinabstimmung', label: t('Feinabstimmung'), section: design },
   { to: '/webseite/fassungen', label: t('Fassungen'), section: design },
-  { to: '/webseite/aufbau', label: t('Menü und Bausteine'), section: structure },
+  { to: '/webseite/aufbau', label: t('Menü und Seiten'), section: structure },
   { to: '/webseite/kontakt', label: t('Kontaktformular'), section: operation },
   { to: '/webseite/domain', label: t('Internetadresse'), section: operation },
 ]

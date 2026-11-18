@@ -73,7 +73,7 @@ class Dignity(WebSlugMixin, models.Model):
     def plural(self) -> str:
         return self.name_plural.strip() or guess_plural(self.name)
 
-    # Webseite #149: /majestaeten/hubertuskoenige/ aus der Mehrzahl wie im Menü
+    # Webseite #149: /wuerden/hubertuskoenige/ aus der Mehrzahl wie im Menü
     WEB_SLUG_FALLBACK = "wuerde"
 
     def web_slug_source(self) -> str:

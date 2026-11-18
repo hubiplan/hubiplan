@@ -1,6 +1,6 @@
 ---
 key: page.website_structure
-titel: Webseite › Menü und Bausteine
+titel: Webseite › Menü und Seiten
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
@@ -44,7 +44,7 @@ Unter „Menüpunkt als Knopf hervorheben“ wählt ihr einen Hauptpunkt, der im
 
 ## Menüpunkte im Fuß
 
-Wird die Menüleiste zu voll, stellt ihr unter „Menüpunkte im Fuß“ für einen Hauptpunkt ein, ob er „im Menü“, „nur im Fuß“ oder „im Menü und im Fuß“ steht. Im Fuß erscheint er neben Impressum und Datenschutz, zum Beispiel „Kontakt“. Die Seite bleibt erreichbar und ihr Baustein bleibt eingeschaltet. Überschriften und Punkte mit Unterpunkten gehen nicht. „Start“ und die Suche stellt ihr unter Webseite › Feinabstimmung bei Kopf und Menü ein.
+Wird die Menüleiste zu voll, stellt ihr unter „Menüpunkte im Fuß“ für einen Hauptpunkt ein, ob er „im Menü“, „nur im Fuß“ oder „im Menü und im Fuß“ steht. Im Fuß erscheint er neben Impressum und Datenschutz, zum Beispiel „Kontakt“. Die Seite bleibt erreichbar und eingeschaltet. Überschriften und Punkte mit Unterpunkten gehen nicht. „Start“ und die Suche stellt ihr unter Webseite › Feinabstimmung bei Kopf und Menü ein.
 
 ## Entwurf
 

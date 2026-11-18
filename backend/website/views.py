@@ -722,7 +722,7 @@ def unit_section_options(org, website: Website) -> dict:
         "body": gettext("Text der Seite"),
         "contact": gettext("Kontakt"),
         "homepage": gettext("Eigene Homepage"),
-        "honors": gettext("Majestäten"),
+        "honors": gettext("Würdenträger"),
         "events": gettext("Nächste Termine"),
         "news": gettext("Aktuelles (Beiträge)"),
         "follow": gettext("Folgt uns"),

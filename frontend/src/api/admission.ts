@@ -35,6 +35,9 @@ export interface JoinConfirmation {
 
 export interface JoinSchema {
   organization: string
+  /** Logo der Einheit (wie in der Anmeldung) und Adresse ihrer öffentlichen Webseite */
+  logo_url?: string | null
+  website_url?: string | null
   language: string
   languages: string[]
   intro: string

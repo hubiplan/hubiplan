@@ -27,7 +27,7 @@ stichworte:
 
 Die Startseite bearbeiten alle an einer Stelle: Wer die Webseite verwaltet, stellt sie hier zusammen und ändert die Inhalte; wer nur „Inhalte bearbeiten“ darf, ändert den Inhalt der vorhandenen Abschnitte. Rechts zeigt die **Vorschau** die Webseite mit dem Entwurf.
 
-Unter **Startseite** stellt ihr die Startseite aus Abschnitten zusammen und seht jede Änderung gleich in der Vorschau. Die bisherigen Bausteine (etwa Willkommenstext, Nächste Termine, Majestäten) gibt es je einmal; ihr schaltet sie ein und aus.
+Unter **Startseite** stellt ihr die Startseite aus Abschnitten zusammen und seht jede Änderung gleich in der Vorschau. Die festen Abschnitte (etwa Willkommenstext, Nächste Termine, Würdenträger) gibt es je einmal; ihr schaltet sie ein und aus.
 
 ## Abschnitte, die es gibt
 
@@ -58,12 +58,12 @@ Mit **Abschnitt hinzufügen** kommen eigene Abschnitte dazu, die ihr beliebig of
 - **Zwei Spalten** (zwei Textblöcke nebeneinander, auf dem Handy untereinander)
 - **Tabelle** (eine bis sechs Spalten mit Kopfzeile)
 - **Zeitstrahl** (eigene Stationen mit Zeitangabe, unabhängig von der Chronik)
-- **Festprogramm** (Programmpunkte mit Tag und Uhrzeit; gleiche Tage hintereinander stehen unter einer Überschrift)
+- **Programm** (Programmpunkte mit Tag und Uhrzeit; gleiche Tage hintereinander stehen unter einer Überschrift)
 - **Hinweis-Kasten** (Info, Achtung oder Erfolg, dauerhaft)
 - **Aufklappbare Abschnitte** (Überschriften mit Text zum Aufklappen)
 - **Bilder** (ein bis acht eigene Bilder mit Bildunterschrift, groß per Klick; ein einzelnes Bild steht über die ganze Breite, mit **Volle Breite** von Rand zu Rand)
 - **Download-Liste** (bis zu zehn veröffentlichte Dateien aus Webseite › Dokumente)
-- **Majestäten einer Untereinheit**
+- **Würdenträger einer Untereinheit**
 - **Ergebnisse eines Wettbewerbs** (Sieger und Stand eines gewählten, veröffentlichten Wettbewerbs)
 - **Galerie-Übersicht** (die ersten Alben der Galerie)
 - **Neueste Beiträge** (aus Instagram und Facebook)

@@ -9,7 +9,7 @@ stichworte: [Sheet music, piece, arrangement, part, import, CSV, repertoire, lic
 
 Open **Music** → **Sheet music library**. Create pieces with composers, then editions/arrangements with arrangers, publishers, duration in seconds, difficulty, instrumentation and licence notes. Archive unused arrangements. Record required musicians, copy counts, storage locations and concert or march book format for each instrument and part. Record full scores separately. Stocks at multiple locations are added together for the same part; the highest player requirement applies.
 
-With **In the repertoire on the website** a piece appears with title and composer in the “Repertoire” section of the club website. Switch the section on under **Website** → **Menu and building blocks**.
+With **In the repertoire on the website** a piece appears with title and composer in the “Repertoire” section of the club website. Switch the section on under **Website** → **Menu and pages**.
 
 ## Digital sheet music
 

@@ -106,7 +106,7 @@ export function ContentPage() {
               {g.kind === 'page' && items.length > 0 && (
                 <p className="muted small">
                   {t('Die Position der Textseiten im Menü legst du hier fest:')}{' '}
-                  <Link to="/webseite/aufbau">{t('Webseite › Menü und Bausteine')}</Link>.
+                  <Link to="/webseite/aufbau">{t('Webseite › Menü und Seiten')}</Link>.
                 </p>
               )}
               <TextList
@@ -192,7 +192,7 @@ export function ContentPage() {
   )
 }
 
-/** Liste der Texte (die Reihenfolge der Textseiten im Menü steht unter Menü und Bausteine). */
+/** Liste der Texte (die Reihenfolge der Textseiten im Menü steht unter Menü und Seiten). */
 function TextList({
   items,
   render,

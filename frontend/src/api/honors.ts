@@ -19,7 +19,7 @@ export interface Dignity {
   name_plural: string
   plural: string
   reign_count: number
-  /** Webseite #149: Adresse auf der Webseite (/majestaeten/…/); leer gesendet = aus dem Namen */
+  /** Webseite #149: Adresse auf der Webseite (/wuerden/…/); leer gesendet = aus dem Namen */
   web_slug?: string
   /** true: Adresse folgt dem Namen */
   web_slug_auto?: boolean

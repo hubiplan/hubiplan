@@ -17,4 +17,4 @@ Ein Foto einer Regentschaft erscheint auf der Webseite nur, wenn alle verknüpft
 
 ## Adresse auf der Webseite
 
-Jede Würde hat auf der Webseite eine lesbare Adresse aus der Mehrzahl, etwa `/majestaeten/hubertuskoenige/`. Im Dialog der Würde lässt sie sich unter **Adresse auf der Webseite** selbst wählen; leer folgt sie wieder dem Namen. Benennt ihr eine Würde um, leiten frühere Adressen weiter, Links und Lesezeichen bleiben also gültig.
+Jede Würde hat auf der Webseite eine lesbare Adresse aus der Mehrzahl, etwa `/wuerden/hubertuskoenige/`. Im Dialog der Würde lässt sie sich unter **Adresse auf der Webseite** selbst wählen; leer folgt sie wieder dem Namen. Benennt ihr eine Würde um, leiten frühere Adressen weiter, Links und Lesezeichen bleiben also gültig.

@@ -15,6 +15,6 @@ stichworte: [gallery, album, photos, pictures, festival]
 5. Choose the cover picture.
 6. Tick **Show on the website**.
 
-Show photos of recognisable people only with their consent. The gallery area must be switched on under Menu and building blocks.
+Show photos of recognisable people only with their consent. The gallery area must be switched on under Menu and pages.
 
 ![Starting point: Create a photo album in the gallery](bild:webseite-album-anlegen)

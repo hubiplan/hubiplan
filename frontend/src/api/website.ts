@@ -320,7 +320,7 @@ export interface HomeSectionData {
   rows?: string[][]
   /** Download-Liste: Dokumentnummern */
   documents?: number[]
-  /** Majestäten einer Untereinheit */
+  /** Würdenträger einer Untereinheit */
   unit?: number | null
   /** Ergebnisse eines Wettbewerbs */
   competition?: number | null
@@ -339,7 +339,7 @@ export interface HomeSectionData {
 
 /** Eintrag einer Liste: Frage/Antwort, Partner (Name, Logo, Link) oder Zahl mit Text */
 export interface HomeItem {
-  /** Zeiten, Festprogramm: Tag; Zeitstrahl: Zeitangabe */
+  /** Zeiten, Programm: Tag; Zeitstrahl: Zeitangabe */
   day?: string
   time?: string
   note?: string
@@ -387,7 +387,7 @@ export interface HomeChoices {
   places?: { id: number; name: string }[]
   categories?: { id: number; name: string }[]
   documents?: { id: number; title: string }[]
-  /** Majestäten einer Untereinheit, Ergebnisse eines Wettbewerbs, Zahlen aus HUBIplan */
+  /** Würdenträger einer Untereinheit, Ergebnisse eines Wettbewerbs, Zahlen aus HUBIplan */
   units?: { id: number; name: string }[]
   competitions?: { id: number; title: string; date: string }[]
   live_facts?: Record<string, string>

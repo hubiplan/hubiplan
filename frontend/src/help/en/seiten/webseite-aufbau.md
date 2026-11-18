@@ -1,6 +1,6 @@
 ---
 key: page.website_structure
-titel: Website › Menu and building blocks
+titel: Website › Menu and pages
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
@@ -45,7 +45,7 @@ Under “Highlight a menu item as a button” you choose one main item that appe
 
 ## Menu items in the footer
 
-If the menu bar gets too full, “Menu items in the footer” lets you set for each main item whether it appears “in the menu”, “footer only” or “menu and footer”. In the footer it appears next to the legal notice and privacy policy, for example “Contact”. The page stays reachable and its block stays switched on. Headings and items with sub-items are not possible. “Home” and the search are set under Website › Fine-tuning, in the header and menu settings.
+If the menu bar gets too full, “Menu items in the footer” lets you set for each main item whether it appears “in the menu”, “footer only” or “menu and footer”. In the footer it appears next to the legal notice and privacy policy, for example “Contact”. The page stays reachable and switched on. Headings and items with sub-items are not possible. “Home” and the search are set under Website › Fine-tuning, in the header and menu settings.
 
 ## Draft
 

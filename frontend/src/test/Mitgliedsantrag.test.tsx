@@ -129,6 +129,29 @@ describe('Mitgliedsantrag', () => {
     expect(await screen.findByText('Erziehungsberechtigte')).toBeInTheDocument()
   })
 
+  it('zeigt Wappen und den Weg zurück zur Webseite des Vereins (UX-Audit WS-09)', async () => {
+    fakeApi({
+      [SESSION]: loggedOut,
+      'GET /api/public/join/k1/?lang=de': () => ({
+        status: 200,
+        body: {
+          ...schema,
+          logo_url: 'https://hubiplan.example/media/logo.png',
+          website_url: 'https://tv-beispielhausen.example/',
+        },
+      }),
+    })
+    renderAt('/mitglied-werden/k1')
+    const back = await screen.findByRole('link', {
+      name: /Zurück zur Webseite von TV Beispielhausen/,
+    })
+    expect(back).toHaveAttribute('href', 'https://tv-beispielhausen.example/')
+    expect(document.querySelector('.login-logo img')).toHaveAttribute(
+      'src',
+      'https://hubiplan.example/media/logo.png',
+    )
+  })
+
   it('eigener Antrag: Link aus der Mail bestätigt, Zurückziehen fragt nach', async () => {
     const calls = fakeApi({
       [SESSION]: loggedOut,

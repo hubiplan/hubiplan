@@ -2,7 +2,7 @@
 // Startseite aus Abschnitten zusammenstellen. Die festen Bausteine gibt es je einmal, eigene
 // Abschnitte (Text, Banner, Kacheln …) beliebig oft. Jeder Abschnitt hat Hintergrund und
 // Breite, im Design „Zeitung“ auch die Spalte. Alles landet im Entwurf der Gestaltung (G2).
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { gradientCss } from '../../api/orgs.ts'
 import { partnerApi } from '../../api/partners.ts'
@@ -98,12 +98,12 @@ function kindLabel(kind: HomeKind): string {
     columns: t('Zwei Spalten'),
     table: t('Tabelle'),
     timeline: t('Zeitstrahl'),
-    program: t('Festprogramm'),
+    program: t('Programm'),
     callout: t('Hinweis-Kasten'),
     accordion: t('Aufklappbare Abschnitte'),
     images: t('Bilder'),
     downloads: t('Download-Liste'),
-    unit_honors: t('Majestäten einer Untereinheit'),
+    unit_honors: t('Würdenträger einer Untereinheit'),
     competition: t('Ergebnisse eines Wettbewerbs'),
     albums: t('Galerie-Übersicht'),
     posts: t('Neueste Beiträge'),
@@ -140,12 +140,12 @@ function kindHint(kind: HomeKind): string {
     columns: t('zwei Textblöcke nebeneinander'),
     table: t('eine einfache Tabelle mit Kopfzeile'),
     timeline: t('eigene Stationen mit Zeitangabe und Text'),
-    program: t('Ablauf eines Fests mit Tagen und Uhrzeiten'),
+    program: t('Ablauf einer Veranstaltung mit Tagen und Uhrzeiten'),
     callout: t('farbiger Kasten für Info, Achtung oder Erfolg'),
     accordion: t('Überschriften mit Text zum Aufklappen'),
     images: t('ein bis acht eigene Bilder mit Bildunterschrift'),
     downloads: t('mehrere Dateien aus Webseite › Dokumente als Liste'),
-    unit_honors: t('die aktuellen Majestäten einer Untereinheit'),
+    unit_honors: t('die aktuellen Würdenträger einer Untereinheit'),
     competition: t('Sieger und Stand eines bestimmten Wettbewerbs'),
     albums: t('die ersten Alben der Galerie als Kacheln'),
     posts: t('die neuesten Beiträge aus Instagram und Facebook'),
@@ -529,6 +529,9 @@ export function HomeBuilder({
       )
     : []
   const [editing, setEditing] = useState<string | null>(null)
+  // Neu gewählter Abschnitt: erst mit „Übernehmen“ Teil der Seite; Abbrechen verwirft ihn
+  // (UX-Audit WS-17: kein leerer Abschnitt, kein Speichern vor der ersten Eingabe)
+  const [pending, setPending] = useState<HomeSection | null>(null)
   const [adding, setAdding] = useState(false)
   const label = (s: HomeSection) => (s.kind ? kindLabel(s.kind) : (labels[s.key] ?? s.key))
   // Bausteine ohne Bezeichnung gibt es hier nicht (z. B. Ergebnisse ohne Modul)
@@ -594,12 +597,11 @@ export function HomeBuilder({
         : 'main',
       data: defaults(kind),
     }
-    onChange([...value, section])
     setAdding(false)
-    setEditing(key)
+    setPending(section)
   }
 
-  const current = value.find((s) => s.key === editing) ?? null
+  const current = pending ?? value.find((s) => s.key === editing) ?? null
 
   if (contentOnly) {
     const custom = value.filter((s) => s.kind)
@@ -738,11 +740,17 @@ export function HomeBuilder({
           section={current}
           title={current.kind ? kindLabel(current.kind) : (labels[current.key] ?? current.key)}
           design={design}
+          fresh={pending !== null}
           onSave={(next) => {
-            update(current.key, next)
+            if (pending) onChange([...value, next])
+            else update(current.key, next)
+            setPending(null)
             setEditing(null)
           }}
-          onClose={() => setEditing(null)}
+          onClose={() => {
+            setPending(null)
+            setEditing(null)
+          }}
         />
       )}
     </>
@@ -815,6 +823,7 @@ function SectionDialog({
   title,
   design,
   contentOnly = false,
+  fresh = false,
   onSave,
   onClose,
 }: {
@@ -824,11 +833,18 @@ function SectionDialog({
   title: string
   design: string
   contentOnly?: boolean
+  /** Gerade gewählter, neuer Abschnitt: Fokus ins erste Feld (UX-Audit WS-17) */
+  fresh?: boolean
   onSave: (next: HomeSection) => void
   onClose: () => void
 }) {
   const org = useActiveOrg()
   const [s, setS] = useState(section)
+  const body = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!fresh) return
+    body.current?.querySelector<HTMLElement>('input, textarea, select')?.focus()
+  }, [fresh])
   // Wasserzeichen „Bild“ auch, solange noch keins gewählt ist (Webseite #123)
   const [markImage, setMarkImage] = useState(typeof section.mark === 'number')
   const images = useLoad(() => contentApi.images(org.id), [org.id])
@@ -856,7 +872,7 @@ function SectionDialog({
 
   return (
     <Modal title={title} onClose={onClose}>
-      <div className="home-section-dialog">
+      <div className="home-section-dialog" ref={body}>
         {s.kind && (
           <SectionContent
             data={data}

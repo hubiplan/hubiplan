@@ -9,7 +9,7 @@ stichworte: [Noten, Stück, Arrangement, Stimme, Import, CSV, Repertoire, Lizenz
 
 Erfasse zuerst die Stücke mit Komponist und dann die Ausgaben/Arrangements mit Arrangeur, Verlag, Dauer in Sekunden, Schwierigkeit, Besetzung und Lizenzhinweisen. Arrangements, die ihr nicht mehr spielt, archivierst du. Unter **Stimmenbestand** gibst du je Instrument und Register/Stimme die benötigten Spieler, die Exemplare, den Lagerort und das Format (Konzert oder Marschbuch) an. Partituren erfasst du gesondert als Partitur. Liegt dieselbe Stimme an mehreren Lagerorten, zählt HUBIplan die Bestände zusammen; es gilt die höchste Zahl benötigter Spieler.
 
-Mit **Im Repertoire auf der Webseite** erscheint ein Stück mit Titel und Komponist im Bereich „Repertoire“ der Vereinswebseite. Den Bereich schaltet ihr unter **Webseite** → **Menü und Bausteine** ein.
+Mit **Im Repertoire auf der Webseite** erscheint ein Stück mit Titel und Komponist im Bereich „Repertoire“ der Vereinswebseite. Den Bereich schaltet ihr unter **Webseite** → **Menü und Seiten** ein.
 
 ## Digitale Noten
 

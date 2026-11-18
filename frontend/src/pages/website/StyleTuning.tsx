@@ -29,6 +29,23 @@ const BASE = '/webseite/feinabstimmung'
 const SHOW_ALL = 'hubiplan.feinabstimmung.alle'
 
 const s = (key: string, more = false): Slot => ({ key, more })
+
+/** Hinweis am Regler, wenn die Wahl schwer lesbar ist (UX-Audit WS-15) */
+function readabilityWarning(key: string, value: unknown): string | null {
+  if (key === 'heading_font' && value === 'fraktur')
+    return t(
+      'Fraktur ist für viele schwer lesbar. Am besten nur für kurze Überschriften verwenden, nicht für Namen oder Termine.',
+    )
+  if (key === 'script_greeting' && value === true)
+    return t(
+      'Schmuckschrift ist schwer lesbar. Die Begrüßung sollte dann kurz sein, längere Texte besser in der normalen Schrift.',
+    )
+  if (key === 'buttons' && value === 'label')
+    return t(
+      'Als Etikett stehen Knöpfe in kleinen Großbuchstaben. Das ist schwerer zu lesen; kurze Knopftexte helfen.',
+    )
+  return null
+}
 /** Darstellung eines Bereichs (variants.py) als Regler */
 const layoutKey = (area: string) => `layout:${area}`
 
@@ -956,7 +973,7 @@ export function StyleTuning({
     homeSections === undefined ||
     homeSections.some((x) => x.key === 'carousel' && x.on)
   const eventsOn = blocks?.events !== false
-  const toStructure = { to: '/webseite/aufbau', label: t('Menü und Bausteine') }
+  const toStructure = { to: '/webseite/aufbau', label: t('Menü und Seiten') }
   const noHero: Why = {
     text: t('Die Startseite zeigt kein Titelbild (Baustein „Bilderkarussell“).'),
     link: { to: '/webseite/startseite', label: t('Startseite') },
@@ -1297,6 +1314,11 @@ export function StyleTuning({
             </button>
           )}
         </div>
+        {!isLocked && !reason && readabilityWarning(key, effective(key)) && (
+          <p className="style-extra style-warn small" role="note">
+            {readabilityWarning(key, effective(key))}
+          </p>
+        )}
         {key === 'header_bg' &&
           !isLocked &&
           (value.header_bg === 'image' || value.header_bg === undefined) && (

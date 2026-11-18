@@ -17,4 +17,4 @@ A photo of a reign appears on the website only if all linked members have consen
 
 ## Address on the website
 
-Each dignity has a readable address on the website made from its plural, such as `/majestaeten/hubertuskoenige/`. In the dignity dialog you can choose it yourself under **Address on the website**; left empty, it follows the name again. If you rename a dignity, earlier addresses redirect, so links and bookmarks keep working.
+Each dignity has a readable address on the website made from its plural, such as `/wuerden/hubertuskoenige/`. In the dignity dialog you can choose it yourself under **Address on the website**; left empty, it follows the name again. If you rename a dignity, earlier addresses redirect, so links and bookmarks keep working.
