@@ -167,6 +167,37 @@ def rsvp_data(event: Event, viewer: services.Viewer) -> dict:
     return data
 
 
+def registration_data(event: Event, viewer: services.Viewer) -> dict | None:
+    """Verbindliche Anmeldung am Termin (Modul „Anmeldungen“), nur ein kurzer Stand;
+    Einzelheiten unter ``<termin>/registration/``."""
+    from registrations import services as reg
+
+    if not reg.module_on(viewer.org):
+        return None
+    setup = reg.setup_of(event)
+    can_setup = (
+        viewer.kind == "org"
+        and viewer.owns(event)
+        and viewer.can_edit(event)
+        and "registrations.edit" in viewer.perms
+    )
+    if setup is None:
+        return {"enabled": False, "can_setup": can_setup} if can_setup else None
+    value = reg.state(setup)
+    return {
+        "enabled": True,
+        "state": value,
+        "state_text": reg.state_text(setup, value),
+        "closes_at": setup.closes_at,
+        "free": reg.free(setup),
+        "can_setup": can_setup,
+        "can_view_list": viewer.kind == "org"
+        and viewer.owns(event)
+        and "registrations.view" in viewer.perms,
+        "can_register": viewer.kind == "member",
+    }
+
+
 def response_data(r: EventResponse) -> dict:
     return {
         "status": r.status,
@@ -216,6 +247,7 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         ],
         "exceptions": [exception_data(e) for e in event.exceptions.all()],
         "rsvp": rsvp_data(event, viewer),
+        "registration": registration_data(event, viewer),
         "source": (
             {
                 "name": event.external_source.name,
@@ -693,6 +725,17 @@ class _EventDetail(APIView):
                     "detail": gettext(
                         "Der Termin gehört zu einer Versammlung. Bitte die Versammlung absagen "
                         "oder dort löschen."
+                    )
+                }
+            )
+        from registrations.models import Registration
+
+        if Registration.objects.filter(setup__event=event).exists():
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Zu diesem Termin gibt es Anmeldungen. Bitte den Termin absagen statt "
+                        "ihn zu löschen."
                     )
                 }
             )

@@ -212,6 +212,12 @@ MODULE_MODELS = (
     "helpers.Shift",
     "helpers.ShiftQuota",
     "helpers.ShiftAssignment",
+    # Anmeldungen nach Terminen und Rechnungen (eine Anmeldung verweist auf ihre Rechnung)
+    "registrations.RegistrationSetup",
+    "registrations.PriceOption",
+    "registrations.PriceStep",
+    "registrations.Registration",
+    "registrations.Participant",
     # Fristenkalender: Pflichten vor ihrem Verlauf
     "obligations.Obligation",
     "obligations.ObligationDone",
@@ -324,6 +330,9 @@ MEMBER_MODELS = {
     "meetings.motion",
     # Einteilungen nennen Mitglieder und Externe mit Telefon
     "helpers.shiftassignment",
+    # Anmeldungen nennen Mitglieder, Gäste und ihre Angaben
+    "registrations.registration",
+    "registrations.participant",
     # Wünsche aus dem Mitgliederbereich nennen das Mitglied und seine Angaben
     "portal.changerequest",
     "portal.cancellationrequest",

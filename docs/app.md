@@ -134,6 +134,10 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `GET /api/app/v1/devices/` | eigene Geräte (`current` = dieses Gerät) |
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |
 | `PUT/DELETE /api/portal/<Zugang>/events/<id>/response/` | Zu-/Absage |
+| `GET /api/portal/<Zugang>/events/<id>/registration/` | Verbindliche Anmeldung (Modul Anmeldungen): `offer` mit Tarifen und aktueller Preisstufe, `persons` (selbst und Familie), `mine` (eigene Anmeldungen mit Rechnung und Zahlungsstand), `can_cancel`; der Termin selbst trägt `registration` (`enabled`, `state`, `can_register`) |
+| `POST /api/portal/<Zugang>/events/<id>/registration/` | Anmelden: `persons` (je `membership_id` oder `name`, `price_id`, bei Altersstufen `birth_date`), `note`, `terms_accepted`; Rechnung und Bestätigung kommen per Mail |
+| `POST /api/portal/<Zugang>/events/<id>/registration/<Anmeldung>/cancel/` | Abmelden bis zum Anmeldeschluss (storniert die Rechnung) |
+| `GET /api/portal/<Zugang>/registrations/` | Eigene Anmeldungen über alle Termine |
 | `GET /api/portal/<Zugang>/circulars/` | Rundschreiben |
 | `GET /api/portal/<Zugang>/results/` | Meine Ergebnisse: Starts mit Platz, Wert und Einheit des Werts (`unit_label`, z. B. „Ringe“), Titel und Auszeichnungen (Wettbewerbe; leer ohne Modul, `competitions_enabled` im Zugang) |
 | `GET /api/portal/<Zugang>/` | eigenes Profil (`kind`, `display_name`; Organisationen ohne Vorname, Geburtsdatum und Geschlecht) |

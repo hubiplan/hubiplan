@@ -580,6 +580,10 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     from surveys.services import forget_membership
 
     forget_membership(membership)
+    # Anmeldungen zu Terminen: bleiben gezählt, ohne Verweis auf die Person
+    from registrations.services import forget_membership as forget_registrations
+
+    forget_registrations(membership)
     membership.club_number = ""
     membership.purged_at = timezone.now()
     membership.save()

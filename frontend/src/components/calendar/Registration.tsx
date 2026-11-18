@@ -1,0 +1,1132 @@
+// Verbindliche Anmeldung mit Teilnahmegebühr am Termin (konzepte/veranstaltungen-anmeldung-gebuehr.md,
+// Stufen A1/A2): Verwaltung richtet Tarife und Preisstufen ein und sieht alle Anmeldungen,
+// Mitglieder melden sich und ihre Familie an.
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import type { CalendarBase, EventDetail } from '../../api/events.ts'
+import { registrationApi } from '../../api/registrations.ts'
+import type {
+  BoardRegistrations,
+  PaidState,
+  Price,
+  PriceInput,
+  Registration,
+  SetupInput,
+} from '../../api/registrations.ts'
+import { euro, financeApi, parseAmount } from '../../api/finance.ts'
+import type { PickedMember } from '../../api/members.ts'
+import { errorMessage, useLoad } from '../forms.ts'
+import { Alert, Checkbox, Field, Loading, SelectField } from '../ui.tsx'
+import { MemberPicker } from '../MemberPicker.tsx'
+import { useRowSearch } from '../RowSearch.tsx'
+import { confirmDialog, promptDialog } from '../dialog.ts'
+import { berlin, formatDay, toApi } from './time.ts'
+import { lang, t } from '../../i18n/index.ts'
+
+const PAID: Record<PaidState, () => string> = {
+  free: () => t('kostenlos'),
+  open: () => t('offen'),
+  partly: () => t('teilweise bezahlt'),
+  paid: () => t('bezahlt'),
+  cancelled: () => t('abgemeldet'),
+}
+
+function PaidBadge({ state }: { state: PaidState }) {
+  const cls = state === 'paid' ? 'badge badge-yes' : state === 'open' ? 'badge badge-open' : 'badge'
+  return <span className={cls}>{PAID[state]()}</span>
+}
+
+function priceName(p: Price): string {
+  return lang() === 'en' && p.name_en ? p.name_en : p.name
+}
+
+function when(iso: string): string {
+  const d = berlin(iso)
+  return t('{x}, {time} Uhr', { x: formatDay(d.date), time: d.time })
+}
+
+/** „29,00 € (Early Bird bis 31.03.2027, noch 5 Plätze) · danach 35,00 €“ */
+function priceText(p: Price): string {
+  if (!p.current) return t('nicht mehr buchbar')
+  const extra: string[] = []
+  if (p.current.name) extra.push(p.current.name)
+  if (p.current.until_date)
+    extra.push(t('bis {date}', { date: formatDay(p.current.until_date, false) }))
+  if (p.current.remaining !== null)
+    extra.push(t('noch {n} zu diesem Preis', { n: p.current.remaining }))
+  let text = euro(p.current.amount)
+  if (extra.length) text += ` (${extra.join(', ')})`
+  if (p.next) text += t(' · danach {amount}', { amount: euro(p.next.amount) })
+  return text
+}
+
+function conditions(p: Price): string {
+  const parts: string[] = []
+  if (p.applies === 'members') parts.push(t('nur Mitglieder'))
+  if (p.applies === 'guests') parts.push(t('nur Gäste'))
+  if (p.age_from !== null && p.age_to !== null)
+    parts.push(t('{a} bis {b} Jahre', { a: p.age_from, b: p.age_to }))
+  else if (p.age_from !== null) parts.push(t('ab {a} Jahren', { a: p.age_from }))
+  else if (p.age_to !== null) parts.push(t('bis {b} Jahre', { b: p.age_to }))
+  return parts.join(', ')
+}
+
+function PriceList({ prices }: { prices: Price[] }) {
+  return (
+    <ul className="plain-list">
+      {prices.map((p) => (
+        <li key={p.id}>
+          <strong>{priceName(p)}</strong>
+          {conditions(p) && <span className="muted small"> ({conditions(p)})</span>}: {priceText(p)}
+          {p.free !== null && (
+            <span className="muted small"> · {t('{n} Plätze frei', { n: p.free })}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Card({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="card event-card">
+      <h3 className="event-card-title">{title}</h3>
+      <div className="stack-sm">{children}</div>
+    </section>
+  )
+}
+
+export function RegistrationPanel({ base, event }: { base: CalendarBase; event: EventDetail }) {
+  const info = event.registration
+  if (!info) return null
+  if (info.can_register && info.enabled) return <MemberRegistrationCard base={base} event={event} />
+  if (info.can_setup || info.can_view_list)
+    return <BoardRegistrationCard base={base} event={event} />
+  return null
+}
+
+function RegistrationTable({
+  rows,
+  canEdit,
+  onCancel,
+}: {
+  rows: Registration[]
+  canEdit: boolean
+  onCancel: (reg: Registration) => void
+}) {
+  const search = useRowSearch(
+    rows,
+    (r) => [r.number, r.name, r.email ?? '', ...r.participants.map((p) => p.name)].join(' '),
+    t('Anmeldungen'),
+  )
+  return (
+    <>
+      {search.field}
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Anmeldung')}</th>
+              <th>{t('Personen')}</th>
+              <th>{t('Betrag')}</th>
+              <th>{t('Stand')}</th>
+              <th>
+                <span className="sr-only">{t('Aktionen')}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {search.shown.map((reg) => (
+              <tr key={reg.id}>
+                <td>
+                  {reg.number}
+                  <div className="muted small">
+                    {reg.name}
+                    {reg.source_label ? ` · ${reg.source_label}` : ''}
+                  </div>
+                </td>
+                <td>
+                  {reg.participants.map((p) => (
+                    <div key={p.id}>
+                      {p.name} <span className="muted small">{p.price_name}</span>
+                    </div>
+                  ))}
+                  {reg.note && <div className="muted small">{reg.note}</div>}
+                </td>
+                <td>
+                  {euro(reg.total)}
+                  {reg.invoice && <div className="muted small">{reg.invoice.number}</div>}
+                </td>
+                <td>
+                  <PaidBadge state={reg.paid_state} />
+                </td>
+                <td>
+                  {canEdit && reg.status !== 'cancelled' && (
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      onClick={() => onCancel(reg)}
+                    >
+                      {t('Abmelden')}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+// --- Mitglied ---
+
+interface Pick {
+  membership_id: number | null
+  name: string
+  price_id: number | ''
+  birth_date: string
+  checked: boolean
+  needsBirth: boolean
+}
+
+function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: EventDetail }) {
+  const { data, error, setData } = useLoad(
+    () => registrationApi.member(base, event.id),
+    [base, event.id],
+  )
+  const [picks, setPicks] = useState<Pick[] | null>(null)
+  const [note, setNote] = useState('')
+  const [terms, setTerms] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
+
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <Loading small />
+  const offer = data.offer
+  const prices = offer.prices.filter((p) => p.current)
+  const rows: Pick[] =
+    picks ??
+    data.persons
+      .filter((p) => !p.registered)
+      .map((p) => ({
+        membership_id: p.membership_id,
+        name: p.name,
+        price_id: '',
+        birth_date: '',
+        checked: p.self,
+        needsBirth: !p.has_birth_date,
+      }))
+  const update = (i: number, patch: Partial<Pick>) =>
+    setPicks(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+  const chosen = rows.filter((r) => r.checked)
+  const sum = chosen.reduce((s, r) => {
+    const p = prices.find((x) => x.id === r.price_id)
+    return s + Number(p?.current?.amount ?? 0)
+  }, 0)
+  const pricesFor = (r: Pick) =>
+    prices.filter((p) => (r.membership_id ? p.applies !== 'guests' : p.applies !== 'members'))
+
+  async function submit() {
+    setBusy(true)
+    setMessage(null)
+    try {
+      const next = await registrationApi.register(base, event.id, {
+        persons: chosen.map((r) => ({
+          membership_id: r.membership_id,
+          name: r.name,
+          price_id: Number(r.price_id),
+          birth_date: r.birth_date || null,
+        })),
+        note,
+        terms_accepted: terms,
+      })
+      setData(next)
+      setPicks(null)
+      setNote('')
+      setTerms(false)
+      setMessage({
+        kind: 'success',
+        text: t('Angemeldet. Die Bestätigung kommt per E-Mail.'),
+      })
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function cancel(reg: Registration) {
+    if (
+      !(await confirmDialog({
+        final: false,
+        title: t('Anmeldung {number} abmelden?', { number: reg.number }),
+        message:
+          reg.paid_state === 'paid' || reg.paid_state === 'partly'
+            ? t('Die Rechnung wird storniert; den gezahlten Betrag erstattet der Verein.')
+            : t('Die Rechnung wird storniert.'),
+        confirmLabel: t('Abmelden'),
+      }))
+    )
+      return
+    setBusy(true)
+    try {
+      setData(await registrationApi.cancelMine(base, event.id, reg.id))
+      setPicks(null)
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const ready =
+    chosen.length > 0 &&
+    chosen.every((r) => r.price_id !== '' && r.name.trim()) &&
+    (!offer.terms || terms)
+  return (
+    <Card title={t('Anmeldung')}>
+      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <p>{offer.state_text}</p>
+      {offer.free !== null && offer.state === 'open' && (
+        <p className="muted small">{t('Noch {n} Plätze frei.', { n: offer.free })}</p>
+      )}
+      <PriceList prices={offer.prices} />
+      {data.mine.map((reg) => (
+        <div key={reg.id} className="stack-sm">
+          <div>
+            <strong>{t('Deine Anmeldung {number}', { number: reg.number })}</strong>{' '}
+            {reg.status === 'cancelled' ? (
+              <span className="badge">{t('abgemeldet')}</span>
+            ) : (
+              <PaidBadge state={reg.paid_state} />
+            )}
+          </div>
+          <ul className="plain-list">
+            {reg.participants.map((p) => (
+              <li key={p.id}>
+                {p.name}: {p.price_name}, {euro(p.amount)}
+              </li>
+            ))}
+          </ul>
+          {reg.invoice && reg.status !== 'cancelled' && (
+            <p className="muted small">
+              {t('Rechnung {number} über {total}, zahlbar bis {due}', {
+                number: reg.invoice.number,
+                total: euro(reg.invoice.total),
+                due: formatDay(reg.invoice.due_date, false),
+              })}
+            </p>
+          )}
+          {reg.status !== 'cancelled' && data.can_cancel && (
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() => void cancel(reg)}
+              >
+                {t('Abmelden')}
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+      {offer.state === 'open' && (rows.length > 0 || offer.guests_allowed) && (
+        <div className="stack-sm">
+          <h4>{t('Anmelden')}</h4>
+          {rows.map((r, i) => (
+            <div key={i} className="stack-sm">
+              {r.membership_id ? (
+                <Checkbox
+                  label={r.name}
+                  checked={r.checked}
+                  onChange={(x) => update(i, { checked: x })}
+                />
+              ) : (
+                <div className="button-row">
+                  <Field
+                    label={t('Name des Gastes')}
+                    value={r.name}
+                    maxLength={200}
+                    onChange={(e) => update(i, { name: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() => setPicks(rows.filter((_, j) => j !== i))}
+                  >
+                    {t('Entfernen')}
+                  </button>
+                </div>
+              )}
+              {r.checked && (
+                <SelectField
+                  label={t('Tarif')}
+                  value={String(r.price_id)}
+                  onChange={(e) =>
+                    update(i, { price_id: e.target.value ? Number(e.target.value) : '' })
+                  }
+                >
+                  <option value="">{t('bitte wählen …')}</option>
+                  {pricesFor(r).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {priceName(p)} – {euro(p.current?.amount)}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+              {r.checked &&
+                (r.needsBirth || !r.membership_id) &&
+                prices.find(
+                  (p) => p.id === r.price_id && (p.age_from !== null || p.age_to !== null),
+                ) && (
+                  <Field
+                    label={t('Geburtsdatum')}
+                    type="date"
+                    value={r.birth_date}
+                    onChange={(e) => update(i, { birth_date: e.target.value })}
+                  />
+                )}
+            </div>
+          ))}
+          {offer.guests_allowed && rows.length < offer.max_persons && (
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  setPicks([
+                    ...rows,
+                    {
+                      membership_id: null,
+                      name: '',
+                      price_id: '',
+                      birth_date: '',
+                      checked: true,
+                      needsBirth: true,
+                    },
+                  ])
+                }
+              >
+                <span aria-hidden="true">+</span> {t('Gast hinzufügen')}
+              </button>
+            </div>
+          )}
+          <Field
+            label={t('Bemerkung (optional)')}
+            value={note}
+            maxLength={500}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          {offer.terms && (
+            <>
+              <details>
+                <summary>{t('Teilnahmebedingungen')}</summary>
+                <p className="event-description">{offer.terms}</p>
+              </details>
+              <Checkbox
+                label={t('Ich habe die Teilnahmebedingungen gelesen und akzeptiere sie.')}
+                checked={terms}
+                onChange={setTerms}
+              />
+            </>
+          )}
+          <p>
+            {t('Summe: {sum}', { sum: euro(sum) })}{' '}
+            <span className="muted small">
+              {t('Abmelden ist bis {when} möglich.', { when: when(offer.closes_at) })}
+            </span>
+          </p>
+          <div className="button-row">
+            <button
+              type="button"
+              className="button"
+              disabled={busy || !ready}
+              onClick={() => void submit()}
+            >
+              {sum > 0 ? t('Zahlungspflichtig anmelden') : t('Verbindlich anmelden')}
+            </button>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+// --- Verwaltung ---
+
+function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: EventDetail }) {
+  const { data, error, setData, reload } = useLoad(
+    () => registrationApi.board(base, event.id),
+    [base, event.id],
+  )
+  const [editing, setEditing] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <Loading small />
+  const offer = data.offer
+  if (editing || (!offer && editing))
+    return (
+      <Card title={t('Anmeldung einrichten')}>
+        <SetupForm
+          base={base}
+          event={event}
+          data={data}
+          onCancel={() => setEditing(false)}
+          onSaved={(next) => {
+            setData(next)
+            setEditing(false)
+          }}
+        />
+      </Card>
+    )
+  if (!offer)
+    return data.can_edit ? (
+      <Card title={t('Anmeldung')}>
+        {event.rsvp.enabled ? (
+          <p className="muted small">
+            {t(
+              'Der Termin hat Zu- und Absagen. Für eine verbindliche Anmeldung mit Teilnahmegebühr diese bitte zuerst ausschalten.',
+            )}
+          </p>
+        ) : (
+          <>
+            <p className="muted small">
+              {t(
+                'Verbindliche Anmeldung mit Tarifen, Preisstufen (z. B. Early Bird), Platzgrenze, Rechnung und Bestätigungen per E-Mail.',
+              )}
+            </p>
+            <div className="button-row">
+              <button type="button" className="button" onClick={() => setEditing(true)}>
+                {t('Verbindliche Anmeldung einrichten')}
+              </button>
+            </div>
+          </>
+        )}
+      </Card>
+    ) : null
+
+  async function cancel(reg: Registration) {
+    const reason = await promptDialog({
+      title: t('Anmeldung {number} abmelden?', { number: reg.number }),
+      label: t('Grund (optional, steht auf der Stornorechnung)'),
+      confirmLabel: t('Abmelden'),
+      danger: true,
+    })
+    if (reason === null) return
+    try {
+      setData(await registrationApi.cancel(base, event.id, reg.id, reason))
+    } catch (err) {
+      setMessage(errorMessage(err))
+    }
+  }
+
+  const s = data.summary
+  return (
+    <Card title={t('Anmeldungen')}>
+      {message && <Alert kind="error">{message}</Alert>}
+      <p>
+        {offer.state_text}{' '}
+        {offer.capacity !== null &&
+          t('{taken} von {capacity} Plätzen belegt.', {
+            taken: offer.taken,
+            capacity: offer.capacity,
+          })}
+      </p>
+      <PriceList prices={offer.prices.filter((p) => p.is_active)} />
+      {s && (
+        <p className="muted small">
+          {t('{r} Anmeldungen, {p} Personen · Summe {total}, bezahlt {paid}, offen {open}', {
+            r: s.registrations,
+            p: s.persons,
+            total: euro(s.total),
+            paid: euro(s.paid),
+            open: euro(s.open),
+          })}
+        </p>
+      )}
+      <div className="button-row">
+        {data.can_edit && (
+          <>
+            <button type="button" className="button" onClick={() => setAdding(!adding)}>
+              <span aria-hidden="true">+</span> {t('Anmeldung erfassen')}
+            </button>
+            <button type="button" className="button button-ghost" onClick={() => setEditing(true)}>
+              {t('Einstellungen')}
+            </button>
+          </>
+        )}
+        {data.registrations.length > 0 && (
+          <a className="button button-ghost" href={registrationApi.exportUrl(base, event.id)}>
+            {t('Teilnehmerliste (Excel)')}
+          </a>
+        )}
+      </div>
+      {adding && (
+        <BoardAddForm
+          base={base}
+          event={event}
+          offer={offer}
+          onDone={(next) => {
+            setData(next)
+            setAdding(false)
+          }}
+        />
+      )}
+      {data.registrations.length > 0 && (
+        <RegistrationTable
+          rows={data.registrations}
+          canEdit={data.can_edit}
+          onCancel={(reg) => void cancel(reg)}
+        />
+      )}
+      {!data.registrations.length && <p className="muted small">{t('Noch keine Anmeldungen.')}</p>}
+      <button type="button" className="button button-ghost small" onClick={() => void reload()}>
+        {t('Aktualisieren')}
+      </button>
+    </Card>
+  )
+}
+
+interface PersonRow {
+  name: string
+  price_id: number | ''
+  member: PickedMember | null
+}
+
+function BoardAddForm({
+  base,
+  event,
+  offer,
+  onDone,
+}: {
+  base: CalendarBase
+  event: EventDetail
+  offer: NonNullable<BoardRegistrations['offer']>
+  onDone: (data: BoardRegistrations) => void
+}) {
+  const orgId = Number(/\/api\/orgs\/(\d+)\//.exec(base)?.[1] ?? 0)
+  const [booker, setBooker] = useState<PickedMember | null>(null)
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', address: '' })
+  const [persons, setPersons] = useState<PersonRow[]>([{ name: '', price_id: '', member: null }])
+  const [note, setNote] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const prices = offer.prices.filter((p) => p.is_active)
+  const set = (i: number, patch: Partial<PersonRow>) =>
+    setPersons(persons.map((p, j) => (j === i ? { ...p, ...patch } : p)))
+
+  async function save() {
+    setBusy(true)
+    setError(null)
+    try {
+      onDone(
+        await registrationApi.add(base, event.id, {
+          membership_id: booker?.id ?? null,
+          ...contact,
+          note,
+          persons: persons.map((p) => ({
+            membership_id: p.member?.id ?? null,
+            name: p.member ? `${p.member.first_name} ${p.member.last_name}` : p.name,
+            price_id: Number(p.price_id),
+          })),
+        }),
+      )
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="stack-sm">
+      {error && <Alert kind="error">{error}</Alert>}
+      <MemberPicker
+        orgId={orgId}
+        value={booker}
+        label={t('Angemeldet von (Mitglied, optional)')}
+        onChange={(m) => {
+          setBooker(m)
+          if (m && !persons[0].member && !persons[0].name) set(0, { member: m })
+        }}
+      />
+      {!booker && (
+        <>
+          <Field
+            label={t('Name')}
+            value={contact.name}
+            maxLength={200}
+            onChange={(e) => setContact({ ...contact, name: e.target.value })}
+          />
+          <Field
+            label={t('E-Mail (für Bestätigung und Rechnung)')}
+            type="email"
+            value={contact.email}
+            onChange={(e) => setContact({ ...contact, email: e.target.value })}
+          />
+          <Field
+            label={t('Telefon')}
+            value={contact.phone}
+            maxLength={50}
+            onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+          />
+          <label className="field">
+            <span>{t('Anschrift (für die Rechnung)')}</span>
+            <textarea
+              rows={3}
+              value={contact.address}
+              onChange={(e) => setContact({ ...contact, address: e.target.value })}
+            />
+          </label>
+        </>
+      )}
+      {persons.map((p, i) => (
+        <div key={i} className="stack-sm">
+          <MemberPicker
+            orgId={orgId}
+            value={p.member}
+            label={t('Person {n}: Mitglied (optional)', { n: i + 1 })}
+            onChange={(m) => set(i, { member: m })}
+          />
+          {!p.member && (
+            <Field
+              label={t('Person {n}: Name', { n: i + 1 })}
+              value={p.name}
+              maxLength={200}
+              onChange={(e) => set(i, { name: e.target.value })}
+            />
+          )}
+          <SelectField
+            label={t('Tarif')}
+            value={String(p.price_id)}
+            onChange={(e) => set(i, { price_id: e.target.value ? Number(e.target.value) : '' })}
+          >
+            <option value="">{t('bitte wählen …')}</option>
+            {prices.map((x) => (
+              <option key={x.id} value={x.id}>
+                {priceName(x)} – {x.current ? euro(x.current.amount) : t('nicht mehr buchbar')}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      ))}
+      <div className="button-row">
+        {persons.length < offer.max_persons && (
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setPersons([...persons, { name: '', price_id: '', member: null }])}
+          >
+            <span aria-hidden="true">+</span> {t('Weitere Person')}
+          </button>
+        )}
+      </div>
+      <Field
+        label={t('Bemerkung (optional)')}
+        value={note}
+        maxLength={500}
+        onChange={(e) => setNote(e.target.value)}
+      />
+      <div className="button-row">
+        <button
+          type="button"
+          className="button"
+          disabled={busy || persons.some((p) => p.price_id === '' || (!p.member && !p.name.trim()))}
+          onClick={() => void save()}
+        >
+          {t('Anmelden')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// --- Einrichten ---
+
+function emptyPrice(): PriceInput {
+  return {
+    id: null,
+    name: '',
+    name_en: '',
+    applies: 'all',
+    age_from: null,
+    age_to: null,
+    capacity: null,
+    vat_rate: null,
+    is_active: true,
+    steps: [{ name: '', amount: '', until_date: null, until_count: null }],
+  }
+}
+
+function num(value: string): number | null {
+  return value.trim() === '' ? null : Number(value)
+}
+
+function SetupForm({
+  base,
+  event,
+  data,
+  onCancel,
+  onSaved,
+}: {
+  base: CalendarBase
+  event: EventDetail
+  data: BoardRegistrations
+  onCancel: () => void
+  onSaved: (data: BoardRegistrations) => void
+}) {
+  const offer = data.offer
+  const orgId = Number(/\/api\/orgs\/(\d+)\//.exec(base)?.[1] ?? 0)
+  const categories = useLoad(
+    () => (orgId ? financeApi.categories(orgId) : Promise.resolve([])),
+    [orgId],
+  )
+  const close = offer ? berlin(offer.closes_at) : berlin(event.starts_at)
+  const open = offer?.opens_at ? berlin(offer.opens_at) : null
+  const [v, setV] = useState({
+    closes_date: close.date,
+    closes_time: offer ? close.time : '23:59',
+    opens_date: open?.date ?? '',
+    opens_time: open?.time ?? '00:00',
+    is_open: offer?.is_open ?? true,
+    capacity: offer?.capacity ? String(offer.capacity) : '',
+    max_persons: String(offer?.max_persons ?? 6),
+    guests_allowed: offer?.guests_allowed ?? true,
+    due_days: String(offer?.due_days ?? 14),
+    category: offer?.category ? String(offer.category) : '',
+    terms: offer?.terms ?? '',
+  })
+  const [prices, setPrices] = useState<PriceInput[]>(
+    offer
+      ? offer.prices.map((p) => ({
+          id: p.id,
+          name: p.name,
+          name_en: p.name_en,
+          applies: p.applies,
+          age_from: p.age_from,
+          age_to: p.age_to,
+          capacity: p.capacity,
+          vat_rate: p.vat_rate,
+          is_active: p.is_active,
+          steps: (p.steps ?? []).map((s) => ({
+            name: s.name,
+            amount: s.amount.replace('.', ','),
+            until_date: s.until_date,
+            until_count: s.until_count,
+          })),
+        }))
+      : [emptyPrice()],
+  )
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const setPrice = (i: number, patch: Partial<PriceInput>) =>
+    setPrices(prices.map((p, j) => (j === i ? { ...p, ...patch } : p)))
+  const setStep = (i: number, k: number, patch: Partial<PriceInput['steps'][number]>) =>
+    setPrice(i, { steps: prices[i].steps.map((s, j) => (j === k ? { ...s, ...patch } : s)) })
+
+  async function save() {
+    setBusy(true)
+    setError(null)
+    const input: SetupInput = {
+      closes_at: toApi(v.closes_date, v.closes_time || '23:59'),
+      opens_at: v.opens_date ? toApi(v.opens_date, v.opens_time || '00:00') : null,
+      is_open: v.is_open,
+      capacity: num(v.capacity),
+      max_persons: Number(v.max_persons) || 1,
+      guests_allowed: v.guests_allowed,
+      due_days: Number(v.due_days) || 0,
+      category: v.category ? Number(v.category) : null,
+      terms: v.terms,
+      prices: prices.map((p, i) => ({
+        ...p,
+        steps: p.steps.map((s, k) => ({
+          ...s,
+          amount: parseAmount(s.amount) || '0',
+          // die letzte Stufe gilt bis zum Anmeldeschluss
+          until_date: k === p.steps.length - 1 ? null : s.until_date || null,
+          until_count: k === p.steps.length - 1 ? null : s.until_count,
+        })),
+        name: p.name.trim() || t('Tarif {n}', { n: i + 1 }),
+      })),
+    }
+    try {
+      onSaved(await registrationApi.save(base, event.id, input))
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove() {
+    if (
+      !(await confirmDialog({
+        final: false,
+        title: t('Anmeldung vom Termin entfernen?'),
+        confirmLabel: t('Entfernen'),
+      }))
+    )
+      return
+    try {
+      await registrationApi.remove(base, event.id)
+      onSaved({ ...data, offer: null, registrations: [] })
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+
+  const income = (categories.data ?? []).filter((c) => c.kind === 'income')
+  return (
+    <div className="stack">
+      {error && <Alert kind="error">{error}</Alert>}
+      {!data.can_set_prices && (
+        <Alert kind="info">
+          {t(
+            'Preise legt fest, wer Rechnungen bearbeiten darf. Ohne dieses Recht sind nur kostenlose Tarife möglich.',
+          )}
+        </Alert>
+      )}
+      <div className="form-grid">
+        <Field
+          label={t('Anmeldeschluss')}
+          type="date"
+          value={v.closes_date}
+          onChange={(e) => setV({ ...v, closes_date: e.target.value })}
+        />
+        <Field
+          label={t('Uhrzeit')}
+          type="time"
+          value={v.closes_time}
+          onChange={(e) => setV({ ...v, closes_time: e.target.value })}
+        />
+        <Field
+          label={t('Anmeldung ab (optional)')}
+          type="date"
+          value={v.opens_date}
+          onChange={(e) => setV({ ...v, opens_date: e.target.value })}
+        />
+        <Field
+          label={t('Plätze (leer: unbegrenzt)')}
+          type="number"
+          min={1}
+          value={v.capacity}
+          onChange={(e) => setV({ ...v, capacity: e.target.value })}
+        />
+        <Field
+          label={t('Personen je Anmeldung')}
+          type="number"
+          min={1}
+          max={20}
+          value={v.max_persons}
+          onChange={(e) => setV({ ...v, max_persons: e.target.value })}
+        />
+        <Field
+          label={t('Zahlungsziel in Tagen')}
+          type="number"
+          min={0}
+          max={90}
+          value={v.due_days}
+          onChange={(e) => setV({ ...v, due_days: e.target.value })}
+        />
+        <SelectField
+          label={t('Kategorie in der Kasse')}
+          value={v.category}
+          onChange={(e) => setV({ ...v, category: e.target.value })}
+          hint={t('leer: Kategorie für Zahlungen aus der Einrichtung')}
+        >
+          <option value="">{t('Vorgabe')}</option>
+          {income.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+      <Checkbox
+        label={t('Mitglieder dürfen Gäste mit anmelden')}
+        checked={v.guests_allowed}
+        onChange={(x) => setV({ ...v, guests_allowed: x })}
+      />
+      {offer && (
+        <Checkbox
+          label={t('Anmeldung offen')}
+          hint={t('ausschalten, um vor dem Anmeldeschluss zu schließen')}
+          checked={v.is_open}
+          onChange={(x) => setV({ ...v, is_open: x })}
+        />
+      )}
+      <label className="field">
+        <span>{t('Teilnahmebedingungen (optional)')}</span>
+        <textarea
+          rows={4}
+          maxLength={5000}
+          value={v.terms}
+          onChange={(e) => setV({ ...v, terms: e.target.value })}
+        />
+      </label>
+      <h4>{t('Tarife')}</h4>
+      {prices.map((p, i) => (
+        <fieldset key={i} className="card stack-sm">
+          <legend>{p.name || t('Tarif {n}', { n: i + 1 })}</legend>
+          <div className="form-grid">
+            <Field
+              label={t('Name')}
+              value={p.name}
+              maxLength={100}
+              onChange={(e) => setPrice(i, { name: e.target.value })}
+            />
+            <Field
+              label={t('Name auf Englisch (optional)')}
+              value={p.name_en ?? ''}
+              maxLength={100}
+              onChange={(e) => setPrice(i, { name_en: e.target.value })}
+            />
+            <SelectField
+              label={t('Gilt für')}
+              value={p.applies}
+              onChange={(e) => setPrice(i, { applies: e.target.value as PriceInput['applies'] })}
+            >
+              <option value="all">{t('alle')}</option>
+              <option value="members">{t('nur Mitglieder')}</option>
+              <option value="guests">{t('nur Gäste')}</option>
+            </SelectField>
+            <Field
+              label={t('Alter von')}
+              type="number"
+              min={0}
+              value={p.age_from ?? ''}
+              onChange={(e) => setPrice(i, { age_from: num(e.target.value) })}
+            />
+            <Field
+              label={t('Alter bis')}
+              type="number"
+              min={0}
+              value={p.age_to ?? ''}
+              onChange={(e) => setPrice(i, { age_to: num(e.target.value) })}
+            />
+            <Field
+              label={t('Plätze in diesem Tarif (optional)')}
+              type="number"
+              min={1}
+              value={p.capacity ?? ''}
+              onChange={(e) => setPrice(i, { capacity: num(e.target.value) })}
+            />
+            <SelectField
+              label={t('Umsatzsteuer im Preis')}
+              value={p.vat_rate ? String(Number(p.vat_rate)) : ''}
+              onChange={(e) => setPrice(i, { vat_rate: e.target.value || null })}
+            >
+              <option value="">{t('keine')}</option>
+              <option value="7">7 %</option>
+              <option value="19">19 %</option>
+            </SelectField>
+          </div>
+          <p className="muted small">
+            {t(
+              'Preisstufen gelten nacheinander, z. B. Early Bird bis zu einem Datum oder für die ersten Plätze. Die letzte Stufe gilt bis zum Anmeldeschluss.',
+            )}
+          </p>
+          {p.steps.map((s, k) => {
+            const last = k === p.steps.length - 1
+            return (
+              <div key={k} className="form-grid">
+                <Field
+                  label={t('Stufe {n}: Name (optional)', { n: k + 1 })}
+                  value={s.name}
+                  maxLength={60}
+                  placeholder={k === 0 && p.steps.length > 1 ? t('Early Bird') : ''}
+                  onChange={(e) => setStep(i, k, { name: e.target.value })}
+                />
+                <Field
+                  label={t('Betrag in €')}
+                  inputMode="decimal"
+                  value={s.amount}
+                  onChange={(e) => setStep(i, k, { amount: e.target.value })}
+                />
+                {!last && (
+                  <>
+                    <Field
+                      label={t('gilt bis (Datum)')}
+                      type="date"
+                      value={s.until_date ?? ''}
+                      onChange={(e) => setStep(i, k, { until_date: e.target.value || null })}
+                    />
+                    <Field
+                      label={t('für die ersten … Personen')}
+                      type="number"
+                      min={1}
+                      value={s.until_count ?? ''}
+                      onChange={(e) => setStep(i, k, { until_count: num(e.target.value) })}
+                    />
+                  </>
+                )}
+                {p.steps.length > 1 && (
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() => setPrice(i, { steps: p.steps.filter((_, j) => j !== k) })}
+                  >
+                    {t('Stufe entfernen')}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+          <div className="button-row">
+            {p.steps.length < 6 && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  setPrice(i, {
+                    steps: [
+                      { name: '', amount: '', until_date: null, until_count: null },
+                      ...p.steps,
+                    ],
+                  })
+                }
+              >
+                <span aria-hidden="true">+</span> {t('Frühere Preisstufe')}
+              </button>
+            )}
+            {prices.length > 1 && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setPrices(prices.filter((_, j) => j !== i))}
+              >
+                {t('Tarif entfernen')}
+              </button>
+            )}
+          </div>
+        </fieldset>
+      ))}
+      <div className="button-row">
+        <button
+          type="button"
+          className="button button-ghost"
+          onClick={() => setPrices([...prices, emptyPrice()])}
+        >
+          <span aria-hidden="true">+</span> {t('Tarif hinzufügen')}
+        </button>
+      </div>
+      <div className="button-row">
+        <button type="button" className="button" disabled={busy} onClick={() => void save()}>
+          {t('Speichern')}
+        </button>
+        <button type="button" className="button button-ghost" onClick={onCancel}>
+          {t('Abbrechen')}
+        </button>
+        {offer && data.registrations.length === 0 && (
+          <button type="button" className="button button-danger" onClick={() => void remove()}>
+            {t('Anmeldung entfernen')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}

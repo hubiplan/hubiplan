@@ -835,6 +835,39 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from registrations.models import Registration
+
+    # Anmeldungen zu Terminen (mit Participant): eigene und solche, in denen die Person steht
+    files["anmeldungen.json"] = _dump(
+        [
+            {
+                "anmeldung": r.display_number,
+                "termin": r.setup.event.title,
+                "beginn": r.setup.event.starts_at,
+                "stand": r.status,
+                "angemeldet_von": r.name,
+                "email": r.email,
+                "telefon": r.phone,
+                "anschrift": r.address,
+                "bemerkung": r.note,
+                "summe": r.total,
+                "rechnung": r.invoice.display_number if r.invoice_id else "",
+                "angemeldet_am": r.created_at,
+                "abgemeldet_am": r.cancelled_at,
+                "personen": [
+                    {"name": p.name, "tarif": p.price_name, "betrag": p.amount, "stand": p.status}
+                    for p in r.participants.all()
+                ],
+            }
+            for r in Registration.objects.filter(
+                Q(membership=membership) | Q(participants__membership=membership)
+            )
+            .distinct()
+            .select_related("setup__event", "invoice")
+            .prefetch_related("participants")
+        ]
+    )
+
     from expenses.models import ExpenseClaim, ExpenseLink
 
     # Auslagen: eigene Anträge mit Positionen und Verlauf (Bankverbindung nur verkürzt)

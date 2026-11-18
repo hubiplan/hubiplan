@@ -111,6 +111,17 @@ MODULES: tuple[Module, ...] = (
         default=True,
     ),
     Module(
+        "registrations",
+        gettext_noop("Anmeldungen"),
+        "life",
+        gettext_noop(
+            "Verbindliche Anmeldung zu Terminen mit Teilnahmegebühr, Tarifen und Preisstufen, "
+            "Rechnung, Anmelde- und Zahlungsbestätigung"
+        ),
+        requires=("events", "billing"),
+        org_types=("federation", "club"),
+    ),
+    Module(
         "meetings",
         gettext_noop("Versammlungen"),
         "life",

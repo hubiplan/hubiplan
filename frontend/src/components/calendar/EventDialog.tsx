@@ -20,6 +20,7 @@ import { errorMessage, useLoad } from '../forms.ts'
 import { Alert, Checkbox, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
+import { RegistrationPanel } from './Registration.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
 import { useEventDocumentLink } from './EventDocumentLink.tsx'
 import { EventRow } from './EventRow.tsx'
@@ -771,6 +772,7 @@ export function EventDialog({
           {!data.rsvp.can_view_list && data.can_edit && data.rsvp.enabled && (
             <p className="muted small">{rsvpNote(data)}</p>
           )}
+          <RegistrationPanel base={base} event={data} />
           <RelatedCard
             base={base}
             event={data}
