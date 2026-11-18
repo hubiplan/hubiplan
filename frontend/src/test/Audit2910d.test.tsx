@@ -34,10 +34,9 @@ describe('Lizenzaudit 29.10. Teil d', () => {
       '/lizenzen/LICENSE.txt',
     )
     // AGPL § 13: Link zum Quellcode (ohne Fassungsdatei auf das Repository)
-    expect(screen.getByRole('link', { name: 'Quellcode von HUBIplan' })).toHaveAttribute(
-      'href',
-      'https://github.com/hubiplan/hubiplan',
-    )
+    expect(
+      screen.getByRole('link', { name: 'Quellcode von HUBIplan (öffnet in neuem Tab)' }),
+    ).toHaveAttribute('href', 'https://github.com/hubiplan/hubiplan')
     expect(
       screen.getByRole('link', { name: 'Lizenzen der enthaltenen Bibliotheken' }),
     ).toHaveAttribute('href', '/lizenzen/drittanbieter.txt')
@@ -54,11 +53,21 @@ describe('Lizenzaudit 29.10. Teil d', () => {
     )
     renderAt('/lizenz')
     expect(
-      await screen.findByRole('link', { name: 'Quellcode dieser Fassung (0123456)' }),
+      await screen.findByRole('link', {
+        name: 'Quellcode dieser Fassung (0123456) (öffnet in neuem Tab)',
+      }),
     ).toHaveAttribute('href', `https://github.com/hubiplan/hubiplan/tree/${sha}`)
+    // Quellcode-Links öffnen in neuem Tab, HUBIplan bleibt offen
+    expect(
+      screen.getByRole('link', {
+        name: 'Quellcode dieser Fassung (0123456) (öffnet in neuem Tab)',
+      }),
+    ).toHaveAttribute('target', '_blank')
     // Fachfrage FQ17: Bauhinweise derselben Fassung gleich daneben
     expect(
-      screen.getByRole('link', { name: 'Bauen und selbst betreiben (Anleitung)' }),
+      screen.getByRole('link', {
+        name: 'Bauen und selbst betreiben (Anleitung) (öffnet in neuem Tab)',
+      }),
     ).toHaveAttribute(
       'href',
       `https://github.com/hubiplan/hubiplan/blob/${sha}/README.md#selbst-betreiben`,
@@ -73,10 +82,9 @@ describe('Lizenzaudit 29.10. Teil d', () => {
     )
     renderAt('/lizenz')
     expect(await screen.findByText(/Laufende Version: 2026\.11\.0/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Änderungen in dieser Version' })).toHaveAttribute(
-      'href',
-      'https://github.com/hubiplan/hubiplan/releases/tag/v2026.11.0',
-    )
+    expect(
+      screen.getByRole('link', { name: 'Änderungen in dieser Version (öffnet in neuem Tab)' }),
+    ).toHaveAttribute('href', 'https://github.com/hubiplan/hubiplan/releases/tag/v2026.11.0')
   })
 
   it('Releases: Zwischenstand ohne Link auf ein Release', async () => {
@@ -89,7 +97,9 @@ describe('Lizenzaudit 29.10. Teil d', () => {
     )
     renderAt('/lizenz')
     expect(await screen.findByText(/Laufende Version: 2026\.11\.0\+3\.0a5d21e/)).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Änderungen in dieser Version' })).toBeNull()
+    expect(
+      screen.queryByRole('link', { name: 'Änderungen in dieser Version (öffnet in neuem Tab)' }),
+    ).toBeNull()
   })
 
   it('F02: Fußzeile verlinkt „Lizenzen“', async () => {
