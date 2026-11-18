@@ -694,6 +694,11 @@ class _EventDetail(APIView):
             # Neuer Zeitpunkt: Erinnerung noch einmal
             event.reminded_at = None
             event.save(update_fields=["reminded_at"])
+        if event.is_cancelled and not was_cancelled and not event.is_series:
+            # Abgesagt: Anmeldungen kostenfrei stornieren, Rechnungen gutschreiben (A3)
+            from registrations.services import event_cancelled
+
+            event_cancelled(event, request.user)
         if data.notify:
             if event.is_cancelled and not was_cancelled:
                 mails(event, notify.CANCEL)

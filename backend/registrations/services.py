@@ -1,6 +1,8 @@
 """Anmeldungen: Preise, freie Plätze, anmelden, abmelden, Rechnung, Zahlungseingang.
 
-Konzept konzepte/veranstaltungen-anmeldung-gebuehr.md, Stufen A1 und A2.
+Konzept konzepte/veranstaltungen-anmeldung-gebuehr.md, Stufen A1 und A2; Stufe A3: Warteliste
+mit Nachrücken, Stornogebühren nach Staffel, Teilabmeldung, Ersatzperson, Absage des Termins
+und Verfall unbezahlter Anmeldungen.
 """
 
 from __future__ import annotations
@@ -12,7 +14,7 @@ from decimal import Decimal
 from django.db import connection, transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_noop
 from rest_framework.exceptions import ValidationError
 
 from members.models import Membership, today
@@ -101,19 +103,28 @@ def state(setup: RegistrationSetup, now: datetime.datetime | None = None) -> str
 
 
 STATE_LABELS = {
-    "not_yet": "Die Anmeldung beginnt am {when}.",
-    "open": "Anmeldung möglich bis {when}.",
-    "closed": "Die Anmeldung ist geschlossen.",
-    "full": "Leider sind alle Plätze vergeben.",
-    "cancelled": "Der Termin ist abgesagt.",
+    "not_yet": gettext_noop("Die Anmeldung beginnt am {when}."),
+    "open": gettext_noop("Anmeldung möglich bis {when}."),
+    "closed": gettext_noop("Die Anmeldung ist geschlossen."),
+    "full": gettext_noop("Leider sind alle Plätze vergeben."),
+    "cancelled": gettext_noop("Der Termin ist abgesagt."),
 }
+WAITLIST_LABEL = gettext_noop(
+    "Alle Plätze sind vergeben. Neue Anmeldungen kommen bis {when} auf die Warteliste."
+)
+
+
+def can_join(setup: RegistrationSetup, value: str) -> bool:
+    """Mitglieder können sich anmelden (offen) oder auf die Warteliste setzen (voll)."""
+    return value == "open" or (value == "full" and setup.waitlist)
 
 
 def state_text(setup: RegistrationSetup, value: str) -> str:
     from core.i18n import datetime_text
 
     when = setup.opens_at if value == "not_yet" else setup.closes_at
-    return gettext(STATE_LABELS[value]).format(when=datetime_text(when) if when else "")
+    label = WAITLIST_LABEL if value == "full" and setup.waitlist else STATE_LABELS[value]
+    return gettext(label).format(when=datetime_text(when) if when else "")
 
 
 def price_label(price: PriceOption, lang: str = "de") -> str:
@@ -198,8 +209,31 @@ def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
         "due_days": setup.due_days,
         "category": setup.category_id,
         "terms": setup.terms,
+        "waitlist": setup.waitlist,
+        "waiting": waiting_count(setup),
+        "substitute_allowed": setup.substitute_allowed,
+        "cancel_rules": rules_of(setup),
+        "cancel_fee_fixed": str(setup.cancel_fee_fixed) if setup.cancel_fee_fixed else None,
+        "expire_unpaid_days": setup.expire_unpaid_days,
         "prices": [price_data(p, on, full=full) for p in prices],
     }
+
+
+def waiting_count(setup: RegistrationSetup) -> int:
+    return Participant.objects.filter(
+        registration__setup=setup,
+        registration__status=Registration.Status.WAITING,
+        status=Participant.Status.ACTIVE,
+    ).count()
+
+
+def waitlist_position(reg: Registration) -> int | None:
+    if reg.status != Registration.Status.WAITING:
+        return None
+    before = Registration.objects.filter(
+        setup_id=reg.setup_id, status=Registration.Status.WAITING
+    ).filter(Q(created_at__lt=reg.created_at) | Q(created_at=reg.created_at, pk__lt=reg.pk))
+    return before.count() + 1
 
 
 # --- Wer gehört zur Familie ---
@@ -234,9 +268,16 @@ def family_of(membership: Membership) -> list[Membership]:
 
 
 def registered_memberships(setup: RegistrationSetup) -> set[int]:
+    """Mitglieder, die angemeldet sind oder auf der Warteliste stehen."""
     return set(
-        _active(
-            Participant.objects.filter(registration__setup=setup, membership__isnull=False)
+        Participant.objects.filter(
+            registration__setup=setup,
+            membership__isnull=False,
+            status=Participant.Status.ACTIVE,
+            registration__status__in=[
+                Registration.Status.REGISTERED,
+                Registration.Status.WAITING,
+            ],
         ).values_list("membership_id", flat=True)
     )
 
@@ -328,7 +369,7 @@ def register(
     value = state(setup)
     if value == "cancelled":
         raise ValidationError(gettext("Der Termin ist abgesagt."))
-    if not board and value != "open":
+    if not board and not can_join(setup, value):
         raise ValidationError(state_text(setup, value))
     if not persons:
         raise ValidationError(gettext("Bitte mindestens eine Person anmelden."))
@@ -355,13 +396,18 @@ def register(
         elif not setup.guests_allowed and not board:
             raise ValidationError(gettext("Zu diesem Termin können keine Gäste angemeldet werden."))
         _check_person(setup, person, start, board)
+    # Über der Platzgrenze: auf die Warteliste (wenn eingeschaltet), sonst abweisen
+    waiting = False
     if setup.capacity is not None and taken(setup) + len(persons) > setup.capacity:
         left = max(0, setup.capacity - taken(setup))
-        raise ValidationError(
-            gettext("Leider sind alle Plätze vergeben.")
-            if left == 0
-            else gettext("Es sind nur noch {n} Plätze frei.").format(n=left)
-        )
+        if setup.waitlist:
+            waiting = True
+        else:
+            raise ValidationError(
+                gettext("Leider sind alle Plätze vergeben.")
+                if left == 0
+                else gettext("Es sind nur noch {n} Plätze frei.").format(n=left)
+            )
     by_price: dict[int, int] = {}
     for person in persons:
         by_price[person.price.pk] = by_price.get(person.price.pk, 0) + 1
@@ -370,6 +416,9 @@ def register(
         if price.capacity is not None and taken_for_price(price) + by_price[price.pk] > (
             price.capacity
         ):
+            if setup.waitlist:
+                waiting = True
+                continue
             raise ValidationError(
                 gettext("Im Tarif „{price}“ sind nicht mehr genug Plätze frei.").format(
                     price=price.name
@@ -390,6 +439,7 @@ def register(
         note=note.strip()[:500],
         language=_language(org),
         source=source,
+        status=Registration.Status.WAITING if waiting else Registration.Status.REGISTERED,
         terms_accepted_at=now if terms_accepted else None,
         created_by=user,
     )
@@ -419,12 +469,16 @@ def register(
         total += step.amount
     reg.total = total
     reg.save(update_fields=["total", "updated_at"])
-    if total > 0:
-        reg.invoice = create_invoice(reg, user)
-        reg.save(update_fields=["invoice", "updated_at"])
     from . import notify
 
     pk = reg.pk
+    if waiting:
+        # Warteliste: keine Rechnung, bis ein Platz frei wird
+        transaction.on_commit(lambda: notify.waitlisted(pk))
+        return reg
+    if total > 0:
+        reg.invoice = create_invoice(reg, user)
+        reg.save(update_fields=["invoice", "updated_at"])
     transaction.on_commit(lambda: notify.confirmation(pk))
     return reg
 
@@ -447,8 +501,9 @@ def due_date(setup: RegistrationSetup, on: datetime.date) -> datetime.date:
     return max(on, min(due, last))
 
 
-def create_invoice(reg: Registration, user=None):
-    """Rechnung über die Teilnahmegebühr, gleich festgeschrieben."""
+def create_invoice(reg: Registration, user=None, fee: Decimal = ZERO):
+    """Rechnung über die Teilnahmegebühr der aktiven Personen (und eine Stornogebühr),
+    gleich festgeschrieben."""
     from billing import services as billing
     from billing.models import Invoice, InvoiceLine
 
@@ -474,14 +529,20 @@ def create_invoice(reg: Registration, user=None):
         payment_category=setup.category,
         date=on,
         due_date=due_date(setup, on),
-        subject=gettext("Teilnahmegebühr {title}").format(title=event.title)[:200],
+        subject=(
+            gettext("Stornogebühr {title}")
+            if fee > 0 and not reg.total
+            else gettext("Teilnahmegebühr {title}")
+        ).format(title=event.title)[:200],
         note=gettext("Anmeldung {number}. Bitte bei der Überweisung die Rechnungsnummer angeben.")
         .format(number=reg.display_number)
         .strip(),
         created_by=user,
         **recipient,
     )
-    for index, p in enumerate(reg.participants.select_related("price")):
+    rows = reg.participants.filter(status=Participant.Status.ACTIVE).select_related("price")
+    index = 0
+    for index, p in enumerate(rows):
         if p.amount <= 0:
             continue
         InvoiceLine.objects.create(
@@ -493,49 +554,382 @@ def create_invoice(reg: Registration, user=None):
             amount=p.amount,
             vat_rate=p.price.vat_rate or None,
         )
+    if fee > 0:
+        InvoiceLine.objects.create(
+            organization=org,
+            invoice=invoice,
+            position=index + 1,
+            text=gettext("Stornogebühr {title}").format(title=event.title)[:200],
+            detail=gettext("Anmeldung {number}").format(number=reg.display_number)[:200],
+            amount=fee,
+        )
     billing.finalize(invoice)
     return invoice
 
 
-# --- Abmelden ---
+# --- Abmelden, Stornogebühr, Warteliste (Stufe A3) ---
+
+# Nachgerückt: so lange kostenfrei abmelden (Fachfrage F7)
+FREE_AFTER_MOVE_UP = datetime.timedelta(hours=48)
+MAX_RULES = 6
+
+
+def rules_of(setup: RegistrationSetup) -> list[dict]:
+    """Stornostaffel, größte Frist zuerst: „weniger als {days} Tage vorher: {percent} %“."""
+    rules = []
+    for rule in setup.cancel_rules or []:
+        try:
+            days, percent = int(rule["days"]), int(rule["percent"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        rules.append({"days": days, "percent": max(0, min(100, percent))})
+    return sorted(rules, key=lambda r: -r["days"])
+
+
+def fee_percent(setup: RegistrationSetup, on: datetime.date | None = None) -> int:
+    left = (first_day(setup) - (on or timezone.localdate())).days
+    hits = [r for r in rules_of(setup) if left < r["days"]]
+    return min(hits, key=lambda r: r["days"])["percent"] if hits else 0
+
+
+@dataclass
+class FeeQuote:
+    base: Decimal
+    percent: int
+    fee: Decimal
+    # warum kostenfrei: "" (Regel), "waitlist", "moved_up", "event_cancelled", "waived"
+    free_reason: str = ""
+
+    def data(self) -> dict:
+        return {
+            "base": str(self.base),
+            "percent": self.percent,
+            "fee": str(self.fee),
+            "free_reason": self.free_reason,
+        }
+
+
+def fee_quote(
+    reg: Registration,
+    participants: list[Participant] | None = None,
+    now: datetime.datetime | None = None,
+) -> FeeQuote:
+    """Stornogebühr für die genannten (sonst alle aktiven) Personen einer Anmeldung.
+
+    Prozent nach der Staffel vom Betrag der Personen; die Bearbeitungsgebühr kommt dazu, sobald
+    eine Stufe greift (ohne Staffel bei jeder Abmeldung). Nie mehr als der Betrag selbst."""
+    now = now or timezone.now()
+    setup = reg.setup
+    if participants is None:
+        participants = list(reg.participants.filter(status=Participant.Status.ACTIVE))
+    base = sum((p.amount for p in participants), ZERO)
+    reason = ""
+    if setup.event.is_cancelled:
+        reason = "event_cancelled"
+    elif reg.status == Registration.Status.WAITING:
+        reason = "waitlist"
+    elif reg.free_cancel_until and now <= reg.free_cancel_until:
+        reason = "moved_up"
+    if reason or base <= 0:
+        return FeeQuote(base, 0, ZERO, reason)
+    rules = rules_of(setup)
+    percent = fee_percent(setup, timezone.localdate(now))
+    fee = (base * percent / Decimal(100)).quantize(Decimal("0.01"))
+    if setup.cancel_fee_fixed and (percent > 0 or not rules):
+        fee += setup.cancel_fee_fixed
+    return FeeQuote(base, percent, min(fee, base))
 
 
 def member_can_cancel(setup: RegistrationSetup) -> bool:
-    """Mitglieder melden sich selbst bis zum Anmeldeschluss ab (Stufe A1)."""
+    """Mitglieder melden sich selbst bis zum Anmeldeschluss ab."""
     return not setup.event.is_cancelled and timezone.now() <= setup.closes_at
 
 
+def member_may_cancel(reg: Registration, now: datetime.datetime | None = None) -> bool:
+    """Darf das Mitglied diese Anmeldung selbst abmelden? Warteliste bis zum Beginn,
+    Nachgerückte in ihren 48 Stunden, sonst bis zum Anmeldeschluss."""
+    now = now or timezone.now()
+    setup = reg.setup
+    if setup.event.is_cancelled or reg.status == Registration.Status.CANCELLED:
+        return False
+    if reg.status == Registration.Status.WAITING:
+        return now < setup.event.starts_at
+    if reg.free_cancel_until and now <= reg.free_cancel_until:
+        return True
+    return now <= setup.closes_at
+
+
+def member_may_substitute(reg: Registration, now: datetime.datetime | None = None) -> bool:
+    now = now or timezone.now()
+    setup = reg.setup
+    return (
+        setup.substitute_allowed
+        and not setup.event.is_cancelled
+        and reg.status != Registration.Status.CANCELLED
+        and now < setup.event.starts_at
+    )
+
+
+def _billing():
+    from billing import services as billing
+
+    return billing
+
+
 @transaction.atomic
-def cancel(reg: Registration, *, user=None, reason: str = "", by_member: bool = False):
+def cancel(
+    reg: Registration,
+    *,
+    user=None,
+    reason: str = "",
+    by_member: bool = False,
+    participants: list[int] | None = None,
+    waive: bool = False,
+    notice: str = "",
+) -> Registration:
+    """Ganz oder für einzelne Personen abmelden.
+
+    Die Rechnung wird storniert; bleiben Personen übrig oder fällt eine Stornogebühr an, kommt
+    eine neue Rechnung (Personen und Gebühr). Ein Guthaben aus Zahlungen wird damit verrechnet,
+    wenn es passt, sonst ist es zu erstatten. Wird der Platz von der Warteliste neu vergeben,
+    entfällt die Gebühr (F8). ``notice``: "" (Abmeldung), "event", "expired", "no_place"."""
+    _lock_setup(reg.setup)
     Registration.objects.select_for_update().filter(pk=reg.pk).values_list("pk").first()
     reg.refresh_from_db()
+    setup = reg.setup
     if reg.status == Registration.Status.CANCELLED:
         raise ValidationError(gettext("Die Anmeldung ist schon abgemeldet."))
-    if by_member and not member_can_cancel(reg.setup):
+    if by_member and not member_may_cancel(reg):
         raise ValidationError(
             gettext(
                 "Abmelden ist nur bis zum Anmeldeschluss möglich. Bitte wende dich an den Verein."
             )
         )
-    reg.status = Registration.Status.CANCELLED
-    reg.cancelled_at = timezone.now()
-    reg.cancel_reason = reason.strip()[:300]
-    reg.save(update_fields=["status", "cancelled_at", "cancel_reason", "updated_at"])
-    reg.participants.update(status=Participant.Status.CANCELLED)
-    invoice = reg.invoice
-    if invoice is not None and invoice.status in ("open", "paid"):
-        from billing import services as billing
-
+    active = list(reg.participants.filter(status=Participant.Status.ACTIVE))
+    if participants is None:
+        chosen = active
+    else:
+        ids = set(participants)
+        chosen = [p for p in active if p.pk in ids]
+        if not chosen or len(chosen) != len(ids):
+            raise ValidationError(gettext("Bitte die Personen wählen, die abgemeldet werden."))
+    whole = len(chosen) == len(active)
+    was_waiting = reg.status == Registration.Status.WAITING
+    quote = fee_quote(reg, chosen)
+    if waive and quote.fee > 0:
+        quote = FeeQuote(quote.base, 0, ZERO, "waived")
+    now = timezone.now()
+    Participant.objects.filter(pk__in=[p.pk for p in chosen]).update(
+        status=Participant.Status.CANCELLED, cancelled_at=now
+    )
+    reg.total = sum((p.amount for p in active if p not in chosen), ZERO)
+    fields = ["total", "updated_at"]
+    if whole:
+        reg.status = Registration.Status.CANCELLED
+        reg.cancelled_at = now
+        reg.cancel_reason = reason.strip()[:300]
+        fields += ["status", "cancelled_at", "cancel_reason"]
+    reg.save(update_fields=fields)
+    # Platz frei: Warteliste rückt nach, dann entfällt die Gebühr
+    moved = [] if was_waiting else move_up(setup, user)
+    if moved and setup.capacity is not None and quote.fee > 0:
+        quote = FeeQuote(quote.base, 0, ZERO, "replaced")
+    old = reg.invoice
+    new = None
+    if not was_waiting and old is not None and old.status in ("open", "paid"):
+        billing = _billing()
         billing.cancel(
-            invoice,
+            old,
             reason or gettext("Abmeldung {number}").format(number=reg.display_number),
             user,
         )
+        old.refresh_from_db()
+    if not was_waiting and (quote.fee > 0 or (not whole and reg.total > 0 and old is not None)):
+        new = create_invoice(reg, user, fee=quote.fee)
+        if not whole:
+            reg.invoice = new
+        if quote.fee > 0:
+            reg.fee_invoice = new
+            reg.cancel_fee += quote.fee
+        reg.save(update_fields=["invoice", "fee_invoice", "cancel_fee", "updated_at"])
+        if old is not None and old.status == "cancelled" and 0 < old.paid <= new.total:
+            # Schon gezahlt: mit der neuen Rechnung verrechnen
+            _billing().apply_credit(old, new)
     from . import notify
 
-    pk = reg.pk
-    transaction.on_commit(lambda: notify.cancellation(pk))
+    pk, fee = reg.pk, str(quote.fee)
+    old_pk = old.pk if old is not None and not was_waiting else None
+    names = [p.name for p in chosen]
+    transaction.on_commit(
+        lambda: notify.cancellation(
+            pk,
+            notice=notice,
+            names=None if whole else names,
+            new_invoice=new.pk if new else None,
+            fee=fee,
+            old_invoice=old_pk,
+        )
+    )
     return reg
+
+
+@transaction.atomic
+def move_up(setup: RegistrationSetup, user=None) -> list[Registration]:
+    """Freie Plätze an die Warteliste geben, in der Reihenfolge der Anmeldung. Passt eine
+    Anmeldung mit mehreren Personen nicht, kommt die nächste dran; sie bleibt stehen."""
+    if not setup.waitlist or setup.event.is_cancelled or timezone.now() >= setup.event.starts_at:
+        return []
+    moved = []
+    waiting = Registration.objects.filter(setup=setup, status=Registration.Status.WAITING)
+    for reg in waiting.order_by("created_at", "pk"):
+        persons = list(reg.participants.filter(status=Participant.Status.ACTIVE))
+        if not persons:
+            continue
+        if setup.capacity is not None and taken(setup) + len(persons) > setup.capacity:
+            continue
+        counts: dict[int, int] = {}
+        for p in persons:
+            counts[p.price_id] = counts.get(p.price_id, 0) + 1
+        prices = {p.pk: p for p in setup.prices.filter(pk__in=counts)}
+        if any(
+            prices[pid].capacity is not None
+            and taken_for_price(prices[pid]) + n > prices[pid].capacity
+            for pid, n in counts.items()
+        ):
+            continue
+        now = timezone.now()
+        reg.status = Registration.Status.REGISTERED
+        reg.moved_up_at = now
+        reg.free_cancel_until = min(now + FREE_AFTER_MOVE_UP, setup.event.starts_at)
+        reg.save(update_fields=["status", "moved_up_at", "free_cancel_until", "updated_at"])
+        if reg.total > 0:
+            reg.invoice = create_invoice(reg, user)
+            reg.save(update_fields=["invoice", "updated_at"])
+        from . import notify
+
+        pk = reg.pk
+        transaction.on_commit(lambda pk=pk: notify.moved_up(pk))
+        moved.append(reg)
+    return moved
+
+
+def event_cancelled(event, user=None) -> int:
+    """Termin abgesagt: alle Anmeldungen und die Warteliste aufheben, ohne Gebühr."""
+    setup = setup_of(event)
+    if setup is None:
+        return 0
+    done = 0
+    rows = Registration.objects.filter(
+        setup=setup,
+        status__in=[Registration.Status.REGISTERED, Registration.Status.WAITING],
+    )
+    for reg in rows.order_by("pk"):
+        cancel(
+            reg, user=user, reason=gettext("Absage der Veranstaltung"), waive=True, notice="event"
+        )
+        done += 1
+    return done
+
+
+@transaction.atomic
+def substitute(
+    p: Participant,
+    *,
+    name: str,
+    membership: Membership | None = None,
+    birth_date: datetime.date | None = None,
+    user=None,
+    by_member: bool = False,
+) -> str:
+    """Ersatzperson: Statt ``p`` kommt jemand anderes, zum selben Tarif und Preis. Die
+    Rechnung bleibt. Gibt den bisherigen Namen zurück."""
+    reg = p.registration
+    setup = reg.setup
+    _lock_setup(setup)
+    p.refresh_from_db()
+    if p.status != Participant.Status.ACTIVE or reg.status == Registration.Status.CANCELLED:
+        raise ValidationError(gettext("Diese Person ist nicht mehr angemeldet."))
+    if timezone.now() >= setup.event.starts_at:
+        raise ValidationError(gettext("Der Termin hat schon begonnen."))
+    if by_member and not setup.substitute_allowed:
+        raise ValidationError(
+            gettext(
+                "Eine Ersatzperson ist bei diesem Termin nicht vorgesehen. Bitte wende dich an "
+                "den Verein."
+            )
+        )
+    name = (membership.person.display_name if membership else name).strip()
+    if not name:
+        raise ValidationError(gettext("Bitte für jede Person den Namen angeben."))
+    if membership is not None and (
+        membership.pk != p.membership_id and membership.pk in registered_memberships(setup)
+    ):
+        raise ValidationError(gettext("{name} ist schon angemeldet.").format(name=name))
+    if membership is None and not setup.guests_allowed and by_member:
+        raise ValidationError(gettext("Zu diesem Termin können keine Gäste angemeldet werden."))
+    _check_person(
+        setup, PersonInput(membership, name, birth_date, p.price), first_day(setup), not by_member
+    )
+    old = p.name
+    p.membership = membership
+    p.name = name[:200]
+    p.birth_date = birth_date
+    p.save(update_fields=["membership", "name", "birth_date"])
+    return old
+
+
+def expire_due(now: datetime.datetime | None = None) -> int:
+    """Unbezahlte Anmeldungen verfallen lassen (Schalter je Termin, Vorgabe aus): ab
+    ``expire_unpaid_days`` Tagen vor Beginn, wenn noch nichts gezahlt ist."""
+    from core.tenancy import rls_bypass
+
+    now = now or timezone.now()
+    on = timezone.localdate(now)
+    done = 0
+    with rls_bypass():
+        setups = RegistrationSetup.objects.filter(
+            expire_unpaid_days__isnull=False,
+            event__is_cancelled=False,
+            event__starts_at__gt=now,
+        ).select_related("event", "organization")
+        for setup in setups:
+            if on < first_day(setup) - datetime.timedelta(days=setup.expire_unpaid_days):
+                continue
+            rows = (
+                Registration.objects.filter(
+                    setup=setup,
+                    status=Registration.Status.REGISTERED,
+                    invoice__status="open",
+                    invoice__paid=0,
+                )
+                .filter(Q(free_cancel_until__isnull=True) | Q(free_cancel_until__lt=now))
+                .order_by("pk")
+            )
+            for reg in rows:
+                cancel(
+                    reg,
+                    reason=gettext("Teilnahmegebühr nicht bezahlt"),
+                    waive=True,
+                    notice="expired",
+                )
+                done += 1
+    return done
+
+
+def close_waitlists(now: datetime.datetime | None = None) -> int:
+    """Mit Beginn endet die Warteliste: wer noch wartet, bekommt Bescheid."""
+    from core.tenancy import rls_bypass
+
+    now = now or timezone.now()
+    done = 0
+    with rls_bypass():
+        rows = Registration.objects.filter(
+            status=Registration.Status.WAITING, setup__event__starts_at__lte=now
+        ).order_by("pk")
+        for reg in rows:
+            cancel(reg, reason=gettext("Kein Platz frei geworden"), notice="no_place")
+            done += 1
+    return done
 
 
 # --- Zahlung ---
@@ -560,9 +954,11 @@ def on_invoice_paid(invoice) -> None:
 
 
 def paid_state(reg: Registration) -> str:
-    """free | open | partly | paid | cancelled"""
+    """free | open | partly | paid | cancelled | waiting"""
     if reg.status == Registration.Status.CANCELLED:
         return "cancelled"
+    if reg.status == Registration.Status.WAITING:
+        return "waiting"
     inv = reg.invoice
     if inv is None:
         return "free"
@@ -577,12 +973,20 @@ def summary(setup: RegistrationSetup) -> dict:
     regs = Registration.objects.filter(setup=setup, status=Registration.Status.REGISTERED)
     totals = regs.aggregate(total=Sum("total"))
     paid = regs.filter(invoice__isnull=False).aggregate(s=Sum("invoice__paid"))["s"] or ZERO
+    cancelled = Registration.objects.filter(setup=setup, status=Registration.Status.CANCELLED)
+    refund = (
+        cancelled.filter(invoice__status="cancelled").aggregate(s=Sum("invoice__paid"))["s"] or ZERO
+    )
+    fees = Registration.objects.filter(setup=setup).aggregate(s=Sum("cancel_fee"))["s"] or ZERO
     return {
         "registrations": regs.count(),
         "persons": taken(setup),
+        "waiting": waiting_count(setup),
         "total": str(totals["total"] or ZERO),
         "paid": str(paid),
         "open": str(max(ZERO, (totals["total"] or ZERO) - paid)),
+        "fees": str(fees),
+        "refund": str(refund),
     }
 
 

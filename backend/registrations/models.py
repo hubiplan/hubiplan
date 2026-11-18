@@ -61,6 +61,28 @@ class RegistrationSetup(models.Model):
         verbose_name=_("Kategorie in der Kasse"),
     )
     terms = models.TextField(_("Teilnahmebedingungen"), blank=True, max_length=5000)
+    # Stufe A3: Warteliste, Ersatzperson, Stornoregel, Verfall unbezahlter Anmeldungen
+    waitlist = models.BooleanField(_("Warteliste"), default=False, db_default=False)
+    substitute_allowed = models.BooleanField(
+        _("Ersatzperson erlaubt"), default=True, db_default=True
+    )
+    # Staffel: [{"days": 30, "percent": 50}, …] heißt „weniger als 30 Tage vorher: 50 %“
+    cancel_rules = models.JSONField(_("Stornogebühren"), default=list, blank=True, null=True)
+    cancel_fee_fixed = models.DecimalField(
+        _("Bearbeitungsgebühr bei Abmeldung"),
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal(0))],
+    )
+    # Unbezahlte Anmeldungen verfallen so viele Tage vor Beginn (leer: nie)
+    expire_unpaid_days = models.PositiveSmallIntegerField(
+        _("Unbezahlte Anmeldungen verfallen"),
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(90)],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -148,6 +170,7 @@ class Registration(models.Model):
 
     class Status(models.TextChoices):
         REGISTERED = "registered", _("angemeldet")
+        WAITING = "waiting", _("Warteliste")
         CANCELLED = "cancelled", _("abgemeldet")
 
     class Source(models.TextChoices):
@@ -193,6 +216,20 @@ class Registration(models.Model):
     payment_confirmed_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancel_reason = models.CharField(max_length=300, blank=True)
+    # Von der Warteliste nachgerückt; bis free_cancel_until kostenfrei abmelden
+    moved_up_at = models.DateTimeField(null=True, blank=True)
+    free_cancel_until = models.DateTimeField(null=True, blank=True)
+    # Stornogebühr (Summe) und die Rechnung dazu
+    cancel_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00"), db_default=Decimal("0.00")
+    )
+    fee_invoice = models.ForeignKey(
+        "billing.Invoice",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
     # Gäste ohne Mitgliedschaft: Daten nach dieser Zeit anonymisieren
     purged_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -254,6 +291,7 @@ class Participant(models.Model):
     price_name = models.CharField(max_length=170, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
     position = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

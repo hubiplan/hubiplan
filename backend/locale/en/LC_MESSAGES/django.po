@@ -14330,3 +14330,144 @@ msgstr "Please choose a category for the accounts (or a category for payments un
 
 msgid "Es gibt schon Anmeldungen. Bitte die Anmeldung schließen statt sie zu entfernen."
 msgstr "There are already registrations. Please close registration instead of removing it."
+
+msgid "Warteliste"
+msgstr "Waiting list"
+
+msgid "Ersatzperson erlaubt"
+msgstr "Substitute allowed"
+
+msgid "Stornogebühren"
+msgstr "Cancellation fees"
+
+msgid "Bearbeitungsgebühr bei Abmeldung"
+msgstr "Handling fee on cancellation"
+
+msgid "Unbezahlte Anmeldungen verfallen"
+msgstr "Unpaid registrations expire"
+
+#, python-brace-format
+msgid "danke für deine Anmeldung ({number}). Im Moment sind alle Plätze vergeben; du stehst auf Platz {position} der Warteliste."
+msgstr "thank you for your registration ({number}). All places are taken at the moment; you are number {position} on the waiting list."
+
+msgid "Wird ein Platz frei, rückst du automatisch verbindlich nach und bekommst eine Mail mit der Rechnung. Danach kannst du dich noch 48 Stunden kostenfrei abmelden."
+msgstr "If a place becomes free, you move up automatically with a binding registration and receive an email with the invoice. After that you can still cancel free of charge for 48 hours."
+
+msgid "Auf der Warteliste:"
+msgstr "On the waiting list:"
+
+#, python-brace-format
+msgid "Warteliste: {title}"
+msgstr "Waiting list: {title}"
+
+#, python-brace-format
+msgid "gute Nachricht: Für deine Anmeldung {number} ist ein Platz frei geworden."
+msgstr "good news: a place has become free for your registration {number}."
+
+msgid "Du bist jetzt verbindlich angemeldet."
+msgstr "Your registration is now binding."
+
+#, python-brace-format
+msgid "Passt es dir nicht mehr, kannst du dich bis {when} kostenfrei abmelden."
+msgstr "If it no longer suits you, you can cancel free of charge until {when}."
+
+#, python-brace-format
+msgid "Platz frei: {title}"
+msgstr "Place available: {title}"
+
+#, python-brace-format
+msgid "leider müssen wir „{title}“ absagen. Deine Anmeldung {number} ist damit aufgehoben:"
+msgstr "unfortunately we have to cancel “{title}”. Your registration {number} is therefore cancelled:"
+
+#, python-brace-format
+msgid "Abgesagt: {title}"
+msgstr "Cancelled: {title}"
+
+#, python-brace-format
+msgid "deine Anmeldung {number} ist verfallen, weil die Teilnahmegebühr nicht rechtzeitig bezahlt war:"
+msgstr "your registration {number} has expired because the participation fee was not paid in time:"
+
+#, python-brace-format
+msgid "Anmeldung verfallen: {title}"
+msgstr "Registration expired: {title}"
+
+#, python-brace-format
+msgid "leider ist für deine Anmeldung {number} auf der Warteliste kein Platz mehr frei geworden:"
+msgstr "unfortunately no place became free for your registration {number} on the waiting list:"
+
+#, python-brace-format
+msgid "Kein Platz frei geworden: {title}"
+msgstr "No place available: {title}"
+
+#, python-brace-format
+msgid "für deine Anmeldung {number} haben wir abgemeldet: {names}."
+msgstr "for your registration {number} we have cancelled: {names}."
+
+#, python-brace-format
+msgid "Nach den Teilnahmebedingungen fällt eine Stornogebühr von {fee} an."
+msgstr "Under the terms of participation, a cancellation fee of {fee} applies."
+
+#, python-brace-format
+msgid "Die neue Rechnung {number} liegt bei; sie ist mit deiner Zahlung schon beglichen."
+msgstr "The new invoice {number} is attached; it is already settled by your payment."
+
+#, python-brace-format
+msgid "Die neue Rechnung {number} über {total} liegt bei. Bitte überweise den offenen Betrag bis {due}."
+msgstr "The new invoice {number} for {total} is attached. Please transfer the outstanding amount by {due}."
+
+#, python-brace-format
+msgid "Die Anmeldung beginnt am {when}."
+msgstr "Registration opens on {when}."
+
+#, python-brace-format
+msgid "Anmeldung möglich bis {when}."
+msgstr "Registration open until {when}."
+
+msgid "Die Anmeldung ist geschlossen."
+msgstr "Registration is closed."
+
+#, python-brace-format
+msgid "Alle Plätze sind vergeben. Neue Anmeldungen kommen bis {when} auf die Warteliste."
+msgstr "All places are taken. New registrations go on the waiting list until {when}."
+
+#, python-brace-format
+msgid "Stornogebühr {title}"
+msgstr "Cancellation fee {title}"
+
+#, python-brace-format
+msgid "Anmeldung {number}"
+msgstr "Registration {number}"
+
+msgid "Bitte die Personen wählen, die abgemeldet werden."
+msgstr "Please choose the people to cancel."
+
+msgid "Absage der Veranstaltung"
+msgstr "Event cancelled"
+
+msgid "Diese Person ist nicht mehr angemeldet."
+msgstr "This person is no longer registered."
+
+msgid "Der Termin hat schon begonnen."
+msgstr "The event has already started."
+
+msgid "Eine Ersatzperson ist bei diesem Termin nicht vorgesehen. Bitte wende dich an den Verein."
+msgstr "Substitutes are not provided for at this event. Please contact the club."
+
+msgid "Teilnahmegebühr nicht bezahlt"
+msgstr "Participation fee not paid"
+
+msgid "Kein Platz frei geworden"
+msgstr "No place became free"
+
+#, python-brace-format
+msgid "Höchstens {n} Stufen für Stornogebühren."
+msgstr "At most {n} cancellation fee tiers."
+
+msgid "Jede Frist für Stornogebühren nur einmal angeben."
+msgstr "Enter each cancellation fee deadline only once."
+
+msgid "Bitte einen Grund angeben, wenn die Gebühr erlassen wird."
+msgstr "Please give a reason when waiving the fee."
+
+msgid "Platz"
+msgstr "Place"
