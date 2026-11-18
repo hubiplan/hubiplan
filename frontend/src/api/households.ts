@@ -30,6 +30,12 @@ export interface Household {
   members: HouseholdMember[]
 }
 
+/** Vorschläge und Mitglieder ohne verwertbare Anschrift (fehlt oder Platzhalter wie „00000“). */
+export interface HouseholdSuggestions {
+  suggestions: HouseholdSuggestion[]
+  missing_address: { id: number; first_name: string; last_name: string }[]
+}
+
 export interface HouseholdSuggestion {
   name: string
   street: string
@@ -89,7 +95,7 @@ export const householdApi = {
   ) => api.patch<Household>(`${base(org)}${id}/members/${link}/`, data),
   deleteMember: (org: number, id: number, link: number) =>
     api.del(`${base(org)}${id}/members/${link}/`),
-  suggestions: (org: number) => api.get<HouseholdSuggestion[]>(`${base(org)}suggestions/`),
+  suggestions: (org: number) => api.get<HouseholdSuggestions>(`${base(org)}suggestions/`),
 }
 
 // --- Zahler und Familien-/Firmenbeitrag (H2/H3), Rechte wie bei Beiträgen ---
