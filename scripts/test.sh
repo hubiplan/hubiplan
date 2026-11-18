@@ -498,6 +498,13 @@ if [ "$RUN_BACKEND" = 1 ]; then
         bash "$WORK/scripts/pruefe-veroeffentlicht.sh" "$WORK"
     fi
 
+    # Zweiter Backup-Ort (OPS-06): rsync/restic gegen Befehlsersatz, ohne Netz und Container
+    if git cat-file -e "$REF:scripts/pruefe-zweitort.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-zweitort.sh deploy/backup/zweitort.sh \
+            deploy/backup/backup.sh deploy/hestia/hubiplan-restic-backup.sh | tar -x -C "$WORK"
+        bash "$WORK/scripts/pruefe-zweitort.sh" "$WORK"
+    fi
+
     if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
         git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \
             deploy/server-setup.sh deploy/zurueck.sh deploy/deploy.sh | tar -x -C "$WORK"

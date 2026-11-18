@@ -1,7 +1,8 @@
 #!/bin/bash
 # Optionale zweite Backup-Kopie: überträgt verschlüsselte Anwendungssicherungen
-# und die .env per restic auf einen getrennten SFTP-Speicher. Zugang und Ziel
-# werden je Installation lokal auf dem Server konfiguriert.
+# und die .env (darin nur durch das restic-Passwort geschützt) per restic auf einen
+# getrennten Speicher (SFTP oder rest-server). Zugang und Ziel werden je Installation
+# lokal auf dem Server konfiguriert.
 #
 # Liegt auch die Mail auf dem Server (Hestia mit Exim/Dovecot), sichert das Skript
 # zusätzlich die Postfächer und die Mail-Einstellungen des Hestia-Benutzers, als eigene
@@ -23,23 +24,49 @@
 # Fehlermeldungen gehen an die Adresse in /root/.config/restic/hubiplan.mailto (sonst root):
 #   echo adresse@example.org | ssh deploy@server.example.org "sudo tee /root/.config/restic/hubiplan.mailto"
 #
+# Einstellungen (optional) in /root/.config/restic/hubiplan.conf (Rechte 600), als
+# Shell-Zuweisungen; alle Werte gehen als Umgebung an restic (Gesamtaudit 15.11., OPS-06):
+#   RESTIC_REPOSITORY=rest:https://backup.example.org/hubiplan/   (oder sftp:…)
+#   RESTIC_REST_USERNAME=…  RESTIC_REST_PASSWORD=…   eigener Zugang zum rest-server
+#   RESTIC_CACERT=/root/.config/restic/ca.pem        nur bei eigener Zertifizierungsstelle
+#   RESTIC_AUFBEWAHRUNG=aus   Standard „an“: forget/prune täglich hier auf dem Server.
+#                             „aus“: hier nur sichern, prüfen, Probe und Speicherstand;
+#                             forget/prune mit „aufbewahrung“ von einem getrennten Rechner.
+#   RESTIC_WARNGRENZE_GB=200  nur bei „aus“: WARNUNG im Protokoll, wenn die Kopie größer ist
+#
 # Ohne Argument: Sicherung (so ruft cron es täglich auf). Gibt keine Passwörter aus.
+# „aufbewahrung“: forget/prune und check, gedacht für einen getrennten Rechner mit eigenem
+# Zugang zum Speicher (dort dasselbe Skript und eine eigene hubiplan.conf/hubiplan.pass).
 set -u
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Nur für die Skriptprüfung (scripts/pruefe-zweitort.sh): Wurzel aller Pfade und Ordner mit
+# Befehlsersatz. Im Betrieb leer.
+R=${HUBIPLAN_RESTIC_TESTWURZEL:-}
+export PATH=${R:+$R/bin:}/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+export RESTIC_CACHE_DIR=$R/root/.cache/restic
+export RESTIC_PASSWORD_FILE=$R/root/.config/restic/hubiplan.pass
+KONFDATEI=$R/root/.config/restic/hubiplan.conf
+if [ -r "$KONFDATEI" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "$KONFDATEI"
+    set +a
+fi
+PASSDATEI=$RESTIC_PASSWORD_FILE
 export RESTIC_REPOSITORY=${RESTIC_REPOSITORY:-sftp:storagebox:restic-hubiplan}
-export RESTIC_CACHE_DIR=/root/.cache/restic
-PASSDATEI=/root/.config/restic/hubiplan.pass
-export RESTIC_PASSWORD_FILE=$PASSDATEI
+AUFBEWAHRUNG=${RESTIC_AUFBEWAHRUNG:-an}
+WARNGRENZE_GB=${RESTIC_WARNGRENZE_GB:-}
 # Empfänger der Fehlermeldungen: eine Adresse in MAILDATEI (nur auf dem Server), sonst root
-MAILDATEI=/root/.config/restic/hubiplan.mailto
+MAILDATEI=$R/root/.config/restic/hubiplan.mailto
 MAILTO=${MAILTO:-$(head -n1 "$MAILDATEI" 2>/dev/null || echo root)}
-LOG=/var/log/hubiplan-restic.log
-BACKUPS=/opt/hubiplan-backups
-ENVDATEI=/opt/hubiplan/.env
-CRON=/etc/cron.d/hubiplan-restic
+LOG=$R/var/log/hubiplan-restic.log
+BACKUPS=$R/opt/hubiplan-backups
+ENVDATEI=$R/opt/hubiplan/.env
+CRON=$R/etc/cron.d/hubiplan-restic
+SPERRE=$R/run/hubiplan-restic.lock
+STAND=$R/var/lib
 # Zusätzlich zu sichernde Mailpfade, eine Zeile je Pfad; fehlt die Datei, keine Mailsicherung
-MAILPFADE=/root/.config/restic/hubiplan.mail
+MAILPFADE=$R/root/.config/restic/hubiplan.mail
 
 log() { echo "$(date '+%F %T') $*" | tee -a "$LOG" >> "${REP:-/dev/null}"; }
 
@@ -63,6 +90,9 @@ mailpfade() { [ -s "$MAILPFADE" ] && grep -v '^[[:space:]]*\(#\|$\)' "$MAILPFADE
 
 einrichten() {
     command -v restic >/dev/null || { echo "restic fehlt (apt install restic)"; exit 1; }
+    case "$RESTIC_REPOSITORY" in
+        rest:http://*) echo "FEHLER: rest-server nur über https (rest:https://…)"; exit 1 ;;
+    esac
     if [ ! -s "$PASSDATEI" ]; then
         install -d -m 700 "$(dirname "$PASSDATEI")"
         (umask 077 && openssl rand -base64 33 | tr -d '\n' > "$PASSDATEI")
@@ -87,6 +117,9 @@ MAILTO=root
 EOF
     chmod 644 "$CRON"
     echo "Zeitplan: $CRON"
+    if [ "$AUFBEWAHRUNG" = aus ]; then
+        echo "Aufbewahrung am Server aus: forget/prune mit „aufbewahrung“ von einem getrennten Rechner"
+    fi
     sichern
     echo "Ergebnis: $(tail -n 1 "$LOG")"
 }
@@ -147,8 +180,59 @@ probe_mail() {
     return $ok
 }
 
+# Aufbewahrung: alte Snapshots vergessen und Speicher freigeben. Braucht Löschrechte am
+# Speicher; ein rest-server mit --append-only lehnt das ab.
+vergessen() {
+    restic forget --tag hubiplan --tag mail --keep-daily 14 --keep-weekly 8 --keep-monthly 12 \
+        --group-by host,tags --prune -q >> "$LOG" 2>&1 \
+        && log "Aufbewahrung/prune ok" || { log "FEHLER: forget/prune"; return 1; }
+}
+
+# Löscht der Server selbst am Zweitort (forget/prune), steht das höchstens einmal am Tag als
+# HINWEIS im Protokoll. Kein Fehler: ändert weder FEHLER noch last-ok noch den Mailbetreff.
+# RESTIC_SNAPSHOTS_AM_SPEICHER=ja (in hubiplan.conf): Am Speicher sind Snapshots eingerichtet,
+# die der Server nicht löschen kann; dann entfällt der Hinweis.
+hinweis_loeschend() {
+    [ "${RESTIC_SNAPSHOTS_AM_SPEICHER:-}" != ja ] || return 0
+    local heute
+    heute=$(date +%F)
+    [ "$(cat "$STAND/hubiplan-restic.hinweis" 2>/dev/null)" != "$heute" ] || return 0
+    echo "$heute" > "$STAND/hubiplan-restic.hinweis" 2>/dev/null || true
+    log "HINWEIS: forget/prune läuft auf diesem Server; wer ihn übernimmt, kann damit auch die Kopien löschen. Schutz: Snapshots am Speicher oder RESTIC_AUFBEWAHRUNG=aus (docs/betrieb.md)"
+}
+
+# Bei „aus“ wächst die Kopie, bis der getrennte Rechner aufräumt. Größe und Zahl der
+# Snapshots nur mit restic selbst ermitteln; nie ein Fehler, höchstens eine WARNUNG.
+speicherstand() {
+    local json bytes anzahl gb
+    json=$(restic stats --mode raw-data --json -q 2>> "$LOG") || json=""
+    bytes=$(printf '%s' "$json" | sed -n 's/.*"total_size":\([0-9][0-9]*\).*/\1/p' | head -n 1)
+    if [ -z "$bytes" ]; then
+        log "HINWEIS: Speicherstand nicht ermittelt (restic stats)"
+        return 0
+    fi
+    anzahl=$(restic snapshots --json -q 2>> "$LOG" | grep -o '"id":"[0-9a-f]*"' | wc -l)
+    gb=$(awk -v b="$bytes" 'BEGIN { printf "%.1f", b / 1e9 }')
+    log "Speicherstand: $gb GB in $anzahl Snapshots (Aufbewahrung am Server aus)"
+    if [ -n "$WARNGRENZE_GB" ] && awk -v b="$bytes" -v g="$WARNGRENZE_GB" 'BEGIN { exit !(g + 0 > 0 && b > g * 1e9) }'; then
+        log "WARNUNG: Kopie größer als RESTIC_WARNGRENZE_GB=$WARNGRENZE_GB ($gb GB); „aufbewahrung“ auf dem getrennten Rechner ausführen oder Speicher erweitern"
+    fi
+    return 0
+}
+
+# forget/prune und check; von einem getrennten Rechner mit eigenem Zugang aufrufen
+aufbewahrung() {
+    exec 9>"$SPERRE"
+    flock -n 9 || { echo "läuft bereits"; exit 1; }
+    REP=/dev/stdout
+    log "=== Start Aufbewahrung (forget/prune)"
+    vergessen || exit 1
+    restic check >> "$LOG" 2>&1 && log "check ok" || { log "FEHLER: check"; exit 1; }
+    log "=== Ende Aufbewahrung"
+}
+
 sichern() {
-    exec 9>/run/hubiplan-restic.lock
+    exec 9>"$SPERRE"
     flock -n 9 || { echo "$(date -Is) läuft bereits" >> "$LOG"; exit 1; }
     REP=$(mktemp)
     FEHLER=0
@@ -178,17 +262,20 @@ sichern() {
                 || { log "FEHLER: restic backup Mail (Exit $?)"; FEHLER=1; }
         fi
     fi
-    restic forget --tag hubiplan --tag mail --keep-daily 14 --keep-weekly 8 --keep-monthly 12 \
-        --group-by host,tags --prune -q >> "$LOG" 2>&1 \
-        && log "Aufbewahrung/prune ok" || { log "FEHLER: forget/prune"; FEHLER=1; }
+    case "$AUFBEWAHRUNG" in
+        an) vergessen || FEHLER=1; hinweis_loeschend ;;
+        aus) speicherstand ;;
+        # Unbekannter Wert: lieber nichts löschen, aber melden
+        *) log "FEHLER: RESTIC_AUFBEWAHRUNG=$AUFBEWAHRUNG (an oder aus)"; FEHLER=1 ;;
+    esac
     if [ "$(date +%d)" = "01" ]; then
         restic check --read-data-subset=10% >> "$LOG" 2>&1 \
             && log "check ok" || { log "FEHLER: check"; FEHLER=1; }
         probe || FEHLER=1
         [ "${#MAIL[@]}" -gt 0 ] && { probe_mail || FEHLER=1; }
     fi
-    touch /var/lib/hubiplan-restic.last-run
-    [ $FEHLER = 0 ] && touch /var/lib/hubiplan-restic.last-ok
+    touch "$STAND/hubiplan-restic.last-run"
+    [ $FEHLER = 0 ] && touch "$STAND/hubiplan-restic.last-ok"
     log "=== Ende (Fehler: $FEHLER)"
     # Mail nur bei Fehlern und am Monatsersten, damit das Postfach ruhig bleibt
     if [ $FEHLER != 0 ] || [ "$(date +%d)" = "01" ]; then
@@ -201,6 +288,7 @@ sichern() {
 
 case "${1:-}" in
     einrichten) einrichten ;;
+    aufbewahrung) aufbewahrung ;;
     "") sichern; exit $? ;;
-    *) echo "Aufruf: $0 [einrichten]"; exit 2 ;;
+    *) echo "Aufruf: $0 [einrichten|aufbewahrung]"; exit 2 ;;
 esac

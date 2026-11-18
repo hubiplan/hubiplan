@@ -20,6 +20,13 @@ set -eu
 # eine unvollständige Datei als Backup gilt
 set -o pipefail
 : "${BACKUP_HMAC_KEY:?BACKUP_HMAC_KEY fehlt}"
+# Kopie an den zweiten Ort (zweitort_kopieren): neben diesem Skript, sonst im Abbild unter
+# /usr/local/bin (z. B. wenn ein Test eine veränderte Kopie von backup.sh anderswo ausführt)
+ZWEITORT_SH="$(dirname "$0")/zweitort.sh"
+[ -r "$ZWEITORT_SH" ] || ZWEITORT_SH=/usr/local/bin/zweitort.sh
+[ -r "$ZWEITORT_SH" ] || { echo "FEHLER: zweitort.sh fehlt" >&2; exit 1; }
+# shellcheck source=deploy/backup/zweitort.sh
+. "$ZWEITORT_SH"
 
 DIR="${BACKUP_DIR:-/backups}"
 DATA_KEY_FILE="${BACKUP_DATA_KEY_FILE:-/run/secrets/datenschluessel}"
@@ -231,15 +238,10 @@ fi
 
 # Optional: Kopie an einen zweiten Ort (z. B. user@host:/pfad, per SSH-Schlüssel)
 if [ -n "${BACKUP_REMOTE:-}" ]; then
-    # Fester Rechnerschlüssel (known_hosts), kein „beim ersten Mal vertrauen“
-    # shellcheck disable=SC2086
-    rsync -a $DELETE \
-        -e "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$SSH_DIR/known_hosts -i $SSH_KEY" \
-        --include='*.enc' --include='*.enc.hmac' --include='*.age' --include='*.age.hmac' \
-        --include='datenschluessel_*.sha256' --include='datenschluessel_*.sha256.hmac' \
-        --include='datenschluessel.sha256' --include='datenschluessel.sha256.hmac' \
-        --include='*.receipt' --include='*.receipt.hmac' \
-        --include='restore-test.log' --include='loeschliste.jsonl' --include='kettenkoepfe.log' --exclude='*' "$DIR/" "$BACKUP_REMOTE" \
+    # Fester Rechnerschlüssel (known_hosts), kein „beim ersten Mal vertrauen“.
+    # BACKUP_REMOTE_ANHAENGEND=1: ohne --delete (siehe zweitort.sh, OPS-06)
+    zweitort_kopieren "$DIR" "$BACKUP_REMOTE" "$DELETE" \
+        "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$SSH_DIR/known_hosts -i $SSH_KEY" \
         || fail "Kopie nach $BACKUP_REMOTE fehlgeschlagen (lokales Backup $STAMP ist ok)"
     echo "$(date '+%F %T') Kopie nach $BACKUP_REMOTE ok" >> "$DIR/backup.log"
 fi
