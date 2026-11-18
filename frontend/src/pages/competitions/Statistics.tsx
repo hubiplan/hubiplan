@@ -156,16 +156,18 @@ export function CompetitionStatistics({
   )
 }
 
-/** Warum die Teilnahmen kleiner sein können als die Starterzahl in der Wettbewerbsliste. */
-function notCounted(n?: { guests: number; out_of_competition: number; absent: number }) {
-  if (!n) return ''
-  const parts = [
-    n.guests && tn('{n} Gast', '{n} Gäste', n.guests),
-    n.out_of_competition &&
+/** Gäste unter den Teilnahmen und Starts, die gar nicht zählen (Starterzahl kann größer sein). */
+function participationNote(s: CompetitionStatisticsData['summary']) {
+  const parts = [tn('{n} Wettbewerb', '{n} Wettbewerbe', s.competitions)]
+  if (s.guests) parts.push(tn('davon {n} Gast', 'davon {n} Gäste', s.guests))
+  const n = s.not_counted
+  const skipped = [
+    n?.out_of_competition &&
       tn('{n} außer Konkurrenz', '{n} außer Konkurrenz', n.out_of_competition),
-    n.absent && tn('{n} fehlend', '{n} fehlend', n.absent),
+    n?.absent && tn('{n} fehlend', '{n} fehlend', n.absent),
   ].filter(Boolean)
-  return parts.length ? t('nicht gezählt: {list}', { list: parts.join(', ') }) : ''
+  if (skipped.length) parts.push(t('nicht gezählt: {list}', { list: skipped.join(', ') }))
+  return parts.join(' · ')
 }
 
 function Figure({ label, value, note }: { label: string; value: string; note?: string }) {
@@ -252,13 +254,7 @@ function StatisticsContent({
         </section>
       )}
       <div className="tiles tiles-figures competition-statistics-figures">
-        <Figure
-          label={t('Teilnahmen')}
-          value={number(s.starts, 0)}
-          note={[tn('{n} Wettbewerb', '{n} Wettbewerbe', s.competitions), notCounted(s.not_counted)]
-            .filter(Boolean)
-            .join(' · ')}
-        />
+        <Figure label={t('Teilnahmen')} value={number(s.starts, 0)} note={participationNote(s)} />
         <Figure
           label={personal ? t('Siege') : t('Teilnehmende Mitglieder')}
           value={number(personal ? s.wins : s.members, 0)}
@@ -331,7 +327,9 @@ function StatisticsContent({
         <div className="competition-statistics-charts">
           <ChartCard
             title={t('Teilnahmen im Zeitverlauf')}
-            note={t('Je Person und Wettbewerb einmal, auch bei mehreren Wertungen.')}
+            note={t(
+              'Je Person und Wettbewerb einmal, auch bei mehreren Wertungen, Gäste eingeschlossen.',
+            )}
           >
             <TimeChart
               title={t('Teilnahmen im Zeitverlauf')}
