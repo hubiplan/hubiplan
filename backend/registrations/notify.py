@@ -200,42 +200,205 @@ def payment_received(pk: int) -> bool:
         return _send(reg, subject, lines, "zahlungsbestaetigung")
 
 
-def cancellation(pk: int) -> bool:
+def _invoice_attachment(invoice, lines: list[str], text: str) -> list:
+    from billing.archive import archived_pdf
+    from billing.pdf import filename
+
+    try:
+        content = archived_pdf(invoice)
+    except Exception:  # noqa: BLE001 – Mail geht auch ohne Anhang raus
+        logger.exception("Rechnung %s ohne PDF", invoice.pk)
+        return []
+    lines += ["", text]
+    return [(filename(invoice), content, "application/pdf")]
+
+
+def waitlisted(pk: int) -> bool:
+    """Auf der Warteliste: Platz in der Reihe, noch keine Rechnung."""
+    from .services import waitlist_position
+
     reg = _load(pk)
-    if reg is None or reg.status != Registration.Status.CANCELLED:
+    if reg is None or reg.status != Registration.Status.WAITING:
         return False
     org = reg.organization
     with rls_bypass(), language_of_org(org):
         lines = [
             _greeting(reg),
             "",
-            _("deine Anmeldung {number} ist abgemeldet:").format(number=reg.display_number),
+            _(
+                "danke für deine Anmeldung ({number}). Im Moment sind alle Plätze vergeben; du "
+                "stehst auf Platz {position} der Warteliste."
+            ).format(number=reg.display_number, position=waitlist_position(reg)),
+            _(
+                "Wird ein Platz frei, rückst du automatisch verbindlich nach und bekommst eine "
+                "Mail mit der Rechnung. Danach kannst du dich noch 48 Stunden kostenfrei abmelden."
+            ),
             "",
             *event_lines(reg),
             "",
+            _("Auf der Warteliste:"),
+            *persons_lines(reg),
+            *_portal_hint(reg),
+            "",
+            org.name,
+        ]
+        subject = _("Warteliste: {title}").format(title=reg.setup.event.title)
+        return _send(reg, subject, lines, "warteliste")
+
+
+def moved_up(pk: int) -> bool:
+    """Von der Warteliste nachgerückt: wie die Anmeldebestätigung, mit 48-Stunden-Hinweis."""
+    reg = _load(pk)
+    if reg is None or reg.status != Registration.Status.REGISTERED:
+        return False
+    org = reg.organization
+    with rls_bypass(), language_of_org(org):
+        event = reg.setup.event
+        lines = [
+            _greeting(reg),
+            "",
+            _("gute Nachricht: Für deine Anmeldung {number} ist ein Platz frei geworden.").format(
+                number=reg.display_number
+            ),
+            _("Du bist jetzt verbindlich angemeldet."),
+            "",
+            *event_lines(reg),
+            "",
+            _("Angemeldet:"),
             *persons_lines(reg),
         ]
         attachments = []
         invoice = reg.invoice
-        if invoice is not None and invoice.status == "cancelled":
+        if invoice is not None and invoice.number is not None:
+            lines += ["", _("Summe: {total}").format(total=euro(reg.total))]
+            attachments += _invoice_attachment(
+                invoice,
+                lines,
+                _(
+                    "Die Rechnung {number} liegt bei. Bitte überweise den Betrag bis {due} "
+                    "und gib die Rechnungsnummer an."
+                ).format(number=invoice.display_number, due=date_text(invoice.due_date)),
+            )
+        if reg.free_cancel_until:
+            lines += [
+                "",
+                _("Passt es dir nicht mehr, kannst du dich bis {when} kostenfrei abmelden.").format(
+                    when=datetime_text(reg.free_cancel_until)
+                ),
+            ]
+        lines += [*_portal_hint(reg), "", org.name]
+        try:
+            attachments.append(("termin.ics", ics(reg), "text/calendar"))
+        except Exception:  # noqa: BLE001
+            logger.exception("Kalenderdatei zur Anmeldung %s", reg.pk)
+        subject = _("Platz frei: {title}").format(title=event.title)
+        sent = _send(reg, subject, lines, "anmeldung", attachments)
+        if sent:
+            now = timezone.now()
+            Registration.objects.filter(pk=reg.pk).update(confirmation_sent_at=now)
+            if invoice is not None and invoice.number is not None:
+                type(invoice).objects.filter(pk=invoice.pk).update(sent_at=now)
+        return sent
+
+
+def cancellation(
+    pk: int,
+    notice: str = "",
+    names: list[str] | None = None,
+    new_invoice: int | None = None,
+    fee: str = "0",
+    old_invoice: int | None = None,
+) -> bool:
+    """Abmeldung (ganz oder einzelne Personen), Absage des Termins, Verfall unbezahlter
+    Anmeldungen, Ende der Warteliste. Mit Stornorechnung, neuer Rechnung und Erstattung."""
+    from decimal import Decimal
+
+    reg = _load(pk)
+    if reg is None:
+        return False
+    partial = names is not None
+    if not partial and reg.status != Registration.Status.CANCELLED:
+        return False
+    org = reg.organization
+    with rls_bypass(), language_of_org(org):
+        event = reg.setup.event
+        number = reg.display_number
+        if notice == "event":
+            intro = _(
+                "leider müssen wir „{title}“ absagen. Deine Anmeldung {number} ist damit "
+                "aufgehoben:"
+            ).format(title=event.title, number=number)
+            subject = _("Abgesagt: {title}").format(title=event.title)
+        elif notice == "expired":
+            intro = _(
+                "deine Anmeldung {number} ist verfallen, weil die Teilnahmegebühr nicht "
+                "rechtzeitig bezahlt war:"
+            ).format(number=number)
+            subject = _("Anmeldung verfallen: {title}").format(title=event.title)
+        elif notice == "no_place":
+            intro = _(
+                "leider ist für deine Anmeldung {number} auf der Warteliste kein Platz mehr "
+                "frei geworden:"
+            ).format(number=number)
+            subject = _("Kein Platz frei geworden: {title}").format(title=event.title)
+        elif partial:
+            intro = _("für deine Anmeldung {number} haben wir abgemeldet: {names}.").format(
+                number=number, names=", ".join(names)
+            )
+            subject = _("Abmeldung bestätigt: {title}").format(title=event.title)
+        else:
+            intro = _("deine Anmeldung {number} ist abgemeldet:").format(number=number)
+            subject = _("Abmeldung bestätigt: {title}").format(title=event.title)
+        lines = [_greeting(reg), "", intro, "", *event_lines(reg), "", *persons_lines(reg)]
+        attachments = []
+        from billing.models import Invoice
+
+        old = Invoice.objects.filter(pk=old_invoice).first() if old_invoice else None
+        if old is not None and old.status == "cancelled":
             from billing.archive import archived_cancellation
             from billing.pdf import cancellation_filename
 
-            content = archived_cancellation(invoice)
+            content = archived_cancellation(old)
             if content:
-                attachments.append((cancellation_filename(invoice), content, "application/pdf"))
+                attachments.append((cancellation_filename(old), content, "application/pdf"))
                 lines += [
                     "",
                     _("Die Stornorechnung {number} liegt bei.").format(
-                        number=invoice.cancellation_number
+                        number=old.cancellation_number
                     ),
                 ]
-            if invoice.paid > 0:
-                lines.append(
-                    _("Den schon gezahlten Betrag von {amount} erstatten wir dir.").format(
-                        amount=euro(invoice.paid)
-                    )
+        new = None
+        if new_invoice:
+            new = Invoice.objects.filter(pk=new_invoice).first()
+        if new is not None and new.number is not None:
+            fee_value = Decimal(fee or "0")
+            if fee_value > 0:
+                lines += [
+                    "",
+                    _("Nach den Teilnahmebedingungen fällt eine Stornogebühr von {fee} an.").format(
+                        fee=euro(fee_value)
+                    ),
+                ]
+            if new.status == "paid":
+                text = _(
+                    "Die neue Rechnung {number} liegt bei; sie ist mit deiner Zahlung schon "
+                    "beglichen."
+                ).format(number=new.display_number)
+            else:
+                text = _(
+                    "Die neue Rechnung {number} über {total} liegt bei. Bitte überweise den "
+                    "offenen Betrag bis {due}."
+                ).format(
+                    number=new.display_number,
+                    total=euro(new.total),
+                    due=date_text(new.due_date),
                 )
+            attachments += _invoice_attachment(new, lines, text)
+        if old is not None and old.status == "cancelled" and old.paid > 0:
+            lines.append(
+                _("Den schon gezahlten Betrag von {amount} erstatten wir dir.").format(
+                    amount=euro(old.paid)
+                )
+            )
         lines += ["", org.name]
-        subject = _("Abmeldung bestätigt: {title}").format(title=reg.setup.event.title)
         return _send(reg, subject, lines, "abmeldung", attachments)

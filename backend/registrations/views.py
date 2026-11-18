@@ -54,6 +54,19 @@ def participant_data(p: Participant) -> dict:
     }
 
 
+def _invoice_brief(inv) -> dict | None:
+    if inv is None:
+        return None
+    return {
+        "id": inv.pk,
+        "number": inv.display_number,
+        "status": inv.status,
+        "total": str(inv.total),
+        "paid": str(inv.paid),
+        "due_date": inv.due_date,
+    }
+
+
 def registration_data(reg: Registration, *, full: bool) -> dict:
     inv = reg.invoice
     data = {
@@ -66,19 +79,18 @@ def registration_data(reg: Registration, *, full: bool) -> dict:
         "created_at": reg.created_at,
         "cancelled_at": reg.cancelled_at,
         "participants": [participant_data(p) for p in reg.participants.all()],
-        "invoice": (
-            {
-                "id": inv.pk,
-                "number": inv.display_number,
-                "status": inv.status,
-                "total": str(inv.total),
-                "paid": str(inv.paid),
-                "due_date": inv.due_date,
-            }
-            if inv
-            else None
-        ),
+        "invoice": _invoice_brief(inv),
+        "waitlist_position": services.waitlist_position(reg),
+        "moved_up_at": reg.moved_up_at,
+        "free_cancel_until": reg.free_cancel_until,
+        "cancel_fee": str(reg.cancel_fee),
+        "fee_invoice": _invoice_brief(reg.fee_invoice)
+        if reg.fee_invoice_id != reg.invoice_id
+        else None,
     }
+    if not full:
+        data["can_cancel"] = services.member_may_cancel(reg)
+        data["can_substitute"] = services.member_may_substitute(reg)
     if full:
         data.update(
             {
@@ -171,6 +183,11 @@ class PriceInput(serializers.Serializer):
         return attrs
 
 
+class RuleInput(serializers.Serializer):
+    days = serializers.IntegerField(min_value=1, max_value=365)
+    percent = serializers.IntegerField(min_value=0, max_value=100)
+
+
 class SetupInput(serializers.Serializer):
     opens_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
     closes_at = serializers.DateTimeField()
@@ -181,7 +198,34 @@ class SetupInput(serializers.Serializer):
     due_days = serializers.IntegerField(min_value=0, max_value=90, default=14)
     category = serializers.IntegerField(required=False, allow_null=True, default=None)
     terms = serializers.CharField(max_length=5000, required=False, allow_blank=True, default="")
+    waitlist = serializers.BooleanField(default=False)
+    substitute_allowed = serializers.BooleanField(default=True)
+    cancel_rules = RuleInput(many=True, required=False, default=list)
+    cancel_fee_fixed = serializers.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        min_value=Decimal(0),
+        max_value=Decimal(10000),
+        required=False,
+        allow_null=True,
+        default=None,
+    )
+    expire_unpaid_days = serializers.IntegerField(
+        required=False, allow_null=True, default=None, min_value=1, max_value=90
+    )
     prices = PriceInput(many=True)
+
+    def validate_cancel_rules(self, value):
+        if len(value) > services.MAX_RULES:
+            raise serializers.ValidationError(
+                gettext("Höchstens {n} Stufen für Stornogebühren.").format(n=services.MAX_RULES)
+            )
+        days = [r["days"] for r in value]
+        if len(set(days)) != len(days):
+            raise serializers.ValidationError(
+                gettext("Jede Frist für Stornogebühren nur einmal angeben.")
+            )
+        return sorted(value, key=lambda r: -r["days"])
 
     def validate(self, attrs):
         if not attrs["prices"]:
@@ -224,11 +268,19 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
         return setup
 
     def payload(self, event, setup) -> dict:
+        from django.db.models import Case, IntegerField, Value, When
+
+        order = Case(
+            When(status=Registration.Status.REGISTERED, then=Value(0)),
+            When(status=Registration.Status.WAITING, then=Value(1)),
+            default=Value(2),
+            output_field=IntegerField(),
+        )
         regs = (
             Registration.objects.filter(setup=setup)
-            .select_related("invoice")
+            .select_related("invoice", "fee_invoice")
             .prefetch_related("participants")
-            .order_by("status", "created_at", "pk")
+            .order_by(order, "created_at", "pk")
         )
         return {
             "event_id": event.pk,
@@ -311,8 +363,13 @@ class SetupView(_OrgRegistrationMixin, APIView):
             "guests_allowed",
             "due_days",
             "terms",
+            "waitlist",
+            "substitute_allowed",
+            "cancel_fee_fixed",
+            "expire_unpaid_days",
         ):
             setattr(setup, field, v[field])
+        setup.cancel_rules = [dict(r) for r in v["cancel_rules"]]
         setup.category = category
         setup.save()
         if paid and services.payment_category(setup) is None:
@@ -325,6 +382,8 @@ class SetupView(_OrgRegistrationMixin, APIView):
                 }
             )
         self._save_prices(setup, v["prices"])
+        # Mehr Plätze oder Warteliste: wer wartet, rückt nach
+        services.move_up(setup, request.user)
         if created and event.project_id is None and "finance" in (self.org.enabled_modules or []):
             # Finanz-Veranstaltung vorschlagen: Einnahmen landen in der Auswertung
             from finance.models import Project
@@ -525,27 +584,122 @@ class RegistrationListView(_OrgRegistrationMixin, APIView):
 
 class CancelIn(serializers.Serializer):
     reason = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+    # Nur diese Personen abmelden (leer: alle)
+    participants = serializers.ListField(
+        child=serializers.IntegerField(), required=False, allow_null=True, default=None
+    )
+    # Stornogebühr im Einzelfall erlassen (nur Verwaltung, mit Grund)
+    waive = serializers.BooleanField(default=False)
+
+
+def _quote(reg: Registration, participants: str | None) -> dict:
+    """Vorschau der Stornogebühr; ``participants``: „3,4“ für einzelne Personen."""
+    rows = list(reg.participants.filter(status=Participant.Status.ACTIVE))
+    if participants:
+        try:
+            ids = {int(x) for x in participants.split(",") if x.strip()}
+        except ValueError:
+            ids = set()
+        rows = [p for p in rows if p.pk in ids]
+    return services.fee_quote(reg, rows).data()
+
+
+def _cancel_label(reg: Registration, ids: list[int] | None) -> str:
+    if not ids:
+        return "abgemeldet"
+    names = [p.name for p in reg.participants.filter(pk__in=ids)]
+    return "abgemeldet: " + ", ".join(names)
 
 
 class RegistrationCancelView(_OrgRegistrationMixin, APIView):
+    """GET Vorschau der Stornogebühr (?participants=1,2) · POST abmelden."""
+
+    def registration(self, pk: int, reg_id: int):
+        event = self.event(pk)
+        setup = self.setup_for(event)
+        reg = Registration.objects.filter(setup=setup, pk=reg_id).first()
+        if reg is None:
+            raise NotFound()
+        return event, setup, reg
+
+    def get(self, request, pk: int, reg_id: int, **kwargs):
+        _event, _setup, reg = self.registration(pk, reg_id)
+        return Response(_quote(reg, request.query_params.get("participants")))
+
     def post(self, request, pk: int, reg_id: int, **kwargs):
+        event, setup, reg = self.registration(pk, reg_id)
+        self.require_edit(event)
+        data = CancelIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        if v["waive"] and not v["reason"].strip():
+            raise serializers.ValidationError(
+                {"reason": gettext("Bitte einen Grund angeben, wenn die Gebühr erlassen wird.")}
+            )
+        with transaction.atomic():
+            label = _cancel_label(reg, v["participants"])
+            services.cancel(
+                reg,
+                user=request.user,
+                reason=v["reason"],
+                participants=v["participants"] or None,
+                waive=v["waive"],
+            )
+            change = {f"Anmeldung {reg.display_number}": [reg.name, label]}
+            if v["waive"]:
+                change["Stornogebühr"] = [None, f"erlassen: {v['reason'].strip()}"]
+            record(self.org, request.user, "update", event, change)
+        return Response(self.payload(event, setup))
+
+
+class SubstituteIn(serializers.Serializer):
+    membership_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    birth_date = serializers.DateField(required=False, allow_null=True, default=None)
+
+
+def _substitute(org, reg, participant_id: int, data: dict, user, allowed=None, by_member=False):
+    p = reg.participants.filter(pk=participant_id).first()
+    if p is None:
+        raise NotFound()
+    member = None
+    if data["membership_id"]:
+        member = (
+            Membership.objects.filter(
+                pk=data["membership_id"], organization=org, purged_at__isnull=True
+            )
+            .select_related("person")
+            .first()
+        )
+        if member is None or (allowed is not None and member.pk not in allowed):
+            raise serializers.ValidationError(gettext("Unbekanntes Mitglied."))
+    old = services.substitute(
+        p,
+        name=data["name"],
+        membership=member,
+        birth_date=data["birth_date"],
+        user=user,
+        by_member=by_member,
+    )
+    p.refresh_from_db()
+    return {f"Anmeldung {reg.display_number}": [old, f"Ersatzperson {p.name}"]}
+
+
+class RegistrationSubstituteView(_OrgRegistrationMixin, APIView):
+    """POST: Ersatzperson statt einer angemeldeten Person (Tarif und Preis bleiben)."""
+
+    def post(self, request, pk: int, reg_id: int, participant_id: int, **kwargs):
         event = self.event(pk)
         self.require_edit(event)
         setup = self.setup_for(event)
         reg = Registration.objects.filter(setup=setup, pk=reg_id).first()
         if reg is None:
             raise NotFound()
-        data = CancelIn(data=request.data)
+        data = SubstituteIn(data=request.data)
         data.is_valid(raise_exception=True)
         with transaction.atomic():
-            services.cancel(reg, user=request.user, reason=data.validated_data["reason"])
-            record(
-                self.org,
-                request.user,
-                "update",
-                event,
-                {f"Anmeldung {reg.display_number}": [reg.name, "abgemeldet"]},
-            )
+            change = _substitute(self.org, reg, participant_id, data.validated_data, request.user)
+            record(self.org, request.user, "update", event, change)
         return Response(self.payload(event, setup))
 
 
@@ -603,6 +757,41 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
                         safe_cell(reg.note),
                     ]
                 )
+        waiting = (
+            Registration.objects.filter(setup=setup, status=Registration.Status.WAITING)
+            .prefetch_related("participants")
+            .order_by("created_at", "pk")
+        )
+        if waiting:
+            wl = wb.create_sheet(gettext("Warteliste")[:30])
+            wl.append(
+                [
+                    gettext("Platz"),
+                    gettext("Anmeldung"),
+                    gettext("Name"),
+                    gettext("Tarif"),
+                    gettext("angemeldet von"),
+                    gettext("E-Mail"),
+                    gettext("Telefon"),
+                ]
+            )
+            for cell in wl[1]:
+                cell.font = Font(bold=True)
+            for place, reg in enumerate(waiting, start=1):
+                for p in reg.participants.all():
+                    if p.status != Participant.Status.ACTIVE:
+                        continue
+                    wl.append(
+                        [
+                            place,
+                            safe_cell(reg.display_number),
+                            safe_cell(p.name),
+                            safe_cell(p.price_name),
+                            safe_cell(reg.name),
+                            safe_cell(reg.email),
+                            safe_cell(reg.phone),
+                        ]
+                    )
         out = io.BytesIO()
         wb.save(out)
         response = HttpResponse(
@@ -639,7 +828,8 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
         return (
             Registration.objects.filter(setup=setup)
             .filter(models_q_member(member_id))
-            .select_related("invoice")
+            .distinct()
+            .select_related("invoice", "fee_invoice", "setup__event")
             .prefetch_related("participants")
             .order_by("-created_at", "-pk")
         )
@@ -715,7 +905,9 @@ class MemberRegistrationView(_PortalRegistrationMixin, APIView):
 
 
 class MemberCancelView(_PortalRegistrationMixin, APIView):
-    def post(self, request, pk: int, reg_id: int, **kwargs):
+    """GET Vorschau der Stornogebühr (?participants=1,2) · POST abmelden (ganz oder einzeln)."""
+
+    def own(self, pk: int, reg_id: int):
         event = self.visible_event(pk)
         setup = services.setup_of(event)
         if setup is None:
@@ -725,15 +917,62 @@ class MemberCancelView(_PortalRegistrationMixin, APIView):
         ).first()
         if reg is None:
             raise NotFound()
+        return event, setup, reg
+
+    def get(self, request, pk: int, reg_id: int, **kwargs):
+        _event, _setup, reg = self.own(pk, reg_id)
+        return Response(_quote(reg, request.query_params.get("participants")))
+
+    def post(self, request, pk: int, reg_id: int, **kwargs):
+        event, setup, reg = self.own(pk, reg_id)
+        ids = request.data.get("participants") if isinstance(request.data, dict) else None
+        if ids is not None and (
+            not isinstance(ids, list) or not all(isinstance(x, int) for x in ids)
+        ):
+            raise serializers.ValidationError(
+                gettext("Bitte die Personen wählen, die abgemeldet werden.")
+            )
         with transaction.atomic():
-            services.cancel(reg, user=request.user, by_member=True)
+            label = _cancel_label(reg, ids)
+            services.cancel(reg, user=request.user, by_member=True, participants=ids or None)
             record(
                 self.viewer.org,
                 request.user,
                 "update",
                 event,
-                {f"Anmeldung {reg.display_number}": [reg.name, "abgemeldet"]},
+                {f"Anmeldung {reg.display_number}": [reg.name, label]},
             )
+        return Response(self.payload(event, setup))
+
+
+class MemberSubstituteView(_PortalRegistrationMixin, APIView):
+    """POST: Ersatzperson (Familie oder Gast mit Namen), wenn der Termin es erlaubt."""
+
+    def post(self, request, pk: int, reg_id: int, participant_id: int, **kwargs):
+        event = self.visible_event(pk)
+        setup = services.setup_of(event)
+        if setup is None:
+            raise NotFound()
+        reg = Registration.objects.filter(
+            setup=setup, pk=reg_id, membership_id=self.viewer.membership_id
+        ).first()
+        if reg is None:
+            raise NotFound()
+        data = SubstituteIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        member = self.member()
+        allowed = {member.pk, *(m.pk for m in services.family_of(member))}
+        with transaction.atomic():
+            change = _substitute(
+                self.viewer.org,
+                reg,
+                participant_id,
+                data.validated_data,
+                request.user,
+                allowed=allowed,
+                by_member=True,
+            )
+            record(self.viewer.org, request.user, "update", event, change)
         return Response(self.payload(event, setup))
 
 

@@ -784,6 +784,11 @@ org_patterns = [
         name="event-registration-cancel",
     ),
     path(
+        "events/<int:pk>/registration/<int:reg_id>/participants/<int:participant_id>/",
+        registration_views.RegistrationSubstituteView.as_view(),
+        name="event-registration-substitute",
+    ),
+    path(
         "events/<int:pk>/occurrence/",
         event_views.OrgEventOccurrenceView.as_view(),
         name="event-occurrence",
@@ -1330,6 +1335,11 @@ urlpatterns = [
         "portal/<int:access_id>/events/<int:pk>/registration/<int:reg_id>/cancel/",
         registration_views.MemberCancelView.as_view(),
         name="portal-event-registration-cancel",
+    ),
+    path(
+        "portal/<int:access_id>/events/<int:pk>/registration/<int:reg_id>/participants/<int:participant_id>/",
+        registration_views.MemberSubstituteView.as_view(),
+        name="portal-event-registration-substitute",
     ),
     path(
         "portal/<int:access_id>/registrations/",
