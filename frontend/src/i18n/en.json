@@ -43,9 +43,9 @@
   "Nur Einzelwertungen": "Individual standings only",
   "Jede Person einmal": "Each person counted once",
   "nicht gezählt: {list}": "not counted: {list}",
-  "{n} Gast": {
-    "one": "{n} guest",
-    "other": "{n} guests"
+  "davon {n} Gast": {
+    "one": "including {n} guest",
+    "other": "including {n} guests"
   },
   "{n} außer Konkurrenz": {
     "one": "{n} non-competing",
@@ -79,7 +79,7 @@
   "Deine Statistik erscheint, sobald endgültige Ergebnisse vorliegen.": "Your statistics will appear once final results are available.",
   "Für diese Auswahl liegen noch keine endgültigen Ergebnisse vor. Passe bei Bedarf die Filter an.": "There are no final results for this selection yet. Adjust the filters if needed.",
   "Teilnahmen im Zeitverlauf": "Participation over time",
-  "Je Person und Wettbewerb einmal, auch bei mehreren Wertungen.": "Once per person and competition, even with multiple standings.",
+  "Je Person und Wettbewerb einmal, auch bei mehreren Wertungen, Gäste eingeschlossen.": "Once per person and competition, even with multiple standings, guests included.",
   "Durchschnittliche Ringe im Zeitverlauf": "Average rings over time",
   "Ergebnisdurchschnitt im Zeitverlauf": "Average results over time",
   "Gleiche Wertungsbedingungen · {unit}": "Same scoring conditions · {unit}",
