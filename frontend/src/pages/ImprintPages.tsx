@@ -350,8 +350,8 @@ const SOURCE_REPO = (
 function NewTabLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer">
-      {children}
-      <span className="sr-only"> {t('(öffnet in neuem Tab)')}</span>
+      {children}{' '}
+      <span className="sr-only">{t('(öffnet in neuem Tab)')}</span>
     </a>
   )
 }
