@@ -106,8 +106,15 @@ der Datenbank). Fehlende Einträge ergänzt es bei jedem Ausrollen, vorhandene b
 > **Wichtig:** `BACKUP_PASSPHRASE`, `BACKUP_HMAC_KEY` und `MFA_ENCRYPTION_KEY`
 > zusätzlich sicher verwahren (z. B. KeePassXC), ebenso den privaten Backup-Schlüssel
 > (siehe Backups). Ohne ihn bzw. die Passphrase lassen sich die Backups nicht
-> entschlüsseln. Der `MFA_ENCRYPTION_KEY` liegt bewusst nicht im Backup:
-> fehlt er nach einer Rücksicherung, müssen alle Benutzer ihre 2FA neu einrichten.
+> entschlüsseln. Der `MFA_ENCRYPTION_KEY` liegt nicht im Anwendungsbackup (Datenbank und
+> Dateien): fehlt er nach einer Rücksicherung, müssen alle Benutzer ihre 2FA neu einrichten.
+>
+> **Ausnahme restic-Kopie** (Gesamtaudit 15.11., OPS-05): `deploy/hestia/hubiplan-restic-backup.sh`
+> sichert die `.env` mit an den zweiten Ort, unverschlüsselt bis auf die restic-Verschlüsselung.
+> Wer das restic-Passwort und Zugriff auf den Speicher hat, erhält damit alle Geheimnisse der
+> `.env` (u. a. `DJANGO_SECRET_KEY`, `MFA_ENCRYPTION_KEY`, `BACKUP_HMAC_KEY`, `BACKUP_PASSPHRASE`,
+> Datenbank- und Mailzugänge); ohne age-Schlüssel (alte Form) auch die Passphrase der Backups.
+> Das restic-Passwort deshalb so sorgfältig verwahren wie den privaten Backup-Schlüssel.
 >
 > Schlüsselwechsel für 2FA: In der `.env` `MFA_ENCRYPTION_KEYS=neuer,alter` setzen
 > (hat Vorrang vor `MFA_ENCRYPTION_KEY`; Backend, Worker und Beat bekommen ihn über die
@@ -690,7 +697,9 @@ acht Testkernen, kein Nachweis einer Produktionsdauer oder paralleler HTTP-Last.
   `text` in das Volume `backup-status`. Der Worker prüft stündlich: Bei Fehler, unvollständigem
   Backup oder wenn das letzte gelungene Backup älter als `BACKUP_MAX_AGE_HOURS` (Standard 26)
   ist, kommt höchstens einmal am Tag die Alarm-Mail „Backup prüfen“.
-- **Zweiter Ort (vorbereitet):** `BACKUP_REMOTE=benutzer@host:/pfad/` in der `.env`
+- **rsync-Kopie (Altweg, nicht empfohlen):** Der zweite Ort ist die restic-Kopie (siehe
+  [Zweiter Ort gegen Löschen schützen](#zweiter-ort-gegen-löschen-schützen)). Die
+  rsync-Kopie bleibt nur für bestehende Einrichtungen: `BACKUP_REMOTE=benutzer@host:/pfad/` in der `.env`
   setzen. Auf dem Server einen Ordner (Standard `/opt/hubiplan-backup-ssh`, sonst
   `BACKUP_SSH_DIR` in der `.env`) mit `id_ed25519` (privater Schlüssel nur für die
   Kopie) und `known_hosts` (Rechnerschlüssel des Ziels, z. B. `ssh-keyscan -t ed25519
@@ -700,7 +709,10 @@ acht Testkernen, kein Nachweis einer Produktionsdauer oder paralleler HTTP-Last.
   Schlüssel oder `known_hosts`, bricht das Backup mit `FEHLER` in `backup.log` ab,
   bevor alte Sicherungen aufgeräumt werden; eine gescheiterte Kopie steht ebenfalls als
   `FEHLER` im Log (das lokale Backup bleibt gültig). Ein geänderter Rechnerschlüssel des
-  Ziels lässt die Kopie scheitern (kein „beim ersten Mal vertrauen“).
+  Ziels lässt die Kopie scheitern (kein „beim ersten Mal vertrauen“). Die Kopie gleicht
+  das Ziel standardmäßig mit `--delete` ab; dann steht höchstens einmal am Tag ein
+  `HINWEIS` in `backup.log` (kein Fehler, keine Alarm-Mail). `BACKUP_REMOTE_ANHAENGEND=1`
+  lässt `--delete` immer weg (Grenzen siehe unten).
 
 ### Backup-Ziele
 
@@ -711,9 +723,10 @@ werden je Installation in privaten Wiederherstellungsunterlagen festgelegt:
   meldet die Alarm-Mail „Backup prüfen“ das nach `BACKUP_MAX_AGE_HOURS` (26) Stunden.
 - **Wiederanlauf innerhalb eines Tages** nach Totalausfall des Servers: neuer Server,
   HUBIplan ausrollen, letztes Backup einspielen (siehe Wiederherstellen).
-- **Zweiter Ort:** eine getrennte Sicherung, zum Beispiel per restic
-  (siehe [echtbetrieb.md](echtbetrieb.md)), mit unabhängig verwalteten Snapshots oder
-  vergleichbarem Schutz gegen Löschen durch einen kompromittierten Anwendungsserver.
+- **Zweiter Ort:** eine getrennte Sicherung per restic
+  (siehe [echtbetrieb.md](echtbetrieb.md)), mit Snapshots am Speicher, die der Server nicht
+  löschen kann, mindestens 30 Tage (siehe
+  [Zweiter Ort gegen Löschen schützen](#zweiter-ort-gegen-löschen-schützen)).
 - **Schlüssel für den Notfall:** Für eine Wiederherstellung ohne Server und ohne lokalen Arbeitsrechner
   braucht es den privaten age-Schlüssel und gegebenenfalls das restic-Passwort sowie die
   Zugangsdaten des zweiten Sicherungsorts. Diese getrennt vom Server und zusätzlich offline
@@ -723,6 +736,98 @@ werden je Installation in privaten Wiederherstellungsunterlagen festgelegt:
   Alarm-Mail, alte vollständige Backups bleiben erhalten.
 - Eine Wiederherstellungsübung auf einem leeren Rechner regelmäßig durchführen und das
   Ergebnis in den privaten Betriebsunterlagen dokumentieren.
+
+### Zweiter Ort gegen Löschen schützen
+
+Wer root auf dem Server hat, kann die lokalen Backups löschen und mit denselben Zugängen
+auch die Kopie am zweiten Ort: restic `forget --prune` mit dem Zugang des Servers oder rsync
+`--delete` gegen einen leeren Ordner (Gesamtaudit 15.11., OPS-06). Der zweite Ort braucht
+deshalb eine Stufe, die der Server nicht löschen kann.
+
+**Empfohlen: restic-Kopie und Snapshots am Speicher, mindestens 30 Tage.** Der Speicher
+legt selbst regelmäßig (z. B. täglich) Snapshots an, die der Zugang des Servers weder
+löschen noch ändern kann, und bewahrt sie **mindestens 30 Tage** auf. Snapshots und
+Aufbewahrung richtet die verwaltende Person in der Oberfläche des Speicheranbieters bzw. auf
+der Speichermaschine ein, nie mit dem Zugang des Servers. Das Skript bleibt im Standard
+(`forget --prune` täglich auf dem Server, `RESTIC_AUFBEWAHRUNG` nicht gesetzt).
+
+- Vorteile: keine Änderung am Skript, keine zweite Maschine; auch ein gelöschtes oder
+  verschlüsseltes Repository lässt sich aus einem Snapshot zurückholen.
+- Nachteile: hängt davon ab, dass der Speicher solche Snapshots anbietet und der
+  Server-Zugang sie wirklich nicht löschen kann (einmal ausdrücklich prüfen); die Snapshots
+  belegen zusätzlichen Platz; ein Angriff fällt erst innerhalb der Aufbewahrung auf, wenn
+  jemand hinsieht (daher mindestens 30 Tage).
+- Der tägliche `HINWEIS: forget/prune läuft auf diesem Server` in
+  `/var/log/hubiplan-restic.log` erinnert daran, dass der Schutz am Speicher liegen muss.
+  Er ist kein Fehler: `last-ok`, Rückgabewert und Mailbetreff bleiben unverändert.
+  Sind die Snapshots am Speicher eingerichtet und geprüft, schaltet
+  `RESTIC_SNAPSHOTS_AM_SPEICHER=ja` in `/root/.config/restic/hubiplan.conf` den Hinweis ab.
+
+**Alternative: rest-server mit `--append-only`, Aufräumen von einem getrennten Rechner.**
+Der Server sichert über `rest:https://…` an einen
+[rest-server](https://github.com/restic/rest-server), der mit `--append-only` läuft: Neue
+Daten kommen dazu, Löschen und Überschreiben lehnt er ab. Einstellungen auf dem Server in
+`/root/.config/restic/hubiplan.conf` (Rechte 600, nur Musterwerte):
+
+```bash
+RESTIC_REPOSITORY=rest:https://backup.example.org/hubiplan/
+RESTIC_REST_USERNAME=hubiplan
+RESTIC_REST_PASSWORD=…              # eigener Zugang nur für diesen Server
+# RESTIC_CACERT=/root/.config/restic/ca.pem   # nur bei eigener Zertifizierungsstelle
+RESTIC_AUFBEWAHRUNG=aus
+RESTIC_WARNGRENZE_GB=200            # optional
+```
+
+- Nur `https`: `einrichten` lehnt `rest:http://` ab. Das Zertifikat prüft restic immer; nie
+  `--insecure-tls` verwenden. Ältere restic-Fassungen kennen `RESTIC_REST_USERNAME` und
+  `RESTIC_REST_PASSWORD` noch nicht; dann stehen Benutzer und Passwort in der Adresse
+  (`rest:https://benutzer:passwort@backup.example.org/hubiplan/`), ebenfalls nur in dieser Datei.
+- Mit `RESTIC_AUFBEWAHRUNG=aus` sichert, prüft (Monatserster) und probt das Skript wie
+  bisher, ruft aber nie `forget`/`prune` auf; ein append-only-Speicher meldet also keinen
+  täglichen Fehler. Stattdessen schreibt es täglich `Speicherstand: … GB in … Snapshots` ins
+  Protokoll (ermittelt nur mit `restic stats --mode raw-data` und `restic snapshots`, also mit
+  dem vorhandenen Zugang); die Zeile steht auch in der Mail am Monatsersten. Über
+  `RESTIC_WARNGRENZE_GB` kommt eine `WARNUNG` dazu. Auch sie ist kein Fehler: `last-ok`,
+  Rückgabewert und Mailbetreff bleiben „OK“; sie erscheint in der nächsten Monatsmail.
+  Ohne Speicherstand (z. B. `restic stats` scheitert) nur ein `HINWEIS`. Freien Platz auf
+  der Speichermaschine selbst sieht das Skript nicht; den überwacht deren Betreuung.
+- Aufräumen: `hubiplan-restic-backup.sh aufbewahrung` führt `forget --prune` (14 Tage,
+  8 Wochen, 12 Monate wie bisher) und `check` aus. Gedacht für einen **getrennten Rechner**
+  mit eigenem Zugang, der löschen darf (z. B. ein zweiter rest-server-Zugang ohne
+  `--append-only`, nur von dort erreichbar, oder direkt auf der Speichermaschine); dort
+  dasselbe Skript mit eigener `hubiplan.conf` und dem restic-Passwort in
+  `/root/.config/restic/hubiplan.pass`, als root, z. B. wöchentlich per cron. Die
+  Zugangsdaten dieses Rechners kommen nie auf den Anwendungsserver. Welcher Rechner das ist,
+  steht in den privaten Wiederherstellungsunterlagen.
+- Vorteile: kein Vertrauen in Snapshots des Anbieters nötig; der Server kann nachweislich
+  nichts löschen.
+- Nachteile: eigener rest-server und eine zweite Maschine mit Zeitplan; ohne Aufräumen
+  wächst die Kopie (daher Speicherstand und Warngrenze); Sperrdateien darf auch ein
+  append-only-Zugang löschen, Daten nicht.
+
+**rsync-Kopie (Altweg, nicht empfohlen): rrsync am Ziel.** Wer die rsync-Kopie
+(`BACKUP_REMOTE`) noch nutzt, setzt `BACKUP_REMOTE_ANHAENGEND=1` (dann nie `--delete`) und
+beschränkt den Schlüssel des Servers am Ziel in `authorized_keys`:
+
+```text
+restrict,command="rrsync -wo -no-del /srv/hubiplan-kopie" ssh-ed25519 AAAA… hubiplan-backup
+```
+
+`BACKUP_REMOTE` zeigt dann auf `benutzer@host:` (Pfade gelten innerhalb des rrsync-Ordners).
+Grenze: rrsync verhindert Löschen und Lesen, aber **nicht das Überschreiben** vorhandener
+Dateien; feste Namen wie `restore-test.log` oder `datenschluessel.age` werden täglich ersetzt,
+und ein Angreifer kann jede Datei mit gleichem Namen überschreiben. Echten Schutz gibt es
+auch hier nur mit Snapshots am Ziel, die der Server nicht löschen kann. Alte Dateien am Ziel
+räumt dessen Betreuung auf, nicht der Server.
+
+**Wiederherstellen ohne Zugriff auf den Server:** Den Notfallweg (restic-Passwort,
+Zugang zum Speicher bzw. zu dessen Snapshots, privater age-Schlüssel) so verwahren, dass er
+ohne den Anwendungsserver funktioniert, und ihn auf einem anderen Rechner üben: Snapshot des
+Speichers bzw. Repository lesen, `restic restore latest --tag hubiplan`, dann wie unter
+[Wiederherstellen](#wiederherstellen-notfall) entschlüsseln und einspielen (Beispiel in
+[echtbetrieb.md](echtbetrieb.md)). Nach einem Einbruch zuerst aus einem Snapshot von **vor**
+dem Einbruch lesen; die Zugänge des Servers zum Speicher gelten dann als bekannt und werden
+erneuert.
 
 ### Backup-Schlüssel einrichten (einmalig, auf einem lokalen Arbeitsrechner)
 

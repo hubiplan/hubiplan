@@ -55,11 +55,18 @@ def test_averages_weighting_missing_results_and_guest_field(club, people):  # no
     add_competition(club, people, [30, 20], date="2026-06-01")
     add_competition(club, people, [27, None], date="2026-09-01")
     data = competition_statistics(club)
-    assert data["summary"]["starts"] == 6
+    # Der Gast zählt als Teilnahme, aber nicht als teilnehmendes Mitglied.
+    assert data["summary"]["starts"] == 7
+    assert data["summary"]["guests"] == 1
     assert data["summary"]["members"] == 2
-    # Der Gast steht in der Starterliste, zählt aber nicht als Teilnahme.
-    assert data["summary"]["not_counted"] == {"guests": 1, "out_of_competition": 0, "absent": 0}
-    assert competition_statistics(club, year=2026)["summary"]["not_counted"]["guests"] == 0
+    assert data["summary"]["not_counted"] == {"out_of_competition": 0, "absent": 0}
+    assert [(b["year"], b["starts"], b["guests"], b["members"]) for b in data["buckets"]] == [
+        (2025, 3, 1, 2),
+        (2026, 4, 0, 2),
+    ]
+    assert competition_statistics(club, year=2026)["summary"]["guests"] == 0
+    assert competition_statistics(club, year=2026)["summary"]["starts"] == 4
+    assert len(data["members"]) == 2
     assert data["performance"]["count"] == 5
     assert data["performance"]["average"] == pytest.approx(23.8)
     assert data["performance"]["member_average"] == pytest.approx(23)
@@ -103,7 +110,24 @@ def test_not_counted_names_out_of_competition_and_absent_starters(club, people):
     starters[2].save()
     data = competition_statistics(club)
     assert data["summary"]["starts"] == 1
-    assert data["summary"]["not_counted"] == {"guests": 0, "out_of_competition": 1, "absent": 1}
+    assert data["summary"]["not_counted"] == {"out_of_competition": 1, "absent": 1}
+
+
+def test_guest_out_of_competition_or_absent_does_not_count(club, people):  # noqa: F811
+    _, _, starters = add_competition(club, people[:1], [30, 25, 20, 15])
+    starters[2].out_of_competition = True
+    starters[2].save()
+    starters[3].presence = "fehlt"
+    starters[3].save()
+    data = competition_statistics(club)
+    # Anna und ein Gast zählen; Gast außer Konkurrenz und fehlender Gast nicht.
+    assert data["summary"]["starts"] == 2
+    assert data["summary"]["guests"] == 1
+    assert data["summary"]["members"] == 1
+    assert data["summary"]["not_counted"] == {"out_of_competition": 1, "absent": 1}
+    personal = competition_statistics(club, person_id=people[0].person_id)
+    assert personal["summary"]["starts"] == 1
+    assert personal["summary"]["guests"] == 0
 
 
 def test_manually_entered_ring_totals_also_provide_ring_averages(club, people):  # noqa: F811

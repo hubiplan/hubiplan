@@ -135,17 +135,21 @@ def _load(org, person_id=None):
         )
 
     def not_counted(st):
-        """Warum ein Start nicht zählt (für den Hinweis neben den Teilnahmen)."""
+        """Warum ein Start nicht als Mitgliederteilnahme zählt.
+
+        Gäste (auch fremde oder gelöschte Mitgliedschaften) zählen bei den Teilnahmen mit,
+        nur nicht bei den Mitgliedern; Starts außer Konkurrenz und Fehlende zählen nie.
+        """
+        if st.out_of_competition:
+            return "out_of_competition"
+        if st.presence == "fehlt":
+            return "absent"
         if (
             st.membership_id is None
             or st.membership.organization_id != org.pk
             or st.membership.purged_at is not None
         ):
             return "guests"
-        if st.out_of_competition:
-            return "out_of_competition"
-        if st.presence == "fehlt":
-            return "absent"
         return None
 
     starts = []
@@ -265,11 +269,12 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
         results = [r for r in results if r["group"] == group_id]
         keys = {(r["person"], r["competition"]) for r in results}
         starts = [s for s in starts if (s["person"], s["competition"]) in keys]
-    # Nicht gezählte Starts nur aus den Wettbewerben, die auch die Auswertung enthält.
+    # Gäste und nicht gezählte Starts nur aus den Wettbewerben, die auch die Auswertung enthält.
     shown = {s["competition"] for s in starts} | {r["competition"] for r in results}
     skipped = [s for s in skipped if s["competition"] in shown]
     if year is not None:
         skipped = [s for s in skipped if int(s["date"][:4]) == year]
+    guests = [s for s in skipped if s["reason"] == "guests"]
     all_results = list(
         {(r["person"], r["competition"], r["scoring_id"]): r for r in results}.values()
     )
@@ -326,12 +331,15 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
     buckets = []
     for y in sorted({int(s["date"][:4]) for s in starts}):
         ss = [s for s in starts if int(s["date"][:4]) == y]
+        gs = sum(int(g["date"][:4]) == y for g in guests)
         rs = [r for r in results if int(r["date"][:4]) == y]
         p = _performance(rs, selected) if selected else None
         buckets.append(
             {
                 "year": y,
-                "starts": len(ss),
+                # Teilnahmen einschließlich Gästen; „members“ zählt nur Mitglieder.
+                "starts": len(ss) + gs,
+                "guests": gs,
                 "members": len({s["person"] for s in ss}),
                 "count": p["count"] if p else 0,
                 "average": p["average"] if p else None,
@@ -382,14 +390,15 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
         "summary": {
             "competitions": len({s["competition"] for s in starts}),
             "members": len(by_member),
-            "starts": len(starts),
+            # Alle gewerteten Starts einschließlich Gästen; Mitglieder stehen unter „members“.
+            "starts": len(starts) + len(guests),
+            "guests": len(guests),
             "wins": sum(m["wins"] for m in by_member),
             "podiums": sum(m["podiums"] for m in by_member),
             "prizes": sum(m["prizes"] for m in by_member),
             "awards": len(award_rows),
             "not_counted": {
-                k: sum(s["reason"] == k for s in skipped)
-                for k in ("guests", "out_of_competition", "absent")
+                k: sum(s["reason"] == k for s in skipped) for k in ("out_of_competition", "absent")
             },
         },
         "performance": performance,

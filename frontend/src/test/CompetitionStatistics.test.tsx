@@ -23,12 +23,13 @@ const sample: CompetitionStatisticsData = {
   summary: {
     competitions: 3,
     members: 2,
-    starts: 6,
+    starts: 7,
+    guests: 1,
     wins: 2,
     podiums: 5,
     prizes: 0,
     awards: 0,
-    not_counted: { guests: 1, out_of_competition: 0, absent: 0 },
+    not_counted: { out_of_competition: 1, absent: 0 },
   },
   performance: {
     count: 5,
@@ -112,7 +113,7 @@ describe('Wettbewerbsstatistik', () => {
     ).toHaveTextContent('7,93')
     expect(screen.getAllByText('Werte als Tabelle')).toHaveLength(2)
     expect(screen.getByRole('heading', { name: 'Teilnahmen' }).closest('.tile')).toHaveTextContent(
-      '3 Wettbewerbe · nicht gezählt: 1 Gast',
+      '3 Wettbewerbe · davon 1 Gast · nicht gezählt: 1 außer Konkurrenz',
     )
   })
 

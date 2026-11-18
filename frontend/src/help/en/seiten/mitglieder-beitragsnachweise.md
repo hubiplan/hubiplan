@@ -7,7 +7,7 @@ routen: [/mitglieder/beitragsnachweise]
 stichworte: [reduction, proof, students, certificate of enrolment, deadline, reduced fee]
 ---
 
-Here the board reviews proofs for reduced fees, such as certificates of enrolment. The treasurer sets up which reductions exist, with deadline (default 28/02), grace period and types of proof, under [Finances › Fee rates](/finanzen/einrichtung/beitraege); they are assigned in the member record under **Reduction with proof**.
+Here the board reviews proofs for reduced fees, such as certificates of enrolment. The treasurer sets up which reductions exist, with deadline (default 28/02), grace period and types of proof, under [Finances › Fee rates](/finanzen/einrichtung/beitraege); they are assigned in the member record under **Reduction with proof**. The menu item only appears once at least one reduction with proof has been set up there.
 
 **To review** shows the proofs received with their channel (members' area, app, link, email reply, application) and the traffic light of the pre-check: for a PDF, HUBIplan looks for name, date of birth, studies or doctorate and validity and suggests "valid until". Photos you read yourself. Decide with **Accept**, **Query** or **Decline**; the member receives an email. The file is then deleted and only the record remains.
 

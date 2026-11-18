@@ -31,6 +31,8 @@ For members under 18 the section is called **Legal guardians**. There you enter 
 
 If the person belongs to a household or a company, the Master data tab shows a section with its name, their role and the other members. You assign and remove them under [Members › Households and companies](/mitglieder/haushalte).
 
+When you edit existing contact persons, legal guardians and billing details, HUBIplan saves automatically; **Close** ends editing. New entries are added with **Save**.
+
 ## Fees and billing address
 
 The **Fees** tab lists the member’s invoices with the outstanding amount and, if SEPA is switched on, their mandates (with the right to view fees and invoices). Open an invoice by its number.

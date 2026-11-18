@@ -3,8 +3,9 @@
 allauth legt diese Geheimnisse in ``mfa_authenticator.data`` ab und ruft dafür
 ``encrypt``/``decrypt`` des Adapters auf. Verschlüsselt wird mit Fernet und einem
 eigenen Schlüssel aus der Server-``.env`` (``MFA_ENCRYPTION_KEY``). Er liegt nicht in
-der Datenbank und nicht im Backup: Wer nur einen Datenbank-Dump hat, kann damit keine
-2FA-Codes erzeugen.
+der Datenbank und nicht im Anwendungsbackup: Wer nur einen Datenbank-Dump hat, kann damit
+keine 2FA-Codes erzeugen. Die optionale restic-Kopie enthält die ``.env`` dagegen mit
+(siehe docs/betrieb.md, Geheimnisse).
 
 Mehrere Schlüssel (``MFA_ENCRYPTION_KEYS=neu,alt``) erlauben einen Wechsel: verschlüsselt
 wird mit dem ersten, entschlüsselt mit jedem.

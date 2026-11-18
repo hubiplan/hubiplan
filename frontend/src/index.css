@@ -2001,6 +2001,11 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   flex: 1 1 18rem;
   min-width: 0;
 }
+/* Erklärung unter dem Suchfeld, eigene Zeile (UX-Audit 16.11. VW-45) */
+.filters-hint {
+  flex-basis: 100%;
+  margin: 0;
+}
 
 .column-picker {
   flex-basis: 100%;
@@ -2086,16 +2091,15 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   padding: 0.35rem 0;
 }
 
-/* Kachel-Einträge: Titel oben, darunter eine Zeile Angaben ohne Umbruch */
+/* Kachel-Einträge: Titel oben, darunter eine Zeile Angaben ohne Umbruch. Der Titel (Name mit
+   Zug) bricht um, statt gekürzt zu werden (UX-Audit 16.11. VW-45). */
 .tile-entry {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 .tile-entry-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .tile-entry-meta {
   display: flex;
@@ -2107,9 +2111,11 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   flex: none;
 }
 /* Geburtstag am heutigen Tag farbig hervorheben */
-.tile-entry-today {
+/* Mit „li“, damit der Innenabstand gegen „.plain-list li“ gewinnt: sonst kleben Name und
+   „heute“ am farbigen Balken. */
+li.tile-entry-today {
   margin: 0.15rem -0.5rem;
-  padding: 0.35rem 0.5rem 0.35rem 0.4rem;
+  padding: 0.35rem 0.5rem;
   border-left: 3px solid var(--color-focus);
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
@@ -7209,17 +7215,30 @@ html {
   }
 }
 
-/* --- UX-Audit VW-06: Zwischenüberschriften der Unterpunkte in der Seitenleiste --- */
+/* --- UX-Audit VW-06: Zwischenüberschriften der Unterpunkte in der Seitenleiste ---
+   Deutlich von Menüpunkten abgesetzt (Ralf 18.11.): feine Linie und mehr Abstand davor,
+   kleinere Schrift in der gedämpften Leistenfarbe (--sidebar-muted hält 4,5 : 1, themeVars
+   rechnet sie zu jeder Vereinsfarbe neu) und weder Fläche noch Zeiger beim Darüberfahren. */
 .sidebar-sub-heading {
-  padding: 0.55rem 0.8rem 0.15rem;
-  font-size: 0.75rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem 0.2rem;
+  border-top: 1px solid color-mix(in srgb, var(--sidebar-text) 22%, transparent);
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--sidebar-muted, color-mix(in srgb, var(--sidebar-text) 70%, transparent));
+  cursor: default;
+  user-select: none;
+}
+.sidebar-sub-heading:hover {
+  background: none;
 }
 .sidebar-sub-heading:first-child {
+  margin-top: 0;
   padding-top: 0.2rem;
+  border-top: 0;
 }
 
 /* --- UX-Audit VW-56: Reichweite der Liste „Letzte Schritte“ --- */

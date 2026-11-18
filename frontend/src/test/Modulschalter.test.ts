@@ -28,6 +28,13 @@ describe('Module Ehrungen & Jubiläen, Würden und Social Media', () => {
     expect(setupTabs(org).map((s) => s.label)).toContain('Ehrungen')
   })
 
+  it('Beitragsnachweise nur mit eingerichteter Ermäßigung mit Nachweis', () => {
+    const without = memberSections(club(['members', 'billing'])).map((s) => s.label)
+    expect(without).not.toContain('Beitragsnachweise')
+    const org = { ...club(['members', 'billing']), fee_proofs_enabled: true }
+    expect(memberSections(org).map((s) => s.label)).toContain('Beitragsnachweise')
+  })
+
   it('Social Media nur mit Modul', () => {
     const perms = ['website.manage', 'website.view']
     const without = websiteSections(club(['website'], perms)).map((s) => s.to)

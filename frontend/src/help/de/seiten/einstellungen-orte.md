@@ -15,4 +15,5 @@ Hier speicherst du Orte, die immer wieder vorkommen, etwa Vereinsheim, Sportplat
 - Wählst du in einem Formular einen gespeicherten Ort, übernimmt HUBIplan Name und Anschrift. Spätere Änderungen hier ändern frühere Einträge nicht.
 - Tippst du im Formular einen neuen Ort ein, speichert **Als Ort speichern** ihn gleich mit. Beginnt er mit einem gespeicherten Ort und Komma, etwa „Bürgerhaus, Küche“, heißt der Knopf **Als Raum speichern** und legt den Raum dort an.
 - Ein Verein sieht auch die Orte seines Dachverbands, eine Untereinheit die Orte ihres Vereins. Ändern und löschen kann sie nur, wem sie gehören.
+- **Bearbeiten** öffnet einen Ort oder Raum. Änderungen speichert HUBIplan automatisch; **Schließen** klappt das Formular wieder zu. Nur neue Orte und Räume legst du mit einem Knopf an.
 - Nicht mehr gebrauchte Orte nimmst du mit **Bearbeiten** und dem Haken **Aktiv (in der Auswahl der Formulare)** aus der Auswahl, ohne sie zu löschen.

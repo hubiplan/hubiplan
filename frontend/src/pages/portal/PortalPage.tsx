@@ -1,4 +1,5 @@
 // Mitgliederbereich nach Aufgaben: Ausweis, Rechnungen, Rundschreiben, eigene Daten.
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
@@ -338,10 +339,8 @@ function ActingFor() {
 function PortalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <p className="small">
-        <Link to="/mein-bereich">{t('← Mein Bereich')}</Link>
-      </p>
-      <h1>{title}</h1>
+      {/* Gemeinsamer Seitenkopf mit Pfadzeile statt eigenem Rücklink (UX-Audit 16.11. VW-27) */}
+      <PageHeader name={title} />
       <ActingFor />
       <div className="stack">{children}</div>
     </section>
@@ -393,7 +392,7 @@ function PortalOverview({ entry }: { entry: PortalEntry }) {
   const pending = data?.change_requests.find((c) => c.status === 'pending')
   return (
     <section>
-      <h1>{t('Mein Bereich')}</h1>
+      <PageHeader name={t('Mein Bereich')} />
       <p className="muted">
         {entry.club_display_name ?? entry.club_name}
         {data?.status === 'former' && t(' · ehemaliges Mitglied')}

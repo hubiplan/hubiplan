@@ -31,6 +31,16 @@ Geschäftspartner, Material und Räume (mit `version`), Einträge der Musik (Mus
 Auftritte, Noten, Mappen, Proben, Besetzungsvorlagen, Programmpunkte) und die
 persönlichen Musikerinnerungen. „Schließen“ schließt ein Formular erst, wenn alles gespeichert ist; einen eigenen „Fertig“-Knopf gibt es nicht.
 
+November 2026 (UX-Audit VW-22): Orte und Räume unter Einstellungen › Orte sowie in der
+Mitgliedsakte vorhandene Ansprechpartner, Erziehungsberechtigte und Rechnungsangaben (die Akte
+lädt erst beim „Schließen“ neu).
+
+Regel: Jedes Bearbeitungsformular zeigt entweder den Speicherzustand (`SaveStatus`) mit
+„Schließen“ oder genau einen Knopf. Einen Knopf „Speichern“ behält nur, was folgenreich ist,
+einen Zeitraum festlegt, etwas neu anlegt oder ein kleiner Dialog ist. Der Test
+`frontend/src/test/UxAudit1116Speichern.test.ts` führt die Ausnahmen mit Begründung; die Liste
+darf kürzer werden, nicht länger.
+
 Bewusst weiter mit Knopf, weil folgenreich, nicht rückgängig oder ein Versand:
 Neuanlagen (auch Rechnungen, SEPA-Mandate, Mitgliedschaftszeiträume, Vorlagen),
 Wertung und Programme eines Wettbewerbs (Neuberechnung der Ergebnisse wird bestätigt),
@@ -39,7 +49,11 @@ das Probenprogramm (Wahl „dieser Termin“ oder „ganze Serie“),
 Rollen und Rechte samt Zeiträumen der Rollenzuordnung, Freigaben im Verbund
 (Daten gehen an eine andere Instanz), Mitgliederportal (Änderungsmeldung an
 den Vorstand), E-Mail-Adresse und Passwort, Plattformseiten (Löschfrist,
-Module, Einheit abschalten wären schon beim Tippen wirksam). Die App nutzt
+Module, Einheit abschalten wären schon beim Tippen wirksam). Ebenso
+Nextcloud (wer sich anmelden darf, Dienstkonto, automatisches Sperren), in der Mitgliedsakte
+alles mit Zeitraum oder Wirkung auf Beiträge und Rechnungen (Abteilungszugehörigkeit,
+Verleihung einer Ehrung, Qualifikationen, Ende einer Ermäßigung, Zahler im Haushalt) und die
+Formulare der Finanzen (Spenden, Auslagen, Kassenprüfung, Anlagen, Haushaltsplan). Die App nutzt
 Bearbeiten-Dialoge mit „Speichern“; jede Änderung ist dort rückgängig zu machen.
 
 ## Rückgängig und Wiederherstellen

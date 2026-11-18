@@ -156,6 +156,21 @@ def test_ohne_beitragsmodul_unsichtbar(club, c):  # noqa: F811
     assert c.get(f"/api/orgs/{club.pk}/fee-proofs/discounts/").status_code == 404
 
 
+def test_menuepunkt_nur_mit_ermaessigung(club, c, setup):  # noqa: F811
+    """Mitglieder › Beitragsnachweise erscheint erst mit eingerichteter Ermäßigung."""
+
+    def summary():
+        orgs = c.get("/api/me/organizations/").json()
+        return next(o for o in orgs if o["id"] == club.pk)
+
+    assert summary()["fee_proofs_enabled"] is False
+    url = f"/api/orgs/{club.pk}/fee-proofs/discounts/"
+    data = ok(c.post(url, {"name": "Studierende", "amount": "10"}, content_type=JSON))
+    assert summary()["fee_proofs_enabled"] is True
+    ok(c.patch(f"{url}{data['id']}/", {"is_archived": True}, content_type=JSON))
+    assert summary()["fee_proofs_enabled"] is False
+
+
 # --- Beitragslauf ---
 
 

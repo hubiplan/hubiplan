@@ -68,19 +68,24 @@ export interface CompetitionStatisticsData {
   summary: {
     competitions: number
     members: number
+    /** Alle gewerteten Starts einschließlich Gästen */
     starts: number
+    /** Davon Gaststarts (nur in der Gesamtsicht) */
+    guests?: number
     wins: number
     podiums: number
     prizes: number
     awards: number
     /** Starts derselben Wettbewerbe, die nicht zählen (nur in der Gesamtsicht) */
-    not_counted?: { guests: number; out_of_competition: number; absent: number }
+    not_counted?: { out_of_competition: number; absent: number }
   }
   performance: Performance | null
   group_summary: (StatisticsGroup & Performance)[]
   buckets: {
     year: number
+    /** Teilnahmen einschließlich Gästen */
     starts: number
+    guests?: number
     members: number
     count: number
     average: number | null

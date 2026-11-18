@@ -11,6 +11,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { useOptionalOrg } from '../../org/OrgContext.tsx'
 
 const DEFAULT_KINDS = [
   'Immatrikulationsbescheinigung',
@@ -71,6 +72,13 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const refreshOrgs = useOptionalOrg()?.refresh
+
+  // Menüpunkt Mitglieder › Beitragsnachweise erscheint nur mit eingerichteter Ermäßigung
+  async function reload() {
+    await list.reload()
+    await refreshOrgs?.().catch(() => undefined)
+  }
 
   if (list.error) return null // Modul Beiträge aus
   if (!list.data) return null
@@ -106,7 +114,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
       if (editing === 'new') await feeProofApi.createDiscount(orgId, data)
       else if (editing !== null) await feeProofApi.updateDiscount(orgId, editing, data)
       setEditing(null)
-      await list.reload()
+      await reload()
     } catch (err) {
       setErrors({ ...(err instanceof ApiError ? err.fieldErrors : {}), detail: errorMessage(err) })
     } finally {
@@ -118,7 +126,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
     setMessage(null)
     try {
       await feeProofApi.updateDiscount(orgId, d.id, { is_archived: value })
-      await list.reload()
+      await reload()
     } catch (err) {
       setMessage(errorMessage(err))
     }
@@ -134,7 +142,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
     setMessage(null)
     try {
       await feeProofApi.removeDiscount(orgId, d.id)
-      await list.reload()
+      await reload()
     } catch (err) {
       setMessage(errorMessage(err))
     }

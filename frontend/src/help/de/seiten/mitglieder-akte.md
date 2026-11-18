@@ -31,6 +31,8 @@ Bei Mitgliedern unter 18 heißt der Abschnitt **Erziehungsberechtigte**. Dort tr
 
 Gehört die Person zu einem **Haushalt** oder einer **Firma**, steht im Reiter Stammdaten ein Abschnitt mit dem Namen, ihrer Rolle und den übrigen Mitgliedern. Zuordnen und herausnehmen geht unter [Mitglieder › Haushalte und Firmen](/mitglieder/haushalte).
 
+Bestehende Ansprechpartner, Erziehungsberechtigte und Rechnungsangaben speichert HUBIplan beim Bearbeiten automatisch; **Schließen** beendet das Bearbeiten. Neue Einträge legst du mit **Speichern** an.
+
 ## Beiträge und Rechnungsanschrift
 
 Im Reiter **Beiträge** stehen die Rechnungen des Mitglieds mit dem offenen Betrag und, wenn SEPA eingeschaltet ist, seine Mandate (mit dem Recht, Beiträge und Rechnungen zu sehen). Eine Rechnung öffnest du über ihre Nummer.
