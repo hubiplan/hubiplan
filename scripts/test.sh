@@ -491,6 +491,12 @@ if [ "$RUN_BACKEND" = 1 ]; then
             deploy/daten-rueckweg.sh deploy/zurueck.sh deploy/server-setup.sh | tar -x -C "$WORK"
         sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
     fi
+    # Nur veröffentlichte Stände ausrollen (AGPL § 13, OPS-13): Wegwerf-Repositorys, ohne Netz
+    if git cat-file -e "$REF:scripts/pruefe-veroeffentlicht.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-veroeffentlicht.sh \
+            deploy/veroeffentlicht.sh deploy/deploy.sh | tar -x -C "$WORK"
+        bash "$WORK/scripts/pruefe-veroeffentlicht.sh" "$WORK"
+    fi
 
     if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
         git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \

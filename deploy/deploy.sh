@@ -19,6 +19,8 @@
 #
 # Ausgerollt wird nur ein Stand, der vorher lokal mit scripts/test.sh
 # erfolgreich getestet wurde (gleicher Git-Tree). Tests laufen nie auf dem Server.
+# Und nur ein Stand, den das öffentliche Repository (HUBIPLAN_SOURCE_URL) enthält
+# (deploy/veroeffentlicht.sh); reine Testserver: HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT=1.
 set -euo pipefail
 
 TESTSERVER_DATEI="${HUBIPLAN_TESTSERVER_FILE:-$HOME/.config/hubiplan/testserver}"
@@ -61,6 +63,31 @@ if ! grep -q "^$TREE " "$STATE" 2>/dev/null; then
     echo "Erst scripts/test.sh $REF ausführen (in WSL), dann ausrollen." >&2
     exit 1
 fi
+
+# Nur veröffentlichte Stände ausrollen (AGPL § 13, Gesamtaudit 15.11., OPS-13): /lizenz verlinkt
+# HUBIPLAN_SOURCE_URL mit genau diesem Commit. Geprüft wird gegen die Adresse, die die Instanz
+# anzeigt: HUBIPLAN_SOURCE_URL aus der .env des Servers, sonst der Standard aus
+# docker-compose.server.yml des auszurollenden Stands. Nicht erreichbar heißt nicht veröffentlicht.
+# Nur reine Testserver: HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT=1 (Warnung, siehe docs/betrieb.md).
+# shellcheck source=deploy/veroeffentlicht.sh
+. "$(dirname "${BASH_SOURCE[0]}")/veroeffentlicht.sh"
+QUELLE=""
+if [ "${HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT:-}" != 1 ]; then
+    if ! QUELLE=$("$SSH" "${SSH_ARGS[@]}" "$HOST" \
+        "if ${SUDO}test -f '$DIR/.env'; then ${SUDO}sed -n 's/^HUBIPLAN_SOURCE_URL=//p' '$DIR/.env'; fi" < /dev/null); then
+        echo "Abbruch: HUBIPLAN_SOURCE_URL auf $HOST nicht lesbar; Veröffentlichung nicht prüfbar." >&2
+        exit 1
+    fi
+    QUELLE=$(printf '%s\n' "$QUELLE" | tail -n 1 | tr -d '\r"'\''')
+    if [ -z "$QUELLE" ]; then
+        QUELLE=$(git show "$REF:docker-compose.server.yml" 2> /dev/null |
+            sed -n 's/.*HUBIPLAN_SOURCE_URL:-\([^}]*\)}.*/\1/p' | head -n 1)
+    fi
+fi
+veroeffentlicht_pruefen "$(git rev-parse --show-toplevel)" "$REF" "$QUELLE" || exit 1
+# Im Rollout-Protokoll sichtbar halten, wenn ohne Prüfung ausgerollt wurde
+ZUSATZ=""
+[ "${HUBIPLAN_UNVEROEFFENTLICHT_ERLAUBT:-}" != 1 ] || ZUSATZ=" (unveroeffentlicht-erlaubt)"
 
 # Sperre auf dem Server: Ein zweiter gleichzeitiger Lauf (von welchem Rechner auch immer)
 # bricht ab, statt den Zwischenstand des ersten zu löschen (Vorfälle 31.10. und 01.11.).
@@ -128,7 +155,7 @@ protokoll() {
 }
 
 if "$SSH" "${SSH_ARGS[@]}" "$HOST" "cd '$NEU' && ${SUDO}env$SETUP_ENV ZIEL='$DIR' sh deploy/server-setup.sh"; then
-    protokoll ausgerollt
+    protokoll "ausgerollt$ZUSATZ"
 else
     rc=$?
     protokoll "fehlgeschlagen ($rc)"
