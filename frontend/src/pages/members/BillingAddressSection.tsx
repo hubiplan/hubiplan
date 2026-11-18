@@ -218,7 +218,7 @@ export function BillingAddressSection({
             {autoSaving ? (
               <>
                 <SaveStatus auto={auto} />
-                <div className="actions">
+                <div className="button-row">
                   <button
                     type="button"
                     className="button"
@@ -232,9 +232,15 @@ export function BillingAddressSection({
                 </div>
               </>
             ) : (
-              <div className="actions">
-                <button type="submit">{t('Speichern')}</button>{' '}
-                <button type="button" className="link-button" onClick={() => setEditing(false)}>
+              <div className="button-row">
+                <button type="submit" className="button button-primary">
+                  {t('Speichern')}
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => setEditing(false)}
+                >
                   {t('Abbrechen')}
                 </button>
               </div>

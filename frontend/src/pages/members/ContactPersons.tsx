@@ -408,7 +408,7 @@ function ContactForm({
         {contact ? (
           <>
             <SaveStatus auto={auto} />
-            <div className="actions">
+            <div className="button-row">
               <button
                 type="button"
                 className="button"
@@ -422,9 +422,11 @@ function ContactForm({
             </div>
           </>
         ) : (
-          <div className="actions">
-            <button type="submit">{t('Speichern')}</button>{' '}
-            <button type="button" className="link-button" onClick={() => onDone(false)}>
+          <div className="button-row">
+            <button type="submit" className="button button-primary">
+              {t('Speichern')}
+            </button>
+            <button type="button" className="button button-ghost" onClick={() => onDone(false)}>
               {t('Abbrechen')}
             </button>
           </div>
