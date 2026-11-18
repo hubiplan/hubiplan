@@ -5,7 +5,7 @@ import datetime
 import pytest
 
 from customfields.models import FieldDefinition, FieldValue
-from members.duration import jubilee_date, merge
+from members.duration import jubilee_date, merge, with_manual_entry
 from members.models import Membership, MemberType
 
 from .factories import found, give_role, make_user
@@ -43,6 +43,15 @@ class TestBerechnung:
         ranges = [(D(2000, 3, 1), D(2004, 2, 29)), (D(2005, 3, 1), None)]
         assert jubilee_date(ranges, 10) == D(2011, 3, 1)
         assert jubilee_date([(D(2000, 1, 1), D(2001, 1, 1))], 10) is None
+
+    def test_eintritt_von_hand_verlaengert_nach_vorn(self):
+        ranges = [(D(2026, 3, 1), None)]
+        assert with_manual_entry(ranges, D(2022, 7, 11)) == [(D(2022, 7, 11), None)]
+        # späterer oder fehlender Eintritt ändert nichts
+        assert with_manual_entry(ranges, D(2027, 1, 1)) == ranges
+        assert with_manual_entry(ranges, None) == ranges
+        # ohne gemeldete Zeiten bleibt es leer (Ende unbekannt)
+        assert with_manual_entry([], D(2000, 1, 1)) == []
 
 
 class TestDauerInDerAkte:
@@ -93,6 +102,30 @@ class TestDauerInDerAkte:
         fed = b["duration"]["federation"]
         assert fed["years"] >= 30  # durchgehend seit 1990 über zwei Vereine
         assert b["duration"]["club"]["years"] < fed["years"]
+
+    def test_eintritt_von_hand_zaehlt_im_dachverband(self, api, orgs, types, board_a):
+        """Eintritt im Dachverband von Hand vor dem ersten Zeitraum im Verein: die Dauer
+        im Dachverband zählt ab diesem Eintritt (Ralf 18.11.: „0 Jahre“ trotz 2022)."""
+        orgs["federation"].jubilee_years = [25]
+        orgs["federation"].save()
+        c = api(board_a)
+        m = admit(c, orgs["a"], types["a"]["aktiv"], entry_date="2020-01-01").json()
+        before = m["duration"]["federation"]
+        resp = c.patch(
+            f"{self.url(orgs, m)}federation/",
+            {"manual_entry_date": "2000-01-01"},
+            content_type=JSON,
+        )
+        assert resp.status_code == 200
+        fed = c.get(self.url(orgs, m)).json()["duration"]["federation"]
+        assert fed["years"] == before["years"] + 20
+        data = c.get(
+            f"/api/orgs/{orgs['a'].pk}/jubilees/", {"von": "2025-01-01", "bis": "2025-12-31"}
+        ).json()
+        rows = {(r["kind"], r["years"], r["date"]) for r in data["results"]}
+        assert ("federation", 25, "2025-01-01") in rows
+        # Im Verein selbst zählt weiter nur der eigene Zeitraum
+        assert ("club", 25, "2025-01-01") not in rows
 
     def test_regel_nur_aktive_zeiten(self, api, orgs, types, board_a):
         orgs["federation"].federation_duration_rule = "active_reported"

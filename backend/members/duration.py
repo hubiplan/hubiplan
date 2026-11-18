@@ -5,6 +5,8 @@
 - Dauer im Dachverband: alle gemeldeten Zeiten in allen seinen Vereinen
   (Überschneidungen zählen einmal), je nach Regel des Dachverbands alle
   gemeldeten oder nur gemeldete aktive Zeiten.
+  Ein von Hand eingetragener Eintritt in den Dachverband (Altdaten) zählt ab
+  diesem Tag bis zum ersten gemeldeten Zeitraum mit (Ralf 18.11.).
 - Jubiläum: der Tag, an dem die gezählte Zeit N Jahre erreicht. Lücken
   verschieben das Jubiläum entsprechend nach hinten.
 - Genauigkeit (je Organisation): tagesgenau wie oben; monats- oder jahresgenau
@@ -26,6 +28,7 @@ from core.tenancy import rls_bypass
 from organizations.models import Organization
 
 from .models import (
+    FederationMember,
     Membership,
     MembershipPeriod,
     MemberType,
@@ -188,6 +191,19 @@ def federation_predicate(federation: Organization):
     return lambda t: t.reported and (t.active or not only_active)
 
 
+def with_manual_entry(ranges: list[Range], manual: datetime.date | None) -> list[Range]:
+    """Gezählte Zeiten um einen von Hand eingetragenen Eintritt (Altdaten) ergänzen.
+
+    Liegt der Eintritt vor dem ersten gezählten Zeitraum, gilt die Person ab dem
+    Eintritt durchgehend als Mitglied bis zu diesem Zeitraum. Ohne gezählte Zeiten
+    (z. B. nie gemeldet) bleibt es bei keiner Dauer, weil das Ende unbekannt ist.
+    """
+    ranges = merge(ranges)
+    if manual is None or not ranges or manual >= ranges[0][0]:
+        return ranges
+    return merge([(manual, ranges[0][0]), *ranges])
+
+
 def federation_ranges(person, federation: Organization) -> list[Range]:
     """Gemeldete Zeiten der Person in allen Vereinen des Dachverbands (Systemabfrage)."""
     predicate = federation_predicate(federation)
@@ -198,7 +214,12 @@ def federation_ranges(person, federation: Organization) -> list[Range]:
         )
         for membership in memberships:
             ranges.extend(counted_ranges(membership, predicate))
-    return merge(ranges)
+        manual = (
+            FederationMember.objects.filter(person=person, scope=federation)
+            .values_list("manual_entry_date", flat=True)
+            .first()
+        )
+    return with_manual_entry(ranges, manual)
 
 
 def duration_info(membership: Membership, on: datetime.date | None = None) -> dict:
@@ -272,7 +293,15 @@ def _federation_ranges_of(memberships, federation: Organization) -> dict[int, li
             raw[person_id].extend(
                 _counted(periods.get(mid, []), assignments.get(mid, []), predicate)
             )
-    return {person_id: merge(ranges) for person_id, ranges in raw.items()}
+        manual = dict(
+            FederationMember.objects.filter(
+                scope=federation, person_id__in=raw.keys(), manual_entry_date__isnull=False
+            ).values_list("person_id", "manual_entry_date")
+        )
+    return {
+        person_id: with_manual_entry(ranges, manual.get(person_id))
+        for person_id, ranges in raw.items()
+    }
 
 
 def jubilees_between(club: Organization, start: datetime.date, end: datetime.date) -> list[dict]:
