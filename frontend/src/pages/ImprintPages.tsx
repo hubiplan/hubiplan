@@ -346,6 +346,16 @@ const SOURCE_REPO = (
   'https://github.com/hubiplan/hubiplan'
 ).replace(/\/+$/, '')
 
+/** Link auf GitHub: öffnet in neuem Tab, damit HUBIplan offen bleibt (Screenreader hören es). */
+function NewTabLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+      <span className="sr-only"> {t('(öffnet in neuem Tab)')}</span>
+    </a>
+  )
+}
+
 /** /lizenz: Lizenz von HUBIplan, Quellcode und Lizenzen der enthaltenen Bibliotheken. */
 export function LicensePage() {
   const commit = useRunningFile(COMMIT_FILE, COMMIT_PATTERN)
@@ -373,11 +383,11 @@ export function LicensePage() {
       <p>
         {t('Den Quellcode bekommt ihr kostenlos auf GitHub:')}{' '}
         {commit ? (
-          <a href={`${SOURCE_REPO}/tree/${commit}`}>
+          <NewTabLink href={`${SOURCE_REPO}/tree/${commit}`}>
             {t('Quellcode dieser Fassung ({x})', { x: commit.slice(0, 7) })}
-          </a>
+          </NewTabLink>
         ) : (
-          <a href={SOURCE_REPO}>{t('Quellcode von HUBIplan')}</a>
+          <NewTabLink href={SOURCE_REPO}>{t('Quellcode von HUBIplan')}</NewTabLink>
         )}
         .
       </p>
@@ -387,18 +397,18 @@ export function LicensePage() {
           {RELEASE_PATTERN.test(version) && (
             <>
               {' · '}
-              <a href={`${SOURCE_REPO}/releases/tag/v${version}`}>
+              <NewTabLink href={`${SOURCE_REPO}/releases/tag/v${version}`}>
                 {t('Änderungen in dieser Version')}
-              </a>
+              </NewTabLink>
             </>
           )}
         </p>
       )}
       <ul>
         <li>
-          <a href={`${SOURCE_REPO}/blob/${commit ?? 'main'}/README.md#selbst-betreiben`}>
+          <NewTabLink href={`${SOURCE_REPO}/blob/${commit ?? 'main'}/README.md#selbst-betreiben`}>
             {t('Bauen und selbst betreiben (Anleitung)')}
-          </a>
+          </NewTabLink>
         </li>
         <li>
           <a href={LICENSE_FILES.license}>{t('Lizenztext (englisch)')}</a>

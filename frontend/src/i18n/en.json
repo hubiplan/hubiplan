@@ -10022,5 +10022,6 @@
   "Nachweis für den ermäßigten Beitrag fehlt, jetzt einreichen": "Proof for the reduced fee is missing, submit it now",
   "Nachweis für den ermäßigten Beitrag einreichen": "Submit proof for the reduced fee",
   "{count} Mitglieder ohne vollständige Anschrift (fehlt oder Platzhalter wie „00000 UNBEKANNT“) werden nicht vorgeschlagen.": "{count} members without a complete address (missing or a placeholder such as “00000 UNKNOWN”) are not suggested.",
-  "Trage die Anschrift in der Mitgliederakte nach, dann erscheinen sie hier.": "Add the address in the member record and they will appear here."
+  "Trage die Anschrift in der Mitgliederakte nach, dann erscheinen sie hier.": "Add the address in the member record and they will appear here.",
+  "(öffnet in neuem Tab)": "(opens in a new tab)"
 }
