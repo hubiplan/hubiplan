@@ -1,5 +1,5 @@
 // Meldungen: zwei Mannschaften melden, Mitglied aus der Liste wählen, abgeben (alles erfunden).
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -306,8 +306,11 @@ describe('Meldungen auf Englisch', () => {
     expect(screen.getByRole('button', { name: 'Submit entry' })).toBeEnabled()
     expect(screen.getByLabelText('Submission method')).toBeVisible()
     expect(screen.getByLabelText('Organiser’s email')).toHaveValue(call.organizer_email)
-    await user.click(screen.getByRole('link', { name: '← All entries' }))
-    expect(await screen.findByRole('heading', { name: 'Entries' })).toBeVisible()
+    // Zurück über die Pfadzeile des Seitenkopfs (UX-Audit 16.11. VW-27)
+    const trail = screen.getByRole('navigation', { name: 'Breadcrumb' })
+    await user.click(within(trail).getAllByRole('link')[0])
+    // Die Überschrift kommt aus dem Menü; dessen Sprache steht im Test schon beim Laden fest
+    expect(await screen.findByRole('heading', { level: 1, name: 'Meldungen' })).toBeVisible()
     expect(await screen.findByText('1 entry')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Create call for entries' }))
     await user.type(screen.getByLabelText('Title'), 'Sample call')
