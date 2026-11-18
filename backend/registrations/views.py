@@ -26,13 +26,22 @@ from events.views import OrgCalendarMixin, PortalCalendarMixin
 from exchange.export import safe_cell
 from members.models import Membership
 
+from . import extras as ex
 from . import services
 from .models import (
+    MAX_ADDONS,
+    MAX_CHOICES,
+    MAX_GUARDIANS,
     MAX_PRICES,
+    MAX_QUESTIONS,
     MAX_STEPS,
+    AddOn,
+    AddOnChoice,
+    Booking,
     Participant,
     PriceOption,
     PriceStep,
+    Question,
     Registration,
     RegistrationSetup,
 )
@@ -42,8 +51,8 @@ def _money(value) -> str:
     return str(value) if value is not None else None
 
 
-def participant_data(p: Participant) -> dict:
-    return {
+def participant_data(p: Participant, *, full: bool = False) -> dict:
+    data = {
         "id": p.pk,
         "name": p.name,
         "membership_id": p.membership_id,
@@ -51,7 +60,14 @@ def participant_data(p: Participant) -> dict:
         "price_name": p.price_name,
         "amount": str(p.amount),
         "status": p.status,
+        "bookings": [ex.booking_data(b) for b in p.bookings.all()],
+        "answers": p.answers or {},
+        "guardians": p.guardians or [],
     }
+    if full:
+        # Gesundheitsangaben nur für die Verwaltung (F11)
+        data["health"] = p.health
+    return data
 
 
 def _invoice_brief(inv) -> dict | None:
@@ -78,7 +94,9 @@ def registration_data(reg: Registration, *, full: bool) -> dict:
         "paid_state": services.paid_state(reg),
         "created_at": reg.created_at,
         "cancelled_at": reg.cancelled_at,
-        "participants": [participant_data(p) for p in reg.participants.all()],
+        "participants": [participant_data(p, full=full) for p in reg.participants.all()],
+        "bookings": [ex.booking_data(b) for b in reg.bookings.all() if b.participant_id is None],
+        "answers": reg.answers or {},
         "invoice": _invoice_brief(inv),
         "waitlist_position": services.waitlist_position(reg),
         "moved_up_at": reg.moved_up_at,
@@ -104,6 +122,7 @@ def registration_data(reg: Registration, *, full: bool) -> dict:
                 "cancel_reason": reg.cancel_reason,
                 "confirmation_sent_at": reg.confirmation_sent_at,
                 "payment_confirmed_at": reg.payment_confirmed_at,
+                "health_consent_at": reg.health_consent_at,
             }
         )
     return data
@@ -183,6 +202,81 @@ class PriceInput(serializers.Serializer):
         return attrs
 
 
+class ChoiceInput(serializers.Serializer):
+    id = serializers.IntegerField(required=False, allow_null=True)
+    name = serializers.CharField(max_length=100)
+    name_en = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
+    amount = serializers.DecimalField(
+        max_digits=10, decimal_places=2, min_value=Decimal(0), max_value=Decimal(100000)
+    )
+    vat_rate = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        min_value=Decimal(0),
+        max_value=Decimal(99),
+        required=False,
+        allow_null=True,
+        default=None,
+    )
+    capacity = serializers.IntegerField(required=False, allow_null=True, default=None, min_value=1)
+    is_active = serializers.BooleanField(default=True)
+
+
+class AddOnInput(serializers.Serializer):
+    id = serializers.IntegerField(required=False, allow_null=True)
+    name = serializers.CharField(max_length=100)
+    name_en = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
+    kind = serializers.ChoiceField(choices=AddOn.Kind.choices, default=AddOn.Kind.OTHER)
+    per = serializers.ChoiceField(choices=ex.Per.choices, default=ex.Per.PERSON)
+    required = serializers.BooleanField(default=False)
+    is_active = serializers.BooleanField(default=True)
+    choices = ChoiceInput(many=True)
+
+    def validate(self, attrs):
+        attrs["name"] = attrs["name"].strip()
+        if not attrs["name"]:
+            raise serializers.ValidationError(gettext("Bitte einen Namen angeben."))
+        if not attrs["choices"]:
+            raise serializers.ValidationError(
+                gettext("Jede Zusatzleistung braucht mindestens eine Auswahl.")
+            )
+        if len(attrs["choices"]) > MAX_CHOICES:
+            raise serializers.ValidationError(
+                gettext("Höchstens {n} Auswahlen je Zusatzleistung.").format(n=MAX_CHOICES)
+            )
+        return attrs
+
+
+class QuestionInput(serializers.Serializer):
+    id = serializers.IntegerField(required=False, allow_null=True)
+    text = serializers.CharField(max_length=200)
+    text_en = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    kind = serializers.ChoiceField(choices=Question.Kind.choices, default=Question.Kind.TEXT)
+    choices = serializers.ListField(
+        child=serializers.CharField(max_length=100), required=False, default=list, max_length=20
+    )
+    required = serializers.BooleanField(default=False)
+    per = serializers.ChoiceField(choices=ex.Per.choices, default=ex.Per.REGISTRATION)
+    is_active = serializers.BooleanField(default=True)
+
+    def validate(self, attrs):
+        attrs["text"] = attrs["text"].strip()
+        if not attrs["text"]:
+            raise serializers.ValidationError(gettext("Bitte die Frage angeben."))
+        attrs["choices"] = [c.strip() for c in attrs["choices"] if c.strip()]
+        if attrs["kind"] == Question.Kind.CHOICE and len(attrs["choices"]) < 2:
+            raise serializers.ValidationError(
+                gettext("Eine Auswahlfrage braucht mindestens zwei Antworten.")
+            )
+        if attrs["kind"] != Question.Kind.CHOICE:
+            attrs["choices"] = []
+        if attrs["kind"] == Question.Kind.HEALTH:
+            # freiwillig und je Person (F11)
+            attrs["required"] = False
+            attrs["per"] = ex.Per.PERSON
+        return attrs
+
+
 class RuleInput(serializers.Serializer):
     days = serializers.IntegerField(min_value=1, max_value=365)
     percent = serializers.IntegerField(min_value=0, max_value=100)
@@ -214,6 +308,11 @@ class SetupInput(serializers.Serializer):
         required=False, allow_null=True, default=None, min_value=1, max_value=90
     )
     prices = PriceInput(many=True)
+    # Stufe A5; fehlt etwas, bleibt es wie es ist (ältere Stände)
+    catering = serializers.BooleanField(required=False, default=None, allow_null=True)
+    minors = serializers.BooleanField(required=False, default=None, allow_null=True)
+    addons = AddOnInput(many=True, required=False, default=None, allow_null=True)
+    questions = QuestionInput(many=True, required=False, default=None, allow_null=True)
 
     def validate_cancel_rules(self, value):
         if len(value) > services.MAX_RULES:
@@ -236,6 +335,24 @@ class SetupInput(serializers.Serializer):
             raise serializers.ValidationError(
                 {"prices": gettext("Höchstens {n} Tarife.").format(n=MAX_PRICES)}
             )
+        if attrs["addons"] is not None and len(attrs["addons"]) > MAX_ADDONS:
+            raise serializers.ValidationError(
+                {"addons": gettext("Höchstens {n} Zusatzleistungen.").format(n=MAX_ADDONS)}
+            )
+        if attrs["questions"] is not None:
+            if len(attrs["questions"]) > MAX_QUESTIONS:
+                raise serializers.ValidationError(
+                    {"questions": gettext("Höchstens {n} Zusatzfragen.").format(n=MAX_QUESTIONS)}
+                )
+            health = [q for q in attrs["questions"] if q["kind"] == Question.Kind.HEALTH]
+            if len(health) > 1:
+                raise serializers.ValidationError(
+                    {
+                        "questions": gettext(
+                            "Nach Allergien und Unverträglichkeiten nur einmal fragen."
+                        )
+                    }
+                )
         if attrs["opens_at"] and attrs["opens_at"] >= attrs["closes_at"]:
             raise serializers.ValidationError(
                 {"closes_at": gettext("Der Anmeldeschluss liegt vor dem Anmeldestart.")}
@@ -279,7 +396,7 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
         regs = (
             Registration.objects.filter(setup=setup)
             .select_related("invoice", "fee_invoice")
-            .prefetch_related("participants")
+            .prefetch_related("participants__bookings__choice", "bookings__choice")
             .order_by(order, "created_at", "pk")
         )
         return {
@@ -371,6 +488,9 @@ class SetupView(_OrgRegistrationMixin, APIView):
             setattr(setup, field, v[field])
         setup.cancel_rules = [dict(r) for r in v["cancel_rules"]]
         setup.category = category
+        for field in ("catering", "minors"):
+            if v[field] is not None:
+                setattr(setup, field, v[field])
         setup.save()
         if paid and services.payment_category(setup) is None:
             raise serializers.ValidationError(
@@ -382,6 +502,36 @@ class SetupView(_OrgRegistrationMixin, APIView):
                 }
             )
         self._save_prices(setup, v["prices"])
+        paid_extras = v["addons"] is not None and any(
+            c["amount"] > 0 for a in v["addons"] for c in a["choices"]
+        )
+        if paid_extras and BILLING_EDIT not in self.viewer.perms:
+            raise PermissionDenied(
+                gettext(
+                    "Preise legt fest, wer Rechnungen bearbeiten darf. Ohne dieses Recht sind nur "
+                    "kostenlose Tarife möglich."
+                )
+            )
+        if v["addons"] is not None:
+            self._save_addons(setup, v["addons"])
+        if v["questions"] is not None:
+            if any(q["kind"] == Question.Kind.HEALTH for q in v["questions"]) and not (
+                ex.health_allowed(setup)
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "questions": gettext(
+                            "Nach Allergien und Unverträglichkeiten darf nur gefragt werden, wenn "
+                            "es bei der Veranstaltung Essen gibt (mit Verpflegung oder einer "
+                            "Zusatzleistung der Art Essen)."
+                        )
+                    }
+                )
+            self._save_questions(setup, v["questions"])
+        if not ex.health_allowed(setup):
+            # Kein Essen mehr: Frage abschalten, schon erfasste Angaben löschen (F11)
+            setup.questions.filter(kind=Question.Kind.HEALTH).update(is_active=False)
+            ex.wipe_health(setup)
         # Mehr Plätze oder Warteliste: wer wartet, rückt nach
         services.move_up(setup, request.user)
         if created and event.project_id is None and "finance" in (self.org.enabled_modules or []):
@@ -449,6 +599,64 @@ class SetupView(_OrgRegistrationMixin, APIView):
             else:
                 price.delete()
 
+    def _save_addons(self, setup: RegistrationSetup, items: list[dict]) -> None:
+        existing = {a.pk: a for a in setup.addons.all()}
+        keep: set[int] = set()
+        for index, item in enumerate(items):
+            addon = existing.get(item.get("id") or 0) or AddOn(setup=setup)
+            for name in ("name", "name_en", "kind", "per", "required", "is_active"):
+                setattr(addon, name, item[name])
+            addon.position = index
+            addon.save()
+            keep.add(addon.pk)
+            choices = {c.pk: c for c in addon.choices.all()}
+            kept: set[int] = set()
+            for pos, c_in in enumerate(item["choices"]):
+                choice = choices.get(c_in.get("id") or 0) or AddOnChoice(addon=addon)
+                choice.name = c_in["name"].strip()[:100]
+                choice.name_en = c_in["name_en"].strip()[:100]
+                # Gebuchte Preise sind festgehalten; ein neuer Preis gilt für neue Buchungen
+                choice.amount = c_in["amount"]
+                choice.vat_rate = c_in["vat_rate"]
+                choice.capacity = c_in["capacity"]
+                choice.is_active = c_in["is_active"]
+                choice.position = pos
+                choice.save()
+                kept.add(choice.pk)
+            for pk, choice in choices.items():
+                if pk in kept:
+                    continue
+                if Booking.objects.filter(choice=choice).exists():
+                    choice.is_active = False
+                    choice.save(update_fields=["is_active"])
+                else:
+                    choice.delete()
+        for pk, addon in existing.items():
+            if pk in keep:
+                continue
+            if Booking.objects.filter(choice__addon=addon).exists():
+                addon.is_active = False
+                addon.save(update_fields=["is_active"])
+            else:
+                addon.delete()
+
+    def _save_questions(self, setup: RegistrationSetup, items: list[dict]) -> None:
+        existing = {q.pk: q for q in setup.questions.all()}
+        keep: set[int] = set()
+        for index, item in enumerate(items):
+            q = existing.get(item.get("id") or 0) or Question(setup=setup)
+            for name in ("text", "text_en", "kind", "choices", "required", "per", "is_active"):
+                setattr(q, name, item[name])
+            q.position = index
+            q.save()
+            keep.add(q.pk)
+        # Antworten bleiben an den Anmeldungen; entfernte Fragen werden nur ausgeblendet
+        for pk, q in existing.items():
+            if pk not in keep:
+                q.is_active = False
+                q.position = 99
+                q.save(update_fields=["is_active", "position"])
+
     @transaction.atomic
     def delete(self, request, pk: int, **kwargs):
         event = self.event(pk)
@@ -468,11 +676,46 @@ class SetupView(_OrgRegistrationMixin, APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PersonIn(serializers.Serializer):
+class GuardianIn(serializers.Serializer):
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    phone = serializers.CharField(max_length=50, required=False, allow_blank=True, default="")
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
+    address = serializers.CharField(max_length=1000, required=False, allow_blank=True, default="")
+
+
+class ExtrasIn(serializers.Serializer):
+    # Zusatzleistung → Auswahl, Frage → Antwort (Schlüssel sind die IDs)
+    addons = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True), required=False, default=dict
+    )
+    answers = serializers.DictField(required=False, default=dict)
+
+
+class PersonIn(ExtrasIn):
     membership_id = serializers.IntegerField(required=False, allow_null=True, default=None)
     name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
     birth_date = serializers.DateField(required=False, allow_null=True, default=None)
     price_id = serializers.IntegerField()
+    health = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+    guardians = GuardianIn(many=True, required=False, default=list, max_length=MAX_GUARDIANS)
+
+
+def _extras(data: dict) -> ex.Extras:
+    def ids(raw: dict) -> dict[int, int]:
+        result = {}
+        for key, value in (raw or {}).items():
+            try:
+                result[int(key)] = value
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(gettext("Ungültige Zusatzleistung.")) from None
+        return result
+
+    return ex.Extras(
+        addons=ids(data.get("addons") or {}),
+        answers={str(k): v for k, v in (data.get("answers") or {}).items()},
+        health=data.get("health", ""),
+        guardians=[dict(g) for g in data.get("guardians") or []],
+    )
 
 
 class BoardRegistrationIn(serializers.Serializer):
@@ -483,6 +726,11 @@ class BoardRegistrationIn(serializers.Serializer):
     address = serializers.CharField(max_length=1000, required=False, allow_blank=True, default="")
     note = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
     persons = PersonIn(many=True)
+    addons = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True), required=False, default=dict
+    )
+    answers = serializers.DictField(required=False, default=dict)
+    health_consent = serializers.BooleanField(default=False)
 
 
 def _person_inputs(setup, persons: list[dict], allowed_members=None) -> list:
@@ -507,7 +755,11 @@ def _person_inputs(setup, persons: list[dict], allowed_members=None) -> list:
         name = member.person.display_name if member else p["name"].strip()
         result.append(
             services.PersonInput(
-                membership=member, name=name, birth_date=p["birth_date"], price=price
+                membership=member,
+                name=name,
+                birth_date=p["birth_date"],
+                price=price,
+                extras=_extras(p),
             )
         )
     return result
@@ -570,6 +822,8 @@ class RegistrationListView(_OrgRegistrationMixin, APIView):
                 note=v["note"],
                 source=Registration.Source.BOARD,
                 user=request.user,
+                extras=_extras(v),
+                health_consent=v["health_consent"],
                 **contact,
             )
             record(
@@ -656,6 +910,7 @@ class SubstituteIn(serializers.Serializer):
     membership_id = serializers.IntegerField(required=False, allow_null=True, default=None)
     name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
     birth_date = serializers.DateField(required=False, allow_null=True, default=None)
+    guardians = GuardianIn(many=True, required=False, default=list, max_length=MAX_GUARDIANS)
 
 
 def _substitute(org, reg, participant_id: int, data: dict, user, allowed=None, by_member=False):
@@ -680,6 +935,7 @@ def _substitute(org, reg, participant_id: int, data: dict, user, allowed=None, b
         birth_date=data["birth_date"],
         user=user,
         by_member=by_member,
+        guardians=[dict(g) for g in data.get("guardians") or []],
     )
     p.refresh_from_db()
     return {f"Anmeldung {reg.display_number}": [old, f"Ersatzperson {p.name}"]}
@@ -709,6 +965,10 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
     def get(self, request, pk: int, **kwargs):
         event = self.event(pk)
         setup = self.setup_for(event)
+        # Gesundheitsangaben nur auf ausdrücklichen Wunsch (?health=1)
+        health = request.query_params.get("health") == "1" and ex.health_allowed(setup)
+        addons = list(setup.addons.all())
+        questions = [q for q in setup.questions.all() if q.kind != Question.Kind.HEALTH]
         wb = Workbook()
         ws = wb.active
         ws.title = gettext("Teilnehmende")[:30]
@@ -723,6 +983,10 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
             gettext("Rechnung"),
             gettext("bezahlt"),
             gettext("Bemerkung"),
+            *[safe_cell(a.name) for a in addons],
+            *[safe_cell(q.text) for q in questions],
+            *([gettext("Erziehungsberechtigte")] if setup.minors else []),
+            *([gettext("Allergien und Unverträglichkeiten")] if health else []),
         ]
         ws.append(head)
         for cell in ws[1]:
@@ -737,7 +1001,7 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
         regs = (
             Registration.objects.filter(setup=setup, status=Registration.Status.REGISTERED)
             .select_related("invoice")
-            .prefetch_related("participants")
+            .prefetch_related("participants__bookings__choice", "bookings__choice")
         )
         for reg in regs:
             for p in reg.participants.all():
@@ -755,11 +1019,12 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
                         safe_cell(reg.invoice.display_number if reg.invoice else ""),
                         labels[services.paid_state(reg)],
                         safe_cell(reg.note),
+                        *self._extra_cells(reg, p, addons, questions, setup.minors, health),
                     ]
                 )
         waiting = (
             Registration.objects.filter(setup=setup, status=Registration.Status.WAITING)
-            .prefetch_related("participants")
+            .prefetch_related("participants__bookings__choice", "bookings__choice")
             .order_by("created_at", "pk")
         )
         if waiting:
@@ -792,6 +1057,14 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
                             safe_cell(reg.phone),
                         ]
                     )
+        if health:
+            record(
+                self.org,
+                request.user,
+                "update",
+                event,
+                {"Teilnehmerliste": [None, "mit Gesundheitsangaben"]},
+            )
         out = io.BytesIO()
         wb.save(out)
         response = HttpResponse(
@@ -801,12 +1074,46 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
         response["Content-Disposition"] = 'attachment; filename="teilnehmende.xlsx"'
         return response
 
+    @staticmethod
+    def _extra_cells(reg, p, addons, questions, minors: bool, health: bool) -> list:
+        booked = {b.choice.addon_id: b for b in p.bookings.all()}
+        booked.update(
+            {b.choice.addon_id: b for b in reg.bookings.all() if b.participant_id is None}
+        )
+        cells = []
+        for a in addons:
+            b = booked.get(a.pk)
+            cells.append(safe_cell(b.choice.name if b else ""))
+        for q in questions:
+            source = p.answers if q.per == ex.Per.PERSON else reg.answers
+            value = (source or {}).get(str(q.pk), "")
+            if isinstance(value, bool):
+                value = gettext("ja") if value else gettext("nein")
+            cells.append(safe_cell(str(value)))
+        if minors:
+            cells.append(
+                safe_cell(
+                    "; ".join(
+                        ", ".join(x for x in (g.get("name"), g.get("phone"), g.get("email")) if x)
+                        for g in p.guardians or []
+                    )
+                )
+            )
+        if health:
+            cells.append(safe_cell(p.health))
+        return cells
+
 
 # --- Mitgliederbereich und Apps ---
 
 
 class MemberRegistrationIn(serializers.Serializer):
     persons = PersonIn(many=True)
+    addons = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True), required=False, default=dict
+    )
+    answers = serializers.DictField(required=False, default=dict)
+    health_consent = serializers.BooleanField(default=False)
     note = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
     terms_accepted = serializers.BooleanField(default=False)
     app = serializers.BooleanField(default=False)
@@ -830,7 +1137,7 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
             .filter(models_q_member(member_id))
             .distinct()
             .select_related("invoice", "fee_invoice", "setup__event")
-            .prefetch_related("participants")
+            .prefetch_related("participants__bookings__choice", "bookings__choice")
             .order_by("-created_at", "-pk")
         )
 
@@ -838,6 +1145,7 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
         member = self.member()
         family = services.family_of(member)
         taken = services.registered_memberships(setup)
+        start = services.first_day(setup)
         return {
             "event_id": event.pk,
             "offer": services.offer_data(setup),
@@ -849,6 +1157,8 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
                     "self": m.pk == member.pk,
                     "registered": m.pk in taken,
                     "has_birth_date": m.person.birth_date is not None,
+                    # unter 18 am ersten Tag: Erziehungsberechtigte nötig (F13)
+                    "minor": ex.needs_guardian(setup, m.person.birth_date, start),
                 }
                 for m in [member, *family]
             ],
@@ -892,6 +1202,8 @@ class MemberRegistrationView(_PortalRegistrationMixin, APIView):
                 source=Registration.Source.APP if v["app"] else Registration.Source.MEMBER,
                 user=request.user,
                 terms_accepted=v["terms_accepted"],
+                extras=_extras(v),
+                health_consent=v["health_consent"],
                 **_contact(member),
             )
             record(
@@ -987,7 +1299,7 @@ class MemberRegistrationsView(PortalCalendarMixin, APIView):
             .filter(setup__event__in=self.viewer.events())
             .distinct()
             .select_related("invoice", "setup__event")
-            .prefetch_related("participants")
+            .prefetch_related("participants__bookings__choice", "bookings__choice")
             .order_by("-setup__event__starts_at", "-pk")
         )
         return Response(

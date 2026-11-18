@@ -17,11 +17,20 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from core.encfields import EncryptedCharField, EncryptedDateField, EncryptedTextField
+from core.encfields import (
+    EncryptedCharField,
+    EncryptedDateField,
+    EncryptedJSONField,
+    EncryptedTextField,
+)
 
 MAX_PERSONS = 20
 MAX_PRICES = 12
 MAX_STEPS = 6
+MAX_ADDONS = 8
+MAX_CHOICES = 10
+MAX_QUESTIONS = 10
+MAX_GUARDIANS = 2
 
 
 class RegistrationSetup(models.Model):
@@ -83,6 +92,9 @@ class RegistrationSetup(models.Model):
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(90)],
     )
+    # Stufe A5: mit Verpflegung (nur dann Gesundheitsangaben, F11) und Minderjährige (F13)
+    catering = models.BooleanField(_("mit Verpflegung"), default=False, db_default=False)
+    minors = models.BooleanField(_("Minderjährige möglich"), default=False, db_default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -165,6 +177,108 @@ class PriceStep(models.Model):
         super().save(*args, **kwargs)
 
 
+class Per(models.TextChoices):
+    PERSON = "person", _("je Person")
+    REGISTRATION = "registration", _("je Anmeldung")
+
+
+class AddOn(models.Model):
+    """Zusatzleistung mit Auswahl, z. B. Busfahrt (+12 €) oder Menü (Schnitzel, Lachs, …)."""
+
+    class Kind(models.TextChoices):
+        MEAL = "meal", _("Essen")
+        OTHER = "other", _("sonstiges")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(RegistrationSetup, on_delete=models.CASCADE, related_name="addons")
+    name = models.CharField(_("Name"), max_length=100)
+    name_en = models.CharField(_("Name (Englisch)"), max_length=100, blank=True)
+    kind = models.CharField(max_length=8, choices=Kind.choices, default=Kind.OTHER)
+    per = models.CharField(max_length=12, choices=Per.choices, default=Per.PERSON)
+    # Pflicht: eine Auswahl muss getroffen werden (z. B. Menü)
+    required = models.BooleanField(default=False)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class AddOnChoice(models.Model):
+    """Eine Auswahl einer Zusatzleistung mit Aufpreis (auch 0 €) und Platzgrenze."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    addon = models.ForeignKey(AddOn, on_delete=models.CASCADE, related_name="choices")
+    name = models.CharField(_("Name"), max_length=100)
+    name_en = models.CharField(_("Name (Englisch)"), max_length=100, blank=True)
+    amount = models.DecimalField(
+        _("Aufpreis"),
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal(0))],
+    )
+    vat_rate = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    capacity = models.PositiveIntegerField(null=True, blank=True, validators=[MinValueValidator(1)])
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.addon.organization_id
+        super().save(*args, **kwargs)
+
+
+class Question(models.Model):
+    """Zusatzfrage ohne Preis. Gesundheitsangaben (``health``) nur mit Verpflegung (F11),
+    freiwillig, mit Einwilligung, und nur für die Verwaltung sichtbar."""
+
+    class Kind(models.TextChoices):
+        TEXT = "text", _("Text")
+        YESNO = "yesno", _("Ja/Nein")
+        CHOICE = "choice", _("Auswahl")
+        HEALTH = "health", _("Allergien und Unverträglichkeiten")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(RegistrationSetup, on_delete=models.CASCADE, related_name="questions")
+    text = models.CharField(_("Frage"), max_length=200)
+    text_en = models.CharField(_("Frage (Englisch)"), max_length=200, blank=True)
+    kind = models.CharField(max_length=8, choices=Kind.choices, default=Kind.TEXT)
+    choices = models.JSONField(default=list, blank=True)
+    required = models.BooleanField(default=False)
+    per = models.CharField(max_length=12, choices=Per.choices, default=Per.REGISTRATION)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.text
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
 class Registration(models.Model):
     """Eine Anmeldung: wer anmeldet, für wen, und die Rechnung dazu."""
 
@@ -230,6 +344,11 @@ class Registration(models.Model):
         blank=True,
         related_name="+",
     )
+    # Antworten auf Zusatzfragen je Anmeldung: {"<Frage-ID>": Wert}
+    answers = EncryptedJSONField(default=dict, blank=True, db_default={})
+    # Einwilligung in die Verarbeitung der Gesundheitsangaben (Art. 9 DSGVO)
+    health_consent_at = models.DateTimeField(null=True, blank=True)
+    health_purged_at = models.DateTimeField(null=True, blank=True)
     # Gäste ohne Mitgliedschaft: Daten nach dieser Zeit anonymisieren
     purged_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -293,6 +412,11 @@ class Participant(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     position = models.PositiveSmallIntegerField(default=0)
+    # Antworten auf Zusatzfragen je Person; Gesundheitsangaben getrennt (früher gelöscht)
+    answers = EncryptedJSONField(default=dict, blank=True, db_default={})
+    health = EncryptedTextField(_("Allergien und Unverträglichkeiten"), blank=True, db_default="")
+    # Unter 18: Erziehungsberechtigte [{"name", "phone", "email", "address"}, …] (F13)
+    guardians = EncryptedJSONField(default=list, blank=True, db_default=[])
 
     class Meta:
         verbose_name = "Teilnehmende"
@@ -302,6 +426,37 @@ class Participant(models.Model):
 
     def __str__(self) -> str:
         return f"participant {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.registration.organization_id
+        super().save(*args, **kwargs)
+
+
+class Booking(models.Model):
+    """Gebuchte Zusatzleistung, je Person oder je Anmeldung, mit festgehaltenem Preis."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    registration = models.ForeignKey(
+        Registration, on_delete=models.CASCADE, related_name="bookings"
+    )
+    # leer: je Anmeldung
+    participant = models.ForeignKey(
+        Participant, on_delete=models.CASCADE, null=True, blank=True, related_name="bookings"
+    )
+    choice = models.ForeignKey(AddOnChoice, on_delete=models.PROTECT, related_name="bookings")
+    # Bei der Anmeldung festgehalten
+    name = models.CharField(max_length=210)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    vat_rate = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        ordering = ["pk"]
+        indexes = [models.Index(fields=["choice"])]
+
+    def __str__(self) -> str:
+        return f"booking {self.pk}"
 
     def save(self, *args, **kwargs):
         self.organization_id = self.registration.organization_id

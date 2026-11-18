@@ -8,7 +8,7 @@ und Verfall unbezahlter Anmeldungen.
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 from django.db import connection, transaction
@@ -19,6 +19,7 @@ from rest_framework.exceptions import ValidationError
 
 from members.models import Membership, today
 
+from . import extras as ex
 from .models import Participant, PriceOption, PriceStep, Registration, RegistrationSetup
 
 ZERO = Decimal("0.00")
@@ -191,6 +192,7 @@ def price_data(price: PriceOption, on: datetime.date, *, full: bool = False) -> 
 def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
     on = timezone.localdate()
     value = state(setup)
+    booked = ex.counts(setup)
     prices = setup.prices.prefetch_related("steps")
     if not full:
         prices = prices.filter(is_active=True)
@@ -216,6 +218,21 @@ def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
         "cancel_fee_fixed": str(setup.cancel_fee_fixed) if setup.cancel_fee_fixed else None,
         "expire_unpaid_days": setup.expire_unpaid_days,
         "prices": [price_data(p, on, full=full) for p in prices],
+        "catering": setup.catering,
+        "minors": setup.minors,
+        "health_allowed": ex.health_allowed(setup),
+        "addons": [
+            ex.addon_data(a, booked, full=full)
+            for a in (
+                setup.addons.prefetch_related("choices")
+                if full
+                else setup.addons.filter(is_active=True).prefetch_related("choices")
+            )
+        ],
+        "questions": [
+            ex.question_data(q)
+            for q in (setup.questions.all() if full else ex.active_questions(setup))
+        ],
     }
 
 
@@ -291,6 +308,7 @@ class PersonInput:
     name: str
     birth_date: datetime.date | None
     price: PriceOption
+    extras: ex.Extras = field(default_factory=ex.Extras)
 
 
 def _lock_setup(setup: RegistrationSetup) -> None:
@@ -360,6 +378,8 @@ def register(
     source: str,
     user=None,
     terms_accepted: bool = False,
+    extras: ex.Extras | None = None,
+    health_consent: bool = False,
 ) -> Registration:
     """Verbindlich anmelden. Prüft Plätze unter Sperre, hält die Preise fest, stellt die
     Rechnung aus und schickt die Anmeldebestätigung (nach dem Speichern)."""
@@ -396,6 +416,47 @@ def register(
         elif not setup.guests_allowed and not board:
             raise ValidationError(gettext("Zu diesem Termin können keine Gäste angemeldet werden."))
         _check_person(setup, person, start, board)
+    reg_extras = extras or ex.Extras()
+    addons = ex.active_addons(setup)
+    questions = ex.active_questions(setup)
+    health_on = any(q.kind == ex.Question.Kind.HEALTH for q in questions)
+    planned: list[tuple[int | None, list]] = []
+    person_answers: list[dict] = []
+    guardians: list[list[dict]] = []
+    healths: list[str] = []
+    for index, person in enumerate(persons):
+        who = gettext(" für {name}").format(name=person.name.strip())
+        planned.append(
+            (index, ex.clean_addons(addons, person.extras.addons, ex.Per.PERSON, who, board))
+        )
+        person_answers.append(
+            ex.clean_answers(questions, person.extras.answers, ex.Per.PERSON, who, board)
+        )
+        healths.append(person.extras.health.strip()[: ex.MAX_ANSWER] if health_on else "")
+        birth = person.birth_date
+        if birth is None and person.membership is not None:
+            birth = person.membership.person.birth_date
+        if setup.minors and birth is None and not board:
+            raise ValidationError(
+                gettext("Bitte das Geburtsdatum von {name} angeben.").format(name=person.name)
+            )
+        guardians.append(
+            ex.clean_guardians(person.extras.guardians, person.name.strip(), board)
+            if ex.needs_guardian(setup, birth, start)
+            else []
+        )
+    planned.append(
+        (None, ex.clean_addons(addons, reg_extras.addons, ex.Per.REGISTRATION, "", board))
+    )
+    reg_answers = ex.clean_answers(questions, reg_extras.answers, ex.Per.REGISTRATION, "", board)
+    if any(healths) and not health_consent:
+        raise ValidationError(
+            gettext(
+                "Bitte der Verarbeitung der Angaben zu Allergien und Unverträglichkeiten "
+                "zustimmen oder das Feld leer lassen."
+            )
+        )
+    ex.check_capacity([c for _i, chosen in planned for c in chosen])
     # Über der Platzgrenze: auf die Warteliste (wenn eingeschaltet), sonst abweisen
     waiting = False
     if setup.capacity is not None and taken(setup) + len(persons) > setup.capacity:
@@ -441,6 +502,8 @@ def register(
         source=source,
         status=Registration.Status.WAITING if waiting else Registration.Status.REGISTERED,
         terms_accepted_at=now if terms_accepted else None,
+        answers=reg_answers,
+        health_consent_at=now if any(healths) else None,
         created_by=user,
     )
     on = timezone.localdate()
@@ -455,7 +518,7 @@ def register(
             )
         extra[step.pk] = extra.get(step.pk, 0) + 1
         label = price.name if not step.name else f"{price.name} – {step.name}"
-        Participant.objects.create(
+        participant = Participant.objects.create(
             registration=reg,
             membership=person.membership,
             name=person.name.strip()[:200],
@@ -465,8 +528,15 @@ def register(
             price_name=label[:170],
             amount=step.amount,
             position=index,
+            answers=person_answers[index],
+            health=healths[index],
+            guardians=guardians[index],
         )
         total += step.amount
+        for choice in planned[index][1]:
+            total += ex.book(reg, participant, choice).amount
+    for choice in planned[-1][1]:
+        total += ex.book(reg, None, choice).amount
     reg.total = total
     reg.save(update_fields=["total", "updated_at"])
     from . import notify
@@ -548,20 +618,36 @@ def create_invoice(reg: Registration, user=None, fee: Decimal = ZERO):
         created_by=user,
         **recipient,
     )
-    rows = reg.participants.filter(status=Participant.Status.ACTIVE).select_related("price")
+    rows = (
+        reg.participants.filter(status=Participant.Status.ACTIVE)
+        .select_related("price")
+        .prefetch_related("bookings")
+    )
     index = 0
-    for index, p in enumerate(rows):
-        if p.amount <= 0:
-            continue
+
+    def line(text: str, detail: str, amount, vat_rate) -> None:
+        nonlocal index
+        index += 1
         InvoiceLine.objects.create(
             organization=org,
             invoice=invoice,
             position=index,
-            text=f"{event.title}: {p.price_name}"[:200],
-            detail=p.name[:200],
-            amount=p.amount,
-            vat_rate=p.price.vat_rate or None,
+            text=text[:200],
+            detail=detail[:200],
+            amount=amount,
+            vat_rate=vat_rate or None,
         )
+
+    for p in rows:
+        if p.amount > 0:
+            line(f"{event.title}: {p.price_name}", p.name, p.amount, p.price.vat_rate)
+        for b in p.bookings.all():
+            if b.amount > 0:
+                line(f"{event.title}: {b.name}", p.name, b.amount, b.vat_rate)
+    if reg.status != Registration.Status.CANCELLED:
+        for b in ex.registration_bookings(reg):
+            if b.amount > 0:
+                line(f"{event.title}: {b.name}", reg.display_number, b.amount, b.vat_rate)
     if fee > 0:
         InvoiceLine.objects.create(
             organization=org,
@@ -628,9 +714,12 @@ def fee_quote(
     eine Stufe greift (ohne Staffel bei jeder Abmeldung). Nie mehr als der Betrag selbst."""
     now = now or timezone.now()
     setup = reg.setup
+    active = list(reg.participants.filter(status=Participant.Status.ACTIVE))
     if participants is None:
-        participants = list(reg.participants.filter(status=Participant.Status.ACTIVE))
-    base = sum((p.amount for p in participants), ZERO)
+        participants = active
+    base = sum((ex.person_total(p) for p in participants), ZERO)
+    if {p.pk for p in participants} >= {p.pk for p in active}:
+        base += ex.booking_total(reg)
     reason = ""
     if setup.event.is_cancelled:
         reason = "event_cancelled"
@@ -730,7 +819,9 @@ def cancel(
     Participant.objects.filter(pk__in=[p.pk for p in chosen]).update(
         status=Participant.Status.CANCELLED, cancelled_at=now
     )
-    reg.total = sum((p.amount for p in active if p not in chosen), ZERO)
+    reg.total = sum((ex.person_total(p) for p in active if p not in chosen), ZERO)
+    if not whole:
+        reg.total += ex.booking_total(reg)
     fields = ["total", "updated_at"]
     if whole:
         reg.status = Registration.Status.CANCELLED
@@ -849,6 +940,7 @@ def substitute(
     birth_date: datetime.date | None = None,
     user=None,
     by_member: bool = False,
+    guardians: list | None = None,
 ) -> str:
     """Ersatzperson: Statt ``p`` kommt jemand anderes, zum selben Tarif und Preis. Die
     Rechnung bleibt. Gibt den bisherigen Namen zurück."""
@@ -879,11 +971,23 @@ def substitute(
     _check_person(
         setup, PersonInput(membership, name, birth_date, p.price), first_day(setup), not by_member
     )
+    birth = birth_date or (membership.person.birth_date if membership else None)
+    if setup.minors and birth is None and by_member:
+        raise ValidationError(
+            gettext("Bitte das Geburtsdatum von {name} angeben.").format(name=name)
+        )
     old = p.name
     p.membership = membership
     p.name = name[:200]
     p.birth_date = birth_date
-    p.save(update_fields=["membership", "name", "birth_date"])
+    # Angaben der bisherigen Person gelten nicht für die neue
+    p.health = ""
+    p.guardians = (
+        ex.clean_guardians(guardians or [], name, not by_member)
+        if ex.needs_guardian(setup, birth, first_day(setup))
+        else []
+    )
+    p.save(update_fields=["membership", "name", "birth_date", "health", "guardians"])
     return old
 
 
@@ -1029,7 +1133,10 @@ def purge_due(now: datetime.datetime | None = None) -> int:
                 for p in parts:
                     p.name = gettext("Gast")
                     p.birth_date = None
-                    p.save(update_fields=["name", "birth_date"])
+                    p.answers = {}
+                    p.health = ""
+                    p.guardians = []
+                    p.save(update_fields=["name", "birth_date", "answers", "health", "guardians"])
                 fields = ["purged_at", "updated_at"]
                 if reg.membership_id is None:
                     reg.name = gettext("gelöscht")
@@ -1039,6 +1146,8 @@ def purge_due(now: datetime.datetime | None = None) -> int:
                     fields += ["name", "email", "phone", "address"]
                 reg.note = ""
                 if reg.membership_id is None:
+                    reg.answers = {}
+                    fields.append("answers")
                     # Infoschreiben an Gäste: Name und Adressen im Versandprotokoll löschen
                     for row in reg.circulars.all():
                         row.first_name = ""
