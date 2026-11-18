@@ -2111,9 +2111,11 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   flex: none;
 }
 /* Geburtstag am heutigen Tag farbig hervorheben */
-.tile-entry-today {
+/* Mit „li“, damit der Innenabstand gegen „.plain-list li“ gewinnt: sonst kleben Name und
+   „heute“ am farbigen Balken. */
+li.tile-entry-today {
   margin: 0.15rem -0.5rem;
-  padding: 0.35rem 0.5rem 0.35rem 0.4rem;
+  padding: 0.35rem 0.5rem;
   border-left: 3px solid var(--color-focus);
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
