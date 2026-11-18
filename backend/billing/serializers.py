@@ -466,7 +466,11 @@ class LineInputSerializer(serializers.Serializer):
 class InvoiceInputSerializer(serializers.Serializer):
     recipient_kind = serializers.ChoiceField(
         choices=[
-            *(c for c in Invoice.Recipient.choices if c[0] != Invoice.Recipient.ANONYMIZED),
+            *(
+                c
+                for c in Invoice.Recipient.choices
+                if c[0] not in (Invoice.Recipient.ANONYMIZED, Invoice.Recipient.REGISTRATION)
+            ),
             ("unit", "Untereinheit"),
         ],
         required=False,

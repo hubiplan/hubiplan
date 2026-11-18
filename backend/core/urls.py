@@ -101,6 +101,7 @@ from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
 from qualifications import views as qualification_views
+from registrations import views as registration_views
 from statutes import views as statute_views
 from surveys import link as survey_link
 from surveys import portal as survey_portal
@@ -763,6 +764,26 @@ org_patterns = [
         "events/<int:pk>/project/", event_views.OrgEventProjectView.as_view(), name="event-project"
     ),
     path(
+        "events/<int:pk>/registration/",
+        registration_views.SetupView.as_view(),
+        name="event-registration",
+    ),
+    path(
+        "events/<int:pk>/registration/list/",
+        registration_views.RegistrationListView.as_view(),
+        name="event-registration-list",
+    ),
+    path(
+        "events/<int:pk>/registration/export/",
+        registration_views.RegistrationExportView.as_view(),
+        name="event-registration-export",
+    ),
+    path(
+        "events/<int:pk>/registration/<int:reg_id>/cancel/",
+        registration_views.RegistrationCancelView.as_view(),
+        name="event-registration-cancel",
+    ),
+    path(
         "events/<int:pk>/occurrence/",
         event_views.OrgEventOccurrenceView.as_view(),
         name="event-occurrence",
@@ -1299,6 +1320,21 @@ urlpatterns = [
         "portal/<int:access_id>/events/<int:pk>/response/",
         event_views.PortalMyResponseView.as_view(),
         name="portal-event-response",
+    ),
+    path(
+        "portal/<int:access_id>/events/<int:pk>/registration/",
+        registration_views.MemberRegistrationView.as_view(),
+        name="portal-event-registration",
+    ),
+    path(
+        "portal/<int:access_id>/events/<int:pk>/registration/<int:reg_id>/cancel/",
+        registration_views.MemberCancelView.as_view(),
+        name="portal-event-registration-cancel",
+    ),
+    path(
+        "portal/<int:access_id>/registrations/",
+        registration_views.MemberRegistrationsView.as_view(),
+        name="portal-registrations",
     ),
     path(
         "portal/<int:access_id>/events/<int:pk>/ics/",

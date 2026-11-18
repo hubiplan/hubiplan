@@ -14072,3 +14072,261 @@ msgstr "Password reset"
 
 msgid "Das Passwort deines HUBIplan-Zugangs wurde über „Passwort vergessen“ neu gesetzt."
 msgstr "The password of your HUBIplan account was set again via “Forgot password”."
+
+msgid "Anmeldungen"
+msgstr "Registrations"
+
+msgid "Anmeldungen, Teilnehmende und Zahlungsstand sehen"
+msgstr "See registrations, participants and payment status"
+
+msgid "Anmeldungen einrichten, Teilnehmende anmelden und abmelden"
+msgstr "Set up registrations, register and cancel participants"
+
+msgid "Teilnehmende"
+msgstr "Participants"
+
+msgid "Anmeldung ab"
+msgstr "Registration opens"
+
+msgid "Anmeldeschluss"
+msgstr "Registration deadline"
+
+msgid "Anmeldung offen"
+msgstr "Registration open"
+
+msgid "Plätze"
+msgstr "Places"
+
+msgid "Personen je Anmeldung"
+msgstr "People per registration"
+
+msgid "Gäste erlaubt"
+msgstr "Guests allowed"
+
+msgid "Kategorie in der Kasse"
+msgstr "Category in the accounts"
+
+msgid "Teilnahmebedingungen"
+msgstr "Terms of participation"
+
+msgid "nur Mitglieder"
+msgstr "members only"
+
+msgid "nur Gäste"
+msgstr "guests only"
+
+msgid "Name (Englisch)"
+msgstr "Name (English)"
+
+msgid "Betrag"
+msgstr "Amount"
+
+msgid "gilt bis"
+msgstr "valid until"
+
+msgid "für die ersten"
+msgstr "for the first"
+
+msgid "angemeldet"
+msgstr "registered"
+
+msgid "abgemeldet"
+msgstr "cancelled"
+
+#, python-brace-format
+msgid "Deine Anmeldung siehst du jederzeit im Mitgliederbereich: {url}"
+msgstr "You can see your registration at any time in the members' area: {url}"
+
+#, python-brace-format
+msgid "vielen Dank für deine Anmeldung ({number}). Sie ist verbindlich."
+msgstr "thank you for your registration ({number}). It is binding."
+
+msgid "Angemeldet:"
+msgstr "Registered:"
+
+#, python-brace-format
+msgid "Summe: {total}"
+msgstr "Total: {total}"
+
+msgid "Teilnahmebedingungen:"
+msgstr "Terms of participation:"
+
+#, python-brace-format
+msgid "Abmelden kannst du dich bis {when}; danach wende dich bitte an uns."
+msgstr "You can cancel until {when}; after that, please contact us."
+
+#, python-brace-format
+msgid "Anmeldebestätigung: {title}"
+msgstr "Registration confirmation: {title}"
+
+#, python-brace-format
+msgid "deine Zahlung über {amount} für die Rechnung {number} ist eingegangen."
+msgstr "we have received your payment of {amount} for invoice {number}."
+
+#, python-brace-format
+msgid "Damit ist deine Anmeldung {number} vollständig bezahlt. Vielen Dank!"
+msgstr "Your registration {number} is now paid in full. Thank you!"
+
+#, python-brace-format
+msgid "Zahlung eingegangen: {title}"
+msgstr "Payment received: {title}"
+
+#, python-brace-format
+msgid "deine Anmeldung {number} ist abgemeldet:"
+msgstr "your registration {number} has been cancelled:"
+
+#, python-brace-format
+msgid "Die Stornorechnung {number} liegt bei."
+msgstr "The cancellation invoice {number} is attached."
+
+#, python-brace-format
+msgid "Den schon gezahlten Betrag von {amount} erstatten wir dir."
+msgstr "We will refund the {amount} you have already paid."
+
+#, python-brace-format
+msgid "Abmeldung bestätigt: {title}"
+msgstr "Cancellation confirmed: {title}"
+
+msgid "Bitte einen gültigen Tarif wählen."
+msgstr "Please choose a valid rate."
+
+#, python-brace-format
+msgid "Den Tarif „{price}“ gibt es nur für Mitglieder."
+msgstr "The rate “{price}” is for members only."
+
+#, python-brace-format
+msgid "Den Tarif „{price}“ gibt es nur für Gäste."
+msgstr "The rate “{price}” is for guests only."
+
+#, python-brace-format
+msgid "Für den Tarif „{price}“ brauchen wir das Geburtsdatum von {name}."
+msgstr "For the rate “{price}” we need the date of birth of {name}."
+
+#, python-brace-format
+msgid "{name} passt nicht in den Tarif „{price}“ (Alter {age})."
+msgstr "{name} does not fit the rate “{price}” (age {age})."
+
+msgid "Bitte mindestens eine Person anmelden."
+msgstr "Please register at least one person."
+
+#, python-brace-format
+msgid "Höchstens {n} Personen je Anmeldung."
+msgstr "At most {n} people per registration."
+
+msgid "Bitte die Teilnahmebedingungen bestätigen."
+msgstr "Please accept the terms of participation."
+
+msgid "Bitte für jede Person den Namen angeben."
+msgstr "Please give a name for each person."
+
+#, python-brace-format
+msgid "{name} ist schon angemeldet."
+msgstr "{name} is already registered."
+
+msgid "Zu diesem Termin können keine Gäste angemeldet werden."
+msgstr "Guests cannot be registered for this event."
+
+#, python-brace-format
+msgid "Es sind nur noch {n} Plätze frei."
+msgstr "Only {n} places are left."
+
+#, python-brace-format
+msgid "Im Tarif „{price}“ sind nicht mehr genug Plätze frei."
+msgstr "There are not enough places left at the rate “{price}”."
+
+#, python-brace-format
+msgid "Der Tarif „{price}“ ist nicht mehr buchbar."
+msgstr "The rate “{price}” is no longer available."
+
+#, python-brace-format
+msgid "Teilnahmegebühr {title}"
+msgstr "Participation fee {title}"
+
+#, python-brace-format
+msgid "Anmeldung {number}. Bitte bei der Überweisung die Rechnungsnummer angeben."
+msgstr "Registration {number}. Please quote the invoice number with your transfer."
+
+msgid "Die Anmeldung ist schon abgemeldet."
+msgstr "The registration has already been cancelled."
+
+msgid "Abmelden ist nur bis zum Anmeldeschluss möglich. Bitte wende dich an den Verein."
+msgstr "Cancelling is only possible until the registration deadline. Please contact the club."
+
+#, python-brace-format
+msgid "Abmeldung {number}"
+msgstr "Cancellation {number}"
+
+msgid "Gast"
+msgstr "Guest"
+
+msgid "Jeder Tarif braucht einen Preis."
+msgstr "Every rate needs a price."
+
+#, python-brace-format
+msgid "Höchstens {n} Preisstufen je Tarif."
+msgstr "At most {n} price tiers per rate."
+
+msgid "Die Preisstufen müssen nach ihrem Datum aufeinander folgen."
+msgstr "The price tiers must follow one another by date."
+
+msgid "Das Alter „von“ ist größer als „bis“."
+msgstr "The age “from” is greater than “to”."
+
+msgid "Bitte mindestens einen Tarif angeben."
+msgstr "Please add at least one rate."
+
+#, python-brace-format
+msgid "Höchstens {n} Tarife."
+msgstr "At most {n} rates."
+
+msgid "Der Anmeldeschluss liegt vor dem Anmeldestart."
+msgstr "The registration deadline is before registration opens."
+
+msgid "Zu diesem Termin gibt es keine Anmeldung."
+msgstr "There is no registration for this event."
+
+msgid "Bitte eine Einnahme-Kategorie wählen."
+msgstr "Please choose an income category."
+
+msgid "Anmeldung"
+msgstr "Registration"
+
+msgid "Tarif"
+msgstr "Rate"
+
+msgid "angemeldet von"
+msgstr "registered by"
+
+msgid "kostenlos"
+msgstr "free of charge"
+
+msgid "teilweise"
+msgstr "partly"
+
+msgid "Verbindliche Anmeldung zu Terminen mit Teilnahmegebühr, Tarifen und Preisstufen, Rechnung, Anmelde- und Zahlungsbestätigung"
+msgstr "Binding registration for events with participation fee, rates and price tiers, invoice, registration and payment confirmation"
+
+msgid "Der Termin hat eine verbindliche Anmeldung. Zu- und Absagen gibt es dann nicht."
+msgstr "The event has binding registration. RSVPs are not available then."
+
+msgid "Zu diesem Termin gibt es Anmeldungen. Bitte den Termin absagen statt ihn zu löschen."
+msgstr "There are registrations for this event. Please cancel the event instead of deleting it."
+
+msgid "Der Termin hat Zu- und Absagen. Bitte diese zuerst ausschalten; ein Termin hat entweder Zu- und Absagen oder eine verbindliche Anmeldung."
+msgstr "The event has RSVPs. Please switch them off first; an event has either RSVPs or binding registration."
+
+#, python-brace-format
+msgid "Die Rechnung {number} liegt bei. Bitte überweise den Betrag bis {due} und gib die Rechnungsnummer an."
+msgstr "Invoice {number} is attached. Please transfer the amount by {due} and quote the invoice number."
+
+msgid "Die letzte Preisstufe gilt bis zum Anmeldeschluss; bitte dort kein Datum und keine Platzzahl angeben."
+msgstr "The last price tier applies until the registration deadline; please do not give a date or number of places there."
+
+msgid "Preise legt fest, wer Rechnungen bearbeiten darf. Ohne dieses Recht sind nur kostenlose Tarife möglich."
+msgstr "Prices are set by whoever may edit invoices. Without that permission only free rates are possible."
+
+msgid "Bitte eine Kategorie für die Kasse wählen (oder unter Finanzen › Einrichtung eine Kategorie für Zahlungen)."
+msgstr "Please choose a category for the accounts (or a category for payments under Finance › Settings)."
+
+msgid "Es gibt schon Anmeldungen. Bitte die Anmeldung schließen statt sie zu entfernen."
+msgstr "There are already registrations. Please close registration instead of removing it."

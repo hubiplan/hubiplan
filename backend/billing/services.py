@@ -664,6 +664,9 @@ def refresh_recipient(invoice: Invoice) -> None:
         data = member_recipient(org, invoice.membership)
     elif invoice.recipient_kind == Invoice.Recipient.CLUB:
         data = club_recipient(invoice.club)
+    elif invoice.recipient_kind == Invoice.Recipient.REGISTRATION:
+        # Angaben aus der Anmeldung, beim Anlegen eingetragen
+        return
     elif invoice.recipient_kind == Invoice.Recipient.HOUSEHOLD:
         if invoice.household_id is None:
             return
@@ -1185,6 +1188,11 @@ def _update_paid(invoice: Invoice) -> None:
     if invoice.final_allocations.filter(active=True).exists():
         invoice.status = Invoice.Status.SETTLED
     invoice.save(update_fields=["paid", "status", "updated_at"])
+    if invoice.status == Invoice.Status.PAID:
+        # Anmeldung zu einem Termin: Zahlungseingang bestätigen
+        from registrations.services import on_invoice_paid
+
+        on_invoice_paid(invoice)
     if invoice.club_id is not None and invoice.club.is_remote:
         from peering import packet_invoices
 

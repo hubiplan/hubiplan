@@ -839,6 +839,8 @@ class Invoice(models.Model):
         ANONYMIZED = "anonymized", gettext_lazy("anonymisiert")
         # Haushalt oder Firma: eine Rechnung an den Zahler (Konzept Familien, H2)
         HOUSEHOLD = "household", gettext_lazy("Haushalt/Firma")
+        # Anmeldung zu einem Termin (Gast ohne Mitgliedschaft); Angaben aus der Anmeldung
+        REGISTRATION = "registration", gettext_lazy("Teilnehmende")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -978,6 +980,7 @@ class Invoice(models.Model):
                     | models.Q(recipient_kind="partner", partner__isnull=False)
                     | models.Q(recipient_kind="anonymized", membership__isnull=True)
                     | models.Q(recipient_kind="household", membership__isnull=True)
+                    | models.Q(recipient_kind="registration", membership__isnull=True)
                 ),
                 name="rechnung_empfaenger",
             ),

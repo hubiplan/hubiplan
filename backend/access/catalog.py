@@ -112,6 +112,9 @@ EXPORT_FULL = "export.full"
 # Geschäftspartner (konzepte/geschaeftspartner.md, P1): ohne eigenes Modul
 PARTNERS_VIEW = "partners.view"
 PARTNERS_EDIT = "partners.edit"
+# Anmeldungen mit Teilnahmegebühr (konzepte/veranstaltungen-anmeldung-gebuehr.md)
+REGISTRATIONS_VIEW = "registrations.view"
+REGISTRATIONS_EDIT = "registrations.edit"
 
 ALL_TYPES = ("platform", "federation", "club", "unit")
 MEMBER_TYPES = ("federation", "club")
@@ -336,6 +339,13 @@ AREAS: tuple[Area, ...] = (
         dept_levels=_BOTH,
         module="events",
         dept_label=gettext_noop("Termine {gen}"),
+    ),
+    Area(
+        "registrations",
+        gettext_noop("Anmeldungen"),
+        gettext_noop("Anmeldungen, Teilnehmende und Zahlungsstand sehen"),
+        gettext_noop("Anmeldungen einrichten, Teilnehmende anmelden und abmelden"),
+        module="registrations",
     ),
     Area(
         "meetings",

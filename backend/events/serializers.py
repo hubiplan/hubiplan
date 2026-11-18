@@ -118,6 +118,18 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             attrs["repeat_until"] = None
         if not attrs.get("is_cancelled", inst.is_cancelled if inst else False):
             attrs["cancel_note"] = ""
+        if attrs.get("rsvp_enabled") and inst is not None:
+            from registrations.services import setup_of
+
+            if setup_of(inst) is not None:
+                raise serializers.ValidationError(
+                    {
+                        "rsvp_enabled": gettext(
+                            "Der Termin hat eine verbindliche Anmeldung. Zu- und Absagen gibt es "
+                            "dann nicht."
+                        )
+                    }
+                )
         if not attrs.get("rsvp_enabled", inst.rsvp_enabled if inst else False):
             attrs["rsvp_deadline"] = None
             attrs["rsvp_capacity"] = None

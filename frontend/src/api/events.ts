@@ -1,6 +1,7 @@
 // Terminkalender: gleiche Schnittstelle für Vorstand, Abteilung und Mitgliederbereich.
 import { api } from './client.ts'
 import { t } from '../i18n/index.ts'
+import type { RegistrationBrief } from './registrations.ts'
 
 export type Visibility = 'public' | 'members' | 'board'
 export type Repeat = 'none' | 'weekly' | 'monthly' | 'yearly'
@@ -197,6 +198,8 @@ export interface EventDetail {
   attachments: Attachment[]
   exceptions: SeriesException[]
   rsvp: RsvpInfo
+  /** Verbindliche Anmeldung (Modul „Anmeldungen“); null ohne Modul */
+  registration?: RegistrationBrief | null
   /** Fremder Kalender, aus dem der Termin stammt (nur lesbare Kopie) */
   source?: { name: string; kind: ExternalKind; kind_label: string } | null
   /** Fremden Termin hier ausblenden (Vorstand der Einheit) */

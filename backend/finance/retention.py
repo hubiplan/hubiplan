@@ -409,6 +409,7 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
             Invoice.Recipient.MEMBER,
             Invoice.Recipient.PARTNER,
             Invoice.Recipient.HOUSEHOLD,
+            Invoice.Recipient.REGISTRATION,
         ]
     ).update(
         recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None, partner=None, household=None
