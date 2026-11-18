@@ -98,9 +98,13 @@ def test_ein_fehler_haelt_die_uebrigen_nicht_auf():
     TodoReminder.objects.filter(todo__in=todos).delete()
     with patch.object(reminders, "sync", first_fails):
         reminders.run(NOW)
-    assert len(calls) == 3
-    assert TodoReminder.objects.filter(todo=todos[1]).exists()
-    assert TodoReminder.objects.filter(todo=todos[2]).exists()
+    assert sorted(calls) == sorted(t.pk for t in todos)
+    # Der Lauf sagt keine Reihenfolge zu: gescheitert ist die zuerst bearbeitete Aufgabe
+    failed = calls[0]
+    assert not TodoReminder.objects.filter(todo_id=failed).exists()
+    for todo in todos:
+        if todo.pk != failed:
+            assert TodoReminder.objects.filter(todo=todo).exists(), todo
 
 
 def test_ueberlappender_lauf_endet_sofort():
