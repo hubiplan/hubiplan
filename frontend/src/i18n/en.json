@@ -10022,5 +10022,7 @@
   "Eingereichte Nachweise": "Submitted proofs",
   "Danke! Dein Nachweis ist eingegangen.": "Thank you! Your proof has been received.",
   "Nachweis für den ermäßigten Beitrag fehlt, jetzt einreichen": "Proof for the reduced fee is missing, submit it now",
-  "Nachweis für den ermäßigten Beitrag einreichen": "Submit proof for the reduced fee"
+  "Nachweis für den ermäßigten Beitrag einreichen": "Submit proof for the reduced fee",
+  "{count} Mitglieder ohne vollständige Anschrift (fehlt oder Platzhalter wie „00000 UNBEKANNT“) werden nicht vorgeschlagen.": "{count} members without a complete address (missing or a placeholder such as “00000 UNKNOWN”) are not suggested.",
+  "Trage die Anschrift in der Mitgliederakte nach, dann erscheinen sie hier.": "Add the address in the member record and they will appear here."
 }

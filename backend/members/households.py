@@ -9,6 +9,7 @@ und höchstens einer Firma.
 from __future__ import annotations
 
 import datetime
+import re
 import unicodedata
 
 from django.db import transaction
@@ -195,16 +196,38 @@ def _norm(text: str) -> str:
     return " ".join(text.replace(",", " ").split())
 
 
+# Platzhalter aus Importen, z. B. „UNBEKANNT - nachtragen, 00000 UNBEKANNT“: keine Anschrift
+_PLACEHOLDER = re.compile(
+    r"\b(unbekannt|unknown|nachtragen|nicht bekannt|keine angabe|ohne anschrift"
+    r"|k\.\s?a\.|n/a)(?!\w)"
+    r"|^[\s\-_.?x*/]*$"
+)
+
+
+def is_placeholder_address(street: str, postal_code: str, city: str) -> bool:
+    """Fehlt die Anschrift oder ist sie nur ein Platzhalter (PLZ 00000, „unbekannt“ …)?"""
+    code = (postal_code or "").strip()
+    if code and set(code) == {"0"}:
+        return True
+    for part in (street, city):
+        if _PLACEHOLDER.search(unicodedata.normalize("NFKC", part or "").casefold().strip()):
+            return True
+    return bool(code) and _PLACEHOLDER.search(code.casefold()) is not None
+
+
 def address_key(street: str, postal_code: str, city: str) -> str:
-    """Vergleichsschlüssel einer Anschrift (Schreibweisen wie „Str.“/„Straße“ gleich)."""
-    if not (street or "").strip() or not (city or "").strip():
+    """Vergleichsschlüssel einer Anschrift (Schreibweisen wie „Str.“/„Straße“ gleich).
+    Leer, wenn die Anschrift fehlt oder nur ein Platzhalter ist."""
+    if is_placeholder_address(street, postal_code, city):
         return ""
     return "|".join((_norm(street), _norm(postal_code), _norm(city)))
 
 
-def suggestions(org, limit: int = 50) -> list[dict]:
+def suggestions(org, limit: int = 50) -> dict:
     """Aktuelle Mitglieder mit gleicher Anschrift, die noch nicht gemeinsam in einem
-    Familienhaushalt sind. Nur Vorschläge; angelegt wird nichts."""
+    Familienhaushalt sind. Nur Vorschläge; angelegt wird nichts. Mitglieder ohne Anschrift
+    oder mit Platzhalter (z. B. „00000 UNBEKANNT“) kommen nicht in Vorschläge, sondern in
+    ``missing_address``, damit die Anschrift nachgetragen werden kann."""
     from .views import member_queryset, member_rows
 
     members = list(
@@ -218,10 +241,15 @@ def suggestions(org, limit: int = 50) -> list[dict]:
         for link in current_links([m.pk for m in members], kind=Household.Kind.FAMILY)
     }
     groups: dict[str, list[dict]] = {}
+    missing = []
     for row in rows:
         key = address_key(row["street"], row["postal_code"], row["city"])
         if key:
             groups.setdefault(key, []).append(row)
+        else:
+            missing.append(
+                {"id": row["id"], "first_name": row["first_name"], "last_name": row["last_name"]}
+            )
     result = []
     for rows_ in groups.values():
         if len(rows_) < 2:
@@ -251,7 +279,8 @@ def suggestions(org, limit: int = 50) -> list[dict]:
         )
         if len(result) >= limit:
             break
-    return result
+    missing.sort(key=lambda m: (m["last_name"].casefold(), m["first_name"].casefold()))
+    return {"suggestions": result, "missing_address": missing}
 
 
 def letter_name(people: list[tuple[str, str, str, str]]) -> str:

@@ -8,7 +8,7 @@ import pytest
 
 from audit.models import AuditEntry
 from circulars.models import CircularRecipient
-from members.households import letter_name
+from members.households import address_key, is_placeholder_address, letter_name
 from members.models import ContactDetails, Household, HouseholdMember, Membership, today
 from members.workflows import _purge_membership, exit_membership
 
@@ -149,13 +149,60 @@ class TestHaushalt:
         details = ContactDetails.objects.get(person=family["otto"].person)
         details.street = "Andere Str. 1"
         details.save()
-        found = c.get(hh_url(club, suffix="suggestions/")).json()
+        found = c.get(hh_url(club, suffix="suggestions/")).json()["suggestions"]
         assert len(found) == 1
         assert {m["first_name"] for m in found[0]["members"]} == {"Erika", "Max", "Lisa"}
         hh = new_household(c, club)
         for key in ("erika", "max", "lisa"):
             add(c, club, hh, family[key])
-        assert c.get(hh_url(club, suffix="suggestions/")).json() == []
+        found = c.get(hh_url(club, suffix="suggestions/")).json()
+        assert found == {"suggestions": [], "missing_address": []}
+
+    def test_platzhalter_anschrift_kein_vorschlag(self, api, cal, board_a, family):
+        """Import-Platzhalter wie „UNBEKANNT - nachtragen, 00000 UNBEKANNT“ sind keine
+        gemeinsame Anschrift; die Mitglieder stehen unter „Anschrift fehlt“."""
+        c = api(board_a)
+        club = cal["a"]
+        for key in ("erika", "max", "otto"):
+            details = ContactDetails.objects.get(person=family[key].person)
+            details.street = "UNBEKANNT - nachtragen"
+            details.postal_code = "00000"
+            details.city = "UNBEKANNT"
+            details.save()
+        found = c.get(hh_url(club, suffix="suggestions/")).json()
+        assert found["suggestions"] == []
+        assert [m["first_name"] for m in found["missing_address"]] == ["Erika", "Max", "Otto"]
+
+
+class TestPlatzhalterAnschrift:
+    @pytest.mark.parametrize(
+        "street,postal_code,city",
+        [
+            ("UNBEKANNT - nachtragen", "00000", "UNBEKANNT"),
+            ("Musterweg 1", "00000", "Musterstadt"),
+            ("Musterweg 1", "", "unbekannt"),
+            ("-", "12345", "Musterstadt"),
+            ("Musterweg 1", "?", "Musterstadt"),
+            ("Musterweg 1", "12345", "k. A."),
+            ("", "12345", "Musterstadt"),
+        ],
+    )
+    def test_platzhalter(self, street, postal_code, city):
+        assert is_placeholder_address(street, postal_code, city)
+        assert address_key(street, postal_code, city) == ""
+
+    @pytest.mark.parametrize(
+        "street,postal_code,city",
+        [
+            ("Musterweg 1", "12345", "Musterstadt"),
+            ("Unbekanntweg 3", "12345", "Musterstadt"),
+            ("Xantener Str. 2", "12345", "Xanten"),
+            ("Musterweg 1", "", "Musterstadt"),
+        ],
+    )
+    def test_echte_anschrift(self, street, postal_code, city):
+        assert not is_placeholder_address(street, postal_code, city)
+        assert address_key(street, postal_code, city)
 
 
 class TestBriefname:
