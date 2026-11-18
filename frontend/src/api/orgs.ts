@@ -126,6 +126,8 @@ export interface OrgSummary {
   registered?: boolean
   /** Schalter „steuerbegünstigt mit eigenem Bescheid“: Zuwendungsbestätigungen */
   donations_enabled?: boolean
+  /** Ermäßigung mit Nachweis eingerichtet: Menüpunkt Mitglieder › Beitragsnachweise */
+  fee_proofs_enabled?: boolean
   /** Ansicht als Rolle: wählbar (eigenes Recht) und gerade gewählte Rolle */
   role_preview?: { available: boolean; active: RolePreviewRole | null }
   /** Schwerpunkte aus den eigenen Rollen (Startseite): finance = Kassenamt, minutes = Schriftführung */
