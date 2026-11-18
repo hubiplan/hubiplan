@@ -254,11 +254,16 @@ export function MemberListPage() {
         <input
           type="search"
           className="search-input"
-          placeholder={t('Suchen: Name, E-Mail, Mitglieds- oder Verbandsnummer')}
+          placeholder={t('Suchen')}
           aria-label={t('Mitglieder suchen')}
+          aria-describedby="member-search-hint"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        {/* Kurzer Platzhalter, Erklärung als Hilfetext: bricht um, statt gekürzt zu werden (VW-45) */}
+        <p id="member-search-hint" className="filters-hint muted small">
+          {t('Sucht nach Name, E-Mail, Mitglieds- oder Verbandsnummer.')}
+        </p>
         <button
           type="button"
           className="button button-ghost member-mobile-toggle"

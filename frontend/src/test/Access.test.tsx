@@ -194,7 +194,7 @@ describe('Mitgliederbereich nach Aufgaben', () => {
       expect(screen.getAllByRole('link', { name: new RegExp(name) }).length).toBeGreaterThan(0)
     }
     await user.click(screen.getByRole('link', { name: /Ausweis zeigen/ }))
-    expect(await screen.findByRole('heading', { name: 'Mein Ausweis' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Ausweis', level: 1 })).toBeInTheDocument()
     expect(await screen.findByText(/keinen Mitgliedsausweis/)).toBeInTheDocument()
   })
 })

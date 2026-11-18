@@ -1,5 +1,6 @@
 // Meldungen: Ausschreibungen erfassen, Mannschaften und Personen melden, Fassungen.
 // Konzept: konzepte/meldungen.md, Doku docs/meldungen.md.
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useCallback, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -70,7 +71,7 @@ function CallList() {
   const [creating, setCreating] = useState(false)
   return (
     <section>
-      <h1>{t('Meldungen')}</h1>
+      <PageHeader name={t('Meldungen')} />
       <p className="muted">
         {t(
           'Mannschaften, Personen und Angaben an einen Veranstalter melden, etwa zu einem Vergleichsschießen oder einem Verbandsfest. Die Meldung geht als Brief auf eurem Briefbogen, per E-Mail oder als Tabelle hinaus; Änderungen werden als neue Fassung festgehalten.',
@@ -288,10 +289,7 @@ function CallArea() {
   const base = `/meldungen/${id}`
   return (
     <section>
-      <p>
-        <Link to="/meldungen">{t('← Alle Meldungen')}</Link>
-      </p>
-      <h1>{c.title}</h1>
+      <PageHeader title={c.title} />
       <p className="muted">
         {t('Veranstalter: ')}
         {c.organizer}
