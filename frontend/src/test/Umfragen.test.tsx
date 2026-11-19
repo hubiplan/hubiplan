@@ -179,7 +179,7 @@ describe('Umfragen im Mitgliederbereich', () => {
     expect(
       await screen.findByText('Anonym. Deine Antwort lässt sich danach nicht mehr ändern.'),
     ).toBeInTheDocument()
-    expect(screen.getByText(/ab drei Antworten/)).toBeInTheDocument()
+    expect(screen.getByText(/ab fünf Antworten/)).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Absenden' })).toHaveLength(1)
     expect(screen.queryByRole('button', { name: 'Antwort ändern' })).not.toBeInTheDocument()
   })

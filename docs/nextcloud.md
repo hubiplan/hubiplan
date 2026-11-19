@@ -168,6 +168,12 @@ Kürzer geht es in der Nextcloud, z. B. `occ config:system:set session_lifetime 
   Refresh-Token. Beides nur im Cache (Redis), nie in der Datenbank.
 - ID-Token RS256; Schlüssel `PRIVATE_ROOT/oidc/signing.pem` (in den Backups enthalten),
   wird beim ersten Gebrauch angelegt. Anderer Ort: `OIDC_KEY_FILE`.
+- Schlüsselwechsel ohne Unterbrechung: `python manage.py oidc_schluessel_wechseln` legt einen
+  neuen Schlüssel an; der bisherige bleibt als `signing.previous.pem` in der Schlüsselliste
+  (`/api/oidc/jwks`), damit Dienste bereits ausgestellte Token weiter prüfen können. Nach
+  mindestens einem Tag nimmt `python manage.py oidc_schluessel_wechseln --alten-entfernen`
+  ihn heraus. Bei Verdacht auf einen abgeflossenen Schlüssel beide Schritte direkt
+  nacheinander ausführen.
 - Aufrufbremsen: Token und Userinfo 60 je Minute und Adresse, Anmeldung 30 je 10 Minuten
   und Konto.
 - Einträge stehen unter RLS (Tabelle `oidc_client`), Änderungen im Änderungsprotokoll

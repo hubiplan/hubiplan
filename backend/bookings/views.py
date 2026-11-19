@@ -675,13 +675,18 @@ class ChoicesView(Base):
         kind = request.query_params.get("kind")
         if kind == "member":
             from materials.access import members
+            from members.personsearch import plain_values
 
-            # Nur Nummer und Name laden (wie beim Material, Gesamtaudit 11.11., P-04)
+            # Nur Nummer und Name laden (wie beim Material, Gesamtaudit 11.11., P-04). Die
+            # Namen sind verschlüsselt, die Datenbank kann nicht nach ihnen suchen; der
+            # Zwischenspeicher der Namenssuche spart das Entschlüsseln je Tastendruck
+            # (Gesamtaudit 19.11., P-01).
             rows = [
                 {"id": pk, "title": f"{last}, {first}" if first else last}
-                for pk, last, first in members(self.scope)
-                .order_by("pk")
-                .values_list("pk", "person__last_name", "person__first_name")
+                for pk, last, first in sorted(
+                    plain_values(members(self.scope), "person__last_name", "person__first_name"),
+                    key=lambda row: row[0],
+                )
             ]
         elif kind == "event":
             from materials.access import events

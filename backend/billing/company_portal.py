@@ -20,7 +20,7 @@ import datetime
 import hashlib
 import json
 
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from django.conf import settings
 from django.core import signing
 from django.db import transaction
@@ -76,9 +76,21 @@ DAY = 24 * 60 * 60
 TOKEN_MAX = 1500
 
 
-def _fernet() -> Fernet:
-    digest = hashlib.sha256(b"hubiplan-firma-meldet:" + settings.SECRET_KEY.encode()).digest()
-    return Fernet(base64.urlsafe_b64encode(digest))
+def _fernet() -> MultiFernet:
+    """Verschlüsselt mit dem aktuellen ``SECRET_KEY``; liest auch Links, die mit einem
+    Vorgänger (``SECRET_KEY_FALLBACKS``) entstanden sind, damit ein Wechsel des Geheimnisses
+    offene Meldelinks nicht entwertet (Gesamtaudit 19.11.2026, F-04)."""
+    keys = [settings.SECRET_KEY, *getattr(settings, "SECRET_KEY_FALLBACKS", [])]
+    return MultiFernet(
+        [
+            Fernet(
+                base64.urlsafe_b64encode(
+                    hashlib.sha256(b"hubiplan-firma-meldet:" + key.encode()).digest()
+                )
+            )
+            for key in keys
+        ]
+    )
 
 
 def invite_token(

@@ -30,6 +30,9 @@ if not SECRET_KEY:
     if not DEBUG:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY muss gesetzt sein.")
     SECRET_KEY = "unsicherer-entwicklungs-schluessel"  # nur mit DJANGO_DEBUG=true
+# Wechsel des Geheimnisses (Gesamtaudit 19.11., S-11): Mit den Vorgängern bleiben Sitzungen und
+# bereits verschickte signierte Links gültig, bis sie hier wieder entfernt werden.
+SECRET_KEY_FALLBACKS = env_list("DJANGO_SECRET_KEY_FALLBACKS", "")
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 # Weitere Adressen aus der Liste „Adressen je Einheit“ zulassen (White Label W7c). Dann prüft

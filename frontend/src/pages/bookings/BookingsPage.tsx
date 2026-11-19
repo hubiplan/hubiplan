@@ -4,6 +4,7 @@ import { api } from '../../api/client.ts'
 import { bookingApi } from '../../api/bookings.ts'
 import type { BookableItem, Booking, Occurrence } from '../../api/bookings.ts'
 import type { MaterialChoice } from '../../api/materials.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
@@ -11,7 +12,7 @@ import { locale, t, tn } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { MaterialPicker } from '../materials/MaterialsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
-import { Loading } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import './bookings.css'
 import {
   ZONE,
@@ -546,6 +547,19 @@ function BookingDetail({
           {data.invoice_status === 'cancelled' ? ` · ${t('storniert')}` : ''}
         </p>
       )}
+      {data.invoice &&
+        data.invoice_status !== 'cancelled' &&
+        (data.status === 'cancelled' || data.status === 'rejected') && (
+          <Alert kind="info">
+            {data.invoice_status === 'draft'
+              ? t(
+                  'Die Buchung gilt nicht mehr, der Rechnungsentwurf besteht noch. Lösche ihn unter Finanzen › Rechnungen, wenn die Miete entfällt.',
+                )
+              : t(
+                  'Die Buchung gilt nicht mehr, die Rechnung besteht noch. Entfällt die Miete, storniere die Rechnung unter Finanzen › Rechnungen.',
+                )}
+          </Alert>
+        )}
       {data.can_invoice && <InvoiceForm base={base} booking={data} disabled={busy} act={act} />}
       {data.needs_review && (
         <p role="status">
@@ -596,7 +610,22 @@ function BookingDetail({
             <button
               className="button button-ghost"
               disabled={busy}
-              onClick={() => act(() => bookingApi.decide(base, data, 'cancel'))}
+              onClick={() => {
+                // Mit Rechnung: vorher sagen, dass sie bestehen bleibt (Gesamtaudit 19.11., F-01)
+                const open = data.invoice && data.invoice_status !== 'cancelled'
+                if (!open) return void act(() => bookingApi.decide(base, data, 'cancel'))
+                void confirmDialog({
+                  final: false,
+                  title: t('Buchung mit Rechnung stornieren?'),
+                  message: t(
+                    'Zu dieser Buchung gibt es die Rechnung {number}. Sie bleibt bestehen: Einen Entwurf löschst du unter Finanzen › Rechnungen, eine gestellte Rechnung stornierst du dort.',
+                    { number: data.invoice_number },
+                  ),
+                  confirmLabel: t('Buchung stornieren'),
+                }).then((ok) => {
+                  if (ok) void act(() => bookingApi.decide(base, data, 'cancel'))
+                })
+              }}
             >
               {data.repeat !== 'none' ? t('Ganze Serie stornieren') : t('Buchung stornieren')}
             </button>

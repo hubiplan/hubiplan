@@ -293,7 +293,7 @@ export function SurveyResults({ result }: { result: SurveyResult }) {
   if (result.hidden) {
     return (
       <p className="muted">
-        {t('Das Ergebnis erscheint ab drei Antworten, damit niemand zurückrechnen kann.')}{' '}
+        {t('Das Ergebnis erscheint ab fünf Antworten, damit niemand zurückrechnen kann.')}{' '}
         {tn('Bisher {n} Antwort.', 'Bisher {n} Antworten.', result.participants)}
       </p>
     )

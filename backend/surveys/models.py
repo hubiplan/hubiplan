@@ -21,7 +21,7 @@ from core.encfields import EncryptedCharField, EncryptedTextField
 MAX_QUESTIONS = 10
 MAX_OPTIONS = 30
 # Anonymes Ergebnis erst ab so vielen Antworten (Fachfrage UM-7)
-ANONYMOUS_MIN = 3
+ANONYMOUS_MIN = 5
 
 
 class Survey(models.Model):

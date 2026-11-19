@@ -154,8 +154,14 @@ class ListView(Base):
                     or ", ".join(row["address"].values()),
                     row["purpose"],
                 ]
+                # Auch Tabulator und Wagenrücklauf am Anfang (Gesamtaudit 19.11., S-14)
                 writer.writerow(
-                    ["'" + v if v.lstrip().startswith(("=", "+", "-", "@")) else v for v in values]
+                    [
+                        "'" + v
+                        if v.startswith(("\t", "\r")) or v.lstrip().startswith(("=", "+", "-", "@"))
+                        else v
+                        for v in values
+                    ]
                 )
             response = HttpResponse(
                 "\ufeff" + output.getvalue(), content_type="text/csv; charset=utf-8"

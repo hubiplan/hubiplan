@@ -3,6 +3,11 @@
 RSA 2048 mit RS256, weil das jede OpenID-Connect-Bibliothek kann (auch die Nextcloud-App
 „user_oidc“). Die Datei liegt im privaten Speicher (in den Backups enthalten) und wird
 beim ersten Gebrauch angelegt.
+
+Schlüsselwechsel (Gesamtaudit 19.11., S-07): ``rotate`` legt einen neuen Schlüssel an und
+behält den bisherigen als ``signing.previous.pem``. Die Schlüsselliste nennt beide, damit
+Dienste Token des alten Schlüssels weiter prüfen können, bis sie die Liste neu geholt
+haben. ``drop_previous`` nimmt den alten heraus.
 """
 
 from __future__ import annotations
@@ -66,18 +71,31 @@ def _kid(key: rsa.RSAPrivateKey) -> str:
     return b64url(hashlib.sha256(der).digest()[:12])
 
 
-def _create(path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+def previous_path() -> Path:
+    path = key_path()
+    return path.with_name(f"{path.stem}.previous{path.suffix}")
+
+
+def _new_pem() -> bytes:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    pem = key.private_bytes(
+    return key.private_bytes(
         serialization.Encoding.PEM,
         serialization.PrivateFormat.PKCS8,
         serialization.NoEncryption(),
     )
+
+
+def _write_tmp(path: Path, pem: bytes) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}")
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, KEY_FILE_MODE)
     with os.fdopen(fd, "wb") as fh:
         fh.write(pem)
+    return tmp
+
+
+def _create(path: Path) -> None:
+    tmp = _write_tmp(path, _new_pem())
     try:
         # link() schlägt fehl, wenn ein anderer Prozess schneller war: dann gilt dessen Datei
         os.link(tmp, path)
@@ -87,10 +105,7 @@ def _create(path: Path) -> None:
         tmp.unlink(missing_ok=True)
 
 
-def signing_key() -> SigningKey:
-    path = key_path()
-    if not path.exists():
-        _create(path)
+def _load(path: Path) -> SigningKey:
     mtime = path.stat().st_mtime_ns
     cached = _cache.get(str(path))
     if cached is not None and cached[0] == mtime:
@@ -101,6 +116,45 @@ def signing_key() -> SigningKey:
     result = SigningKey(key, _kid(key))
     _cache[str(path)] = (mtime, result)
     return result
+
+
+def signing_key() -> SigningKey:
+    path = key_path()
+    if not path.exists():
+        _create(path)
+    return _load(path)
+
+
+def public_keys() -> list[dict]:
+    """Schlüsselliste: der aktuelle Schlüssel, nach einem Wechsel auch der vorherige."""
+    result = [signing_key().jwk()]
+    previous = previous_path()
+    if previous.exists():
+        jwk = _load(previous).jwk()
+        if jwk["kid"] != result[0]["kid"]:
+            result.append(jwk)
+    return result
+
+
+def rotate() -> tuple[str, str]:
+    """Neuen Schlüssel anlegen, den bisherigen als vorherigen behalten. Liefert die Kennungen
+    (neu, alt). Beide Dateien wechseln jeweils in einem Schritt, es fehlt nie ein Schlüssel."""
+    path = key_path()
+    old = signing_key()
+    os.replace(_write_tmp(previous_path(), path.read_bytes()), previous_path())
+    os.replace(_write_tmp(path, _new_pem()), path)
+    reset_cache()
+    return signing_key().kid, old.kid
+
+
+def drop_previous() -> bool:
+    """Den vorherigen Schlüssel aus der Liste nehmen. ``False``, wenn es keinen gab."""
+    previous = previous_path()
+    if not previous.exists():
+        return False
+    previous.unlink()
+    reset_cache()
+    return True
 
 
 def reset_cache() -> None:

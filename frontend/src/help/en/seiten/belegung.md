@@ -39,6 +39,10 @@ fee is otherwise paid through a unit's collective invoice. Finalise and send the
 Finance › Invoices like any other invoice; the booking then shows the invoice number. You need
 the permission to edit invoices.
 
+If you cancel a booking that has an invoice, the invoice remains; HUBIplan points this out
+beforehand and at the booking. Delete a draft under Finance › Invoices, or cancel an issued
+invoice there.
+
 ## Overlaps and approval
 
 Overlaps: If the item, including set-up time, is already booked, HUBIplan refuses the

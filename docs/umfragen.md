@@ -27,7 +27,7 @@ Zeilenschutz (RLS) nach Verein; ein Trigger prüft, dass Untereinheit und Termin
 
 - Nach dem Start lassen sich Fragen und Zielgruppe nicht mehr ändern; Namen und Ergebnis nur
   strenger stellen (offen → nur Verwaltung → anonym).
-- Anonym: Antworten nicht änderbar, Ergebnis erst ab drei Teilnahmen und erst, wenn die Umfrage
+- Anonym: Antworten nicht änderbar, Ergebnis erst ab fünf Teilnahmen und erst, wenn die Umfrage
   geschlossen ist, auch für die Verwaltung (Gesamtaudit 15.11., FF-22 (a)); Ergebnis für Befragte
   nur `after_close` oder `managers`. Kein Eintragen durch die Verwaltung, keine Namen in Export
   und Auskunft.

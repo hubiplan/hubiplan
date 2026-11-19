@@ -31,7 +31,7 @@ up to two meals. If someone declines the event, their answer is removed from the
 Names and result: **open** (everyone asked sees names), **only the administrators see names** or
 **anonymous**. Anonymous means nobody sees who answered what, not even the administrators.
 HUBIplan only stores that someone took part, separately from the answer. Anonymous answers cannot
-be changed, and the result only appears from three answers on and only after the end, also for
+be changed, and the result only appears from five answers on and only after the end, also for
 the administrators. After starting, names and result can only become stricter, never more open.
 People asked see the result after answering, always, only after closing or not at all
 (administrators only); for anonymous surveys only “only after the end” or “administrators only”.
