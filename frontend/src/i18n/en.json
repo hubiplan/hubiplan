@@ -10258,5 +10258,15 @@
   "{n} Personen verbindlich anmelden": "Register {n} people (binding)",
   "Sammelanmeldung": "Group registration",
   "Vereine melden ihre Mitglieder gesammelt an": "Clubs register their members as a group",
-  "Die Vereine sehen den Termin in ihrem Kalender und melden dort Mitglieder an. Die Rechnung geht an den Verein. Die Vereine brauchen dafür das Modul Anmeldungen.": "The clubs see the event in their calendar and register members there. The invoice goes to the club. The clubs need the Registrations module for this."
+  "Die Vereine sehen den Termin in ihrem Kalender und melden dort Mitglieder an. Die Rechnung geht an den Verein. Die Vereine brauchen dafür das Modul Anmeldungen.": "The clubs see the event in their calendar and register members there. The invoice goes to the club. The clubs need the Registrations module for this.",
+  "Bei {name} bar kassieren": "Take cash payment from {name}",
+  "Bar kassieren": "Take cash",
+  "Alle Angemeldeten stehen schon in der Starterliste.": "Everyone registered is already on the starter list.",
+  "{added} Starter aus den Anmeldungen übernommen.": "{added} starters added from the registrations.",
+  "{n} Personen verbindlich angemeldet.": "{n} people registered.",
+  "Angemeldete als Starter übernehmen": "Add registered people as starters",
+  "Sammelanmeldungen beim Dachverband": "Group registrations with the federation",
+  "Zu diesen Terminen von {name} meldet ihr eure Mitglieder gesammelt an.": "For these events of {name} you register your members as a group.",
+  "noch niemand gemeldet": "nobody registered yet",
+  "{n} gemeldet": "{n} registered"
 }

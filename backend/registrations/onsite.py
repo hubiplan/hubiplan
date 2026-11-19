@@ -25,7 +25,7 @@ def active(setup) -> list[Participant]:
             registration__setup=setup,
             registration__status=Registration.Status.REGISTERED,
             status=Participant.Status.ACTIVE,
-        ).select_related("registration", "membership__organization", "membership__person")
+        ).select_related("registration__club", "membership__organization", "membership__person")
     )
     rows.sort(key=lambda p: (p.name.casefold(), p.pk))
     return rows

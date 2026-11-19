@@ -373,6 +373,10 @@ export interface CheckInRow {
   number: string
   contact: string
   paid_state: PaidState
+  /** Abendkasse: Rechnung der Anmeldung und offener Betrag */
+  invoice_id?: number | null
+  invoice_number?: string
+  outstanding?: string
   checked_in_at: string | null
   minor: boolean
 }
@@ -388,9 +392,22 @@ export interface CheckInList {
   event_id: number
   title: string
   can_edit: boolean
+  /** darf an der Abendkasse bar kassieren (Rechnungen bearbeiten) */
+  can_cash?: boolean
   participants: CheckInRow[]
   count: number
   checked_in: number
+}
+
+/** Termin des Dachverbands mit Sammelanmeldung (unter Meldungen, A8) */
+export interface ClubOffer {
+  event_id: number
+  title: string
+  starts_at: string
+  closes_at: string
+  state: string
+  state_text: string
+  persons: number
 }
 
 export interface CheckInResult {
@@ -457,6 +474,10 @@ export const registrationApi = {
   ) => api.post<ClubRegistrations>(`${url(base, eventId)}club/`, data),
   clubCancel: (base: CalendarBase, eventId: number, regId: number, participants: number[]) =>
     api.post<ClubRegistrations>(`${url(base, eventId)}club/${regId}/cancel/`, { participants }),
+  clubOffers: (org: number) =>
+    api.get<{ federation: string; offers: ClubOffer[] }>(
+      `/api/orgs/${org}/registrations/club-offers/`,
+    ),
   badgesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}badges/`,
   certificatesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}certificates/`,
   addQualification: (

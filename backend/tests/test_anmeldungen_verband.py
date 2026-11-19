@@ -205,3 +205,30 @@ def test_andere_vereine_und_ohne_recht(verband, orgs, api):
         )
     )
     assert v["c"].get(v["club_url"]).status_code == 404
+
+
+def test_sammelanmeldungen_unter_meldungen(verband, orgs, api):
+    v = verband
+    offers_url = f"/api/orgs/{v['club'].pk}/registrations/club-offers/"
+    data = ok(v["c"].get(offers_url))
+    assert data["federation"] == v["fed"].name
+    assert [o["event_id"] for o in data["offers"]] == [v["event"]["id"]]
+    assert data["offers"][0]["persons"] == 0 and data["offers"][0]["state"] == "open"
+    price = ok(v["c"].get(v["club_url"]))["offer"]["prices"][0]["id"]
+    ok(
+        v["c"].post(
+            v["club_url"],
+            {"persons": [{"membership_id": v["anna"].pk, "price_id": price}]},
+            content_type=JSON,
+        )
+    )
+    assert ok(v["c"].get(offers_url))["offers"][0]["persons"] == 1
+    # Ohne Sammelanmeldung: nicht mehr in der Liste
+    ok(
+        v["f"].put(
+            v["url"],
+            {"closes_at": soon(30), "prices": PRICES, "club_registration": False},
+            content_type=JSON,
+        )
+    )
+    assert ok(v["c"].get(offers_url))["offers"] == []

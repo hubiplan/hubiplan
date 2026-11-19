@@ -362,6 +362,15 @@ Vorstandsschlüssel, Ändern nur mit `events.manage`:
   Personen, offen; `items`, `open`; PUT `membership_id`, `status`, `guests`, `note` trägt
   für ein Mitglied ein, auch nach Anmeldeschluss und über die Höchstzahl hinaus),
   `events/<id>/responses/<Mitglied>/` (DELETE entfernt).
+- Einlass bei verbindlicher Anmeldung (Modul Anmeldungen, `registrations.view` lesen,
+  `registrations.edit` einlassen): `events/<id>/registration/checkin/` (GET: `participants`
+  mit `id`, `name`, `price_name`, `number`, `contact`, `paid_state`, `invoice_id`,
+  `invoice_number`, `outstanding`, `checked_in_at`, `minor`; dazu `count`, `checked_in`,
+  `can_edit`, `can_cash`; POST `code` (gescannter QR-Code der Eintrittskarte) oder
+  `participant`, mit `undo: true` zurücknehmen; Antwort `result` `ok`/`already`/`undone`/
+  `unknown`/`other`/`cancelled`, `message`, `participant`). Die Liste reicht für den Einlass
+  ohne Netz; abgehakt wird beim nächsten Kontakt. Abendkasse über die Barzahlung zur Rechnung
+  (`billing/invoices/<invoice_id>/cash/`, Schritt B5), wenn `can_cash`.
 - Offene Aufgaben „Rückmeldungen“ enthalten den Termin in `ref`.
 - Alles mit Änderungsprotokoll und Rückgängig.
 

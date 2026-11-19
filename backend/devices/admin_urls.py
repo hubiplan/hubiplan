@@ -25,6 +25,7 @@ from obligations import views as obligation_views
 from organizations import views as org_views
 from portal import views as portal_views
 from qualifications import views as qualification_views
+from registrations import views as registration_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
@@ -196,6 +197,12 @@ urlpatterns = [
     _p("events/<int:pk>/notify/", event_views.OrgEventNotifyView, "event-notify"),
     _p("events/<int:pk>/occurrence/", event_views.OrgEventOccurrenceView, "event-occurrence"),
     _p("events/<int:pk>/responses/", event_views.OrgResponsesView, "event-responses"),
+    # Anmeldung A6/A7: Einlass vor Ort mit dem Kamera-Scanner der App
+    _p(
+        "events/<int:pk>/registration/checkin/",
+        registration_views.CheckInView,
+        "event-registration-checkin",
+    ),
     _p(
         "events/<int:pk>/responses/<int:membership_id>/",
         event_views.OrgResponseDetailView,

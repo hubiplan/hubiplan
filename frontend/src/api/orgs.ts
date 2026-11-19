@@ -833,6 +833,7 @@ export const PERM = {
   todosView: 'todos.view',
   todosEdit: 'todos.edit',
   membersView: 'members.view',
+  registrationsEdit: 'registrations.edit',
   membersEdit: 'members.edit',
   photosManage: 'photos.manage',
   orgEdit: 'org.edit',
