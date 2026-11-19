@@ -463,6 +463,9 @@ class PersonalCalendar(models.Model):
     # die Spalte bleibt eine Fassung lang leer stehen.
     key = models.CharField(max_length=40, unique=True, null=True, blank=True)
     key_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    # Zweiter Link nur mit den Terminen „nur Vorstand“ der Einheit (Vorstandsmitglieder);
+    # gespeichert ist nur der Hash. Leeres ``key_hash``: nur das Vorstands-Abo ist an.
+    board_key_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

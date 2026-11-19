@@ -14904,6 +14904,12 @@ msgstr "Cash payment booked."
 msgid "Kassenperson"
 msgstr "Cashier"
 
+msgid "Das Vorstands-Abo gibt es nur für den Vorstand."
+msgstr "The board calendar subscription is only available to board members."
+
+msgid "{name} – Vorstand"
+msgstr "{name} – Board"
+
 #: bookings/views.py
 msgid "Mitglied nicht verfügbar."
 msgstr "Member unavailable."

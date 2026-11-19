@@ -1287,6 +1287,11 @@ urlpatterns = [
         event_views.PersonalCalendarIcsView.as_view(),
         name="personal-calendar-ics",
     ),
+    path(
+        "public/feed/<str:key>/vorstand.ics",
+        event_views.BoardCalendarIcsView.as_view(),
+        name="board-calendar-ics",
+    ),
     path("csrf/", views.csrf, name="csrf"),
     path("me/", views.me, name="me"),
     path("me/account/", self_service.AccountView.as_view(), name="my-account"),
@@ -1434,6 +1439,11 @@ urlpatterns = [
         "portal/<int:access_id>/events/feed/",
         event_views.PortalFeedView.as_view(),
         name="portal-events-feed",
+    ),
+    path(
+        "portal/<int:access_id>/events/board-feed/",
+        event_views.PortalBoardFeedView.as_view(),
+        name="portal-events-board-feed",
     ),
     path(
         "portal/<int:access_id>/events/<int:pk>/response/",

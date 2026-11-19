@@ -9,6 +9,7 @@ from django.test import Client
 from django.utils import timezone
 from openpyxl import load_workbook
 
+from core.tenancy import rls_bypass
 from events import notify
 from events.models import Event, EventResponse, PersonalCalendar
 from members.models import MembershipPeriod
@@ -393,6 +394,56 @@ class TestKalenderAbo:
         # Zugang entzogen: Link liefert nichts mehr
         access.delete()
         assert Client().get(new).status_code == 404
+        assert PersonalCalendar.objects.count() == 0
+
+    def test_vorstands_abo(self, cal, board_a, zug, api):
+        # Eigener Link nur mit den Terminen „nur Vorstand“, nur für Vorstandsmitglieder,
+        # Rolle bei jedem Abruf geprüft (Ralf 19.11.2026, Weg 3)
+        from .factories import give_role
+
+        create(api(board_a), org_base(cal["a"]), title="JHV", starts_at=soon(), ends_at=soon(22))
+        create(
+            api(board_a),
+            org_base(cal["a"]),
+            title="Vorstandssitzung",
+            starts_at=soon(),
+            ends_at=soon(22),
+            visibility="board",
+        )
+        _, user, access = member_with_access(cal["a"], "Vorsitz", depts=[zug])
+        amt = give_role(user, cal["a"], ["events.view"], name="Vorsitz")
+        c = api(user)
+        base = f"{portal(access)}events/board-feed/"
+        assert c.get(base).json() == {"available": True, "active": False, "ics_url": None}
+        url = c.put(base).json()["ics_url"]
+        assert url.endswith("/vorstand.ics")
+        assert c.get(base).json() == {"available": True, "active": True, "ics_url": None}
+        body = Client().get(url).content.decode()
+        assert "SUMMARY:Vorstandssitzung" in body and "JHV" not in body
+        # Das persönliche Abo bleibt aus und ohne Vorstandstermine
+        assert c.get(f"{portal(access)}events/feed/").json()["active"] is False
+        member_url = c.put(f"{portal(access)}events/feed/").json()["ics_url"]
+        member_body = Client().get(member_url).content.decode()
+        assert "SUMMARY:JHV" in member_body and "Vorstandssitzung" not in member_body
+        # Persönliches Abo abschalten lässt das Vorstands-Abo stehen und umgekehrt
+        c.delete(f"{portal(access)}events/feed/")
+        assert Client().get(member_url).status_code == 404
+        assert Client().get(url).status_code == 200
+        # Amtszeit beendet: Link liefert nichts mehr, Angebot verschwindet
+        with rls_bypass():
+            amt.valid_until = timezone.localdate() - datetime.timedelta(days=1)
+            amt.save()
+        assert Client().get(url).status_code == 404
+        assert c.get(base).json()["available"] is False
+        assert c.put(base).status_code == 403
+        c.delete(base)
+        assert PersonalCalendar.objects.count() == 0
+
+    def test_vorstands_abo_nicht_fuer_mitglieder(self, cal, api):
+        _, user, access = member_with_access(cal["a"], "Erika")
+        base = f"{portal(access)}events/board-feed/"
+        assert api(user).get(base).json() == {"available": False, "active": False, "ics_url": None}
+        assert api(user).put(base).status_code == 403
         assert PersonalCalendar.objects.count() == 0
 
     def test_ausgetreten_kein_abo(self, cal, api):

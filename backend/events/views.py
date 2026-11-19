@@ -1689,12 +1689,30 @@ class _EventIcs(APIView):
 
 def feed_data(request, feed: PersonalCalendar | None, key: str = "") -> dict:
     """Den Link gibt es nur direkt nach dem Erstellen; gespeichert ist nur sein Hash."""
+    active = feed is not None and feed.key_hash is not None
     return {
-        "active": feed is not None,
+        "active": active,
         "ics_url": request.build_absolute_uri(reverse("personal-calendar-ics", args=[key]))
-        if feed is not None and key
+        if active and key
         else None,
     }
+
+
+def board_feed_data(request, feed: PersonalCalendar | None, available: bool, key="") -> dict:
+    active = available and feed is not None and feed.board_key_hash is not None
+    return {
+        "available": available,
+        "active": active,
+        "ics_url": request.build_absolute_uri(reverse("board-calendar-ics", args=[key]))
+        if active and key
+        else None,
+    }
+
+
+def _drop_if_empty(feed: PersonalCalendar) -> None:
+    """Ohne Link für Mitglieder und Vorstand braucht es die Zeile nicht mehr."""
+    if feed.key_hash is None and feed.board_key_hash is None:
+        feed.delete()
 
 
 class PortalFeedView(PortalCalendarMixin, APIView):
@@ -1719,8 +1737,93 @@ class PortalFeedView(PortalCalendarMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, **kwargs):
-        PersonalCalendar.objects.filter(access=self.access).delete()
+        feed = PersonalCalendar.objects.filter(access=self.access).first()
+        if feed is not None:
+            feed.key = None
+            feed.key_hash = None
+            feed.save(update_fields=["key", "key_hash"])
+            _drop_if_empty(feed)
         return Response(feed_data(request, None))
+
+
+class PortalBoardFeedView(PortalCalendarMixin, APIView):
+    """Vorstands-Abo: eigener Link nur mit den Terminen „nur Vorstand“ der Einheit.
+
+    Nur für Vorstandsmitglieder; GET zeigt mit ``available``, ob es angeboten wird.
+    """
+
+    def get(self, request, **kwargs):
+        feed = PersonalCalendar.objects.filter(access=self.access).first()
+        return Response(board_feed_data(request, feed, self.viewer.sees_board))
+
+    @transaction.atomic
+    def put(self, request, **kwargs):
+        if not self.viewer.sees_board:
+            raise PermissionDenied(gettext("Das Vorstands-Abo gibt es nur für den Vorstand."))
+        key = PersonalCalendar.new_key()
+        feed, created = PersonalCalendar.objects.get_or_create(
+            access=self.access,
+            defaults={
+                "organization": self.viewer.org,
+                "board_key_hash": PersonalCalendar.hash_key(key),
+            },
+        )
+        if not created:
+            feed.board_key_hash = PersonalCalendar.hash_key(key)
+            feed.save(update_fields=["board_key_hash"])
+        return Response(board_feed_data(request, feed, True, key))
+
+    @transaction.atomic
+    def delete(self, request, **kwargs):
+        feed = PersonalCalendar.objects.filter(access=self.access).first()
+        if feed is not None:
+            feed.board_key_hash = None
+            feed.save(update_fields=["board_key_hash"])
+            _drop_if_empty(feed)
+        return Response(board_feed_data(request, None, self.viewer.sees_board))
+
+
+def _feed_owner(feed: PersonalCalendar | None):
+    """Zugang und Verein eines Abos, solange es gilt (unter ``rls_bypass``), sonst 404."""
+    from portal.services import portal_accesses
+
+    if feed is None:
+        raise Http404
+    access = feed.access
+    club = access.organization
+    # Zugang weg, Mitgliederbereich aus oder Konto gesperrt: keine Termine mehr
+    if (
+        not access.user.is_active
+        or not club.is_active
+        or access.pk not in {a.pk for a in portal_accesses(access.user)}
+        or not services.module_on(club)
+    ):
+        raise Http404
+    membership = Membership.objects.filter(pk=access.membership_id).first()
+    if membership is None or membership.current_period(today()) is None:
+        raise Http404
+    return access, club
+
+
+def _feed_response(request, name: str, items, club) -> HttpResponse:
+    body = ical.calendar(
+        name, items, request.get_host().split(":")[0], description=_imprint_note(club)
+    )
+    response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+    response["Content-Disposition"] = 'inline; filename="termine.ics"'
+    response["Cache-Control"] = "private, max-age=300"
+    return response
+
+
+def _feed_window():
+    now = timezone.now()
+    return (
+        now - datetime.timedelta(days=FEED_DAYS_BACK),
+        now + datetime.timedelta(days=FEED_DAYS_AHEAD),
+    )
+
+
+_FEED_RELATED = ("access__organization", "access__organization__parent", "access__user")
 
 
 class PersonalCalendarIcsView(APIView):
@@ -1730,32 +1833,13 @@ class PersonalCalendarIcsView(APIView):
     authentication_classes = []
 
     def get(self, request, key: str):
-        from portal.services import portal_accesses
-
         with rls_bypass():
-            feed = (
-                PersonalCalendar.objects.select_related(
-                    "access__organization", "access__organization__parent", "access__user"
-                )
+            access, club = _feed_owner(
+                PersonalCalendar.objects.select_related(*_FEED_RELATED)
                 .filter(key_hash=PersonalCalendar.hash_key(key))
                 .first()
             )
-            if feed is None:
-                raise Http404
-            access = feed.access
-            club = access.organization
-            # Zugang weg, Mitgliederbereich aus oder Konto gesperrt: keine Termine mehr
-            if (
-                not access.user.is_active
-                or not club.is_active
-                or access.pk not in {a.pk for a in portal_accesses(access.user)}
-                or not services.module_on(club)
-            ):
-                raise Http404
-            membership = Membership.objects.filter(pk=access.membership_id).first()
             on = today()
-            if membership is None or membership.current_period(on) is None:
-                raise Http404
             depts = list(
                 DepartmentMembership.objects.filter(
                     membership_id=access.membership_id, valid_from__lte=on
@@ -1763,20 +1847,39 @@ class PersonalCalendarIcsView(APIView):
                 .exclude(valid_until__lt=on)
                 .values_list("department_id", flat=True)
             )
+            # Ohne Vorstandstermine: dafür gibt es das eigene Vorstands-Abo
             viewer = services.member_viewer(club, depts, access.membership_id)
-            now = timezone.now()
-            items = occurrences(
-                viewer.events(),
-                now - datetime.timedelta(days=FEED_DAYS_BACK),
-                now + datetime.timedelta(days=FEED_DAYS_AHEAD),
+            items = occurrences(viewer.events(), *_feed_window())
+        return _feed_response(request, club.name, items, club)
+
+
+class BoardCalendarIcsView(APIView):
+    """Vorstands-Abo ohne Anmeldung: nur die Termine „nur Vorstand“ der Einheit.
+
+    Die Vorstandsrolle wird bei jedem Abruf geprüft; endet sie, liefert der Link nichts mehr.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request, key: str):
+        with rls_bypass():
+            access, club = _feed_owner(
+                PersonalCalendar.objects.select_related(*_FEED_RELATED)
+                .filter(board_key_hash=PersonalCalendar.hash_key(key))
+                .first()
             )
-        body = ical.calendar(
-            club.name, items, request.get_host().split(":")[0], description=_imprint_note(club)
-        )
-        response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
-        response["Content-Disposition"] = 'inline; filename="termine.ics"'
-        response["Cache-Control"] = "private, max-age=300"
-        return response
+            if not services.is_board(access.user, club):
+                raise Http404
+            events = Event.objects.filter(
+                organization=club,
+                department__isnull=True,
+                visibility=Event.Visibility.BOARD,
+                source_stale=False,
+            ).select_related("organization", "department", "category")
+            items = occurrences(events, *_feed_window())
+        name = gettext("{name} – Vorstand").format(name=club.name)
+        return _feed_response(request, name, items, club)
 
 
 # Vorstand

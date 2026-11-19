@@ -464,9 +464,23 @@ export function ResponsesPanel({
   )
 }
 
-/** Mitgliederbereich: persönliches Kalender-Abo. */
+/** Mitgliederbereich: persönliches Kalender-Abo und für den Vorstand das Vorstands-Abo. */
 export function FeedPanel({ base }: { base: CalendarBase }) {
-  const { data, error, setData } = useLoad(() => eventApi.feed(base), [base])
+  return (
+    <>
+      <FeedCard base={base} board={false} />
+      <FeedCard base={base} board />
+    </>
+  )
+}
+
+function FeedCard({ base, board }: { base: CalendarBase; board: boolean }) {
+  const { data, error, setData } = useLoad(
+    () => (board ? eventApi.boardFeed(base) : eventApi.feed(base)),
+    [base, board],
+  )
+  const renew = () => (board ? eventApi.renewBoardFeed(base) : eventApi.renewFeed(base))
+  const remove = () => (board ? eventApi.removeBoardFeed(base) : eventApi.removeFeed(base))
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -493,13 +507,19 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <Loading />
+  if (!data) return board ? null : <Loading />
+  if (board && !data.available) return null
   return (
     <div className="card card-wide stack">
+      {board && <h2>{t('Vorstands-Abo')}</h2>}
       <p className="muted small">
-        {t(
-          'Mit diesem persönlichen Link erscheinen deine Termine im Kalender von Handy oder Outlook („Kalender abonnieren“ bzw. „Kalender aus dem Internet hinzufügen“). Der Link ist nur für dich. Gib ihn nicht weiter. Du kannst ihn jederzeit erneuern, dann gilt der alte nicht mehr.',
-        )}
+        {board
+          ? t(
+              'Ein eigener Link nur mit den Terminen „nur Vorstand“, getrennt vom Abo oben. So kannst du den Vorstandskalender im Handy oder in Outlook eigens ein- und ausblenden. Der Link gilt nur, solange du ein Vorstandsamt hast. Gib ihn nicht weiter, auch nicht in einen geteilten Kalender.',
+            )
+          : t(
+              'Mit diesem persönlichen Link erscheinen deine Termine im Kalender von Handy oder Outlook („Kalender abonnieren“ bzw. „Kalender aus dem Internet hinzufügen“). Der Link ist nur für dich. Gib ihn nicht weiter. Du kannst ihn jederzeit erneuern, dann gilt der alte nicht mehr.',
+            )}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {data.active ? (
@@ -543,7 +563,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
                     danger: false,
                   })
                 ) {
-                  void run(() => eventApi.renewFeed(base), t('Neuer Link erstellt.'))
+                  void run(renew, t('Neuer Link erstellt.'))
                 }
               }}
             >
@@ -553,9 +573,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
               type="button"
               className="button button-ghost"
               disabled={busy}
-              onClick={() =>
-                void run(() => eventApi.removeFeed(base), t('Das Abo ist abgeschaltet.'))
-              }
+              onClick={() => void run(remove, t('Das Abo ist abgeschaltet.'))}
             >
               {t('Abo abschalten')}
             </button>
@@ -566,9 +584,9 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
           type="button"
           className="button button-primary"
           disabled={busy}
-          onClick={() => void run(() => eventApi.renewFeed(base), t('Dein Link ist bereit.'))}
+          onClick={() => void run(renew, t('Dein Link ist bereit.'))}
         >
-          {t('Persönlichen Link erstellen')}
+          {board ? t('Link für den Vorstand erstellen') : t('Persönlichen Link erstellen')}
         </button>
       )}
     </div>
