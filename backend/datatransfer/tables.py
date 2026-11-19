@@ -216,8 +216,12 @@ MODULE_MODELS = (
     "registrations.RegistrationSetup",
     "registrations.PriceOption",
     "registrations.PriceStep",
+    "registrations.AddOn",
+    "registrations.AddOnChoice",
+    "registrations.Question",
     "registrations.Registration",
     "registrations.Participant",
+    "registrations.Booking",
     # Fristenkalender: Pflichten vor ihrem Verlauf
     "obligations.Obligation",
     "obligations.ObligationDone",

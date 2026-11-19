@@ -59,6 +59,10 @@ def persons_lines(reg: Registration) -> list[str]:
         price = f"{p.price_name}, {euro(p.amount)}" if p.amount else p.price_name
         mark = "" if p.status == "active" else f" ({_('abgemeldet')})"
         lines.append(f"- {p.name}: {price}{mark}")
+        for b in p.bookings.all():
+            lines.append(f"  {b.name}, {euro(b.amount)}" if b.amount else f"  {b.name}")
+    for b in reg.bookings.filter(participant__isnull=True):
+        lines.append(f"- {b.name}, {euro(b.amount)}" if b.amount else f"- {b.name}")
     return lines
 
 

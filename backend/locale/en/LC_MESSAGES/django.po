@@ -14474,3 +14474,106 @@ msgstr "Place"
 
 msgid "Angemeldete des Termins"
 msgstr "Registrants of the event"
+
+msgid " für {name}"
+msgstr " for {name}"
+
+msgid "Allergien und Unverträglichkeiten"
+msgstr "Allergies and intolerances"
+
+msgid "Aufpreis"
+msgstr "Surcharge"
+
+msgid "Bei „{addon}“ ist „{choice}“ leider ausgebucht."
+msgstr "Sorry, “{choice}” for “{addon}” is fully booked."
+
+msgid "Bitte bei „{addon}“ eine gültige Auswahl treffen."
+msgstr "Please make a valid choice for “{addon}”."
+
+msgid "Bitte bei „{addon}“ etwas wählen{who}."
+msgstr "Please choose something for “{addon}”{who}."
+
+msgid "Bitte bei „{question}“ eine der Antworten wählen."
+msgstr "Please choose one of the answers for “{question}”."
+
+msgid "Bitte das Geburtsdatum von {name} angeben."
+msgstr "Please enter the date of birth of {name}."
+
+msgid ""
+"Bitte der Verarbeitung der Angaben zu Allergien und Unverträglichkeiten "
+"zustimmen oder das Feld leer lassen."
+msgstr ""
+"Please consent to the processing of the information on allergies and "
+"intolerances, or leave the field empty."
+
+msgid "Bitte die Frage angeben."
+msgstr "Please enter the question."
+
+msgid "Bitte „{question}“ beantworten."
+msgstr "Please answer “{question}”."
+
+msgid "Bitte „{question}“ beantworten{who}."
+msgstr "Please answer “{question}”{who}."
+
+msgid "Bitte „{question}“ mit Ja oder Nein beantworten."
+msgstr "Please answer “{question}” with yes or no."
+
+msgid "Eine Auswahlfrage braucht mindestens zwei Antworten."
+msgstr "A choice question needs at least two answers."
+
+msgid "Erziehungsberechtigte"
+msgstr "Parents or guardians"
+
+msgid "Essen"
+msgstr "Food"
+
+msgid "Frage (Englisch)"
+msgstr "Question (English)"
+
+msgid "Höchstens {n} Auswahlen je Zusatzleistung."
+msgstr "At most {n} choices per extra."
+
+msgid "Höchstens {n} Zusatzfragen."
+msgstr "At most {n} additional questions."
+
+msgid "Höchstens {n} Zusatzleistungen."
+msgstr "At most {n} extras."
+
+msgid "Ja/Nein"
+msgstr "Yes/No"
+
+msgid "Jede Zusatzleistung braucht mindestens eine Auswahl."
+msgstr "Each extra needs at least one choice."
+
+msgid "Minderjährige möglich"
+msgstr "Minors can take part"
+
+msgid ""
+"Nach Allergien und Unverträglichkeiten darf nur gefragt werden, wenn es bei "
+"der Veranstaltung Essen gibt (mit Verpflegung oder einer Zusatzleistung der "
+"Art Essen)."
+msgstr ""
+"You may only ask about allergies and intolerances if the event includes food"
+" (with catering or an extra of the type food)."
+
+msgid "Nach Allergien und Unverträglichkeiten nur einmal fragen."
+msgstr "Ask about allergies and intolerances only once."
+
+msgid "Ungültige Zusatzleistung."
+msgstr "Invalid extra."
+
+msgid "je Anmeldung"
+msgstr "per registration"
+
+msgid "mit Verpflegung"
+msgstr "with catering"
+
+msgid "sonstiges"
+msgstr "other"
+
+msgid ""
+"{name} ist unter 18: Bitte Name, Telefon und E-Mail einer oder eines "
+"Erziehungsberechtigten angeben."
+msgstr ""
+"{name} is under 18: please give the name, phone number and email of a parent"
+" or guardian."

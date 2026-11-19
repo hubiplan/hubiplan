@@ -73,6 +73,67 @@ export interface Offer {
   cancel_rules: CancelRule[]
   cancel_fee_fixed: string | null
   expire_unpaid_days: number | null
+  // Stufe A5 (fehlt bei älteren Ständen)
+  catering?: boolean
+  minors?: boolean
+  health_allowed?: boolean
+  addons?: AddOn[]
+  questions?: Question[]
+}
+
+export type Per = 'person' | 'registration'
+
+/** Zusatzleistung mit Auswahl, z. B. Busfahrt oder Menü */
+export interface AddOn {
+  id: number
+  name: string
+  name_en: string
+  kind: 'meal' | 'other'
+  per: Per
+  required: boolean
+  is_active: boolean
+  choices: AddOnChoice[]
+}
+
+export interface AddOnChoice {
+  id: number
+  name: string
+  name_en: string
+  amount: string
+  vat_rate: string | null
+  capacity: number | null
+  free: number | null
+  is_active: boolean
+  taken?: number
+}
+
+/** Zusatzfrage; „health“ sind Allergien und Unverträglichkeiten (nur mit Essen) */
+export interface Question {
+  id: number
+  text: string
+  text_en: string
+  kind: 'text' | 'yesno' | 'choice' | 'health'
+  choices: string[]
+  required: boolean
+  per: Per
+  is_active: boolean
+}
+
+export type Answer = string | boolean
+
+export interface Booking {
+  id: number
+  choice_id: number
+  addon_id: number
+  name: string
+  amount: string
+}
+
+export interface Guardian {
+  name: string
+  phone: string
+  email: string
+  address?: string
 }
 
 /** Stornostaffel: „weniger als {days} Tage vorher: {percent} %“ */
@@ -97,6 +158,11 @@ export interface Participant {
   price_name: string
   amount: string
   status: 'active' | 'cancelled'
+  bookings?: Booking[]
+  answers?: Record<string, Answer>
+  guardians?: Guardian[]
+  /** nur für die Verwaltung */
+  health?: string
 }
 
 export interface InvoiceBrief {
@@ -124,6 +190,8 @@ export interface Registration {
   free_cancel_until: string | null
   cancel_fee: string
   fee_invoice: InvoiceBrief | null
+  bookings?: Booking[]
+  answers?: Record<string, Answer>
   // nur im Mitgliederbereich
   can_cancel?: boolean
   can_substitute?: boolean
@@ -166,6 +234,8 @@ export interface MemberRegistrations {
     self: boolean
     registered: boolean
     has_birth_date: boolean
+    /** unter 18 am Veranstaltungstag (nur mit „Minderjährige möglich“) */
+    minor?: boolean
   }[]
   mine: Registration[]
 }
@@ -199,6 +269,46 @@ export interface SetupInput {
   cancel_fee_fixed: string | null
   expire_unpaid_days: number | null
   prices: PriceInput[]
+  catering?: boolean
+  minors?: boolean
+  addons?: AddOnInput[]
+  questions?: QuestionInput[]
+}
+
+export interface AddOnInput {
+  id?: number | null
+  name: string
+  name_en: string
+  kind: 'meal' | 'other'
+  per: Per
+  required: boolean
+  is_active: boolean
+  choices: {
+    id?: number | null
+    name: string
+    name_en: string
+    amount: string
+    vat_rate: string | null
+    capacity: number | null
+    is_active: boolean
+  }[]
+}
+
+export interface QuestionInput {
+  id?: number | null
+  text: string
+  text_en: string
+  kind: Question['kind']
+  choices: string[]
+  required: boolean
+  per: Per
+  is_active: boolean
+}
+
+/** Zusatzleistungen (Zusatzleistung → Auswahl) und Antworten (Frage → Antwort) */
+export interface ExtrasInput {
+  addons?: Record<string, number | null>
+  answers?: Record<string, Answer>
 }
 
 export interface CancelInput {
@@ -211,13 +321,16 @@ export interface SubstituteInput {
   membership_id?: number | null
   name?: string
   birth_date?: string | null
+  guardians?: Guardian[]
 }
 
-export interface PersonInput {
+export interface PersonInput extends ExtrasInput {
   membership_id?: number | null
   name?: string
   birth_date?: string | null
   price_id: number
+  health?: string
+  guardians?: Guardian[]
 }
 
 const url = (base: CalendarBase, eventId: number) => `${base}events/${eventId}/registration/`
@@ -238,7 +351,7 @@ export const registrationApi = {
       address?: string
       note?: string
       persons: PersonInput[]
-    },
+    } & ExtrasInput & { health_consent?: boolean },
   ) => api.post<BoardRegistrations>(`${url(base, eventId)}list/`, data),
   cancel: (base: CalendarBase, eventId: number, regId: number, data: CancelInput = {}) =>
     api.post<BoardRegistrations>(`${url(base, eventId)}${regId}/cancel/`, data),
@@ -257,12 +370,18 @@ export const registrationApi = {
       `${url(base, eventId)}${regId}/participants/${participantId}/`,
       data,
     ),
-  exportUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}export/`,
+  exportUrl: (base: CalendarBase, eventId: number, health = false) =>
+    `${url(base, eventId)}export/${health ? '?health=1' : ''}`,
   member: (base: CalendarBase, eventId: number) => api.get<MemberRegistrations>(url(base, eventId)),
   register: (
     base: CalendarBase,
     eventId: number,
-    data: { persons: PersonInput[]; note: string; terms_accepted: boolean },
+    data: {
+      persons: PersonInput[]
+      note: string
+      terms_accepted: boolean
+      health_consent?: boolean
+    } & ExtrasInput,
   ) => api.post<MemberRegistrations>(url(base, eventId), data),
   cancelMine: (base: CalendarBase, eventId: number, regId: number, participants: number[] = []) =>
     api.post<MemberRegistrations>(

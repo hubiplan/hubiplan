@@ -10,6 +10,7 @@ import type {
   CancelRule,
   PaidState,
   Participant,
+  Offer,
   Price,
   PriceInput,
   Registration,
@@ -24,6 +25,26 @@ import { MemberPicker } from '../MemberPicker.tsx'
 import { useRowSearch } from '../RowSearch.tsx'
 import { confirmDialog } from '../dialog.ts'
 import { CancelPanel, SubstitutePanel } from './RegistrationCancel.tsx'
+import {
+  AddOnsEditor,
+  ExtrasFields,
+  HealthConsent,
+  QuestionsEditor,
+} from './RegistrationExtras.tsx'
+import {
+  addonInputs,
+  answerText,
+  asksHealth,
+  bookingText,
+  cleanAddons,
+  emptyExtras,
+  extrasPayload,
+  extrasReady,
+  extrasSum,
+  isMinor,
+  questionInputs,
+} from './extras.ts'
+import type { ExtrasState } from './extras.ts'
 import { berlin, formatDay, toApi } from './time.ts'
 import { lang, t, tc } from '../../i18n/index.ts'
 
@@ -117,11 +138,13 @@ export function RegistrationPanel({ base, event }: { base: CalendarBase; event: 
 
 function RegistrationTable({
   rows,
+  offer,
   canEdit,
   onCancel,
   onSubstitute,
 }: {
   rows: Registration[]
+  offer: Offer
   canEdit: boolean
   onCancel: (reg: Registration) => void
   onSubstitute: (reg: Registration, p: Participant) => void
@@ -162,6 +185,24 @@ function RegistrationTable({
                     <div key={p.id}>
                       {p.status === 'cancelled' ? <s>{p.name}</s> : p.name}{' '}
                       <span className="muted small">{p.price_name}</span>
+                      {p.bookings?.length ? (
+                        <div className="muted small">{bookingText(p.bookings)}</div>
+                      ) : null}
+                      {answerText(offer, p.answers) && (
+                        <div className="muted small">{answerText(offer, p.answers)}</div>
+                      )}
+                      {p.health && (
+                        <div className="muted small">
+                          {t('Allergien: {text}', { text: p.health })}
+                        </div>
+                      )}
+                      {p.guardians?.map((g, k) => (
+                        <div key={k} className="muted small">
+                          {t('Erziehungsberechtigt: {who}', {
+                            who: [g.name, g.phone, g.email].filter(Boolean).join(', '),
+                          })}
+                        </div>
+                      ))}
                       {canEdit && reg.status !== 'cancelled' && p.status === 'active' && (
                         <button
                           type="button"
@@ -174,6 +215,12 @@ function RegistrationTable({
                       )}
                     </div>
                   ))}
+                  {reg.bookings?.length ? (
+                    <div className="muted small">{bookingText(reg.bookings)}</div>
+                  ) : null}
+                  {answerText(offer, reg.answers) && (
+                    <div className="muted small">{answerText(offer, reg.answers)}</div>
+                  )}
                   {reg.note && <div className="muted small">{reg.note}</div>}
                 </td>
                 <td>
@@ -228,6 +275,15 @@ interface Pick {
   birth_date: string
   checked: boolean
   needsBirth: boolean
+  /** Mitglied ist unter 18 (vom Server) */
+  minor: boolean
+  extras: ExtrasState
+}
+
+/** Braucht die Person Erziehungsberechtigte? Mitglieder sagt der Server, sonst das Datum. */
+function pickMinor(offer: { minors?: boolean }, r: Pick, startsAt: string): boolean {
+  if (!offer.minors) return false
+  return r.minor || isMinor(r.birth_date, startsAt)
 }
 
 function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: EventDetail }) {
@@ -238,6 +294,8 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
   const [picks, setPicks] = useState<Pick[] | null>(null)
   const [note, setNote] = useState('')
   const [terms, setTerms] = useState(false)
+  const [regExtras, setRegExtras] = useState<ExtrasState>(emptyExtras)
+  const [consent, setConsent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [cancelling, setCancelling] = useState<Registration | null>(null)
@@ -258,14 +316,20 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
         birth_date: '',
         checked: p.self,
         needsBirth: !p.has_birth_date,
+        minor: !!p.minor,
+        extras: emptyExtras(),
       }))
   const update = (i: number, patch: Partial<Pick>) =>
     setPicks(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
   const chosen = rows.filter((r) => r.checked)
-  const sum = chosen.reduce((s, r) => {
-    const p = prices.find((x) => x.id === r.price_id)
-    return s + Number(p?.current?.amount ?? 0)
-  }, 0)
+  const sum = chosen.reduce(
+    (s, r) => {
+      const p = prices.find((x) => x.id === r.price_id)
+      return s + Number(p?.current?.amount ?? 0) + extrasSum(offer, r.extras)
+    },
+    extrasSum(offer, regExtras),
+  )
+  const health = asksHealth(offer) && chosen.some((r) => r.extras.health.trim())
   const pricesFor = (r: Pick) =>
     prices.filter((p) => (r.membership_id ? p.applies !== 'guests' : p.applies !== 'members'))
 
@@ -279,14 +343,19 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
           name: r.name,
           price_id: Number(r.price_id),
           birth_date: r.birth_date || null,
+          ...extrasPayload(offer, r.extras, pickMinor(offer, r, event.starts_at)),
         })),
         note,
         terms_accepted: terms,
+        ...extrasPayload(offer, regExtras),
+        health_consent: health && consent,
       })
       setData(next)
       setPicks(null)
       setNote('')
       setTerms(false)
+      setRegExtras(emptyExtras())
+      setConsent(false)
       const waiting = next.mine[0]?.status === 'waiting'
       setMessage({
         kind: 'success',
@@ -317,7 +386,15 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
 
   const ready =
     chosen.length > 0 &&
-    chosen.every((r) => r.price_id !== '' && r.name.trim()) &&
+    chosen.every(
+      (r) =>
+        r.price_id !== '' &&
+        r.name.trim() &&
+        (!offer.minors || !r.needsBirth || r.birth_date) &&
+        extrasReady(offer, r.extras, 'person', pickMinor(offer, r, event.starts_at)),
+    ) &&
+    extrasReady(offer, regExtras, 'registration') &&
+    (!health || consent) &&
     (!offer.terms || terms)
   return (
     <Card title={t('Anmeldung')}>
@@ -359,6 +436,7 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
               <li key={p.id}>
                 {p.status === 'cancelled' ? <s>{p.name}</s> : p.name}: {p.price_name},{' '}
                 {euro(p.amount)}
+                {p.bookings?.length ? ` · ${bookingText(p.bookings)}` : ''}
                 {p.status === 'active' && reg.can_substitute && (
                   <>
                     {' '}
@@ -478,9 +556,10 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
                 )}
                 {r.checked &&
                   (r.needsBirth || !r.membership_id) &&
-                  prices.find(
-                    (p) => p.id === r.price_id && (p.age_from !== null || p.age_to !== null),
-                  ) && (
+                  (offer.minors ||
+                    prices.find(
+                      (p) => p.id === r.price_id && (p.age_from !== null || p.age_to !== null),
+                    )) && (
                     <Field
                       label={t('Geburtsdatum')}
                       type="date"
@@ -488,6 +567,16 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
                       onChange={(e) => update(i, { birth_date: e.target.value })}
                     />
                   )}
+                {r.checked && (
+                  <ExtrasFields
+                    offer={offer}
+                    per="person"
+                    state={r.extras}
+                    who={rows.filter((x) => x.checked).length > 1 ? r.name : undefined}
+                    minor={pickMinor(offer, r, event.starts_at)}
+                    onChange={(extras) => update(i, { extras })}
+                  />
+                )}
               </div>
             ))}
             {offer.guests_allowed && rows.length < offer.max_persons && (
@@ -505,6 +594,8 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
                         birth_date: '',
                         checked: true,
                         needsBirth: true,
+                        minor: false,
+                        extras: emptyExtras(),
                       },
                     ])
                   }
@@ -513,12 +604,19 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
                 </button>
               </div>
             )}
+            <ExtrasFields
+              offer={offer}
+              per="registration"
+              state={regExtras}
+              onChange={setRegExtras}
+            />
             <Field
               label={t('Bemerkung (optional)')}
               value={note}
               maxLength={500}
               onChange={(e) => setNote(e.target.value)}
             />
+            {health && <HealthConsent checked={consent} onChange={setConsent} />}
             {offer.terms && (
               <>
                 <details>
@@ -657,6 +755,11 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             {t('Teilnehmerliste (Excel)')}
           </a>
         )}
+        {data.registrations.length > 0 && asksHealth(offer) && (
+          <a className="button button-ghost" href={registrationApi.exportUrl(base, event.id, true)}>
+            {t('Liste mit Allergien (Excel)')}
+          </a>
+        )}
       </div>
       {adding && (
         <BoardAddForm
@@ -707,6 +810,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
       {data.registrations.length > 0 && (
         <RegistrationTable
           rows={data.registrations}
+          offer={offer}
           canEdit={data.can_edit}
           onCancel={(reg) => {
             setReplacing(null)
@@ -730,7 +834,17 @@ interface PersonRow {
   name: string
   price_id: number | ''
   member: PickedMember | null
+  birth_date: string
+  extras: ExtrasState
 }
+
+const emptyRow = (): PersonRow => ({
+  name: '',
+  price_id: '',
+  member: null,
+  birth_date: '',
+  extras: emptyExtras(),
+})
 
 function BoardAddForm({
   base,
@@ -746,13 +860,17 @@ function BoardAddForm({
   const orgId = Number(/\/api\/orgs\/(\d+)\//.exec(base)?.[1] ?? 0)
   const [booker, setBooker] = useState<PickedMember | null>(null)
   const [contact, setContact] = useState({ name: '', email: '', phone: '', address: '' })
-  const [persons, setPersons] = useState<PersonRow[]>([{ name: '', price_id: '', member: null }])
+  const [persons, setPersons] = useState<PersonRow[]>(() => [emptyRow()])
+  const [regExtras, setRegExtras] = useState<ExtrasState>(emptyExtras)
+  const [consent, setConsent] = useState(false)
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const prices = offer.prices.filter((p) => p.is_active)
   const set = (i: number, patch: Partial<PersonRow>) =>
     setPersons(persons.map((p, j) => (j === i ? { ...p, ...patch } : p)))
+  const minor = (p: PersonRow) => !!offer.minors && isMinor(p.birth_date, event.starts_at)
+  const health = asksHealth(offer) && persons.some((p) => p.extras.health.trim())
 
   async function save() {
     setBusy(true)
@@ -767,7 +885,11 @@ function BoardAddForm({
             membership_id: p.member?.id ?? null,
             name: p.member ? `${p.member.first_name} ${p.member.last_name}` : p.name,
             price_id: Number(p.price_id),
+            birth_date: p.birth_date || null,
+            ...extrasPayload(offer, p.extras, minor(p)),
           })),
+          ...extrasPayload(offer, regExtras),
+          health_consent: health && consent,
         }),
       )
     } catch (err) {
@@ -847,6 +969,22 @@ function BoardAddForm({
               </option>
             ))}
           </SelectField>
+          {offer.minors && !p.member && (
+            <Field
+              label={t('Geburtsdatum')}
+              type="date"
+              value={p.birth_date}
+              onChange={(e) => set(i, { birth_date: e.target.value })}
+            />
+          )}
+          <ExtrasFields
+            offer={offer}
+            per="person"
+            state={p.extras}
+            who={persons.length > 1 ? t('Person {n}', { n: i + 1 }) : undefined}
+            minor={minor(p)}
+            onChange={(extras) => set(i, { extras })}
+          />
         </div>
       ))}
       <div className="button-row">
@@ -854,23 +992,29 @@ function BoardAddForm({
           <button
             type="button"
             className="button button-ghost"
-            onClick={() => setPersons([...persons, { name: '', price_id: '', member: null }])}
+            onClick={() => setPersons([...persons, emptyRow()])}
           >
             <span aria-hidden="true">+</span> {t('Weitere Person')}
           </button>
         )}
       </div>
+      <ExtrasFields offer={offer} per="registration" state={regExtras} onChange={setRegExtras} />
       <Field
         label={t('Bemerkung (optional)')}
         value={note}
         maxLength={500}
         onChange={(e) => setNote(e.target.value)}
       />
+      {health && <HealthConsent checked={consent} onChange={setConsent} />}
       <div className="button-row">
         <button
           type="button"
           className="button"
-          disabled={busy || persons.some((p) => p.price_id === '' || (!p.member && !p.name.trim()))}
+          disabled={
+            busy ||
+            (health && !consent) ||
+            persons.some((p) => p.price_id === '' || (!p.member && !p.name.trim()))
+          }
           onClick={() => void save()}
         >
           {t('Anmelden')}
@@ -938,7 +1082,14 @@ function SetupForm({
     substitute_allowed: offer?.substitute_allowed ?? true,
     cancel_fee_fixed: offer?.cancel_fee_fixed ? offer.cancel_fee_fixed.replace('.', ',') : '',
     expire_unpaid_days: offer?.expire_unpaid_days ? String(offer.expire_unpaid_days) : '',
+    catering: offer?.catering ?? false,
+    minors: offer?.minors ?? false,
   })
+  const [addons, setAddons] = useState(() => addonInputs(offer))
+  const [questions, setQuestions] = useState(() => questionInputs(offer))
+  const healthAllowed = v.catering || addons.some((a) => a.is_active && a.kind === 'meal')
+  const dropsHealth =
+    !healthAllowed && (offer?.questions ?? []).some((q) => q.kind === 'health' && q.is_active)
   const [rules, setRules] = useState<CancelRule[]>(offer?.cancel_rules ?? [])
   const [prices, setPrices] = useState<PriceInput[]>(
     offer
@@ -986,6 +1137,12 @@ function SetupForm({
       cancel_rules: rules.filter((x) => x.days > 0),
       cancel_fee_fixed: v.cancel_fee_fixed.trim() ? parseAmount(v.cancel_fee_fixed) || '0' : null,
       expire_unpaid_days: num(v.expire_unpaid_days),
+      catering: v.catering,
+      minors: v.minors,
+      addons: cleanAddons(addons),
+      questions: questions
+        .filter((q) => healthAllowed || q.kind !== 'health')
+        .map((q) => ({ ...q, text: q.text.trim(), choices: q.choices.filter((c) => c.trim()) })),
       prices: prices.map((p, i) => ({
         ...p,
         steps: p.steps.map((s, k) => ({
@@ -1341,6 +1498,34 @@ function SetupForm({
           <span aria-hidden="true">+</span> {t('Tarif hinzufügen')}
         </button>
       </div>
+      <h4>{t('Zusatzleistungen und Fragen')}</h4>
+      <Checkbox
+        label={t('mit Verpflegung')}
+        hint={t('Nur dann darf nach Allergien und Unverträglichkeiten gefragt werden.')}
+        checked={v.catering}
+        onChange={(on) => setV({ ...v, catering: on })}
+      />
+      <Checkbox
+        label={t('Minderjährige möglich')}
+        hint={t(
+          'Fragt immer das Geburtsdatum ab; unter 18 sind Name, Telefon und E-Mail einer oder eines Erziehungsberechtigten Pflicht.',
+        )}
+        checked={v.minors}
+        onChange={(on) => setV({ ...v, minors: on })}
+      />
+      <AddOnsEditor addons={addons} onChange={setAddons} canSetPrices={data.can_set_prices} />
+      <QuestionsEditor
+        questions={questions}
+        onChange={setQuestions}
+        healthAllowed={healthAllowed}
+      />
+      {dropsHealth && (
+        <Alert kind="info">
+          {t(
+            'Ohne Verpflegung fällt die Frage nach Allergien weg; schon erfasste Angaben werden beim Speichern gelöscht.',
+          )}
+        </Alert>
+      )}
       <div className="button-row">
         <button type="button" className="button" disabled={busy} onClick={() => void save()}>
           {t('Speichern')}
