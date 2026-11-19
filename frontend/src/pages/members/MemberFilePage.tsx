@@ -54,6 +54,7 @@ import { FeesTab } from './FeesTab.tsx'
 import { MusicTab } from './MusicTab.tsx'
 import { AtAGlance } from './AtAGlance.tsx'
 import { MemberHeader } from './MemberHeader.tsx'
+import { MemberBookings } from '../bookings/MemberBookings.tsx'
 
 type Tab =
   | 'stammdaten'
@@ -748,6 +749,7 @@ function MembershipTab({
         title={t('Ausgegebenes Material')}
         wide
       />
+      <MemberBookings org={org} memberId={member.id} />
       {/* Eigene Region, unabhängig von Untereinheiten (UX-Audit 31.10. W08) */}
       <Section title={t('Kommunikation & Zustellung')}>
         <Checkbox

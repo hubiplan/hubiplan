@@ -65,6 +65,14 @@ class Booking(models.Model):
     )
     # Externe (z. B. Saalmiete): Name, E-Mail, Telefon; nur für Verwalter sichtbar
     contact = EncryptedJSONField(default=dict, blank=True)
+    # Für ein Mitglied gebucht (Kontaktdaten stehen in der Akte, nicht noch einmal hier)
+    member = models.ForeignKey(
+        "members.Membership",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
     event = models.ForeignKey(
         "events.Event", null=True, blank=True, on_delete=models.SET_NULL, related_name="bookings"
     )

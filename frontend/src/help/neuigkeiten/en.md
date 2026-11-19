@@ -84,6 +84,7 @@ November 2026:
 
 #### Club and members
 
+- Bookings: **Book for a member and view a month or year.** When booking under Equipment & rooms › Bookings you can look up a member; the booking then appears in the member record under “Bookings” and in the member's members area, without entering contact details twice. Besides the week there is now a month and a year view.
 - Members: **Reduction with proof.** For reduced fees, for example for students, the treasurer sets up a reduction under Finances › Fee rates with a deadline (e.g. 28/02), grace period and types of proof. HUBIplan reminds members in January and before the deadline, accepts proofs in the members' area, the app, via a personal link or as a reply to the reminder email, and runs a pre-check (name, studies, validity).
 - **Family application**: in the online application you can turn on the family application under Fields. Adults then register further family members at the same address at once; on acceptance a household is created and the applicant pays for everyone with one mandate.
 - **Households in Excel import and export**: columns “Haushalt”, “Rolle im Haushalt”, “Firma” and “Beitrag über”; the same name in the file makes one household. HUBIplan books payments on household and company invoices to the payer, so the donation receipt goes to them as well.

@@ -7,76 +7,29 @@ import type { MaterialChoice } from '../../api/materials.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
-import { locale, t } from '../../i18n/index.ts'
+import { locale, t, tn } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { MaterialPicker } from '../materials/MaterialsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './bookings.css'
+import {
+  ZONE,
+  addDays,
+  addMonths,
+  dayKey,
+  daysOf,
+  monday,
+  monthStart,
+  noon,
+  span,
+  statusLabel,
+  time,
+} from './format.ts'
 import { NoAccessPage } from '../NoticePages.tsx'
 
-const ZONE = 'Europe/Berlin'
-
-// Tag in deutscher Zeit als JJJJ-MM-TT
-function dayKey(value: Date | string) {
-  return new Date(value).toLocaleDateString('sv-SE', { timeZone: ZONE })
-}
-
-function noon(key: string) {
-  return new Date(key + 'T12:00:00Z')
-}
-
-function addDays(key: string, days: number) {
-  const d = new Date(`${key}T12:00:00Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
-function monday(key: string) {
-  const d = new Date(`${key}T12:00:00Z`)
-  return addDays(key, -((d.getUTCDay() + 6) % 7))
-}
-
-function time(value: string) {
-  return new Date(value).toLocaleTimeString(locale(), {
-    timeZone: ZONE,
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function statusLabel(status: string) {
-  return (
-    {
-      requested: t('angefragt'),
-      confirmed: t('bestätigt'),
-      rejected: t('abgelehnt'),
-      cancelled: t('storniert'),
-    }[status] ?? status
-  )
-}
-
-function span(row: { starts_at: string; ends_at: string; all_day: boolean }) {
-  if (row.all_day) {
-    const last = addDays(dayKey(row.ends_at), -1)
-    const first = dayKey(row.starts_at)
-    const fmt = (k: string) =>
-      new Date(`${k}T12:00:00Z`).toLocaleDateString(locale(), { timeZone: 'UTC' })
-    return first === last ? `${fmt(first)} · ${t('ganztägig')}` : `${fmt(first)} – ${fmt(last)}`
-  }
-  const start = new Date(row.starts_at).toLocaleString(locale(), {
-    timeZone: ZONE,
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
-  return dayKey(row.starts_at) === dayKey(row.ends_at)
-    ? `${start} – ${time(row.ends_at)}`
-    : `${start} – ${new Date(row.ends_at).toLocaleString(locale(), {
-        timeZone: ZONE,
-        dateStyle: 'short',
-        timeStyle: 'short',
-      })}`
-}
+const VIEWS = ['woche', 'monat', 'jahr'] as const
+type View = (typeof VIEWS)[number]
 
 export function BookingsPage() {
   const { active, activeDept } = useOrg()
@@ -102,8 +55,24 @@ export function BookingsPage() {
 function Bookings({ base }: { base: string }) {
   const [params, setParams] = useSearchParams()
   const [today] = useState(() => dayKey(new Date()))
-  const from = monday(params.get('ab') ?? today)
-  const until = addDays(from, 7)
+  const view: View = VIEWS.includes(params.get('ansicht') as View)
+    ? (params.get('ansicht') as View)
+    : 'woche'
+  const anchor = params.get('ab') ?? today
+  const from =
+    view === 'woche'
+      ? monday(anchor)
+      : view === 'monat'
+        ? monthStart(anchor)
+        : `${anchor.slice(0, 4)}-01-01`
+  const until =
+    view === 'woche'
+      ? addDays(from, 7)
+      : view === 'monat'
+        ? addMonths(from, 1)
+        : addMonths(from, 12)
+  const step = (n: number) =>
+    view === 'woche' ? addDays(from, 7 * n) : addMonths(from, view === 'monat' ? n : 12 * n)
   const only = Number(params.get('objekt')) || null
   const items = useLoad(() => bookingApi.items(base), [base])
   const query = new URLSearchParams({ start: from, end: until })
@@ -134,7 +103,30 @@ function Bookings({ base }: { base: string }) {
   const parent = all.find((i) => i.id === only)?.facility ?? null
   // Ein Gebäude zeigt seine Bereiche, ein Bereich das Gebäude
   const rows = all.filter((i) => !only || i.id === only || i.facility === only || i.id === parent)
-  const days = Array.from({ length: 7 }, (_, i) => addDays(from, i))
+  const days: string[] = []
+  if (view !== 'jahr') for (let d = from; d < until; d = addDays(d, 1)) days.push(d)
+  const months = Array.from({ length: 12 }, (_, i) => addMonths(from, i))
+  const occurrences = list.data?.occurrences ?? []
+  // Wer das ganze Gebäude bucht, belegt auch die Bereiche
+  const onItem = (o: Occurrence, item: BookableItem) =>
+    o.item === item.id || o.item === item.facility
+  const label =
+    view === 'woche'
+      ? `${noon(from).toLocaleDateString(locale(), { timeZone: 'UTC' })} – ${noon(
+          addDays(until, -1),
+        ).toLocaleDateString(locale(), { timeZone: 'UTC' })}`
+      : view === 'monat'
+        ? noon(from).toLocaleDateString(locale(), {
+            timeZone: 'UTC',
+            month: 'long',
+            year: 'numeric',
+          })
+        : from.slice(0, 4)
+  const names = {
+    woche: [t('Vorige Woche'), t('Nächste Woche')],
+    monat: [t('Voriger Monat'), t('Nächster Monat')],
+    jahr: [t('Voriges Jahr'), t('Nächstes Jahr')],
+  }[view]
   const bookable = (items.data?.items ?? []).filter((i) => i.can_book)
   return (
     <div className="bookings">
@@ -173,15 +165,28 @@ function Bookings({ base }: { base: string }) {
       )}
       <div className="card booking-toolbar">
         <div className="button-row">
-          <button className="button button-ghost" onClick={() => set('ab', addDays(from, -7))}>
-            {t('Vorige Woche')}
+          <button className="button button-ghost" onClick={() => set('ab', step(-1))}>
+            {names[0]}
           </button>
           <button className="button button-ghost" onClick={() => set('ab', '')}>
             {t('Heute')}
           </button>
-          <button className="button button-ghost" onClick={() => set('ab', addDays(from, 7))}>
-            {t('Nächste Woche')}
+          <button className="button button-ghost" onClick={() => set('ab', step(1))}>
+            {names[1]}
           </button>
+        </div>
+        <div className="segmented" role="group" aria-label={t('Ansicht')}>
+          {VIEWS.map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={`button ${v === view ? 'button-primary' : 'button-ghost'}`}
+              aria-pressed={v === view}
+              onClick={() => set('ansicht', v === 'woche' ? '' : v)}
+            >
+              {{ woche: t('Woche'), monat: t('Monat'), jahr: t('Jahr') }[v]}
+            </button>
+          ))}
         </div>
         <label className="inline-label">
           {t('Objekt')}
@@ -196,21 +201,30 @@ function Bookings({ base }: { base: string }) {
         </label>
       </div>
       {list.error && <p role="alert">{list.error}</p>}
-      {rows.length > 0 && (
+      <h2 className="booking-period">{label}</h2>
+      {rows.length > 0 && view !== 'jahr' && (
         <div className="booking-scroll">
-          <table className="booking-grid">
-            <caption className="visually-hidden">{t('Belegung dieser Woche')}</caption>
+          <table className={`booking-grid${view === 'monat' ? ' booking-grid-month' : ''}`}>
+            <caption className="visually-hidden">
+              {view === 'woche' ? t('Belegung dieser Woche') : t('Belegung im {x}', { x: label })}
+            </caption>
             <thead>
               <tr>
                 <th scope="col">{t('Objekt')}</th>
                 {days.map((d) => (
                   <th scope="col" key={d} className={d === today ? 'booking-today' : ''}>
-                    {noon(d).toLocaleDateString(locale(), {
-                      timeZone: 'UTC',
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'numeric',
-                    })}
+                    {view === 'woche'
+                      ? noon(d).toLocaleDateString(locale(), {
+                          timeZone: 'UTC',
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'numeric',
+                        })
+                      : noon(d).toLocaleDateString(locale(), {
+                          timeZone: 'UTC',
+                          weekday: 'narrow',
+                          day: 'numeric',
+                        })}
                   </th>
                 ))}
               </tr>
@@ -227,11 +241,10 @@ function Bookings({ base }: { base: string }) {
                   </th>
                   {days.map((d) => (
                     <td key={d}>
-                      {(list.data?.occurrences ?? [])
+                      {occurrences
                         .filter(
                           (o) =>
-                            // Wer das ganze Gebäude bucht, belegt auch die Bereiche
-                            (o.item === item.id || o.item === item.facility) &&
+                            onItem(o, item) &&
                             dayKey(o.starts_at) <= d &&
                             (o.all_day ? addDays(dayKey(o.ends_at), -1) : dayKey(o.ends_at)) >= d,
                         )
@@ -239,6 +252,7 @@ function Bookings({ base }: { base: string }) {
                           <OccurrenceChip
                             key={`${o.booking}-${o.original_start}`}
                             occurrence={o}
+                            compact={view === 'monat'}
                             onSelect={() =>
                               setSelected({ id: o.booking, original: o.original_start })
                             }
@@ -248,6 +262,68 @@ function Bookings({ base }: { base: string }) {
                   ))}
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {rows.length > 0 && view === 'jahr' && (
+        <div className="booking-scroll">
+          <table className="booking-grid booking-grid-year">
+            <caption className="visually-hidden">
+              {t('Belegte Tage je Monat im Jahr {x}', { x: label })}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{t('Objekt')}</th>
+                {months.map((m) => (
+                  <th
+                    scope="col"
+                    key={m}
+                    className={m === monthStart(today) ? 'booking-today' : ''}
+                  >
+                    {noon(m).toLocaleDateString(locale(), { timeZone: 'UTC', month: 'short' })}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => {
+                const busy = new Set(
+                  occurrences.filter((o) => onItem(o, item)).flatMap((o) => daysOf(o)),
+                )
+                return (
+                  <tr key={item.id}>
+                    <th scope="row">
+                      <Link
+                        to={`${item.kind === 'facility' ? '/infrastruktur' : '/material'}/${item.id}`}
+                      >
+                        {item.title}
+                      </Link>
+                    </th>
+                    {months.map((m) => {
+                      const count = [...busy].filter((d) => d.startsWith(m.slice(0, 7))).length
+                      return (
+                        <td key={m}>
+                          {count > 0 && (
+                            <button
+                              type="button"
+                              className="booking-chip booking-count"
+                              onClick={() => {
+                                const next = new URLSearchParams(params)
+                                next.set('ansicht', 'monat')
+                                next.set('ab', m)
+                                setParams(next, { replace: true })
+                              }}
+                            >
+                              {tn('{n} Tag', '{n} Tage', count)}
+                            </button>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -269,11 +345,26 @@ function Bookings({ base }: { base: string }) {
 
 function OccurrenceChip({
   occurrence: o,
+  compact = false,
   onSelect,
 }: {
   occurrence: Occurrence
+  /** Monatsansicht: schmale Spalten, voller Text als Hinweis */
+  compact?: boolean
   onSelect: () => void
 }) {
+  const when = o.all_day ? t('ganztägig') : `${time(o.starts_at)}–${time(o.ends_at)}`
+  if (compact)
+    return (
+      <button
+        type="button"
+        className={`booking-chip booking-compact booking-${o.status}${o.own ? ' booking-own' : ''}`}
+        title={[when, o.title, o.member_name].filter(Boolean).join(' · ')}
+        onClick={onSelect}
+      >
+        {o.title}
+      </button>
+    )
   return (
     <button
       type="button"
@@ -282,6 +373,7 @@ function OccurrenceChip({
     >
       <span>{o.all_day ? t('ganztägig') : `${time(o.starts_at)}–${time(o.ends_at)}`}</span>{' '}
       <strong>{o.title}</strong>
+      {o.member_name && <span> · {o.member_name}</span>}
       {o.status === 'requested' && <span> · {t('angefragt')}</span>}
       {o.needs_review && <span> · {t('prüfen')}</span>}
     </button>
@@ -318,6 +410,7 @@ function Decision({
         <p>
           {span(booking)}
           {booking.booked_by ? ` · ${booking.booked_by}` : ''}
+          {booking.member_name ? ` · ${t('für {name}', { name: booking.member_name })}` : ''}
         </p>
         {booking.note && <p className="muted">{booking.note}</p>}
       </div>
@@ -431,6 +524,16 @@ function BookingDetail({
         <p>
           {t('Extern')}:{' '}
           {[data.contact.name, data.contact.email, data.contact.phone].filter(Boolean).join(' · ')}
+        </p>
+      )}
+      {data.member_name && (
+        <p>
+          {t('Für Mitglied')}:{' '}
+          {base.startsWith('/api/orgs/') ? (
+            <Link to={`/mitglieder/${data.member}`}>{data.member_name}</Link>
+          ) : (
+            data.member_name
+          )}
         </p>
       )}
       {data.booked_by && (
@@ -666,6 +769,9 @@ function BookingForm({
     visibility: booking?.visibility ?? 'members',
     note: booking?.note ?? '',
     contact: { name: '', email: '', phone: '', ...(booking?.contact ?? {}) },
+    member: booking?.member
+      ? ({ id: booking.member, title: booking.member_name } as MaterialChoice)
+      : null,
   }
   const [values, setValues] = useState(initial)
   const [link, setLink] = useState<{
@@ -710,8 +816,14 @@ function BookingForm({
             payload.repeat_until =
               values.repeat !== 'none' && values.repeat_until ? values.repeat_until : null
           }
-          if (manage && Object.values(values.contact).some(Boolean))
-            payload.contact = values.contact
+          if (manage) {
+            if (values.member || booking?.member) payload.member = values.member?.id ?? null
+            // Für ein Mitglied stehen die Kontaktdaten in der Akte, nicht noch einmal hier
+            if (values.member) {
+              if (Object.values(booking?.contact ?? {}).some(Boolean))
+                payload.contact = { name: '', email: '', phone: '' }
+            } else if (Object.values(values.contact).some(Boolean)) payload.contact = values.contact
+          }
           if (booking) await bookingApi.update(base, booking, payload)
           else await bookingApi.create(base, payload)
           setSaved(true)
@@ -870,6 +982,32 @@ function BookingForm({
           />
         </label>
         {manage && (
+          <fieldset>
+            <legend>{t('Für ein Mitglied (optional)')}</legend>
+            {values.member ? (
+              <p className="material-selection">
+                <span>{values.member.title}</span>
+                <button
+                  className="button button-ghost"
+                  type="button"
+                  onClick={() => setValues({ ...values, member: null })}
+                >
+                  {t('Entfernen')}
+                </button>
+              </p>
+            ) : (
+              <MaterialPicker
+                base={base}
+                kind="member"
+                onSelect={(choice) => setValues({ ...values, member: choice })}
+              />
+            )}
+            <p className="muted">
+              {t('Die Buchung erscheint dann in der Mitgliedsakte und im Mitgliederbereich.')}
+            </p>
+          </fieldset>
+        )}
+        {manage && !values.member && (
           <fieldset>
             <legend>{t('Externe Buchung (optional)')}</legend>
             <div className="booking-times">

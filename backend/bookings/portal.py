@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime
 
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -91,8 +92,11 @@ class Base(APIView):
         return response
 
     def own(self):
+        # Eigene Anfragen und Buchungen, die die Verwaltung für dieses Mitglied eingetragen hat
         return Booking.objects.filter(
-            organization=self.org, department__isnull=True, booked_by=self.request.user
+            Q(booked_by=self.request.user) | Q(member_id=self.access.membership_id),
+            organization=self.org,
+            department__isnull=True,
         ).select_related("item")
 
 
@@ -113,7 +117,10 @@ class ListView(Base):
             .select_related("booking")
             .order_by("starts_at")[:1000]
         ):
-            mine = slot.booking.booked_by_id == request.user.pk
+            mine = (
+                slot.booking.booked_by_id == request.user.pk
+                or slot.booking.member_id == self.access.membership_id
+            )
             busy.append(
                 {
                     "item": slot.resource_id,

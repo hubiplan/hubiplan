@@ -10361,5 +10361,21 @@
   "{amount} bar erhalten": "{amount} received in cash",
   "{amount} bar erhalten?": "{amount} received in cash?",
   "Barzahlung buchen": "Book cash payment",
-  "Dieser Browser gibt die Kamera nicht frei. Bitte den Code mit einem Handscanner oder von Hand eingeben.": "This browser does not allow camera access. Please enter the code with a hand scanner or by hand."
+  "Dieser Browser gibt die Kamera nicht frei. Bitte den Code mit einem Handscanner oder von Hand eingeben.": "This browser does not allow camera access. Please enter the code with a hand scanner or by hand.",
+  "Für ein Mitglied (optional)": "For a member (optional)",
+  "Die Buchung erscheint dann in der Mitgliedsakte und im Mitgliederbereich.": "The booking then appears in the member record and in the members area.",
+  "Für Mitglied": "For member",
+  "für {name}": "for {name}",
+  "Belegungen": "Bookings",
+  "Belegung öffnen": "Open bookings",
+  "Voriger Monat": "Previous month",
+  "Voriges Jahr": "Previous year",
+  "Nächstes Jahr": "Next year",
+  "Woche": "Week",
+  "Belegung im {x}": "Bookings in {x}",
+  "Belegte Tage je Monat im Jahr {x}": "Booked days per month in {x}",
+  "{n} Tag": {
+    "one": "{n} day",
+    "other": "{n} days"
+  }
 }

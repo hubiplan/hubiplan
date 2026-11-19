@@ -84,6 +84,7 @@ November 2026:
 
 #### Verein und Mitglieder
 
+- Belegung: **Für ein Mitglied buchen und Monat oder Jahr ansehen.** Beim Buchen unter Material & Räume › Belegung lässt sich ein Mitglied heraussuchen; die Buchung steht dann in der Mitgliedsakte unter „Belegungen“ und im Mitgliederbereich des Mitglieds, Kontaktdaten werden nicht doppelt erfasst. Neben der Woche gibt es eine Monats- und eine Jahresansicht.
 - Mitglieder: **Ermäßigung mit Nachweis.** Für ermäßigte Beiträge etwa von Studierenden richtet die Kasse unter Finanzen › Beitragssätze eine Ermäßigung mit Frist (z. B. 28.02.), Kulanzzeit und Arten von Nachweisen ein. HUBIplan erinnert die Mitglieder im Januar und vor der Frist, nimmt Nachweise im Mitgliederbereich, in der App, über einen persönlichen Link oder als Antwort auf die Erinnerungsmail an und macht eine Vorprüfung (Name, Studium, Gültigkeit).
 - **Familienantrag**: Im Online-Antrag lässt sich unter Felder der Familienantrag einschalten. Dann melden Volljährige weitere Familienmitglieder mit derselben Anschrift gleich mit an; bei der Annahme entsteht ein Haushalt, und der Antragsteller zahlt mit einem Mandat für alle.
 - **Haushalte im Excel-Import und -Export**: Spalten „Haushalt“, „Rolle im Haushalt“, „Firma“ und „Beitrag über“; gleicher Name in der Datei ergibt einen Haushalt. Zahlungen auf Haushalts- und Firmenrechnungen bucht HUBIplan auf den Zahler, damit auch die Zuwendungsbestätigung an ihn geht.

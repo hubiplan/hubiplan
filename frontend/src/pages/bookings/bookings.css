@@ -101,3 +101,29 @@
 .booking-detail {
   margin-bottom: 1rem;
 }
+.booking-period {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+/* Monat: bis zu 31 schmale Spalten, Einträge einzeilig mit vollem Text als Hinweis */
+.booking-grid-month {
+  min-width: 1400px;
+}
+.booking-grid-month th,
+.booking-grid-month td {
+  padding: 0.15rem;
+}
+.booking-grid-month thead th {
+  font-size: 0.8rem;
+  text-align: center;
+}
+.booking-chip.booking-compact {
+  overflow: hidden;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.booking-chip.booking-count {
+  text-align: center;
+}
