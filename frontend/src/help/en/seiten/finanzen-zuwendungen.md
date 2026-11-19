@@ -13,6 +13,8 @@ An issued donation receipt also protects its source cashbook entry: it cannot be
 
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
 
+## In detail
+
 For donations up to 300 €, the tax office accepts the bank statement together with a note from the club (simplified donation proof). Once the tax-privileged status details are complete, Finance › Set up › Donations offers this note under **Donations up to 300 €** as a PDF and as text for the website. It names the notice, the purposes, the donation account and whether it also covers membership fees.
 
 A donation taken from the cash book follows its booking: if you change the booking's amount or date, HUBIplan changes the not yet confirmed donation as well. If the booking is deleted or cancelled (also by cancelling a receipt), the unconfirmed donation is removed. Once it is confirmed, the booking and receipt can only be changed, deleted or cancelled after the confirmation has been cancelled. Before issuing, HUBIplan checks that booking and donation match; the checklist names mismatches from older data.

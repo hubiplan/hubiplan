@@ -4,6 +4,7 @@ titel: Finanzen › Mittelverwendung
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/steuern/mittelverwendung]
+siehe: [guide.reserve, guide.year_closing]
 stichworte: [Mittelverwendung, zeitnahe Verwendung, Rücklage, Gemeinnützigkeit]
 ---
 

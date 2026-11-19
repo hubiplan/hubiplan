@@ -1,0 +1,40 @@
+---
+key: guide.mcp_tasks
+titel: What an AI assistant can do
+routen: [/mein-konto/app]
+reihe: 51
+stichworte:
+  [
+    AI,
+    assistant,
+    Claude,
+    ChatGPT,
+    website,
+    draft,
+    design,
+    menu,
+    upload images,
+    alternative text,
+    chronicle,
+    letterhead,
+    Instagram,
+    Facebook,
+  ]
+---
+
+Once an AI assistant is connected ([Connect AI assistants to HUBIplan](/hilfe/ki-assistent-verbinden)), it can read the website and edit it as a draft. Publishing happens only in HUBIplan, by a person.
+
+- Design, menu and home page: choose design, colours, fine-tuning, header image and header image for phones, arrange the menu (headings, external links, button) and add, move or hide custom home page sections. This needs the “Manage website” permission and goes into the draft. Switching blocks on or off is only possible in HUBIplan.
+- Title image and image carousel: the assistant can set the large image at the top of the home page (image or image carousel of the greeting) and the image at the top of a text page, for example “Use the new photo of the parade as the title image”. This also goes into the draft. If the image has no alternative text, it points this out.
+- Sections on text pages: text pages are built from sections like the home page. The assistant can add, change, move or hide tiles, text with image, buttons, contacts and the other section kinds there, for example “Show the four ways to join on the ‘Get involved’ page as tiles”. The right “Edit content” is enough; everything goes into the page draft.
+- Introductions of the sections: the assistant can write the introduction above the board, events, sub-units and gallery as well as the box next to the contact form, even if it does not exist yet, for example “Write next to the contact form when we can be reached at the clubhouse”. The new introduction goes into the draft under Website › Texts.
+- Upload images: write, for example, “I want to upload photos from the summer festival”. The assistant gives you a link that is valid for 30 minutes and up to 20 images. Open it on your phone or PC and choose the photos; they go straight to HUBIplan, not through the chat, and end up under Website › Images.
+- Describe images: the assistant sees the images in a small size and suggests alternative text and caption; it only enters the creator if you name them. For images already on the website it only fills in missing texts; you change existing ones yourself. It does not recognise or name people.
+- Images by address: HUBIplan fetches an image itself from servers you approve under [Website › Web address](/webseite/domain) at “Images for AI assistants” (such as the club’s Nextcloud). The source (creator and licence) goes into the “Creator” field. Without an entry this is not possible.
+- Appearance: change colours with names and use, further colours, gradients, colour roles and the logo (from an image under Website › Images). This applies immediately to HUBIplan and the website, there is no draft; the assistant asks first. Any change can be taken back in the change log with “Undo”. This is not included by default: when connecting, tick the appearance under “Also allow”. It also needs the permission for the appearance.
+- Letterhead: view and change layout, logo and logo size, a logo only for letters (from an image under Website › Images), name next to the logo, fonts, line and table colours, title colour and footer for the Word template and PDF letters, also for sub-units with their own letterhead. This applies immediately to new letters and invoices; the assistant asks first.
+- The assistant can only read the texts of the letterhead (name in the letterhead, additional line, salutation, closing); you change them yourself under Settings › Letterhead. That way no slipped-in text (such as false bank details) reaches invoices through the assistant. This is not included by default either: when connecting, tick the letterhead under “Also allow”. It needs the permission to edit the unit.
+- Chronicle: view the introduction and the timeline entries, add new entries (also many at once, for example from an anniversary publication), change entries, assign or remove images, e.g. “Add the events from this anniversary booklet to our chronicle”. Everything goes into the draft; publishing happens under [Chronicle](/chronik). This needs the “Chronicle” module and the “Maintain chronicle” permission (or editing website content). The chronicle only names living people if they have not objected; HUBIplan does not check this in the text itself.
+- Posts for Instagram or Facebook: the assistant stores text and images as a draft under [Website › Social media](/webseite/beitraege). There you copy the text, save the images and post yourself; HUBIplan publishes nothing on Meta.
+
+New images only become public once they are in a published text or section.

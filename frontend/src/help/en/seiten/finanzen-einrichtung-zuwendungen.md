@@ -4,6 +4,7 @@ titel: Finance › Setup › Donations
 modul: donations
 rechte: [finance.view]
 routen: [/finanzen/einrichtung/zuwendungen]
+siehe: [guide.donation_receipts]
 stichworte: [Exemption notice, tax office, tax-privileged, donation receipt, donations up to €300]
 ---
 

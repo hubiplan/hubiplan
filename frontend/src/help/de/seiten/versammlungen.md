@@ -29,15 +29,9 @@ Auch die Angaben zur Versammlung (Ort, Leitung, Protokollführung, Notiz …) sp
 
 ## Unterpunkte
 
-Mit **Unterpunkt hinzufügen** bekommt ein Punkt Unterpunkte, etwa TOP 8.1 und 8.2
-unter „Wahlen“. Einen vorhandenen Punkt hängst du unter einen anderen, indem du ihn auf diesen
-Punkt ziehst oder unter **Gehört zu** den Punkt wählst; mit „Eigener Punkt (oberste Ebene)“ wird
-er wieder ein eigener Punkt. Ziehen geht am Griff oder an jeder freien Stelle des Punkts (auf dem
-Handy nur am Griff): Zwischen zwei Punkten abgelegt, ändert sich die Reihenfolge; auf einem Punkt
-abgelegt, wird er dessen Unterpunkt. Ein Punkt nimmt seine Unterpunkte immer mit. Am Griff gehen
-auch die Pfeiltasten: ↑ und ↓ verschieben, → macht den Punkt zum Unterpunkt des Punkts darüber,
-← wieder zum eigenen Punkt. Es gibt eine Ebene Unterpunkte. Die Nummern stehen so auch in der
-Einladung, im Protokoll, im Mitgliederbereich und bei der Online-Abstimmung.
+Mit **Unterpunkt hinzufügen** bekommt ein Punkt Unterpunkte, etwa TOP 8.1 und 8.2 unter „Wahlen“. Einen vorhandenen Punkt hängst du unter einen anderen, indem du ihn auf diesen Punkt ziehst oder unter **Gehört zu** den Punkt wählst; mit „Eigener Punkt (oberste Ebene)“ wird er wieder ein eigener Punkt. Ziehen geht am Griff oder an jeder freien Stelle des Punkts (auf dem Handy nur am Griff): Zwischen zwei Punkten abgelegt, ändert sich die Reihenfolge; auf einem Punkt abgelegt, wird er dessen Unterpunkt.
+
+Ein Punkt nimmt seine Unterpunkte immer mit. Am Griff gehen auch die Pfeiltasten: ↑ und ↓ verschieben, → macht den Punkt zum Unterpunkt des Punkts darüber, ← wieder zum eigenen Punkt. Es gibt eine Ebene Unterpunkte. Die Nummern stehen so auch in der Einladung, im Protokoll, im Mitgliederbereich und bei der Online-Abstimmung.
 
 ## Einladungsfrist
 
@@ -60,7 +54,9 @@ Protokoll sieht. Änderungen an einer vorhandenen Art speichern sich von selbst.
 
 ## Einladung
 
-**Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an. Solange noch nicht eingeladen ist, zeigt die Prüfliste **Vor der Einladung**, ob die Frist noch reicht, ob die Tagesordnung Punkte hat und ob jeder Beschluss- und Wahlpunkt eine Erläuterung hat. Sie blockiert nichts.
+**Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin.
+
+Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an. Solange noch nicht eingeladen ist, zeigt die Prüfliste **Vor der Einladung**, ob die Frist noch reicht, ob die Tagesordnung Punkte hat und ob jeder Beschluss- und Wahlpunkt eine Erläuterung hat. Sie blockiert nichts.
 
 ## Anwesenheit
 
@@ -70,7 +66,9 @@ Organisationen als Mitglied haben eine Stimme und sind **Durch Vertreter** anwes
 
 ## Anmelden per App und Online-Abstimmung
 
-**Anmeldung per App öffnen** zeigt einen QR-Code, der alle 30 Sekunden wechselt; mit **Code groß zeigen** erscheint er bildschirmfüllend für den Beamer. Mitglieder scannen ihn mit der HUBIplan-App oder der Handykamera und tippen **Ich bin da**, mit **Ich gehe** melden sie sich wieder ab (Vollmachten fallen dann weg). Erlaubt die Art die Teilnahme aus der Ferne, schaltest du sie mit **Teilnahme aus der Ferne für diese Versammlung erlauben** ein; Stimmberechtigte tippen dann im Mitgliederbereich auf **Online teilnehmen**. Ist bei der Art **Online-Abstimmung am Handy erlaubt** eingeschaltet, legst du bei Beschluss- und Wahlpunkten eine Abstimmung an, offen oder geheim, bei Wahlen mit einer oder mehreren Personen. **Abstimmung starten** gibt sie frei, **Abstimmung beenden** schließt sie und zeigt das Ergebnis, **Ins Protokoll übernehmen** trägt es als Beschluss oder Wahl ein. Abstimmen dürfen anwesende Stimmberechtigte, für jede Vollmacht eine Stimme mehr. Bei geheimer Abstimmung trägt der Stimmzettel keine Person; bei offener siehst du nach dem Ende unter **Wer wie gestimmt hat**, wer wie gestimmt hat. Teilnahme und Abstimmung aus der Ferne brauchen eine Grundlage in der Satzung (§ 32 Abs. 2 BGB).
+**Anmeldung per App öffnen** zeigt einen QR-Code, der alle 30 Sekunden wechselt; mit **Code groß zeigen** erscheint er bildschirmfüllend für den Beamer. Mitglieder scannen ihn mit der HUBIplan-App oder der Handykamera und tippen **Ich bin da**, mit **Ich gehe** melden sie sich wieder ab (Vollmachten fallen dann weg). Erlaubt die Art die Teilnahme aus der Ferne, schaltest du sie mit **Teilnahme aus der Ferne für diese Versammlung erlauben** ein; Stimmberechtigte tippen dann im Mitgliederbereich auf **Online teilnehmen**.
+
+Ist bei der Art **Online-Abstimmung am Handy erlaubt** eingeschaltet, legst du bei Beschluss- und Wahlpunkten eine Abstimmung an, offen oder geheim, bei Wahlen mit einer oder mehreren Personen. **Abstimmung starten** gibt sie frei, **Abstimmung beenden** schließt sie und zeigt das Ergebnis, **Ins Protokoll übernehmen** trägt es als Beschluss oder Wahl ein. Abstimmen dürfen anwesende Stimmberechtigte, für jede Vollmacht eine Stimme mehr. Bei geheimer Abstimmung trägt der Stimmzettel keine Person; bei offener siehst du nach dem Ende unter **Wer wie gestimmt hat**, wer wie gestimmt hat. Teilnahme und Abstimmung aus der Ferne brauchen eine Grundlage in der Satzung (§ 32 Abs. 2 BGB).
 
 ## Protokoll
 

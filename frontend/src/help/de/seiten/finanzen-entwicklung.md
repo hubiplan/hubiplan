@@ -4,6 +4,7 @@ titel: Finanzen › Entwicklung
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/entwicklung]
+siehe: [guide.budget_plan, guide.year_closing]
 stichworte: [Einnahmen, Ausgaben, Jahresvergleich]
 ---
 

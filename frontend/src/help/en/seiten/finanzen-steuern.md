@@ -4,10 +4,13 @@ titel: Finance › Taxes
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/steuern]
+siehe: [guide.vat_return, guide.year_closing]
 stichworte: [Taxes, exemption limit, charitable status, commercial operation, tax adviser]
 ---
 
 The **Taxes** item shows the tax report for a financial year. It belongs to the Tax & charitable status module. It also needs categories assigned to tax areas (Set up › Categories). You see:
+
+## In detail
 
 - **Tax-free limit**: income from commercial operations including VAT compared with the tax-free limit (€50,000 since 2026, €45,000 before), plus the two previous years. From 80 % you get a note, above the limit a warning.
 - **By tax area**: income, expenses and result per area. Cancellations are offset against the cancelled booking. A loss in the commercial operations shows a note.

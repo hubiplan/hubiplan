@@ -3,6 +3,7 @@ key: page.settings_terms
 titel: Einstellungen › Bezeichnungen
 rechte: [org.edit]
 routen: [/einstellungen/bezeichnungen]
+siehe: [guide.club_setup]
 stichworte: [Bezeichnung, Zug, Korps, Sparte, Untereinheit, Artikel, Englisch]
 ---
 

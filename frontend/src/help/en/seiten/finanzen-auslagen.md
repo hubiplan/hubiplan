@@ -28,6 +28,8 @@ Here the treasurer reviews members' expense claims. **To review** shows submitte
 
 Choose the **Category** for the booking for each item, then **Approve**, **Send a query** or **Decline**. Approving less needs a reason, which the person sees. From the set amount on, two different people approve. Your own claim is always approved by someone else. Only up to the small-amount limit (default €200) may the treasurer approve their own claim; a second person then reviews it under **Review afterwards**.
 
+## In detail
+
 Pay approved claims individually: choose account or cash box and date, then **Paid out: book**. HUBIplan books the expense (as a split booking for several categories) and attaches the receipts to the booking. A GiroCode is available for the banking app. Under **Batch transfer** you combine several claims into one SEPA file for online banking; it is booked on the first download and can be cancelled before that. Reversing the booking in the cash book makes the claim open again.
 
 With **Enter for someone** you record a claim for a member or another person, for example for a paper receipt handed in; without a receipt only with a reason (self-issued receipt). Payments the treasurer makes directly are not expense claims and belong in the cash book.

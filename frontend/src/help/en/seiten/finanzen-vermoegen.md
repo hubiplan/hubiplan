@@ -4,6 +4,7 @@ titel: Finance › Net assets
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/auswertung/vermoegen]
+siehe: [guide.year_closing]
 stichworte: [Net assets, receivables, liabilities, balance]
 ---
 

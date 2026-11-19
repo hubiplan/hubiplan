@@ -5,7 +5,8 @@ modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/kontoauszuege, /finanzen/lastschrift]
 reihe: 55
-stichworte: [Rücklastschrift, Rückgabe, Widerspruch, geplatzt, Konto nicht gedeckt, Bankgebühr, zurückgebucht]
+stichworte:
+  [Rücklastschrift, Rückgabe, Widerspruch, geplatzt, Konto nicht gedeckt, Bankgebühr, zurückgebucht]
 ---
 
 1. Lies den Kontoauszug unter [Finanzen › Kontoauszüge](/finanzen/kontoauszuege) ein. HUBIplan erkennt die Rücklastschrift und nennt die Rechnung dazu.

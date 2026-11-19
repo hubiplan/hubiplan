@@ -11,6 +11,8 @@ Im Haushaltsplan legt ihr für ein Geschäftsjahr fest, was der Verein je Katego
 
 Anlegen: Wählt oben das Geschäftsjahr, auch das kommende. Am schnellsten geht es mit „Plan von … übernehmen“ oder „Ist von … übernehmen“ (auf volle Euro gerundet); mit **Leer beginnen** fangt ihr ohne Vorlage an. Mit **Bearbeiten** ändert ihr Beträge, fügt mit **Zeile hinzufügen** Kategorien hinzu und entfernt Zeilen. **Speichern** übernimmt alles auf einmal.
 
+## Im Einzelnen
+
 Untereinheiten: Eine Zeile kann für alle oder für eine Untereinheit (z. B. einen Zug) gelten. Die Zeile einer Untereinheit zählt nur deren Buchungen, die Zeile für alle zählt den Rest der Kategorie. Buchungen ohne passende Zeile stehen als „nicht geplant“ darunter; mit **In den Plan** nehmt ihr sie auf.
 
 Ist und Hochrechnung: Gezählt werden Einnahmen und Ausgaben des Geschäftsjahres ohne Umbuchungen; ein Storno mindert die stornierte Seite. Die Hochrechnung nimmt an, dass bis zum Jahresende noch so viel dazukommt wie im Vorjahr ab demselben Tag. So verzerrt ein Fest im Sommer die Rechnung nicht. Ohne Vorjahreswerte gilt der Plan, solange das Ist ihn nicht übersteigt.

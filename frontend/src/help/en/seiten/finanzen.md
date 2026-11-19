@@ -3,6 +3,7 @@ key: page.finance
 titel: Finance › Overview
 rechte: [finance.view, billing.view]
 routen: [/finanzen]
+siehe: [guide.booking, guide.fee_run, guide.year_change]
 stichworte: [cash, balance, overview, open items]
 ---
 

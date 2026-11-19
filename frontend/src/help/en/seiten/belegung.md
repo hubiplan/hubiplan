@@ -14,6 +14,8 @@ managers switch on booking under **Booking calendar**. There you also decide whe
 need approval, how much set-up time stays free before and after, and how far ahead
 people may book.
 
+## In detail
+
 Book: Choose **Book**, then the item, the purpose and the time. A booking can repeat
 weekly, monthly or yearly. Instead of a time you can choose an event or a competition;
 the booking then follows it when it is moved or cancelled. Booking a whole building also books

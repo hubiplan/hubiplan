@@ -19,6 +19,8 @@ einschließlich Kontaktperson und Telefon werden für XRechnung benötigt.
 Ohne USt-IdNr. muss der Rechnungssteller eine eindeutige Geschäftspartnerkennung
 angeben, beispielsweise seine mit dem Kunden vereinbarte Lieferantennummer.
 
+## Im Einzelnen
+
 **E-Rechnung prüfen** zeigt Fehler und Hinweise. **Prüfen und festschreiben** prüft
 erneut und vergibt nur bei Erfolg die endgültige Rechnungsnummer. Danach bleiben
 Rechnung und Anschriften unverändert. XML, Prüfbericht und lesbare Ansicht kannst

@@ -4,6 +4,7 @@ titel: Räume und Anlagen verwalten
 modul: infrastructure
 rechte: [infrastructure.view]
 routen: [/infrastruktur]
+siehe: [guide.booking_create, guide.material_add]
 stichworte: [Schießstand, Schützenhaus, Vereinsheim, Raum, Saal, Bereich, Schlüssel, Schießbahnen]
 ---
 
@@ -19,6 +20,8 @@ Bei der Art **Schießstand** gibst du unter **Schießbahnen** an, wie viele Bahn
 vorhanden sind, zum Beispiel zehn Bahnen Luftgewehr 10 m. In den Einstellungen zur
 Schießinfrastruktur kann der Verein **Aus der Infrastruktur übernehmen** wählen. Dann
 empfiehlt die Scheibenwahl in Wettbewerben Scheiben passend zu diesen Bahnen.
+
+## Im Einzelnen
 
 Teile einer Infrastruktur legst du auf ihrer Detailseite mit **Bereich anlegen** an, zum
 Beispiel Saal, Küche oder einzelne Stände. Ein Bereich erbt die Anschrift; weitere Bereiche

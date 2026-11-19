@@ -18,6 +18,8 @@ stichworte:
 
 Here you set up the form people use to become members online. Each club has its own form with its own address.
 
+## In detail
+
 - **Membership types in the form**: which types can be applied for, with name and short explanation. The form shows the annual fee if a fee rate for the type is set under Finances.
 - **Fields**: phone, gender, date of birth, sub-unit, desired start date and message are required, optional or not asked. Custom fields can be added.
 - **Fee and direct debit**: the SEPA mandate can be offered or required in the application once the creditor ID is entered.

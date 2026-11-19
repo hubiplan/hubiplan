@@ -4,6 +4,7 @@ titel: Finanzen › Vermögen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/auswertung/vermoegen]
+siehe: [guide.year_closing]
 stichworte: [Vermögen, Vermögensübersicht, Forderungen, Verbindlichkeiten, Bestand]
 ---
 

@@ -4,6 +4,7 @@ titel: Finanzen › Anlagegüter
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/anlagen]
+siehe: [guide.booking, guide.year_closing]
 stichworte: [Anlagen, Anlagenverzeichnis, Abschreibung, AfA, Nutzungsdauer]
 ---
 

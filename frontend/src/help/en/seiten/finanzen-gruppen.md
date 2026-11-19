@@ -3,6 +3,7 @@ key: page.finance_groups
 titel: Finance › Group pages
 rechte: [finance.view, billing.view]
 routen: [/finanzen/buchen, /finanzen/abrechnen, /finanzen/zahlungen, /finanzen/abschliessen]
+siehe: [guide.fee_rates, guide.fee_run]
 stichworte: [group, group page, payments, book, set up, to do]
 ---
 

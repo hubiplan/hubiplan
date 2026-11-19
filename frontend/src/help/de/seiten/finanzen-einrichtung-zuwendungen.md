@@ -4,6 +4,7 @@ titel: Finanzen › Einrichten › Zuwendungen
 modul: donations
 rechte: [finance.view]
 routen: [/finanzen/einrichtung/zuwendungen]
+siehe: [guide.donation_receipts]
 stichworte:
   [Freistellungsbescheid, Finanzamt, steuerbegünstigt, Zuwendungsbestätigung, Spenden bis 300 €]
 ---

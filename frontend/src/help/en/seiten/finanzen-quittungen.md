@@ -13,6 +13,8 @@ The signature on the screen is a simple electronic signature: it shows that some
 
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
 
+## In detail
+
 The details of a new receipt are saved with **Continue to signature**. If you change details and cancel or leave the page, HUBIplan asks before discarding them. **Continue editing** retains your input. An automatically selected sole cash account does not trigger a warning on its own.
 
 If the receipt list or the account and category choices fail to load, use **Reload**. A failed request for choices does not discard receipt details you have already entered.

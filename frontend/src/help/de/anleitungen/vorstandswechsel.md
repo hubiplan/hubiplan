@@ -5,7 +5,8 @@ modul: members
 rechte: [roles.edit]
 routen: [/mitglieder/aemter]
 reihe: 52
-stichworte: [Vorstandswechsel, neuer Vorstand, Wahl, Neuwahl, Übergabe, Nachfolger, Vorgänger, Amtsübergabe]
+stichworte:
+  [Vorstandswechsel, neuer Vorstand, Wahl, Neuwahl, Übergabe, Nachfolger, Vorgänger, Amtsübergabe]
 ---
 
 1. Besetze jedes neu gewählte Amt unter [Mitglieder › Ämter](/mitglieder/aemter) mit **Besetzen** und lass die Amtszeit des Vorgängers enden, siehe [Amt nach einer Wahl neu besetzen](/hilfe/amt-besetzen).

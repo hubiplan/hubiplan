@@ -4,6 +4,7 @@ titel: Finanzen › Künstlersozialabgabe
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/steuern/kuenstlersozialabgabe]
+siehe: [guide.event_finance]
 stichworte: [Künstlersozialabgabe, KSK, Honorar, Künstler, Meldung]
 ---
 

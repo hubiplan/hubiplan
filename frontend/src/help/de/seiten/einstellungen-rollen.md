@@ -10,7 +10,11 @@ Eine Rolle legt für jeden Bereich fest, was ihre Inhaber dürfen: **kein Zugrif
 
 In der Rollenliste stehen die Bereiche nach Stufe zusammengefasst, zum Beispiel „Bearbeiten: Kasse, Beiträge“ und „Lesen: Mitglieder“. Bereiche ohne Stufen erscheinen als einzelne Kennzeichen; „(teilweise)“ heißt, dass nur einige ihrer Rechte vergeben sind. Unter **Einzelne Rechte** klappst du alle Rechte der Rolle auf.
 
-Hat jemand mehrere Rollen, gilt je Bereich die höchste Stufe. Besetzt wird unter Mitglieder › Ämter mit **Besetzen**; dort endet auf Wunsch gleich die Amtszeit des Vorgängers. Alle Konten mit ihren Rollen stehen unter Einstellungen › Konten; ohne Mitgliederverwaltung besetzt du eine Rolle dort unter **Amtszeiten**, auch befristet. Hat die Rolle Rechte und die Person noch kein Konto, bekommt sie eine Einladung per E-Mail. Ein Konto ist die Anmeldung einer Person; eine Rolle ohne Rechte braucht keins. Wer noch kein Passwort festgelegt hat, ist mit „Passwort noch nicht festgelegt“ markiert; mit **Einladung erneut senden** geht ein neuer Link raus. Mit dem Recht „Ansicht als Rolle“ prüfst du unter **Mein Konto** oben rechts, was eine Rolle sieht. Wer Rollen nur lesen darf, sieht Rollen, Rechte und Inhaber, ändert aber nichts.
+## Im Einzelnen
+
+Hat jemand mehrere Rollen, gilt je Bereich die höchste Stufe. Besetzt wird unter Mitglieder › Ämter mit **Besetzen**; dort endet auf Wunsch gleich die Amtszeit des Vorgängers. Alle Konten mit ihren Rollen stehen unter Einstellungen › Konten; ohne Mitgliederverwaltung besetzt du eine Rolle dort unter **Amtszeiten**, auch befristet. Hat die Rolle Rechte und die Person noch kein Konto, bekommt sie eine Einladung per E-Mail.
+
+Ein Konto ist die Anmeldung einer Person; eine Rolle ohne Rechte braucht keins. Wer noch kein Passwort festgelegt hat, ist mit „Passwort noch nicht festgelegt“ markiert; mit **Einladung erneut senden** geht ein neuer Link raus. Mit dem Recht „Ansicht als Rolle“ prüfst du unter **Mein Konto** oben rechts, was eine Rolle sieht. Wer Rollen nur lesen darf, sieht Rollen, Rechte und Inhaber, ändert aber nichts.
 
 Die Reihenfolge der Rollen legst du fest, indem du eine Rolle am Griff anfasst und ziehst. Sie gilt überall, wo Rollen aufgezählt werden: in der Rollenliste, auf der Webseite und bei den Vertretungsberechtigten in Impressum, Datenschutzhinweisen und Briefbogen. Stell also zum Beispiel den Vorsitz vor die Stellvertretung und die Finanzen.
 

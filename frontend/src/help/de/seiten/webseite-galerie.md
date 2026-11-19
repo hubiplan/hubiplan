@@ -11,6 +11,8 @@ In der Galerie legt ihr Fotoalben für die Webseite an. Ein Album kann Unteralbe
 
 Album anlegen: Titel eingeben und „Neues Album“ wählen. Die Adresse auf der Webseite (z. B. /galerie/schuetzenfest-2024/) entsteht aus dem Titel und lässt sich ändern. Mit einem Datum zeigt die Webseite das Jahr und kann die Alben danach sortieren. Für ein Unteralbum wählt ihr bei „Gehört zu Album“ das Oberalbum.
 
+## Im Einzelnen
+
 Fotos: „Fotos hochladen“ nimmt viele Fotos auf einmal; ihr könnt sie auch auf die Seite ziehen. Die Fotos landen zugleich in der Bilderverwaltung. Zuschneiden ist beim Hochladen aus, damit es schnell geht; einzeln geht es später über „Bild bearbeiten“. Mit „Aus der Bilderverwaltung wählen“ nehmt ihr vorhandene Bilder ins Album. „Aus dem Album nehmen“ löscht das Bild nicht.
 
 Sortierung: Bilder sortiert die Galerie standardmäßig nach Aufnahmedatum, Alben nach Datum (neueste zuerst). Wer „eigene Reihenfolge“ wählt, kann per Ziehen sortieren. Das Titelbild ist das gewählte, sonst das erste Bild.

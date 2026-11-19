@@ -12,6 +12,8 @@ If your club accepts motions, the meeting shows the deadline for them. **Submit 
 you enter a title and a reason, and **Submit motion** sends it. You then see whether it was added
 to the agenda or why not. Until a decision has been made, **Withdraw** takes it back.
 
+## In detail
+
 During the meeting: scan the QR code in the room with the app or your phone camera and tap
 **I'm here**. If your club allows remote participation, the meeting shows
 **To the meeting: take part online and vote**; there you tap **Take part online**. When the chair

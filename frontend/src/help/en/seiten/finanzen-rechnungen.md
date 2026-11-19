@@ -15,6 +15,8 @@ Enter a search term and choose **Search** or press Enter. Status and other filte
 
 After you change the selection, previous results are hidden until the new request finishes. If loading fails, **Reload** retries the same selection.
 
+## In detail
+
 Final invoices show credited advances and the remaining outstanding amount. A credited
 advance invoice is marked “Settled”. Its receipts remain in the cashbook. Cancel the
 associated final invoice before removing those payments. A final invoice fully covered

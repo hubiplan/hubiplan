@@ -9,6 +9,7 @@ routen:
     /abteilung/meldungen,
     /abteilung/export,
   ]
+siehe: [guide.unit_create, guide.unit_lead]
 stichworte: [platoon, department, area, leader]
 ---
 

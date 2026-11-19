@@ -7,6 +7,8 @@ stichworte: [card, QR code, membership card]
 
 Your membership card with QR code. Show it on your phone or print it. If you lose your phone, the club can block the card and create a new one.
 
+## In detail
+
 If your operator has configured Wallet and your club has switched it on, you can add
 the card to Google Wallet or download an Apple Wallet pass (`.pkpass`). The pass shows
 name, club, membership type, department and umbrella association in the club's colours

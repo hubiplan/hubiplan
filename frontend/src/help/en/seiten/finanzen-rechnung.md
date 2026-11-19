@@ -4,6 +4,7 @@ titel: Finance › Set up › Invoice & payment
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/rechnung]
+siehe: [guide.invoice_single, guide.invoice_cancel]
 stichworte: [invoice, payment term, creditor ID, e-invoice]
 ---
 

@@ -7,7 +7,7 @@ import { TERMS, termAnchor, tr } from '../learning/content.ts'
 import type { TermKey } from '../learning/content.ts'
 import { useLearning } from '../learning/LearningContext.tsx'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
-import { guidesFor, pageHelpFor, routeMatches } from './content.ts'
+import { guidesFor, guidesOfPage, pageHelpFor, routeMatches } from './content.ts'
 import type { HelpEntry } from './content.ts'
 import { useHelp } from './HelpContext.tsx'
 import type { HelpState } from './HelpContext.tsx'
@@ -102,7 +102,7 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
   const close = () => help.setPanelOpen(false)
   const all = help.entries?.filter(help.visible) ?? []
   const page = pageHelpFor(all, pathname)
-  const guides = guidesFor(all, pathname)
+  const guides = guidesOfPage(all, page, guidesFor(all, pathname))
   // Anleitungen zu dieser Seite, für die ein Recht fehlt (ausgegraut, F1)
   const blocked = (help.entries ?? []).filter(
     (e) =>

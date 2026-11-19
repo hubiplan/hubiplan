@@ -15,6 +15,8 @@ schaltet die Verwaltung unter **Buchungskalender** das Buchen ein. Dort legst du
 Buchungen eine Freigabe brauchen, wie lange vorher und nachher eine Rüstzeit frei
 bleiben soll und wie weit im Voraus gebucht werden darf.
 
+## Im Einzelnen
+
 Buchen: Wähle **Buchen**, dann Objekt, Zweck und Zeit. Eine Buchung kann sich wöchentlich,
 monatlich oder jährlich wiederholen. Statt einer Zeit kannst du einen Termin oder
 Wettbewerb wählen; die Buchung folgt ihm dann, wenn er verschoben oder abgesagt wird.

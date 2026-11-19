@@ -4,6 +4,7 @@ titel: Finanzen › Einrichten › Rechnung & Zahlung
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/rechnung]
+siehe: [guide.invoice_single, guide.invoice_cancel]
 stichworte: [Rechnung, Zahlungsziel, Gläubiger-ID, E-Rechnung]
 ---
 

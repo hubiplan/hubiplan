@@ -14,6 +14,7 @@
 //   rechte: [members.edit]       eines davon nötig (leer: alle Angemeldeten)
 //   routen: [/mein-konto/anmeldung]
 //   stichworte: [Kennwort, Login]
+//   siehe: [guide.fee_run]       nur Seitenhilfen: verwandte Anleitungen anderer Seiten
 //
 // Seitenhilfen (Ordner seiten/) gehören zu ihren Routen; Anleitungen (anleitungen/)
 // erscheinen auf diesen Routen als „Häufige Aufgaben“. Bilder: ![Text](bild:name),
@@ -37,10 +38,12 @@ export interface HelpEntry {
   rights: string[]
   routes: string[]
   keywords: string[]
+  /** Seitenhilfe: Schlüssel verwandter Anleitungen, die nicht zur selben Route gehören */
+  see: string[]
   body: string
 }
 
-const LIST_FIELDS = new Set(['rechte', 'routen', 'stichworte'])
+const LIST_FIELDS = new Set(['rechte', 'routen', 'stichworte', 'siehe'])
 const KNOWN_FIELDS = new Set(['key', 'titel', 'modul', 'reihe', 'menue', ...LIST_FIELDS])
 
 /** Kopf und Text einer Hilfedatei lesen. Wirft bei Formfehlern (Test prüft alle Dateien). */
@@ -87,6 +90,7 @@ export function parseHelpFile(file: string, raw: string): HelpEntry {
     rights: list('rechte'),
     routes: list('routen'),
     keywords: list('stichworte'),
+    see: list('siehe'),
     body: m[2].trim(),
   }
 }
@@ -185,6 +189,20 @@ export function guidesFor(entries: HelpEntry[], pathname: string): HelpEntry[] {
   return entries.filter(
     (e) => e.kind === 'guide' && e.routes.some((r) => routeMatches(r, pathname)),
   )
+}
+
+/** Anleitungen einer Seitenhilfe: die der Route, dann die unter `siehe` genannten. */
+export function guidesOfPage(
+  entries: HelpEntry[],
+  page: Pick<HelpEntry, 'see'> | null,
+  routeGuides: HelpEntry[],
+): HelpEntry[] {
+  if (!page?.see.length) return routeGuides
+  const have = new Set(routeGuides.map((g) => g.key))
+  const more = page.see
+    .map((key) => entries.find((e) => e.kind === 'guide' && e.key === key))
+    .filter((e): e is HelpEntry => !!e && !have.has(e.key))
+  return [...routeGuides, ...more]
 }
 
 /** Alle Wörter der Suche müssen vorkommen (Groß-/Kleinschreibung egal). */

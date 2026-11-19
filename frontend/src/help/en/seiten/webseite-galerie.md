@@ -11,6 +11,8 @@ In the gallery you create photo albums for the website. An album can have sub-al
 
 Create an album: enter a title and choose “New album”. The address on the website (e.g. /galerie/schuetzenfest-2024/) is made from the title and can be changed. With a date the website shows the year and can sort the albums by it. For a sub-album, choose the parent album under “Belongs to album”.
 
+## In detail
+
 Photos: “Upload photos” takes many photos at once; you can also drag them onto the page. The photos are also added to the image library. Cropping is off while uploading to keep it quick; you can crop single photos later with “Edit image”. “Choose from the image library” adds existing images to the album. “Remove from album” does not delete the image.
 
 Sorting: by default the gallery sorts images by date taken and albums by date (newest first). Choose “custom order” to sort by dragging. The cover is the chosen image, otherwise the first one.

@@ -4,6 +4,7 @@ titel: Department › Expenses
 modul: expenses
 rechte: [expenses.view]
 routen: [/auslagen]
+siehe: [guide.expense_claim, guide.expense_review]
 stichworte: [expense, confirm, leaders, department]
 ---
 

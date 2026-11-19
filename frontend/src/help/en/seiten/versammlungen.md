@@ -28,15 +28,9 @@ The meeting details (location, chair, minute taker, note …) also save themselv
 
 ## Sub-items
 
-**Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”.
-To put an existing item under another one, drag it onto that item or pick the item under
-**Belongs to**; “Own item (top level)” makes it an item of its own again. You can drag by the
-handle or any empty spot of the item (on a phone only by the handle): dropped between two items
-it changes the order; dropped onto an item it becomes a sub-item of that item. An item always
-takes its sub-items along. The arrow keys work on the handle too: ↑ and ↓ move, → makes the item a
-sub-item of the item above, ← makes it an item of its own again. There is one level of
-sub-items. The numbers appear the same way in the invitation, the minutes, the member area and
-online voting.
+**Add sub-item** gives an item sub-items, for example 8.1 and 8.2 under “Elections”. To put an existing item under another one, drag it onto that item or pick the item under **Belongs to**; “Own item (top level)” makes it an item of its own again. You can drag by the handle or any empty spot of the item (on a phone only by the handle): dropped between two items it changes the order; dropped onto an item it becomes a sub-item of that item.
+
+An item always takes its sub-items along. The arrow keys work on the handle too: ↑ and ↓ move, → makes the item a sub-item of the item above, ← makes it an item of its own again. There is one level of sub-items. The numbers appear the same way in the invitation, the minutes, the member area and online voting.
 
 ## Notice period
 
@@ -57,7 +51,9 @@ you set the notice period, how invitations are sent, the quorum and who will see
 
 ## Invitation
 
-**Prepare invitation** creates a draft circular with the agenda. For general meetings it goes to the members entitled to vote under the type (member types and minimum age), for board meetings to the board, and for leadership meetings of a unit to its role holders. Use **Open circular** to check the recipients and text and to send the invitation. After that the meeting counts as invited; if it went out after the last day of the notice period, HUBIplan points this out. You also need the right to send circulars. If the agenda changes after the draft has been created, adjust the text in the circular. Until the invitation has gone out, the **Before the invitation** checklist shows whether the notice period can still be met, whether the agenda has items and whether every resolution and election item has an explanation. It never blocks anything.
+**Prepare invitation** creates a draft circular with the agenda. For general meetings it goes to the members entitled to vote under the type (member types and minimum age), for board meetings to the board, and for leadership meetings of a unit to its role holders. Use **Open circular** to check the recipients and text and to send the invitation. After that the meeting counts as invited; if it went out after the last day of the notice period, HUBIplan points this out.
+
+You also need the right to send circulars. If the agenda changes after the draft has been created, adjust the text in the circular. Until the invitation has gone out, the **Before the invitation** checklist shows whether the notice period can still be met, whether the agenda has items and whether every resolution and election item has an explanation. It never blocks anything.
 
 ## Attendance
 
@@ -67,7 +63,9 @@ Organisations as members have one vote and attend **By representative**: choose 
 
 ## Check-in via app and online voting
 
-**Open check-in via app** shows a QR code that changes every 30 seconds; **Show code full screen** displays it full screen for the projector. Members scan it with the HUBIplan app or their phone camera and tap **I'm here**; **I'm leaving** checks them out again (any proxies then lapse). If the type allows remote participation, switch it on with **Allow remote participation for this meeting**; members entitled to vote then tap **Take part online** in the member area. If **Online voting on the phone allowed** is switched on for the type, you create a vote for resolution and election items, open or secret, for elections with one or more candidates. **Start vote** opens it, **End vote** closes it and shows the result, **Transfer to the minutes** records it as a resolution or election. Members present and entitled to vote can vote, with one extra vote for each proxy. In a secret ballot no person is recorded on the ballot; in an open vote, **Who voted how** shows after the end who voted how. Remote participation and voting need a basis in the constitution (section 32 (2) German Civil Code).
+**Open check-in via app** shows a QR code that changes every 30 seconds; **Show code full screen** displays it full screen for the projector. Members scan it with the HUBIplan app or their phone camera and tap **I'm here**; **I'm leaving** checks them out again (any proxies then lapse). If the type allows remote participation, switch it on with **Allow remote participation for this meeting**; members entitled to vote then tap **Take part online** in the member area. If **Online voting on the phone allowed** is switched on for the type, you create a vote for resolution and election items, open or secret, for elections with one or more candidates.
+
+**Start vote** opens it, **End vote** closes it and shows the result, **Transfer to the minutes** records it as a resolution or election. Members present and entitled to vote can vote, with one extra vote for each proxy. In a secret ballot no person is recorded on the ballot; in an open vote, **Who voted how** shows after the end who voted how. Remote participation and voting need a basis in the constitution (section 32 (2) German Civil Code).
 
 ## Minutes
 

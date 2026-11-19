@@ -8,6 +8,8 @@ stichworte: [Export, Sicherung, Umzug, JSON]
 
 Mit dem vollständigen Export nehmt ihr alle Daten der Einheit als Datei mit, etwa für einen Umzug auf eine andere HUBIplan-Instanz oder als eigene Sicherung. Der Import spielt eine solche Datei ein. Bewahrt die Datei sicher auf, sie enthält personenbezogene Daten.
 
+## Im Einzelnen
+
 Neue Exporte kennzeichnen ihr Rechteformat ausdrücklich. Bei Dateien ohne diese Angabe und mit mehrdeutigen Codes muss die ursprüngliche
 Bedeutung ausdrücklich ausgewählt werden. **Erneut prüfen** zeigt die danach
 wirksamen Rollenrechte. Diese sind vor der Übernahme ausdrücklich zu bestätigen.

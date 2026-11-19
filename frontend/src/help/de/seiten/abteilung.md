@@ -9,6 +9,7 @@ routen:
     /abteilung/meldungen,
     /abteilung/export,
   ]
+siehe: [guide.unit_create, guide.unit_lead]
 stichworte: [Zug, Abteilung, Bereich, Zugführer]
 ---
 

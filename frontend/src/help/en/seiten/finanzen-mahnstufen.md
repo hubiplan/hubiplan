@@ -4,6 +4,7 @@ titel: Finance › Set up › Reminder levels
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/mahnstufen]
+siehe: [guide.dunning]
 stichworte: [reminder level, deadline, reminder fee]
 ---
 

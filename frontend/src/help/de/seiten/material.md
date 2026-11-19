@@ -18,6 +18,8 @@ Wähle ein zugängliches Mitglied
 oder trage eine vollständige Adresse ein. Freie Adressen sehen alle Materialleser dieser Einheit.
 Ein neues Teil speicherst du mit **Speichern**. Änderungen an einem vorhandenen Teil speichern sich von selbst; **Schließen** führt zurück zur Ansicht.
 
+## Im Einzelnen
+
 Das Formular gliedert sich in Grunddaten, Standort und Zustand. Beschriftungen stehen über
 den Eingabefeldern. Bei der Auswahl von Mitgliedern, Terminen, Aufgaben oder Dokumenten
 gibst du mindestens zwei Zeichen in **Auswahl suchen** ein. Darunter klappt die Trefferliste

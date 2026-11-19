@@ -13,6 +13,8 @@ Die Unterschrift auf dem Bildschirm ist eine einfache elektronische Unterschrift
 
 Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode-Schreibvarianten werden vereinheitlicht; „ß“ und „ss“ gelten dabei als gleich. Andere gewählte Filter gelten weiterhin.
 
+## Im Einzelnen
+
 Die Angaben einer neuen Quittung werden mit **Weiter zur Unterschrift** gespeichert. Änderst du Angaben und brichst ab oder verlässt die Seite, fragt HUBIplan vor dem Verwerfen nach. **Weiter bearbeiten** behält deine Eingaben. Die automatisch vorgewählte einzige Barkasse löst allein keine Warnung aus.
 
 Kann die Quittungsliste oder die Auswahl von Konten und Kategorien nicht geladen werden, nutze **Erneut laden**. Eine fehlgeschlagene Auswahlabfrage verwirft bereits eingegebene Quittungsangaben nicht.

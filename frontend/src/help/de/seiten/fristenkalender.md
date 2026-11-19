@@ -33,6 +33,8 @@ Zuständig: Eine Pflicht hängt an einer Rolle, nicht an einer Person, zum Beisp
 Wechselt das Amt, erinnert HUBIplan von selbst die neuen Inhaber. Ohne Rolle gehen die
 Erinnerungen an alle, die den Fristenkalender pflegen dürfen.
 
+## Im Einzelnen
+
 Vorschläge: Unter **Vorschläge** stehen übliche Pflichten eingetragener, gemeinnütziger Vereine
 in Deutschland. **Übernehmen** legt die Pflicht an; Frist, Wiederholung und Zuständigkeit passt
 du dabei an. Vorschläge, die nur eingetragene Vereine betreffen, erscheinen, wenn im Impressum

@@ -4,6 +4,7 @@ titel: Finanzen › Einrichten › Kategorien
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/kategorien]
+siehe: [guide.booking]
 stichworte: [Kategorie, Steuerbereich, Zweckbetrieb]
 ---
 

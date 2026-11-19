@@ -17,6 +17,8 @@ and location. The default location type is **With a member**. Select an accessib
 or enter a complete address. Everyone with
 equipment viewing permission in this unit can see manually entered addresses. Save a new item with **Save**. Changes to an existing item save themselves; **Close** returns to the view.
 
+## In detail
+
 The form is divided into basic data, location and condition, with labels above the fields.
 To select members, events, tasks or documents, enter at least two characters in **Search choices**.
 A result menu opens below the field; choose the matching entry. There is no separate permanent menu.

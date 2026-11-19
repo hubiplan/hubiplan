@@ -5,7 +5,16 @@ modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder]
 reihe: 86
-stichworte: [Auskunft, Löschung, DSGVO, Daten löschen, Datenauskunft, Recht auf Vergessenwerden, Betroffenenrechte]
+stichworte:
+  [
+    Auskunft,
+    Löschung,
+    DSGVO,
+    Daten löschen,
+    Datenauskunft,
+    Recht auf Vergessenwerden,
+    Betroffenenrechte,
+  ]
 ---
 
 1. Prüfe, dass die Anfrage wirklich von der Person kommt, etwa durch einen Rückruf.

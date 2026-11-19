@@ -11,7 +11,9 @@ Under **Design and colours** you choose the look, colours and logo of the websit
 
 ## Assign colours
 
-When assigning colours you choose a palette colour, white or dark for each place of the design (header, menu, decorative lines, footer, colour bands, date box). The header, footer, colour bands and decorative lines can also get a gradient from the appearance settings instead of a colour; the menu, buttons and date box stay single-coloured, and rounded edges show the first colour of the gradient. Below, under **Text, surfaces and background**, you set the colour of body text, secondary text, surfaces (cards, table rows) and the page background. “Default” takes the colour ticked under **Used for** in Settings › Appearance, otherwise the design stays as it is; table rows then alternate with the surface colour; a chosen page background takes precedence over the “Background” control of the fine-tuning. If text on surfaces or background becomes hard to read (below 4.5 : 1), a notice appears.
+When assigning colours you choose a palette colour, white or dark for each place of the design (header, menu, decorative lines, footer, colour bands, date box). The header, footer, colour bands and decorative lines can also get a gradient from the appearance settings instead of a colour; the menu, buttons and date box stay single-coloured, and rounded edges show the first colour of the gradient.
+
+Below, under **Text, surfaces and background**, you set the colour of body text, secondary text, surfaces (cards, table rows) and the page background. “Default” takes the colour ticked under **Used for** in Settings › Appearance, otherwise the design stays as it is; table rows then alternate with the surface colour; a chosen page background takes precedence over the “Background” control of the fine-tuning. If text on surfaces or background becomes hard to read (below 4.5 : 1), a notice appears.
 
 ## Draft and publishing
 
@@ -25,7 +27,9 @@ In the browser tab and on the phone home screen the website shows the unit's own
 
 Under **Share design** you save a design as a ZIP file with **Save as package**. The package contains the styling, the layout of header, footer and home page and the colour defaults, but no coat of arms, texts or images.
 
-Whoever manages the website can import a package under **Load design from package**, for example to keep the previous look when moving from WordPress. With a new **Short name** and **Name** it becomes an own design. **Check** lets HUBIplan check the package: no JavaScript, no content from other addresses, no imported HTML/Django templates, only permitted CSS rules. **Import** releases the design for this website. It applies to your unit only, other clubs do not see it, and the short name only has to be unique within your unit. A unit can import up to ten designs of its own, each package at most 2 MB. Under **Imported designs** you see your designs and the installation designs released for you, marked “this unit only” or “whole installation”.
+Whoever manages the website can import a package under **Load design from package**, for example to keep the previous look when moving from WordPress. With a new **Short name** and **Name** it becomes an own design. **Check** lets HUBIplan check the package: no JavaScript, no content from other addresses, no imported HTML/Django templates, only permitted CSS rules. **Import** releases the design for this website.
+
+It applies to your unit only, other clubs do not see it, and the short name only has to be unique within your unit. A unit can import up to ten designs of its own, each package at most 2 MB. Under **Imported designs** you see your designs and the installation designs released for you, marked “this unit only” or “whole installation”.
 
 Platform administrators import a package for the whole installation (or, with **for this unit only**, like a club) and switch the release on and off for each website. Under **Designs of units** they see all designs that units imported themselves and can block them with **blocked**; a website with a blocked design then shows Classic. Importing, deleting and blocking are recorded in the unit's change log.
 

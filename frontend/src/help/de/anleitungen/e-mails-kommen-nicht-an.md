@@ -4,7 +4,16 @@ titel: E-Mails kommen nicht an
 rechte: [audit.view]
 routen: [/einstellungen/postausgang]
 reihe: 14
-stichworte: [Spam, E-Mail kommt nicht an, nicht zugestellt, Zustellung, unzustellbar, Mail fehlt, keine Mail bekommen]
+stichworte:
+  [
+    Spam,
+    E-Mail kommt nicht an,
+    nicht zugestellt,
+    Zustellung,
+    unzustellbar,
+    Mail fehlt,
+    keine Mail bekommen,
+  ]
 ---
 
 1. Öffne [Einstellungen › Postausgang](/einstellungen/postausgang) und suche die Mail. Ihr Stand zeigt, ob sie verschickt wurde oder ob die Adresse nicht erreichbar war.

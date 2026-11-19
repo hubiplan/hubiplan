@@ -4,6 +4,7 @@ titel: Webseite › Dokumente
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/dokumente]
+siehe: [guide.document_upload, guide.website_page]
 stichworte: [Dokumente, Presse, Pressespiegel, Zeitungsartikel, PDF]
 ---
 

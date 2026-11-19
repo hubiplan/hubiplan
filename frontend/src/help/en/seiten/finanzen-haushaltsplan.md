@@ -11,6 +11,8 @@ In the budget you set out, for one financial year, what the club plans to receiv
 
 Creating: Choose the financial year at the top, including the coming one. The quickest way is “Copy plan from …” or “Copy actual figures from …” (rounded to whole euros); **Start empty** starts without a template. With **Edit** you change amounts, add categories with **Add line** and remove lines. **Save** applies everything at once.
 
+## In detail
+
 Sub-units: A line can apply to everyone or to one sub-unit (for example a platoon). A sub-unit's line counts only its bookings; the line for everyone counts the rest of the category. Bookings without a matching line are listed below as “not budgeted”; **Add to budget** takes them in.
 
 Actual and forecast: Income and expenses of the financial year count, without transfers; a cancellation reduces the side it cancels. The forecast assumes that as much will still come in by year end as in the previous year from the same day, so a festival in summer does not distort it. Without figures from the previous year, the plan applies as long as the actual figure stays below it.

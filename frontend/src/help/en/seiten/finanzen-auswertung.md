@@ -4,6 +4,7 @@ titel: Finance › Evaluation
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/auswertung]
+siehe: [guide.year_closing, guide.cash_audit]
 stichworte: [Evaluation, cash report, accounts, category, balance, financial year]
 ---
 

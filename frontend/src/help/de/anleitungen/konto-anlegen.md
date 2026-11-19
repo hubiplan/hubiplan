@@ -4,7 +4,8 @@ titel: Konto für eine neue Person anlegen
 rechte: [roles.edit]
 routen: [/einstellungen/konten]
 reihe: 12
-stichworte: [Benutzer anlegen, neuer Benutzer, Zugang, Login, Konto anlegen, einladen, Einladung, Nutzer]
+stichworte:
+  [Benutzer anlegen, neuer Benutzer, Zugang, Login, Konto anlegen, einladen, Einladung, Nutzer]
 ---
 
 Ein Konto legst du nicht einzeln an. Es entsteht mit der Einladung, sobald die Person eine Rolle bekommt oder den Mitgliederbereich nutzen darf.

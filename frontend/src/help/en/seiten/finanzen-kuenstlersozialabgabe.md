@@ -4,6 +4,7 @@ titel: Finance › Artists’ social security levy
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/steuern/kuenstlersozialabgabe]
+siehe: [guide.event_finance]
 stichworte: [Artists’ social security levy, KSK, fee, artist, report]
 ---
 

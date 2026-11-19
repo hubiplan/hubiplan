@@ -3,6 +3,7 @@ key: page.settings_audit
 titel: Einstellungen › Protokoll
 rechte: [audit.view]
 routen: [/einstellungen/protokoll]
+siehe: [guide.privacy_request, guide.backup]
 stichworte: [Protokoll, Änderungen, wer, Nachvollziehbarkeit]
 ---
 

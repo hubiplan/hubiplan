@@ -10,6 +10,7 @@ import { DEPT_PERM } from '../api/portal.ts'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import {
   guidesFor,
+  guidesOfPage,
   imagesIn,
   pageHelpFor,
   parseHelpFile,
@@ -87,6 +88,8 @@ const TOP_ROUTES = new Set(
 )
 const bold = (body: string) => [...body.matchAll(/\*\*([^*]+)\*\*/g)].map((m) => m[1])
 
+const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
+
 describe('Hilfedateien', () => {
   it('Menüpfade („Bereich › Punkt“) nennen Punkte, die es im Menü gibt', () => {
     // UX-Audit X-01: Hilfe, Web und App nutzen dieselben Begriffe (docs/begriffe.md)
@@ -127,7 +130,7 @@ describe('Hilfedateien', () => {
     expect([...ENG.keys()].sort()).toEqual([...DE.keys()].sort())
     for (const [name, de] of DE) {
       const en = ENG.get(name) as HelpEntry
-      const meta = (e: HelpEntry) => [e.key, e.module, e.rights, e.routes, e.order, e.menu]
+      const meta = (e: HelpEntry) => [e.key, e.module, e.rights, e.routes, e.order, e.menu, e.see]
       expect(meta(en), name).toEqual(meta(de))
       expect(en.keywords.length, `${name}: Stichworte`).toBeGreaterThan(0)
       expect(imagesIn(en.body), `${name}: Bilder`).toEqual(imagesIn(de.body))
@@ -181,15 +184,61 @@ describe('Hilfedateien', () => {
     expect(NAV_ROUTES.filter((r) => !exact.has(r))).toEqual([])
   })
 
-  it('lange Seitenhilfen sind mit Zwischenüberschriften gegliedert', () => {
-    // Die Leiste zeigt Abschnitte („## …“) eingeklappt; ohne sie ist ein langer Text eine Wand
-    const walls = [...DE.entries()]
-      .filter(([, e]) => e.kind === 'page')
-      .filter(
-        ([, e]) => e.body.split(/\s+/).length > 450 && splitSections(e.body).sections.length < 2,
-      )
-      .map(([name]) => name)
+  it('Seitenhilfen bleiben kurz: Einleitung und Abschnitte mit Obergrenze', () => {
+    // Die Leiste zeigt die Einleitung offen und Abschnitte („## …“) eingeklappt. Englisch
+    // braucht etwas mehr Wörter.
+    const tooLong: string[] = []
+    for (const [files, lead, section] of [
+      [DE, 150, 350],
+      [ENG, 170, 400],
+    ] as const)
+      for (const [name, e] of files) {
+        if (e.kind !== 'page') continue
+        const parts = splitSections(e.body)
+        if (words(parts.lead) > lead) tooLong.push(`${name}: Einleitung ${words(parts.lead)}`)
+        for (const s of parts.sections)
+          if (words(s.body) > section) tooLong.push(`${name}: „${s.title}“ ${words(s.body)}`)
+      }
+    expect(tooLong).toEqual([])
+  })
+
+  it('kein Absatz und kein Listenpunkt hat mehr als 120 Wörter', () => {
+    const walls: string[] = []
+    for (const files of [DE, ENG])
+      for (const [name, e] of files)
+        for (const block of e.body.split(/\n[ \t]*\n/)) {
+          if (/^\s*(\||#|```|!\[)/.test(block)) continue
+          const items = /^\s*(\d+\.|-)\s/.test(block)
+            ? block.split(/\n(?=\s*(?:\d+\.|-)\s)/)
+            : [block]
+          for (const item of items)
+            if (words(item) > 120) walls.push(`${name}: ${words(item)} „${item.slice(0, 40)}…“`)
+        }
     expect(walls).toEqual([])
+  })
+
+  it('„siehe“ nennt Anleitungen, die es gibt und die nicht schon zur Seite gehören', () => {
+    const guides = new Map(
+      [...DE.values()].filter((e) => e.kind === 'guide').map((e) => [e.key, e]),
+    )
+    for (const [name, e] of DE) {
+      if (e.see.length) expect(e.kind, name).toBe('page')
+      for (const key of e.see) {
+        const guide = guides.get(key)
+        expect(guide, `${name}: ${key}`).toBeTruthy()
+        expect(
+          guide?.routes.some((r) => e.routes.includes(r)),
+          `${name}: ${key} steht schon über die Route da`,
+        ).toBe(false)
+      }
+    }
+    const page = { see: ['guide.b', 'guide.a'] }
+    const entry = (key: string) => ({ key, kind: 'guide' }) as HelpEntry
+    expect(
+      guidesOfPage([entry('guide.a'), entry('guide.b'), entry('guide.c')], page, [
+        entry('guide.a'),
+      ]).map((g) => g.key),
+    ).toEqual(['guide.a', 'guide.b'])
   })
 
   it('Anleitungen haben höchstens zehn Schritte', () => {
@@ -390,6 +439,21 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
     for (const text of Object.values(news))
       for (const link of text.matchAll(/\]\((\/[^)]*)\)/g))
         expect(TOP_ROUTES.has(link[1].split('/')[1]), link[1]).toBe(true)
+  })
+
+  it('Neuigkeiten: ein Eintrag hat höchstens 90 Wörter, mehr steht in der Hilfe', () => {
+    const news = import.meta.glob('../help/neuigkeiten/*.md', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>
+    const long = Object.entries(news).flatMap(([file, text]) =>
+      text
+        .split('\n')
+        .filter((line) => line.startsWith('- ') && words(line) > 90)
+        .map((line) => `${file}: ${words(line)} „${line.slice(0, 50)}…“`),
+    )
+    expect(long).toEqual([])
   })
 })
 

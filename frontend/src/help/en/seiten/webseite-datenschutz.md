@@ -4,6 +4,7 @@ titel: Website › Privacy notice
 modul: website
 rechte: [website.manage]
 routen: [/webseite/datenschutz]
+siehe: [guide.website_publish]
 stichworte: [Privacy, privacy notice, privacy policy, GDPR]
 ---
 

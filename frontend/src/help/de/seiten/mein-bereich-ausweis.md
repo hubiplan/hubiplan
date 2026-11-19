@@ -7,6 +7,8 @@ stichworte: [Ausweis, QR-Code, Mitgliedsausweis]
 
 Dein Mitgliedsausweis mit QR-Code. Zeig ihn auf dem Handy vor oder druck ihn aus. Wenn du das Handy verlierst, kann der Verein den Ausweis sperren und neu erzeugen.
 
+## Im Einzelnen
+
 Wenn dein Betreiber Wallet eingerichtet und dein Verein es eingeschaltet hat, kannst du
 den Ausweis zu Google Wallet hinzufügen oder als Apple-Wallet-Pass (`.pkpass`)
 herunterladen. Der Pass zeigt Name, Verein, Mitgliedsart, Abteilung und Dachverband in
