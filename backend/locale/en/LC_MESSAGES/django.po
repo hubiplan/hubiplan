@@ -14891,3 +14891,15 @@ msgstr "Allow name search"
 
 msgid "mit Rückgabe"
 msgstr "to be returned"
+
+msgid "Dieser Link nimmt kein Bargeld an."
+msgstr "This link does not accept cash."
+
+msgid "Hier ist nichts offen."
+msgstr "Nothing is outstanding here."
+
+msgid "Barzahlung gebucht."
+msgstr "Cash payment booked."
+
+msgid "Kassenperson"
+msgstr "Cashier"

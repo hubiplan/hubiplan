@@ -1044,17 +1044,38 @@ class ScanLinkIn(serializers.Serializer):
     material_return = serializers.BooleanField(required=False, default=False)
     expires_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
     allow_search = serializers.BooleanField(required=False, default=False)
+    cash_account = serializers.IntegerField(required=False, allow_null=True, default=None)
+    cashier = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
 
 
 class ScanLinksView(_OrgRegistrationMixin, APIView):
     """Scan-Links für Personal ohne Konto (A6): GET Liste mit Links · POST ``{label, addon?,
-    expires_at?}`` neuer Link für den Einlass oder eine Zusatzleistung."""
+    material?, material_return?, allow_search?, cash_account?, cashier?, expires_at?}`` neuer
+    Link für den Einlass, eine Zusatzleistung oder Material; mit ``cash_account`` nimmt das
+    Personal offene Teilnahmegebühren bar an (Kassen-Link)."""
+
+    def _cash_accounts(self, event) -> list:
+        from finance.models import Account
+
+        if (
+            BILLING_EDIT not in self.viewer.perms
+            or self.viewer.kind != "org"
+            or event.organization_id != self.org.pk
+        ):
+            return []
+        return list(
+            Account.objects.filter(
+                organization=self.org, kind=Account.Kind.CASH, is_active=True
+            ).order_by("name")
+        )
 
     def get(self, request, pk: int, **kwargs):
         event = self.event(pk)
         self.require_edit(event)
         setup = self.setup_for(event)
-        links = setup.scan_links.select_related("setup__organization", "setup__event", "addon")
+        links = setup.scan_links.select_related(
+            "setup__organization", "setup__event", "addon", "material", "cash_account"
+        )
         return Response(
             {
                 "links": [scanning.link_data(link, with_url=True) for link in links],
@@ -1064,6 +1085,8 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
                 "materials": [
                     materials.material_data(m) for m in setup.materials.filter(is_active=True)
                 ],
+                # Kassen-Links: nur wer Rechnungen bearbeiten darf, mit den Barkassen
+                "cash_accounts": [{"id": a.pk, "name": a.name} for a in self._cash_accounts(event)],
                 "default_expires_at": scanning.default_expiry(setup),
             }
         )
@@ -1093,6 +1116,15 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
                 raise serializers.ValidationError(
                     {"material": gettext("Dieses Material wird nicht zurückgegeben.")}
                 )
+        cash_account = None
+        if v["cash_account"] is not None:
+            cash_account = next(
+                (a for a in self._cash_accounts(event) if a.pk == v["cash_account"]), None
+            )
+            if cash_account is None:
+                raise serializers.ValidationError(
+                    {"cash_account": gettext("Bitte eine Barkasse wählen.")}
+                )
         expires = v["expires_at"]
         if expires is not None and expires <= timezone.now():
             raise serializers.ValidationError(
@@ -1106,6 +1138,8 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
             material_return=v["material_return"],
             expires_at=expires,
             allow_search=v["allow_search"],
+            cash_account=cash_account,
+            cashier=v["cashier"],
             user=request.user,
         )
         record(

@@ -13,6 +13,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import secrets
+from decimal import Decimal
 
 from django.db.models import F
 from django.utils import timezone
@@ -21,7 +22,7 @@ from django.utils.translation import gettext as _
 from core.tenancy import rls_bypass
 
 from . import materials, services, tickets
-from .models import Booking, Participant, Redemption, Registration, ScanLink
+from .models import Booking, CashTake, Participant, Redemption, Registration, ScanLink
 
 MAX_LINKS = 20
 
@@ -47,6 +48,8 @@ def create(
     material_return=False,
     expires_at=None,
     allow_search=False,
+    cash_account=None,
+    cashier: str = "",
     user=None,
 ) -> ScanLink:
     token = secrets.token_urlsafe(24)
@@ -60,6 +63,8 @@ def create(
         token_hash=hash_token(token),
         expires_at=expires_at or default_expiry(setup),
         allow_search=allow_search,
+        cash_account=cash_account,
+        cashier=cashier.strip()[:100] if cash_account else "",
         created_by=user,
     )
 
@@ -89,7 +94,7 @@ def link_by_token(token: str) -> ScanLink | None:
     with rls_bypass():
         link = (
             ScanLink.objects.select_related(
-                "setup__organization", "setup__event", "addon", "material"
+                "setup__organization", "setup__event", "addon", "material", "cash_account"
             )
             .filter(token_hash=hash_token(token))
             .first()
@@ -123,6 +128,8 @@ def link_data(link: ScanLink, *, with_url: bool = False) -> dict:
         "station": station(link),
         "expires_at": link.expires_at,
         "allow_search": link.allow_search,
+        "cash": bool(link.cash_account_id),
+        "cashier": link.cashier,
         "revoked": link.revoked_at is not None,
         "active": usable(link),
         "created_at": link.created_at,
@@ -131,7 +138,26 @@ def link_data(link: ScanLink, *, with_url: bool = False) -> dict:
     }
     if with_url:
         data["url"] = url(link)
+    if link.cash_account_id:
+        data["cash_account"] = link.cash_account.name
+        data["cash_takes"] = cash_takes(link)
+        data["cash_total"] = str(sum((t["amount"] for t in data["cash_takes"]), Decimal("0.00")))
     return data
+
+
+def cash_takes(link: ScanLink) -> list[dict]:
+    """Kassenabschluss je Link: alle Barzahlungen, die noch bestehen."""
+    rows = []
+    for take in link.cash_takes.filter(payment__isnull=False).select_related("participant"):
+        rows.append(
+            {
+                "at": take.at,
+                "amount": take.amount,
+                "invoice_number": take.invoice_number,
+                "name": take.participant.name if take.participant_id else "",
+            }
+        )
+    return rows
 
 
 def page_data(link: ScanLink) -> dict:
@@ -146,6 +172,8 @@ def page_data(link: ScanLink) -> dict:
         "kind": kind(link),
         "expires_at": link.expires_at,
         "allow_search": link.allow_search,
+        "cash": bool(link.cash_account_id),
+        "cashier": link.cashier,
     }
 
 
@@ -199,13 +227,19 @@ def _redeemed_at(b: Booking):
         return None
 
 
-def _card(p: Participant, now: datetime.datetime) -> dict:
+def _card(p: Participant, now: datetime.datetime, link: ScanLink | None = None) -> dict:
     """Wer die Karte besitzt und wofür sie gilt."""
     reg = p.registration
     start = services.first_day(reg.setup)
     birth = p.birth_date
+    inv = reg.invoice if reg.invoice_id else None
     return {
+        "id": p.pk,
         "name": p.name,
+        # Kassen-Link: offener Betrag der Rechnung, bar anzunehmen
+        "open_amount": str(inv.outstanding)
+        if link is not None and link.cash_account_id and inv and cashable(inv, link)
+        else None,
         "birth_date": birth,
         "minor": bool(birth) and services.age_on(birth, start) < 18,
         "price_name": p.price_name,
@@ -305,11 +339,76 @@ def scan(link: ScanLink, scanned: str = "", participant: int | None = None) -> d
                 else:
                     Redemption.objects.create(booking=open_[0], participant=p, at=now, link=link)
                     result, when = "ok", now
-        card = _card(p, now)
+        card = _card(p, now, link)
     return {
         "result": result,
         "valid": result == "ok",
         "message": message(result, link),
         "at": when,
         "card": card,
+    }
+
+
+# --- Kasse (Barzahlung über den Link) ---
+
+
+def cashable(invoice, link: ScanLink) -> bool:
+    return (
+        invoice.organization_id == link.organization_id
+        and invoice.status == invoice.Status.OPEN
+        and invoice.outstanding > 0
+    )
+
+
+def take_cash(link: ScanLink, participant: int, request_key, amount: Decimal | None = None):
+    """Barzahlung zur Rechnung der Anmeldung buchen (in die Barkasse des Links). Liefert die
+    Antwort für die Scan-Seite; ``ValidationError`` bei Problemen."""
+    from django.core.exceptions import ValidationError
+
+    from billing import services as billing_services
+
+    if not link.cash_account_id:
+        raise ValidationError(_("Dieser Link nimmt kein Bargeld an."))
+    done = CashTake.objects.filter(link=link, request_key=request_key).first()
+    p = (
+        Participant.objects.select_related("registration__invoice", "registration__setup")
+        .filter(pk=participant, registration__setup_id=link.setup_id)
+        .first()
+    )
+    if p is None:
+        raise ValidationError(_("Ungültige Karte."))
+    if done is None:
+        inv = p.registration.invoice
+        if inv is None or not cashable(inv, link):
+            raise ValidationError(_("Hier ist nichts offen."))
+        amount = inv.outstanding if amount is None else amount
+        payment = billing_services.add_payment(
+            inv,
+            date=timezone.localdate(),
+            amount=amount,
+            method="cash",
+            account=link.cash_account,
+            user=link.created_by,
+        )
+        who = f" · {link.cashier}" if link.cashier else ""
+        booking = payment.booking
+        booking.text = f"{booking.text} · {link.label}{who}"[:200]
+        booking.save(update_fields=["text"])
+        CashTake.objects.create(
+            link=link,
+            payment=payment,
+            participant=p,
+            invoice_number=inv.display_number,
+            amount=payment.amount,
+            at=timezone.now(),
+            request_key=request_key,
+        )
+        p.registration.refresh_from_db()
+        p.registration.invoice.refresh_from_db()
+    return {
+        "result": "paid",
+        "valid": True,
+        "message": _("Barzahlung gebucht."),
+        "at": timezone.now(),
+        "card": _card(p, timezone.now(), link),
     }

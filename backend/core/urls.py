@@ -1213,6 +1213,11 @@ urlpatterns = [
         name="public-registration-cancel",
     ),
     path(
+        "public/scan/<str:token>/cash/",
+        registration_public.ScanCashView.as_view(),
+        name="public-registration-scan-cash",
+    ),
+    path(
         "public/scan/<str:token>/search/",
         registration_public.ScanSearchView.as_view(),
         name="public-registration-scan-search",

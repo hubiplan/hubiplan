@@ -608,6 +608,16 @@ class ScanLink(models.Model):
     token = EncryptedCharField(max_length=100, strict=True)
     token_hash = models.CharField(max_length=64, unique=True)
     expires_at = models.DateTimeField(_("gültig bis"))
+    # Kasse: Personal darf offene Teilnahmegebühren bar annehmen, gebucht in diese Barkasse
+    cash_account = models.ForeignKey(
+        "finance.Account",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("Barkasse"),
+    )
+    cashier = models.CharField(_("Kassenperson"), max_length=100, blank=True, default="")
     # Ohne Karte: Personal darf Angemeldete per Namenssuche einbuchen (nach Ausweisabgleich)
     allow_search = models.BooleanField(_("Namenssuche erlauben"), default=False)
     revoked_at = models.DateTimeField(null=True, blank=True)
@@ -656,4 +666,40 @@ class Redemption(models.Model):
 
     def save(self, *args, **kwargs):
         self.organization_id = self.booking.organization_id
+        super().save(*args, **kwargs)
+
+
+class CashTake(models.Model):
+    """Barzahlung über einen Kassen-Link: welcher Link, welche Zahlung, wann. Für den
+    Kassenabschluss je Link; storniert wird nur in der Verwaltung (Zahlung entfernen)."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    link = models.ForeignKey(ScanLink, on_delete=models.CASCADE, related_name="cash_takes")
+    payment = models.OneToOneField(
+        "billing.Payment", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    participant = models.ForeignKey(
+        Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    invoice_number = models.CharField(max_length=40)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    at = models.DateTimeField()
+    # gegen doppeltes Tippen: eine Kennung je Vorgang vom Gerät
+    request_key = models.UUIDField()
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["link", "request_key"], name="registrations_cashtake_einmal"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"cash {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.link.organization_id
         super().save(*args, **kwargs)

@@ -8,6 +8,7 @@ import type { ScanLink } from '../../api/registrations.ts'
 import { errorMessage, useLoad } from '../forms.ts'
 import { Alert, Checkbox, Field, Loading, SelectField } from '../ui.tsx'
 import { confirmDialog } from '../dialog.ts'
+import { euro } from '../../api/finance.ts'
 import { t } from '../../i18n/index.ts'
 
 function when(iso: string): string {
@@ -47,6 +48,25 @@ function LinkRow({ link, onRevoke }: { link: ScanLink; onRevoke: (link: ScanLink
           {link.allow_search && ` · ${t('mit Namenssuche')}`}
         </span>
       </div>
+      {link.cash && (
+        <details>
+          <summary>
+            {t('Kasse {account}{cashier}: {n} Zahlungen, zusammen {total}', {
+              account: link.cash_account ?? '',
+              cashier: link.cashier ? ` (${link.cashier})` : '',
+              n: link.cash_takes?.length ?? 0,
+              total: euro(link.cash_total ?? '0'),
+            })}
+          </summary>
+          <ul className="plain-list small">
+            {(link.cash_takes ?? []).map((c, i) => (
+              <li key={i}>
+                {when(c.at)} · {euro(c.amount)} · {c.invoice_number} · {c.name}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       {link.active && link.url && (
         <>
           <div className="button-row">
@@ -92,6 +112,8 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
   const [label, setLabel] = useState('')
   const [station, setStation] = useState('')
   const [allowSearch, setAllowSearch] = useState(false)
+  const [cashAccount, setCashAccount] = useState('')
+  const [cashier, setCashier] = useState('')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
 
@@ -106,8 +128,11 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
           station.startsWith('m') || station.startsWith('r') ? Number(station.slice(1)) : null,
         material_return: station.startsWith('r'),
         allow_search: allowSearch,
+        cash_account: cashAccount ? Number(cashAccount) : null,
+        cashier: cashAccount ? cashier.trim() : '',
       })
       setLabel('')
+      setCashier('')
       await reload()
     } catch (e) {
       setFailed(errorMessage(e))
@@ -194,6 +219,33 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
           checked={allowSearch}
           onChange={setAllowSearch}
         />
+        {(data.cash_accounts ?? []).length > 0 && (
+          <>
+            <SelectField
+              label={t('Barzahlung annehmen')}
+              hint={t(
+                'Kassen-Link: Das Personal sieht beim Scan den offenen Betrag und bucht die Barzahlung in diese Barkasse.',
+              )}
+              value={cashAccount}
+              onChange={(e) => setCashAccount(e.target.value)}
+            >
+              <option value="">{t('nein')}</option>
+              {(data.cash_accounts ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </SelectField>
+            {cashAccount && (
+              <Field
+                label={t('Kassenperson')}
+                value={cashier}
+                maxLength={100}
+                onChange={(e) => setCashier(e.target.value)}
+              />
+            )}
+          </>
+        )}
         <div className="button-row">
           <button type="submit" className="button" disabled={busy || !label.trim()}>
             {t('Scan-Link anlegen')}

@@ -252,3 +252,39 @@ class ScanSearchView(_Public):
         with tenant_context(link.organization_id):
             hits = scanning.search(link, request.query_params.get("q", "")[:100])
         return Response({"results": hits})
+
+
+class CashIn(serializers.Serializer):
+    participant = serializers.IntegerField()
+    request_key = serializers.UUIDField()
+    amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, required=False, allow_null=True, default=None
+    )
+
+
+class ScanCashView(_Public):
+    """``POST public/scan/<token>/cash/ {participant, request_key, amount?}``: offene
+    Teilnahmegebühr bar annehmen (nur Kassen-Links). Ein zweites Senden mit derselben
+    ``request_key`` bucht nicht doppelt."""
+
+    def post(self, request, token: str):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        from billing.views import _as_drf
+
+        from . import scanning
+
+        link = _scan_link(token)
+        if not link.cash_account_id:
+            raise Http404
+        ser = CashIn(data=request.data)
+        ser.is_valid(raise_exception=True)
+        v = ser.validated_data
+        with override(self.language(request)), tenant_context(link.organization_id):
+            try:
+                with transaction.atomic():
+                    return Response(
+                        scanning.take_cash(link, v["participant"], v["request_key"], v["amount"])
+                    )
+            except DjangoValidationError as exc:
+                raise _as_drf(exc) from exc

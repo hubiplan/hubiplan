@@ -101,6 +101,40 @@ describe('Kartenscan für Personal', () => {
     expect(JSON.parse(String(post?.init?.body))).toEqual({ participant: 7 })
   })
 
+  it('nimmt am Kassen-Link Bargeld an', async () => {
+    const calls = renderPage({
+      [`GET ${API}`]: () => ({ status: 200, body: { ...PAGE, cash: true, cashier: 'Erika' } }),
+      [`POST ${API}`]: () => ({
+        status: 200,
+        body: {
+          result: 'waiting',
+          valid: false,
+          message: 'Noch nicht bezahlt.',
+          at: null,
+          card: { ...CARD, id: 7, paid_state: 'open', open_amount: '25.00' },
+        },
+      }),
+      [`POST ${API}cash/`]: () => ({
+        status: 200,
+        body: {
+          result: 'paid',
+          valid: true,
+          message: 'Barzahlung gebucht.',
+          at: null,
+          card: { ...CARD, id: 7, open_amount: null },
+        },
+      }),
+    })
+    await screen.findByRole('heading', { name: 'Sommerfest' })
+    await userEvent.type(screen.getByLabelText('Code der Eintrittskarte'), 'T1:abc')
+    await userEvent.click(screen.getByRole('button', { name: 'Prüfen' }))
+    await userEvent.click(await screen.findByRole('button', { name: /bar erhalten$/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Barzahlung buchen' }))
+    expect(await screen.findByText('Barzahlung gebucht.')).toBeInTheDocument()
+    const post = calls.find((c) => c.key === `POST ${API}cash/`)
+    expect(JSON.parse(String(post?.init?.body))).toMatchObject({ participant: 7 })
+  })
+
   it('meldet einen gesperrten Link', async () => {
     renderPage({ [`GET ${API}`]: () => ({ status: 404, body: { detail: 'Nicht gefunden.' } }) })
     expect(await screen.findByText('Dieser Link ist ungültig oder abgelaufen.')).toBeInTheDocument()

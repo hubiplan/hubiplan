@@ -10330,5 +10330,12 @@
   "ausgegeben am {when}": "handed out on {when}",
   "noch nicht ausgegeben": "not handed out yet",
   "zurück am {when}": "returned on {when}",
-  "Rücknahme": "Take back"
+  "Rücknahme": "Take back",
+  "Kasse {account}{cashier}: {n} Zahlungen, zusammen {total}": "Cash box {account}{cashier}: {n} payments, total {total}",
+  "Barzahlung annehmen": "Accept cash payment",
+  "Kassen-Link: Das Personal sieht beim Scan den offenen Betrag und bucht die Barzahlung in diese Barkasse.": "Cash link: staff see the open amount when scanning and book the cash payment into this cash box.",
+  "Kassenperson": "Cashier",
+  "{amount} bar erhalten": "{amount} received in cash",
+  "{amount} bar erhalten?": "{amount} received in cash?",
+  "Barzahlung buchen": "Book cash payment"
 }

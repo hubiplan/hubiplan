@@ -10,6 +10,8 @@ import { PaidBadge } from '../components/calendar/PaidBadge.tsx'
 import { formatDay } from '../components/calendar/time.ts'
 import { errorMessage } from '../components/forms.ts'
 import { Alert, Field, Loading } from '../components/ui.tsx'
+import { confirmDialog } from '../components/dialog.ts'
+import { euro } from '../api/finance.ts'
 import { t } from '../i18n/index.ts'
 
 function time(iso: string): string {
@@ -21,7 +23,15 @@ function dateTime(iso: string): string {
   return `${d.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })} ${time(iso)}`
 }
 
-function ResultCard({ res, page }: { res: ScanResult; page: ScanPage }) {
+function ResultCard({
+  res,
+  page,
+  onCash,
+}: {
+  res: ScanResult
+  page: ScanPage
+  onCash: (participant: number) => void
+}) {
   const card = res.card
   const okTitle = {
     entry: () => t('Gültig: einlassen'),
@@ -30,16 +40,15 @@ function ResultCard({ res, page }: { res: ScanResult; page: ScanPage }) {
     material_return: () => t('Zurückgenommen'),
   }[page.kind]
   const title =
-    res.result === 'ok'
-      ? okTitle()
-      : res.result === 'already'
-        ? t('Schon gescannt')
-        : t('Nicht gültig')
+    res.result === 'paid'
+      ? t('Bezahlt')
+      : res.result === 'ok'
+        ? okTitle()
+        : res.result === 'already'
+          ? t('Schon gescannt')
+          : t('Nicht gültig')
   return (
-    <div
-      className={`scan-result stack-sm${res.result === 'ok' ? ' scan-result-ok' : ''}`}
-      role="status"
-    >
+    <div className={`scan-result stack-sm${res.valid ? ' scan-result-ok' : ''}`} role="status">
       <p className="scan-result-title">{title}</p>
       <p>
         {res.message}
@@ -57,6 +66,13 @@ function ResultCard({ res, page }: { res: ScanResult; page: ScanPage }) {
           <p>
             {card.price_name} · {card.number} <PaidBadge state={card.paid_state} />
           </p>
+          {page.cash && card.open_amount && card.id && (
+            <div className="button-row">
+              <button type="button" className="button" onClick={() => onCash(card.id ?? 0)}>
+                {t('{amount} bar erhalten', { amount: euro(card.open_amount) })}
+              </button>
+            </div>
+          )}
           {card.checked_in_at && (
             <p className="muted small">
               {t('eingelassen am {when}', { when: dateTime(card.checked_in_at) })}
@@ -167,9 +183,37 @@ export function PublicScanPage() {
               {page.organization} · {formatDay(page.starts_at.slice(0, 10), false)}
               <br />
               {t('Station: {station}', { station: page.station })} · {page.label}
+              {page.cash && ` · ${t('Kasse')}${page.cashier ? `: ${page.cashier}` : ''}`}
             </p>
             <div aria-live="polite">
-              {res && <ResultCard res={res} page={page} />}
+              {res && (
+                <ResultCard
+                  res={res}
+                  page={page}
+                  onCash={(id) => {
+                    const amount = res.card?.open_amount
+                    if (!amount) return
+                    void confirmDialog({
+                      final: false,
+                      title: t('{amount} bar erhalten?', { amount: euro(amount) }),
+                      confirmLabel: t('Barzahlung buchen'),
+                    }).then(async (ok) => {
+                      if (!ok) return
+                      setFailure(null)
+                      try {
+                        setRes(
+                          await registrationApi.scanCash(token, {
+                            participant: id,
+                            request_key: crypto.randomUUID(),
+                          }),
+                        )
+                      } catch (err) {
+                        setFailure(errorMessage(err))
+                      }
+                    })
+                  }}
+                />
+              )}
               {failure && <Alert kind="error">{failure}</Alert>}
             </div>
             {detectorClass() ? (
