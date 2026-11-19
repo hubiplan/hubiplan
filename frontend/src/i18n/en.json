@@ -10384,5 +10384,8 @@
   "Zuletzt": "Last",
   "Suchwörter „{x}“ entfernen": "Remove search words “{x}”",
   "versendet": "sent",
-  "fehlgeschlagen": "failed"
+  "fehlgeschlagen": "failed",
+  "Vorstands-Abo": "Board subscription",
+  "Ein eigener Link nur mit den Terminen „nur Vorstand“, getrennt vom Abo oben. So kannst du den Vorstandskalender im Handy oder in Outlook eigens ein- und ausblenden. Der Link gilt nur, solange du ein Vorstandsamt hast. Gib ihn nicht weiter, auch nicht in einen geteilten Kalender.": "A separate link with only the “board only” events, apart from the subscription above. This lets you show or hide the board calendar on your phone or in Outlook on its own. The link only works while you hold a board office. Do not pass it on, not even into a shared calendar.",
+  "Link für den Vorstand erstellen": "Create link for the board"
 }

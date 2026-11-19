@@ -55,6 +55,8 @@ export interface Occurrence {
 export interface FeedInfo {
   active: boolean
   ics_url: string | null
+  /** Vorstands-Abo: nur für Vorstandsmitglieder angeboten */
+  available?: boolean
 }
 
 export type ResponseStatus = 'yes' | 'no' | 'maybe'
@@ -466,4 +468,7 @@ export const eventApi = {
   feed: (base: CalendarBase) => api.get<FeedInfo>(`${base}events/feed/`),
   renewFeed: (base: CalendarBase) => api.put<FeedInfo>(`${base}events/feed/`, {}),
   removeFeed: (base: CalendarBase) => api.delWith<FeedInfo>(`${base}events/feed/`, {}),
+  boardFeed: (base: CalendarBase) => api.get<FeedInfo>(`${base}events/board-feed/`),
+  renewBoardFeed: (base: CalendarBase) => api.put<FeedInfo>(`${base}events/board-feed/`, {}),
+  removeBoardFeed: (base: CalendarBase) => api.delWith<FeedInfo>(`${base}events/board-feed/`, {}),
 }
