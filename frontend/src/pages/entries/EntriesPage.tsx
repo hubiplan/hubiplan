@@ -44,6 +44,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { CallEventCard, InterestCard } from './CallEvent.tsx'
 import { UnitEntryPage, UnitsPanel } from './UnitEntries.tsx'
 import { EntryResultsCard } from './EntryResults.tsx'
+import { ClubOffersCard } from './ClubOffers.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
 
@@ -78,6 +79,7 @@ function CallList() {
         )}
       </p>
       {error && <LoadError message={error} onRetry={reload} />}
+      <ClubOffersCard />
       {/* Ohne Ausschreibungen steht der Knopf nur im leeren Kasten, nicht doppelt */}
       {!creating && (data?.length ?? 0) > 0 && (
         <div className="button-row">

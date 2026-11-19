@@ -41,7 +41,27 @@ def event_info(event: Event | None) -> dict | None:
         "is_cancelled": event.is_cancelled,
         "rsvp_enabled": event.rsvp_enabled,
         "yes_count": event.responses.filter(status=EventResponse.Status.YES).count(),
+        # Termin mit verbindlicher Anmeldung (Anmeldung A6): Angemeldete statt Zusagen
+        "registered_count": _registered_count(event),
     }
+
+
+def _registration_setup(event: Event):
+    from registrations import services as reg_services
+
+    setup = reg_services.setup_of(event)
+    if setup is None or setup.organization_id != event.organization_id:
+        return None
+    return setup
+
+
+def _registered_count(event: Event) -> int | None:
+    setup = _registration_setup(event)
+    if setup is None:
+        return None
+    from registrations import onsite
+
+    return len(onsite.active(setup))
 
 
 def _visible_events(view: _Mixin):
@@ -198,14 +218,60 @@ class EventLinkView(_Mixin, APIView):
         )
 
 
+def starters_from_registrations(view: _Mixin, comp: Competition, setup) -> dict:
+    """Angemeldete (verbindlich, nicht abgemeldet) als Starter übernehmen: eigene Mitglieder
+    als Mitglied, alle anderen als Gast mit Verein (Konzept Anmeldung 3.11)."""
+    from registrations import onsite
+    from registrations import services as reg_services
+
+    taken = set(
+        comp.starters.filter(membership__isnull=False).values_list("membership_id", flat=True)
+    )
+    guests = {s.name.casefold() for s in comp.starters.filter(membership__isnull=True)}
+    added = already = 0
+    for p in onsite.active(setup):
+        member = p.membership if p.membership_id else None
+        if member is not None and member.organization_id == view.org.pk:
+            if member.pk in taken or member.purged_at is not None:
+                already += 1
+                continue
+            create_starter(view.org, view.request.user, comp, {"membership": member.pk})
+            taken.add(member.pk)
+        else:
+            if p.name.casefold() in guests:
+                already += 1
+                continue
+            reg = p.registration
+            if member is not None:
+                club = member.organization.name
+            elif reg.club_id:
+                club = reg.club.name
+            else:
+                club = ""
+            adult = bool(p.birth_date) and reg_services.age_on(p.birth_date, comp.date) >= 18
+            create_starter(
+                view.org,
+                view.request.user,
+                comp,
+                {"name": p.name, "club": club, "adult": adult},
+            )
+            guests.add(p.name.casefold())
+        added += 1
+    return {"added": added, "already": already}
+
+
 class StartersFromEventView(_Mixin, APIView):
-    """POST: Zusagen des zugeordneten Termins als Starter übernehmen (ohne Begleitpersonen)."""
+    """POST: Zusagen des zugeordneten Termins als Starter übernehmen (ohne Begleitpersonen).
+    Hat der Termin eine verbindliche Anmeldung, kommen die Angemeldeten."""
 
     @transaction.atomic
     def post(self, request, org_id: int, competition_id: int):
         comp = self.competition(competition_id)
         if comp.event_id is None:
             raise ValidationError(gettext("Dem Wettbewerb ist kein Termin zugeordnet."))
+        setup = _registration_setup(comp.event)
+        if setup is not None:
+            return Response(starters_from_registrations(self, comp, setup))
         yes = ordered(
             EventResponse.objects.filter(
                 event_id=comp.event_id,

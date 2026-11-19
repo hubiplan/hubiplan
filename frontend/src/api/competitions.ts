@@ -105,6 +105,8 @@ export interface CompetitionEvent {
   is_cancelled: boolean
   rsvp_enabled: boolean
   yes_count: number
+  /** Termin mit verbindlicher Anmeldung: Zahl der Angemeldeten, sonst null */
+  registered_count?: number | null
   /** Titel des Wettbewerbs, dem der Termin schon zugeordnet ist */
   competition?: string | null
 }

@@ -6,6 +6,7 @@ Mitgliederbereich und Apps: ``/api/portal/<access>/events/<pk>/registration/…`
 
 from __future__ import annotations
 
+import datetime
 import io
 from decimal import Decimal
 
@@ -997,6 +998,10 @@ class CheckInView(_OrgRegistrationMixin, APIView):
                 "event_id": event.pk,
                 "title": event.title,
                 "can_edit": REGISTRATIONS_EDIT in self.viewer.perms and self.viewer.can_edit(event),
+                # Abendkasse: Rechnungen liegen beim Verein bzw. Dachverband selbst
+                "can_cash": BILLING_EDIT in self.viewer.perms
+                and self.viewer.kind == "org"
+                and event.organization_id == self.org.pk,
                 "participants": rows,
                 "count": len(rows),
                 "checked_in": sum(1 for r in rows if r["checked_in_at"]),
@@ -1412,6 +1417,49 @@ class ClubRegistrationView(_ClubRegistrationMixin, APIView):
             {"Sammelanmeldung": [None, f"{reg.display_number}: {len(persons)} Personen"]},
         )
         return Response(self.payload(event, fed, setup), status=status.HTTP_201_CREATED)
+
+
+class ClubOffersView(_ClubRegistrationMixin, APIView):
+    """GET: kommende Termine des Dachverbands mit Sammelanmeldung und wie viele Personen der
+    Verein dazu gemeldet hat (unter Meldungen, Anmeldung A8)."""
+
+    def get(self, request, **kwargs):
+        from core.tenancy import tenant_context
+        from events.services import federation_of
+
+        fed = federation_of(self.org)
+        if fed is None or not services.module_on(fed):
+            return Response({"federation": "", "offers": []})
+        visible = set(self.viewer.events().values_list("pk", flat=True))
+        since = timezone.now() - datetime.timedelta(days=1)
+        out = []
+        with tenant_context(fed.pk):
+            setups = (
+                RegistrationSetup.objects.filter(
+                    organization=fed,
+                    club_registration=True,
+                    event__starts_at__gte=since,
+                    event__is_cancelled=False,
+                )
+                .select_related("event")
+                .order_by("event__starts_at", "pk")
+            )
+            for setup in setups:
+                if setup.event_id not in visible:
+                    continue
+                value = services.state(setup)
+                out.append(
+                    {
+                        "event_id": setup.event_id,
+                        "title": setup.event.title,
+                        "starts_at": setup.event.starts_at,
+                        "closes_at": setup.closes_at,
+                        "state": value,
+                        "state_text": services.state_text(setup, value),
+                        "persons": len(services.registered_club_members(setup, self.org)),
+                    }
+                )
+        return Response({"federation": fed.name, "offers": out})
 
 
 class ClubCancelView(_ClubRegistrationMixin, APIView):

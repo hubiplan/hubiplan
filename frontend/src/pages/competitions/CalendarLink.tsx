@@ -80,6 +80,8 @@ export function EventCard({
   const event = comp.event_info ?? null
   const canManage = comp.can_manage
   const closed = comp.status === 'endgueltig'
+  // Termin mit verbindlicher Anmeldung: Angemeldete statt Zusagen
+  const registered = event?.registered_count != null
 
   async function run(
     action: () => Promise<{ date: string; location: string; description: string }>,
@@ -101,8 +103,11 @@ export function EventCard({
     setBusy(true)
     try {
       const res = await competitionsApi.startersFromEvent(org, comp.id)
-      const text =
-        res.added === 0
+      const text = registered
+        ? res.added === 0
+          ? t('Alle Angemeldeten stehen schon in der Starterliste.')
+          : t('{added} Starter aus den Anmeldungen übernommen.', { added: res.added })
+        : res.added === 0
           ? t('Alle Zusagen stehen schon in der Starterliste.')
           : t('{added} Starter aus den Zusagen übernommen.', { added: res.added })
       setMessage({ kind: 'success', text })
@@ -146,7 +151,12 @@ export function EventCard({
               )}
             </Alert>
           )}
-          {event.rsvp_enabled && (
+          {registered && (
+            <p className="muted">
+              {t('{n} Personen verbindlich angemeldet.', { n: event.registered_count ?? 0 })}
+            </p>
+          )}
+          {!registered && event.rsvp_enabled && (
             <p className="muted">
               {event.yes_count} {event.yes_count === 1 ? t('Zusage') : t('Zusagen')}{' '}
               {t('zum Termin.')}
@@ -173,7 +183,17 @@ export function EventCard({
             />
           )}
           <div className="button-row">
-            {event?.rsvp_enabled && event.yes_count > 0 && (
+            {registered && (event?.registered_count ?? 0) > 0 && (
+              <button
+                type="button"
+                className="button"
+                disabled={busy}
+                onClick={() => void takeStarters()}
+              >
+                {t('Angemeldete als Starter übernehmen')}
+              </button>
+            )}
+            {!registered && event?.rsvp_enabled && event.yes_count > 0 && (
               <button
                 type="button"
                 className="button"
