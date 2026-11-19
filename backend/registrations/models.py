@@ -447,6 +447,8 @@ class Participant(models.Model):
     checked_in_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Eingelassen über einen Scan-Link (Bezeichnung zur Zeit des Scans)
+    checked_in_via = models.CharField(max_length=100, blank=True, db_default="", default="")
 
     class Meta:
         verbose_name = "Teilnehmende"
@@ -522,4 +524,182 @@ class PendingRegistration(models.Model):
 
     def save(self, *args, **kwargs):
         self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class Material(models.Model):
+    """Material zum Ausgeben vor Ort, z. B. Namensschild, Tasche oder Leihgerät, wahlweise mit
+    Rückgabe (A6)."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(RegistrationSetup, on_delete=models.CASCADE, related_name="materials")
+    name = models.CharField(_("Name"), max_length=100)
+    returnable = models.BooleanField(_("mit Rückgabe"), default=False)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class Handout(models.Model):
+    """Ausgegebenes (und ggf. zurückgegebenes) Material je Person."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name="handouts")
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="handouts")
+    handed_out_at = models.DateTimeField()
+    returned_at = models.DateTimeField(null=True, blank=True)
+    # Scan-Link (Bezeichnung) oder leer, wenn in der Verwaltung abgehakt
+    via = models.CharField(max_length=100, blank=True, default="")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["material", "participant"], name="registrations_handout_einmal"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"handout {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.material.organization_id
+        super().save(*args, **kwargs)
+
+
+class ScanLink(models.Model):
+    """Link für Scanpersonal ohne Konto (A6): öffnet auf dem Handy nur den Kartenscanner,
+    für den Einlass oder für eine Zusatzleistung (z. B. Essen). Gesucht wird über die
+    Prüfsumme des Schlüssels; der Schlüssel selbst liegt verschlüsselt, damit der Link sich
+    noch einmal anzeigen lässt."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(
+        RegistrationSetup, on_delete=models.CASCADE, related_name="scan_links"
+    )
+    label = models.CharField(_("Bezeichnung"), max_length=100)
+    # leer: Einlass; sonst wird diese Zusatzleistung eingelöst
+    addon = models.ForeignKey(
+        AddOn, on_delete=models.CASCADE, null=True, blank=True, related_name="scan_links"
+    )
+    # oder Material ausgeben bzw. zurücknehmen
+    material = models.ForeignKey(
+        Material, on_delete=models.CASCADE, null=True, blank=True, related_name="scan_links"
+    )
+    material_return = models.BooleanField(default=False)
+    token = EncryptedCharField(max_length=100, strict=True)
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField(_("gültig bis"))
+    # Kasse: Personal darf offene Teilnahmegebühren bar annehmen, gebucht in diese Barkasse
+    cash_account = models.ForeignKey(
+        "finance.Account",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("Barkasse"),
+    )
+    cashier = models.CharField(_("Kassenperson"), max_length=100, blank=True, default="")
+    # Ohne Karte: Personal darf Angemeldete per Namenssuche einbuchen (nach Ausweisabgleich)
+    allow_search = models.BooleanField(_("Namenssuche erlauben"), default=False)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    scans = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
+        return self.label
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class Redemption(models.Model):
+    """Eingelöste Zusatzleistung (z. B. Essen ausgegeben): einmal je gebuchter Leistung."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="redemption")
+    # wer die Karte vorgezeigt hat (bei Leistungen je Anmeldung eine der Personen)
+    participant = models.ForeignKey(
+        Participant, on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    at = models.DateTimeField()
+    link = models.ForeignKey(
+        ScanLink, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
+        return f"redemption {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.booking.organization_id
+        super().save(*args, **kwargs)
+
+
+class CashTake(models.Model):
+    """Barzahlung über einen Kassen-Link: welcher Link, welche Zahlung, wann. Für den
+    Kassenabschluss je Link; storniert wird nur in der Verwaltung (Zahlung entfernen)."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    link = models.ForeignKey(ScanLink, on_delete=models.CASCADE, related_name="cash_takes")
+    payment = models.OneToOneField(
+        "billing.Payment", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    participant = models.ForeignKey(
+        Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    invoice_number = models.CharField(max_length=40)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    at = models.DateTimeField()
+    # gegen doppeltes Tippen: eine Kennung je Vorgang vom Gerät
+    request_key = models.UUIDField()
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["link", "request_key"], name="registrations_cashtake_einmal"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"cash {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.link.organization_id
         super().save(*args, **kwargs)

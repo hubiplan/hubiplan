@@ -62,14 +62,66 @@ def _place(event) -> str:
     return ", ".join(x for x in (event.location, event.address.replace("\n", ", ")) if x)
 
 
-# --- Namensschilder ---
+# --- Namensschilder und Aufkleber ---
 
-BADGE_W, BADGE_H = 85, 54  # mm, Visitenkartenformat für übliche Namensschildhüllen
+# Format: (Breite mm, Höhe mm, Spalten, Zeilen) je A4-Seite
+FORMATS = {
+    "badge": (85, 54, 2, 5),  # Visitenkartenformat für übliche Namensschildhüllen
+    "label24": (70, 37, 3, 8),  # Aufkleber 70 × 37 mm, 24 je Bogen
+    "label8": (105, 74, 2, 4),  # große Aufkleber 105 × 74 mm, 8 je Bogen
+}
+# Angaben, die sich drucken lassen; dazu „q<Frage>“ für Antworten auf Zusatzfragen
+FIELDS = ("event", "name", "club", "price", "addons", "number", "qr")
+DEFAULT_FIELDS = ("event", "name", "club")
+BADGE_W, BADGE_H = 85, 54
 COLS, ROWS = 2, 5
 
 
-def badges_pdf(setup) -> bytes:
-    """Namensschilder aller Personen verbindlicher Anmeldungen, zehn je A4-Seite."""
+def label_options(setup) -> dict:
+    """Was sich auf Namensschildern und Aufklebern drucken lässt."""
+    from . import extras as ex
+
+    questions = [q for q in ex.active_questions(setup) if q.kind != q.Kind.HEALTH]
+    return {
+        "formats": list(FORMATS),
+        "fields": list(FIELDS),
+        "questions": [{"id": q.pk, "text": q.text} for q in questions],
+        "default_fields": list(DEFAULT_FIELDS),
+    }
+
+
+def clean_fields(raw: str, setup) -> list[str]:
+    from . import extras as ex
+
+    allowed = set(FIELDS) | {
+        f"q{q.pk}" for q in ex.active_questions(setup) if q.kind != q.Kind.HEALTH
+    }
+    out = [f for f in (raw or "").split(",") if f in allowed]
+    return list(dict.fromkeys(out)) or list(DEFAULT_FIELDS)
+
+
+def _club(p: Participant) -> str:
+    if p.membership_id:
+        return p.membership.organization.name
+    if p.registration.club_id:
+        return p.registration.club.name
+    return ""
+
+
+def _answer(p: Participant, q) -> str:
+    from . import extras as ex
+
+    answers = p.answers if q.per == "person" else p.registration.answers
+    rows = ex.answer_lines([q], answers or {})
+    return rows[0]["answer"] if rows else ""
+
+
+def labels_pdf(setup, fmt: str = "badge", fields: list[str] | None = None) -> bytes:
+    """Namensschilder oder Aufkleber aller Personen verbindlicher Anmeldungen, mit den
+    gewählten Angaben (A6)."""
+    from reportlab.graphics import renderPDF
+    from reportlab.graphics.barcode.qr import QrCodeWidget
+    from reportlab.graphics.shapes import Drawing
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
@@ -78,55 +130,117 @@ def badges_pdf(setup) -> bytes:
     from letterhead.data import letter_data
     from letterhead.pdf import fit, fonts
 
+    from . import tickets
+    from .models import Booking, Question
+
+    fields = fields or list(DEFAULT_FIELDS)
+    width, height, cols, rows_per = FORMATS.get(fmt, FORMATS["badge"])
     event = setup.event
     data = letter_data(setup.organization)
     regular, bold = fonts(data.font)
     _hr, heading = fonts(data.heading_font)
     primary = colors.HexColor(data.primary)
+    questions = {
+        f"q{q.pk}": q for q in Question.objects.filter(setup=setup, pk__in=_question_ids(fields))
+    }
+    bookings: dict[int, list] = {}
+    for b in Booking.objects.filter(registration__setup=setup).order_by("pk"):
+        bookings.setdefault(b.registration_id, []).append(b)
     page_w, page_h = A4
-    left = (page_w - COLS * BADGE_W * mm) / 2
-    top = (page_h - ROWS * BADGE_H * mm) / 2
+    left = (page_w - cols * width * mm) / 2
+    top = (page_h - rows_per * height * mm) / 2
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     c.setTitle(_("Namensschilder: {title}").format(title=event.title))
-    rows = active(setup)
-    per_page = COLS * ROWS
-    for i, p in enumerate(rows):
+    people = active(setup)
+    per_page = cols * rows_per
+    w, h = width * mm, height * mm
+    pad = 4 * mm
+    for i, p in enumerate(people):
         if i and i % per_page == 0:
             c.showPage()
         slot = i % per_page
-        x = left + (slot % COLS) * BADGE_W * mm
-        y = page_h - top - (slot // COLS + 1) * BADGE_H * mm
-        w, h = BADGE_W * mm, BADGE_H * mm
-        pad = 5 * mm
-        # Schnittlinie
-        c.setStrokeColor(colors.lightgrey)
-        c.setLineWidth(0.3)
-        c.rect(x, y, w, h)
-        # Kopf: Veranstaltung in Vereinsfarbe
-        c.setFillColor(primary)
-        c.rect(x, y + h - 9 * mm, w, 9 * mm, stroke=0, fill=1)
-        c.setFillColor(colors.white)
-        size = fit(c, event.title, heading, 10, w - 2 * pad)
-        c.setFont(heading, size)
-        c.drawString(x + pad, y + h - 6 * mm, event.title)
-        # Name groß, Verein darunter
-        c.setFillColor(colors.black)
-        size = fit(c, p.name, bold, 20, w - 2 * pad)
-        c.setFont(bold, size)
-        c.drawCentredString(x + w / 2, y + h / 2 - 4 * mm, p.name)
-        club = p.membership.organization.name if p.membership_id else ""
-        if club:
-            c.setFillColor(colors.dimgrey)
-            size = fit(c, club, regular, 10, w - 2 * pad)
+        x = left + (slot % cols) * w
+        y = page_h - top - (slot // cols + 1) * h
+        # Schnittlinie (bei Aufklebern gibt der Bogen sie vor)
+        if fmt == "badge":
+            c.setStrokeColor(colors.lightgrey)
+            c.setLineWidth(0.3)
+            c.rect(x, y, w, h)
+        inner_top = y + h
+        if "event" in fields:
+            band = min(9 * mm, h * 0.2)
+            c.setFillColor(primary)
+            c.rect(x, y + h - band, w, band, stroke=0, fill=1)
+            c.setFillColor(colors.white)
+            size = fit(c, event.title, heading, 10, w - 2 * pad)
+            c.setFont(heading, size)
+            c.drawString(x + pad, y + h - band + (band - size) / 2 + 1, event.title)
+            inner_top = y + h - band
+        qr_size = 0
+        if "qr" in fields:
+            qr_size = min(h * 0.42, 24 * mm)
+            widget = QrCodeWidget(tickets.code(p))
+            bx0, by0, bx1, by1 = widget.getBounds()
+            drawing = Drawing(
+                qr_size,
+                qr_size,
+                transform=[qr_size / (bx1 - bx0), 0, 0, qr_size / (by1 - by0), 0, 0],
+            )
+            drawing.add(widget)
+            renderPDF.draw(drawing, c, x + w - qr_size - 2 * mm, y + 2 * mm)
+        # Zeilen unter dem Namen
+        lines: list[str] = []
+        for f in fields:
+            if f == "club":
+                lines.append(_club(p))
+            elif f == "price":
+                lines.append(p.price_name)
+            elif f == "number":
+                lines.append(p.registration.display_number)
+            elif f == "addons":
+                names = [
+                    b.name
+                    for b in bookings.get(p.registration_id, [])
+                    if b.participant_id in (None, p.pk)
+                ]
+                lines.append(", ".join(names))
+            elif f in questions:
+                lines.append(_answer(p, questions[f]))
+        lines = [line for line in lines if line]
+        text_w = w - 2 * pad - (qr_size + 2 * mm if qr_size else 0)
+        center = x + pad + text_w / 2
+        avail = inner_top - y
+        name_size = min(20, max(9, avail / mm * 0.45))
+        block = name_size + len(lines) * (name_size * 0.55 + 2)
+        cursor = y + avail / 2 + block / 2 - name_size
+        if "name" in fields:
+            c.setFillColor(colors.black)
+            size = fit(c, p.name, bold, name_size, text_w)
+            c.setFont(bold, size)
+            c.drawCentredString(center, cursor, p.name)
+            cursor -= name_size * 0.55 + 4
+        c.setFillColor(colors.dimgrey)
+        for line in lines:
+            size = fit(c, line, regular, max(7, name_size * 0.5), text_w)
             c.setFont(regular, size)
-            c.drawCentredString(x + w / 2, y + h / 2 - 11 * mm, club)
-    if not rows:
+            c.drawCentredString(center, cursor, line)
+            cursor -= size + 2
+    if not people:
         c.setFont(regular, 11)
         c.drawString(left, page_h - top, _("Keine Personen angemeldet."))
     c.showPage()
     c.save()
     return buf.getvalue()
+
+
+def _question_ids(fields: list[str]) -> list[int]:
+    return [int(f[1:]) for f in fields if f.startswith("q") and f[1:].isdigit()]
+
+
+def badges_pdf(setup) -> bytes:
+    """Namensschilder mit Veranstaltung, Name und Verein, zehn je A4-Seite."""
+    return labels_pdf(setup, "badge", list(DEFAULT_FIELDS))
 
 
 # --- Teilnahmebescheinigungen ---

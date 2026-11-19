@@ -147,8 +147,25 @@ def entry_data(p: Participant, paid: str) -> dict:
         "invoice_number": reg.invoice.display_number if reg.invoice_id else "",
         "outstanding": str(reg.invoice.outstanding) if reg.invoice_id else "0.00",
         "checked_in_at": p.checked_in_at,
+        # über welchen Scan-Link eingelassen (leer: in der Verwaltung)
+        "checked_in_via": p.checked_in_via,
         "minor": bool(p.guardians),
+        # gebuchte Zusatzleistungen und wann sie eingelöst wurden (Scan-Links)
+        "bookings": [
+            {"name": b.name, "redeemed_at": _redeemed_at(b)}
+            for b in reg.bookings.all()
+            if b.participant_id in (None, p.pk)
+        ],
     }
+
+
+def _redeemed_at(booking):
+    from .models import Redemption
+
+    try:
+        return booking.redemption.at
+    except Redemption.DoesNotExist:
+        return None
 
 
 def entries(setup) -> list[dict]:
@@ -158,7 +175,7 @@ def entries(setup) -> list[dict]:
     regs = (
         Registration.objects.filter(setup=setup, status=Registration.Status.REGISTERED)
         .select_related("invoice")
-        .prefetch_related("participants")
+        .prefetch_related("participants", "bookings__redemption")
     )
     rows = []
     for reg in regs:
@@ -198,11 +215,13 @@ def check_in(setup, *, participant: int | None, scanned: str = "", user=None, un
     if undo:
         p.checked_in_at = None
         p.checked_in_by = None
-        p.save(update_fields=["checked_in_at", "checked_in_by"])
+        p.checked_in_via = ""
+        p.save(update_fields=["checked_in_at", "checked_in_by", "checked_in_via"])
         return "undone", entry_data(p, paid)
     if p.checked_in_at is not None:
         return "already", entry_data(p, paid)
     p.checked_in_at = timezone.now()
     p.checked_in_by = user
-    p.save(update_fields=["checked_in_at", "checked_in_by"])
+    p.checked_in_via = ""
+    p.save(update_fields=["checked_in_at", "checked_in_by", "checked_in_via"])
     return "ok", entry_data(p, paid)

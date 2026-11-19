@@ -222,6 +222,8 @@ MODULE_MODELS = (
     "registrations.Registration",
     "registrations.Participant",
     "registrations.Booking",
+    # Material zur Ausgabe vor Ort (Ausgaben selbst bleiben auf der alten Instanz)
+    "registrations.Material",
     # Fristenkalender: Pflichten vor ihrem Verlauf
     "obligations.Obligation",
     "obligations.ObligationDone",

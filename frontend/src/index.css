@@ -7279,3 +7279,28 @@ html {
   border-radius: var(--radius);
   margin-top: 0.5rem;
 }
+
+/* Scan-Seite für Personal ohne Konto (Anmeldung A6) */
+.scan-page .checkin-camera {
+  max-width: none;
+}
+.scan-result {
+  border-radius: var(--radius);
+  border: 3px solid var(--color-error);
+  background: var(--color-error-bg);
+  padding: 1rem;
+}
+.scan-result-ok {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+.scan-result-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+.scan-result-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0.5rem 0 0;
+}
