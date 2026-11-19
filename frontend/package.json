@@ -16,6 +16,7 @@
     "i18n:check": "node scripts/i18n-check.mjs"
   },
   "dependencies": {
+    "jsqr": "1.4.0",
     "markdown-it": "15.0.3",
     "prosemirror-commands": "1.7.2",
     "prosemirror-history": "1.5.1",
