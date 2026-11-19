@@ -41,6 +41,14 @@ def _greeting(reg: Registration) -> str:
 
 def _portal_hint(reg: Registration) -> list[str]:
     org = reg.organization
+    if reg.access_nonce:
+        # Öffentliches Formular (A4): eigener Link statt Mitgliederbereich
+        from .public import link_url
+
+        return [
+            "",
+            _("Deine Anmeldung ansehen oder abmelden: {url}").format(url=link_url(reg)),
+        ]
     if reg.membership_id is None or not getattr(org, "member_portal_enabled", False):
         return []
     from organizations.addresses import base_url
@@ -406,3 +414,55 @@ def cancellation(
             )
         lines += ["", org.name]
         return _send(reg, subject, lines, "abmeldung", attachments)
+
+
+def confirm_email(setup_pk: int, data: dict, token: str, language: str) -> bool:
+    """Öffentliches Formular: Link zum Bestätigen der E-Mail-Adresse (24 Stunden gültig)."""
+    from django.utils.translation import override
+
+    from organizations.addresses import base_url
+
+    from .models import RegistrationSetup
+    from .public import CONFIRM_HOURS
+
+    with rls_bypass():
+        setup = (
+            RegistrationSetup.objects.select_related("organization", "event")
+            .filter(pk=setup_pk)
+            .first()
+        )
+    if setup is None:
+        return False
+    org = setup.organization
+    event = setup.event
+    url = f"{base_url(org)}/anmeldung/bestaetigen/{token}"
+    with override(language):
+        names = ", ".join(p["name"] for p in data.get("persons", []))
+        lines = [
+            _("Hallo {name},").format(name=data.get("name", "")),
+            "",
+            _(
+                "bitte bestätige deine Anmeldung zu „{title}“ ({when}) mit diesem Link. Erst dann "
+                "ist sie verbindlich, und du bekommst die Bestätigung mit der Rechnung."
+            ).format(title=event.title, when=datetime_text(event.starts_at)),
+            "",
+            url,
+            "",
+            _("Angemeldet werden: {names}").format(names=names),
+            _(
+                "Der Link gilt {hours} Stunden. Wenn du dich nicht angemeldet hast, ignoriere "
+                "diese Mail einfach; die Angaben werden dann gelöscht."
+            ).format(hours=CONFIRM_HOURS),
+            "",
+            org.name,
+        ]
+        return mail.send(
+            data.get("email", ""),
+            _("Anmeldung bestätigen: {title}").format(title=event.title),
+            "\n".join(lines) + "\n",
+            organization=org,
+            kind="anmeldung-bestaetigen",
+            reply_to=[org.contact_email] if org.contact_email else None,
+            fail_silently=True,
+            language=language,
+        )

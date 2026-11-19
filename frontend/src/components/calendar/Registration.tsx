@@ -102,7 +102,7 @@ function conditions(p: Price): string {
   return parts.join(', ')
 }
 
-function PriceList({ prices }: { prices: Price[] }) {
+export function PriceList({ prices }: { prices: Price[] }) {
   return (
     <ul className="plain-list">
       {prices.map((p) => (
@@ -115,6 +115,31 @@ function PriceList({ prices }: { prices: Price[] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+/** Link zum öffentlichen Formular mit „Link kopieren“ (A4) */
+function PublicLink({ url }: { url: string }) {
+  const [note, setNote] = useState('')
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url)
+      setNote(t('Link kopiert.'))
+    } catch {
+      setNote(t('Kopieren ging nicht. Bitte den Link markieren.'))
+    }
+  }
+  return (
+    <p className="small">
+      {t('Öffentliches Formular:')}{' '}
+      <a href={url} target="_blank" rel="noreferrer">
+        {url}
+      </a>{' '}
+      <button type="button" className="button button-ghost small" onClick={() => void copy()}>
+        {t('Link kopieren')}
+      </button>
+      {note && <span className="muted"> {note}</span>}
+    </p>
   )
 }
 
@@ -725,6 +750,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           })}
       </p>
       <PriceList prices={offer.prices.filter((p) => p.is_active)} />
+      {offer.public_url && <PublicLink url={offer.public_url} />}
       {s && (
         <p className="muted small">
           {t('{r} Anmeldungen, {p} Personen · Summe {total}, bezahlt {paid}, offen {open}', {
@@ -1084,6 +1110,7 @@ function SetupForm({
     expire_unpaid_days: offer?.expire_unpaid_days ? String(offer.expire_unpaid_days) : '',
     catering: offer?.catering ?? false,
     minors: offer?.minors ?? false,
+    public: offer?.public ?? false,
   })
   const [addons, setAddons] = useState(() => addonInputs(offer))
   const [questions, setQuestions] = useState(() => questionInputs(offer))
@@ -1139,6 +1166,7 @@ function SetupForm({
       expire_unpaid_days: num(v.expire_unpaid_days),
       catering: v.catering,
       minors: v.minors,
+      public: v.public && event.visibility === 'public',
       addons: cleanAddons(addons),
       questions: questions
         .filter((q) => healthAllowed || q.kind !== 'health')
@@ -1498,6 +1526,20 @@ function SetupForm({
           <span aria-hidden="true">+</span> {t('Tarif hinzufügen')}
         </button>
       </div>
+      <h4>{t('Öffentliche Anmeldung')}</h4>
+      <Checkbox
+        label={t('Auch Nichtmitglieder können sich anmelden (Formular mit Link)')}
+        hint={
+          event.visibility === 'public'
+            ? t(
+                'Wer sich so anmeldet, bestätigt die E-Mail-Adresse; erst dann gilt die Anmeldung und die Rechnung kommt. Den Link zum Formular siehst du nach dem Speichern.',
+              )
+            : t('Nur bei Terminen mit der Sichtbarkeit „öffentlich“.')
+        }
+        checked={v.public && event.visibility === 'public'}
+        disabled={event.visibility !== 'public'}
+        onChange={(on) => setV({ ...v, public: on })}
+      />
       <h4>{t('Zusatzleistungen und Fragen')}</h4>
       <Checkbox
         label={t('mit Verpflegung')}

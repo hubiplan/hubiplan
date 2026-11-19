@@ -101,6 +101,7 @@ from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
 from qualifications import views as qualification_views
+from registrations import public_views as registration_public
 from registrations import views as registration_views
 from statutes import views as statute_views
 from surveys import link as survey_link
@@ -1125,6 +1126,27 @@ urlpatterns = [
     *expense_urls.public_patterns,
     *feeproof_urls.public_patterns,
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
+    # Öffentliche Anmeldung zu Terminen (Stufe A4)
+    path(
+        "public/registration/confirm/<str:token>/",
+        registration_public.ConfirmView.as_view(),
+        name="public-registration-confirm",
+    ),
+    path(
+        "public/registration/mine/<str:token>/",
+        registration_public.MineView.as_view(),
+        name="public-registration-mine",
+    ),
+    path(
+        "public/registration/mine/<str:token>/cancel/",
+        registration_public.MineCancelView.as_view(),
+        name="public-registration-cancel",
+    ),
+    path(
+        "public/registration/<str:key>/",
+        registration_public.FormView.as_view(),
+        name="public-registration",
+    ),
     path(
         "public/survey/<str:token>/", survey_link.PublicSurveyView.as_view(), name="public-survey"
     ),
