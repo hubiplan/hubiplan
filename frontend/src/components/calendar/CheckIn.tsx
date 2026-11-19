@@ -1,6 +1,7 @@
 // Einlass vor Ort (Anmeldung A6, Konzept 3.11): Eintrittskarte scannen (Handscanner tippt den
 // Code ins Feld, Kamera wo der Browser QR-Codes lesen kann) oder in der Liste abhaken.
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { CalendarBase } from '../../api/events.ts'
 import { registrationApi } from '../../api/registrations.ts'
 import type { CheckInResult, CheckInRow } from '../../api/registrations.ts'
@@ -8,6 +9,7 @@ import { errorMessage, useLoad } from '../forms.ts'
 import { Alert, Field, Loading } from '../ui.tsx'
 import { useRowSearch } from '../RowSearch.tsx'
 import { PaidBadge } from './PaidBadge.tsx'
+import { euro } from '../../api/finance.ts'
 import { t } from '../../i18n/index.ts'
 
 interface Detector {
@@ -18,6 +20,21 @@ type DetectorClass = new (options: { formats: string[] }) => Detector
 function detectorClass(): DetectorClass | null {
   const w = window as unknown as { BarcodeDetector?: DetectorClass }
   return typeof w.BarcodeDetector === 'function' ? w.BarcodeDetector : null
+}
+
+/** Abendkasse (Konzept 3.11): offene Rechnung bar kassieren, mit Quittung bei der Rechnung. */
+function CashLink({ row }: { row: CheckInRow }) {
+  if (!row.invoice_id || !['open', 'partly'].includes(row.paid_state)) return null
+  return (
+    <Link
+      className="button button-ghost small"
+      to={`/finanzen/rechnungen?rechnung=${row.invoice_id}`}
+      aria-label={t('Bei {name} bar kassieren', { name: row.name })}
+    >
+      {t('Bar kassieren')}
+      {row.outstanding ? ` (${euro(row.outstanding)})` : ''}
+    </Link>
+  )
 }
 
 function time(iso: string): string {
@@ -170,6 +187,12 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
                   ` · ${t('um {time}', { time: time(result.participant.checked_in_at) })}`}
                 {unpaid && ` · ${t('Zahlung offen')}`}
                 {result.participant.minor && ` · ${t('minderjährig')}`}
+                {unpaid && data.can_cash && (
+                  <>
+                    {' '}
+                    <CashLink row={result.participant} />
+                  </>
+                )}
               </>
             )}
           </Alert>
@@ -200,6 +223,11 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
                 </td>
                 <td>
                   <PaidBadge state={r.paid_state} />
+                  {data.can_cash && (
+                    <div>
+                      <CashLink row={r} />
+                    </div>
+                  )}
                 </td>
                 <td>
                   {r.checked_in_at ? (

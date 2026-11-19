@@ -142,6 +142,10 @@ def entry_data(p: Participant, paid: str) -> dict:
         "number": reg.display_number,
         "contact": reg.name,
         "paid_state": paid,
+        # Abendkasse (A6/A7): offene Rechnung der Anmeldung, bar zu kassieren
+        "invoice_id": reg.invoice_id,
+        "invoice_number": reg.invoice.display_number if reg.invoice_id else "",
+        "outstanding": str(reg.invoice.outstanding) if reg.invoice_id else "0.00",
         "checked_in_at": p.checked_in_at,
         "minor": bool(p.guardians),
     }

@@ -304,3 +304,52 @@ class TestSchiesslisteNachZug:
         s = Starter.objects.create(organization=club, competition=comp, name="Peter Probe")
         Score.objects.create(organization=club, scoring=einzel, starter=s, value=28)
         assert report.shooting_list(comp).startswith(b"%PDF")
+
+
+@pytest.mark.django_db
+def test_angemeldete_als_starter(kalender, schuetzen, board_a, api):  # noqa: F811
+    """Termin mit verbindlicher Anmeldung (Anmeldung A6): Mitglieder als Mitglied, Gäste mit
+    Verein und „volljährig“ aus dem Geburtsdatum."""
+    kalender.enabled_modules = [*kalender.enabled_modules, "registrations"]
+    kalender.save()
+    c = api(board_a)
+    termin = _termin(kalender, day=timezone.localdate() + datetime.timedelta(days=30))
+    org = f"/api/orgs/{kalender.pk}"
+    closes = (timezone.now() + datetime.timedelta(days=20)).isoformat()
+    resp = c.put(
+        f"{org}/events/{termin.pk}/registration/",
+        {"closes_at": closes, "prices": [{"name": "Alle", "steps": [{"amount": "0"}]}]},
+        "application/json",
+    )
+    assert resp.status_code == 200, resp.content
+    price = resp.json()["offer"]["prices"][0]["id"]
+    resp = c.post(
+        f"{org}/events/{termin.pk}/registration/list/",
+        {
+            "name": "Max Muster",
+            "persons": [
+                {"membership_id": schuetzen["Max"].pk, "price_id": price},
+                {"name": "Gerd Gast", "birth_date": "1980-02-03", "price_id": price},
+                {"name": "Kim Klein", "birth_date": "2015-06-01", "price_id": price},
+            ],
+        },
+        "application/json",
+    )
+    assert resp.status_code in (200, 201), resp.content
+    resp = c.post(
+        url(kalender),
+        {"title": "Pokalschießen", "date": termin.starts_at.date().isoformat(), "event": termin.pk},
+        "application/json",
+    )
+    comp_id = resp.json()["id"]
+    detail = c.get(url(kalender, f"{comp_id}/")).json()
+    assert detail["event_info"]["registered_count"] == 3
+    resp = c.post(url(kalender, f"{comp_id}/starters/from-event/"))
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == {"added": 3, "already": 0}
+    starters = {s["name"]: s for s in c.get(url(kalender, f"{comp_id}/starters/")).json()}
+    assert sorted(starters) == ["Gerd Gast", "Kim Klein", "Max Muster"]
+    assert starters["Gerd Gast"]["adult"] is True and starters["Kim Klein"]["adult"] is False
+    # Noch einmal: nichts doppelt
+    resp = c.post(url(kalender, f"{comp_id}/starters/from-event/"))
+    assert resp.json() == {"added": 0, "already": 3}
