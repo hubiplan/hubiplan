@@ -408,6 +408,9 @@ export interface ScanLink {
   id: number
   label: string
   addon_id: number | null
+  material_id?: number | null
+  material_return?: boolean
+  kind?: ScanKind
   station: string
   expires_at: string
   allow_search: boolean
@@ -419,9 +422,44 @@ export interface ScanLink {
   url?: string
 }
 
+export interface Material {
+  id: number
+  name: string
+  returnable: boolean
+  is_active: boolean
+}
+
+export interface HandoutState {
+  handed_out_at: string
+  returned_at: string | null
+  via: string
+}
+
+export interface LabelOptions {
+  formats: string[]
+  fields: string[]
+  questions: { id: number; text: string }[]
+  default_fields: string[]
+}
+
+export interface MaterialBoard {
+  materials: Material[]
+  rows: {
+    id: number
+    name: string
+    number: string
+    price_name: string
+    items: Record<string, HandoutState | null>
+  }[]
+  counts: Record<string, { out: number; returned: number }>
+  can_edit: boolean
+  labels: LabelOptions
+}
+
 export interface ScanLinks {
   links: ScanLink[]
   addons: { id: number; name: string }[]
+  materials: Material[]
   default_expires_at: string
 }
 
@@ -432,10 +470,12 @@ export interface ScanPage {
   starts_at: string
   label: string
   station: string
-  kind: 'entry' | 'addon'
+  kind: ScanKind
   expires_at: string
   allow_search: boolean
 }
+
+export type ScanKind = 'entry' | 'addon' | 'material_out' | 'material_return'
 
 export interface ScanHit {
   id: number
@@ -447,7 +487,7 @@ export interface ScanHit {
 }
 
 export type ScanResultKind =
-  'ok' | 'already' | 'unknown' | 'other' | 'cancelled' | 'waiting' | 'not_booked'
+  'ok' | 'already' | 'unknown' | 'other' | 'cancelled' | 'waiting' | 'not_booked' | 'not_out'
 
 export interface ScanResult {
   result: ScanResultKind
@@ -468,6 +508,13 @@ export interface ScanResult {
       name: string
       per_registration: boolean
       redeemed_at: string | null
+    }[]
+    materials?: {
+      id: number
+      name: string
+      returnable: boolean
+      handed_out_at: string | null
+      returned_at: string | null
     }[]
   } | null
 }
@@ -555,6 +602,8 @@ export const registrationApi = {
     data: {
       label: string
       addon: number | null
+      material?: number | null
+      material_return?: boolean
       expires_at?: string | null
       allow_search?: boolean
     },
@@ -570,7 +619,21 @@ export const registrationApi = {
     api.get<{ federation: string; offers: ClubOffer[] }>(
       `/api/orgs/${org}/registrations/club-offers/`,
     ),
-  badgesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}badges/`,
+  badgesUrl: (base: CalendarBase, eventId: number, format = '', fields: string[] = []) =>
+    `${url(base, eventId)}badges/${
+      format ? `?format=${format}&fields=${encodeURIComponent(fields.join(','))}` : ''
+    }`,
+  materials: (base: CalendarBase, eventId: number) =>
+    api.get<MaterialBoard>(`${url(base, eventId)}materials/`),
+  addMaterial: (base: CalendarBase, eventId: number, data: { name: string; returnable: boolean }) =>
+    api.post<Material>(`${url(base, eventId)}materials/`, data),
+  removeMaterial: (base: CalendarBase, eventId: number, id: number) =>
+    api.del(`${url(base, eventId)}materials/${id}/`),
+  handout: (
+    base: CalendarBase,
+    eventId: number,
+    data: { participant: number; material: number; action: 'out' | 'return' | 'undo' },
+  ) => api.post<MaterialBoard>(`${url(base, eventId)}materials/handout/`, data),
   certificatesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}certificates/`,
   addQualification: (
     base: CalendarBase,

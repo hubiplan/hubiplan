@@ -23,11 +23,15 @@ function dateTime(iso: string): string {
 
 function ResultCard({ res, page }: { res: ScanResult; page: ScanPage }) {
   const card = res.card
+  const okTitle = {
+    entry: () => t('Gültig: einlassen'),
+    addon: () => t('Gültig: ausgeben'),
+    material_out: () => t('Gültig: ausgeben'),
+    material_return: () => t('Zurückgenommen'),
+  }[page.kind]
   const title =
     res.result === 'ok'
-      ? page.kind === 'entry'
-        ? t('Gültig: einlassen')
-        : t('Gültig: ausgeben')
+      ? okTitle()
       : res.result === 'already'
         ? t('Schon gescannt')
         : t('Nicht gültig')
@@ -57,6 +61,22 @@ function ResultCard({ res, page }: { res: ScanResult; page: ScanPage }) {
             <p className="muted small">
               {t('eingelassen am {when}', { when: dateTime(card.checked_in_at) })}
             </p>
+          )}
+          {(card.materials ?? []).length > 0 && (
+            <ul className="plain-list">
+              {(card.materials ?? []).map((m) => (
+                <li key={`m${m.id}`}>
+                  {m.name}{' '}
+                  <span className="muted small">
+                    {m.handed_out_at
+                      ? t('ausgegeben am {when}', { when: dateTime(m.handed_out_at) })
+                      : t('noch nicht ausgegeben')}
+                    {m.returned_at &&
+                      ` · ${t('zurück am {when}', { when: dateTime(m.returned_at) })}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
           {card.bookings.length > 0 && (
             <ul className="plain-list">
@@ -246,7 +266,13 @@ export function PublicScanPage() {
                             void send(h.id)
                           }}
                         >
-                          {page.kind === 'entry' ? t('Einbuchen') : t('Einlösen')}
+                          {page.kind === 'entry'
+                            ? t('Einbuchen')
+                            : page.kind === 'addon'
+                              ? t('Einlösen')
+                              : page.kind === 'material_out'
+                                ? t('Ausgeben')
+                                : t('Zurücknehmen')}
                         </button>
                       </li>
                     ))}

@@ -36,7 +36,7 @@ from members.models import Membership
 from organizations.models import Organization
 
 from . import extras as ex
-from . import onsite, public, scanning, services, tickets
+from . import materials, onsite, public, scanning, services, tickets
 from .models import (
     MAX_ADDONS,
     MAX_CHOICES,
@@ -47,6 +47,7 @@ from .models import (
     AddOn,
     AddOnChoice,
     Booking,
+    Material,
     Participant,
     PriceOption,
     PriceStep,
@@ -1039,6 +1040,8 @@ class CheckInView(_OrgRegistrationMixin, APIView):
 class ScanLinkIn(serializers.Serializer):
     label = serializers.CharField(max_length=100)
     addon = serializers.IntegerField(required=False, allow_null=True, default=None)
+    material = serializers.IntegerField(required=False, allow_null=True, default=None)
+    material_return = serializers.BooleanField(required=False, default=False)
     expires_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
     allow_search = serializers.BooleanField(required=False, default=False)
 
@@ -1078,6 +1081,15 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
             addon = setup.addons.filter(pk=v["addon"]).first()
             if addon is None:
                 raise serializers.ValidationError({"addon": gettext("Unbekannte Zusatzleistung.")})
+        material = None
+        if v["material"] is not None:
+            material = setup.materials.filter(pk=v["material"], is_active=True).first()
+            if material is None or addon is not None:
+                raise serializers.ValidationError({"material": gettext("Unbekanntes Material.")})
+            if v["material_return"] and not material.returnable:
+                raise serializers.ValidationError(
+                    {"material": gettext("Dieses Material wird nicht zurückgegeben.")}
+                )
         expires = v["expires_at"]
         if expires is not None and expires <= timezone.now():
             raise serializers.ValidationError(
@@ -1087,6 +1099,8 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
             setup,
             label=v["label"],
             addon=addon,
+            material=material,
+            material_return=v["material_return"],
             expires_at=expires,
             allow_search=v["allow_search"],
             user=request.user,
@@ -1099,6 +1113,120 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
             {"Scan-Link": [None, f"{link.label} ({scanning.station(link)})"]},
         )
         return Response(scanning.link_data(link, with_url=True), status=status.HTTP_201_CREATED)
+
+
+class MaterialIn(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    returnable = serializers.BooleanField(required=False, default=False)
+
+
+class MaterialsView(_OrgRegistrationMixin, APIView):
+    """Material vor Ort (A6): GET Liste je Person mit Ausgabe und Rückgabe, dazu die
+    Druckoptionen für Namensschilder · POST ``{name, returnable}`` neues Material."""
+
+    def get(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        setup = self.setup_for(event)
+        data = materials.board(setup)
+        data["can_edit"] = REGISTRATIONS_EDIT in self.viewer.perms and self.viewer.can_edit(event)
+        data["labels"] = onsite.label_options(setup)
+        return Response(data)
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        data = MaterialIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        if setup.materials.filter(is_active=True).count() >= materials.MAX_MATERIALS:
+            raise serializers.ValidationError(
+                gettext("Höchstens {n} Materialien je Termin.").format(n=materials.MAX_MATERIALS)
+            )
+        m = Material.objects.create(
+            setup=setup,
+            name=data.validated_data["name"].strip(),
+            returnable=data.validated_data["returnable"],
+            position=setup.materials.count(),
+        )
+        record(self.org, request.user, "update", event, {"Material": [None, m.name]})
+        return Response(materials.material_data(m), status=status.HTTP_201_CREATED)
+
+
+class MaterialView(_OrgRegistrationMixin, APIView):
+    """PATCH ``{name?, returnable?}`` · DELETE: Material entfernen (mit Ausgaben nur
+    ausblenden, damit nachvollziehbar bleibt, wer was bekommen hat)."""
+
+    def _material(self, pk: int, material_id: int):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        m = setup.materials.filter(pk=material_id, is_active=True).first()
+        if m is None:
+            raise NotFound()
+        return event, m
+
+    def patch(self, request, pk: int, material_id: int, **kwargs):
+        event, m = self._material(pk, material_id)
+        data = MaterialIn(data={"name": m.name, "returnable": m.returnable, **request.data})
+        data.is_valid(raise_exception=True)
+        m.name = data.validated_data["name"].strip()
+        m.returnable = data.validated_data["returnable"]
+        m.save(update_fields=["name", "returnable"])
+        return Response(materials.material_data(m))
+
+    def delete(self, request, pk: int, material_id: int, **kwargs):
+        event, m = self._material(pk, material_id)
+        if m.handouts.exists():
+            m.is_active = False
+            m.save(update_fields=["is_active"])
+            m.scan_links.filter(revoked_at__isnull=True).update(revoked_at=timezone.now())
+        else:
+            m.delete()
+        record(self.org, request.user, "update", event, {"Material": [m.name, None]})
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HandoutIn(serializers.Serializer):
+    participant = serializers.IntegerField()
+    material = serializers.IntegerField()
+    action = serializers.ChoiceField(choices=["out", "return", "undo"])
+
+
+class HandoutView(_OrgRegistrationMixin, APIView):
+    """POST ``{participant, material, action: out|return|undo}``: Material ausgeben,
+    zurücknehmen oder den letzten Schritt rückgängig machen. Antwort wie GET materials/."""
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        data = HandoutIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        m = setup.materials.filter(pk=v["material"], is_active=True).first()
+        p = (
+            Participant.objects.filter(
+                pk=v["participant"],
+                registration__setup=setup,
+                registration__status=Registration.Status.REGISTERED,
+                status=Participant.Status.ACTIVE,
+            )
+            .select_related("registration")
+            .first()
+        )
+        if m is None or p is None:
+            raise NotFound()
+        if v["action"] == "return" and not m.returnable:
+            raise serializers.ValidationError(gettext("Dieses Material wird nicht zurückgegeben."))
+        with transaction.atomic():
+            result, _h = materials.apply(m, p, v["action"], user=request.user)
+        if result == "not_out":
+            raise serializers.ValidationError(gettext("Dieses Material wurde nicht ausgegeben."))
+        out = materials.board(setup)
+        out["can_edit"] = True
+        out["labels"] = onsite.label_options(setup)
+        out["result"] = result
+        return Response(out)
 
 
 class ScanLinkView(_OrgRegistrationMixin, APIView):
@@ -1127,12 +1255,19 @@ def _pdf(content: bytes, name: str) -> HttpResponse:
 
 
 class BadgesView(_OrgRegistrationMixin, APIView):
-    """GET: Namensschilder aller Personen verbindlicher Anmeldungen als PDF (A6)."""
+    """GET: Namensschilder oder Aufkleber aller Personen verbindlicher Anmeldungen als PDF
+    (A6). ``?format=badge|label24|label8&fields=event,name,club,…,q<Frage>``; ohne Angaben
+    Namensschilder mit Veranstaltung, Name und Verein."""
 
     def get(self, request, pk: int, **kwargs):
         event = self.event(pk)
         setup = self.setup_for(event)
-        return _pdf(onsite.badges_pdf(setup), "namensschilder.pdf")
+        fmt = request.query_params.get("format", "badge")
+        if fmt not in onsite.FORMATS:
+            fmt = "badge"
+        fields = onsite.clean_fields(request.query_params.get("fields", ""), setup)
+        name = "namensschilder.pdf" if fmt == "badge" else "aufkleber.pdf"
+        return _pdf(onsite.labels_pdf(setup, fmt, fields), name)
 
 
 class CertificatesView(_OrgRegistrationMixin, APIView):

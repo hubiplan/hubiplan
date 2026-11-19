@@ -101,7 +101,10 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
     try {
       await registrationApi.addScanLink(base, eventId, {
         label: label.trim(),
-        addon: station ? Number(station) : null,
+        addon: station.startsWith('a') ? Number(station.slice(1)) : null,
+        material:
+          station.startsWith('m') || station.startsWith('r') ? Number(station.slice(1)) : null,
+        material_return: station.startsWith('r'),
         allow_search: allowSearch,
       })
       setLabel('')
@@ -166,10 +169,22 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
         >
           <option value="">{t('Einlass')}</option>
           {data.addons.map((a) => (
-            <option key={a.id} value={a.id}>
+            <option key={`a${a.id}`} value={`a${a.id}`}>
               {a.name}
             </option>
           ))}
+          {data.materials.map((m) => (
+            <option key={`m${m.id}`} value={`m${m.id}`}>
+              {t('Ausgabe: {name}', { name: m.name })}
+            </option>
+          ))}
+          {data.materials
+            .filter((m) => m.returnable)
+            .map((m) => (
+              <option key={`r${m.id}`} value={`r${m.id}`}>
+                {t('Rückgabe: {name}', { name: m.name })}
+              </option>
+            ))}
         </SelectField>
         <Checkbox
           label={t('Namenssuche erlauben')}

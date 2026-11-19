@@ -20,7 +20,7 @@ from django.utils.translation import gettext as _
 
 from core.tenancy import rls_bypass
 
-from . import services, tickets
+from . import materials, services, tickets
 from .models import Booking, Participant, Redemption, Registration, ScanLink
 
 MAX_LINKS = 20
@@ -39,13 +39,23 @@ def default_expiry(setup) -> datetime.datetime:
 
 
 def create(
-    setup, *, label: str, addon=None, expires_at=None, allow_search=False, user=None
+    setup,
+    *,
+    label: str,
+    addon=None,
+    material=None,
+    material_return=False,
+    expires_at=None,
+    allow_search=False,
+    user=None,
 ) -> ScanLink:
     token = secrets.token_urlsafe(24)
     return ScanLink.objects.create(
         setup=setup,
         label=label.strip()[:100],
         addon=addon,
+        material=material,
+        material_return=bool(material) and material_return,
         token=token,
         token_hash=hash_token(token),
         expires_at=expires_at or default_expiry(setup),
@@ -78,7 +88,9 @@ def link_by_token(token: str) -> ScanLink | None:
         return None
     with rls_bypass():
         link = (
-            ScanLink.objects.select_related("setup__organization", "setup__event", "addon")
+            ScanLink.objects.select_related(
+                "setup__organization", "setup__event", "addon", "material"
+            )
             .filter(token_hash=hash_token(token))
             .first()
         )
@@ -87,7 +99,16 @@ def link_by_token(token: str) -> ScanLink | None:
     return link
 
 
+def kind(link: ScanLink) -> str:
+    """entry | addon | material_out | material_return"""
+    if link.material_id:
+        return "material_return" if link.material_return else "material_out"
+    return "addon" if link.addon_id else "entry"
+
+
 def station(link: ScanLink) -> str:
+    if link.material_id:
+        return materials.station(link.material, link.material_return)
     return link.addon.name if link.addon_id else _("Einlass")
 
 
@@ -96,6 +117,9 @@ def link_data(link: ScanLink, *, with_url: bool = False) -> dict:
         "id": link.pk,
         "label": link.label,
         "addon_id": link.addon_id,
+        "material_id": link.material_id,
+        "material_return": link.material_return,
+        "kind": kind(link),
         "station": station(link),
         "expires_at": link.expires_at,
         "allow_search": link.allow_search,
@@ -119,7 +143,7 @@ def page_data(link: ScanLink) -> dict:
         "starts_at": event.starts_at,
         "label": link.label,
         "station": station(link),
-        "kind": "addon" if link.addon_id else "entry",
+        "kind": kind(link),
         "expires_at": link.expires_at,
         "allow_search": link.allow_search,
     }
@@ -198,14 +222,28 @@ def _card(p: Participant, now: datetime.datetime) -> dict:
             }
             for b in _bookings(p)
         ],
+        "materials": materials.card_items(p),
     }
 
 
 def message(result: str, link: ScanLink) -> str:
+    k = kind(link)
     if result == "ok":
-        return _("Eingelassen.") if not link.addon_id else _("Gültig, eingelöst.")
+        return {
+            "entry": _("Eingelassen."),
+            "addon": _("Gültig, eingelöst."),
+            "material_out": _("Ausgegeben."),
+            "material_return": _("Zurückgenommen."),
+        }[k]
+    if result == "already":
+        return {
+            "entry": _("Schon eingelassen."),
+            "addon": _("Schon eingelöst."),
+            "material_out": _("Schon ausgegeben."),
+            "material_return": _("Schon zurückgegeben."),
+        }[k]
     return {
-        "already": _("Schon eingelassen.") if not link.addon_id else _("Schon eingelöst."),
+        "not_out": _("Dieses Material wurde nicht ausgegeben."),
         "unknown": _("Ungültige Karte."),
         "other": _("Diese Karte gilt für einen anderen Termin."),
         "cancelled": _("Diese Person ist abgemeldet."),
@@ -242,6 +280,11 @@ def scan(link: ScanLink, scanned: str = "", participant: int | None = None) -> d
             result = "cancelled"
         elif reg.status == Registration.Status.WAITING:
             result = "waiting"
+        elif link.material_id:
+            action = "return" if link.material_return else "out"
+            result, h = materials.apply(link.material, p, action, via=link.label)
+            if h is not None:
+                when = h.returned_at if link.material_return else h.handed_out_at
         elif not link.addon_id:
             if p.checked_in_at is not None:
                 result, when = "already", p.checked_in_at

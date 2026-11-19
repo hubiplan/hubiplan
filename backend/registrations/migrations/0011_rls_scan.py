@@ -1,4 +1,4 @@
-"""Scan-Links und eingelöste Zusatzleistungen: Zeilenschutz je Einheit wie die übrigen
+"""Scan-Links, eingelöste Zusatzleistungen und Material: Zeilenschutz je Einheit wie die übrigen
 Anmeldetabellen.
 
 Rückweg: Schutz und Prüfung aufheben.
@@ -11,6 +11,8 @@ from core.rls import ORG, disable_rls_sql, enable_policy_sql
 PARENTS = {
     "registrations_scanlink": ("registrations_registrationsetup", "setup_id"),
     "registrations_redemption": ("registrations_booking", "booking_id"),
+    "registrations_material": ("registrations_registrationsetup", "setup_id"),
+    "registrations_handout": ("registrations_material", "material_id"),
 }
 
 

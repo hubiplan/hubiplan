@@ -527,6 +527,62 @@ class PendingRegistration(models.Model):
         super().save(*args, **kwargs)
 
 
+class Material(models.Model):
+    """Material zum Ausgeben vor Ort, z. B. Namensschild, Tasche oder Leihgerät, wahlweise mit
+    Rückgabe (A6)."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(RegistrationSetup, on_delete=models.CASCADE, related_name="materials")
+    name = models.CharField(_("Name"), max_length=100)
+    returnable = models.BooleanField(_("mit Rückgabe"), default=False)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class Handout(models.Model):
+    """Ausgegebenes (und ggf. zurückgegebenes) Material je Person."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name="handouts")
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE, related_name="handouts")
+    handed_out_at = models.DateTimeField()
+    returned_at = models.DateTimeField(null=True, blank=True)
+    # Scan-Link (Bezeichnung) oder leer, wenn in der Verwaltung abgehakt
+    via = models.CharField(max_length=100, blank=True, default="")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["material", "participant"], name="registrations_handout_einmal"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"handout {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.material.organization_id
+        super().save(*args, **kwargs)
+
+
 class ScanLink(models.Model):
     """Link für Scanpersonal ohne Konto (A6): öffnet auf dem Handy nur den Kartenscanner,
     für den Einlass oder für eine Zusatzleistung (z. B. Essen). Gesucht wird über die
@@ -544,6 +600,11 @@ class ScanLink(models.Model):
     addon = models.ForeignKey(
         AddOn, on_delete=models.CASCADE, null=True, blank=True, related_name="scan_links"
     )
+    # oder Material ausgeben bzw. zurücknehmen
+    material = models.ForeignKey(
+        Material, on_delete=models.CASCADE, null=True, blank=True, related_name="scan_links"
+    )
+    material_return = models.BooleanField(default=False)
     token = EncryptedCharField(max_length=100, strict=True)
     token_hash = models.CharField(max_length=64, unique=True)
     expires_at = models.DateTimeField(_("gültig bis"))
