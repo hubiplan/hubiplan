@@ -17,6 +17,8 @@ export interface RegistrationBrief {
   can_setup?: boolean
   can_view_list?: boolean
   can_register?: boolean
+  /** Termin des Dachverbands: der Verein meldet seine Mitglieder gesammelt an (A8) */
+  club_register?: boolean
 }
 
 export interface PriceStep {
@@ -82,6 +84,8 @@ export interface Offer {
   // Stufe A4: öffentliches Formular (nur bei öffentlichen Terminen)
   public?: boolean
   public_url?: string | null
+  // Stufe A8: Sammelanmeldung durch die Vereine (Dachverband)
+  club_registration?: boolean
 }
 
 export type Per = 'person' | 'registration'
@@ -211,6 +215,8 @@ export interface Registration {
   source?: string
   source_label?: string
   cancel_reason?: string
+  /** Sammelanmeldung eines Vereins (A8) */
+  club_id?: number | null
 }
 
 export interface BoardRegistrations {
@@ -230,6 +236,18 @@ export interface BoardRegistrations {
   can_set_prices: boolean
   /** Qualifikationen, die nach der Veranstaltung eingetragen werden dürfen (A6) */
   qualification_kinds?: { id: number; name: string }[]
+  /** Sammelanmeldung durch die Vereine einstellbar (nur Dachverband, A8) */
+  club_registration_possible?: boolean
+  registrations: Registration[]
+}
+
+/** Sammelanmeldung des Vereins zu einem Termin seines Dachverbands (A8) */
+export interface ClubRegistrations {
+  event_id: number
+  federation: string
+  offer: Offer
+  max_persons: number
+  registered_members: number[]
   registrations: Registration[]
 }
 
@@ -281,6 +299,7 @@ export interface SetupInput {
   catering?: boolean
   minors?: boolean
   public?: boolean
+  club_registration?: boolean
   addons?: AddOnInput[]
   questions?: QuestionInput[]
 }
@@ -425,6 +444,19 @@ export const registrationApi = {
     eventId: number,
     data: { code?: string; participant?: number; undo?: boolean },
   ) => api.post<CheckInResult>(`${url(base, eventId)}checkin/`, data),
+  club: (base: CalendarBase, eventId: number) =>
+    api.get<ClubRegistrations>(`${url(base, eventId)}club/`),
+  clubRegister: (
+    base: CalendarBase,
+    eventId: number,
+    data: {
+      persons: { membership_id: number; price_id: number }[]
+      note: string
+      terms_accepted: boolean
+    },
+  ) => api.post<ClubRegistrations>(`${url(base, eventId)}club/`, data),
+  clubCancel: (base: CalendarBase, eventId: number, regId: number, participants: number[]) =>
+    api.post<ClubRegistrations>(`${url(base, eventId)}club/${regId}/cancel/`, { participants }),
   badgesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}badges/`,
   certificatesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}certificates/`,
   addQualification: (

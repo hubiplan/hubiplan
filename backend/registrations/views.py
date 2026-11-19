@@ -20,12 +20,19 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import BILLING_EDIT, MEMBERS_EDIT, REGISTRATIONS_EDIT, REGISTRATIONS_VIEW
+from access.catalog import (
+    BILLING_EDIT,
+    MEMBERS_EDIT,
+    MEMBERS_VIEW,
+    REGISTRATIONS_EDIT,
+    REGISTRATIONS_VIEW,
+)
 from audit.log import record
 from events.models import Event
 from events.views import OrgCalendarMixin, PortalCalendarMixin
 from exchange.export import safe_cell
 from members.models import Membership
+from organizations.models import Organization
 
 from . import extras as ex
 from . import onsite, public, services, tickets
@@ -124,6 +131,7 @@ def registration_data(reg: Registration, *, full: bool) -> dict:
                 "note": reg.note,
                 "source": reg.source,
                 "source_label": reg.get_source_display(),
+                "club_id": reg.club_id,
                 "cancel_reason": reg.cancel_reason,
                 "confirmation_sent_at": reg.confirmation_sent_at,
                 "payment_confirmed_at": reg.payment_confirmed_at,
@@ -318,6 +326,8 @@ class SetupInput(serializers.Serializer):
     minors = serializers.BooleanField(required=False, default=None, allow_null=True)
     # Stufe A4: öffentliches Formular (nur bei öffentlichen Terminen)
     public = serializers.BooleanField(required=False, default=None, allow_null=True)
+    # Stufe A8: Sammelanmeldung durch die Vereine (nur beim Dachverband)
+    club_registration = serializers.BooleanField(required=False, default=None, allow_null=True)
     addons = AddOnInput(many=True, required=False, default=None, allow_null=True)
     questions = QuestionInput(many=True, required=False, default=None, allow_null=True)
 
@@ -423,6 +433,8 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
             "can_edit": REGISTRATIONS_EDIT in self.viewer.perms and self.viewer.can_edit(event),
             "can_set_prices": BILLING_EDIT in self.viewer.perms,
             "qualification_kinds": self.qualification_kinds(event),
+            # Sammelanmeldung durch die Vereine (A8) gibt es nur beim Dachverband
+            "club_registration_possible": self.org.type == Organization.Type.FEDERATION,
             "registrations": [registration_data(r, full=True) for r in regs],
         }
 
@@ -521,6 +533,16 @@ class SetupView(_OrgRegistrationMixin, APIView):
                 )
             setup.public = v["public"]
             public.ensure_key(setup)
+        if v["club_registration"] is not None:
+            if v["club_registration"] and self.org.type != Organization.Type.FEDERATION:
+                raise serializers.ValidationError(
+                    {
+                        "club_registration": gettext(
+                            "Sammelanmeldungen durch Vereine gibt es nur beim Dachverband."
+                        )
+                    }
+                )
+            setup.club_registration = v["club_registration"]
         setup.save()
         if paid and services.payment_category(setup) is None:
             raise serializers.ValidationError(
@@ -1262,6 +1284,162 @@ class RegistrationExportView(_OrgRegistrationMixin, APIView):
         if health:
             cells.append(safe_cell(p.health))
         return cells
+
+
+# --- Sammelanmeldung der Vereine beim Dachverband (A8) ---
+
+
+class ClubPersonIn(serializers.Serializer):
+    membership_id = serializers.IntegerField()
+    price_id = serializers.IntegerField()
+
+
+class ClubRegistrationIn(serializers.Serializer):
+    persons = ClubPersonIn(many=True)
+    note = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+    terms_accepted = serializers.BooleanField(required=False, default=False)
+
+
+class ClubCancelIn(serializers.Serializer):
+    participants = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=list, max_length=100
+    )
+
+
+class _ClubRegistrationMixin(OrgCalendarMixin):
+    """Der Verein meldet Mitglieder zu einem Termin seines Dachverbands. Die Anmeldung liegt
+    beim Dachverband; der Verein sieht nur seine eigenen."""
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if self.viewer.kind != "org" or self.org.type != Organization.Type.CLUB:
+            raise NotFound()
+        if REGISTRATIONS_EDIT not in self.viewer.perms or MEMBERS_VIEW not in self.viewer.perms:
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+
+    def federation_setup(self, pk: int):
+        from core.tenancy import tenant_context
+        from events.services import federation_of
+
+        event = self.visible_event(pk)
+        fed = federation_of(self.org)
+        if fed is None or event.organization_id != fed.pk or not services.module_on(fed):
+            raise NotFound()
+        with tenant_context(fed.pk):
+            setup = services.setup_of(event)
+        if setup is None or not setup.club_registration:
+            raise NotFound(gettext("Zu diesem Termin gibt es keine Sammelanmeldung."))
+        return event, fed, setup
+
+    def payload(self, event, fed, setup) -> dict:
+        from core.tenancy import tenant_context
+
+        with tenant_context(fed.pk):
+            regs = (
+                Registration.objects.filter(setup=setup, club=self.org)
+                .select_related("invoice", "fee_invoice", "setup__event")
+                .prefetch_related("participants__bookings__choice", "bookings__choice")
+                .order_by("created_at", "pk")
+            )
+            return {
+                "event_id": event.pk,
+                "federation": fed.name,
+                "offer": services.offer_data(setup),
+                "max_persons": services.MAX_CLUB_PERSONS,
+                "registered_members": sorted(services.registered_club_members(setup, self.org)),
+                "registrations": [registration_data(r, full=False) for r in regs],
+            }
+
+
+class ClubRegistrationView(_ClubRegistrationMixin, APIView):
+    """GET Angebot und eigene Sammelanmeldungen · POST ``{persons: [{membership_id, price_id}],
+    note}``: Mitglieder anmelden; die Rechnung geht an den Verein."""
+
+    def get(self, request, pk: int, **kwargs):
+        return Response(self.payload(*self.federation_setup(pk)))
+
+    def post(self, request, pk: int, **kwargs):
+        from core.tenancy import tenant_context
+
+        event, fed, setup = self.federation_setup(pk)
+        data = ClubRegistrationIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        ids = [p["membership_id"] for p in v["persons"]]
+        members = {
+            m.pk: m
+            for m in Membership.objects.filter(
+                pk__in=ids, organization=self.org, purged_at__isnull=True
+            ).select_related("person")
+        }
+        with tenant_context(fed.pk):
+            prices = {p.pk: p for p in setup.prices.all()}
+            persons = []
+            for p in v["persons"]:
+                member = members.get(p["membership_id"])
+                if member is None:
+                    raise serializers.ValidationError(gettext("Unbekanntes Mitglied."))
+                price = prices.get(p["price_id"])
+                if price is None:
+                    raise serializers.ValidationError(gettext("Bitte einen gültigen Tarif wählen."))
+                persons.append(
+                    services.PersonInput(
+                        membership=None,
+                        name=member.person.display_name,
+                        birth_date=member.person.birth_date,
+                        price=price,
+                        club_member_id=member.pk,
+                    )
+                )
+            with transaction.atomic():
+                reg = services.register(
+                    setup,
+                    persons,
+                    booker=None,
+                    name=self.org.name,
+                    email=request.user.email or "",
+                    note=v["note"],
+                    source=Registration.Source.CLUB,
+                    user=request.user,
+                    terms_accepted=v["terms_accepted"],
+                    club=self.org,
+                )
+        record(
+            self.org,
+            request.user,
+            "update",
+            event,
+            {"Sammelanmeldung": [None, f"{reg.display_number}: {len(persons)} Personen"]},
+        )
+        return Response(self.payload(event, fed, setup), status=status.HTTP_201_CREATED)
+
+
+class ClubCancelView(_ClubRegistrationMixin, APIView):
+    """POST ``{participants?}``: eigene Sammelanmeldung (oder einzelne Personen) abmelden, bis
+    zum Anmeldeschluss wie im Mitgliederbereich."""
+
+    def post(self, request, pk: int, reg_id: int, **kwargs):
+        from core.tenancy import tenant_context
+
+        event, fed, setup = self.federation_setup(pk)
+        data = ClubCancelIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        with tenant_context(fed.pk):
+            reg = Registration.objects.filter(setup=setup, club=self.org, pk=reg_id).first()
+            if reg is None:
+                raise NotFound()
+            if not services.member_may_cancel(reg):
+                raise PermissionDenied(
+                    gettext("Abmelden geht nur bis zum Anmeldeschluss, danach beim Veranstalter.")
+                )
+            with transaction.atomic():
+                services.cancel(
+                    reg,
+                    user=request.user,
+                    by_member=True,
+                    participants=data.validated_data["participants"] or None,
+                )
+        return Response(self.payload(event, fed, setup))
 
 
 # --- Mitgliederbereich und Apps ---

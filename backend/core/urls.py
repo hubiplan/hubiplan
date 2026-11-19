@@ -785,6 +785,16 @@ org_patterns = [
         name="event-registration-checkin",
     ),
     path(
+        "events/<int:pk>/registration/club/",
+        registration_views.ClubRegistrationView.as_view(),
+        name="event-registration-club",
+    ),
+    path(
+        "events/<int:pk>/registration/club/<int:reg_id>/cancel/",
+        registration_views.ClubCancelView.as_view(),
+        name="event-registration-club-cancel",
+    ),
+    path(
         "events/<int:pk>/registration/badges/",
         registration_views.BadgesView.as_view(),
         name="event-registration-badges",

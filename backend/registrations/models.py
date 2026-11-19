@@ -98,6 +98,11 @@ class RegistrationSetup(models.Model):
     # Stufe A4: öffentliches Formular /anmeldung/<public_key> (nur bei öffentlichen Terminen)
     public = models.BooleanField(_("Öffentliche Anmeldung"), default=False, db_default=False)
     public_key = models.CharField(max_length=40, unique=True, null=True, blank=True)
+    # Stufe A8: Vereine des Dachverbands melden ihre Mitglieder gesammelt an (Rechnung an
+    # den Verein)
+    club_registration = models.BooleanField(
+        _("Sammelanmeldung durch die Vereine"), default=False, db_default=False
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -295,6 +300,7 @@ class Registration(models.Model):
         APP = "app", _("App")
         BOARD = "board", _("Verwaltung")
         PUBLIC = "public", _("öffentliches Formular")
+        CLUB = "club", _("Sammelanmeldung des Vereins")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -313,6 +319,15 @@ class Registration(models.Model):
         null=True,
         blank=True,
         related_name="event_registrations",
+    )
+    # Stufe A8: Sammelanmeldung eines Vereins zu einem Termin seines Dachverbands
+    club = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("Verein"),
     )
     name = EncryptedCharField(_("Name"), max_length=200, strict=True)
     email = EncryptedCharField(_("E-Mail"), max_length=254, blank=True, strict=True)
@@ -424,6 +439,9 @@ class Participant(models.Model):
     health = EncryptedTextField(_("Allergien und Unverträglichkeiten"), blank=True, db_default="")
     # Unter 18: Erziehungsberechtigte [{"name", "phone", "email", "address"}, …] (F13)
     guardians = EncryptedJSONField(default=list, blank=True, db_default=[])
+    # Sammelanmeldung (A8): Mitgliedschaft im meldenden Verein (eigener Datenbereich, daher
+    # nur die Kennung)
+    club_member_id = models.PositiveBigIntegerField(null=True, blank=True)
     # Einlass vor Ort (A6): wann und von wem abgehakt
     checked_in_at = models.DateTimeField(_("eingelassen am"), null=True, blank=True)
     checked_in_by = models.ForeignKey(

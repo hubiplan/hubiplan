@@ -48,6 +48,7 @@ import { berlin, formatDay, toApi } from './time.ts'
 import { PaidBadge } from './PaidBadge.tsx'
 import { CheckInPanel } from './CheckIn.tsx'
 import { QualificationPanel } from './AfterEvent.tsx'
+import { ClubRegistrationCard } from './ClubRegistration.tsx'
 import { Modal } from '../Modal.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
 
@@ -144,6 +145,7 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 export function RegistrationPanel({ base, event }: { base: CalendarBase; event: EventDetail }) {
   const info = event.registration
   if (!info) return null
+  if (info.club_register && info.enabled) return <ClubRegistrationCard base={base} event={event} />
   if (info.can_register && info.enabled) return <MemberRegistrationCard base={base} event={event} />
   if (info.can_setup || info.can_view_list)
     return <BoardRegistrationCard base={base} event={event} />
@@ -1181,6 +1183,7 @@ function SetupForm({
     catering: offer?.catering ?? false,
     minors: offer?.minors ?? false,
     public: offer?.public ?? false,
+    club_registration: offer?.club_registration ?? false,
   })
   const [addons, setAddons] = useState(() => addonInputs(offer))
   const [questions, setQuestions] = useState(() => questionInputs(offer))
@@ -1237,6 +1240,7 @@ function SetupForm({
       catering: v.catering,
       minors: v.minors,
       public: v.public && event.visibility === 'public',
+      ...(data.club_registration_possible ? { club_registration: v.club_registration } : {}),
       addons: cleanAddons(addons),
       questions: questions
         .filter((q) => healthAllowed || q.kind !== 'health')
@@ -1610,6 +1614,19 @@ function SetupForm({
         disabled={event.visibility !== 'public'}
         onChange={(on) => setV({ ...v, public: on })}
       />
+      {data.club_registration_possible && (
+        <>
+          <h4>{t('Sammelanmeldung')}</h4>
+          <Checkbox
+            label={t('Vereine melden ihre Mitglieder gesammelt an')}
+            hint={t(
+              'Die Vereine sehen den Termin in ihrem Kalender und melden dort Mitglieder an. Die Rechnung geht an den Verein. Die Vereine brauchen dafür das Modul Anmeldungen.',
+            )}
+            checked={v.club_registration}
+            onChange={(on) => setV({ ...v, club_registration: on })}
+          />
+        </>
+      )}
       <h4>{t('Zusatzleistungen und Fragen')}</h4>
       <Checkbox
         label={t('mit Verpflegung')}
