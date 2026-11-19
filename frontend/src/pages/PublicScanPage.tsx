@@ -150,12 +150,7 @@ export function PublicScanPage() {
       busy.current = true
       setFailure(null)
       try {
-        setRes(
-          await registrationApi.scan(
-            token,
-            byRef ? { participant: text } : { code: text },
-          ),
-        )
+        setRes(await registrationApi.scan(token, byRef ? { participant: text } : { code: text }))
         if (navigator.vibrate) navigator.vibrate(120)
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) setInvalid(true)
