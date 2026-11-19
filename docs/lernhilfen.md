@@ -53,7 +53,12 @@ Alle Texte stehen in `frontend/src/learning/content.ts`:
   Quelle mit Fundstelle (z. B. § 64 Abs. 3 AO). Nichts erfinden; bei Zahlen und Fristen
   den aktuellen Stand prüfen (z. B. Freigrenze § 64 Abs. 3 AO: 50.000 € ab 2026,
   Aufbewahrung von Buchungsbelegen: 8 Jahre seit 2025).
-- Jeder Text höchstens drei Sätze; jeder Begriff mit einem Beispiel mit Zahlen.
+- Jeder Text höchstens drei Sätze, jeder Satz höchstens 30 Wörter (Fundstellen in Klammern
+  zählen nicht mit); jeder Begriff mit einem Beispiel mit Zahlen.
+- Einträge, die nur Bedienung oder Rechnung erklären oder auf die Satzung verweisen, bleiben
+  ohne Quelle (`sources: []`) und nennen dann auch keinen Paragrafen. Lieber kein Beleg als
+  einer, der die Aussage nicht trägt.
+- Anrede: „du“ für die Person am Bildschirm, „der Verein“ für die Sache; kein „ihr“.
 - Texte haben eine Fassung je Sprache (`LANGUAGES`, zurzeit nur Deutsch).
 
 Wer eine Entscheidung hinzufügt oder entfernt, muss die Schlüsselliste
