@@ -258,6 +258,62 @@ describe('Belegung: Monat, Jahr und Mitglied', () => {
   })
 })
 
+describe('Belegung: Rechnung anlegen', () => {
+  it('legt einen Rechnungsentwurf an das Mitglied an', async () => {
+    const booked = {
+      ...request,
+      id: 13,
+      status: 'confirmed',
+      member: 17,
+      member_name: 'Beispiel, Erika',
+      invoice: null,
+      invoice_number: '',
+      invoice_status: '',
+      can_invoice: true,
+      price_suggestion: '50.00',
+    }
+    const api = show(
+      ['infrastructure.view', 'infrastructure.edit', 'billing.edit'],
+      {
+        'GET /api/orgs/7/bookings/13/': () => ({ status: 200, body: booked }),
+        'POST /api/orgs/7/bookings/13/invoice/': () => ({
+          status: 201,
+          body: { ...booked, invoice: 31, invoice_number: 'Entwurf', can_invoice: false },
+        }),
+      },
+      [
+        {
+          booking: 13,
+          item: 4,
+          item_title: 'Saal',
+          title: 'Geburtstag',
+          starts_at: '2026-11-05T17:00:00Z',
+          ends_at: '2026-11-05T21:00:00Z',
+          original_start: '2026-11-05T17:00:00Z',
+          all_day: false,
+          status: 'confirmed',
+          series: false,
+          own: false,
+          needs_review: false,
+          member_name: 'Beispiel, Erika',
+        },
+      ],
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: /Geburtstag/ }))[0])
+    expect(await screen.findByText(/Beispiel, Erika/, { selector: 'a' })).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Rechnung anlegen' }))
+    expect(screen.getByLabelText('Betrag in Euro')).toHaveValue(50)
+    fireEvent.click(screen.getByRole('button', { name: 'Entwurf anlegen' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/bookings/13/invoice/')).toBe(true),
+    )
+    const body = JSON.parse(
+      String(api.find((c) => c.key === 'POST /api/orgs/7/bookings/13/invoice/')!.init!.body),
+    )
+    expect(body).toEqual({ amount: '50.00', version: 1 })
+  })
+})
+
 describe('Material & Räume in der Seitenleiste', () => {
   it('zeigt Räume und Anlagen und Belegung unter einem Punkt', async () => {
     show(['infrastructure.view'])

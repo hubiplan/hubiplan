@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { bookingApi } from '../../api/bookings.ts'
 import type { BookableItem, Booking, Occurrence } from '../../api/bookings.ts'
@@ -539,6 +539,14 @@ function BookingDetail({
       {data.booked_by && (
         <p className="muted">{t('Gebucht von {name}', { name: data.booked_by })}</p>
       )}
+      {data.invoice && (
+        <p>
+          {t('Rechnung')}:{' '}
+          <Link to={`/finanzen/rechnungen?rechnung=${data.invoice}`}>{data.invoice_number}</Link>
+          {data.invoice_status === 'cancelled' ? ` · ${t('storniert')}` : ''}
+        </p>
+      )}
+      {data.can_invoice && <InvoiceForm base={base} booking={data} disabled={busy} act={act} />}
       {data.needs_review && (
         <p role="status">
           {t(
@@ -615,6 +623,74 @@ function BookingDetail({
         </details>
       )}
     </section>
+  )
+}
+
+/** „Rechnung anlegen“: Entwurf an das Mitglied, Betrag aus dem Mietpreis des Objekts. */
+function InvoiceForm({
+  base,
+  booking,
+  disabled,
+  act,
+}: {
+  base: string
+  booking: Booking
+  disabled: boolean
+  act: (fn: () => Promise<unknown>) => Promise<void>
+}) {
+  const [open, setOpen] = useState(false)
+  const [amount, setAmount] = useState(booking.price_suggestion ?? '')
+  const navigate = useNavigate()
+  if (!open)
+    return (
+      <p>
+        <button className="button button-ghost" disabled={disabled} onClick={() => setOpen(true)}>
+          {t('Rechnung anlegen')}
+        </button>
+      </p>
+    )
+  return (
+    <form
+      className="booking-invoice"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void act(async () => {
+          const saved = await bookingApi.invoice(base, booking, amount)
+          if (saved.invoice) navigate(`/finanzen/rechnungen?rechnung=${saved.invoice}`)
+        })
+      }}
+    >
+      <p className="muted">
+        {t(
+          'Legt einen Rechnungsentwurf an {name} an, auch wenn der Beitrag sonst über eine Sammelrechnung läuft. Festschreiben und verschicken wie jede Rechnung.',
+          { name: booking.member_name },
+        )}
+      </p>
+      <label className="field">
+        <span>{t('Betrag in Euro')}</span>
+        <input
+          required
+          type="number"
+          min="0.01"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </label>
+      <div className="button-row">
+        <button className="button button-primary" disabled={disabled}>
+          {t('Entwurf anlegen')}
+        </button>
+        <button
+          className="button button-ghost"
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen(false)}
+        >
+          {t('Abbrechen')}
+        </button>
+      </div>
+    </form>
   )
 }
 
@@ -1077,9 +1153,13 @@ export function BookingRulesCard({
     horizon_days: 365,
     website: 'off' as 'off' | 'busy' | 'titles',
     portal: false,
+    price: '',
+    price_unit: 'booking' as 'booking' | 'day' | 'hour',
     ...(item.booking_rules ?? {}),
   }
   const [rules, setRules] = useState(initial)
+  const { active } = useOrg()
+  const billing = active?.modules.includes('billing') ?? false
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   if (!editable && !initial.enabled) return null
@@ -1100,7 +1180,7 @@ export function BookingRulesCard({
             setError(null)
             try {
               await api.patch(`${itemBase}${item.id}/`, {
-                booking_rules: rules,
+                booking_rules: { ...rules, price: rules.price === '' ? null : rules.price },
                 version: item.version,
               })
               onSaved()
@@ -1186,6 +1266,36 @@ export function BookingRulesCard({
                       <option value="titles">{t('mit Zweck öffentlicher Buchungen')}</option>
                     </select>
                   </label>
+                  {billing && (
+                    <>
+                      <label className="field">
+                        <span>{t('Mietpreis in Euro (Vorschlag für Rechnungen)')}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={rules.price}
+                          onChange={(e) => setRules({ ...rules, price: e.target.value })}
+                        />
+                      </label>
+                      <label className="field">
+                        <span>{t('Mietpreis gilt')}</span>
+                        <select
+                          value={rules.price_unit}
+                          onChange={(e) =>
+                            setRules({
+                              ...rules,
+                              price_unit: e.target.value as typeof rules.price_unit,
+                            })
+                          }
+                        >
+                          <option value="booking">{t('je Buchung')}</option>
+                          <option value="day">{t('je angefangenen Tag')}</option>
+                          <option value="hour">{t('je Stunde')}</option>
+                        </select>
+                      </label>
+                    </>
+                  )}
                 </div>
               </>
             )}

@@ -32,6 +32,14 @@ stehen in der Akte. Die Buchung erscheint mit dem Namen in der Belegung, in der 
 **Belegungen** und im Mitgliederbereich des Mitglieds. Für Gäste ohne Mitgliedschaft gibt es
 weiter **Externe Buchung (optional)** mit Name, E-Mail und Telefon.
 
+Miete abrechnen: Im Buchungskalender eines Objekts trägst du einen Mietpreis ein, je Buchung, je
+angefangenen Tag oder je Stunde. An einer bestätigten, einmaligen Buchung für ein Mitglied legt
+**Rechnung anlegen** einen Rechnungsentwurf an das Mitglied an, mit dem Mietpreis als Vorschlag.
+Das gilt auch, wenn der Beitrag des Mitglieds sonst über die Sammelrechnung einer Untereinheit
+läuft. Den Entwurf schreibst du unter Finanzen › Rechnungen fest und verschickst ihn wie jede
+Rechnung; die Buchung zeigt dann die Rechnungsnummer. Dafür brauchst du das Recht, Rechnungen zu
+bearbeiten.
+
 ## Überschneidungen und Freigabe
 
 Überschneidungen: Ist das Objekt einschließlich Rüstzeit schon belegt, lehnt HUBIplan die

@@ -76,6 +76,10 @@ class Booking(models.Model):
     event = models.ForeignKey(
         "events.Event", null=True, blank=True, on_delete=models.SET_NULL, related_name="bookings"
     )
+    # Rechnung über die Miete (Entwurf aus „Rechnung anlegen“); Entwurf gelöscht = leer
+    invoice = models.ForeignKey(
+        "billing.Invoice", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
     competition = models.ForeignKey(
         "competitions.Competition",
         null=True,

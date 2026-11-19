@@ -15,6 +15,9 @@ DEFAULTS = {
     "website": "off",
     # Mitglieder dürfen im Mitgliederbereich (Portal) anfragen
     "portal": False,
+    # Mietpreis als Vorschlag für „Rechnung anlegen“ ("" = keiner): je Buchung, Tag oder Stunde
+    "price": "",
+    "price_unit": "booking",
 }
 
 
@@ -38,8 +41,17 @@ class RulesInput(serializers.Serializer):
         choices=["off", "busy", "titles"], required=False, default="off"
     )
     portal = serializers.BooleanField(required=False, default=False)
+    price = serializers.DecimalField(
+        max_digits=9, decimal_places=2, min_value=0, required=False, allow_null=True
+    )
+    price_unit = serializers.ChoiceField(
+        choices=["booking", "day", "hour"], required=False, default="booking"
+    )
 
     def validate(self, data):
         if data["buffer_before"] % 5 or data["buffer_after"] % 5:
             raise serializers.ValidationError(_("Rüstzeiten bitte in Schritten von 5 Minuten."))
+        # Als Text speichern (JSON); leer = kein Mietpreis
+        price = data.get("price")
+        data["price"] = "" if price is None else str(price)
         return data

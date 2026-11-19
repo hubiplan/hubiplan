@@ -9,6 +9,9 @@ export interface BookingRules {
   horizon_days: number
   website: 'off' | 'busy' | 'titles'
   portal?: boolean
+  /** Mietpreis als Vorschlag für Rechnungen ("" = keiner) */
+  price?: string
+  price_unit?: 'booking' | 'day' | 'hour'
 }
 
 export interface BookableItem {
@@ -45,6 +48,12 @@ export interface Booking {
   /** Für dieses Mitglied gebucht (nur für die Verwaltung sichtbar) */
   member: number | null
   member_name: string
+  /** Rechnung über die Miete (nur mit Rechnungsrecht sichtbar) */
+  invoice: number | null
+  invoice_number: string
+  invoice_status: string
+  can_invoice: boolean
+  price_suggestion?: string
   event: number | null
   event_title: string
   competition: number | null
@@ -109,6 +118,8 @@ export const bookingApi = {
       version: booking.version,
       ...extra,
     }),
+  invoice: (base: string, booking: Booking, amount: string) =>
+    api.post<Booking>(`${base}${booking.id}/invoice/`, { amount, version: booking.version }),
   skip: (base: string, booking: Booking, originalStart: string, restore = false) =>
     api.post<Booking>(`${base}${booking.id}/skip/`, {
       original_start: originalStart,

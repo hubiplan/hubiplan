@@ -78,6 +78,7 @@ def booking_data(booking, scope, user):
         "contact": booking.contact if manage else {},
         "member": booking.member_id if manage else None,
         "member_name": member_name(booking.member) if manage and booking.member_id else "",
+        **invoice_data(booking, scope, manage),
         "event": booking.event_id if details else None,
         "event_title": booking.event.title if details and booking.event_id else "",
         "competition": booking.competition_id if details else None,
@@ -102,6 +103,48 @@ def booking_data(booking, scope, user):
             )
         ],
     }
+
+
+def invoice_data(booking, scope, manage) -> dict:
+    """Rechnung über die Miete: verknüpfter Entwurf bzw. Rechnung und Preisvorschlag."""
+    from access.catalog import BILLING_EDIT, BILLING_VIEW
+
+    if not manage or not {BILLING_VIEW, BILLING_EDIT} & scope.permissions:
+        return {"invoice": None, "invoice_number": "", "invoice_status": "", "can_invoice": False}
+    invoice = booking.invoice if booking.invoice_id else None
+    open_invoice = invoice is not None and invoice.status != "cancelled"
+    return {
+        "invoice": invoice.pk if invoice else None,
+        "invoice_number": invoice.display_number if invoice else "",
+        "invoice_status": invoice.status if invoice else "",
+        "can_invoice": (
+            BILLING_EDIT in scope.permissions
+            and scope.department_id is None
+            and booking.member_id is not None
+            and not booking.is_series
+            and booking.status == Booking.Status.CONFIRMED
+            and not open_invoice
+        ),
+        "price_suggestion": price_suggestion(booking),
+    }
+
+
+def price_suggestion(booking) -> str:
+    """Mietpreis laut Objekt: je Buchung, je angefangenem Tag oder je Stunde ("" = keiner)."""
+    import decimal
+    import math
+
+    rules = rules_of(booking.item)
+    if rules["price"] in ("", None):
+        return ""
+    price = decimal.Decimal(rules["price"])
+    duration = booking.ends_at - booking.starts_at
+    if rules["price_unit"] == "day":
+        price *= max(1, math.ceil(duration.total_seconds() / 86400))
+    elif rules["price_unit"] == "hour":
+        hours = decimal.Decimal(duration.total_seconds()) / 3600
+        price = (price * hours).quantize(decimal.Decimal("0.01"))
+    return str(price)
 
 
 def member_name(membership):
@@ -546,6 +589,82 @@ class MemberView(Base):
             if access.can_manage(self.scope, b.item)
         ]
         return Response({"bookings": rows})
+
+
+class InvoiceInput(serializers.Serializer):
+    version = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value="0.01")
+
+
+class InvoiceView(Base):
+    """Rechnungsentwurf über die Miete an das Mitglied der Buchung („Rechnung anlegen“).
+
+    Nur einmalige, bestätigte Buchungen für ein Mitglied im Verein (nicht in Untereinheiten).
+    Der Entwurf geht nicht an die Sammelrechnung einer Untereinheit, sondern an das Mitglied
+    selbst; festgeschrieben und verschickt wird er wie jede andere Rechnung.
+    """
+
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        from access.catalog import BILLING_EDIT
+        from audit.log import record
+        from billing import services as billing
+        from billing.models import Invoice, InvoiceLine
+
+        booking = self.booking(pk, lock=True)
+        manage = access.can_manage(self.scope, booking.item)
+        if not manage or BILLING_EDIT not in self.scope.permissions:
+            raise PermissionDenied()
+        if "billing" not in (self.scope.org.enabled_modules or []):
+            raise PermissionDenied()
+        expected(booking, request.data.get("version"))
+        form = InvoiceInput(data=request.data)
+        form.is_valid(raise_exception=True)
+        if not invoice_data(booking, self.scope, manage)["can_invoice"]:
+            raise ValidationError(
+                _(
+                    "Eine Rechnung gibt es nur für bestätigte, einmalige Buchungen für ein "
+                    "Mitglied, die noch keine Rechnung haben."
+                )
+            )
+        org = self.scope.org
+        on = timezone.localdate()
+        cfg = billing.settings_for(org)
+        from .format import span_text
+
+        invoice = Invoice.objects.create(
+            organization=org,
+            recipient_kind=Invoice.Recipient.MEMBER,
+            membership=booking.member,
+            date=on,
+            due_date=on + datetime.timedelta(days=cfg.due_days),
+            subject=_("Miete {item}").format(item=booking.item.title)[:200],
+            created_by=request.user,
+            **billing.member_recipient(org, booking.member),
+        )
+        InvoiceLine.objects.create(
+            organization=org,
+            invoice=invoice,
+            position=0,
+            text=f"{booking.item.title}: {booking.title}"[:200],
+            detail=span_text(booking)[:200],
+            amount=form.validated_data["amount"],
+            membership=booking.member,
+            is_fee=False,
+        )
+        billing.recalc_total(invoice)
+        invoice.save(update_fields=["total", "updated_at"])
+        record(
+            org,
+            request.user,
+            "create",
+            invoice,
+            {"Rechnung": [None, f"Entwurf für {invoice.recipient_name.splitlines()[0]}"]},
+        )
+        booking.invoice = invoice
+        booking.version += 1
+        booking.save(update_fields=["invoice", "version", "updated_at"])
+        return Response(self.data(booking), status=201)
 
 
 class ChoicesView(Base):
