@@ -780,6 +780,16 @@ org_patterns = [
         name="event-registration-export",
     ),
     path(
+        "events/<int:pk>/registration/checkin/",
+        registration_views.CheckInView.as_view(),
+        name="event-registration-checkin",
+    ),
+    path(
+        "events/<int:pk>/registration/<int:reg_id>/tickets/",
+        registration_views.RegistrationTicketsView.as_view(),
+        name="event-registration-tickets",
+    ),
+    path(
         "events/<int:pk>/registration/<int:reg_id>/cancel/",
         registration_views.RegistrationCancelView.as_view(),
         name="event-registration-cancel",
@@ -1138,6 +1148,11 @@ urlpatterns = [
         name="public-registration-mine",
     ),
     path(
+        "public/registration/mine/<str:token>/tickets/",
+        registration_public.MineTicketsView.as_view(),
+        name="public-registration-tickets",
+    ),
+    path(
         "public/registration/mine/<str:token>/cancel/",
         registration_public.MineCancelView.as_view(),
         name="public-registration-cancel",
@@ -1352,6 +1367,11 @@ urlpatterns = [
         "portal/<int:access_id>/events/<int:pk>/registration/",
         registration_views.MemberRegistrationView.as_view(),
         name="portal-event-registration",
+    ),
+    path(
+        "portal/<int:access_id>/events/<int:pk>/registration/<int:reg_id>/tickets/",
+        registration_views.MemberTicketsView.as_view(),
+        name="portal-event-registration-tickets",
     ),
     path(
         "portal/<int:access_id>/events/<int:pk>/registration/<int:reg_id>/cancel/",

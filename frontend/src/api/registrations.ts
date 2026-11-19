@@ -166,6 +166,8 @@ export interface Participant {
   guardians?: Guardian[]
   /** nur für die Verwaltung */
   health?: string
+  /** Einlass vor Ort (A6), nur für die Verwaltung */
+  checked_in_at?: string | null
 }
 
 export interface InvoiceBrief {
@@ -179,6 +181,8 @@ export interface InvoiceBrief {
 
 export interface Registration {
   id: number
+  /** Eintrittskarten mit QR-Code als PDF (A6) */
+  has_tickets?: boolean
   number: string
   status: 'registered' | 'waiting' | 'cancelled'
   name: string
@@ -339,6 +343,34 @@ export interface PersonInput extends ExtrasInput {
 
 const url = (base: CalendarBase, eventId: number) => `${base}events/${eventId}/registration/`
 
+/** Person beim Einlass (A6) */
+export interface CheckInRow {
+  id: number
+  name: string
+  price_name: string
+  registration_id: number
+  number: string
+  contact: string
+  paid_state: PaidState
+  checked_in_at: string | null
+  minor: boolean
+}
+
+export interface CheckInList {
+  event_id: number
+  title: string
+  can_edit: boolean
+  participants: CheckInRow[]
+  count: number
+  checked_in: number
+}
+
+export interface CheckInResult {
+  result: 'ok' | 'already' | 'undone' | 'unknown' | 'other' | 'cancelled'
+  message: string
+  participant: CheckInRow | null
+}
+
 export const registrationApi = {
   board: (base: CalendarBase, eventId: number) => api.get<BoardRegistrations>(url(base, eventId)),
   save: (base: CalendarBase, eventId: number, data: SetupInput) =>
@@ -374,6 +406,16 @@ export const registrationApi = {
       `${url(base, eventId)}${regId}/participants/${participantId}/`,
       data,
     ),
+  /** Eintrittskarten einer Anmeldung als PDF (Verwaltung und Mitgliederbereich) */
+  ticketsUrl: (base: CalendarBase, eventId: number, regId: number) =>
+    `${url(base, eventId)}${regId}/tickets/`,
+  checkIns: (base: CalendarBase, eventId: number) =>
+    api.get<CheckInList>(`${url(base, eventId)}checkin/`),
+  checkIn: (
+    base: CalendarBase,
+    eventId: number,
+    data: { code?: string; participant?: number; undo?: boolean },
+  ) => api.post<CheckInResult>(`${url(base, eventId)}checkin/`, data),
   exportUrl: (base: CalendarBase, eventId: number, health = false) =>
     `${url(base, eventId)}export/${health ? '?health=1' : ''}`,
   member: (base: CalendarBase, eventId: number) => api.get<MemberRegistrations>(url(base, eventId)),
@@ -470,6 +512,7 @@ export const publicRegistrationApi = {
   confirm: (token: string) =>
     api.post<PublicMine>(`${pub(`confirm/${encodeURIComponent(token)}`)}/`),
   mine: (token: string) => api.get<PublicMine>(`${pub(`mine/${encodeURIComponent(token)}`)}/`),
+  ticketsUrl: (token: string) => `${pub(`mine/${encodeURIComponent(token)}`)}/tickets/`,
   quote: (token: string, participants: number[] = []) =>
     api.get<FeeQuote>(
       `${pub(`mine/${encodeURIComponent(token)}`)}/cancel/${

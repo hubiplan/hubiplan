@@ -8,7 +8,6 @@ import { registrationApi } from '../../api/registrations.ts'
 import type {
   BoardRegistrations,
   CancelRule,
-  PaidState,
   Participant,
   Offer,
   Price,
@@ -46,21 +45,10 @@ import {
 } from './extras.ts'
 import type { ExtrasState } from './extras.ts'
 import { berlin, formatDay, toApi } from './time.ts'
+import { PaidBadge } from './PaidBadge.tsx'
+import { CheckInPanel } from './CheckIn.tsx'
+import { Modal } from '../Modal.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
-
-const PAID: Record<PaidState, () => string> = {
-  free: () => t('kostenlos'),
-  open: () => t('offen'),
-  partly: () => t('teilweise bezahlt'),
-  paid: () => t('bezahlt'),
-  cancelled: () => t('abgemeldet'),
-  waiting: () => t('Warteliste'),
-}
-
-function PaidBadge({ state }: { state: PaidState }) {
-  const cls = state === 'paid' ? 'badge badge-yes' : state === 'open' ? 'badge badge-open' : 'badge'
-  return <span className={cls}>{PAID[state]()}</span>
-}
 
 /** Liegt der Zeitpunkt noch in der Zukunft? */
 function stillFree(iso: string): boolean {
@@ -167,10 +155,12 @@ function RegistrationTable({
   canEdit,
   onCancel,
   onSubstitute,
+  ticketsUrl,
 }: {
   rows: Registration[]
   offer: Offer
   canEdit: boolean
+  ticketsUrl: (reg: Registration) => string
   onCancel: (reg: Registration) => void
   onSubstitute: (reg: Registration, p: Participant) => void
 }) {
@@ -272,6 +262,15 @@ function RegistrationTable({
                   )}
                 </td>
                 <td>
+                  {reg.has_tickets && (
+                    <a
+                      className="button button-ghost"
+                      href={ticketsUrl(reg)}
+                      aria-label={t('Eintrittskarten von {number}', { number: reg.number })}
+                    >
+                      {t('Eintrittskarten')}
+                    </a>
+                  )}
                   {canEdit && reg.status !== 'cancelled' && (
                     <button
                       type="button"
@@ -508,6 +507,16 @@ function MemberRegistrationCard({ base, event }: { base: CalendarBase; event: Ev
               })}
             </p>
           )}
+          {reg.has_tickets && (
+            <p>
+              <a
+                className="button button-ghost small"
+                href={registrationApi.ticketsUrl(base, event.id, reg.id)}
+              >
+                {t('Eintrittskarten (PDF)')}
+              </a>
+            </p>
+          )}
           {cancelling?.id === reg.id ? (
             <CancelPanel
               reg={reg}
@@ -692,6 +701,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   const [adding, setAdding] = useState(false)
   const [cancelling, setCancelling] = useState<Registration | null>(null)
   const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
+  const [checkIn, setCheckIn] = useState(false)
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
   const offer = data.offer
@@ -776,6 +786,11 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             </button>
           </>
         )}
+        {data.registrations.some((r) => r.status === 'registered') && (
+          <button type="button" className="button button-ghost" onClick={() => setCheckIn(true)}>
+            {t('Einlass')}
+          </button>
+        )}
         {data.registrations.length > 0 && (
           <a className="button button-ghost" href={registrationApi.exportUrl(base, event.id)}>
             {t('Teilnehmerliste (Excel)')}
@@ -787,6 +802,18 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           </a>
         )}
       </div>
+      {checkIn && (
+        <Modal
+          title={t('Einlass: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => {
+            setCheckIn(false)
+            void reload()
+          }}
+        >
+          <CheckInPanel base={base} eventId={event.id} />
+        </Modal>
+      )}
       {adding && (
         <BoardAddForm
           base={base}
@@ -838,6 +865,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           rows={data.registrations}
           offer={offer}
           canEdit={data.can_edit}
+          ticketsUrl={(reg) => registrationApi.ticketsUrl(base, event.id, reg.id)}
           onCancel={(reg) => {
             setReplacing(null)
             setCancelling(reg)

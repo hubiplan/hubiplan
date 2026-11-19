@@ -573,6 +573,13 @@ export function PublicMyRegistrationPage() {
       {Number(reg.cancel_fee) > 0 && (
         <p className="small">{t('Stornogebühr {fee}', { fee: euro(reg.cancel_fee) })}</p>
       )}
+      {reg.has_tickets && (
+        <p>
+          <a className="button button-ghost" href={publicRegistrationApi.ticketsUrl(token)}>
+            {t('Eintrittskarten (PDF)')}
+          </a>
+        </p>
+      )}
       {data.cancel_text && <p className="muted small">{data.cancel_text}</p>}
       {cancelling ? (
         <CancelPanel

@@ -141,6 +141,17 @@ class MineView(_Public):
             return Response(mine_payload(reg))
 
 
+class MineTicketsView(_Public):
+    """GET: Eintrittskarten über den Link „Anmeldung ansehen“ (A6)."""
+
+    def get(self, request, token: str):
+        from .views import tickets_response
+
+        reg = _own(token)
+        with override(self.language(request)), tenant_context(reg.organization_id):
+            return tickets_response(reg)
+
+
 class CancelIn(serializers.Serializer):
     participants = serializers.ListField(
         child=serializers.IntegerField(), required=False, allow_null=True, default=None

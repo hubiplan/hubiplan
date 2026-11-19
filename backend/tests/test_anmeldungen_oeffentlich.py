@@ -136,6 +136,8 @@ def test_anmelden_bestaetigen_ansehen_abmelden(c, fest, django_capture_on_commit
     assert mine["registration"]["number"] == reg["number"]
     assert mine["registration"]["can_cancel"] is True
     assert Client().get("/api/public/registration/mine/falsch/").status_code == 404
+    pdf = Client().get(f"/api/public/registration/mine/{link}/tickets/")
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
     # Eine Person abmelden, dann den Rest
     first = mine["registration"]["participants"][0]["id"]
     quote = ok(Client().get(f"/api/public/registration/mine/{link}/cancel/?participants={first}"))
