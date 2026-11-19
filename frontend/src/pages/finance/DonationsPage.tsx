@@ -1126,7 +1126,7 @@ function SettingsEditor({ initial, canEdit }: { initial: DonationSettings; canEd
             rows={2}
             value={v.purposes}
             maxLength={1000}
-            placeholder={t('z. B. des traditionellen Brauchtums einschließlich des Schützenwesens')}
+            placeholder={t('z. B. des Sports oder des traditionellen Brauchtums')}
             onChange={(e) => set('purposes', e.target.value)}
           />
           <small className="muted">

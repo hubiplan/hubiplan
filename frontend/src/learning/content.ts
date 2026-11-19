@@ -16,10 +16,17 @@ import { learningText } from '../i18n/index.ts'
 
 export const LANGUAGES = ['de'] as const
 export type Lang = (typeof LANGUAGES)[number]
-export type Text = Record<Lang, string>
+/** `neutral`: Fassung ohne Schützenwörter für Vereine ohne Modul Schießsport (UX-Audit VW-13). */
+export type Text = Record<Lang, string> & { neutral?: string }
+
+/** Schießsport an der gezeigten Einheit; setzt LearningContext (ohne Kontext: an). */
+let schiessen = true
+export function setLearningShooting(on: boolean): void {
+  schiessen = on
+}
 
 export function tr(text: Text): string {
-  return learningText(text.de)
+  return learningText(!schiessen && text.neutral ? text.neutral : text.de)
 }
 
 // --- Quellen (wiederverwendbar, jede nur einmal) ---
@@ -184,6 +191,8 @@ export type Feature =
   | 'platform'
   | 'website'
   | 'competitions'
+  /** nur mit Modul Schießsport: Ringe, Scheiben, Vogelschießen (UX-Audit VW-13) */
+  | 'shooting'
   | 'tax'
   | 'meetings'
   | 'helpers'
@@ -211,6 +220,8 @@ export interface Decision {
 }
 
 const d = (de: string): Text => ({ de })
+/** Text mit vereinsneutraler Fassung (ohne Modul Schießsport) */
+const n = (de: string, neutral: string): Text => ({ de, neutral })
 
 const DECISIONS_DATA = {
   member_type_active: {
@@ -761,8 +772,9 @@ const DECISIONS_DATA = {
   // --- Wettbewerbe (Ralf 2026-11-01: „Alles wie in der Liste“) ---
   comp_own: {
     title: d('Eigener oder fremder Wettbewerb?'),
-    text: d(
+    text: n(
       'Beim eigenen Wettbewerb erfasst du Schützen und Werte selbst, und HUBIplan rechnet Plätze, Zugwertung und Stechen. Beim fremden trägst du nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert der eigenen Teilnehmer. Wie dort gewertet wird, regelt die Schießordnung des Ausrichters.',
+      'Beim eigenen Wettbewerb erfasst du Teilnehmende und Werte selbst, und HUBIplan rechnet Plätze, die Wertung der Untereinheiten und Entscheidungsrunden. Beim fremden trägst du nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert der eigenen Teilnehmer. Wie dort gewertet wird, regelt die Wettkampfordnung des Ausrichters.',
     ),
     sources: [],
     place: d('Wettbewerbe → Neuer Wettbewerb'),
@@ -777,7 +789,7 @@ const DECISIONS_DATA = {
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Schießbedingungen und Wertungen'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_target: {
     title: d('Wozu Scheibe und Wertungsart?'),
@@ -787,7 +799,7 @@ const DECISIONS_DATA = {
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Schießbedingungen und Wertungen'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_tie_breaks: {
     title: d('Welche Regeln bei Gleichstand?'),
@@ -797,7 +809,7 @@ const DECISIONS_DATA = {
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Wertungen → Gleichstand und Stechen'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_photo: {
     title: d('Warum ist das Foto nur ein Vorschlag?'),
@@ -807,7 +819,7 @@ const DECISIONS_DATA = {
     sources: ['dsbSpo', 'dsgvo'],
     place: d('Standmodus → Foto der Scheibe'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_photo_sum: {
     title: d('Summe und Foto weichen ab, was gilt?'),
@@ -817,7 +829,7 @@ const DECISIONS_DATA = {
     sources: ['dsbSpo'],
     place: d('Standmodus → Nur die Summe eingeben → Foto der Scheibe'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_photo_samples: {
     title: d('Spiegelausschnitte sammeln?'),
@@ -827,12 +839,16 @@ const DECISIONS_DATA = {
     sources: ['dsgvo'],
     place: d('Einstellungen → Datenschutz → Fotoerkennung verbessern'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_team_mode: {
-    title: d('Warum zählen nur die besten Schützen einer Einheit?'),
-    text: d(
+    title: n(
+      'Warum zählen nur die besten Schützen einer Einheit?',
+      'Warum zählen nur die Besten einer Einheit?',
+    ),
+    text: n(
       'Mit „Summe der besten 5“ gewinnt ein großer Zug nicht schon durch mehr Schützen, und schwache Ergebnisse ziehen niemanden herunter. Ein Zug mit weniger als 5 Schützen wird deshalb nicht gewertet, sonst stünde er gegen volle Züge schlechter da. Auch die DSB-Sportordnung wertet Mannschaften mit fester Schützenzahl.',
+      'Mit „Summe der besten 5“ gewinnt eine große Einheit nicht schon durch mehr Teilnehmende, und schwache Ergebnisse ziehen niemanden herunter. Eine Einheit mit weniger als 5 Teilnehmenden wird deshalb nicht gewertet, sonst stünde sie gegen volle Einheiten schlechter da. Auch viele Sportordnungen werten Mannschaften mit fester Teilnehmerzahl.',
     ),
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Wertungen → Wertung der Untereinheiten'),
@@ -841,8 +857,9 @@ const DECISIONS_DATA = {
   },
   comp_prize_places: {
     title: d('Wozu Preisplätze?'),
-    text: d(
+    text: n(
       'Nur auf Preisplätzen entscheidet ein Gleichstand über einen Preis, deshalb verlangt HUBIplan nur dort ein Stechen; darunter teilen sich Gleichstände den Platz. Wie viele Plätze einen Preis bekommen, steht in der Ausschreibung. Ein öffentlich ausgeschriebener Preis ist eine Auslobung, an die der Verein gebunden ist (§§ 657, 661 BGB).',
+      'Nur auf Preisplätzen entscheidet ein Gleichstand über einen Preis, deshalb verlangt HUBIplan nur dort eine Entscheidungsrunde; darunter teilen sich Gleichstände den Platz. Wie viele Plätze einen Preis bekommen, steht in der Ausschreibung. Ein öffentlich ausgeschriebener Preis ist eine Auslobung, an die der Verein gebunden ist (§§ 657, 661 BGB).',
     ),
     sources: ['bgb'],
     place: d('Wettbewerb → Einrichten → Wertungen'),
@@ -850,19 +867,27 @@ const DECISIONS_DATA = {
     feature: 'competitions',
   },
   comp_shootoff_rules: {
-    title: d('Warum die Stechregeln erst beim Anlegen?'),
-    text: d(
+    title: n(
+      'Warum die Stechregeln erst beim Anlegen?',
+      'Warum die Regeln der Entscheidungsrunde erst beim Anlegen?',
+    ),
+    text: n(
       'Ob 1 oder 3 Schuss gestochen werden, entscheidet oft die Schießleitung am Stand. HUBIplan schlägt die Regel aus „Einrichten“ vor; ändern geht, bis der erste Wert eingetragen ist, sonst würden sich die Bedingungen mitten im Stechen ändern. Für Verbandswettkämpfe regelt die DSB-Sportordnung das Stechen, im Verein die eigene Schießordnung.',
+      'Wie viele Wertungen eine Entscheidungsrunde hat, entscheidet oft die Wettkampfleitung vor Ort. HUBIplan schlägt die Regel aus „Einrichten“ vor; ändern geht, bis der erste Wert eingetragen ist, sonst würden sich die Bedingungen mitten in der Runde ändern. Für Verbandswettkämpfe regelt das die Ordnung des Verbands, im Verein die eigene Wettkampfordnung.',
     ),
     sources: ['dsbSpo'],
-    place: d('Wettbewerb → Auswertung oder Standmodus → Stechen anlegen'),
+    place: n(
+      'Wettbewerb → Auswertung oder Standmodus → Stechen anlegen',
+      'Wettbewerb → Auswertung oder Standmodus → Entscheidungsrunde anlegen',
+    ),
     phase: 'competitions',
     feature: 'competitions',
   },
   comp_provisional: {
-    title: d('Wann ist das Schießen beendet?'),
-    text: d(
+    title: n('Wann ist das Schießen beendet?', 'Wann ist der Wettbewerb beendet?'),
+    text: n(
       'HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Stechen kennt nur die Schießleitung. „Schießen beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Stechen bleiben möglich. Gib vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für fertig hält.',
+      'HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Entscheidungsrunden kennt nur die Wettkampfleitung. „Wettbewerb beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Entscheidungsrunden bleiben möglich. Gib vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für fertig hält.',
     ),
     sources: [],
     place: d('Wettbewerb → Auswertung → Wettbewerb und Abschluss; Standmodus → Abschluss'),
@@ -871,8 +896,9 @@ const DECISIONS_DATA = {
   },
   comp_final: {
     title: d('Was bedeutet endgültig abschließen?'),
-    text: d(
+    text: n(
       'Danach sind Eingaben gesperrt, und nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht. Offene Stechen sperren den Abschluss, weil sonst Plätze ungeklärt blieben. Veröffentlichte Ergebnisse müssen sachlich richtig sein (Art. 5 Abs. 1 lit. d DSGVO), „Wieder öffnen“ bleibt für Korrekturen.',
+      'Danach sind Eingaben gesperrt, und nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht. Offene Entscheidungsrunden sperren den Abschluss, weil sonst Plätze ungeklärt blieben. Veröffentlichte Ergebnisse müssen sachlich richtig sein (Art. 5 Abs. 1 lit. d DSGVO), „Wieder öffnen“ bleibt für Korrekturen.',
     ),
     sources: ['dsgvo'],
     place: d('Wettbewerb → Auswertung → Wettbewerb und Abschluss'),
@@ -881,8 +907,9 @@ const DECISIONS_DATA = {
   },
   comp_reset: {
     title: d('Was passiert beim Zurücksetzen?'),
-    text: d(
+    text: n(
       'Zurücksetzen löscht alle erfassten Werte, Stechen, Schüsse und gefallenen Pfänder; Regeln, Pfänder, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Schießordnung; rückgängig machen lässt sich das Zurücksetzen nicht.',
+      'Zurücksetzen löscht alle erfassten Werte und Entscheidungsrunden; Regeln, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Wettkampfordnung; rückgängig machen lässt sich das Zurücksetzen nicht.',
     ),
     sources: [],
     place: d('Wettbewerb → Einrichten → Weitere Aktionen'),
@@ -909,7 +936,7 @@ const DECISIONS_DATA = {
     sources: [],
     place: d('Wettbewerb → Einrichten → Pfänder & Ablauf'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_bird_rules: {
     title: d('Ausscheiden und feste Reihenfolge?'),
@@ -919,7 +946,7 @@ const DECISIONS_DATA = {
     sources: [],
     place: d('Wettbewerb → Einrichten → Pfänder & Ablauf'),
     phase: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_website: {
     title: d('Ergebnisse auf der Webseite?'),
@@ -2100,12 +2127,14 @@ const TERMS_DATA = {
   },
   // --- Wettbewerbe ---
   comp_shootoff: {
-    name: d('Stechen'),
-    meaning: d(
+    name: n('Stechen', 'Entscheidungsrunde'),
+    meaning: n(
       'Zusätzliches Schießen bei Gleichstand auf einem Preisplatz, mit eigenen Regeln für Schusszahl und Wertung. Steht es danach wieder gleich, folgt ein weiteres Stechen; die Regeln stehen in der Schießordnung oder der DSB-Sportordnung.',
+      'Zusätzliche Runde bei Gleichstand auf einem Preisplatz, mit eigenen Regeln für Zahl und Wertung der Versuche. Steht es danach wieder gleich, folgt eine weitere Runde; die Regeln stehen in der Wettkampfordnung des Vereins oder des Verbands.',
     ),
-    example: d(
+    example: n(
       'Beispiel: Anna und Paul haben beide 28 Ringe für Platz 1; im Stechen mit 1 Schuss schießt Anna 9, Paul 8, Anna wird Erste.',
+      'Beispiel: Anna und Paul haben beide 28 Punkte für Platz 1; in der Entscheidungsrunde mit 1 Versuch erreicht Anna 9, Paul 8, Anna wird Erste.',
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
@@ -2121,7 +2150,7 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_inner: {
     name: d('Innenzehner'),
@@ -2133,7 +2162,7 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_teiler: {
     name: d('Teiler'),
@@ -2145,7 +2174,7 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_spot: {
     name: d('Spiegel'),
@@ -2157,7 +2186,7 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_hole_in_hole: {
     name: d('Loch in Loch'),
@@ -2169,15 +2198,17 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_tie: {
     name: d('Gleichstand'),
-    meaning: d(
+    meaning: n(
       'Zwei oder mehr Schützen haben denselben Wert. Sie teilen sich den Platz, auf Preisplätzen entscheidet ein Stechen (Schießordnung des Vereins, DSB-Sportordnung).',
+      'Zwei oder mehr Teilnehmende haben denselben Wert. Sie teilen sich den Platz, auf Preisplätzen entscheidet eine Entscheidungsrunde (Wettkampfordnung des Vereins oder Verbands).',
     ),
-    example: d(
+    example: n(
       'Beispiel: Zweimal 27 Ringe ergibt zweimal Platz 2, der nächste Schütze ist Vierter.',
+      'Beispiel: Zweimal 27 Punkte ergibt zweimal Platz 2, die nächste Person ist Vierte.',
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
@@ -2185,11 +2216,13 @@ const TERMS_DATA = {
   },
   comp_prize_place: {
     name: d('Preisplatz'),
-    meaning: d(
+    meaning: n(
       'Platz, für den es laut Ausschreibung einen Preis gibt, etwa die ersten drei. Nur hier braucht ein Gleichstand ein Stechen (§ 661 BGB).',
+      'Platz, für den es laut Ausschreibung einen Preis gibt, etwa die ersten drei. Nur hier braucht ein Gleichstand eine Entscheidungsrunde (§ 661 BGB).',
     ),
-    example: d(
+    example: n(
       'Beispiel: Bei 3 Preisplätzen muss ein Gleichstand auf Platz 3 gestochen werden, einer auf Platz 4 nicht.',
+      'Beispiel: Bei 3 Preisplätzen braucht ein Gleichstand auf Platz 3 eine Entscheidungsrunde, einer auf Platz 4 nicht.',
     ),
     sources: ['bgb'],
     section: 'competitions',
@@ -2205,25 +2238,31 @@ const TERMS_DATA = {
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_unit_scoring: {
     name: d('Wertung der Untereinheiten'),
-    meaning: d(
+    meaning: n(
       'Wertung der Züge oder Abteilungen aus den Einzelergebnissen ihrer Schützen, etwa als Summe der besten 5 (Zugwertung). Einheiten mit zu wenigen Schützen bleiben ungewertet, wie bei Mannschaften nach der DSB-Sportordnung.',
+      'Wertung der Untereinheiten aus den Einzelergebnissen ihrer Teilnehmenden, etwa als Summe der besten 5. Einheiten mit zu wenigen Teilnehmenden bleiben ungewertet, wie bei Mannschaften in vielen Sportordnungen.',
     ),
-    example: d('Beispiel: Zug 1 mit 28, 27, 25, 24, 22 und 20 Ringen hat bei „beste 5“ 126 Ringe.'),
+    example: n(
+      'Beispiel: Zug 1 mit 28, 27, 25, 24, 22 und 20 Ringen hat bei „beste 5“ 126 Ringe.',
+      'Beispiel: Gruppe 1 mit 28, 27, 25, 24, 22 und 20 Punkten hat bei „beste 5“ 126 Punkte.',
+    ),
     sources: ['dsbSpo'],
     section: 'competitions',
     feature: 'competitions',
   },
   comp_ooc: {
     name: d('außer Konkurrenz'),
-    meaning: d(
+    meaning: n(
       'Der Schütze schießt mit und erscheint in der Liste, bekommt aber keinen Platz und keinen Preis. Üblich etwa für Schießleiter oder Gäste aus Nachbarvereinen (§ 25 BGB, Schießordnung).',
+      'Die Person nimmt teil und erscheint in der Liste, bekommt aber keinen Platz und keinen Preis. Üblich etwa für die Wettkampfleitung oder Gäste aus Nachbarvereinen (§ 25 BGB, Wettkampfordnung).',
     ),
-    example: d(
+    example: n(
       'Beispiel: Der Schießleiter schießt 30 Ringe außer Konkurrenz; Platz 1 geht an die Beste mit 28.',
+      'Beispiel: Die Wettkampfleiterin erreicht 30 Punkte außer Konkurrenz; Platz 1 geht an den Besten mit 28.',
     ),
     sources: ['bgb'],
     section: 'competitions',
@@ -2232,11 +2271,13 @@ const TERMS_DATA = {
   },
   comp_guest: {
     name: d('Gast'),
-    meaning: d(
+    meaning: n(
       'Teilnehmer, der nicht Mitglied ist; von ihm speichert HUBIplan nur Name und Verein (Art. 5 Abs. 1 lit. c DSGVO). Ob Gäste um Preise schießen dürfen, regelt die Ausschreibung.',
+      'Teilnehmer, der nicht Mitglied ist; von ihm speichert HUBIplan nur Name und Verein (Art. 5 Abs. 1 lit. c DSGVO). Ob Gäste um Preise mitspielen dürfen, regelt die Ausschreibung.',
     ),
-    example: d(
+    example: n(
       'Beispiel: „Gerd Gast, SV Nachbarort“ schießt 26 Ringe mit; für die Zugwertung kann er einer Untereinheit zugeordnet werden.',
+      'Beispiel: „Gerd Gast, SV Nachbarort“ erreicht 26 Punkte; für die Wertung der Untereinheiten kann er einer Einheit zugeordnet werden.',
     ),
     sources: ['dsgvo'],
     section: 'competitions',
@@ -2251,7 +2292,7 @@ const TERMS_DATA = {
     example: d('Beispiel: Wer Los 7 zieht, schießt nach Nummer 6 und vor Nummer 8.'),
     sources: [],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_prize: {
     name: d('Pfand'),
@@ -2263,7 +2304,7 @@ const TERMS_DATA = {
     ),
     sources: [],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_round: {
     name: d('Runde'),
@@ -2273,7 +2314,7 @@ const TERMS_DATA = {
     example: d('Beispiel: Bei 40 Schützen beginnt mit dem 41. Schuss die zweite Runde.'),
     sources: ['bgb'],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_shots_for: {
     name: d('Schüsse für das Pfand'),
@@ -2285,15 +2326,17 @@ const TERMS_DATA = {
     ),
     sources: [],
     section: 'competitions',
-    feature: 'competitions',
+    feature: 'shooting',
   },
   comp_provisional_term: {
     name: d('vorläufig'),
-    meaning: d(
+    meaning: n(
       'Zustand nach „Schießen beenden“: Ergebnisse stehen, Nachträge und Stechen sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält.',
+      'Zustand nach „Wettbewerb beenden“: Ergebnisse stehen, Nachträge und Entscheidungsrunden sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält.',
     ),
-    example: d(
+    example: n(
       'Beispiel: Am Abend hängt die vorläufige Liste aus; ein Stechen am nächsten Morgen ändert noch Platz 3.',
+      'Beispiel: Am Abend hängt die vorläufige Liste aus; eine Entscheidungsrunde am nächsten Morgen ändert noch Platz 3.',
     ),
     sources: [],
     section: 'competitions',
@@ -2304,8 +2347,9 @@ const TERMS_DATA = {
     meaning: d(
       'Zustand nach dem Abschluss: Eingaben sind gesperrt, die Ergebnisse gelten. Nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht.',
     ),
-    example: d(
+    example: n(
       'Beispiel: Nach dem 2. Stechen schließt der Schießmeister ab, danach lässt sich kein Wert mehr ändern.',
+      'Beispiel: Nach der 2. Entscheidungsrunde schließt die Wettkampfleitung ab, danach lässt sich kein Wert mehr ändern.',
     ),
     sources: [],
     section: 'competitions',
@@ -2313,11 +2357,13 @@ const TERMS_DATA = {
   },
   comp_stand_mode: {
     name: d('Standmodus'),
-    meaning: d(
+    meaning: n(
       'Vollbildansicht für Tablet oder Handy am Schießstand, mit großer Suche und Eingabe; sie arbeitet auch ohne Empfang weiter. Sie zeigt nur, was zum Erfassen nötig ist (Art. 5 Abs. 1 lit. c DSGVO), und sendet, sobald wieder Verbindung besteht.',
+      'Vollbildansicht für Tablet oder Handy am Ort des Wettbewerbs, mit großer Suche und Eingabe; sie arbeitet auch ohne Empfang weiter. Sie zeigt nur, was zum Erfassen nötig ist (Art. 5 Abs. 1 lit. c DSGVO), und sendet, sobald wieder Verbindung besteht.',
     ),
-    example: d(
+    example: n(
       'Beispiel: Am Stand tippt die Aufsicht „Mül“, wählt Jürgen Müller und trägt 27 ein.',
+      'Beispiel: Vor Ort tippt die Aufsicht „Mül“, wählt Jürgen Müller und trägt 27 ein.',
     ),
     sources: ['dsgvo'],
     section: 'competitions',
@@ -2340,8 +2386,9 @@ const TERMS_DATA = {
     meaning: d(
       'Verein oder Verband, der einen fremden Wettbewerb veranstaltet und wertet. Er legt Regeln und Preise fest.',
     ),
-    example: d(
+    example: n(
       'Beispiel: Beim Bezirksschießen 2027 ist der Bezirksverband der Ausrichter; du trägst nur die Plätze der eigenen Teilnehmer ein, etwa Platz 3 mit 287 Ringen.',
+      'Beispiel: Beim Bezirksturnier 2027 ist der Bezirksverband der Ausrichter; du trägst nur die Plätze der eigenen Teilnehmer ein, etwa Platz 3 mit 287 Punkten.',
     ),
     sources: [],
     section: 'competitions',
@@ -2885,11 +2932,12 @@ const HOWTOS_DATA = {
   how_comp_ranking: {
     kind: 'calc',
     title: d('Plätze bei Gleichstand'),
-    text: d(
+    text: n(
       'Gleiche Werte teilen sich den Platz, der nächste Platz wird übersprungen. Auf Preisplätzen entscheidet ein Stechen, danach gilt die Reihenfolge des Stechens.',
+      'Gleiche Werte teilen sich den Platz, der nächste Platz wird übersprungen. Auf Preisplätzen entscheidet eine Entscheidungsrunde, danach gilt deren Reihenfolge.',
     ),
     example: {
-      head: ['Schütze', 'Wert', 'Platz'],
+      head: ['Name', 'Wert', 'Platz'],
       rows: [
         ['A', '29', '1.'],
         ['B', '27', '2.'],
@@ -2922,20 +2970,21 @@ const HOWTOS_DATA = {
       ],
     },
     sources: [],
-    feature: 'competitions',
+    feature: 'shooting',
   },
   how_comp_unit: {
     kind: 'calc',
     title: d('Wertung der Untereinheiten'),
-    text: d(
+    text: n(
       'Bei „Summe der besten k“ zählen die k besten Einzelwerte der Einheit; Schützen außer Konkurrenz zählen nicht. Hat eine Einheit weniger als k Werte, bleibt sie ohne Platz.',
+      'Bei „Summe der besten k“ zählen die k besten Einzelwerte der Einheit; Teilnehmende außer Konkurrenz zählen nicht. Hat eine Einheit weniger als k Werte, bleibt sie ohne Platz.',
     ),
     example: {
-      head: ['Zug', 'Einzelwerte', 'beste 3'],
+      head: ['Einheit', 'Einzelwerte', 'beste 3'],
       rows: [
-        ['Zug 1', '28, 27, 25, 20', '80'],
-        ['Zug 2', '29, 26, 24', '79'],
-        ['Zug 3', '30, 28', 'nicht gewertet'],
+        ['Gruppe 1', '28, 27, 25, 20', '80'],
+        ['Gruppe 2', '29, 26, 24', '79'],
+        ['Gruppe 3', '30, 28', 'nicht gewertet'],
       ],
     },
     sources: [],
@@ -2955,7 +3004,7 @@ const HOWTOS_DATA = {
       ],
     },
     sources: [],
-    feature: 'competitions',
+    feature: 'shooting',
   },
   how_comp_shots_for: {
     kind: 'calc',
@@ -2970,13 +3019,14 @@ const HOWTOS_DATA = {
       ],
     },
     sources: [],
-    feature: 'competitions',
+    feature: 'shooting',
   },
   how_comp_tablets: {
     kind: 'how',
     title: d('Mehrere Tablets gleichzeitig'),
-    text: d(
+    text: n(
       'Alle Geräte gleichen sich etwa alle 3 Sekunden ab; für einen Schützen gilt der zuletzt eingetragene Wert, und doppelt angelegte Schützen werden zusammengeführt. Ohne Empfang wird weiter erfasst und später gesendet. Stechen anlegen und abschließen braucht Empfang.',
+      'Alle Geräte gleichen sich etwa alle 3 Sekunden ab; für eine Person gilt der zuletzt eingetragene Wert, und doppelt angelegte Teilnehmende werden zusammengeführt. Ohne Empfang wird weiter erfasst und später gesendet. Entscheidungsrunden anlegen und abschließen braucht Empfang.',
     ),
     sources: [],
     feature: 'competitions',

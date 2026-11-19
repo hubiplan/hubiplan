@@ -1,6 +1,7 @@
 // Helferdienste und Schichtpläne (konzepte/helferdienste.md, Schritte H1–H3): Dienstpläne,
 // Dienste, Schichten mit Schnelleingabe, Einteilung durch die Verwaltung, Druck und Export,
 // Kontingente für Untereinheiten, Kopie, Aufruf per Rundschreiben und geleistete Dienste (H4).
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { berlin } from '../../components/calendar/time.ts'
@@ -91,6 +92,12 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
     next.delete('termin')
     setParams(next, { replace: true })
   }, [params, setParams])
+  const sorting = useRowSort(list.data ?? [], {
+    title: (p) => p.title,
+    event: (p) => p.event_starts_at,
+    open: (p) => p.open,
+    status: (p) => p.status,
+  })
   if (detail.value) {
     return (
       <PlanDetail
@@ -108,7 +115,7 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
       />
     )
   }
-  const rows = list.data ?? []
+  const rows = sorting.rows
   return (
     <div className="helpers">
       <PageHeader
@@ -149,10 +156,10 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Dienstplan')}</th>
-              <th>{t('Termin')}</th>
-              <th>{t('Offene Plätze')}</th>
-              <th>{t('Stand')}</th>
+              {sorting.head('title', t('Dienstplan'))}
+              {sorting.head('event', t('Termin'))}
+              {sorting.head('open', t('Offene Plätze'))}
+              {sorting.head('status', t('Stand'))}
             </tr>
           </thead>
           <tbody>
@@ -1396,7 +1403,12 @@ function CopyForm({
 function DoneCard({ base }: { base: string }) {
   const [year, setYear] = useState(() => new Date().getFullYear())
   const done = useLoad(() => helperApi.done(base, year), [base, year])
-  const people = done.data?.people ?? []
+  const doneSort = useRowSort(done.data?.people ?? [], {
+    name: (p) => p.name,
+    shifts: (p) => p.shifts,
+    minutes: (p) => p.minutes,
+  })
+  const people = doneSort.rows
   const hours = (minutes: number) =>
     (minutes / 60).toLocaleString(locale(), { maximumFractionDigits: 1 })
   return (
@@ -1419,9 +1431,9 @@ function DoneCard({ base }: { base: string }) {
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Name')}</th>
-              <th>{t('Schichten')}</th>
-              <th>{t('Stunden')}</th>
+              {doneSort.head('name', t('Name'))}
+              {doneSort.head('shifts', t('Schichten'))}
+              {doneSort.head('minutes', t('Stunden'))}
             </tr>
           </thead>
           <tbody>

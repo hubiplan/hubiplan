@@ -52,7 +52,7 @@ import { SiteLanguage } from './SiteLanguage.tsx'
 import { UndoBar, useDesignHistory } from './designHistory.tsx'
 import { DesignFile } from './DesignFile.tsx'
 import { HomeBuilder, TargetField } from './HomeBuilder.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
@@ -288,7 +288,7 @@ function HomeContentCard({
 
   return (
     <section className="card card-wide" aria-labelledby="startseite-inhalte">
-      <h2 id="startseite-inhalte">{t('Startseite')}</h2>
+      <h2 id="startseite-inhalte">{tc('Webseite', 'Startseite')}</h2>
       <HomeBuilder
         data={data}
         website={website}
@@ -746,7 +746,7 @@ function WebsiteAdmin({
     data.can_manage && data.home_labels && v.home_sections
       ? shell(
           settings(
-            t('Startseite'),
+            tc('Webseite', 'Startseite'),
             <HomeBuilder
               data={data}
               website={website}

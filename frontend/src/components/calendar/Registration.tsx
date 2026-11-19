@@ -1,6 +1,7 @@
 // Verbindliche Anmeldung mit Teilnahmegebühr am Termin (konzepte/veranstaltungen-anmeldung-gebuehr.md,
 // Stufen A1–A3): Verwaltung richtet Tarife, Preisstufen, Warteliste und Stornostaffel ein und
 // sieht alle Anmeldungen, Mitglieder melden sich und ihre Familie an und ab.
+import { useRowSort } from '../RowSort.tsx'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CalendarBase, EventDetail } from '../../api/events.ts'
@@ -174,6 +175,12 @@ function RegistrationTable({
     (r) => [r.number, r.name, r.email ?? '', ...r.participants.map((p) => p.name)].join(' '),
     t('Anmeldungen'),
   )
+  const sorting = useRowSort(search.shown, {
+    number: (r) => r.number,
+    people: (r) => r.participants.filter((p) => p.status === 'active').length,
+    total: (r) => Number(r.total),
+    paid: (r) => r.paid_state,
+  })
   return (
     <>
       {search.field}
@@ -181,17 +188,17 @@ function RegistrationTable({
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Anmeldung')}</th>
-              <th>{t('Personen')}</th>
-              <th>{t('Betrag')}</th>
-              <th>{t('Stand')}</th>
+              {sorting.head('number', t('Anmeldung'))}
+              {sorting.head('people', t('Personen'))}
+              {sorting.head('total', t('Betrag'))}
+              {sorting.head('paid', t('Stand'))}
               <th>
                 <span className="sr-only">{t('Aktionen')}</span>
               </th>
             </tr>
           </thead>
           <tbody>
-            {search.shown.map((reg) => (
+            {sorting.rows.map((reg) => (
               <tr key={reg.id}>
                 <td>
                   {reg.number}

@@ -5,7 +5,6 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { euro, financeApi, parseAmount, RESERVE_KINDS, reserveApi } from '../../api/finance.ts'
 import type { Reserve, ReserveKind } from '../../api/finance.ts'
-import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -399,29 +398,14 @@ function ReserveCard({
                     <button
                       type="button"
                       className="link-button"
+                      // ohne Rückfrage, lässt sich rückgängig machen (VW-23)
                       onClick={() =>
-                        void (async () => {
-                          if (
-                            await confirmDialog({
-                              final: false,
-                              title: t('{direction_label} löschen?', {
-                                direction_label: m.direction_label,
-                              }),
-                              message: t('{direction_label} von {x} am {x2} wird gelöscht.', {
-                                direction_label: m.direction_label,
-                                x: euro(m.amount),
-                                x2: formatDate(m.date),
-                              }),
-                              confirmLabel: t('Löschen'),
-                            })
-                          )
-                            await act(
-                              () => reserveApi.removeMove(org.id, reserve.id, m.id),
-                              t('{direction_label} gelöscht.', {
-                                direction_label: m.direction_label,
-                              }),
-                            )
-                        })()
+                        void act(
+                          () => reserveApi.removeMove(org.id, reserve.id, m.id),
+                          t('{direction_label} gelöscht.', {
+                            direction_label: m.direction_label,
+                          }),
+                        )
                       }
                     >
                       {t('Löschen')}

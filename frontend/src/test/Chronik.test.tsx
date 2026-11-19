@@ -141,7 +141,7 @@ describe('Chronik', () => {
     expect(await screen.findByText('Karl Bürger')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Bundeskönig (Testbund)' })).toBeVisible()
     const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: 'Neue Regentschaft' }))
+    await user.click(screen.getAllByRole('button', { name: 'Neue Regentschaft' })[0])
     await user.type(screen.getByLabelText('Würdenträger (Name)'), 'Hans Alt')
     await user.selectOptions(screen.getByLabelText(/Aus \(Herkunft/), 'frei')
     await user.type(screen.getByLabelText('Aus (frei)'), 'Alter Zug')
@@ -164,7 +164,7 @@ describe('Chronik', () => {
       { type: 'federation', direct_members: true, modules: ['members', 'awards', 'honors'] },
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Neue Würde' }))
+    await user.click((await screen.findAllByRole('button', { name: 'Neue Würde' }))[0])
     expect(screen.queryByText(/Untereinheiten konnten nicht geladen werden/)).toBeNull()
     expect(calls.some((c) => c.key.includes('/departments/'))).toBe(false)
   })
@@ -267,7 +267,7 @@ describe('Chronik', () => {
       '/mitglieder/wuerdentraeger/wuerden',
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Neue Würde' }))
+    await user.click((await screen.findAllByRole('button', { name: 'Neue Würde' }))[0])
     await user.type(screen.getByLabelText(/Bezeichnung/), 'König')
     await user.click(screen.getByRole('button', { name: 'Anlegen' }))
     await waitFor(() => expect(calls.some((c) => c.key === `POST ${base}dignities/`)).toBe(true))

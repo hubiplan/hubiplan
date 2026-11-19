@@ -6,7 +6,7 @@ routen: [/finanzen/buchen, /finanzen/abrechnen, /finanzen/zahlungen, /finanzen/a
 stichworte: [group, group page, payments, book, set up, to do]
 ---
 
-Clicking the name of a group in the Finance sidebar (e.g. **Book**) opens its group page. It shows every entry of the group with a short description and, in red below it, what is currently to do there, such as entries without a receipt or reminders that are due. Clicking a card opens the entry.
+Clicking the name of a group in the Finance sidebar (e.g. **Bookkeeping**) opens its group page. It shows every entry of the group with a short description and, in red below it, what is currently to do there, such as entries without a receipt or reminders that are due. Clicking a card opens the entry.
 
 At the top right is the main action of the group, if you may edit finance: **Write invoice** for Fees & invoices, **Import bank statement** for Payments, **Record income** and **Record expense** for Book, and **Close the year** for Evaluate & close. The group page of **Set up** is at [Finance › Set up](/finanzen/einrichtung).
 

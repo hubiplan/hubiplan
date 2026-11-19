@@ -1,7 +1,7 @@
 // Webseite: Unterpunkte in der Seitenleiste (wie bei Mitglieder und Finanzen).
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export interface NavItem {
   to: string
@@ -17,7 +17,7 @@ const operation = t('Betrieb')
 
 const ALL: NavItem[] = [
   { to: '/webseite', label: t('Übersicht') },
-  { to: '/webseite/startseite', label: t('Startseite'), section: content },
+  { to: '/webseite/startseite', label: tc('Webseite', 'Startseite'), section: content },
   { to: '/webseite/inhalte', label: t('Texte'), section: content },
   { to: '/webseite/bilder', label: t('Bilder'), section: content },
   { to: '/webseite/galerie', label: t('Galerie'), section: content },

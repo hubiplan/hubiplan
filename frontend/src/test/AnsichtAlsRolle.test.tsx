@@ -72,11 +72,11 @@ describe('Ansicht als Rolle', () => {
     // Seltene Prüfung: steht im Menü „Mein Konto“ (UX-Audit W-06)
     await user.click(await screen.findByRole('button', { name: /Mein Konto/ }))
     const select = await screen.findByRole('combobox', { name: 'Ansicht als Rolle' })
-    await within(select).findByRole('option', { name: 'Ansicht als Kassierer' })
+    await within(select).findByRole('option', { name: 'Ansicht als „Kassierer“' })
     const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).toHaveTextContent('Mitglieder')
 
-    await user.selectOptions(select, 'Ansicht als Kassierer')
+    await user.selectOptions(select, 'Ansicht als „Kassierer“')
     const banner = await screen.findByText(/Ändern ist ausgeschaltet/)
     expect(banner).toHaveTextContent('Ansicht als „Kassierer“')
     const start = calls.find((c) => c.key === 'POST /api/orgs/7/ansicht/')!

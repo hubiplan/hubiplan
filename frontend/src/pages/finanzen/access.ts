@@ -3,7 +3,7 @@
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { DEFAULT_TERMS } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export interface FinanceAccess {
   /** Kasse: Kassenbuch, Konten, Kategorien, Abschluss */
@@ -127,7 +127,7 @@ export function financeGroups(): Record<
     },
     booking: {
       key: 'buchen',
-      label: t('Buchen'),
+      label: tc('Finanzen', 'Buchen'),
       to: '/finanzen/buchen',
       text: t('Einnahmen und Ausgaben erfassen, Kasse zählen, Rücklagen und Anlagen führen.'),
     },
@@ -235,8 +235,8 @@ export function financeSections(a: FinanceAccess): NavItem[] {
       },
       a.finance && {
         to: '/finanzen/veranstaltungen',
-        label: t('Veranstaltungen'),
-        text: t('Einnahmen und Ausgaben je Fest'),
+        label: tc('Finanzen', 'Veranstaltungen'),
+        text: t('Einnahmen und Ausgaben je Veranstaltung'),
       },
       a.tax && {
         to: '/finanzen/anlagen',
@@ -252,7 +252,7 @@ export function financeSections(a: FinanceAccess): NavItem[] {
     ...items(g.closing, [
       a.finance && {
         to: '/finanzen/auswertung',
-        label: t('Auswertung'),
+        label: tc('Finanzen', 'Auswertung'),
         text: t('Ergebnis nach Konten und Kategorien, Vermögen'),
       },
       a.finance && {

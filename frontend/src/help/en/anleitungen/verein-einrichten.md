@@ -7,7 +7,7 @@ reihe: 5
 stichworte: [initial setup, new club, set up, required details, membership types]
 ---
 
-1. Open [Settings › Setup (overview)](/einstellungen/einrichtung).
+1. Open [Settings › Settings at a glance](/einstellungen/einrichtung).
 2. Work through the required items marked in red from top to bottom; each row opens the page in its area.
 3. Enter the address and contact under Organisation and complete the legal notice.
 4. Create the membership types under Members, and the accounts, categories, fee rates and reminder levels under Finance.
