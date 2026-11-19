@@ -13,5 +13,3 @@ stichworte: [backup, data backup, safety copy, all data, move, export]
 4. Keep the file encrypted and separate from the computer. It contains all personal data.
 
 The export is your own copy, for example for a move to another instance. Independently of that, the operator backs up the server; ask there how often. User accounts and passwords are not included in the export.
-
-![Starting point: Back up or take along your data](bild:daten-sichern)

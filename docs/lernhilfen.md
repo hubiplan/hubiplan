@@ -83,6 +83,17 @@ Die Prüfpunkte und ihre Schwellen stehen in `frontend/src/learning/checks.ts`; 
 Zahlen dafür liefern die Vorschau des Beitragslaufs (`checks`), die Lastschrift-Vorschläge
 (`creditor_valid`, `expiring_soon`, `has_email`) und die Abschlussübersicht (`checks`). Die Prüflisten vor der Einladung und vor dem Abschluss der Kassenprüfung rechnen nur mit den Daten, die die Seite ohnehin lädt (Frist und Tagesordnung bzw. Prüfpunkte, Stichproben und Kontenabgleich).
 
+## Stand der Beträge und „Zur Stelle“
+
+- Nennt eine Erklärung oder ein Begriff mit Quelle einen Geldbetrag (Freigrenze, Pauschale …),
+  braucht der Eintrag `asOf: <Jahr>`: das Jahr, in dem der Betrag am Gesetz geprüft wurde. Das
+  Glossar zeigt „(Beträge: Stand 2026)“. Der Test verlangt das Feld und gibt im Testlauf eine
+  Warnung aus, sobald das Jahr zurückliegt; dann die Beträge am Gesetz prüfen und `asOf` anheben.
+- Das Glossar bietet bei Erklärungen „Zur Stelle“ an. Die Zuordnung Erklärung → Seite steht in
+  `src/learning/places.json` und entsteht mit `node scripts/lernhilfen-stellen.mjs` (Ordner
+  `frontend`) aus den Routen der Oberfläche; nach neuen Erklärungen oder verschobenen Seiten
+  neu erzeugen und einchecken. Verlinkt werden nur Seiten mit eigener Seitenhilfe.
+
 ## Bedienung und Barrierefreiheit
 
 - Tab erreicht jedes „?“ und jedes „Warum?“; Enter oder Leertaste öffnet, Esc schließt,

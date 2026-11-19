@@ -20,6 +20,7 @@
 // erscheinen auf diesen Routen als „Häufige Aufgaben“. Bilder: ![Text](bild:name),
 // erzeugt von scripts/hilfe-bilder.sh nach src/help/bilder.json.
 import type { Lang } from '../i18n/index.ts'
+import { variants } from './synonyms.ts'
 
 export type HelpKind = 'guide' | 'page'
 
@@ -205,12 +206,34 @@ export function guidesOfPage(
   return [...routeGuides, ...more]
 }
 
-/** Alle Wörter der Suche müssen vorkommen (Groß-/Kleinschreibung egal). */
+const queryWords = (query: string) => query.toLocaleLowerCase().split(/\s+/).filter(Boolean)
+const haystack = (texts: (string | undefined)[]) =>
+  texts.filter(Boolean).join(' ').toLocaleLowerCase()
+const hasWord = (hay: string, word: string) => variants(word).some((v) => hay.includes(v))
+
+/** Alle Wörter der Suche müssen vorkommen (Groß-/Kleinschreibung egal); gleichbedeutende
+ *  Wörter zählen mit (help/synonyms.ts: „Homepage“ findet „Webseite“). */
 export function matchesQuery(query: string, ...texts: (string | undefined)[]): boolean {
-  const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean)
+  const words = queryWords(query)
   if (!words.length) return true
-  const hay = texts.filter(Boolean).join(' ').toLocaleLowerCase()
-  return words.every((w) => hay.includes(w))
+  const hay = haystack(texts)
+  return words.every((w) => hasWord(hay, w))
+}
+
+/** Wie matchesQuery, aber nur die getippten Wörter selbst (für die Reihenfolge der Treffer). */
+export function matchesLiteral(query: string, ...texts: (string | undefined)[]): boolean {
+  const hay = haystack(texts)
+  return queryWords(query).every((w) => hay.includes(w))
+}
+
+/** Bei mehreren Suchwörtern: Welches eine Wort fehlt, wenn alle anderen vorkommen?
+ *  null, wenn alle passen, mehr als eines fehlt oder nur ein Wort gesucht wird. */
+export function missingWord(query: string, ...texts: (string | undefined)[]): string | null {
+  const words = queryWords(query)
+  if (words.length < 2) return null
+  const hay = haystack(texts)
+  const missing = words.filter((w) => !hasWord(hay, w))
+  return missing.length === 1 ? missing[0] : null
 }
 
 /** Bilder im Text: bild:name → Datei der Sprache. */

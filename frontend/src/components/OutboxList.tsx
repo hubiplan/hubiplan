@@ -7,10 +7,10 @@ import { Alert, Loading } from './ui.tsx'
 import { useLoad } from './forms.ts'
 
 const STATUS = [
-  ['', 'alle'],
-  ['sent', 'versendet'],
-  ['stored', t('nur gespeichert')],
-  ['failed', 'fehlgeschlagen'],
+  ['', () => t('alle')],
+  ['sent', () => t('versendet')],
+  ['stored', () => t('nur gespeichert')],
+  ['failed', () => t('fehlgeschlagen')],
 ] as const
 
 /** Postausgang mit Suche (Empfänger, Betreff), Zeitraum, Status und Seiten. */
@@ -39,7 +39,7 @@ export function OutboxBrowser({
           >
             {STATUS.map(([value, label]) => (
               <option key={value} value={value}>
-                {label}
+                {label()}
               </option>
             ))}
           </select>

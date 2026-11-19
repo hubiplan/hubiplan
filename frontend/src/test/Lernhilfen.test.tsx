@@ -24,6 +24,7 @@ import {
   donationChecks,
 } from '../learning/checks.ts'
 import {
+  AMOUNT,
   DECISIONS,
   HOWTOS,
   LANGUAGES,
@@ -36,6 +37,8 @@ import {
   type Text,
 } from '../learning/content.ts'
 import { Field } from '../components/ui.tsx'
+import PLACES from '../learning/places.json'
+import { parseHelpFile } from '../help/content.ts'
 import { GlossaryPage } from '../learning/GlossaryPage.tsx'
 import { LearningCard } from '../learning/LearningCard.tsx'
 import { LearningProvider, NoLearningAids } from '../learning/LearningContext.tsx'
@@ -491,6 +494,46 @@ describe('Freischaltung', () => {
     expect(screen.queryByText(DECISIONS.sepa_use.title.de)).not.toBeInTheDocument()
     expect(document.getElementById(termAnchor('mandate'))).toBeNull()
     expect(screen.queryByRole('heading', { name: 'SEPA-Lastschrift' })).not.toBeInTheDocument()
+  })
+})
+
+describe('Stand der Beträge und Stellen', () => {
+  it('Texte mit Quelle und Geldbetrag nennen das Jahr der Prüfung', () => {
+    const year = new Date().getFullYear()
+    const missing: string[] = []
+    const old: string[] = []
+    const check = (key: string, text: string, sources: unknown[], asOf?: number) => {
+      if (sources.length && AMOUNT.test(text) && !asOf) missing.push(key)
+      if (asOf) {
+        expect(asOf, key).toBeGreaterThanOrEqual(2026)
+        expect(asOf, key).toBeLessThanOrEqual(year)
+        if (asOf < year) old.push(key)
+      }
+    }
+    for (const [key, e] of Object.entries(DECISIONS)) check(key, e.text.de, e.sources, e.asOf)
+    for (const [key, e] of Object.entries(TERMS)) check(key, e.meaning.de, e.sources, e.asOf)
+    expect(missing).toEqual([])
+    // Kein Fehler, aber sichtbar: Beträge aus Gesetzen ändern sich fast jedes Jahr
+    if (old.length)
+      console.warn(
+        `Lernhilfen mit Beträgen, Stand vor ${year}: bitte am Gesetz prüfen und asOf anheben: ${old.join(', ')}`,
+      )
+  })
+
+  it('„Zur Stelle“ führt nur zu Erklärungen und Seiten, die es gibt', () => {
+    const keys = Object.keys(PLACES)
+    expect(keys.filter((k) => !(k in DECISIONS))).toEqual([])
+    // scripts/lernhilfen-stellen.mjs findet fast alle; fällt die Zahl, stimmt etwas nicht
+    expect(keys.length).toBeGreaterThan(Object.keys(DECISIONS).length * 0.9)
+    const files = import.meta.glob('../help/de/seiten/*.md', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>
+    const routes = new Set(
+      Object.entries(files).flatMap(([name, raw]) => parseHelpFile(name, raw).routes),
+    )
+    for (const route of new Set(Object.values(PLACES))) expect(routes.has(route), route).toBe(true)
   })
 })
 

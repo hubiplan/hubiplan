@@ -11,6 +11,8 @@ import { AuthProvider } from '../auth/AuthContext.tsx'
 import {
   guidesFor,
   guidesOfPage,
+  matchesQuery,
+  missingWord,
   imagesIn,
   pageHelpFor,
   parseHelpFile,
@@ -21,6 +23,7 @@ import type { HelpEntry } from '../help/content.ts'
 import { FIRST_STEPS, MEMBER_TOPICS, highlight, labelsIn } from '../help/extras.ts'
 import { byMenu, partOf, placeOf } from '../help/menu.ts'
 import { parseNews } from '../help/news.ts'
+import { SYNONYM_GROUPS } from '../help/synonyms.ts'
 import { HelpContactsCard } from '../help/HelpExtras.tsx'
 import { renderHelp, sectionAnchor, splitSections } from '../help/markdown.ts'
 import { searchRank } from '../help/HelpPage.tsx'
@@ -722,5 +725,139 @@ describe('Zeig es mir', () => {
     expect(highlight(['Speichern'])).toBe(false)
     expect(highlight(['Speichern', 'Weiter'])).toBe(true)
     expect(document.querySelector('#inhalt button')).toHaveClass('help-highlight')
+  })
+})
+
+describe('Suche mit gleichbedeutenden Wörtern', () => {
+  it('„Homepage“ findet „Webseite“, jedes Wort steht nur in einer Gruppe', () => {
+    expect(matchesQuery('Homepage', 'Webseite veröffentlichen')).toBe(true)
+    expect(matchesQuery('Newsletter verschicken', 'Rundschreiben verschicken')).toBe(true)
+    expect(matchesQuery('Backup', 'Daten sichern', 'Datenübernahme')).toBe(true)
+    expect(matchesQuery('Homepage', 'Kassenbuch')).toBe(false)
+    const all = SYNONYM_GROUPS.flat()
+    expect(all.filter((w, i) => all.indexOf(w) !== i)).toEqual([])
+    expect(all.filter((w) => w !== w.toLocaleLowerCase())).toEqual([])
+  })
+
+  it('die Wörter, die Menschen eintippen, finden jetzt eine Anleitung', () => {
+    const guides = [...DE.values()].filter((e) => e.kind === 'guide')
+    for (const query of [
+      'Rücklastschrift',
+      'Beitrag erhöhen',
+      'Newsletter',
+      'Homepage',
+      'Datensicherung',
+      'Backup',
+      'Benutzer anlegen',
+      'Spam',
+      'Vorstand Wechsel',
+    ])
+      expect(
+        guides.some((e) => matchesQuery(query, e.title, e.body, e.keywords.join(' '))),
+        query,
+      ).toBe(true)
+  })
+
+  it('nennt das eine fehlende Wort', () => {
+    expect(missingWord('Passwort Zebra', 'Passwort ändern')).toBe('zebra')
+    expect(missingWord('Passwort ändern', 'Passwort ändern')).toBeNull()
+    expect(missingWord('Zebra', 'Passwort ändern')).toBeNull()
+    expect(missingWord('Zebra Giraffe', 'Passwort ändern')).toBeNull()
+  })
+
+  it('Treffer mit einem fehlenden Wort; Suche ohne Treffer wird ohne Person gemeldet', async () => {
+    const api = renderApp('/hilfe', undefined, {
+      'POST /api/help/search-miss/': () => ({ status: 204 }),
+    })
+    await screen.findAllByRole('link', { name: 'Passwort ändern' })
+    await userEvent.type(screen.getByLabelText('Hilfe durchsuchen'), 'Passwort Zebrastreifen')
+    expect(
+      await screen.findByText(
+        'Keine Hilfe enthält alle Suchwörter. Diese Treffer lassen ein Wort aus:',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('(ohne „zebrastreifen“)').length).toBeGreaterThan(0)
+    await waitFor(
+      () => expect(api.some((c) => c.key === 'POST /api/help/search-miss/')).toBe(true),
+      { timeout: 4000 },
+    )
+    const call = api.find((c) => c.key === 'POST /api/help/search-miss/')
+    expect(JSON.parse(String(call?.init?.body))).toEqual({
+      term: 'Passwort Zebrastreifen',
+      language: 'de',
+    })
+  })
+})
+
+describe('Hat das geholfen?', () => {
+  it('Ja sendet sofort; Nein fragt nach, was gefehlt hat, mit Hinweis ohne Namen', async () => {
+    const user = userEvent.setup()
+    const api = renderApp('/hilfe/passwort-aendern', undefined, {
+      'POST /api/help/feedback/': () => ({ status: 204 }),
+    })
+    const box = await screen.findByRole('region', { name: 'Hat das geholfen?' })
+    await user.click(within(box).getByRole('button', { name: 'Nein' }))
+    const field = within(box).getByLabelText(/Was hat gefehlt\? \(freiwillig\)/)
+    expect(within(box).getByText(/Bitte keine Namen oder persönlichen Angaben/)).toBeInTheDocument()
+    await user.type(field, 'Wo steht der Knopf?')
+    await user.click(within(box).getByRole('button', { name: 'Absenden' }))
+    expect(await within(box).findByText('Danke für die Rückmeldung.')).toBeInTheDocument()
+    const call = api.find((c) => c.key === 'POST /api/help/feedback/')
+    expect(JSON.parse(String(call?.init?.body))).toEqual({
+      key: 'guide.password',
+      language: 'de',
+      helpful: false,
+      comment: 'Wo steht der Knopf?',
+    })
+    expect(within(box).queryByRole('button', { name: 'Ja' })).not.toBeInTheDocument()
+  })
+
+  it('steht auch in der Hilfe zu dieser Seite; Ja ohne Rückfrage', async () => {
+    const user = userEvent.setup()
+    const api = renderApp('/mein-konto', undefined, {
+      'POST /api/help/feedback/': () => ({ status: 204 }),
+    })
+    await user.click(await screen.findByRole('button', { name: 'Hilfe zu dieser Seite' }))
+    const panel = await screen.findByRole('complementary', { name: 'Hilfe zu dieser Seite' })
+    const box = await within(panel).findByRole('region', { name: 'Hat das geholfen?' })
+    await user.click(within(box).getByRole('button', { name: 'Ja' }))
+    expect(await within(box).findByText('Danke für die Rückmeldung.')).toBeInTheDocument()
+    const call = api.find((c) => c.key === 'POST /api/help/feedback/')
+    expect(JSON.parse(String(call?.init?.body))).toMatchObject({
+      key: 'page.account',
+      helpful: true,
+    })
+  })
+
+  it('Plattform › Hilfe: meiste „Nein“ zuerst, Satz entfernen, Suchen ohne Treffer', async () => {
+    const user = userEvent.setup()
+    const state = {
+      entries: [
+        {
+          key: 'guide.password',
+          yes: 1,
+          no: 3,
+          comments: [{ id: 5, text: 'Bild fehlt', day: '2026-11-19', language: 'de', version: '' }],
+        },
+      ],
+      misses: [{ id: 9, term: 'newsletter', language: 'de', count: 4, last_day: '2026-11-18' }],
+    }
+    const api = renderApp(
+      '/plattform/hilfe',
+      testOrg({ type: 'platform', permissions: ['platform.manage'] }),
+      {
+        'GET /api/platform/help-feedback/': () => ({ status: 200, body: state }),
+        'DELETE /api/platform/help-feedback/comments/5/': () => ({
+          status: 200,
+          body: { ...state, entries: [{ ...state.entries[0], comments: [] }] },
+        }),
+      },
+    )
+    const row = (await screen.findByRole('link', { name: 'Passwort ändern' })).closest('tr')!
+    expect(within(row).getByText('Bild fehlt')).toBeInTheDocument()
+    expect(screen.getByRole('rowheader', { name: 'newsletter' })).toBeInTheDocument()
+    await user.click(within(row).getByRole('button', { name: 'Satz „Bild fehlt“ entfernen' }))
+    await waitFor(() => expect(screen.queryByText('Bild fehlt')).not.toBeInTheDocument())
+    expect(api.some((c) => c.key === 'DELETE /api/platform/help-feedback/comments/5/')).toBe(true)
   })
 })
