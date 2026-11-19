@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 from django.db import transaction
 from django.db.models import F
@@ -131,7 +132,6 @@ def invoice_data(booking, scope, manage) -> dict:
 
 def price_suggestion(booking) -> str:
     """Mietpreis laut Objekt: je Buchung, je angefangenem Tag oder je Stunde ("" = keiner)."""
-    import decimal
     import math
 
     rules = rules_of(booking.item)
@@ -593,7 +593,9 @@ class MemberView(Base):
 
 class InvoiceInput(serializers.Serializer):
     version = serializers.IntegerField()
-    amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value="0.01")
+    amount = serializers.DecimalField(
+        max_digits=10, decimal_places=2, min_value=decimal.Decimal("0.01")
+    )
 
 
 class InvoiceView(Base):
