@@ -363,7 +363,10 @@ fi
 echo "Teste $SHA ($(git log -1 --format=%s "$COMMIT")) lokal mit $WORKERS Kernen …"
 [ "$RUN_BACKEND" = 1 ] || echo "Backend: dieser Inhalt war schon grün, wird nicht erneut geprüft"
 [ "$RUN_FRONTEND" = 1 ] || echo "Frontend: dieser Inhalt war schon grün, wird nicht erneut geprüft"
-git archive --format=tar "$REF" backend frontend deploy/backup | tar -x -C "$WORK"
+# Die Compose-Dateien und zwei Betriebsskripte lesen Tests im Container (F-06, siehe BETRIEBSDATEIEN)
+git archive --format=tar "$REF" backend frontend deploy/backup docker-compose.server.yml \
+    docker-compose.clamav.yml deploy/server-setup.sh deploy/datenschluessel-wechseln.sh \
+    | tar -x -C "$WORK"
 start=$(date +%s)
 
 # --- Frontend, Teil 1 (im Hintergrund, während das Backend sich vorbereitet) ---
