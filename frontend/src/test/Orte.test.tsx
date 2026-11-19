@@ -160,11 +160,19 @@ describe('Orte', () => {
 
   it('bietet gespeicherte Orte im Formular an und speichert neue', async () => {
     const api = show('/helferdienste?plan=5', ['helpers.view', 'helpers.edit'])
-    const field = await screen.findByLabelText('Ort')
-    await waitFor(() => expect(field).toHaveAttribute('list'))
-    const list = document.getElementById(field.getAttribute('list')!)!
-    const options = Array.from(list.querySelectorAll('option')).map((o) => o.value)
-    expect(options).toEqual(['Schützenhaus', 'Schützenhaus, Saal', 'Bundesfestplatz'])
+    const field = await screen.findByRole('combobox', { name: 'Ort' })
+    await waitFor(() =>
+      expect(screen.getByText('Gespeicherten Ort wählen oder frei eingeben.')).toBeInTheDocument(),
+    )
+    // eigene Vorschlagsliste statt <datalist> (Browsermenü passte nicht zum Design)
+    expect(document.querySelector('datalist')).toBeNull()
+    fireEvent.click(field)
+    const options = within(screen.getByRole('listbox')).getAllByRole('option')
+    expect(options.map((o) => o.querySelector('.suggest-value')?.textContent)).toEqual([
+      'Schützenhaus',
+      'Schützenhaus, Saal',
+      'Bundesfestplatz',
+    ])
     // Gespeicherter Ort: kein Knopf zum Speichern
     fireEvent.change(field, { target: { value: 'Schützenhaus' } })
     expect(screen.queryByRole('button', { name: 'Als Ort speichern' })).not.toBeInTheDocument()
@@ -196,13 +204,14 @@ describe('Orte', () => {
 
   it('übernimmt beim Raum die Anschrift des Orts und speichert „Ort, Raum“ als Raum', async () => {
     const api = show('/helferdienste?plan=5', ['helpers.view', 'helpers.edit'])
-    const field = await screen.findByLabelText('Ort')
-    await waitFor(() => expect(field).toHaveAttribute('list'))
-    const list = document.getElementById(field.getAttribute('list')!)!
-    const room = Array.from(list.querySelectorAll('option')).find(
-      (o) => o.value === 'Schützenhaus, Saal',
-    )!
-    expect(room.textContent).toBe('Musterweg 1, 12345 Musterstadt')
+    const field = await screen.findByRole('combobox', { name: 'Ort' })
+    await waitFor(() =>
+      expect(screen.getByText('Gespeicherten Ort wählen oder frei eingeben.')).toBeInTheDocument(),
+    )
+    fireEvent.change(field, { target: { value: 'Saal' } })
+    const room = within(screen.getByRole('listbox')).getByRole('option')
+    expect(room).toHaveTextContent('Schützenhaus, Saal')
+    expect(room).toHaveTextContent('Musterweg 1, 12345 Musterstadt')
     fireEvent.change(field, { target: { value: 'Schützenhaus, Küche' } })
     fireEvent.click(screen.getByRole('button', { name: 'Als Raum speichern' }))
     expect(await screen.findByText('Raum „Schützenhaus, Küche“ gespeichert.')).toBeInTheDocument()
@@ -219,7 +228,9 @@ describe('Orte', () => {
     })
     const field = await screen.findByLabelText('Ort')
     fireEvent.change(field, { target: { value: 'Festzelt' } })
-    await waitFor(() => expect(field).toHaveAttribute('list'))
+    await waitFor(() =>
+      expect(screen.getByText('Gespeicherten Ort wählen oder frei eingeben.')).toBeInTheDocument(),
+    )
     expect(screen.queryByRole('button', { name: 'Als Ort speichern' })).not.toBeInTheDocument()
   })
 

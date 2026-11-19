@@ -45,6 +45,7 @@ import { useTerms } from '../../org/terms.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageNav } from '../../components/ListControls.tsx'
+import { SuggestInput } from '../../components/SuggestInput.tsx'
 
 /** Wer das Geld bekommt (Ausgabe) bzw. zahlt (Einnahme). */
 function partnerLabel(kind: BookingKind): string {
@@ -291,19 +292,14 @@ export function BookingsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <input
+        <SuggestInput
           type="search"
-          list="booking-partners-filter"
+          suggestions={(partners.data ?? []).map((p) => ({ value: p.name }))}
           placeholder={t('Empfänger/Zahler')}
           aria-label={t('Empfänger/Zahler')}
           value={partner}
           onChange={(e) => setPartner(e.target.value)}
         />
-        <datalist id="booking-partners-filter">
-          {(partners.data ?? []).map((p) => (
-            <option key={p.name} value={p.name} />
-          ))}
-        </datalist>
         <select
           aria-label={t('Geschäftsjahr')}
           value={year}
@@ -901,8 +897,7 @@ function BookingForm({
                 label={
                   kind === 'expense' ? t('Empfänger (Geschäft, Dienstleister …)') : t('Zahler')
                 }
-                list="booking-partner-suggestions"
-                autoComplete="off"
+                suggestions={suggestions.map((s) => ({ value: s.name }))}
                 placeholder={
                   kind === 'expense' ? t('z. B. Getränkehandel') : t('z. B. Name oder Firma')
                 }
@@ -1053,11 +1048,6 @@ function BookingForm({
               </SelectField>
             </div>
           )}
-          <datalist id="booking-partner-suggestions">
-            {suggestions.map((s) => (
-              <option key={s.name} value={s.name} />
-            ))}
-          </datalist>
           {kind !== 'transfer' && isClub && (
             <details className="booking-assign" open={assignedOpen}>
               <summary>

@@ -1,6 +1,6 @@
 // Ortsfeld mit Auswahl aus den gespeicherten Orten (Einstellungen › Orte).
 // Freie Eingabe bleibt möglich; ein neuer Ort lässt sich gleich speichern.
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { placeApi } from '../api/places.ts'
 import type { Place } from '../api/places.ts'
 import { findPlace, roomTarget, usePlaces } from './places.ts'
@@ -31,7 +31,6 @@ export function PlaceField({
   maxLength?: number
   required?: boolean
 }) {
-  const listId = useId()
   const { places, canEdit, base, add } = usePlaces()
   const [saving, setSaving] = useState(false)
   const [note, setNote] = useState<string | null>(null)
@@ -73,20 +72,13 @@ export function PlaceField({
         placeholder={placeholder}
         error={error}
         required={required}
-        list={places.length ? listId : undefined}
-        autoComplete="off"
+        suggestions={places.map((p) => ({
+          value: p.name,
+          detail: [p.address, p.owner].filter(Boolean).join(' · ') || undefined,
+        }))}
         hint={places.length ? t('Gespeicherten Ort wählen oder frei eingeben.') : undefined}
         onChange={(e) => change(e.target.value)}
       />
-      {places.length > 0 && (
-        <datalist id={listId}>
-          {places.map((p) => (
-            <option key={p.id} value={p.name}>
-              {[p.address, p.owner].filter(Boolean).join(' · ')}
-            </option>
-          ))}
-        </datalist>
-      )}
       {base && canEdit && value.trim() && !known && (
         <button type="button" className="link-button place-save" disabled={saving} onClick={save}>
           {roomTarget(places, value.trim()) ? t('Als Raum speichern') : t('Als Ort speichern')}

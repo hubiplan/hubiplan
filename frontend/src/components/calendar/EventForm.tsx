@@ -713,7 +713,9 @@ export function EventForm({
           className={event ? 'button button-ghost' : 'button button-primary'}
           disabled={form.busy}
         >
-          {event ? t('Schließen') : t('Termin anlegen')}
+          {/* Bearbeiten: zurück zur Terminansicht. „Schließen“ steht nur einmal, im Dialogkopf
+              (Ralf 19.11.: zwei „Schließen“ mit verschiedener Wirkung verwirrten). */}
+          {event ? t('Fertig') : t('Termin anlegen')}
         </button>
         {!event && (
           <button

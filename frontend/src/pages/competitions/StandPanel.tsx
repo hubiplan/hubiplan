@@ -26,6 +26,7 @@ import { TargetPad, type PadHit } from './TargetPad.tsx'
 import { scoreShot, totalText } from './targetMath.ts'
 import { describe, guestOrigin, useStandStore } from './standStore.ts'
 import { t } from '../../i18n/index.ts'
+import { SuggestInput } from '../../components/SuggestInput.tsx'
 
 type Hit =
   | { kind: 'starter'; starter: Starter }
@@ -521,19 +522,13 @@ export function StandPanel({
                     <label className="stand-label" htmlFor="stand-verein">
                       {t('Verein oder Einheit (optional)')}
                     </label>
-                    <input
+                    <SuggestInput
                       id="stand-verein"
                       className="stand-input"
-                      list="stand-einheiten"
-                      autoComplete="off"
+                      suggestions={comp.units.map((u) => ({ value: u.name }))}
                       value={guestClub}
                       onChange={(e) => setGuestClub(e.target.value)}
                     />
-                    <datalist id="stand-einheiten">
-                      {comp.units.map((u) => (
-                        <option key={u.id} value={u.name} />
-                      ))}
-                    </datalist>
                     <label className="checkbox">
                       <input
                         type="checkbox"
