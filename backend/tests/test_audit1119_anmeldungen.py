@@ -15,7 +15,7 @@ from registrations import notify, scanning
 from registrations.models import Participant, ScanLink
 
 from .test_anmeldungen import JSON, einrichten, fest, ok, soon  # noqa: F401
-from .test_anmeldungen_oeffentlich import _public, _send
+from .test_anmeldungen_oeffentlich import _public, _send, leichte_aufgabe  # noqa: F401
 from .test_m9_billing import base, c, club, setup, zug  # noqa: F401
 
 pytestmark = pytest.mark.django_db
