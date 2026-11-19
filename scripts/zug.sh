@@ -22,7 +22,9 @@ ZUG="${ZUG_DIR:-$STATE_DIR/zug}"
 ANFRAGEN="$ZUG/anfragen"
 BUENDEL="${ZUG_BUENDEL:-3}"
 WARTEN="${ZUG_WARTEN:-1800}"
-TEST="${ZUG_TEST:-$HIER/test.sh}"
+# Ohne ZUG_TEST nimmt der Zug scripts/ aus dem Stand, den er testet (wie nach dem Merge auf
+# main), nicht aus dem Klon, aus dem er gestartet wurde; der bleibt sonst unbemerkt alt.
+TEST="${ZUG_TEST:-}"
 mkdir -p "$ANFRAGEN"
 
 wert() { sed -n "s/^$2=//p" "$1" 2> /dev/null | tail -1; }
@@ -162,7 +164,14 @@ if [ "${1:-}" = "--innen" ]; then
         aufraeumen
         trap - EXIT
         rc=0
-        "$TEST" "$M" || rc=$?
+        if [ -n "$TEST" ]; then
+            "$TEST" "$M" || rc=$?
+        else
+            SKRIPTE=$(mktemp -d)
+            git archive --format=tar "$M" scripts | tar -x -C "$SKRIPTE"
+            "$SKRIPTE/scripts/test.sh" "$M" || rc=$?
+            rm -rf "$SKRIPTE"
+        fi
         if [ "$rc" != 0 ]; then
             if [ "${#bund[@]}" -gt 1 ]; then
                 # Bündel rot: der erste fährt allein noch einmal, die anderen kommen danach dran

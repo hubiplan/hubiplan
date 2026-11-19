@@ -63,7 +63,8 @@ scripts/zug.sh --fertig      # warten, bis der grüne Stand in main ist
 
 1. Der Zug prüft den PR vor (siehe „Vorprüfung“) und reiht ihn für den Zug-Platz ein.
 2. Ist der PR dran, mischt der Zug ihn lokal auf den neuesten main und testet genau diesen Stand
-   mit `scripts/test.sh` (Vorlauf der geänderten Testdateien zuerst). Warten weitere PRs, fahren
+   mit `scripts/test.sh` aus genau diesem Stand, nicht aus dem Klon, in dem der Zug gestartet
+   wurde (`ZUG_TEST=<Pfad>` wählt ein anderes Skript); Vorlauf der geänderten Testdateien zuerst. Warten weitere PRs, fahren
    bis zu drei zusammen (`ZUG_BUENDEL`); ein PR mit Migrationen fährt allein. Ist ein Bündel rot,
    fährt der erste PR allein weiter, die anderen danach.
 3. **Grün:** Der Zug nennt die PRs in ihrer Reihenfolge. Der Thread, der den Lauf gestartet hat,
