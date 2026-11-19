@@ -71,6 +71,23 @@ function sentences(text: string): number {
   return cleaned.split(/[.!?](?:\s|$)/).filter((s) => s.trim()).length
 }
 
+/** Höchstens so viele Wörter je Satz, Fundstellen in Klammern nicht mitgezählt */
+const MAX_WORDS = 30
+
+function longestSentence(text: string): number {
+  const cleaned = text
+    .replace(/\([^)]*\)/g, '')
+    .replace(
+      /\b(z|d|u|o|v|s|bzw|ggf|usw|vgl|Abs|Art|Nr|lit|Satz|S|Verbandsnr|USt-IdNr|ca)\./g,
+      '$1',
+    )
+    .replace(/\d\./g, '0')
+  return Math.max(
+    0,
+    ...cleaned.split(/[.!?](?:\s|$)/).map((s) => s.split(/\s+/).filter(Boolean).length),
+  )
+}
+
 const allTexts = (): [string, Text][] => [
   ...Object.entries(DECISIONS).flatMap(([k, e]): [string, Text][] => [
     [`${k}.title`, e.title],
@@ -118,19 +135,25 @@ function renderWithOrg(ui: ReactNode, modules: string[], on = true) {
 
 describe('Inhalte', () => {
   it('1: jede Entscheidung und jeder Begriff hat eine vollständige Quelle, Begriffe ein Beispiel, kein Text mehr als drei Sätze', () => {
-    for (const [k, e] of Object.entries(DECISIONS)) {
-      expect(e.sources.length, k).toBeGreaterThan(0)
-      for (const s of e.sources) expect(SOURCES[s].full.length, s).toBeGreaterThan(20)
+    // Kurzbeleg im Text: Paragraph, Artikel oder Regelwerk. Einträge ohne Quelle erklären nur
+    // Bedienung, Rechnung oder verweisen auf die Satzung; sie nennen dann auch keinen Paragrafen.
+    const cite = /§|Art\. \d|EPC|UStAE|GoBD|Bundesbank|WCAG|EuGH|ISO 20022|DSB-Sportordnung/
+    const cited = (k: string, sources: string[], text: string) => {
+      for (const s of sources)
+        expect(SOURCES[s as keyof typeof SOURCES].full.length, s).toBeGreaterThan(20)
+      if (sources.length) expect(text, k).toMatch(cite)
+      else
+        expect(text, `${k} nennt eine Fundstelle, hat aber keine Quelle`).not.toMatch(/§|Art\. \d/)
     }
+    for (const [k, e] of Object.entries(DECISIONS)) cited(k, e.sources, tr(e.text))
     for (const [k, t] of Object.entries(TERMS)) {
-      expect(t.sources.length, k).toBeGreaterThan(0)
+      cited(k, t.sources, tr(t.meaning))
       expect(tr(t.example), k).toMatch(/^Beispiel: .*\d/)
     }
-    for (const [k, text] of allTexts()) expect(sentences(tr(text)), k).toBeLessThanOrEqual(3)
-    // Kurzbeleg im Text: Paragraph, Artikel oder Regelwerk
-    const cite = /§|Art\. \d|EPC|UStAE|GoBD|Bundesbank|WCAG|EuGH|ISO 20022|DSB-Sportordnung/
-    for (const [k, e] of Object.entries(DECISIONS)) expect(tr(e.text), k).toMatch(cite)
-    for (const [k, t] of Object.entries(TERMS)) expect(tr(t.meaning), k).toMatch(cite)
+    for (const [k, text] of allTexts()) {
+      expect(sentences(tr(text)), k).toBeLessThanOrEqual(3)
+      expect(longestSentence(tr(text)), `${k}: Satz zu lang`).toBeLessThanOrEqual(MAX_WORDS)
+    }
   })
 
   it('2: jeder Text hat eine Fassung je Oberflächensprache; Schlüssel wie im Backend', () => {

@@ -216,7 +216,7 @@ const DECISIONS_DATA = {
   member_type_active: {
     title: d('Wann ist eine Mitgliedsart „aktiv“?'),
     text: d(
-      'Aktive Mitglieder zählen getrennt, etwa beim Verbandsbeitrag je aktivem Mitglied und in der Entwicklung; passive zahlen oft weniger und nehmen weniger am Vereinsleben teil. Eine feine Einteilung hilft bei Meldung und Beitrag, kostet aber Pflege, wenn Mitglieder oft wechseln. Richte dich nach Satzung oder Beitragsordnung, die festlegen, welche Gruppen es gibt und was sie zahlen (§§ 25, 58 Nr. 2 BGB).',
+      'Aktive Mitglieder zählen getrennt, etwa beim Verbandsbeitrag je aktivem Mitglied und in der Entwicklung; passive zahlen oft weniger und nehmen weniger am Vereinsleben teil. Eine feine Einteilung hilft bei Meldung und Beitrag, kostet aber Pflege, wenn Mitglieder oft wechseln. Richte dich nach Satzung oder Beitragsordnung, die festlegen, welche Gruppen es gibt und was sie zahlen (§ 58 Nr. 2 BGB).',
     ),
     sources: ['bgb'],
     place: d('Mitgliedsart bearbeiten'),
@@ -225,9 +225,9 @@ const DECISIONS_DATA = {
   member_type_duration: {
     title: d('Welche Zeiten zählen für die Mitgliedsdauer?'),
     text: d(
-      'Zählt eine Art für die Dauer, fließen ihre Zeiten in Jubiläen und Ehrungen ein. Dafür spricht, dass Treue auch als passives Mitglied gewürdigt wird; dagegen, wenn eure Ehrenordnung nur aktive Jahre zählt. Übernimm die Regel aus Satzung oder Ehrenordnung, damit Ehrungen für alle gleich berechnet werden (§ 25 BGB).',
+      'Zählt eine Art für die Dauer, fließen ihre Zeiten in Jubiläen und Ehrungen ein. Dafür spricht, dass Treue auch als passives Mitglied gewürdigt wird; dagegen, wenn die Ehrenordnung nur aktive Jahre zählt. Übernimm die Regel aus Satzung oder Ehrenordnung, damit Ehrungen für alle gleich berechnet werden.',
     ),
-    sources: ['bgb'],
+    sources: [],
     place: d('Mitgliedsart bearbeiten'),
     phase: 'setup',
   },
@@ -243,7 +243,7 @@ const DECISIONS_DATA = {
   fiscal_year: {
     title: d('Kalenderjahr oder abweichendes Geschäftsjahr?'),
     text: d(
-      'Das Kalenderjahr passt zur Steuer, denn die Körperschaftsteuer wird nach dem Kalenderjahr ermittelt (§ 7 Abs. 3 KStG). Ein abweichendes Geschäftsjahr passt, wenn sich das Vereinsjahr nach einer Saison oder einem Fest richtet, kann aber zusätzliche Aufstellungen für das Finanzamt nötig machen. Maßgeblich ist, was die Satzung bestimmt (§ 25 BGB).',
+      'Das Kalenderjahr passt zur Steuer, denn die Körperschaftsteuer wird nach dem Kalenderjahr ermittelt (§ 7 Abs. 3 KStG). Ein abweichendes Geschäftsjahr passt, wenn sich das Vereinsjahr nach einer Saison oder einem Fest richtet, kann aber zusätzliche Aufstellungen für das Finanzamt nötig machen. Maßgeblich ist, was die Satzung bestimmt.',
     ),
     sources: ['kstg', 'bgb'],
     place: d('Organisation bearbeiten → Geschäftsjahr'),
@@ -272,7 +272,7 @@ const DECISIONS_DATA = {
   pro_rata: {
     title: d('Beitrag bei Eintritt im laufenden Zeitraum anteilig?'),
     text: d(
-      'Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre; je Halbjahr heißt bei einem Geschäftsjahr wie dem Kalenderjahr: Eintritt bis 30. Juni voller Jahresbeitrag, ab 1. Juli die Hälfte. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).',
+      'Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).',
     ),
     sources: ['bgb'],
     place: d('Beitragsregeln → Abrechnung und Rechnung'),
@@ -282,7 +282,7 @@ const DECISIONS_DATA = {
   due_days: {
     title: d('Wie lang soll das Zahlungsziel sein?'),
     text: d(
-      'Das Zahlungsziel ist die Frist vom Rechnungsdatum bis zur Fälligkeit. Ohne Mahnung gerät ein Mitglied spätestens 30 Tage nach Fälligkeit und Zugang der Rechnung in Verzug, bei Verbrauchern aber nur, wenn die Rechnung darauf hinweist (§ 286 Abs. 3 BGB). Eine kurze Frist bringt das Geld früher, aber mehr Mahnungen; eine lange Frist wirkt umgekehrt.',
+      'Das Zahlungsziel ist die Frist vom Rechnungsdatum bis zur Fälligkeit. Sicher in Verzug kommt ein Mitglied erst durch eine Mahnung nach der Fälligkeit (§ 286 Abs. 1 BGB). Eine kurze Frist bringt das Geld früher, aber mehr Mahnungen; eine lange Frist wirkt umgekehrt.',
     ),
     sources: ['bgb'],
     place: d('Beitragsregeln → Abrechnung und Rechnung'),
@@ -324,7 +324,7 @@ const DECISIONS_DATA = {
   vat_show: {
     title: d('Umsatzsteuer auf Rechnungen ausweisen?'),
     text: d(
-      'Echte Mitgliedsbeiträge, die alle für den Vereinszweck zahlen, sind kein steuerbarer Umsatz; auf sie gehört keine Umsatzsteuer (UStAE 1.4). Steuer weist du nur für Leistungen gegen Entgelt aus, etwa Verkauf oder Werbung, und nur, wenn der Verein kein Kleinunternehmer ist (§ 19 UStG: Vorjahr bis 25.000 €, laufendes Jahr bis 100.000 €). Wer Steuer ausweist, ohne sie zu schulden, schuldet sie trotzdem (§ 14c UStG); frag im Zweifel das Finanzamt oder eine Steuerberatung.',
+      'Echte Mitgliedsbeiträge, die alle für den Vereinszweck zahlen, sind kein steuerbarer Umsatz; auf sie gehört keine Umsatzsteuer (UStAE 1.4). Steuer weist du nur für Leistungen gegen Entgelt aus, etwa Verkauf oder Werbung, und nur, wenn der Verein kein Kleinunternehmer ist (§ 19 UStG). Wer Steuer ausweist, ohne sie zu schulden, schuldet sie trotzdem (§ 14c UStG); frag im Zweifel das Finanzamt oder eine Steuerberatung.',
     ),
     sources: ['ustae', 'ustg'],
     place: d('Beitragsregeln → Umsatzsteuer'),
@@ -344,7 +344,7 @@ const DECISIONS_DATA = {
   tax_areas: {
     title: d('Kategorien steuerlichen Bereichen zuordnen?'),
     text: d(
-      'Gemeinnützige Vereine trennen ideellen Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlichen Geschäftsbetrieb, weil nur Letzterer steuerpflichtig sein kann (§§ 14, 64, 65 AO). Die Zuordnung erleichtert die Steuererklärung, verlangt aber saubere Kategorien. Schalte sie ein, sobald der Verein Einnahmen aus Verkauf, Festen oder Werbung hat; bleiben diese einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an (§ 64 Abs. 3 AO, seit 2026; vorher 45.000 €).',
+      'Gemeinnützige Vereine trennen ideellen Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlichen Geschäftsbetrieb, weil nur Letzterer steuerpflichtig sein kann (§§ 14, 64, 65 AO). Bleiben die Einnahmen aus Verkauf, Festen und Werbung einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an. Liegen alle wirtschaftlichen Einnahmen samt Zweckbetrieben unter dieser Grenze, entfällt meist auch die Prüfung, ob ein Zweckbetrieb vorliegt (§ 64 Abs. 3 AO); schalte die Zuordnung ein, bevor der Verein sie erreicht.',
     ),
     sources: ['ao'],
     place: d('Finanzen → Einrichtung → Kategorien'),
@@ -403,7 +403,7 @@ const DECISIONS_DATA = {
   paper_mandate: {
     title: d('Was gehört zu einem schriftlichen Mandat?'),
     text: d(
-      'Ein Mandat nennt unter anderem Zahler, IBAN, Gläubiger-ID, Mandatsreferenz, Datum und Unterschrift (EPC016-06). Bewahre das Original auf, solange du darauf einziehst, und danach, solange Rückfragen möglich sind; ohne Nachweis muss der Verein eine bestrittene Lastschrift noch bis 13 Monate später erstatten (§§ 675u, 676b Abs. 2 BGB). Mandate aus dem Mitgliederbereich speichert HUBIplan selbst.',
+      'Ein Mandat nennt unter anderem Zahler, IBAN, Gläubiger-ID, Mandatsreferenz, Datum und Unterschrift (EPC016-06). Bewahre das Original auf, solange du darauf einziehst und danach Rückfragen möglich sind; Mandate aus dem Mitgliederbereich speichert HUBIplan selbst. Ohne Nachweis muss der Verein eine bestrittene Lastschrift noch bis 13 Monate später erstatten (§§ 675u, 676b Abs. 2 BGB).',
     ),
     sources: ['epcSdd', 'bgb'],
     place: d('Lastschrift → Mandate → Schriftliches Mandat erfassen'),
@@ -414,7 +414,7 @@ const DECISIONS_DATA = {
   invoice_date: {
     title: d('Welches Rechnungsdatum für den Beitragslauf?'),
     text: d(
-      'Ab dem Rechnungsdatum läuft das Zahlungsziel und damit auch die Frist bis zum Verzug (§ 286 Abs. 3 BGB). Ein Datum kurz vor dem Versand ist richtig; ein rückdatiertes verkürzt den Mitgliedern die Frist, ein spätes verschiebt den Geldeingang.',
+      'Ab dem Rechnungsdatum läuft das Zahlungsziel; an dessen Ende ist der Betrag fällig (§ 271 BGB). Ein Datum kurz vor dem Versand ist richtig; ein rückdatiertes verkürzt den Mitgliedern die Frist, ein spätes verschiebt den Geldeingang.',
     ),
     sources: ['bgb'],
     place: d('Neuer Beitragslauf'),
@@ -462,6 +462,7 @@ const DECISIONS_DATA = {
     sources: ['ao', 'gobd'],
     place: d('Kassenbuch → Buchung'),
     phase: 'closing',
+    basic: true,
     feature: 'finance',
   },
   cash_audit: {
@@ -508,7 +509,7 @@ const DECISIONS_DATA = {
   retention_end: {
     title: d('Wann dürfen alte Kassendaten weg?'),
     text: d(
-      'Belege sind 8 Jahre, Bücher und Abschlüsse 10 Jahre aufzubewahren, gerechnet ab Ende des Kalenderjahres (§ 147 Abs. 3 und 4 AO); danach verlangt der Datenschutz, Personendaten zu löschen (Art. 5 Abs. 1 lit. e DSGVO). Bereinigen schützt ehemalige Mitglieder und Spender, ist aber endgültig. Bereinige nicht, solange Steuern dieser Jahre noch festgesetzt werden können, etwa während einer Betriebsprüfung, denn so lange läuft die Frist nicht ab (§ 147 Abs. 3 AO).',
+      'Belege sind 8 Jahre, Bücher und Abschlüsse 10 Jahre aufzubewahren, gerechnet ab Ende des Kalenderjahres (§ 147 Abs. 3 und 4 AO). Danach verlangt der Datenschutz, Personendaten zu löschen; das schützt ehemalige Mitglieder und Spender, ist aber endgültig (Art. 5 Abs. 1 lit. e DSGVO). Bereinige nicht, solange Steuern dieser Jahre noch festgesetzt werden können, etwa während einer Betriebsprüfung (§ 147 Abs. 3 AO).',
     ),
     sources: ['ao', 'dsgvo'],
     place: d('Abschluss → Jahresabschluss'),
@@ -518,7 +519,7 @@ const DECISIONS_DATA = {
   reserves: {
     title: d('Wann braucht der Verein eine Rücklage?'),
     text: d(
-      'Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden (§ 55 Abs. 1 Nr. 5 AO); wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck. Kleine Vereine unter der Einnahmengrenze in § 55 Abs. 1 Nr. 5 AO müssen nicht zeitnah verwenden, eine Rücklage hilft dann trotzdem bei der Planung.',
+      'Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden; Vereine mit Einnahmen bis 100.000 € im Jahr sind davon befreit (§ 55 Abs. 1 Nr. 5 AO). Wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck.',
     ),
     sources: ['ao'],
     place: d('Finanzen → Rücklagen'),
@@ -528,7 +529,7 @@ const DECISIONS_DATA = {
   datev_accounts: {
     title: d('Warum braucht jede Kategorie ein DATEV-Konto?'),
     text: d(
-      'Die Steuerberatung bucht nach einem Kontenrahmen wie SKR 42 oder SKR 49; jede Einnahme und Ausgabe muss dort einem Sachkonto zugeordnet sein, sonst landet sie auf einem Sammelkonto und muss von Hand umgebucht werden (GoBD). Einmal sauber zugeordnet, geht der Export jedes Jahr ohne Nacharbeit. Stimme die Konten vorher mit der Steuerberatung ab, statt sie zu raten.',
+      'Die Steuerberatung bucht nach einem Kontenrahmen (SKR 42 oder SKR 49). Jede Einnahme und Ausgabe braucht dort ein Sachkonto, sonst landet sie auf einem Sammelkonto und muss von Hand umgebucht werden (GoBD). Stimme die Konten vorher mit der Steuerberatung ab, dann geht der Export jedes Jahr ohne Nacharbeit.',
     ),
     sources: ['gobd'],
     place: d('Finanzen → Einrichtung → Konten'),
@@ -558,7 +559,7 @@ const DECISIONS_DATA = {
   photo_consent: {
     title: d('Fotos nur mit Einwilligung?'),
     text: d(
-      'Ein Foto erleichtert das Erkennen am Ausweis, zeigt aber eine Person erkennbar; dafür stützt sich der Verein in der Regel auf ihre Einwilligung (§ 22 KUG, Art. 6 Abs. 1 lit. a DSGVO). Die Einwilligung ist freiwillig und jederzeit widerrufbar, danach muss das Foto weg (Art. 7 Abs. 3 DSGVO). Der Ausweis funktioniert auch ohne Foto, also frag nur, wenn es wirklich hilft.',
+      'Ein Foto erleichtert das Erkennen am Ausweis, zeigt aber eine Person erkennbar. Dafür braucht der Verein in der Regel ihre Einwilligung; sie ist freiwillig und jederzeit widerrufbar, danach muss das Foto weg (§ 22 KUG, Art. 6 Abs. 1 lit. a, Art. 7 Abs. 3 DSGVO). Der Ausweis funktioniert auch ohne Foto, also frag nur, wenn es wirklich hilft.',
     ),
     sources: ['kug', 'dsgvo'],
     place: d('Mitgliedsakte → Foto'),
@@ -567,7 +568,7 @@ const DECISIONS_DATA = {
   doc_visibility: {
     title: d('Wer soll die Dokumente eines Ordners sehen?'),
     text: d(
-      'Je weiter ein Ordner sichtbar ist, desto leichter finden Mitglieder Satzung und Protokolle, desto größer ist aber das Risiko, dass Personendaten zu weit gehen (Art. 5 Abs. 1 lit. c und f DSGVO). Allgemeines wie die Satzung kann breit sichtbar sein, Protokolle mit Namen, Verträge und Listen nur für den Vorstand. Fang im Zweifel eng an und erweitere später.',
+      'Je weiter ein Ordner sichtbar ist, desto leichter finden Mitglieder Satzung und Protokolle. Zugleich wächst das Risiko, dass Personendaten zu weit gehen (Art. 5 Abs. 1 lit. c und f DSGVO). Allgemeines wie die Satzung kann breit sichtbar sein; Protokolle mit Namen, Verträge und Listen im Zweifel nur für den Vorstand.',
     ),
     sources: ['dsgvo'],
     place: d('Dokumente → Ordner'),
@@ -638,7 +639,7 @@ const DECISIONS_DATA = {
   donation_waiver: {
     title: d('Wann ist ein Verzicht auf Auslagen eine Spende?'),
     text: d(
-      'Nur wenn ein Anspruch auf Erstattung vorher durch Vertrag oder Satzung bestand und dann darauf verzichtet wurde; der Anspruch darf nicht schon unter der Bedingung des Verzichts eingeräumt sein (§ 10b Abs. 3 Satz 5 und 6 EStG). Typisch sind Fahrtkosten nach einer Reisekostenregelung des Vereins. Fehlt so eine Regelung, ist der Verzicht keine abziehbare Spende.',
+      'Nur wenn vorher durch Vertrag oder Satzung ein Anspruch auf Erstattung bestand und die Person dann darauf verzichtet. Der Anspruch darf nicht schon unter der Bedingung des Verzichts eingeräumt sein (§ 10b Abs. 3 Satz 5 und 6 EStG). Typisch sind Fahrtkosten nach einer Reisekostenregelung des Vereins; fehlt sie, ist der Verzicht keine abziehbare Spende.',
     ),
     sources: ['estg'],
     place: d('Finanzen → Zuwendungsbestätigungen → Zuwendung erfassen'),
@@ -724,6 +725,7 @@ const DECISIONS_DATA = {
     sources: ['tdddg', 'eughFashionId'],
     place: d('Webseite → Social Media'),
     phase: 'website',
+    basic: true,
     feature: 'website',
   },
   web_alt_text: {
@@ -760,9 +762,9 @@ const DECISIONS_DATA = {
   comp_own: {
     title: d('Eigener oder fremder Wettbewerb?'),
     text: d(
-      'Beim eigenen Wettbewerb erfasst ihr Schützen und Werte selbst, und HUBIplan rechnet Plätze, Zugwertung und Stechen. Beim fremden tragt ihr nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert eurer Teilnehmer. Wie dort gewertet wird, regelt die Schießordnung des Ausrichters (§ 25 BGB).',
+      'Beim eigenen Wettbewerb erfasst du Schützen und Werte selbst, und HUBIplan rechnet Plätze, Zugwertung und Stechen. Beim fremden trägst du nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert der eigenen Teilnehmer. Wie dort gewertet wird, regelt die Schießordnung des Ausrichters.',
     ),
-    sources: ['bgb'],
+    sources: [],
     place: d('Wettbewerbe → Neuer Wettbewerb'),
     phase: 'competitions',
     feature: 'competitions',
@@ -770,7 +772,7 @@ const DECISIONS_DATA = {
   comp_shots: {
     title: d('Wozu Schusszahl und Höchstwert je Schuss?'),
     text: d(
-      'Mit gewerteten Schüssen und Höchstwert weist HUBIplan unmögliche Werte beim Erfassen ab, etwa 31 bei 3 gewerteten Schüssen mit höchstens 10. So fallen Tippfehler am Stand auf, bevor sie Plätze verschieben. Die Zahlen stehen in der Schießordnung des Vereins oder in der DSB-Sportordnung.',
+      'Mit gewerteten Schüssen und Höchstwert weist HUBIplan unmögliche Werte beim Erfassen ab, etwa 31 bei 3 gewerteten Schüssen mit höchstens 10 Ringen. So fallen Tippfehler am Stand auf, bevor sie Plätze verschieben. Die Zahlen stehen in der Schießordnung des Vereins oder in der DSB-Sportordnung.',
     ),
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Schießbedingungen und Wertungen'),
@@ -780,7 +782,7 @@ const DECISIONS_DATA = {
   comp_target: {
     title: d('Wozu Scheibe und Wertungsart?'),
     text: d(
-      'Kennt HUBIplan die Scheibe, rechnet es aus jedem Trefferpunkt Ring, Zehntel, Innenzehner und Teiler nach der DSB-Sportordnung: Berührt der Lochrand die Ringlinie, zählt der höhere Ring. Ohne erfasste Treffer bleibt alles wie bisher, ihr gebt die Summe ein, und bei Gleichstand entscheidet das Stechen. Die Ergebnisse sind vereinsintern, nicht amtlich.',
+      'Kennt HUBIplan die Scheibe, rechnet es aus jedem Trefferpunkt Ring, Zehntel, Innenzehner und Teiler nach der DSB-Sportordnung: Berührt der Lochrand die Ringlinie, zählt der höhere Ring. Ohne erfasste Treffer bleibt alles wie bisher, du gibst die Summe ein, und bei Gleichstand entscheidet das Stechen. Die Ergebnisse sind vereinsintern, nicht amtlich.',
     ),
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Schießbedingungen und Wertungen'),
@@ -790,7 +792,7 @@ const DECISIONS_DATA = {
   comp_tie_breaks: {
     title: d('Welche Regeln bei Gleichstand?'),
     text: d(
-      'Mit Regeln aus den Treffern entscheidet HUBIplan einen Gleichstand ohne Stechen, etwa nach der DSB-Sportordnung erst über die Serien von hinten, dann über mehr Zehner und mehr Innenzehner. Das spart Zeit am Stand, verlangt aber, dass für alle Gleichen Treffer erfasst sind; sonst bleibt es beim Stechen. Nimm die Reihenfolge aus eurer Schießordnung oder der Ausschreibung; steht dort nichts, bleibt das Stechen die übliche Lösung.',
+      'Mit Regeln aus den Treffern entscheidet HUBIplan einen Gleichstand ohne Stechen, etwa nach der DSB-Sportordnung erst über die Serien von hinten, dann über mehr Zehner und mehr Innenzehner. Das spart Zeit am Stand, verlangt aber, dass für alle Gleichen Treffer erfasst sind; sonst bleibt es beim Stechen. Nimm die Reihenfolge aus der Schießordnung des Vereins oder der Ausschreibung; steht dort nichts, bleibt das Stechen die übliche Lösung.',
     ),
     sources: ['dsbSpo'],
     place: d('Wettbewerb → Einrichten → Wertungen → Gleichstand und Stechen'),
@@ -800,7 +802,7 @@ const DECISIONS_DATA = {
   comp_photo: {
     title: d('Warum ist das Foto nur ein Vorschlag?'),
     text: d(
-      'Bei mehreren Löchern ineinander, auf dunkler Unterlage oder knapp an einer Ringlinie kann die Erkennung irren; maßgeblich ist die Auswertung der Scheibe nach der DSB-Sportordnung bzw. eurer Schießordnung. Deshalb setzt das Foto die Treffer nur ins Antipp-Bild, und erst „Speichern“ übernimmt sie. Das Foto selbst wird nur ausgewertet und nie gespeichert, so entsteht kein Bild mit Bezug zum Schützen (Art. 5 Abs. 1 lit. c DSGVO).',
+      'Bei mehreren Löchern ineinander, auf dunkler Unterlage oder knapp an einer Ringlinie kann die Erkennung irren; maßgeblich ist die Auswertung der Scheibe nach der DSB-Sportordnung oder der Schießordnung des Vereins. Deshalb setzt das Foto die Treffer nur ins Antipp-Bild, und erst „Speichern“ übernimmt sie. Das Foto selbst wird nur ausgewertet und nie gespeichert, so entsteht kein Bild mit Bezug zum Schützen (Art. 5 Abs. 1 lit. c DSGVO).',
     ),
     sources: ['dsbSpo', 'dsgvo'],
     place: d('Standmodus → Foto der Scheibe'),
@@ -810,7 +812,7 @@ const DECISIONS_DATA = {
   comp_photo_sum: {
     title: d('Summe und Foto weichen ab, was gilt?'),
     text: d(
-      'Gespeichert wird die eingegebene Summe; das Foto ist nur eine zweite Meinung, die Tippfehler und verzählte Ringe auffallen lässt. Bei einer Abweichung die Scheibe noch einmal ansehen, im Zweifel entscheidet die Aufsicht bzw. der Auswerter nach der DSB-Sportordnung oder eurer Schießordnung. „Treffer ansehen“ zeigt, wo die Erkennung die Löcher sieht.',
+      'Gespeichert wird die eingegebene Summe; das Foto ist nur eine zweite Meinung, die Tippfehler und verzählte Ringe auffallen lässt. Sieh dir bei einer Abweichung die Scheibe noch einmal an; im Zweifel entscheidet die Aufsicht oder der Auswerter nach der DSB-Sportordnung oder der Schießordnung des Vereins. „Treffer ansehen“ zeigt, wo die Erkennung die Löcher sieht.',
     ),
     sources: ['dsbSpo'],
     place: d('Standmodus → Nur die Summe eingeben → Foto der Scheibe'),
@@ -820,7 +822,7 @@ const DECISIONS_DATA = {
   comp_photo_samples: {
     title: d('Spiegelausschnitte sammeln?'),
     text: d(
-      'Echte, bestätigte Scheiben sind der einzige Weg zu prüfen, wie gut die Fotoerkennung wirklich ist; ohne sie wird nur an künstlichen Fotos gemessen. Gespeichert wird nur der Ausschnitt des Spiegels mit der Trefferlage, ohne Namen, Wettbewerb oder Uhrzeit, also ohne Bezug zu einer Person (Art. 4 Nr. 1 DSGVO). Schalte es ein, wenn ihr die Erkennung oft nutzt; ausschalten und alles löschen geht jederzeit.',
+      'Echte, bestätigte Scheiben sind der einzige Weg zu prüfen, wie gut die Fotoerkennung wirklich ist; ohne sie wird nur an künstlichen Fotos gemessen. Gespeichert wird nur der Ausschnitt des Spiegels mit der Trefferlage, ohne Namen, Wettbewerb oder Uhrzeit, also ohne Bezug zu einer Person (Art. 4 Nr. 1 DSGVO). Schalte es ein, wenn der Verein die Erkennung oft nutzt; ausschalten und alles löschen geht jederzeit.',
     ),
     sources: ['dsgvo'],
     place: d('Einstellungen → Datenschutz → Fotoerkennung verbessern'),
@@ -860,9 +862,9 @@ const DECISIONS_DATA = {
   comp_provisional: {
     title: d('Wann ist das Schießen beendet?'),
     text: d(
-      'HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Stechen kennt nur die Schießleitung. „Schießen beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Stechen bleiben möglich. Gebt vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für richtig und fertig hält (Art. 5 Abs. 1 lit. d DSGVO).',
+      'HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Stechen kennt nur die Schießleitung. „Schießen beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Stechen bleiben möglich. Gib vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für fertig hält.',
     ),
-    sources: ['dsgvo'],
+    sources: [],
     place: d('Wettbewerb → Auswertung → Wettbewerb und Abschluss; Standmodus → Abschluss'),
     phase: 'competitions',
     feature: 'competitions',
@@ -880,11 +882,12 @@ const DECISIONS_DATA = {
   comp_reset: {
     title: d('Was passiert beim Zurücksetzen?'),
     text: d(
-      'Zurücksetzen löscht alle erfassten Werte, Stechen, Schüsse und gefallenen Pfänder; Regeln, Pfänder, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Schießordnung (§ 25 BGB), rückgängig machen lässt es sich nicht.',
+      'Zurücksetzen löscht alle erfassten Werte, Stechen, Schüsse und gefallenen Pfänder; Regeln, Pfänder, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Schießordnung; rückgängig machen lässt sich das Zurücksetzen nicht.',
     ),
-    sources: ['bgb'],
+    sources: [],
     place: d('Wettbewerb → Einrichten → Weitere Aktionen'),
     phase: 'competitions',
+    basic: true,
     feature: 'competitions',
   },
   comp_stand_access: {
@@ -895,14 +898,15 @@ const DECISIONS_DATA = {
     sources: ['dsgvo'],
     place: d('Wettbewerb → Erfassen → Anderes Gerät per QR-Code'),
     phase: 'competitions',
+    basic: true,
     feature: 'competitions',
   },
   comp_lots: {
     title: d('Wozu „Lose im Hut“?'),
     text: d(
-      'Ohne diese Angabe zieht „Nummer ziehen“ nur bis zur Zahl der bisherigen Schützen, und ein Nachzügler bekommt meist die nächste Nummer. Mit der Zahl der Lose im Hut zieht HUBIplan wie aus einem echten Hut; wer lieber alle zugleich auslost, nimmt „Alle ohne Nummer auslosen“. Wie die Reihenfolge bestimmt wird, regelt die Schießordnung (§ 25 BGB).',
+      'Ohne diese Angabe zieht „Nummer ziehen“ nur bis zur Zahl der bisherigen Schützen, und ein Nachzügler bekommt meist die nächste Nummer. Mit der Zahl der Lose im Hut zieht HUBIplan wie aus einem echten Hut; wer lieber alle zugleich auslost, nimmt „Alle ohne Nummer auslosen“. Wie die Reihenfolge bestimmt wird, regelt die Schießordnung.',
     ),
-    sources: ['bgb'],
+    sources: [],
     place: d('Wettbewerb → Einrichten → Pfänder & Ablauf'),
     phase: 'competitions',
     feature: 'competitions',
@@ -910,9 +914,9 @@ const DECISIONS_DATA = {
   comp_bird_rules: {
     title: d('Ausscheiden und feste Reihenfolge?'),
     text: d(
-      'Scheidet aus, wer ein Pfand errungen hat, kommen mehr Schützen zu einem Preis. In fester Reihenfolge wird Pfand für Pfand geschossen, und HUBIplan bietet nach jedem Treffer gleich das nächste an. Welche Regel gilt, steht in der Schießordnung des Vereins (§ 25 BGB).',
+      'Scheidet aus, wer ein Pfand errungen hat, kommen mehr Schützen zu einem Preis. In fester Reihenfolge wird Pfand für Pfand geschossen, und HUBIplan bietet nach jedem Treffer gleich das nächste an. Welche Regel gilt, steht in der Schießordnung des Vereins.',
     ),
-    sources: ['bgb'],
+    sources: [],
     place: d('Wettbewerb → Einrichten → Pfänder & Ablauf'),
     phase: 'competitions',
     feature: 'competitions',
@@ -920,7 +924,7 @@ const DECISIONS_DATA = {
   comp_website: {
     title: d('Ergebnisse auf der Webseite?'),
     text: d(
-      'Namen mit Ergebnissen zu zeigen stützt sich meist auf das berechtigte Interesse des Vereins (Art. 6 Abs. 1 lit. f DSGVO); Mitglieder können widersprechen (Art. 21 DSGVO), bei Minderjährigen fragt die Eltern. Für Fotos der Sieger gelten zusätzlich §§ 22 und 23 KUG. „Nach Abschluss“ zeigt nur geprüfte Ergebnisse, „live“ auch Zwischenstände.',
+      'Namen mit Ergebnissen zu zeigen stützt sich meist auf das berechtigte Interesse des Vereins (Art. 6 Abs. 1 lit. f DSGVO); Mitglieder können widersprechen (Art. 21 DSGVO), bei Minderjährigen frag die Eltern. Für Fotos der Sieger gelten zusätzlich §§ 22 und 23 KUG. „Nach Abschluss“ zeigt nur geprüfte Ergebnisse, „live“ auch Zwischenstände.',
     ),
     sources: ['dsgvo', 'kug'],
     place: d('Wettbewerb → Einrichten → Ausgabe & Freigabe'),
@@ -941,7 +945,7 @@ const DECISIONS_DATA = {
   meeting_quorum: {
     title: d('Mindestzahl für die Beschlussfähigkeit?'),
     text: d(
-      'Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn eure Satzung ihn vorschreibt (§ 40 BGB).',
+      'Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn die Satzung ihn vorschreibt (§ 40 BGB).',
     ),
     sources: ['bgb'],
     place: d('Versammlungen → Arten und Fristen'),
@@ -951,7 +955,7 @@ const DECISIONS_DATA = {
   meeting_proxies: {
     title: d('Vertretung mit Vollmacht zulassen?'),
     text: d(
-      'Das Stimmrecht ist nach dem Gesetz persönlich und kann keinem anderen überlassen werden (§ 38 Satz 2 BGB). Die Satzung darf Vollmachten erlauben (§ 40 BGB); das hilft Mitgliedern, die nicht kommen können, birgt aber das Risiko, dass wenige viele Stimmen sammeln. Schalte es nur ein, wenn eure Satzung Vollmachten vorsieht.',
+      'Das Stimmrecht ist nach dem Gesetz persönlich und kann keinem anderen überlassen werden (§ 38 Satz 2 BGB). Die Satzung darf Vollmachten erlauben (§ 40 BGB); das hilft Mitgliedern, die nicht kommen können, birgt aber das Risiko, dass wenige viele Stimmen sammeln. Schalte es nur ein, wenn die Satzung Vollmachten vorsieht.',
     ),
     sources: ['bgb'],
     place: d('Versammlungen → Arten und Fristen'),
@@ -982,7 +986,7 @@ const DECISIONS_DATA = {
   board_pay: {
     title: d('Vorstand mit Pauschale vergüten?'),
     text: d(
-      'Ohne Regel in der Satzung arbeitet der Vorstand unentgeltlich und bekommt nur seine Auslagen ersetzt (§ 27 Abs. 3 BGB). Eine Vergütung ohne Grundlage in der Satzung kann die Gemeinnützigkeit gefährden, weil Mittel satzungswidrig fließen (§ 55 Abs. 1 Nr. 1 AO). Kreuze das nur an, wenn eure Satzung eine Vergütung des Vorstands ausdrücklich erlaubt.',
+      'Ohne Regel in der Satzung arbeitet der Vorstand unentgeltlich und bekommt nur seine Auslagen ersetzt (§ 27 Abs. 3 BGB). Eine Vergütung ohne Grundlage in der Satzung kann die Gemeinnützigkeit gefährden, weil Mittel satzungswidrig fließen (§ 55 Abs. 1 Nr. 1 AO). Kreuze das nur an, wenn die Satzung eine Vergütung des Vorstands ausdrücklich erlaubt.',
     ),
     sources: ['bgb', 'ao'],
     place: d('Finanzen → Pauschalen'),
@@ -992,7 +996,7 @@ const DECISIONS_DATA = {
   artist_fee_mark: {
     title: d('Welche Ausgaben als Künstlerhonorar kennzeichnen?'),
     text: d(
-      'Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Ob der Verein überhaupt abgabepflichtig ist, hängt davon ab, wie oft er Künstler beauftragt (§ 24 KSVG).',
+      'Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Beauftragt der Verein Künstler nur für eigene Feste oder Werbung, beginnt die Abgabepflicht erst über 1.000 € Honorar im Kalenderjahr; bei höchstens drei Veranstaltungen im Jahr bleiben deren Honorare frei (§ 24 Abs. 2 KSVG).',
     ),
     sources: ['ksvg'],
     place: d('Finanzen → Steuern → Künstlersozialabgabe'),
@@ -1112,7 +1116,7 @@ const DECISIONS_DATA = {
   application_consents: {
     title: d('Welche Einwilligungen abfragen?'),
     text: d(
-      'Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was ihr nach einem Widerruf auch wieder abstellen könnt.',
+      'Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was der Verein nach einem Widerruf auch wieder abstellen kann.',
     ),
     sources: ['dsgvo'],
     place: d('Mitglieder → Online-Antrag'),
@@ -1130,7 +1134,7 @@ const DECISIONS_DATA = {
   cancellation_notice: {
     title: d('Welche Kündigungsfrist eintragen?'),
     text: d(
-      'Trag genau die Frist und den Termin aus eurer Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.',
+      'Trag genau die Frist und den Termin aus der Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.',
     ),
     sources: ['bgb'],
     place: d('Mitglieder → Einstellungen'),
@@ -1164,12 +1168,13 @@ const DECISIONS_DATA = {
     sources: ['bgb'],
     place: d('Umfragen'),
     phase: 'meetings',
+    basic: true,
     feature: 'surveys',
   },
   survey_anonymous: {
     title: d('Namen zeigen oder anonym fragen?'),
     text: d(
-      'Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl braucht ihr die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).',
+      'Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl brauchst du die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).',
     ),
     sources: ['dsgvo'],
     place: d('Umfragen → Namen und Ergebnis'),
@@ -1217,7 +1222,7 @@ const DECISIONS_DATA = {
   qualification_inspection: {
     title: d('Nur Einsichtsvermerk festhalten?'),
     text: d(
-      'Beim erweiterten Führungszeugnis für Betreuer von Kindern und Jugendlichen darf der Verein nur festhalten, dass er es eingesehen hat, das Datum des Zeugnisses und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).',
+      'Beim erweiterten Führungszeugnis darf der Verein nur festhalten, dass er es eingesehen hat, von wann es ist und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).',
     ),
     sources: ['sgb8', 'dsgvo'],
     place: d('Mitglieder → Qualifikationen'),
@@ -1291,11 +1296,12 @@ const DECISIONS_DATA = {
   video_link: {
     title: d('Warum nur ein Link zum Video?'),
     text: d(
-      'Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf eurer Seite.',
+      'Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf der Vereinsseite.',
     ),
     sources: ['tdddg', 'dsgvo'],
     place: d('Webseite → Startseite → Abschnitt „Video“'),
     phase: 'website',
+    basic: true,
     feature: 'website',
   },
   chronicle_public: {
@@ -1358,6 +1364,7 @@ const DECISIONS_DATA = {
     sources: ['dsgvo'],
     place: d('Mein Konto → Zwei-Faktor-Anmeldung'),
     phase: 'privacy',
+    basic: true,
   },
   material_with_member: {
     title: d('Material bei einem Mitglied lagern?'),
@@ -1441,23 +1448,23 @@ const TERMS_DATA = {
   active_passive: {
     name: d('aktiv / passiv'),
     meaning: d(
-      'Kennzeichen einer Mitgliedsart: aktive Mitglieder nehmen voll am Vereinsleben teil, passive unterstützen vor allem mit ihrem Beitrag. Was das für Rechte und Beitrag bedeutet, regelt die Satzung (§ 25 BGB).',
+      'Kennzeichen einer Mitgliedsart: aktive Mitglieder nehmen voll am Vereinsleben teil, passive unterstützen vor allem mit ihrem Beitrag. Was das für Rechte und Beitrag bedeutet, regelt die Satzung.',
     ),
     example: d(
       'Beispiel: 112 aktive und 38 passive Mitglieder: Der Dachverband berechnet seinen Beitrag für beide Gruppen getrennt.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'members',
   },
   membership_duration: {
     name: d('Mitgliedsdauer'),
     meaning: d(
-      'Summe der Zeiten, in denen jemand Mitglied war, ohne Lücken zwischen Austritt und Wiedereintritt. Es zählen nur Mitgliedsarten mit dem Kennzeichen „zählt für Dauer“ (§ 25 BGB).',
+      'Summe der Zeiten, in denen jemand Mitglied war, ohne Lücken zwischen Austritt und Wiedereintritt. Es zählen nur Mitgliedsarten mit dem Kennzeichen „zählt für Dauer“.',
     ),
     example: d(
       'Beispiel: 1998 bis 2010 und wieder ab 2014 ergibt im Jahr 2026 zusammen 24 Jahre, das 25-jährige Jubiläum folgt 2027.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'members',
   },
   federation_number: {
@@ -1475,12 +1482,12 @@ const TERMS_DATA = {
   cutoff_date: {
     name: d('Stichtag'),
     meaning: d(
-      'Der Tag, für den ein Stand gezählt oder berechnet wird, z. B. Mitglieder, Alter oder Kontostand. Wer an diesem Tag Mitglied ist, zählt mit (§ 259 Abs. 1 BGB).',
+      'Der Tag, für den ein Stand gezählt oder berechnet wird, etwa Mitglieder, Alter oder Kontostand. Wer an diesem Tag Mitglied ist, zählt mit.',
     ),
     example: d(
       'Beispiel: Stichtag 1. Januar 2026, 150 Mitglieder: Wer am 2. Januar eintritt, zählt erst beim nächsten Stichtag.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'members',
     simple: true,
   },
@@ -1511,7 +1518,7 @@ const TERMS_DATA = {
   due_date: {
     name: d('fällig'),
     meaning: d(
-      'Ab der Fälligkeit darf der Verein die Zahlung verlangen; sie ergibt sich aus Rechnungsdatum und Zahlungsziel. Spätestens 30 Tage danach gerät ein Mitglied in Verzug, wenn die Rechnung darauf hinweist (§§ 271, 286 Abs. 3 BGB).',
+      'Ab der Fälligkeit darf der Verein die Zahlung verlangen; sie ergibt sich aus Rechnungsdatum und Zahlungsziel. Zahlt das Mitglied danach trotz Mahnung nicht, ist es in Verzug (§§ 271, 286 Abs. 1 BGB).',
     ),
     example: d('Beispiel: Rechnung vom 1. März, Zahlungsziel 14 Tage, also fällig am 15. März.'),
     sources: ['bgb'],
@@ -1646,48 +1653,48 @@ const TERMS_DATA = {
   opening_balance_term: {
     name: d('Anfangsbestand'),
     meaning: d(
-      'Geld auf einem Konto oder in der Barkasse zu Beginn des Zeitraums, meist der Endbestand des Vorjahrs. Er ist der Ausgangspunkt jeder Kassenrechnung (§ 259 Abs. 1 BGB).',
+      'Geld auf einem Konto oder in der Barkasse zu Beginn des Zeitraums, meist der Endbestand des Vorjahrs. Er ist der Ausgangspunkt jeder Kassenrechnung.',
     ),
     example: d(
       'Beispiel: Anfangsbestand 4.250,00 € am 1. Januar: So viel lag auf dem Girokonto, bevor das Jahr begann.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     feature: 'finance',
   },
   closing_balance: {
     name: d('Endbestand'),
     meaning: d(
-      'Geld auf einem Konto am Ende des Zeitraums: Anfangsbestand plus Einnahmen minus Ausgaben, plus oder minus Umbuchungen. Er muss zum Kontoauszug passen (§ 259 Abs. 1 BGB).',
+      'Geld auf einem Konto am Ende des Zeitraums: Anfangsbestand plus Einnahmen minus Ausgaben, plus oder minus Umbuchungen. Er muss zum Kontoauszug passen.',
     ),
     example: d(
       'Beispiel: 4.250,00 € + 9.800,00 € − 8.900,00 € = 5.150,00 €: Der Kontoauszug zum 31. Dezember zeigt denselben Betrag.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     feature: 'finance',
   },
   transfer: {
     name: d('Umbuchung'),
     meaning: d(
-      'Geld wandert zwischen zwei eigenen Konten, etwa von der Barkasse auf das Girokonto. Das ist weder Einnahme noch Ausgabe und ändert das Ergebnis nicht (§ 259 Abs. 1 BGB).',
+      'Geld wandert zwischen zwei eigenen Konten, etwa von der Barkasse auf das Girokonto. Das ist weder Einnahme noch Ausgabe und ändert das Ergebnis nicht.',
     ),
     example: d(
       'Beispiel: 600,00 € Kasseneinnahmen vom Fest auf das Girokonto eingezahlt: Kasse −600,00 €, Girokonto +600,00 €, Ergebnis unverändert.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     feature: 'finance',
   },
   balance: {
     name: d('Saldo'),
     meaning: d(
-      'Differenz von Einnahmen und Ausgaben, etwa je Kategorie. Positiv heißt: mehr eingenommen als ausgegeben (§ 259 Abs. 1 BGB).',
+      'Differenz von Einnahmen und Ausgaben, etwa je Kategorie. Positiv heißt: mehr eingenommen als ausgegeben.',
     ),
     example: d(
       'Beispiel: Kategorie Sommerfest: Einnahmen 3.100,00 €, Ausgaben 2.700,00 €, Saldo 400,00 €.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     simple: true,
     feature: 'finance',
@@ -1695,12 +1702,12 @@ const TERMS_DATA = {
   result: {
     name: d('Ergebnis'),
     meaning: d(
-      'Alle Einnahmen minus alle Ausgaben eines Zeitraums oder einer Veranstaltung, ohne Umbuchungen. Ein negatives Ergebnis heißt, der Verein hat aus Rücklagen oder Beständen zugezahlt (§ 259 Abs. 1 BGB).',
+      'Alle Einnahmen minus alle Ausgaben eines Zeitraums oder einer Veranstaltung, ohne Umbuchungen. Ein negatives Ergebnis heißt, der Verein hat aus Rücklagen oder Beständen zugezahlt.',
     ),
     example: d(
       'Beispiel: Ergebnis 2026: +900,00 €: Der Verein hat im Jahr 900,00 € mehr eingenommen als ausgegeben.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     simple: true,
     feature: 'finance',
@@ -1720,12 +1727,12 @@ const TERMS_DATA = {
   fiscal_year_term: {
     name: d('Geschäftsjahr'),
     meaning: d(
-      'Der Zeitraum, für den der Verein abrechnet und einen Kassenbericht vorlegt, meist das Kalenderjahr. Die Satzung kann ein anderes Jahr festlegen (§ 25 BGB).',
+      'Der Zeitraum, für den der Verein abrechnet und einen Kassenbericht vorlegt, meist das Kalenderjahr. Die Satzung kann ein anderes Jahr festlegen.',
     ),
     example: d(
       'Beispiel: Geschäftsjahr 1. Juli 2025 bis 30. Juni 2026: Das Sommerfest im Juni fällt ans Ende desselben Jahres.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     simple: true,
     feature: 'finance',
@@ -1745,12 +1752,12 @@ const TERMS_DATA = {
   auditors: {
     name: d('Kassenprüfer'),
     meaning: d(
-      'Von der Mitgliederversammlung gewählte Mitglieder, die die Kasse prüfen und darüber berichten; ihre Aufgaben bestimmt die Satzung. Sie gehören nicht zum Vorstand, den sie prüfen (§ 25 BGB).',
+      'Von der Mitgliederversammlung gewählte Mitglieder, die die Kasse prüfen und darüber berichten; ihre Aufgaben bestimmt die Satzung. Sie gehören nicht zum Vorstand, den sie prüfen.',
     ),
     example: d(
       'Beispiel: zwei Kassenprüfer prüfen 312 Buchungen stichprobenartig und empfehlen die Entlastung.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'cash',
     feature: 'finance',
   },
@@ -1792,7 +1799,7 @@ const TERMS_DATA = {
     symbol: 'wGB',
     name: d('wirtschaftlicher Geschäftsbetrieb'),
     meaning: d(
-      'Eine selbstständige, nachhaltige Tätigkeit, mit der der Verein Einnahmen erzielt und die über Vermögensverwaltung hinausgeht (§ 14 AO). Steuer fällt erst an, wenn diese Einnahmen einschließlich Umsatzsteuer 50.000 € im Jahr übersteigen (§ 64 Abs. 3 AO).',
+      'Eine selbstständige, nachhaltige Tätigkeit, mit der der Verein Einnahmen erzielt und die über Vermögensverwaltung hinausgeht (§ 14 AO). Körperschaft- und Gewerbesteuer fallen erst an, wenn diese Einnahmen einschließlich Umsatzsteuer 50.000 € im Jahr übersteigen (§ 64 Abs. 3 AO).',
     ),
     example: d(
       'Beispiel: Getränkeverkauf am Sommerfest, 14.000,00 €: steuerpflichtiger Bereich, aber unter der Freigrenze.',
@@ -2122,7 +2129,7 @@ const TERMS_DATA = {
       'Besonders guter Zehner: Auf der DSB-Luftgewehrscheibe ist es einer, der den weißen Zehnerpunkt ganz wegschießt (DSB-Sportordnung). Mehr Innenzehner entscheiden oft einen Gleichstand.',
     ),
     example: d(
-      'Beispiel: Ein Treffer 0,8 mm neben der Mitte ist ein Innenzehner, einer 2 mm daneben nur ein Zehner.',
+      'Beispiel: Ein Treffer 0,8 mm neben der Mitte ist ein Innenzehner, einer 2,3 mm daneben nur ein Zehner.',
     ),
     sources: ['dsbSpo'],
     section: 'competitions',
@@ -2239,22 +2246,22 @@ const TERMS_DATA = {
   comp_lot: {
     name: d('Losnummer'),
     meaning: d(
-      'Nummer aus dem Hut, die beim Vogelschießen die Reihenfolge der Schützen bestimmt. Nachzügler ziehen eine noch freie Nummer; das Verfahren regelt die Schießordnung (§ 25 BGB).',
+      'Nummer aus dem Hut, die beim Vogelschießen die Reihenfolge der Schützen bestimmt. Nachzügler ziehen eine noch freie Nummer; das Verfahren regelt die Schießordnung.',
     ),
     example: d('Beispiel: Wer Los 7 zieht, schießt nach Nummer 6 und vor Nummer 8.'),
-    sources: ['bgb'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
   comp_prize: {
     name: d('Pfand'),
     meaning: d(
-      'Teil des Vogels, für dessen Abschuss es einen Preis gibt, etwa Kopf, Flügel oder Schweif. Wer es herunterholt, hat das Pfand errungen; Pfänder und Preise legt die Schießordnung fest (§ 25 BGB).',
+      'Teil des Vogels, für dessen Abschuss es einen Preis gibt, etwa Kopf, Flügel oder Schweif. Wer es herunterholt, hat das Pfand errungen; Pfänder und Preise legt die Schießordnung fest.',
     ),
     example: d(
       'Beispiel: Paul holt mit Schuss 54 den linken Flügel herunter und erhält den Flügelorden.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
@@ -2271,36 +2278,36 @@ const TERMS_DATA = {
   comp_shots_for: {
     name: d('Schüsse für das Pfand'),
     meaning: d(
-      'Schüsse seit dem vorher gefallenen Pfand bis zu dem, der dieses Pfand heruntergeholt hat. Beim ersten Pfand zählen alle Schüsse seit Beginn; wofür es Preise gibt, regelt die Schießordnung (§ 25 BGB).',
+      'Schüsse seit dem vorher gefallenen Pfand bis zu dem, der dieses Pfand heruntergeholt hat. Beim ersten Pfand zählen alle Schüsse seit Beginn; wofür es Preise gibt, regelt die Schießordnung.',
     ),
     example: d(
       'Beispiel: Der Kopf fällt mit Schuss 30, der Schweif mit Schuss 75: für den Schweif waren es 45 Schüsse.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
   comp_provisional_term: {
     name: d('vorläufig'),
     meaning: d(
-      'Zustand nach „Schießen beenden“: Ergebnisse stehen, Nachträge und Stechen sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält (Art. 5 Abs. 1 lit. d DSGVO).',
+      'Zustand nach „Schießen beenden“: Ergebnisse stehen, Nachträge und Stechen sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält.',
     ),
     example: d(
       'Beispiel: Am Abend hängt die vorläufige Liste aus; ein Stechen am nächsten Morgen ändert noch Platz 3.',
     ),
-    sources: ['dsgvo'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
   comp_final_term: {
     name: d('endgültig'),
     meaning: d(
-      'Zustand nach dem Abschluss: Eingaben sind gesperrt, die Ergebnisse gelten. Nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht (Art. 5 Abs. 1 lit. d DSGVO).',
+      'Zustand nach dem Abschluss: Eingaben sind gesperrt, die Ergebnisse gelten. Nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht.',
     ),
     example: d(
       'Beispiel: Nach dem 2. Stechen schließt der Schießmeister ab, danach lässt sich kein Wert mehr ändern.',
     ),
-    sources: ['dsgvo'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
@@ -2331,12 +2338,12 @@ const TERMS_DATA = {
   comp_organizer: {
     name: d('Ausrichter'),
     meaning: d(
-      'Verein oder Verband, der einen fremden Wettbewerb veranstaltet und wertet. Er legt Regeln und Preise fest (§ 25 BGB).',
+      'Verein oder Verband, der einen fremden Wettbewerb veranstaltet und wertet. Er legt Regeln und Preise fest.',
     ),
     example: d(
-      'Beispiel: Beim Bezirksschießen 2027 ist der Bezirksverband der Ausrichter; ihr tragt nur eure Plätze ein, etwa Platz 3 mit 287 Ringen.',
+      'Beispiel: Beim Bezirksschießen 2027 ist der Bezirksverband der Ausrichter; du trägst nur die Plätze der eigenen Teilnehmer ein, etwa Platz 3 mit 287 Ringen.',
     ),
-    sources: ['bgb'],
+    sources: [],
     section: 'competitions',
     feature: 'competitions',
   },
@@ -2635,7 +2642,7 @@ const HOWTOS_DATA = {
     kind: 'calc',
     title: d('Anteiliger Beitrag'),
     text: d(
-      'Der Beitrag des Zeitraums wird durch dessen Monate geteilt, mit den Monaten der Mitgliedschaft malgenommen und kaufmännisch auf Cent gerundet. Ein angefangener Abschnitt zählt voll: je nach Einstellung ein Monat, ein Quartal oder ein Halbjahr, gezählt ab Beginn des Geschäftsjahres; ist der Abschnitt länger als der Abrechnungszeitraum, gilt der Zeitraum als ein Abschnitt. Bei mehreren Raten im Jahr gehen übrige Cents auf die ersten Raten, damit alle zusammen genau den Jahresbeitrag ergeben (100,00 € monatlich: 4 × 8,34 € und 8 × 8,33 €).',
+      'Der Beitrag des Zeitraums wird durch dessen Monate geteilt, mit den Monaten der Mitgliedschaft malgenommen und kaufmännisch auf Cent gerundet. Ein angefangener Abschnitt zählt voll: je nach Einstellung ein Monat, Quartal oder Halbjahr ab Beginn des Geschäftsjahres; ist er länger als der Abrechnungszeitraum, gilt der Zeitraum als ein Abschnitt. Bei mehreren Raten im Jahr gehen übrige Cents auf die ersten Raten, damit alle zusammen genau den Jahresbeitrag ergeben (100,00 € monatlich: 4 × 8,34 € und 8 × 8,33 €).',
     ),
     example: {
       head: ['Eintritt', 'Monate', 'Rechnung', 'Beitrag'],
@@ -2672,6 +2679,29 @@ const HOWTOS_DATA = {
     text: d(
       'Heute plus die eingestellte Vorabankündigung, mindestens aber zwei Tage, verschoben auf den nächsten Werktag. Das SEPA-Regelwerk verlangt die Ankündigung vor dem Einzug (EPC016-06).',
     ),
+    example: {
+      head: ['Heute', 'Vorabankündigung', 'Rechnung', 'Frühester Einzug'],
+      rows: [
+        [
+          'Montag, 2. März 2026',
+          '5 Tage',
+          '2. März + 5 Tage = Samstag, 7. März',
+          'Montag, 9. März 2026',
+        ],
+        [
+          'Montag, 2. März 2026',
+          '1 Tag',
+          'mindestens 2 Tage: 2. März + 2 Tage',
+          'Mittwoch, 4. März 2026',
+        ],
+        [
+          'Dienstag, 31. März 2026',
+          '3 Tage',
+          '3. April ist Karfreitag, 6. April Ostermontag',
+          'Dienstag, 7. April 2026',
+        ],
+      ],
+    },
     sources: ['epcSdd'],
     feature: 'billing',
   },
@@ -2681,6 +2711,14 @@ const HOWTOS_DATA = {
     text: d(
       'Ab dem letzten Einzug, oder ohne Einzug ab der Unterschrift, zählen 36 Monate. Ist bis dahin nichts eingezogen, gilt das Mandat als verfallen (EPC016-06).',
     ),
+    example: {
+      head: ['Unterschrift', 'Letzter Einzug', 'Verfällt am'],
+      rows: [
+        ['10. Mai 2021', '31. Januar 2023', '31. Januar 2026'],
+        ['10. Mai 2021', '1. März 2026', '1. März 2029'],
+        ['15. Juni 2024', 'noch keiner', '15. Juni 2027'],
+      ],
+    },
     sources: ['epcSdd'],
     feature: 'billing',
   },
@@ -2722,6 +2760,15 @@ const HOWTOS_DATA = {
     text: d(
       'Mitglied am Stichtag ist, wessen Mitgliedschaft an diesem Tag läuft; der Bestand eines Tages ist der Stand nach den Austritten dieses Tages. Eintritte und Austritte zählen alle Wechsel im gewählten Zeitraum, ein Wiedereintritt also erneut als Eintritt.',
     ),
+    example: {
+      head: ['Vorgang im Jahr 2026', 'Bestand', 'Eintritte', 'Austritte'],
+      rows: [
+        ['Stand am 1. Januar', '150', '', ''],
+        ['6 Eintritte, davon 1 Wiedereintritt', '156', '6', ''],
+        ['4 Austritte zum 31. Dezember', '152', '', '4'],
+        ['Stand am 31. Dezember', '152', '6', '4'],
+      ],
+    },
     sources: [],
   },
   calc_jubilee: {
@@ -2900,6 +2947,13 @@ const HOWTOS_DATA = {
     text: d(
       'Geschossen wird nach Losnummer, Fehlende und Ausgeschiedene werden übersprungen. Nach der höchsten Nummer beginnt die nächste Runde wieder bei der kleinsten.',
     ),
+    example: {
+      head: ['Runde', 'Reihenfolge', 'Hinweis'],
+      rows: [
+        ['1', 'Los 1, 2, 4, 5', 'Los 3 fehlt und wird übersprungen'],
+        ['2', 'Los 1, 2, 3, 5', 'Los 3 ist da; Los 4 hat ein Pfand errungen und ist ausgeschieden'],
+      ],
+    },
     sources: [],
     feature: 'competitions',
   },
@@ -2966,6 +3020,15 @@ const HOWTOS_DATA = {
     text: d(
       'Braucht ein Objekt keine Freigabe, gilt jede Buchung sofort; wer Freigaberecht hat, bucht ohnehin direkt. Sonst bleibt die Buchung eine Anfrage, bis jemand mit Freigaberecht sie annimmt oder ablehnt, und die buchende Person bekommt dann eine E-Mail. Ändert jemand ohne Freigaberecht eine angenommene Buchung, wird sie wieder zur Anfrage.',
     ),
+    example: {
+      head: ['Objekt', 'Wer bucht', 'Ergebnis'],
+      rows: [
+        ['Grillhütte, ohne Freigabe', 'Mitglied', 'gilt sofort'],
+        ['Vereinsheim, mit Freigabe', 'Mitglied', 'Anfrage, bis der Hauswart annimmt'],
+        ['Vereinsheim, mit Freigabe', 'Hauswart (Freigaberecht)', 'gilt sofort'],
+        ['Vereinsheim, angenommene Buchung', 'Mitglied ändert die Uhrzeit', 'wieder Anfrage'],
+      ],
+    },
     sources: [],
     feature: 'bookings',
   },
