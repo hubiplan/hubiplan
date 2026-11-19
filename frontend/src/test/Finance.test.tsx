@@ -225,15 +225,13 @@ describe('Kasse', () => {
     const form = screen.getByRole('heading', { name: 'Neue Ausgabe' }).closest('form')!
     const f = within(form)
     const partner = f.getByLabelText(/Empfänger/)
-    await waitFor(() =>
-      expect(
-        form.querySelector('datalist#booking-partner-suggestions option[value="Getränke Müller"]'),
-      ).not.toBeNull(),
-    )
     // Mitglied/Abteilung sind bei Ausgaben eingeklappt
     expect(form.querySelector('details.booking-assign')?.hasAttribute('open')).toBe(false)
     await user.type(f.getByLabelText('Betrag (€)'), '45,90')
-    await user.type(partner, 'Getränke Müller')
+    // Vorschlag aus der eigenen Liste (kein <datalist>) wählen
+    await user.type(partner, 'Getr')
+    await user.click(await f.findByRole('option', { name: 'Getränke Müller' }))
+    expect(partner).toHaveValue('Getränke Müller')
     await user.selectOptions(f.getByLabelText('Kategorie'), '4')
     await user.type(f.getByLabelText('Buchungstext'), 'Wasser und Saft')
     await user.click(f.getByRole('button', { name: 'Buchen' }))

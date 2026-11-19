@@ -11,6 +11,8 @@ import { useAnnounce } from './announce.ts'
 import { Term } from '../learning/Aids.tsx'
 import type { TermKey } from '../learning/content.ts'
 import { useOnline } from './OfflineBanner.tsx'
+import { SuggestInput } from './SuggestInput.tsx'
+import type { Suggestion } from './SuggestInput.tsx'
 
 /**
  * Beschriftung, Hinweis und Fehler eines Feldes. Hinweis und Fehler hängen per
@@ -70,26 +72,29 @@ export function Field({
   hint,
   term,
   id,
+  suggestions,
   ...input
-}: InputHTMLAttributes<HTMLInputElement> & {
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'list'> & {
   label: string
   error?: string
   hint?: string
   term?: TermKey
+  /** Vorschläge in eigener, gestalteter Liste (nie HTML-datalist: Browsermenü passt nicht) */
+  suggestions?: Suggestion[]
 }) {
   const own = useId()
   const fieldId = id ?? own
+  const props = {
+    ...input,
+    id: fieldId,
+    'aria-invalid': !!error,
+    'aria-describedby':
+      [input['aria-describedby'], noteId(fieldId, error, hint)].filter(Boolean).join(' ') ||
+      undefined,
+  }
   return (
     <FieldFrame id={fieldId} label={label} error={error} hint={hint} term={term}>
-      <input
-        {...input}
-        id={fieldId}
-        aria-invalid={!!error}
-        aria-describedby={
-          [input['aria-describedby'], noteId(fieldId, error, hint)].filter(Boolean).join(' ') ||
-          undefined
-        }
-      />
+      {suggestions ? <SuggestInput {...props} suggestions={suggestions} /> : <input {...props} />}
     </FieldFrame>
   )
 }

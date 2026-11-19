@@ -11,4 +11,5 @@ aus dem Mitgliederbereich freigegeben hat. Fremde Buchungen erscheinen nur als �
 Unter **Anfrage stellen** wählst du Objekt, Zweck und Zeit und schickst die Anfrage mit
 **Anfrage senden**. Die Verwaltung bestätigt sie oder lehnt sie ab; du bekommst dann eine
 E-Mail. Unter **Meine Anfragen und Buchungen** siehst du den Stand und kannst mit
-**Buchung stornieren** absagen.
+**Buchung stornieren** absagen. Dort stehen auch Buchungen, die die Verwaltung für dich
+eingetragen hat.

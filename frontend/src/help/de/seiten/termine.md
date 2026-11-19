@@ -34,7 +34,9 @@ Mit **Rundschreiben dazu schreiben** in der Knopfleiste legst du einen Entwurf a
 
 ## Termin anlegen und bearbeiten
 
-Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen. „nach außen öffentlich“ heißt: auf der Webseite und ohne Anmeldung zu sehen. In HUBIplan selbst sehen den Termin die Mitglieder der Ebene, die ihn anlegt; andere Einheiten sehen ihn nur, wenn er nach oben oder unten weitergegeben wird.
+Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen.
+
+Beim Bearbeiten speichert der Dialog jede Änderung sofort: **Fertig** unten führt zurück zur Terminansicht, **Schließen** oben schließt den Dialog. Im Feld **Ort** öffnet sich beim Tippen, per Klick oder mit Pfeil nach unten die Liste der gespeicherten Orte; mit den Pfeiltasten und Eingabe wählst du, Esc schließt nur die Liste. „nach außen öffentlich“ heißt: auf der Webseite und ohne Anmeldung zu sehen. In HUBIplan selbst sehen den Termin die Mitglieder der Ebene, die ihn anlegt; andere Einheiten sehen ihn nur, wenn er nach oben oder unten weitergegeben wird.
 
 Termine „nur Vorstand“ sehen die Mitglieder mit einer Vorstandsrolle der Einheit, in der Verwaltung, unter **Meine Termine** und in der App. Ins persönliche Kalender-Abo kommen sie nicht; dafür gibt es unter Termine › Kalender-Abo das eigene **Vorstands-Abo**.
 

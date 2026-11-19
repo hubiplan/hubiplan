@@ -34,7 +34,9 @@ To link, you need the right to edit the event and to see the document store. If 
 
 ## Create and edit an event
 
-The event dialog first asks for title, time and place, then category and **Who sees the event?**. Rarely used options are folded under **More settings**: **Pass on upwards**, **Pass on downwards** and **Hide end time on the website**. If one of them is set, the section is open. The header and the save bar stay in place while you scroll in the dialog. “public” means visible on the website and without signing in. Inside HUBIplan the members of the level that creates the event see it; other units only see it if it is passed on upwards or downwards.
+The event dialog first asks for title, time and place, then category and **Who sees the event?**. Rarely used options are folded under **More settings**: **Pass on upwards**, **Pass on downwards** and **Hide end time on the website**. If one of them is set, the section is open. The header and the save bar stay in place while you scroll in the dialog.
+
+When editing, the dialog saves every change straight away: **Done** at the bottom takes you back to the event view, **Close** at the top closes the dialog. In the **Place** field, typing, a click or the down arrow opens the list of saved places; choose with the arrow keys and Enter, Esc closes only the list. “public” means visible on the website and without signing in. Inside HUBIplan the members of the level that creates the event see it; other units only see it if it is passed on upwards or downwards.
 
 “board only” events are seen by members with a board role in the unit: in the administration, under **My events** and in the app. They are not included in the personal calendar subscription; for them there is the separate **Board subscription** under Events › Calendar subscription.
 
