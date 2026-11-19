@@ -228,6 +228,8 @@ export interface BoardRegistrations {
   }
   can_edit: boolean
   can_set_prices: boolean
+  /** Qualifikationen, die nach der Veranstaltung eingetragen werden dürfen (A6) */
+  qualification_kinds?: { id: number; name: string }[]
   registrations: Registration[]
 }
 
@@ -356,6 +358,13 @@ export interface CheckInRow {
   minor: boolean
 }
 
+export interface QualificationResult {
+  created: number
+  existing: number
+  guests: number
+  checked_in_only: boolean
+}
+
 export interface CheckInList {
   event_id: number
   title: string
@@ -416,6 +425,13 @@ export const registrationApi = {
     eventId: number,
     data: { code?: string; participant?: number; undo?: boolean },
   ) => api.post<CheckInResult>(`${url(base, eventId)}checkin/`, data),
+  badgesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}badges/`,
+  certificatesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}certificates/`,
+  addQualification: (
+    base: CalendarBase,
+    eventId: number,
+    data: { kind: number; acquired_on?: string | null },
+  ) => api.post<QualificationResult>(`${url(base, eventId)}qualification/`, data),
   exportUrl: (base: CalendarBase, eventId: number, health = false) =>
     `${url(base, eventId)}export/${health ? '?health=1' : ''}`,
   member: (base: CalendarBase, eventId: number) => api.get<MemberRegistrations>(url(base, eventId)),

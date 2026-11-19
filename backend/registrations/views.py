@@ -20,7 +20,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import BILLING_EDIT, REGISTRATIONS_EDIT, REGISTRATIONS_VIEW
+from access.catalog import BILLING_EDIT, MEMBERS_EDIT, REGISTRATIONS_EDIT, REGISTRATIONS_VIEW
 from audit.log import record
 from events.models import Event
 from events.views import OrgCalendarMixin, PortalCalendarMixin
@@ -28,7 +28,7 @@ from exchange.export import safe_cell
 from members.models import Membership
 
 from . import extras as ex
-from . import public, services, tickets
+from . import onsite, public, services, tickets
 from .models import (
     MAX_ADDONS,
     MAX_CHOICES,
@@ -391,6 +391,16 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
             raise NotFound(gettext("Zu diesem Termin gibt es keine Anmeldung."))
         return setup
 
+    def qualification_kinds(self, event) -> list[dict]:
+        """Arten, die nach der Veranstaltung eingetragen werden dürfen (A6)."""
+        if (
+            REGISTRATIONS_EDIT not in self.viewer.perms
+            or MEMBERS_EDIT not in self.viewer.perms
+            or not self.viewer.can_edit(event)
+        ):
+            return []
+        return [{"id": k.pk, "name": k.name} for k in onsite.qualification_kinds(self.org)]
+
     def payload(self, event, setup) -> dict:
         from django.db.models import Case, IntegerField, Value, When
 
@@ -412,6 +422,7 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
             "summary": services.summary(setup),
             "can_edit": REGISTRATIONS_EDIT in self.viewer.perms and self.viewer.can_edit(event),
             "can_set_prices": BILLING_EDIT in self.viewer.perms,
+            "qualification_kinds": self.qualification_kinds(event),
             "registrations": [registration_data(r, full=True) for r in regs],
         }
 
@@ -996,6 +1007,63 @@ class CheckInView(_OrgRegistrationMixin, APIView):
             "cancelled": gettext("Diese Person ist abgemeldet."),
         }
         return Response({"result": result, "message": messages[result], "participant": row})
+
+
+def _pdf(content: bytes, name: str) -> HttpResponse:
+    resp = HttpResponse(content, content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="{name}"'
+    resp["Cache-Control"] = "private, no-store"
+    return resp
+
+
+class BadgesView(_OrgRegistrationMixin, APIView):
+    """GET: Namensschilder aller Personen verbindlicher Anmeldungen als PDF (A6)."""
+
+    def get(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        setup = self.setup_for(event)
+        return _pdf(onsite.badges_pdf(setup), "namensschilder.pdf")
+
+
+class CertificatesView(_OrgRegistrationMixin, APIView):
+    """GET: Teilnahmebescheinigungen im Briefbogen als PDF (A6)."""
+
+    def get(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        return _pdf(onsite.certificates_pdf(setup, request.user), "teilnahmebescheinigungen.pdf")
+
+
+class QualificationIn(serializers.Serializer):
+    kind = serializers.IntegerField()
+    acquired_on = serializers.DateField(required=False, allow_null=True, default=None)
+
+
+class QualificationView(_OrgRegistrationMixin, APIView):
+    """POST ``{kind, acquired_on?}``: Qualifikation für alle teilnehmenden Mitglieder (A6)."""
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        kinds = {k["id"]: k for k in self.qualification_kinds(event)}
+        if not kinds:
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+        setup = self.setup_for(event)
+        data = QualificationIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        if v["kind"] not in kinds:
+            raise serializers.ValidationError({"kind": gettext("Bitte eine Qualifikation wählen.")})
+        acquired = v["acquired_on"] or onsite.last_day(event)
+        if acquired > timezone.localdate():
+            raise serializers.ValidationError(
+                {"acquired_on": gettext("Das Datum liegt in der Zukunft.")}
+            )
+        from qualifications.models import QualificationType
+
+        kind = QualificationType.objects.get(organization=self.org, pk=v["kind"])
+        result = onsite.add_qualification(setup, kind, request.user, acquired)
+        return Response(result)
 
 
 class SubstituteIn(serializers.Serializer):

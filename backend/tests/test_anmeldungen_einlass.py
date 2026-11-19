@@ -21,7 +21,7 @@ FREE = [{"name": "Alle", "steps": [{"amount": "0"}]}]
 def _anmelden(fest, who="Bernd"):
     client, url = fest["portals"][who]
     price = ok(client.get(f"{url}registration/"))["offer"]["prices"][0]["id"]
-    member = fest["bernd"] if who == "Bernd" else None
+    member = fest[who.lower()]
     data = ok(
         client.post(
             f"{url}registration/",
@@ -109,3 +109,58 @@ def test_einlass_mit_code_und_liste(c, fest, club):
     assert ok(c.post(url, {"code": code}, content_type=JSON))["result"] == "cancelled"
     assert ok(c.get(url))["count"] == 0
     assert ok(c.get(fest["url"]))["registrations"][0]["has_tickets"] is False
+
+
+def test_namensschilder_und_bescheinigungen(c, fest, club):
+    from core.tenancy import tenant_context
+    from registrations import onsite
+    from registrations.models import Participant, RegistrationSetup
+
+    einrichten(c, fest, prices=FREE)
+    _anmelden(fest)
+    _anmelden(fest, "Anna")
+    badges = c.get(f"{fest['url']}badges/")
+    assert badges.status_code == 200 and badges.content.startswith(b"%PDF")
+    certs = c.get(f"{fest['url']}certificates/")
+    assert certs.status_code == 200 and certs.content.startswith(b"%PDF")
+    with tenant_context(club.pk):
+        setup = RegistrationSetup.objects.get(event_id=fest["event"]["id"])
+        # Ohne Einlass gelten alle; nach dem ersten Abhaken nur die Eingelassenen
+        rows, filtered = onsite.present(setup)
+        assert len(rows) == 2 and not filtered
+        p = Participant.objects.filter(registration__setup=setup).first()
+    ok(c.post(f"{fest['url']}checkin/", {"participant": p.pk}, content_type=JSON))
+    with tenant_context(club.pk):
+        rows, filtered = onsite.present(setup)
+        assert [r.pk for r in rows] == [p.pk] and filtered
+    # Mitglieder ohne Bearbeitungsrecht bekommen keine Bescheinigungen
+    member, url = fest["portals"]["Anna"]
+    assert member.get(f"{fest['url']}certificates/").status_code in (403, 404)
+
+
+def test_qualifikation_fuer_teilnehmende(c, fest, club):
+    from core.tenancy import tenant_context
+    from qualifications.models import Qualification, QualificationType
+
+    club.enabled_modules = sorted({*club.enabled_modules, "qualifications"})
+    club.save()
+    with tenant_context(club.pk):
+        kind = QualificationType.objects.create(
+            organization=club, name="Standaufsicht", validity_months=24
+        )
+    einrichten(c, fest, prices=FREE)
+    _anmelden(fest)
+    board = ok(c.get(fest["url"]))
+    assert board["qualification_kinds"] == [{"id": kind.pk, "name": "Standaufsicht"}]
+    url = f"{fest['url']}qualification/"
+    # Veranstaltung liegt in der Zukunft: Datum fehlt → abgelehnt
+    assert c.post(url, {"kind": kind.pk}, content_type=JSON).status_code == 400
+    today = timezone.localdate().isoformat()
+    first = ok(c.post(url, {"kind": kind.pk, "acquired_on": today}, content_type=JSON))
+    assert first["created"] == 1 and first["guests"] == 0
+    again = ok(c.post(url, {"kind": kind.pk, "acquired_on": today}, content_type=JSON))
+    assert again["created"] == 0 and again["existing"] == 1
+    with tenant_context(club.pk):
+        q = Qualification.objects.get(kind=kind)
+        assert q.person_id == fest["bernd"].person_id and q.valid_until is not None
+    assert c.post(url, {"kind": 999999, "acquired_on": today}, content_type=JSON).status_code == 400

@@ -47,6 +47,7 @@ import type { ExtrasState } from './extras.ts'
 import { berlin, formatDay, toApi } from './time.ts'
 import { PaidBadge } from './PaidBadge.tsx'
 import { CheckInPanel } from './CheckIn.tsx'
+import { QualificationPanel } from './AfterEvent.tsx'
 import { Modal } from '../Modal.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
 
@@ -702,6 +703,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   const [cancelling, setCancelling] = useState<Registration | null>(null)
   const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
   const [checkIn, setCheckIn] = useState(false)
+  const [qualifying, setQualifying] = useState(false)
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
   const offer = data.offer
@@ -749,6 +751,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   const orgId = Number(/\/api\/orgs\/(\d+)\//.exec(base)?.[1] ?? 0)
 
   const s = data.summary
+  const hasRegistered = data.registrations.some((r) => r.status === 'registered')
   return (
     <Card title={t('Anmeldungen')}>
       <p>
@@ -786,9 +789,34 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             </button>
           </>
         )}
-        {data.registrations.some((r) => r.status === 'registered') && (
+        {hasRegistered && (
           <button type="button" className="button button-ghost" onClick={() => setCheckIn(true)}>
             {t('Einlass')}
+          </button>
+        )}
+        {hasRegistered && (
+          <a
+            className="button button-ghost"
+            href={registrationApi.badgesUrl(base, event.id)}
+            target="_blank"
+            rel="noopener"
+          >
+            {t('Namensschilder (PDF)')}
+          </a>
+        )}
+        {hasRegistered && data.can_edit && (
+          <a
+            className="button button-ghost"
+            href={registrationApi.certificatesUrl(base, event.id)}
+            target="_blank"
+            rel="noopener"
+          >
+            {t('Teilnahmebescheinigungen (PDF)')}
+          </a>
+        )}
+        {hasRegistered && (data.qualification_kinds?.length ?? 0) > 0 && (
+          <button type="button" className="button button-ghost" onClick={() => setQualifying(true)}>
+            {t('Qualifikation eintragen')}
           </button>
         )}
         {data.registrations.length > 0 && (
@@ -812,6 +840,20 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           }}
         >
           <CheckInPanel base={base} eventId={event.id} />
+        </Modal>
+      )}
+      {qualifying && (
+        <Modal
+          title={t('Qualifikation eintragen: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => setQualifying(false)}
+        >
+          <QualificationPanel
+            base={base}
+            eventId={event.id}
+            kinds={data.qualification_kinds ?? []}
+            lastDay={berlin(event.ends_at ?? event.starts_at).date}
+          />
         </Modal>
       )}
       {adding && (

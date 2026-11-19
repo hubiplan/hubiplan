@@ -10241,5 +10241,12 @@
   "Eintrittskarten von {number}": "Tickets for {number}",
   "Eintrittskarten": "Tickets",
   "Eintrittskarten (PDF)": "Tickets (PDF)",
-  "Einlass: {title}": "Admission: {title}"
+  "Einlass: {title}": "Admission: {title}",
+  "Trägt die Qualifikation bei allen teilnehmenden Mitgliedern ein. Teilgenommen hat, wer beim Einlass abgehakt ist; ohne Einlass alle Angemeldeten. Gäste ohne Mitgliedschaft werden übersprungen.": "Records the qualification for all participating members. Participants are those checked in at the entrance; without check-in, everyone registered. Guests without membership are skipped.",
+  "{n} Nachweise eingetragen.": "{n} records added.",
+  "{n} hatten ihn schon.": "{n} already had it.",
+  "{n} Gäste übersprungen.": "{n} guests skipped.",
+  "Namensschilder (PDF)": "Name badges (PDF)",
+  "Teilnahmebescheinigungen (PDF)": "Certificates of attendance (PDF)",
+  "Qualifikation eintragen: {title}": "Record qualification: {title}"
 }
