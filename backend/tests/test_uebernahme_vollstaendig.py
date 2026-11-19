@@ -21,8 +21,10 @@ NICHT = {
     "registrations.PendingRegistration": "unbestätigte Anmeldung, höchstens 24 Stunden gültig",
     "registrations.ScanLink": "Scan- oder Kassen-Link für Personal, am Ziel neu anlegen",
     "registrations.Redemption": "Einlösung vor Ort über einen Scan-Link der alten Instanz",
-    "registrations.Handout": "Ausgabe und Rückgabe von Material vor Ort, bleibt auf der alten Instanz",
-    "registrations.CashTake": "Kassenabschluss eines Kassen-Links; die Zahlungen stehen an der Rechnung",
+    "registrations.Handout": "Ausgabe und Rückgabe von Material vor Ort, bleibt auf der alten "
+    "Instanz",
+    "registrations.CashTake": "Kassenabschluss eines Kassen-Links; die Zahlungen stehen an der "
+    "Rechnung",
     "core.DataKey": "Schlüssel der alten Instanz",
     "core.DataKeyRotation": "Schlüsselwechsel der alten Instanz",
     "organizations.InstanceAddress": "Adresse der alten Instanz",
