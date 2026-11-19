@@ -117,6 +117,22 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
       'guide.obligation_add',
     ],
   },
+  {
+    id: 'anlass',
+    label: () => t('Was tun, wenn …'),
+    keys: [
+      'guide.debit_return',
+      'guide.fee_change',
+      'guide.board_change',
+      'guide.year_change',
+      'guide.member_moved',
+      'guide.member_deceased',
+      'guide.privacy_request',
+      'guide.account_create',
+      'guide.mail_trouble',
+      'guide.backup',
+    ],
+  },
 ]
 
 /** Alle ersten Schritte (ohne Doppelte), in Paketreihenfolge */

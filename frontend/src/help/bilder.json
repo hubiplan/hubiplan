@@ -565,6 +565,42 @@
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/musik/musiker",
       "ausschnitt": ""
+    },
+    {
+      "name": "konto-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/konten",
+      "ausschnitt": ""
+    },
+    {
+      "name": "e-mails-kommen-nicht-an",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/postausgang",
+      "ausschnitt": ""
+    },
+    {
+      "name": "daten-sichern",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/datenuebernahme",
+      "ausschnitt": ""
+    },
+    {
+      "name": "online-antrag-einrichten",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/einrichtung/antrag",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-textseite-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/inhalte",
+      "ausschnitt": ""
+    },
+    {
+      "name": "mitgliedsantrag-pruefen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/antraege",
+      "ausschnitt": ""
     }
   ]
 }

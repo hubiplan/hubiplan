@@ -16,3 +16,5 @@ stichworte: [page, text page, about us, statutes, sections]
 6. Click **Publish**.
 
 If a photo is still missing, write a note for the image slot under **Text with image**; the published page does not show the empty slot.
+
+![Starting point: Create a text page of your own](bild:webseite-textseite-anlegen)

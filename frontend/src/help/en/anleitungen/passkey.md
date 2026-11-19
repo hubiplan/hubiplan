@@ -55,3 +55,5 @@ password manager.
 
 If it does not work, connect the app as before with the QR code under **My account** › App &
 other instances.
+
+![Starting point: Sign in with a passkey](bild:konto-passwort)

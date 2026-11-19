@@ -16,3 +16,5 @@ stichworte: [family, household, family fee, joint letter, payer]
 6. With **Fee via the household**, decide per member that their fee goes on the joint invoice.
 
 Circulars combine letters to a household at the same address into one letter.
+
+![Starting point: Set up a family as a household](bild:haushalte-liste)

@@ -15,3 +15,5 @@ stichworte: [DATEV, Steuerberater, Export, Buchungsstapel, Kontenrahmen]
 5. Klicke beim Geschäftsjahr auf „DATEV“ und gib die Datei an die Steuerberatung.
 
 Die Datei ist ein Buchungsstapel im DATEV-Format. Buchungen mit Steuersatz bekommen den passenden Steuerschlüssel.
+
+![Ausgangspunkt: Buchungen für die Steuerberatung exportieren (DATEV)](bild:jahresabschluss)

@@ -16,3 +16,5 @@ stichworte: [Familie, Haushalt, Familienbeitrag, gemeinsamer Brief, Zahler]
 6. Lege mit **Beitrag über den Haushalt** je Mitglied fest, dass sein Beitrag auf die gemeinsame Rechnung kommt.
 
 Rundschreiben fassen Briefe an einen Haushalt mit gleicher Anschrift zu einem Brief zusammen.
+
+![Ausgangspunkt: Familie als Haushalt anlegen](bild:haushalte-liste)
