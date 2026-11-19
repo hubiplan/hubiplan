@@ -172,6 +172,8 @@ def registration_data(event: Event, viewer: services.Viewer) -> dict | None:
     Einzelheiten unter ``<termin>/registration/``."""
     from registrations import services as reg
 
+    if viewer.kind == "org" and event.organization_id != viewer.org.pk:
+        return _club_registration_data(event, viewer)
     if not reg.module_on(viewer.org):
         return None
     setup = reg.setup_of(event)
@@ -196,6 +198,38 @@ def registration_data(event: Event, viewer: services.Viewer) -> dict | None:
         and "registrations.view" in viewer.perms,
         "can_register": viewer.kind == "member",
     }
+
+
+def _club_registration_data(event: Event, viewer: services.Viewer) -> dict | None:
+    """Termin des Dachverbands im Vereinskalender: Sammelanmeldung durch den Verein (A8)."""
+    from core.tenancy import tenant_context
+    from registrations import services as reg
+
+    fed = services.federation_of(viewer.org)
+    if (
+        fed is None
+        or event.organization_id != fed.pk
+        or not reg.module_on(fed)
+        or "registrations.edit" not in viewer.perms
+        or "members.view" not in viewer.perms
+    ):
+        return None
+    with tenant_context(fed.pk):
+        setup = reg.setup_of(event)
+        if setup is None or not setup.club_registration:
+            return None
+        value = reg.state(setup)
+        return {
+            "enabled": True,
+            "state": value,
+            "state_text": reg.state_text(setup, value),
+            "closes_at": setup.closes_at,
+            "free": reg.free(setup),
+            "can_setup": False,
+            "can_view_list": False,
+            "can_register": False,
+            "club_register": True,
+        }
 
 
 def response_data(r: EventResponse) -> dict:

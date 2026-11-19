@@ -227,6 +227,7 @@ def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
         "catering": setup.catering,
         "minors": setup.minors,
         "public": setup.public,
+        "club_registration": setup.club_registration,
         "public_url": _public_url(setup) if full else None,
         "health_allowed": ex.health_allowed(setup),
         "addons": [
@@ -317,6 +318,12 @@ class PersonInput:
     birth_date: datetime.date | None
     price: PriceOption
     extras: ex.Extras = field(default_factory=ex.Extras)
+    # Sammelanmeldung (A8): Mitgliedschaft im meldenden Verein
+    club_member_id: int | None = None
+
+    @property
+    def is_member(self) -> bool:
+        return self.membership is not None or self.club_member_id is not None
 
 
 def _lock_setup(setup: RegistrationSetup) -> None:
@@ -336,15 +343,35 @@ def next_number(org_id: int, year: int) -> int:
     return (last or 0) + 1
 
 
+# Sammelanmeldung eines Vereins (A8): mehr Personen als bei einer Familie
+MAX_CLUB_PERSONS = 60
+
+
+def registered_club_members(setup: RegistrationSetup, club) -> set[int]:
+    """Schon angemeldete Mitglieder eines Vereins (Kennungen im Datenbereich des Vereins)."""
+    return set(
+        Participant.objects.filter(
+            registration__setup=setup,
+            registration__club=club,
+            club_member_id__isnull=False,
+            status=Participant.Status.ACTIVE,
+            registration__status__in=[
+                Registration.Status.REGISTERED,
+                Registration.Status.WAITING,
+            ],
+        ).values_list("club_member_id", flat=True)
+    )
+
+
 def _check_person(setup, person: PersonInput, start: datetime.date, board: bool) -> None:
     price = person.price
     if price.setup_id != setup.pk or (not price.is_active and not board):
         raise ValidationError(gettext("Bitte einen gültigen Tarif wählen."))
-    if price.applies == PriceOption.Applies.MEMBERS and person.membership is None:
+    if price.applies == PriceOption.Applies.MEMBERS and not person.is_member:
         raise ValidationError(
             gettext("Den Tarif „{price}“ gibt es nur für Mitglieder.").format(price=price.name)
         )
-    if price.applies == PriceOption.Applies.GUESTS and person.membership is not None:
+    if price.applies == PriceOption.Applies.GUESTS and person.is_member:
         raise ValidationError(
             gettext("Den Tarif „{price}“ gibt es nur für Gäste.").format(price=price.name)
         )
@@ -390,6 +417,7 @@ def register(
     health_consent: bool = False,
     check_only: bool = False,
     access_nonce: str = "",
+    club=None,
 ) -> Registration | None:
     """Verbindlich anmelden. Prüft Plätze unter Sperre, hält die Preise fest, stellt die
     Rechnung aus und schickt die Anmeldebestätigung (nach dem Speichern).
@@ -406,16 +434,19 @@ def register(
         raise ValidationError(state_text(setup, value))
     if not persons:
         raise ValidationError(gettext("Bitte mindestens eine Person anmelden."))
-    if len(persons) > setup.max_persons:
-        raise ValidationError(
-            gettext("Höchstens {n} Personen je Anmeldung.").format(n=setup.max_persons)
-        )
+    limit = MAX_CLUB_PERSONS if club is not None else setup.max_persons
+    if club is not None and not setup.club_registration:
+        raise ValidationError(gettext("Zu diesem Termin melden die Vereine nicht gesammelt an."))
+    if len(persons) > limit:
+        raise ValidationError(gettext("Höchstens {n} Personen je Anmeldung.").format(n=limit))
     if setup.terms and not board and not terms_accepted:
         raise ValidationError(gettext("Bitte die Teilnahmebedingungen bestätigen."))
     if not name.strip():
         raise ValidationError(gettext("Bitte den Namen angeben."))
     start = first_day(setup)
     already = registered_memberships(setup)
+    club_already = registered_club_members(setup, club) if club is not None else set()
+    club_seen: set[int] = set()
     seen: set[int] = set()
     for person in persons:
         if not person.name.strip():
@@ -426,6 +457,12 @@ def register(
                     gettext("{name} ist schon angemeldet.").format(name=person.name)
                 )
             seen.add(person.membership.pk)
+        elif person.club_member_id is not None:
+            if person.club_member_id in club_already or person.club_member_id in club_seen:
+                raise ValidationError(
+                    gettext("{name} ist schon angemeldet.").format(name=person.name)
+                )
+            club_seen.add(person.club_member_id)
         elif not setup.guests_allowed and not board and source != Registration.Source.PUBLIC:
             raise ValidationError(gettext("Zu diesem Termin können keine Gäste angemeldet werden."))
         _check_person(setup, person, start, board)
@@ -520,6 +557,7 @@ def register(
         answers=reg_answers,
         health_consent_at=now if any(healths) else None,
         access_nonce=access_nonce,
+        club=club,
         created_by=user,
     )
     on = timezone.localdate()
@@ -537,6 +575,7 @@ def register(
         participant = Participant.objects.create(
             registration=reg,
             membership=person.membership,
+            club_member_id=person.club_member_id,
             name=person.name.strip()[:200],
             birth_date=person.birth_date,
             price=price,
@@ -605,7 +644,11 @@ def create_invoice(reg: Registration, user=None, fee: Decimal = ZERO):
     event = setup.event
     org = reg.organization
     on = timezone.localdate()
-    if reg.membership_id is not None:
+    if reg.club_id is not None:
+        # Sammelanmeldung: eine Rechnung an den Verein (Dachverband an Verein)
+        kind = Invoice.Recipient.CLUB
+        recipient = billing.club_recipient(reg.club)
+    elif reg.membership_id is not None:
         kind = Invoice.Recipient.MEMBER
         recipient = billing.member_recipient(org, reg.membership)
     else:
@@ -619,6 +662,7 @@ def create_invoice(reg: Registration, user=None, fee: Decimal = ZERO):
         organization=org,
         recipient_kind=kind,
         membership=reg.membership if kind == Invoice.Recipient.MEMBER else None,
+        club=reg.club if kind == Invoice.Recipient.CLUB else None,
         project=event.project,
         payment_category=setup.category,
         date=on,

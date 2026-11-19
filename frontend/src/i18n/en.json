@@ -10248,5 +10248,15 @@
   "{n} Gäste übersprungen.": "{n} guests skipped.",
   "Namensschilder (PDF)": "Name badges (PDF)",
   "Teilnahmebescheinigungen (PDF)": "Certificates of attendance (PDF)",
-  "Qualifikation eintragen: {title}": "Record qualification: {title}"
+  "Qualifikation eintragen: {title}": "Record qualification: {title}",
+  "Sammelanmeldung des Vereins": "Club group registration",
+  "Veranstalter: {name}. Die Rechnung geht an euren Verein.": "Organiser: {name}. The invoice goes to your club.",
+  "Rechnung {number} über {total}": "Invoice {number} for {total}",
+  "{name} abmelden?": "Cancel {name}?",
+  "Mitglieder anmelden": "Register members",
+  "Die Teilnahmebedingungen habe ich gelesen und akzeptiere sie.": "I have read and accept the terms of participation.",
+  "{n} Personen verbindlich anmelden": "Register {n} people (binding)",
+  "Sammelanmeldung": "Group registration",
+  "Vereine melden ihre Mitglieder gesammelt an": "Clubs register their members as a group",
+  "Die Vereine sehen den Termin in ihrem Kalender und melden dort Mitglieder an. Die Rechnung geht an den Verein. Die Vereine brauchen dafür das Modul Anmeldungen.": "The clubs see the event in their calendar and register members there. The invoice goes to the club. The clubs need the Registrations module for this."
 }

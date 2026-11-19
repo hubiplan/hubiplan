@@ -14801,3 +14801,24 @@ msgstr "on {date}"
 #, python-brace-format
 msgid "vom {start} bis {end}"
 msgstr "from {start} to {end}"
+
+msgid "Abmelden geht nur bis zum Anmeldeschluss, danach beim Veranstalter."
+msgstr ""
+"Cancelling is only possible until the registration deadline, after that "
+"through the organiser."
+
+msgid "Sammelanmeldung des Vereins"
+msgstr "Club group registration"
+
+msgid "Sammelanmeldung durch die Vereine"
+msgstr "Group registration by the clubs"
+
+msgid "Sammelanmeldungen durch Vereine gibt es nur beim Dachverband."
+msgstr ""
+"Group registration by clubs is only available for an umbrella association."
+
+msgid "Zu diesem Termin gibt es keine Sammelanmeldung."
+msgstr "There is no group registration for this event."
+
+msgid "Zu diesem Termin melden die Vereine nicht gesammelt an."
+msgstr "Clubs do not register as a group for this event."
