@@ -209,6 +209,14 @@ class Viewer:
                 | Q(organization=org, department_id__in=above, visibility__in=SHARED)
                 & down("department")
             )
+            if self.sees_board:
+                # Vorstandsmitglieder sehen auch hier die Termine „nur Vorstand“ ihrer
+                # Einheit, wie in der Verwaltung
+                q |= Q(
+                    organization=org,
+                    department__isnull=True,
+                    visibility=Event.Visibility.BOARD,
+                )
         else:
             own = Q(organization=org, department__isnull=True)
             if self.board_units:
@@ -310,8 +318,13 @@ def department_viewer(ctx) -> Viewer:
 
 
 def member_viewer(
-    club: Organization, department_ids: list[int], membership_id: int | None = None
+    club: Organization,
+    department_ids: list[int],
+    membership_id: int | None = None,
+    sees_board: bool = False,
 ) -> Viewer:
+    """Mitgliederbereich; ``sees_board``: Vorstandsmitglied der Einheit, sieht dann
+    auch deren Termine „nur Vorstand“."""
     # Wer einer Untereinheit angehört, sieht auch die Termine der Einheiten darüber
     ids = list(department_ids)
     ids = sorted(with_ancestors(club.pk, ids) or ids)
@@ -319,7 +332,7 @@ def member_viewer(
         club,
         None,
         False,
-        False,
+        sees_board,
         ids,
         sorted(department_ids),
         kind="member",

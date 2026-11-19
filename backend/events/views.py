@@ -519,7 +519,10 @@ class PortalCalendarMixin(_CalendarMixin):
             .exclude(valid_until__lt=on)
             .values_list("department_id", flat=True)
         )
-        self.viewer = services.member_viewer(club, depts, access.membership_id)
+        # Vorstandsmitglieder sehen auch die Termine „nur Vorstand“ (wie in der Verwaltung)
+        self.viewer = services.member_viewer(
+            club, depts, access.membership_id, sees_board=services.is_board(request.user, club)
+        )
         self.access = access
         self.base_url = f"/api/portal/{access.pk}/events/"
 
