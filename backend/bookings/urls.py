@@ -11,4 +11,5 @@ urlpatterns = [
     path("<int:pk>/decision/", views.DecisionView.as_view()),
     path("<int:pk>/skip/", views.SkipView.as_view()),
     path("<int:pk>/handover/", views.HandoverView.as_view()),
+    path("<int:pk>/invoice/", views.InvoiceView.as_view()),
 ]

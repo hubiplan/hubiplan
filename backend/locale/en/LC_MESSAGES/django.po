@@ -14913,3 +14913,15 @@ msgstr "{name} – Board"
 #: bookings/views.py
 msgid "Mitglied nicht verfügbar."
 msgstr "Member unavailable."
+
+#: bookings/views.py
+msgid "Miete {item}"
+msgstr "Rental {item}"
+
+#: bookings/views.py
+msgid "Eine Rechnung gibt es nur für bestätigte, einmalige Buchungen für ein Mitglied, die noch keine Rechnung haben."
+msgstr "Invoices are only available for confirmed one-off bookings for a member that do not have an invoice yet."
+
+#: bookings/format.py
+msgid "{date}, ganztägig"
+msgstr "{date}, all day"

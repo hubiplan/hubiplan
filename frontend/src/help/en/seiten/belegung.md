@@ -32,6 +32,13 @@ The booking shows the name in Bookings, appears in the member record under **Boo
 member's members area. For guests without membership there is still
 **External booking (optional)** with name, email and phone.
 
+Charging rent: In an item's booking calendar you enter a rental price, per booking, per started
+day or per hour. On a confirmed one-off booking for a member, **Create invoice** creates a draft
+invoice to that member with the rental price as a suggestion. This also works if the member's
+fee is otherwise paid through a unit's collective invoice. Finalise and send the draft under
+Finance › Invoices like any other invoice; the booking then shows the invoice number. You need
+the permission to edit invoices.
+
 ## Overlaps and approval
 
 Overlaps: If the item, including set-up time, is already booked, HUBIplan refuses the
