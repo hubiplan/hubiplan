@@ -5159,6 +5159,13 @@ label:has(> .file-input:focus-visible) {
   font-weight: normal;
   color: var(--color-text-muted);
 }
+/* In gefüllten Knöpfen (Hauptknopf, Löschen) trägt die Erklärung die Schriftfarbe des Knopfs:
+   Grau auf Vereinsfarbe war kaum lesbar (Ralf 19.11.2026, „Anmeldung abgelaufen“). */
+.button-primary .choice-hint,
+.button-danger-solid .choice-hint,
+.button:is([aria-pressed='true'], [aria-selected='true'], .is-active, .active) .choice-hint {
+  color: inherit;
+}
 /* Standmodus: helle Blöcke auf dunklem Grund (Ralf 2026-11-01). In den Blöcken gelten die
    hellen Farben von HUBIplan; Link- und Fokusfarbe kommen von :root (applyTheme). */
 :root {
