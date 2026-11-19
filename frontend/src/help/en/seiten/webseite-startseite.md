@@ -1,6 +1,6 @@
 ---
 key: page.website_home_content
-titel: Website › Home
+titel: Website › Home page
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/startseite]
@@ -26,7 +26,7 @@ stichworte:
 
 Everyone edits the home page in one place: whoever manages the website puts it together here and changes the content; people who may only “Edit content” change the content of the existing sections. The **Preview** on the right shows the website with the draft.
 
-Under **Home** you build the home page from sections and see every change straight away in the preview. The fixed sections (such as welcome text, upcoming events, title holders) exist once each; you switch them on and off.
+Under **Home page** you build the home page from sections and see every change straight away in the preview. The fixed sections (such as welcome text, upcoming events, title holders) exist once each; you switch them on and off.
 
 ## Available sections
 

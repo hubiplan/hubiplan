@@ -55,7 +55,7 @@ Order, names, links, button and footer place of the menu go into the draft, like
 
 ## Home page
 
-You put together the home page sections under Website › Home, with the preview next to them.
+You put together the home page sections under Website › Home page, with the preview next to them.
 
 ## Repertoire and press
 

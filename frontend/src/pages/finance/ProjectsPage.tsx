@@ -13,7 +13,7 @@ import type {
   ProjectStatus,
 } from '../../api/finance.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
-import { confirmDialog, promptDialog } from '../../components/dialog.ts'
+import { promptDialog } from '../../components/dialog.ts'
 import {
   errorMessage,
   formatDate,
@@ -411,18 +411,8 @@ function ProjectDetail() {
     void project.reload()
   }
 
+  // Ohne Rückfrage: Löschen lässt sich rückgängig machen (UX-Audit VW-23)
   async function remove() {
-    if (
-      !(await confirmDialog({
-        final: false,
-        title: t('„{name}“ löschen?', { name: d.name }),
-        message: t(
-          'Verknüpfte Termine bleiben im Kalender. Zugeordnete Buchungen müssen vorher gelöst werden.',
-        ),
-        confirmLabel: t('Löschen'),
-      }))
-    )
-      return
     try {
       await financeApi.deleteProject(org.id, d.id)
       navigate('/finanzen/veranstaltungen')
@@ -1039,16 +1029,8 @@ function SeriesPage() {
     }
   }
 
+  // Ohne Rückfrage: rückgängig zu machen, Veranstaltungen und Buchungen bleiben (VW-23)
   async function remove(s: ProjectSeries) {
-    if (
-      !(await confirmDialog({
-        final: false,
-        title: t('Reihe „{name}“ löschen?', { name: s.name }),
-        message: t('Die Veranstaltungen und ihre Buchungen bleiben erhalten.'),
-        confirmLabel: t('Löschen'),
-      }))
-    )
-      return
     try {
       await financeApi.deleteSeries(org.id, s.id)
       setSelected(null)

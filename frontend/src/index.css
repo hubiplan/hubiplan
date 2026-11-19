@@ -169,17 +169,12 @@ a:focus-visible,
 
 :where(input[type='checkbox'], input[type='radio']) {
   accent-color: var(--color-focus);
-  /* W-14 (Fitts): größere Kästchen statt 13 px; die Beschriftung ist mitklickbar */
-  width: 1.25rem;
-  height: 1.25rem;
-  margin: 0.1rem 0.15rem;
+  /* W-14 (Fitts): größere Kästchen statt 13 px; die Beschriftung ist mitklickbar.
+     24 px auch ohne Beschriftung, z. B. in Tabellen (UX-Audit 16.11. VW-42, WCAG 2.5.8) */
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 0.15rem;
   flex-shrink: 0;
-}
-@media (pointer: coarse) {
-  :where(input[type='checkbox'], input[type='radio']) {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
 }
 
 :where(input[type='file'])::file-selector-button {
@@ -1336,6 +1331,8 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   border: 0;
   border-radius: var(--radius);
   padding: 0.15rem 0.35rem;
+  /* Zielgröße mindestens 24 px, auch in kleiner Schrift (VW-42) */
+  min-height: 1.5rem;
   font: inherit;
   font-weight: 600;
   color: var(--color-link);
@@ -3838,6 +3835,12 @@ form.card > .save-status:first-child {
 .content > .site-footer {
   margin-top: 2.5rem;
   border-top: 1px solid var(--color-border);
+}
+
+/* Links in Tabellen und Listen: Klickfläche mindestens 24 px hoch, ohne die Zeile zu verschieben
+   (Innenabstand an Inline-Elementen vergrößert nur die Trefferfläche; VW-42) */
+:where(td, li) > :where(a:not([class])) {
+  padding-block: 0.15rem;
 }
 
 .site-footer a {
@@ -7275,4 +7278,29 @@ html {
   max-width: 24rem;
   border-radius: var(--radius);
   margin-top: 0.5rem;
+}
+
+/* Scan-Seite für Personal ohne Konto (Anmeldung A6) */
+.scan-page .checkin-camera {
+  max-width: none;
+}
+.scan-result {
+  border-radius: var(--radius);
+  border: 3px solid var(--color-error);
+  background: var(--color-error-bg);
+  padding: 1rem;
+}
+.scan-result-ok {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+.scan-result-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+.scan-result-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0.5rem 0 0;
 }

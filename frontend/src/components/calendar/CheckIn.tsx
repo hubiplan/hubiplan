@@ -1,5 +1,6 @@
 // Einlass vor Ort (Anmeldung A6, Konzept 3.11): Eintrittskarte scannen (Handscanner tippt den
 // Code ins Feld, Kamera wo der Browser QR-Codes lesen kann) oder in der Liste abhaken.
+import { useRowSort } from '../RowSort.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { CalendarBase } from '../../api/events.ts'
@@ -17,7 +18,7 @@ interface Detector {
 }
 type DetectorClass = new (options: { formats: string[] }) => Detector
 
-function detectorClass(): DetectorClass | null {
+export function detectorClass(): DetectorClass | null {
   const w = window as unknown as { BarcodeDetector?: DetectorClass }
   return typeof w.BarcodeDetector === 'function' ? w.BarcodeDetector : null
 }
@@ -42,7 +43,7 @@ function time(iso: string): string {
 }
 
 /** Kamera mit QR-Erkennung des Browsers; ruft onCode einmal je neuem Code. */
-function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
+export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
   const video = useRef<HTMLVideoElement>(null)
   const [error, setError] = useState<string | null>(null)
   const last = useRef({ code: '', at: 0 })
@@ -99,8 +100,25 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
   const [result, setResult] = useState<CheckInResult | null>(null)
   const [failure, setFailure] = useState<string | null>(null)
   const [camera, setCamera] = useState(false)
+  // Live: alle 10 Sekunden neu laden, solange die Liste offen ist (Scans vom Personal)
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.hidden) return
+      registrationApi
+        .checkIns(base, eventId)
+        .then((fresh) => setData(fresh))
+        .catch(() => undefined)
+    }, 10000)
+    return () => window.clearInterval(timer)
+  }, [base, eventId, setData])
   const rows = data?.participants ?? []
   const search = useRowSearch(rows, (r) => `${r.name} ${r.number} ${r.contact}`, t('Personen'))
+  const sorting = useRowSort(search.shown, {
+    name: (r) => r.name,
+    number: (r) => r.number,
+    paid: (r) => r.paid_state,
+    entry: (r) => r.checked_in_at,
+  })
 
   function apply(res: CheckInResult) {
     setResult(res)
@@ -204,18 +222,25 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Name')}</th>
-              <th>{t('Anmeldung')}</th>
-              <th>{t('Stand')}</th>
-              <th>{t('Einlass')}</th>
+              {sorting.head('name', t('Name'))}
+              {sorting.head('number', t('Anmeldung'))}
+              {sorting.head('paid', t('Stand'))}
+              {sorting.head('entry', t('Einlass'))}
             </tr>
           </thead>
           <tbody>
-            {search.shown.map((r: CheckInRow) => (
+            {sorting.rows.map((r: CheckInRow) => (
               <tr key={r.id}>
                 <td>
                   {r.name}
                   <div className="muted small">{r.price_name}</div>
+                  {(r.bookings ?? []).map((b, i) => (
+                    <div key={i} className="muted small">
+                      {b.name}
+                      {b.redeemed_at &&
+                        ` · ${t('eingelöst um {time}', { time: time(b.redeemed_at) })}`}
+                    </div>
+                  ))}
                 </td>
                 <td>
                   {r.number}
@@ -235,6 +260,7 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
                       <span className="badge badge-yes">
                         {t('da seit {time}', { time: time(r.checked_in_at) })}
                       </span>{' '}
+                      {r.checked_in_via && <span className="muted small">{r.checked_in_via} </span>}
                       {data.can_edit && (
                         <button
                           type="button"

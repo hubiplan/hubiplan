@@ -21,6 +21,7 @@ import { useLocation } from 'react-router-dom'
 import { learningApi } from '../api/learning.ts'
 import type { LearningData } from '../api/learning.ts'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
+import { setLearningShooting } from './content.ts'
 import type { Feature } from './content.ts'
 
 export interface LearningState {
@@ -223,6 +224,8 @@ export function LearningProvider({ children, off }: { children: ReactNode; off?:
   )
 
   const modules = org?.active?.modules
+  // Lernhilfen ohne Schützenwörter, wenn der Verein kein Schießsport-Modul hat (VW-13)
+  setLearningShooting(!modules || modules.includes('shooting'))
   const isPlatform = org?.active?.type === 'platform'
   // In einer Untereinheit gelten deren freigeschaltete Bereiche (UI-Audit NUI-08)
   const dept = org?.active ? null : (org?.activeDept ?? null)

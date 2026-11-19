@@ -7,7 +7,7 @@ reihe: 5
 stichworte: [Ersteinrichtung, neuer Verein, einrichten, Pflichtangaben, Mitgliedsarten]
 ---
 
-1. Öffne [Einstellungen › Einrichtung (Übersicht)](/einstellungen/einrichtung).
+1. Öffne [Einstellungen › Einstellungen im Überblick](/einstellungen/einrichtung).
 2. Arbeite die rot markierten Pflichtpunkte von oben nach unten ab; jede Zeile öffnet die Seite im Bereich.
 3. Trage unter Organisation die Anschrift und den Kontakt ein und ergänze das Impressum.
 4. Lege unter Mitglieder die Mitgliedsarten an, unter Finanzen die Konten, Kategorien, Beitragssätze und Mahnstufen.

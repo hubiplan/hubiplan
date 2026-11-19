@@ -1,5 +1,6 @@
 // Mein Bereich › Firma (Haushalte und Firmen H5): Ansprechpartner einer Firma, die für
 // Mitarbeiter zahlt, sehen nur Name, seit wann und ob der Beitrag über die Firma läuft.
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useRowSearch } from '../../components/RowSearch.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
@@ -68,6 +69,11 @@ function CompanyCard({
 }) {
   const [ending, setEnding] = useState<number | null>(null)
   const search = useRowSearch(members, (m) => m.name, name)
+  const sorting = useRowSort(search.shown, {
+    name: (m) => m.name,
+    since: (m) => m.since,
+    fee: (m) => (m.pays_via ? 0 : 1),
+  })
   return (
     <section className="card stack" aria-label={name}>
       <h2>{name}</h2>
@@ -79,16 +85,16 @@ function CompanyCard({
           <table className="table">
             <thead>
               <tr>
-                <th scope="col">{t('Name')}</th>
-                <th scope="col">{t('Seit')}</th>
-                <th scope="col">{t('Beitrag')}</th>
+                {sorting.head('name', t('Name'))}
+                {sorting.head('since', t('Seit'))}
+                {sorting.head('fee', t('Beitrag'))}
                 <th scope="col">
                   <span className="sr-only">{t('Aktionen')}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {search.shown.map((m) => (
+              {sorting.rows.map((m) => (
                 <tr key={m.link}>
                   <td>{m.name}</td>
                   <td>

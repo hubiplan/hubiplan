@@ -1,5 +1,6 @@
 // Mitglieder › Würdenträger: Würden (frei benannt, z. B. König, Prinz, Zugkönig),
 // Regentschaften mit Begleitpersonen und Foto, Excel-Import der Königsliste.
+import { EmptyList } from '../../components/EmptyList.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
@@ -183,6 +184,15 @@ function ReignsPanel() {
         columns={columns}
         initialSort={{ key: 'year', dir: 'desc' }}
         emptyText={t('Noch keine Regentschaften erfasst.')}
+        empty={
+          editing === null ? (
+            <EmptyList
+              title={t('Noch keine Regentschaften erfasst.')}
+              canAdd={canEdit && usable.length > 0}
+              action={{ label: t('Neue Regentschaft'), onClick: () => setEditing('new') }}
+            />
+          ) : undefined
+        }
         actions={
           canEdit
             ? (r) => (
@@ -908,6 +918,19 @@ function DignitiesPanel() {
           rowKey={(d) => d.id}
           columns={columns}
           emptyText={t('Noch keine Würden angelegt.')}
+          empty={
+            editing === null ? (
+              <EmptyList
+                title={t('Noch keine Würden angelegt.')}
+                canAdd={canEdit}
+                action={{ label: t('Neue Würde'), onClick: () => setEditing('new') }}
+              >
+                {t(
+                  'Welche Würden es gibt, etwa Königin, Prinz oder Vereinsmeister, legt ihr selbst fest; danach tragt ihr die Regentschaften ein.',
+                )}
+              </EmptyList>
+            ) : undefined
+          }
           rowClassName={(d) => (d.is_archived ? 'inactive' : undefined)}
           actions={
             canEdit

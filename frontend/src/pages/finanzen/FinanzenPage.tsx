@@ -40,7 +40,7 @@ import { AssetsPage } from './AssetsPage.tsx'
 import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { ExpensesArea } from '../expenses/ExpensesPage.tsx'
 import { expenseTabs } from '../expenses/format.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { NoAccessPage } from '../NoticePages.tsx'
 
@@ -199,7 +199,7 @@ export function FinanzenPage() {
             <Section
               readOnly={!a.financeEdit}
               tabs={[
-                { to: '/finanzen/veranstaltungen', label: t('Veranstaltungen') },
+                { to: '/finanzen/veranstaltungen', label: tc('Finanzen', 'Veranstaltungen') },
                 { to: '/finanzen/veranstaltungen/reihen', label: t('Reihen') },
               ]}
             >
@@ -325,7 +325,7 @@ function EvaluationArea() {
   return (
     <Section
       tabs={[
-        { to: '/finanzen/auswertung', label: t('Auswertung') },
+        { to: '/finanzen/auswertung', label: tc('Finanzen', 'Auswertung') },
         { to: '/finanzen/auswertung/vermoegen', label: t('Vermögen') },
       ]}
     >

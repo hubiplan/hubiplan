@@ -94,7 +94,21 @@ Every binding registration has **Tickets** as a PDF, one ticket per person with 
 
 Without a ticket, tick the person off in the list with **Admit**. HUBIplan tells you if someone has already been admitted, the ticket belongs to another event, the person has cancelled or has not paid yet. **Undo** reverses an admission. Whoever may edit invoices sees **Take cash** for unpaid registrations: it opens the invoice, where you book the cash payment, with a signed receipt if you like (box office). In the HUBIplan app, admission is under Administration › Events with a camera scanner and box office; the list stays readable without a network.
 
-For on site and afterwards: **Name badges (PDF)** prints ten badges per A4 page in business card format (85 × 54 mm) with event, name and club. **Certificates of attendance (PDF)** creates one page per person on your letterhead. Participants are those checked in at the entrance; if you did not use check-in, everyone registered counts. With the Qualifications module switched on, **Record qualification** adds the chosen record to all participating members after a course, dated the last day of the event and with the usual validity. Guests without membership are skipped and duplicates avoided.
+The admission list reloads every 10 seconds, so you see live who has been scanned, through which scan link and when extras such as meals were redeemed.
+
+## Scan links and cash desk on site
+
+For scanning staff without an account, create one or more links under **Scan links for staff**, each with a **Label** (e.g. “North entrance”) and a **Station**: **Admission** ticks the person off, an extra (e.g. lunch) is redeemed. Pass the link on with **Copy link** or let someone scan the QR code. On the phone or tablet there is then only the ticket scanner: it shows whether the ticket is valid, the name and date of birth to compare with an ID, the tariff, booked extras with the time they were redeemed and whether the ticket has already been scanned. Staff do not see a participant list.
+
+The link is valid until the day after the event; **Block** ends it at once. The camera works in browsers that can read QR codes (e.g. Chrome on Android); otherwise enter the code with a hand scanner or by hand. With **Allow name search**, staff can book in registered people without a ticket: they search by name from three letters on, see only the matches with their date of birth and book them in after checking their ID.
+
+Cashiers also work via a link: whoever may edit invoices chooses a cash box under **Accept cash payment** when creating the link and enters the **Cashier**. When scanning or after a name search, staff then see the open amount and book the cash payment onto the invoice with one tap, into the chosen cash box. Free registrations have nothing open. In the list of scan links, each cash link shows the number of payments and the total as its cash closing, to compare with the cash.
+
+## Name badges, labels and equipment
+
+For on site and afterwards: **Name badges and labels** prints name badges in business card format (85 × 54 mm, ten per A4 page) or labels (70 × 37 mm, 24 per sheet, or 105 × 74 mm, eight per sheet) from the registration list. Under **Details** you choose what goes on them: event, name, club, tariff, extras, registration number, ticket QR code and answers to additional questions; to print a company name, ask for it as an additional question per person. Under **Equipment** you create what is handed out on site, such as a name badge, bag or loan device, optionally **to be returned**.
+
+The list shows for each person what was handed out and returned when, and reloads every 10 seconds; **Hand out**, **Take back** and **Undo** tick things off by hand. Staff can do the same through a scan link with the station “Hand-out” or “Return”. **Certificates of attendance (PDF)** creates one page per person on your letterhead. Participants are those checked in at the entrance; if you did not use check-in, everyone registered counts. With the Qualifications module switched on, **Record qualification** adds the chosen record to all participating members after a course, dated the last day of the event and with the usual validity. Guests without membership are skipped and duplicates avoided.
 
 ## Group registration with the umbrella association
 

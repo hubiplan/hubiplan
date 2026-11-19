@@ -46,7 +46,7 @@ export function VisibilityBadge({ visibility }: { visibility: string }) {
   if (visibility === 'members') return null
   return (
     <span className={`badge badge-${visibility}`}>
-      {visibility === 'public' ? t('öffentlich') : t('nur Vorstand')}
+      {visibility === 'public' ? t('nach außen öffentlich') : t('nur Vorstand')}
     </span>
   )
 }
@@ -279,13 +279,12 @@ function RelatedCard({
 }
 
 function rsvpNote(event: EventDetail): string {
-  return (
-    t('Zu- und Absagen sind eingeschaltet') +
-    (event.remind_days
-      ? t(', Erinnerung {remind_days} Tage vorher', { remind_days: event.remind_days })
-      : '') +
-    '.'
-  )
+  // X-13: „Rückmeldung“ als Oberbegriff; ganze Sätze (VW-15)
+  return event.remind_days
+    ? t('Rückmeldungen sind eingeschaltet, Erinnerung {remind_days} Tage vorher.', {
+        remind_days: event.remind_days,
+      })
+    : t('Rückmeldungen sind eingeschaltet.')
 }
 
 /** Aktionsleiste unter dem Kopf: alles, was man mit dem Termin tut, als gleichartige Knöpfe. */

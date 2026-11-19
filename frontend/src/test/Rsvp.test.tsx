@@ -321,6 +321,6 @@ describe('Zu- und Absagen', () => {
     )
     await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
     const dialog = await screen.findByRole('dialog', { name: 'Neuer Termin' })
-    expect(within(dialog).queryByText('Zu- und Absagen')).not.toBeInTheDocument()
+    expect(within(dialog).queryByText('Rückmeldungen')).not.toBeInTheDocument()
   })
 })

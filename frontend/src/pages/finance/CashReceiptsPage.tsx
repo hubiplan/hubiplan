@@ -1,6 +1,7 @@
 // Quittungen mit Unterschrift: vorbereiten, beide unterschreiben lassen (Gegenseite im
 // Vollbild auf dem Telefon), abschließen mit Belegnummer aus dem Kassenbuch.
 // Konzept: konzepte/digitale-quittung.md
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -13,7 +14,7 @@ import type {
   SignatureRole,
 } from '../../api/finance.ts'
 import type { MemberRow } from '../../api/members.ts'
-import { confirmDialog, promptDialog } from '../../components/dialog.ts'
+import { promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
@@ -41,6 +42,14 @@ export function CashReceiptsArea({ canEdit }: { canEdit: boolean }) {
 function CashReceiptList({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const { data, error, reload } = useLoad(() => financeApi.cashReceipts(org.id), [org.id])
+  const sorting = useRowSort(data?.results ?? [], {
+    number: (r) => r.number,
+    date: (r) => r.receipt_date,
+    direction: (r) => r.direction,
+    party: (r) => r.counterparty_name,
+    amount: (r) => Number(r.amount),
+    status: (r) => r.status_label,
+  })
   return (
     <div className="card card-wide">
       <div className="card-head">
@@ -76,16 +85,16 @@ function CashReceiptList({ canEdit }: { canEdit: boolean }) {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Beleg-Nr.')}</th>
-                <th>{t('Datum')}</th>
-                <th>{t('Richtung')}</th>
-                <th>{t('Gegenseite')}</th>
-                <th className="num">{t('Betrag')}</th>
-                <th>{t('Status')}</th>
+                {sorting.head('number', t('Beleg-Nr.'))}
+                {sorting.head('date', t('Datum'))}
+                {sorting.head('direction', t('Richtung'))}
+                {sorting.head('party', t('Gegenseite'))}
+                {sorting.head('amount', t('Betrag'), { className: 'num' })}
+                {sorting.head('status', t('Status'))}
               </tr>
             </thead>
             <tbody>
-              {data.results.map((r) => (
+              {sorting.rows.map((r) => (
                 <tr key={r.id}>
                   <td>
                     <Link to={`/finanzen/quittungen/${r.id}`}>{r.number || t('Entwurf')}</Link>
@@ -484,16 +493,9 @@ function CashReceiptDetail({ canEdit }: { canEdit: boolean }) {
     await act(() => financeApi.sendCashReceipt(org.id, r.id, email), t('Die Mail ist unterwegs.'))
   }
 
+  // Ohne Rückfrage: Verwerfen lässt sich rückgängig machen (UX-Audit VW-23)
   async function discard() {
     if (!r) return
-    if (
-      !(await confirmDialog({
-        final: false,
-        title: t('Entwurf verwerfen?'),
-        confirmLabel: t('Verwerfen'),
-      }))
-    )
-      return
     try {
       await financeApi.deleteCashReceipt(org.id, r.id)
       navigate('/finanzen/quittungen')

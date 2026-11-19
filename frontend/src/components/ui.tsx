@@ -1,5 +1,5 @@
 // Kleine, wiederverwendbare Bausteine für Formulare und Seiten.
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { ChangeEvent, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useSubNav } from './subnav.ts'
@@ -10,6 +10,7 @@ import type { TileIconName } from './icons.tsx'
 import { useAnnounce } from './announce.ts'
 import { Term } from '../learning/Aids.tsx'
 import type { TermKey } from '../learning/content.ts'
+import { useOnline } from './OfflineBanner.tsx'
 
 /**
  * Beschriftung, Hinweis und Fehler eines Feldes. Hinweis und Fehler hängen per
@@ -235,9 +236,8 @@ export function SaveStatus(
   return (
     <div className={`save-status save-status-${state}`}>
       <p role="status" aria-live="polite">
-        {SAVE_TEXT[state]}
-        {state === 'error' && error ? t(': {error}', { error }) : ''}
-        {state === 'error' && auto ? t(' Deine Eingaben bleiben erhalten.') : ''}
+        {state === 'error' && error ? t('Nicht gespeichert: {error}', { error }) : SAVE_TEXT[state]}
+        {state === 'error' && auto ? <> {t('Deine Eingaben bleiben erhalten.')}</> : ''}
       </p>
       {state === 'error' && auto && (
         <div className="button-row">
@@ -289,6 +289,18 @@ export function Freshness({
 }
 
 export function LoadError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const online = useOnline()
+  const missed = useRef(!online)
+  useEffect(() => {
+    if (!online) missed.current = true
+    else if (missed.current) {
+      missed.current = false
+      onRetry?.()
+    }
+  }, [online, onRetry])
+  // Ohne Verbindung sagt das Band oben schon alles (UX-Audit VW-38: eine Meldung statt zwei);
+  // ist die Verbindung zurück, lädt die Seite von selbst neu.
+  if (!online) return null
   return (
     <div className="alert alert-error" role="alert">
       {message}

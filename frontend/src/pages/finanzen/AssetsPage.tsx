@@ -1,5 +1,6 @@
 // Finanzen › Buchen › Anlagen: Anlagenverzeichnis mit Abschreibung (AfA).
 // Die AfA erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -245,6 +246,13 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
     preset.buchung && canEdit ? 'new' : null,
   )
   const [error, setError] = useState<string | null>(null)
+  const sorting = useRowSort(register.data?.assets ?? [], {
+    name: (a) => a.name,
+    acquired: (a) => a.acquired_on,
+    cost: (a) => Number(a.cost),
+    afa: (a) => Number(a.values?.depreciation ?? 0),
+    book: (a) => Number(a.values?.book_end ?? 0),
+  })
 
   const loadError = settings.error ?? register.error
   if (loadError) return <Alert kind="error">{loadError}</Alert>
@@ -333,13 +341,13 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Bezeichnung')}</th>
-                <th>{t('Anschaffung')}</th>
-                <th className="num">{t('Anschaffungskosten')}</th>
+                {sorting.head('name', t('Bezeichnung'))}
+                {sorting.head('acquired', t('Anschaffung'))}
+                {sorting.head('cost', t('Anschaffungskosten'), { className: 'num' })}
                 <th>
                   <Term k="depreciation">{t('Abschreibung')}</Term>
                 </th>
-                <th className="num">{t('AfA {y}', { y: data.label })}</th>
+                {sorting.head('afa', t('AfA {y}', { y: data.label }), { className: 'num' })}
                 <th className="num">
                   <Term k="book_value">{t('Buchwert')}</Term> {t('am Jahresende')}
                 </th>
@@ -347,7 +355,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
               </tr>
             </thead>
             <tbody>
-              {data.assets.map((a) => (
+              {sorting.rows.map((a) => (
                 <tr key={a.id}>
                   <td>
                     <button type="button" className="link-button" onClick={() => setEditing(a)}>

@@ -193,7 +193,8 @@ function Disclosure({
   children,
   summaryRef,
 }: {
-  prefix: string
+  /** leer, wenn der Titel schon selbst fragt (VW-53: kein „Warum? Warum …“) */
+  prefix?: string
   title: string
   children: ReactNode
   summaryRef?: (el: HTMLElement | null) => void
@@ -244,7 +245,9 @@ function Disclosure({
           }}
         >
           <InfoIcon />
-          <span className="aid-prefix">{prefix}</span> <span className="aid-title">{title}</span>
+          {prefix && <span className="aid-prefix">{prefix}</span>}
+          {prefix && ' '}
+          <span className="aid-title">{title}</span>
         </summary>
         {!open && <div className="aid-body">{children}</div>}
       </details>
@@ -333,7 +336,11 @@ export function Why({ k }: { k: DecisionKey }) {
   }
   if (!first) return null
   return (
-    <Disclosure prefix={t('Warum?')} title={tr(entry.title)} summaryRef={setTitleRef}>
+    <Disclosure
+      prefix={/^(Warum|Why)\b/.test(tr(entry.title)) ? undefined : t('Warum?')}
+      title={tr(entry.title)}
+      summaryRef={setTitleRef}
+    >
       <p>{tr(entry.text)}</p>
       <SourceList sources={entry.sources} />
       {failed && (

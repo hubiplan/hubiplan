@@ -1,6 +1,7 @@
 // Verbindliche Anmeldung mit Teilnahmegebühr am Termin (konzepte/veranstaltungen-anmeldung-gebuehr.md,
 // Stufen A1–A3): Verwaltung richtet Tarife, Preisstufen, Warteliste und Stornostaffel ein und
 // sieht alle Anmeldungen, Mitglieder melden sich und ihre Familie an und ab.
+import { useRowSort } from '../RowSort.tsx'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CalendarBase, EventDetail } from '../../api/events.ts'
@@ -48,6 +49,8 @@ import { berlin, formatDay, toApi } from './time.ts'
 import { PaidBadge } from './PaidBadge.tsx'
 import { CheckInPanel } from './CheckIn.tsx'
 import { QualificationPanel } from './AfterEvent.tsx'
+import { ScanLinksPanel } from './ScanLinks.tsx'
+import { MaterialPanel, PrintLoader } from './Material.tsx'
 import { ClubRegistrationCard } from './ClubRegistration.tsx'
 import { Modal } from '../Modal.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
@@ -172,6 +175,12 @@ function RegistrationTable({
     (r) => [r.number, r.name, r.email ?? '', ...r.participants.map((p) => p.name)].join(' '),
     t('Anmeldungen'),
   )
+  const sorting = useRowSort(search.shown, {
+    number: (r) => r.number,
+    people: (r) => r.participants.filter((p) => p.status === 'active').length,
+    total: (r) => Number(r.total),
+    paid: (r) => r.paid_state,
+  })
   return (
     <>
       {search.field}
@@ -179,17 +188,17 @@ function RegistrationTable({
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Anmeldung')}</th>
-              <th>{t('Personen')}</th>
-              <th>{t('Betrag')}</th>
-              <th>{t('Stand')}</th>
+              {sorting.head('number', t('Anmeldung'))}
+              {sorting.head('people', t('Personen'))}
+              {sorting.head('total', t('Betrag'))}
+              {sorting.head('paid', t('Stand'))}
               <th>
                 <span className="sr-only">{t('Aktionen')}</span>
               </th>
             </tr>
           </thead>
           <tbody>
-            {search.shown.map((reg) => (
+            {sorting.rows.map((reg) => (
               <tr key={reg.id}>
                 <td>
                   {reg.number}
@@ -706,6 +715,9 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
   const [checkIn, setCheckIn] = useState(false)
   const [qualifying, setQualifying] = useState(false)
+  const [scanLinks, setScanLinks] = useState(false)
+  const [printing, setPrinting] = useState(false)
+  const [material, setMaterial] = useState(false)
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
   const offer = data.offer
@@ -796,15 +808,20 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             {t('Einlass')}
           </button>
         )}
+        {hasRegistered && data.can_edit && (
+          <button type="button" className="button button-ghost" onClick={() => setScanLinks(true)}>
+            {t('Scan-Links für Personal')}
+          </button>
+        )}
         {hasRegistered && (
-          <a
-            className="button button-ghost"
-            href={registrationApi.badgesUrl(base, event.id)}
-            target="_blank"
-            rel="noopener"
-          >
-            {t('Namensschilder (PDF)')}
-          </a>
+          <button type="button" className="button button-ghost" onClick={() => setPrinting(true)}>
+            {t('Namensschilder und Aufkleber')}
+          </button>
+        )}
+        {hasRegistered && (
+          <button type="button" className="button button-ghost" onClick={() => setMaterial(true)}>
+            {t('Material')}
+          </button>
         )}
         {hasRegistered && data.can_edit && (
           <a
@@ -842,6 +859,33 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           }}
         >
           <CheckInPanel base={base} eventId={event.id} />
+        </Modal>
+      )}
+      {printing && (
+        <Modal
+          title={t('Namensschilder und Aufkleber: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => setPrinting(false)}
+        >
+          <PrintLoader base={base} eventId={event.id} />
+        </Modal>
+      )}
+      {material && (
+        <Modal
+          title={t('Material: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => setMaterial(false)}
+        >
+          <MaterialPanel base={base} eventId={event.id} />
+        </Modal>
+      )}
+      {scanLinks && (
+        <Modal
+          title={t('Scan-Links für Personal: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => setScanLinks(false)}
+        >
+          <ScanLinksPanel base={base} eventId={event.id} />
         </Modal>
       )}
       {qualifying && (

@@ -441,6 +441,9 @@ function ItemForm({
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const facility = stock.kind === 'facility'
+  // Schießstand als Art nur mit Modul Schießsport (UX-Audit VW-13)
+  const { active: club } = useOrg()
+  const shooting = !club || club.modules.includes('shooting')
   // „Bereich anlegen“ auf der Detailseite: ?bereich=<id>&name=<Bezeichnung>
   const parentId = Number(params.get('bereich')) || null
   const initial = {
@@ -583,11 +586,13 @@ function ItemForm({
                     value={values.facility_type}
                     onChange={(e) => setValues({ ...values, facility_type: e.target.value })}
                   >
-                    {['building', 'room', 'range', 'ground', 'storage', 'other'].map((v) => (
-                      <option key={v} value={v}>
-                        {facilityTypeLabel(v)}
-                      </option>
-                    ))}
+                    {['building', 'room', 'range', 'ground', 'storage', 'other']
+                      .filter((v) => v !== 'range' || shooting || values.facility_type === 'range')
+                      .map((v) => (
+                        <option key={v} value={v}>
+                          {facilityTypeLabel(v)}
+                        </option>
+                      ))}
                   </select>
                 </label>
               )}

@@ -96,9 +96,11 @@ describe('Hilfedateien', () => {
     const labels = new Set(
       [...Object.values(NAV_SOURCES), ...Object.values(PAGE_SOURCES)].flatMap((src) =>
         // Einträge und Arbeitsgruppen (Finanzen, Konzept S-01)
-        [...src.matchAll(/(?:to: '\/[^']*'|key: '[^']*'),\s*label: t\('([^']+)'\)/g)].map(
-          (m) => m[1],
-        ),
+        [
+          ...src.matchAll(
+            /(?:to: '\/[^']*'|key: '[^']*'),\s*label: tc?\((?:'[^']+', )?'([^']+)'\)/g,
+          ),
+        ].map((m) => m[1]),
       ),
     )
     const areas =

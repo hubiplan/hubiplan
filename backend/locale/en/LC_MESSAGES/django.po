@@ -14822,3 +14822,84 @@ msgstr "There is no group registration for this event."
 
 msgid "Zu diesem Termin melden die Vereine nicht gesammelt an."
 msgstr "Clubs do not register as a group for this event."
+
+msgid "Gültig, eingelöst."
+msgstr "Valid, redeemed."
+
+msgid "Schon eingelöst."
+msgstr "Already redeemed."
+
+msgid "Ungültige Karte."
+msgstr "Invalid ticket."
+
+msgid "Diese Person steht auf der Warteliste."
+msgstr "This person is on the waiting list."
+
+msgid "Diese Leistung ist auf der Karte nicht gebucht."
+msgstr "This extra is not booked on the ticket."
+
+msgid "Höchstens {n} Scan-Links je Termin."
+msgstr "At most {n} scan links per event."
+
+msgid "Unbekannte Zusatzleistung."
+msgstr "Unknown extra."
+
+msgid "Das Ende muss in der Zukunft liegen."
+msgstr "The end must be in the future."
+
+msgid "Zu viele Scans. Bitte kurz warten."
+msgstr "Too many scans. Please wait a moment."
+
+msgid "Zu viele Anfragen. Bitte kurz warten."
+msgstr "Too many requests. Please wait a moment."
+
+msgid "Ausgegeben."
+msgstr "Handed out."
+
+msgid "Zurückgenommen."
+msgstr "Taken back."
+
+msgid "Schon ausgegeben."
+msgstr "Already handed out."
+
+msgid "Schon zurückgegeben."
+msgstr "Already returned."
+
+msgid "Dieses Material wurde nicht ausgegeben."
+msgstr "This item has not been handed out."
+
+msgid "Dieses Material wird nicht zurückgegeben."
+msgstr "This item is not returned."
+
+msgid "Unbekanntes Material."
+msgstr "Unknown item."
+
+msgid "Höchstens {n} Materialien je Termin."
+msgstr "At most {n} items per event."
+
+msgid "Rückgabe: {name}"
+msgstr "Return: {name}"
+
+msgid "Ausgabe: {name}"
+msgstr "Hand-out: {name}"
+
+msgid "Einlass"
+msgstr "Admission"
+
+msgid "Namenssuche erlauben"
+msgstr "Allow name search"
+
+msgid "mit Rückgabe"
+msgstr "to be returned"
+
+msgid "Dieser Link nimmt kein Bargeld an."
+msgstr "This link does not accept cash."
+
+msgid "Hier ist nichts offen."
+msgstr "Nothing is outstanding here."
+
+msgid "Barzahlung gebucht."
+msgstr "Cash payment booked."
+
+msgid "Kassenperson"
+msgstr "Cashier"
