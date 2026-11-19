@@ -114,6 +114,8 @@ export function LoginPage() {
           .catch(() => undefined)
     } else {
       setError(result.message)
+      // Falscher Code bleibt nicht stehen (UX-Audit VW-53); ein Code gilt ohnehin nur einmal
+      if (step === 'mfa') setCode('')
       focusAfterError()
     }
   }

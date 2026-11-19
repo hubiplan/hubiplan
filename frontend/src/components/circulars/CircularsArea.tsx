@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../../api/client.ts'
-import { channelLabel, circularApi, emptySelections } from '../../api/circulars.ts'
+import { baseUrl, channelLabel, circularApi, emptySelections } from '../../api/circulars.ts'
+import { showNotice } from '../undo.ts'
 import type {
   Circular,
   CircularBase,
@@ -63,6 +64,7 @@ function CircularList({ base, root }: { base: CircularBase; root: string }) {
       return
     try {
       await circularApi.removeTemplate(base, id)
+      showNotice(baseUrl(base), t('Vorlage gelöscht.'))
       await templates.reload()
     } catch (err) {
       setError(errorMessage(err))
@@ -400,6 +402,7 @@ function DraftEditor({
       return
     await act(async () => {
       await circularApi.remove(base, initial.id)
+      showNotice(baseUrl(base), t('Entwurf gelöscht.'))
       navigate(root)
     })
   }

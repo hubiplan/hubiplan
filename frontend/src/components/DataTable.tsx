@@ -358,13 +358,13 @@ export function DataTable<T>({
             onPrev={() => setPage(current - 1)}
             onNext={() => setPage(current + 1)}
           >
-            {visible.length === 0 ? 0 : start + 1}
-            {t('–{x} von  {n} · Seite {current} von', {
+            {t('{from}–{x} von {n} · Seite {current} von {pages}', {
+              from: visible.length === 0 ? 0 : start + 1,
               x: Math.min(start + pageSize, visible.length),
               n: visible.length,
               current,
-            })}{' '}
-            {pages}
+              pages,
+            })}
           </PageNav>
         </div>
       ) : null}

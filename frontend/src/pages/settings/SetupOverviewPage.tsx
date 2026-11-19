@@ -1,4 +1,4 @@
-// Einstellungen › Einrichtung (Übersicht), Konzept S-02: alle Einrichtungspunkte der aktiven
+// Einstellungen › Einstellungen im Überblick, Konzept S-02: alle Einrichtungspunkte der aktiven
 // Module mit Stand, Suche und Fortschritt über die Pflichtpunkte. Jede Zeile führt auf die
 // bestehende Seite im Modul; nichts wird verschoben.
 import { useState } from 'react'

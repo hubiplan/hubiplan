@@ -476,6 +476,7 @@ describe('Glossar', () => {
       'events',
       'website',
       'competitions',
+      'shooting',
       'tax',
       'meetings',
       'helpers',

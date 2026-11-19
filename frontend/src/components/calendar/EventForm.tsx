@@ -573,7 +573,7 @@ export function EventForm({
       )}
       {rsvpAllowed && v.repeat === 'none' && v.visibility !== 'board' && (
         <fieldset className="subcard stack-sm">
-          <legend>{t('Zu- und Absagen')}</legend>
+          <legend>{t('Rückmeldungen')}</legend>
           <Checkbox
             label={t('Mitglieder können zu- oder absagen')}
             checked={v.rsvp_enabled}

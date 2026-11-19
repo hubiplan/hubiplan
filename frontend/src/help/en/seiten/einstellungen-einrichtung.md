@@ -1,6 +1,6 @@
 ---
 key: page.settings_setup
-titel: Settings › Setup (overview)
+titel: Settings › Settings at a glance
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung, /einstellungen]
 stichworte: [initial setup, set up, progress, required details, reminder levels]

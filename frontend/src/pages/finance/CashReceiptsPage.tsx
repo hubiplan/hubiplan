@@ -13,7 +13,7 @@ import type {
   SignatureRole,
 } from '../../api/finance.ts'
 import type { MemberRow } from '../../api/members.ts'
-import { confirmDialog, promptDialog } from '../../components/dialog.ts'
+import { promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
@@ -484,16 +484,9 @@ function CashReceiptDetail({ canEdit }: { canEdit: boolean }) {
     await act(() => financeApi.sendCashReceipt(org.id, r.id, email), t('Die Mail ist unterwegs.'))
   }
 
+  // Ohne Rückfrage: Verwerfen lässt sich rückgängig machen (UX-Audit VW-23)
   async function discard() {
     if (!r) return
-    if (
-      !(await confirmDialog({
-        final: false,
-        title: t('Entwurf verwerfen?'),
-        confirmLabel: t('Verwerfen'),
-      }))
-    )
-      return
     try {
       await financeApi.deleteCashReceipt(org.id, r.id)
       navigate('/finanzen/quittungen')

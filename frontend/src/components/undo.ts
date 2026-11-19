@@ -112,6 +112,17 @@ export function noteChange(url: string, status: number, headers: Headers) {
 
 mutationListeners.add(noteChange)
 
+/**
+ * Kurze Meldung am selben Ort wie „Gelöscht. Rückgängig“, aber ohne Knopf: für Änderungen, die
+ * sich nicht zurücknehmen lassen (UX-Audit VW-29: ein Ort für Rückmeldungen nach Anlegen und
+ * Löschen). `url`: API-Adresse der Änderung, bestimmt den Bereich.
+ */
+export function showNotice(url: string, text: string) {
+  const base = baseOf(url)
+  if (base === null) return
+  update({ notice: { id: ++noticeId, base, text, action: null } })
+}
+
 type UndoResponse = {
   change_set?: string
   detail?: string

@@ -514,6 +514,16 @@ export default function App() {
           />
           {/* alte Adresse von „Mein Konto“ */}
           <Route path="einstellungen/konto" element={<Navigate to="/mein-konto" replace />} />
+          {/* kurze Adressen der Einstellungen (UX-Audit VW-54) */}
+          <Route path="rollen" element={<Navigate to="/einstellungen/rollen" replace />} />
+          <Route
+            path="erscheinungsbild"
+            element={<Navigate to="/einstellungen/erscheinungsbild" replace />}
+          />
+          <Route
+            path="organisation"
+            element={<Navigate to="/einstellungen/organisation" replace />}
+          />
           <Route path="einstellungen" element={<SettingsLayout />}>
             <Route
               path="einrichtung"

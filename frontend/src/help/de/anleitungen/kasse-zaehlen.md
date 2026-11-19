@@ -8,7 +8,7 @@ reihe: 130
 stichworte: [Kassenzählung, Bargeld, Fest, Kassenbericht]
 ---
 
-1. Öffne [Finanzen › Kassenzählung](/finanzen/kassenzaehlung) und klicke auf **Kasse zählen** oder, für einen Verkaufsstand, auf **Kassenbericht Fest**.
+1. Öffne [Finanzen › Kassenzählung](/finanzen/kassenzaehlung) und klicke auf **Kasse zählen** oder, für einen Verkaufsstand, auf **Kassenbericht Veranstaltung**.
 2. Wähle die Barkasse und trage Scheine und Münzen ein; HUBIplan rechnet die Summe.
 3. Gib bei einer Differenz zum Kassenbuch den Grund an.
 4. Zählt eine zweite Person mit, trage sie ein (empfohlen).

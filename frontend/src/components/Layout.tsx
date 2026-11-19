@@ -408,11 +408,14 @@ export function Layout() {
             {portalInPicker.map((p) => (
               <option key={`p${p.id}`} value={`p:${p.id}`}>
                 {p.member_kind === 'organization'
-                  ? t('Mein Bereich: {member} als Ansprechpartner (', {
+                  ? t('Mein Bereich: {member} als Ansprechpartner ({club})', {
                       member: p.member_name ?? '',
+                      club: p.club_display_name || p.club_name,
                     })
-                  : t('Mein Bereich: {first_name} (', { first_name: p.first_name })}
-                {p.club_display_name || p.club_name})
+                  : t('Mein Bereich: {first_name} ({club})', {
+                      first_name: p.first_name,
+                      club: p.club_display_name || p.club_name,
+                    })}
               </option>
             ))}
             {remoteAccounts.length > 0 && (
@@ -689,10 +692,10 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
         <p className="small">
           {overdue
             ? t(
-                'Alle Rechte in Verein und Abteilungen ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. Dein eigener Mitgliederbereich und „Mein Konto“ gehen weiter. ',
+                'Alle Rechte in Verein und Abteilungen ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. Dein eigener Mitgliederbereich und „Mein Konto“ gehen weiter.',
               )
             : t(
-                'Für deine Rechte brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. Bis dahin ruhen schon Rundschreiben, Exporte und das Buchen in der Kasse. ',
+                'Für deine Rechte brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. Bis dahin ruhen schon Rundschreiben, Exporte und das Buchen in der Kasse.',
                 { date },
               )}
         </p>

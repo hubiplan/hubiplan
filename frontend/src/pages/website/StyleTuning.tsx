@@ -976,7 +976,7 @@ export function StyleTuning({
   const toStructure = { to: '/webseite/aufbau', label: t('Menü und Seiten') }
   const noHero: Why = {
     text: t('Die Startseite zeigt kein Titelbild (Baustein „Bilderkarussell“).'),
-    link: { to: '/webseite/startseite', label: t('Startseite') },
+    link: { to: '/webseite/startseite', label: tc('Webseite', 'Startseite') },
   }
 
   // U3 (F7): nicht verstecken, sondern sagen, warum es gerade nicht greift

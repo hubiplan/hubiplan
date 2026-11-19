@@ -176,6 +176,7 @@ describe('Lernhilfen auf Englisch', () => {
     if (!value || typeof value !== 'object') return
     const rec = value as Record<string, unknown>
     if (typeof rec.de === 'string') texts.push(rec.de)
+    if (typeof rec.neutral === 'string') texts.push(rec.neutral)
     Object.values(rec).forEach(collect)
   }
   collect([PHASES, SECTIONS, DECISIONS, TERMS, HOWTOS])

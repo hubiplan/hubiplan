@@ -102,6 +102,24 @@ describe('Anmeldung', () => {
     const mfa = calls.find((c) => c.key === MFA)!
     expect(JSON.parse(String(mfa.init?.body))).toEqual({ code: '123456' })
   })
+
+  it('leert das Feld nach einem falschen Code (VW-53)', async () => {
+    fakeApi({
+      [SESSION]: loggedOut,
+      [LOGIN]: () => ({
+        status: 401,
+        body: { status: 401, data: { flows: [{ id: 'mfa_authenticate', is_pending: true }] } },
+      }),
+      [MFA]: () => ({ status: 400, body: { status: 400, errors: [{ code: 'incorrect_code' }] } }),
+    })
+    renderApp()
+    const user = await fillLogin()
+    await screen.findByRole('heading', { name: 'Bestätigungscode' })
+    await user.type(screen.getByLabelText('Code'), '000000')
+    await user.click(screen.getByRole('button', { name: 'Bestätigen' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Der Code ist ungültig.')
+    expect(screen.getByLabelText('Code')).toHaveValue('')
+  })
 })
 
 describe('Layout', () => {
