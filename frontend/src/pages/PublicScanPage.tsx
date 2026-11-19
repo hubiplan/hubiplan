@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { ApiError } from '../api/client.ts'
 import { registrationApi } from '../api/registrations.ts'
 import type { ScanHit, ScanPage, ScanResult } from '../api/registrations.ts'
-import { CameraScanner, detectorClass } from '../components/calendar/CheckIn.tsx'
+import { CameraScanner, cameraAvailable } from '../components/calendar/CheckIn.tsx'
 import { PaidBadge } from '../components/calendar/PaidBadge.tsx'
 import { formatDay } from '../components/calendar/time.ts'
 import { errorMessage } from '../components/forms.ts'
@@ -216,7 +216,7 @@ export function PublicScanPage() {
               )}
               {failure && <Alert kind="error">{failure}</Alert>}
             </div>
-            {detectorClass() ? (
+            {cameraAvailable() ? (
               <div className="button-row">
                 <button
                   type="button"
@@ -230,7 +230,7 @@ export function PublicScanPage() {
             ) : (
               <p className="muted small">
                 {t(
-                  'Dieser Browser kann keine QR-Codes lesen. Bitte den Code mit einem Handscanner oder von Hand eingeben, oder einen anderen Browser (z. B. Chrome) nutzen.',
+                  'Dieser Browser gibt die Kamera nicht frei. Bitte den Code mit einem Handscanner oder von Hand eingeben.',
                 )}
               </p>
             )}

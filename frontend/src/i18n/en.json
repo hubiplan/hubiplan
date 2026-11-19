@@ -10317,7 +10317,6 @@
   "noch nicht eingelöst": "not redeemed yet",
   "Eintrittskarten scannen": "Scan tickets",
   "Station: {station}": "Station: {station}",
-  "Dieser Browser kann keine QR-Codes lesen. Bitte den Code mit einem Handscanner oder von Hand eingeben, oder einen anderen Browser (z. B. Chrome) nutzen.": "This browser cannot read QR codes. Please enter the code with a hand scanner or by hand, or use another browser (e.g. Chrome).",
   "eingelöst um {time}": "redeemed at {time}",
   "mit Namenssuche": "with name search",
   "Namenssuche erlauben": "Allow name search",
@@ -10361,5 +10360,6 @@
   "Kassenperson": "Cashier",
   "{amount} bar erhalten": "{amount} received in cash",
   "{amount} bar erhalten?": "{amount} received in cash?",
-  "Barzahlung buchen": "Book cash payment"
+  "Barzahlung buchen": "Book cash payment",
+  "Dieser Browser gibt die Kamera nicht frei. Bitte den Code mit einem Handscanner oder von Hand eingeben.": "This browser does not allow camera access. Please enter the code with a hand scanner or by hand."
 }
