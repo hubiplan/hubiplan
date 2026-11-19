@@ -1,5 +1,6 @@
 // Einlass vor Ort (Anmeldung A6, Konzept 3.11): Eintrittskarte scannen (Handscanner tippt den
-// Code ins Feld, Kamera wo der Browser QR-Codes lesen kann) oder in der Liste abhaken.
+// Code ins Feld oder Kamera) oder in der Liste abhaken. Die Kamera nutzt die QR-Erkennung des
+// Browsers; wo sie fehlt (z. B. Safari auf dem iPhone), liest jsQR das Kamerabild.
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { CalendarBase } from '../../api/events.ts'
@@ -17,9 +18,38 @@ interface Detector {
 }
 type DetectorClass = new (options: { formats: string[] }) => Detector
 
-export function detectorClass(): DetectorClass | null {
+function detectorClass(): DetectorClass | null {
   const w = window as unknown as { BarcodeDetector?: DetectorClass }
   return typeof w.BarcodeDetector === 'function' ? w.BarcodeDetector : null
+}
+
+/** Kamera-Scan möglich: Der Browser gibt die Kamera frei (mit oder ohne eigene QR-Erkennung). */
+export function cameraAvailable(): boolean {
+  return typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia
+}
+
+/** QR-Erkennung des Browsers, sonst jsQR (erst bei Bedarf geladen) auf einem verkleinerten Bild. */
+async function qrDetector(): Promise<Detector> {
+  const Klass = detectorClass()
+  if (Klass) return new Klass({ formats: ['qr_code'] })
+  const { default: jsQR } = await import('jsqr')
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  return {
+    detect: async (source) => {
+      const v = source as HTMLVideoElement
+      const w = v.videoWidth
+      const h = v.videoHeight
+      if (!ctx || !w || !h) return []
+      const scale = Math.min(1, 800 / Math.max(w, h))
+      canvas.width = Math.round(w * scale)
+      canvas.height = Math.round(h * scale)
+      ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
+      const image = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const hit = jsQR(image.data, image.width, image.height, { inversionAttempts: 'dontInvert' })
+      return hit ? [{ rawValue: hit.data }] : []
+    },
+  }
 }
 
 /** Abendkasse (Konzept 3.11): offene Rechnung bar kassieren, mit Quittung bei der Rechnung. */
@@ -41,20 +71,22 @@ function time(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
-/** Kamera mit QR-Erkennung des Browsers; ruft onCode einmal je neuem Code. */
+/** Kamera mit QR-Erkennung; ruft onCode einmal je neuem Code. */
 export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
   const video = useRef<HTMLVideoElement>(null)
   const [error, setError] = useState<string | null>(null)
   const last = useRef({ code: '', at: 0 })
   useEffect(() => {
-    const Klass = detectorClass()
-    if (!Klass) return
-    const detector = new Klass({ formats: ['qr_code'] })
+    if (!cameraAvailable()) return
+    let detector: Detector | null = null
     let stream: MediaStream | null = null
     let timer = 0
     let stopped = false
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: 'environment' } })
+    qrDetector()
+      .then((d) => {
+        detector = d
+        return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      })
       .then((s) => {
         if (stopped) {
           s.getTracks().forEach((track) => track.stop())
@@ -67,7 +99,7 @@ export function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
         }
         timer = window.setInterval(() => {
           const v = video.current
-          if (!v || v.readyState < 2) return
+          if (!v || v.readyState < 2 || !detector) return
           void detector.detect(v).then((codes) => {
             const value = codes[0]?.rawValue
             const now = Date.now()
@@ -171,7 +203,7 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
             <button type="submit" className="button" disabled={!code.trim()}>
               {t('Einlassen')}
             </button>
-            {detectorClass() && (
+            {cameraAvailable() && (
               <button
                 type="button"
                 className="button button-ghost"
