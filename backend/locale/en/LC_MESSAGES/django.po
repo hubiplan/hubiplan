@@ -14750,3 +14750,54 @@ msgstr "The tickets are attached; please show them at the entrance."
 
 msgid "eingelassen am"
 msgstr "admitted on"
+
+#, python-brace-format
+msgid ", geboren am {date},"
+msgstr ", born on {date},"
+
+msgid "Bitte eine Qualifikation wählen."
+msgstr "Please choose a qualification."
+
+#, python-brace-format
+msgid ""
+"Hiermit bestätigen wir, dass {name}{born} {when} an der Veranstaltung "
+"„{title}“ teilgenommen hat."
+msgstr ""
+"We hereby confirm that {name}{born} took part in the event “{title}” {when}."
+
+msgid "Keine Personen angemeldet."
+msgstr "No one has registered."
+
+msgid "Keine Teilnehmenden."
+msgstr "No participants."
+
+#, python-brace-format
+msgid "Namensschilder: {title}"
+msgstr "Name badges: {title}"
+
+#, python-brace-format
+msgid "Ort: {place}"
+msgstr "Place: {place}"
+
+#, python-brace-format
+msgid "Teilnahme als: {price}"
+msgstr "Took part as: {price}"
+
+#, python-brace-format
+msgid "Teilnahme: {title}"
+msgstr "Participation: {title}"
+
+msgid "Teilnahmebescheinigung"
+msgstr "Certificate of attendance"
+
+#, python-brace-format
+msgid "Teilnahmebescheinigungen: {title}"
+msgstr "Certificates of attendance: {title}"
+
+#, python-brace-format
+msgid "am {date}"
+msgstr "on {date}"
+
+#, python-brace-format
+msgid "vom {start} bis {end}"
+msgstr "from {start} to {end}"
