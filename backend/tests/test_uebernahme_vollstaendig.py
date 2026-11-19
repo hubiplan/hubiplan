@@ -18,6 +18,7 @@ NICHT = {
     "music.MusicReminderTask": "geplante Erinnerung, entsteht am Ziel neu",
     "music.RehearsalNotice": "versandte Benachrichtigung",
     "admission.KioskLink": "Link des Stand-Modus, höchstens sieben Tage gültig",
+    "registrations.PendingRegistration": "unbestätigte Anmeldung, höchstens 24 Stunden gültig",
     "core.DataKey": "Schlüssel der alten Instanz",
     "core.DataKeyRotation": "Schlüsselwechsel der alten Instanz",
     "organizations.InstanceAddress": "Adresse der alten Instanz",

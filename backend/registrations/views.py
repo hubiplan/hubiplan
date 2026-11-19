@@ -22,12 +22,13 @@ from rest_framework.views import APIView
 
 from access.catalog import BILLING_EDIT, REGISTRATIONS_EDIT, REGISTRATIONS_VIEW
 from audit.log import record
+from events.models import Event
 from events.views import OrgCalendarMixin, PortalCalendarMixin
 from exchange.export import safe_cell
 from members.models import Membership
 
 from . import extras as ex
-from . import services
+from . import public, services
 from .models import (
     MAX_ADDONS,
     MAX_CHOICES,
@@ -311,6 +312,8 @@ class SetupInput(serializers.Serializer):
     # Stufe A5; fehlt etwas, bleibt es wie es ist (ältere Stände)
     catering = serializers.BooleanField(required=False, default=None, allow_null=True)
     minors = serializers.BooleanField(required=False, default=None, allow_null=True)
+    # Stufe A4: öffentliches Formular (nur bei öffentlichen Terminen)
+    public = serializers.BooleanField(required=False, default=None, allow_null=True)
     addons = AddOnInput(many=True, required=False, default=None, allow_null=True)
     questions = QuestionInput(many=True, required=False, default=None, allow_null=True)
 
@@ -491,6 +494,18 @@ class SetupView(_OrgRegistrationMixin, APIView):
         for field in ("catering", "minors"):
             if v[field] is not None:
                 setattr(setup, field, v[field])
+        if v["public"] is not None:
+            if v["public"] and event.visibility != Event.Visibility.PUBLIC:
+                raise serializers.ValidationError(
+                    {
+                        "public": gettext(
+                            "Eine öffentliche Anmeldung gibt es nur bei Terminen mit der "
+                            "Sichtbarkeit „nach außen öffentlich“."
+                        )
+                    }
+                )
+            setup.public = v["public"]
+            public.ensure_key(setup)
         setup.save()
         if paid and services.payment_category(setup) is None:
             raise serializers.ValidationError(

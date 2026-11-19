@@ -431,6 +431,12 @@ def _new_photo_key():
     return ReignPhoto.new_key()
 
 
+def _new_registration_key():
+    import secrets
+
+    return secrets.token_urlsafe(12)
+
+
 FRESH_VALUES = {
     "statutes.statutepublication": {"public_key": _new_statute_key},
     "documents.folder": {"public_key": _new_folder_key},
@@ -445,6 +451,10 @@ FRESH_VALUES = {
         "units_mode": lambda: "all",
     },
     "website.socialpostimage": {"key": _new_social_key},
+    # Öffentliches Anmeldeformular: neuer Link; Links „Anmeldung ansehen“ der alten Instanz
+    # gelten am Ziel nicht (anderer Signaturschlüssel)
+    "registrations.registrationsetup": {"public_key": _new_registration_key},
+    "registrations.registration": {"access_nonce": str},
 }
 
 # Nie exportiert: Zugangsdaten und Anmeldezustand (Social-Media-Kanäle)

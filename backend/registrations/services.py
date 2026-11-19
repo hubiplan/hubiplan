@@ -189,6 +189,12 @@ def price_data(price: PriceOption, on: datetime.date, *, full: bool = False) -> 
     return data
 
 
+def _public_url(setup: RegistrationSetup) -> str | None:
+    from .public import form_url
+
+    return form_url(setup)
+
+
 def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
     on = timezone.localdate()
     value = state(setup)
@@ -220,6 +226,8 @@ def offer_data(setup: RegistrationSetup, *, full: bool = False) -> dict:
         "prices": [price_data(p, on, full=full) for p in prices],
         "catering": setup.catering,
         "minors": setup.minors,
+        "public": setup.public,
+        "public_url": _public_url(setup) if full else None,
         "health_allowed": ex.health_allowed(setup),
         "addons": [
             ex.addon_data(a, booked, full=full)
@@ -380,9 +388,14 @@ def register(
     terms_accepted: bool = False,
     extras: ex.Extras | None = None,
     health_consent: bool = False,
-) -> Registration:
+    check_only: bool = False,
+    access_nonce: str = "",
+) -> Registration | None:
     """Verbindlich anmelden. Prüft Plätze unter Sperre, hält die Preise fest, stellt die
-    Rechnung aus und schickt die Anmeldebestätigung (nach dem Speichern)."""
+    Rechnung aus und schickt die Anmeldebestätigung (nach dem Speichern).
+
+    ``check_only``: nur prüfen und nichts anlegen (öffentliches Formular vor der Bestätigung
+    der E-Mail-Adresse); gibt dann ``None`` zurück."""
     _lock_setup(setup)
     setup.refresh_from_db()
     board = source == Registration.Source.BOARD
@@ -413,7 +426,7 @@ def register(
                     gettext("{name} ist schon angemeldet.").format(name=person.name)
                 )
             seen.add(person.membership.pk)
-        elif not setup.guests_allowed and not board:
+        elif not setup.guests_allowed and not board and source != Registration.Source.PUBLIC:
             raise ValidationError(gettext("Zu diesem Termin können keine Gäste angemeldet werden."))
         _check_person(setup, person, start, board)
     reg_extras = extras or ex.Extras()
@@ -485,6 +498,8 @@ def register(
                     price=price.name
                 )
             )
+    if check_only:
+        return None
     now = timezone.now()
     org = setup.organization
     year = timezone.localdate().year
@@ -504,6 +519,7 @@ def register(
         terms_accepted_at=now if terms_accepted else None,
         answers=reg_answers,
         health_consent_at=now if any(healths) else None,
+        access_nonce=access_nonce,
         created_by=user,
     )
     on = timezone.localdate()
@@ -1158,7 +1174,9 @@ def purge_due(now: datetime.datetime | None = None) -> int:
                         row.save(
                             update_fields=["first_name", "last_name", "email", "address", "values"]
                         )
+                # Der Link „Anmeldung ansehen“ erlischt mit der Löschfrist
+                reg.access_nonce = ""
                 reg.purged_at = now
-                reg.save(update_fields=fields + ["note"])
+                reg.save(update_fields=fields + ["note", "access_nonce"])
                 done += 1
     return done

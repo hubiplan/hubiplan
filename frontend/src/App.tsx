@@ -28,6 +28,11 @@ import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
 import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
 import { JoinFormPage } from './pages/join/JoinFormPage.tsx'
 import { JoinStatusPage } from './pages/join/JoinStatusPage.tsx'
+import {
+  PublicMyRegistrationPage,
+  PublicRegistrationConfirmPage,
+  PublicRegistrationPage,
+} from './pages/events/PublicRegistrationPages.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { McpConnectPage } from './pages/McpConnectPage.tsx'
 import { AppLoginPage } from './pages/AppLoginPage.tsx'
@@ -349,6 +354,9 @@ export default function App() {
           <Route path="/mitglied-werden/stand/:token" element={<JoinFormPage kiosk />} />
           <Route path="/mitglied-werden/:key" element={<JoinFormPage />} />
           <Route path="/antrag/:token" element={<JoinStatusPage />} />
+          <Route path="/anmeldung/bestaetigen/:token" element={<PublicRegistrationConfirmPage />} />
+          <Route path="/anmeldung/:key" element={<PublicRegistrationPage />} />
+          <Route path="/meine-anmeldung/:token" element={<PublicMyRegistrationPage />} />
           <Route path="/rundschreiben/bestaetigen/:token" element={<PublicCircularConfirmPage />} />
           <Route path="/ausweis/:token" element={<PublicCardPage />} />
           <Route path="/passwort-zuruecksetzen/:key" element={<PasswordResetPage />} />

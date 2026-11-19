@@ -79,6 +79,9 @@ export interface Offer {
   health_allowed?: boolean
   addons?: AddOn[]
   questions?: Question[]
+  // Stufe A4: öffentliches Formular (nur bei öffentlichen Terminen)
+  public?: boolean
+  public_url?: string | null
 }
 
 export type Per = 'person' | 'registration'
@@ -271,6 +274,7 @@ export interface SetupInput {
   prices: PriceInput[]
   catering?: boolean
   minors?: boolean
+  public?: boolean
   addons?: AddOnInput[]
   questions?: QuestionInput[]
 }
@@ -398,5 +402,83 @@ export const registrationApi = {
     api.post<MemberRegistrations>(
       `${url(base, eventId)}${regId}/participants/${participantId}/`,
       data,
+    ),
+}
+
+// --- Öffentliche Anmeldung (Stufe A4), ohne Konto ---
+
+export interface PublicEvent {
+  id?: number
+  title: string
+  starts_at: string
+  ends_at: string
+  all_day: boolean
+  location: string
+  address: string
+  directions?: string
+  description?: string
+  programme?: string
+}
+
+export interface PublicRegistrationForm {
+  organization: string
+  logo_url?: string | null
+  website_url?: string | null
+  privacy_text: string
+  event: PublicEvent
+  offer: Offer
+  cancel_text: string
+  challenge?: { token: string; salt: string; difficulty: number }
+  key?: string
+}
+
+export interface PublicSubmission extends ExtrasInput {
+  name: string
+  email: string
+  phone: string
+  address: string
+  persons: PersonInput[]
+  note: string
+  terms_accepted: boolean
+  privacy_accepted: boolean
+  health_consent: boolean
+  language: string
+  challenge?: string
+  nonce?: number
+  homepage: string
+}
+
+export interface PublicMine {
+  organization: string
+  event: PublicEvent
+  offer: Offer
+  registration: Registration
+  cancel_text: string
+  /** nur nach dem Bestätigen: Schlüssel für den Link „Anmeldung ansehen“ */
+  token?: string | null
+}
+
+const pub = (path: string) => `/api/public/registration/${path}`
+
+export const publicRegistrationApi = {
+  form: (key: string, language: string) =>
+    api.get<PublicRegistrationForm>(
+      `${pub(encodeURIComponent(key))}/?lang=${encodeURIComponent(language)}`,
+    ),
+  submit: (key: string, data: PublicSubmission) =>
+    api.post<{ status: string }>(`${pub(encodeURIComponent(key))}/`, data),
+  confirm: (token: string) =>
+    api.post<PublicMine>(`${pub(`confirm/${encodeURIComponent(token)}`)}/`),
+  mine: (token: string) => api.get<PublicMine>(`${pub(`mine/${encodeURIComponent(token)}`)}/`),
+  quote: (token: string, participants: number[] = []) =>
+    api.get<FeeQuote>(
+      `${pub(`mine/${encodeURIComponent(token)}`)}/cancel/${
+        participants.length ? `?participants=${participants.join(',')}` : ''
+      }`,
+    ),
+  cancel: (token: string, participants: number[] = []) =>
+    api.post<PublicMine>(
+      `${pub(`mine/${encodeURIComponent(token)}`)}/cancel/`,
+      participants.length ? { participants } : {},
     ),
 }

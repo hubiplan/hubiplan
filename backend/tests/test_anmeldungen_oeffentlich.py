@@ -1,0 +1,166 @@
+# ruff: noqa: F811  (Fixtures aus test_m9_billing und test_anmeldungen)
+"""Öffentliche Anmeldung für Nichtmitglieder (konzepte/veranstaltungen-anmeldung-gebuehr.md,
+Stufe A4): Formular mit Spamschutz, Bestätigungslink, erst danach Platz und Rechnung, Link
+„Anmeldung ansehen“ zum Abmelden. Alle Daten erfunden."""
+
+import datetime
+
+import pytest
+from django.core import mail
+from django.test import Client
+from django.utils import timezone
+
+from core.tenancy import rls_bypass
+from registrations.models import PendingRegistration, Registration
+from registrations.public import purge_pending
+from website import contact
+
+from .test_anmeldungen import JSON, einrichten, fest, ok, soon  # noqa: F401
+from .test_m9_billing import base, c, club, setup, zug  # noqa: F401
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def leichte_aufgabe(monkeypatch):
+    monkeypatch.setattr(contact, "MIN_SECONDS", 0)
+    monkeypatch.setattr(contact, "DIFFICULTY", 4)
+
+
+def _public(c, fest):
+    """Termin öffentlich machen und die öffentliche Anmeldung einschalten."""
+    ok(
+        c.patch(
+            f"{fest['org']}/events/{fest['event']['id']}/",
+            {"visibility": "public"},
+            content_type=JSON,
+        )
+    )
+    return einrichten(c, fest, public=True)
+
+
+def _token(message, marker: str) -> str:
+    for word in message.body.split():
+        if marker in word:
+            return word.rstrip("/").rsplit("/", 1)[-1]
+    raise AssertionError(message.body)
+
+
+def _send(key: str, **extra):
+    form = ok(Client().get(f"/api/public/registration/{key}/"))
+    ch = form["challenge"]
+    guest = next(p for p in form["offer"]["prices"] if p["name"] == "Gäste")
+    body = {
+        "name": "Erika Beispiel",
+        "email": "erika@example.org",
+        "phone": "0123 456789",
+        "persons": [
+            {"name": "Erika Beispiel", "price_id": guest["id"]},
+            {"name": "Max Beispiel", "price_id": guest["id"]},
+        ],
+        "privacy_accepted": True,
+        "challenge": ch["token"],
+        "nonce": contact.solve(ch["salt"], ch["difficulty"]),
+        **extra,
+    }
+    return Client().post(f"/api/public/registration/{key}/", body, JSON)
+
+
+def test_nur_bei_oeffentlichen_terminen(c, fest):
+    resp = c.put(
+        fest["url"],
+        {
+            "closes_at": soon(30),
+            "prices": [{"name": "Alle", "steps": [{"amount": "0"}]}],
+            "public": True,
+        },
+        content_type=JSON,
+    )
+    assert resp.status_code == 400 and "öffentlich" in resp.content.decode()
+    data = _public(c, fest)
+    url = data["offer"]["public_url"]
+    assert url and "/anmeldung/" in url
+    key = url.rsplit("/", 1)[-1]
+    form = ok(Client().get(f"/api/public/registration/{key}/"))
+    assert form["event"]["title"] == "Vereinsausflug"
+    # Tarife nur für Mitglieder fehlen, Verwaltungsangaben auch
+    assert all(p["applies"] != "members" for p in form["offer"]["prices"])
+    assert "taken" not in form["offer"] and "category" not in form["offer"]
+    assert form["privacy_text"] and form["challenge"]["salt"]
+    # Termin nicht mehr öffentlich: Formular weg
+    ok(
+        c.patch(
+            f"{fest['org']}/events/{fest['event']['id']}/",
+            {"visibility": "members"},
+            content_type=JSON,
+        )
+    )
+    assert Client().get(f"/api/public/registration/{key}/").status_code == 404
+
+
+def test_anmelden_bestaetigen_ansehen_abmelden(c, fest, django_capture_on_commit_callbacks):
+    data = _public(c, fest)
+    key = data["offer"]["public_url"].rsplit("/", 1)[-1]
+    # Ohne Datenschutzhinweis nicht
+    resp = _send(key, privacy_accepted=False)
+    assert resp.status_code == 400 and "Datenschutz" in resp.content.decode()
+    # Honigtopf: still verworfen
+    assert _send(key, homepage="https://spam.example.org").status_code == 201
+    with rls_bypass():
+        assert not PendingRegistration.objects.exists()
+    mail.outbox.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        ok(_send(key), 201)
+    with rls_bypass():
+        assert PendingRegistration.objects.count() == 1
+        assert not Registration.objects.filter(source="public").exists()
+    confirm = [m for m in mail.outbox if "Anmeldung bestätigen" in m.subject]
+    assert confirm and confirm[0].to == ["erika@example.org"]
+    token = _token(confirm[0], "/anmeldung/bestaetigen/")
+    mail.outbox.clear()
+    with django_capture_on_commit_callbacks(execute=True):
+        done = ok(Client().post(f"/api/public/registration/confirm/{token}/"))
+    reg = done["registration"]
+    assert reg["status"] == "registered" and reg["total"] == "80.00"
+    assert reg["invoice"] is not None and done["token"]
+    with rls_bypass():
+        row = Registration.objects.get(pk=reg["id"])
+        assert row.source == "public" and row.access_nonce
+        assert not PendingRegistration.objects.exists()
+    sent = [m for m in mail.outbox if "Anmeldebestätigung" in m.subject]
+    assert sent and "/meine-anmeldung/" in sent[0].body
+    # Link nur einmal
+    assert Client().post(f"/api/public/registration/confirm/{token}/").status_code == 404
+    link = _token(sent[0], "/meine-anmeldung/")
+    mine = ok(Client().get(f"/api/public/registration/mine/{link}/"))
+    assert mine["registration"]["number"] == reg["number"]
+    assert mine["registration"]["can_cancel"] is True
+    assert Client().get("/api/public/registration/mine/falsch/").status_code == 404
+    # Eine Person abmelden, dann den Rest
+    first = mine["registration"]["participants"][0]["id"]
+    quote = ok(Client().get(f"/api/public/registration/mine/{link}/cancel/?participants={first}"))
+    assert "fee" in quote
+    with django_capture_on_commit_callbacks(execute=True):
+        part = ok(
+            Client().post(
+                f"/api/public/registration/mine/{link}/cancel/", {"participants": [first]}, JSON
+            )
+        )
+    states = [p["status"] for p in part["registration"]["participants"]]
+    assert states == ["cancelled", "active"]
+    with django_capture_on_commit_callbacks(execute=True):
+        gone = ok(Client().post(f"/api/public/registration/mine/{link}/cancel/", {}, JSON))
+    assert gone["registration"]["status"] == "cancelled"
+
+
+def test_unbestaetigte_anmeldung_verfaellt(c, fest, django_capture_on_commit_callbacks):
+    data = _public(c, fest)
+    key = data["offer"]["public_url"].rsplit("/", 1)[-1]
+    with django_capture_on_commit_callbacks(execute=True):
+        ok(_send(key), 201)
+    token = _token(
+        [m for m in mail.outbox if "Anmeldung bestätigen" in m.subject][-1],
+        "/anmeldung/bestaetigen/",
+    )
+    assert purge_pending(timezone.now() + datetime.timedelta(hours=25)) == 1
+    assert Client().post(f"/api/public/registration/confirm/{token}/").status_code == 404

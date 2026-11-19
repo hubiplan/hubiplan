@@ -95,6 +95,9 @@ class RegistrationSetup(models.Model):
     # Stufe A5: mit Verpflegung (nur dann Gesundheitsangaben, F11) und Minderjährige (F13)
     catering = models.BooleanField(_("mit Verpflegung"), default=False, db_default=False)
     minors = models.BooleanField(_("Minderjährige möglich"), default=False, db_default=False)
+    # Stufe A4: öffentliches Formular /anmeldung/<public_key> (nur bei öffentlichen Terminen)
+    public = models.BooleanField(_("Öffentliche Anmeldung"), default=False, db_default=False)
+    public_key = models.CharField(max_length=40, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -291,6 +294,7 @@ class Registration(models.Model):
         MEMBER = "member", _("Mitgliederbereich")
         APP = "app", _("App")
         BOARD = "board", _("Verwaltung")
+        PUBLIC = "public", _("öffentliches Formular")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -349,6 +353,9 @@ class Registration(models.Model):
     # Einwilligung in die Verarbeitung der Gesundheitsangaben (Art. 9 DSGVO)
     health_consent_at = models.DateTimeField(null=True, blank=True)
     health_purged_at = models.DateTimeField(null=True, blank=True)
+    # Öffentliches Formular (A4): Zufallswert im signierten Link „Anmeldung ansehen“;
+    # leer heißt: kein Link (Mitglieder, Verwaltung) oder nach der Löschfrist erloschen
+    access_nonce = models.CharField(max_length=24, blank=True, default="", db_default="")
     # Gäste ohne Mitgliedschaft: Daten nach dieser Zeit anonymisieren
     purged_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -460,4 +467,36 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         self.organization_id = self.registration.organization_id
+        super().save(*args, **kwargs)
+
+
+class PendingRegistration(models.Model):
+    """Anmeldung über das öffentliche Formular, bis die E-Mail-Adresse bestätigt ist (A4).
+
+    Erst mit dem Bestätigungslink wird daraus eine ``Registration`` mit Platz und Rechnung;
+    unbestätigte Einträge werden nach ``expires_at`` gelöscht.
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(RegistrationSetup, on_delete=models.CASCADE, related_name="pending")
+    token_hash = models.CharField(max_length=64, unique=True)
+    email = EncryptedCharField(max_length=254, strict=True)
+    # Alle Angaben des Formulars wie abgeschickt (geprüft beim Absenden und beim Bestätigen)
+    data = EncryptedJSONField(default=dict)
+    language = models.CharField(max_length=8, default="de")
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        verbose_name = "unbestätigte Anmeldung"
+        verbose_name_plural = "unbestätigte Anmeldungen"
+        indexes = [models.Index(fields=["expires_at"])]
+
+    def __str__(self) -> str:
+        return f"pending {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
         super().save(*args, **kwargs)

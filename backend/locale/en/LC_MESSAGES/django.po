@@ -14577,3 +14577,88 @@ msgid ""
 msgstr ""
 "{name} is under 18: please give the name, phone number and email of a parent"
 " or guardian."
+
+msgid "Abmelden ist bis zum Anmeldeschluss kostenfrei möglich."
+msgstr "You can cancel free of charge until registration closes."
+
+msgid ""
+"{org} verarbeitet deine Angaben, um die Anmeldung durchzuführen und "
+"abzurechnen (Art. 6 Abs. 1 lit. b DSGVO). Die Daten liegen verschlüsselt in "
+"HUBIplan und sind nur für die zuständigen Personen im Verein sichtbar. Ohne "
+"Bestätigung deiner E-Mail-Adresse wird die Anmeldung nach 24 Stunden "
+"gelöscht; sonst werden die Angaben ein halbes Jahr nach der Veranstaltung "
+"gelöscht, Rechnungen nach den gesetzlichen Fristen."
+msgstr ""
+"{org} processes your details to carry out and invoice the registration (Art."
+" 6(1)(b) GDPR). The data is stored encrypted in HUBIplan and is visible only"
+" to the responsible people in the club. If you do not confirm your email "
+"address, the registration is deleted after 24 hours; otherwise the details "
+"are deleted six months after the event, invoices after the statutory "
+"periods."
+
+msgid "Bitte den Datenschutzhinweis bestätigen."
+msgstr "Please confirm the privacy notice."
+
+msgid ""
+"Für diese E-Mail-Adresse liegen schon unbestätigte Anmeldungen vor. Bitte "
+"den Link in der Mail anklicken."
+msgstr ""
+"There are already unconfirmed registrations for this email address. Please "
+"click the link in the email."
+
+msgid "Diese Anmeldung ist schon bestätigt."
+msgstr "This registration has already been confirmed."
+
+msgid "Der Link ist abgelaufen. Bitte noch einmal anmelden."
+msgstr "The link has expired. Please register again."
+
+msgid "Stornogebühren beim Abmelden: {rules}."
+msgstr "Cancellation fees: {rules}."
+
+msgid "Bearbeitungsgebühr {amount} €"
+msgstr "Handling fee €{amount}"
+
+msgid "ab {date}: {percent} % der Gebühr"
+msgstr "from {date}: {percent} % of the fee"
+
+msgid "Bitte eine gültige Auswahl treffen."
+msgstr "Please make a valid choice."
+
+msgid "Zu viele Anmeldungen. Bitte später noch einmal versuchen."
+msgstr "Too many registrations. Please try again later."
+
+msgid "Deine Anmeldung ansehen oder abmelden: {url}"
+msgstr "View or cancel your registration: {url}"
+
+msgid ""
+"bitte bestätige deine Anmeldung zu „{title}“ ({when}) mit diesem Link. Erst "
+"dann ist sie verbindlich, und du bekommst die Bestätigung mit der Rechnung."
+msgstr ""
+"please confirm your registration for “{title}” ({when}) with this link. Only"
+" then is it binding, and you will receive the confirmation with the invoice."
+
+msgid "Angemeldet werden: {names}"
+msgstr "Being registered: {names}"
+
+msgid ""
+"Der Link gilt {hours} Stunden. Wenn du dich nicht angemeldet hast, ignoriere"
+" diese Mail einfach; die Angaben werden dann gelöscht."
+msgstr ""
+"The link is valid for {hours} hours. If you did not register, simply ignore "
+"this email; the details will then be deleted."
+
+msgid "Anmeldung bestätigen: {title}"
+msgstr "Confirm registration: {title}"
+
+msgid ""
+"Eine öffentliche Anmeldung gibt es nur bei Terminen mit der Sichtbarkeit "
+"„nach außen öffentlich“."
+msgstr ""
+"Public registration is only available for events with the visibility "
+"“public”."
+
+msgid "Öffentliche Anmeldung"
+msgstr "Public registration"
+
+msgid "öffentliches Formular"
+msgstr "public form"
