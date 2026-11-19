@@ -7,8 +7,10 @@ stichworte: [Buchung, Buchungskalender, Reservierung, Anfrage, Freigabe, Rüstze
 ---
 
 Unter Material & Räume › **Belegung** siehst du, wann Infrastruktur und Material mit Buchungskalender belegt
-sind. Die Wochenansicht zeigt je Objekt eine Zeile; mit **Vorige Woche** und **Nächste Woche**
-blätterst du.
+sind. Je Objekt gibt es eine Zeile. Oben schaltest du zwischen **Woche**, **Monat** und **Jahr**
+um und blätterst mit den Knöpfen daneben. Die Monatsansicht zeigt alle Tage des Monats
+nebeneinander (der volle Text steht im Hinweis beim Darüberfahren), die Jahresansicht je Monat die
+Zahl der belegten Tage; ein Klick darauf öffnet den Monat.
 
 Buchungskalender einschalten: Auf der Detailseite einer Infrastruktur oder eines Materials
 schaltet die Verwaltung unter **Buchungskalender** das Buchen ein. Dort legst du auch fest, ob
@@ -21,6 +23,16 @@ Buchen: Wähle **Buchen**, dann Objekt, Zweck und Zeit. Eine Buchung kann sich w
 monatlich oder jährlich wiederholen. Statt einer Zeit kannst du einen Termin oder
 Wettbewerb wählen; die Buchung folgt ihm dann, wenn er verschoben oder abgesagt wird.
 Wer ein ganzes Gebäude bucht, belegt auch alle seine Bereiche.
+
+## Für Mitglieder und Gäste
+
+Für ein Mitglied buchen: Unter **Für ein Mitglied (optional)** suchst du ein Mitglied heraus
+(braucht das Recht, Mitglieder zu sehen). Kontaktdaten trägst du dann nicht noch einmal ein, sie
+stehen in der Akte. Die Buchung erscheint mit dem Namen in der Belegung, in der Mitgliedsakte unter
+**Belegungen** und im Mitgliederbereich des Mitglieds. Für Gäste ohne Mitgliedschaft gibt es
+weiter **Externe Buchung (optional)** mit Name, E-Mail und Telefon.
+
+## Überschneidungen und Freigabe
 
 Überschneidungen: Ist das Objekt einschließlich Rüstzeit schon belegt, lehnt HUBIplan die
 Buchung ab und nennt die belegte Zeit. Verschiebt sich später ein verknüpfter Termin auf eine

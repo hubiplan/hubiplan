@@ -14903,3 +14903,7 @@ msgstr "Cash payment booked."
 
 msgid "Kassenperson"
 msgstr "Cashier"
+
+#: bookings/views.py
+msgid "Mitglied nicht verfügbar."
+msgstr "Member unavailable."

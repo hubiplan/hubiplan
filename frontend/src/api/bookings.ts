@@ -42,6 +42,9 @@ export interface Booking {
   status: BookingStatus
   visibility: 'public' | 'members' | 'board'
   contact: { name?: string; email?: string; phone?: string }
+  /** Für dieses Mitglied gebucht (nur für die Verwaltung sichtbar) */
+  member: number | null
+  member_name: string
   event: number | null
   event_title: string
   competition: number | null
@@ -73,6 +76,7 @@ export interface Occurrence {
   series: boolean
   own: boolean
   needs_review: boolean
+  member_name: string
 }
 
 export interface BookingConflict {
@@ -87,6 +91,8 @@ export const bookingApi = {
   list: (base: string, query: string) =>
     api.get<{ occurrences: Occurrence[]; requests: Booking[] }>(`${base}?${query}`),
   get: (base: string, id: number) => api.get<Booking>(`${base}${id}/`),
+  forMember: (base: string, memberId: number) =>
+    api.get<{ bookings: Booking[] }>(`${base}member/${memberId}/`),
   create: (base: string, data: object) => api.post<Booking>(base, data),
   update: (base: string, booking: Booking, data: object) =>
     api.patch<Booking>(`${base}${booking.id}/`, { ...data, version: booking.version }),

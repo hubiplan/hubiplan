@@ -116,7 +116,8 @@ describe('VW-10 Kein Zugriff', () => {
     window.history.replaceState(null, '', '/mitglieder?einheit=99')
     renderAt('/mitglieder')
     expect(await screen.findByTestId('kein-zugriff')).toBeInTheDocument()
-    expect(window.location.search).toBe('')
+    // Der Hinweis kann erscheinen, bevor die Angabe aus der Adresse genommen ist
+    await waitFor(() => expect(window.location.search).toBe(''))
   })
 })
 

@@ -11,3 +11,4 @@ from the members' area is booked. Other people's bookings only appear as "Booked
 Under **Make a request** you choose the item, the purpose and the time and send it with
 **Send request**. The managers confirm or reject it; you then receive an email. Under
 **My requests and bookings** you see the status and can cancel with **Cancel booking**.
+Bookings the managers entered for you appear there too.

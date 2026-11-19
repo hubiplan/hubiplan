@@ -338,6 +338,7 @@ def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | byte
     oder Mitgliedschaft hier, in der Akte oder auf der begründeten Ausnahmeliste steht.
     """
     from billing.models import BusinessPartner, HouseholdPayer
+    from bookings.models import Booking as Belegung
     from cards.models import MemberCard
     from circulars.models import CircularRecipient
     from competitions.models import AwardGrant, ShootOffEntry, Starter
@@ -402,6 +403,21 @@ def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | byte
     files["musik.json"] = _dump(_rows(Musician.objects.filter(**mine)))
     files["material.json"] = _dump(
         _rows(MaterialItem.objects.filter(member=membership), {"member", "version"})
+    )
+    # Belegungen für das Mitglied, ohne Bearbeiter und ohne Kontaktangaben Dritter
+    files["belegungen.json"] = _dump(
+        [
+            {
+                "objekt": b.item.title,
+                **_row(
+                    b,
+                    STAFF
+                    | {"organization", "member", "version", "contact"}
+                    | {"booked_by", "handed_out_by", "returned_by"},
+                ),
+            }
+            for b in Belegung.objects.filter(member=membership).select_related("item")
+        ]
     )
     files["wechsel.json"] = _dump(
         {

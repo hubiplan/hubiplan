@@ -7,7 +7,10 @@ stichworte: [Booking, Booking calendar, Reservation, Request, Approval, Set-up t
 ---
 
 Equipment & rooms › **Bookings** shows when facilities and material with a booking calendar are in use. The week
-view has one row per item; use **Previous week** and **Next week** to move through the weeks.
+view has one row per item. At the top you switch between **Week**, **Month** and **Year** and move
+on with the buttons next to it. The month view shows every day of the month side by side (the full
+text appears as a tooltip), the year view shows the number of booked days per month; click it to
+open that month.
 
 Switch on a booking calendar: On the detail page of a facility or a material item, the
 managers switch on booking under **Booking calendar**. There you also decide whether bookings
@@ -20,6 +23,16 @@ Book: Choose **Book**, then the item, the purpose and the time. A booking can re
 weekly, monthly or yearly. Instead of a time you can choose an event or a competition;
 the booking then follows it when it is moved or cancelled. Booking a whole building also books
 all of its areas.
+
+## For members and guests
+
+Booking for a member: Under **For a member (optional)** you look up a member (this needs the
+permission to view members). You don't enter contact details again; they are in the member record.
+The booking shows the name in Bookings, appears in the member record under **Bookings** and in the
+member's members area. For guests without membership there is still
+**External booking (optional)** with name, email and phone.
+
+## Overlaps and approval
 
 Overlaps: If the item, including set-up time, is already booked, HUBIplan refuses the
 booking and shows the booked time. If a linked event later moves onto a booked time, the

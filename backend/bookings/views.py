@@ -76,6 +76,8 @@ def booking_data(booking, scope, user):
         "status": booking.status,
         "visibility": booking.visibility,
         "contact": booking.contact if manage else {},
+        "member": booking.member_id if manage else None,
+        "member_name": member_name(booking.member) if manage and booking.member_id else "",
         "event": booking.event_id if details else None,
         "event_title": booking.event.title if details and booking.event_id else "",
         "competition": booking.competition_id if details else None,
@@ -102,6 +104,11 @@ def booking_data(booking, scope, user):
     }
 
 
+def member_name(membership):
+    person = membership.person
+    return f"{person.last_name}, {person.first_name}" if person.first_name else person.last_name
+
+
 class ContactInput(serializers.Serializer):
     name = serializers.CharField(max_length=200, allow_blank=True, required=False)
     email = serializers.EmailField(allow_blank=True, required=False)
@@ -123,6 +130,7 @@ class BookingInput(serializers.Serializer):
         choices=Booking.Visibility.choices, required=False, default="members"
     )
     contact = ContactInput(required=False)
+    member = serializers.IntegerField(min_value=1, required=False, allow_null=True)
     event = serializers.IntegerField(min_value=1, required=False, allow_null=True)
     # Nur ein Vorkommen einer Terminreihe buchen (aus dem Material-Bedarf „Nur dieser Termin“)
     occurrence = serializers.DateTimeField(required=False)
@@ -166,8 +174,17 @@ class BookingInput(serializers.Serializer):
             data["competition"] = None
         if not (data.get("title") or (booking and booking.title)):
             raise ValidationError({"title": _("Bitte einen Zweck angeben.")})
-        if "contact" in data and not manage:
+        if ("contact" in data or "member" in data) and not manage:
             raise PermissionDenied()
+        if data.get("member"):
+            from materials.access import members
+
+            member = members(scope).filter(pk=data["member"]).first()
+            if member is None:
+                raise ValidationError({"member": _("Mitglied nicht verfügbar.")})
+            data["member"] = member
+        elif "member" in data:
+            data["member"] = None
         target = booking or Booking()
         for key in ("starts_at", "ends_at", "all_day", "repeat", "repeat_interval", "repeat_until"):
             if key in data:
@@ -273,7 +290,12 @@ class ListView(Base):
                 starts_at__lt=end,
                 ends_at__gt=start,
             )
-            .select_related("booking__item", "booking__booked_by", "booking__event")
+            .select_related(
+                "booking__item",
+                "booking__booked_by",
+                "booking__event",
+                "booking__member__person",
+            )
             .order_by("starts_at", "pk")
         )
         if request.query_params.get("mine") == "1":
@@ -299,6 +321,7 @@ class ListView(Base):
                     "series": booking.is_series,
                     "own": data["own"],
                     "needs_review": booking.needs_review,
+                    "member_name": data["member_name"],
                 }
             )
         pending = []
@@ -310,7 +333,7 @@ class ListView(Base):
                     department_id=self.scope.department_id,
                     item__in=visible,
                     status=Booking.Status.REQUESTED,
-                ).select_related("item", "booked_by", "event", "competition")
+                ).select_related("item", "booked_by", "event", "competition", "member__person")
                 if access.can_manage(self.scope, b.item)
             ]
         return Response({"occurrences": rows, "requests": pending})
@@ -501,11 +524,45 @@ class SkipView(Base):
         return Response(self.data(booking))
 
 
+class MemberView(Base):
+    """Buchungen für ein Mitglied (Mitgliedsakte): kommende und das letzte Jahr."""
+
+    def get(self, request, member_id, **kwargs):
+        from materials.access import members
+
+        member = get_object_or_404(members(self.scope), pk=member_id)
+        since = timezone.now() - datetime.timedelta(days=365)
+        rows = [
+            self.data(b)
+            for b in Booking.objects.filter(
+                organization=self.scope.org,
+                department_id=self.scope.department_id,
+                item__in=access.items(self.scope),
+                member=member,
+            )
+            .exclude(ends_at__lt=since, repeat="none")
+            .select_related("item", "booked_by", "event", "competition", "member__person")
+            .order_by("-starts_at")[:100]
+            if access.can_manage(self.scope, b.item)
+        ]
+        return Response({"bookings": rows})
+
+
 class ChoicesView(Base):
     def get(self, request, **kwargs):
         query = request.query_params.get("q", "").casefold().strip()
         kind = request.query_params.get("kind")
-        if kind == "event":
+        if kind == "member":
+            from materials.access import members
+
+            # Nur Nummer und Name laden (wie beim Material, Gesamtaudit 11.11., P-04)
+            rows = [
+                {"id": pk, "title": f"{last}, {first}" if first else last}
+                for pk, last, first in members(self.scope)
+                .order_by("pk")
+                .values_list("pk", "person__last_name", "person__first_name")
+            ]
+        elif kind == "event":
             from materials.access import events
 
             rows = [

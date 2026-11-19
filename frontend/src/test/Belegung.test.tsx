@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import App from '../App.tsx'
@@ -187,6 +188,73 @@ describe('Belegung', () => {
     await waitFor(() =>
       expect(api.some((c) => c.key === 'POST /api/orgs/7/bookings/11/handover/')).toBe(true),
     )
+  })
+})
+
+describe('Belegung: Monat, Jahr und Mitglied', () => {
+  const occurrence = {
+    booking: 8,
+    item: 4,
+    item_title: 'Saal',
+    title: 'Geburtstag',
+    starts_at: '2026-11-20T17:00:00Z',
+    ends_at: '2026-11-20T21:00:00Z',
+    original_start: '2026-11-20T17:00:00Z',
+    all_day: false,
+    status: 'confirmed',
+    series: false,
+    own: false,
+    needs_review: false,
+    member_name: 'Beispiel, Erika',
+  }
+  const listed = { status: 200, body: { occurrences: [occurrence], requests: [] } }
+
+  it('schaltet auf Monat und Jahr um', async () => {
+    const api = show(['infrastructure.view', 'infrastructure.edit'], {
+      'GET /api/orgs/7/bookings/?start=2026-11-01&end=2026-12-01': () => listed,
+      'GET /api/orgs/7/bookings/?start=2026-01-01&end=2027-01-01': () => listed,
+    })
+    fireEvent.click(await screen.findByRole('button', { name: 'Monat' }))
+    expect(await screen.findByRole('heading', { name: 'November 2026' })).toBeInTheDocument()
+    const chip = await screen.findByRole('button', { name: 'Geburtstag' })
+    expect(chip).toHaveAttribute('title', expect.stringContaining('Beispiel, Erika'))
+    expect(screen.getByRole('button', { name: 'Nächster Monat' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Jahr' }))
+    expect(await screen.findByRole('heading', { name: '2026' })).toBeInTheDocument()
+    const hall = within(await screen.findByRole('table')).getByRole('row', { name: /Saal/ })
+    fireEvent.click(await within(hall).findByRole('button', { name: '1 Tag' }))
+    expect(await screen.findByRole('heading', { name: 'November 2026' })).toBeInTheDocument()
+    expect(api.some((c) => c.key.includes('start=2026-01-01&end=2027-01-01'))).toBe(true)
+  })
+
+  it('bucht für ein Mitglied ohne Kontaktdaten', async () => {
+    const api = show(['infrastructure.view', 'infrastructure.edit', 'members.view'], {
+      'GET /api/orgs/7/bookings/choices/?kind=member&q=Bei': () => ({
+        status: 200,
+        body: { items: [{ id: 17, title: 'Beispiel, Erika' }], more: false },
+      }),
+      'POST /api/orgs/7/bookings/': () => ({
+        status: 201,
+        body: { ...request, id: 12, status: 'confirmed', member: 17 },
+      }),
+    })
+    const user = userEvent.setup()
+    fireEvent.click(await screen.findByRole('button', { name: 'Buchen' }))
+    const group = await screen.findByRole('group', { name: 'Für ein Mitglied (optional)' })
+    await user.type(within(group).getByRole('searchbox'), 'Bei')
+    await user.click(await within(group).findByRole('button', { name: 'Beispiel, Erika' }))
+    expect(within(group).getByText('Beispiel, Erika')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Externe Buchung (optional)' })).toBeNull()
+    fireEvent.change(screen.getByLabelText('Zweck'), { target: { value: 'Geburtstag' } })
+    fireEvent.change(screen.getByLabelText('Beginn'), { target: { value: '2026-11-20T18:00' } })
+    fireEvent.change(screen.getByLabelText('Ende'), { target: { value: '2026-11-20T22:00' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+    await waitFor(() => expect(api.some((c) => c.key === 'POST /api/orgs/7/bookings/')).toBe(true))
+    const body = JSON.parse(
+      String(api.find((c) => c.key === 'POST /api/orgs/7/bookings/')!.init!.body),
+    )
+    expect(body.member).toBe(17)
+    expect(body.contact).toBeUndefined()
   })
 })
 
