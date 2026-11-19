@@ -86,6 +86,42 @@ def setup_by_key(key: str) -> RegistrationSetup | None:
     return setup
 
 
+def site_brief(setup: RegistrationSetup) -> dict:
+    """Kurzfassung für die Vereinswebseite: Stand, freie Plätze, Preise, Link (A4)."""
+    from core.i18n import datetime_text
+
+    value = services.state(setup)
+    on = timezone.localdate()
+    prices = []
+    for price in setup.prices.filter(is_active=True).prefetch_related("steps"):
+        if price.applies == PriceOption.Applies.MEMBERS:
+            continue
+        step = services.current_step(price, on)
+        if step is None:
+            continue
+        prices.append(
+            {
+                "name": price.name,
+                "name_en": price.name_en,
+                "amount": str(step.amount),
+                "step": step.name,
+                "until_date": step.until_date,
+            }
+        )
+    return {
+        "state": value,
+        "state_text": services.state_text(setup, value),
+        "opens_at": setup.opens_at,
+        "closes_at": setup.closes_at,
+        "closes_text": datetime_text(setup.closes_at),
+        "free": services.free(setup),
+        "waitlist": setup.waitlist,
+        "prices": prices,
+        "url": form_url(setup),
+        "can_join": services.can_join(setup, value),
+    }
+
+
 def guest_prices(offer: dict) -> list[dict]:
     """Tarife, die Nichtmitglieder buchen können."""
     return [p for p in offer["prices"] if p.get("applies") != PriceOption.Applies.MEMBERS]

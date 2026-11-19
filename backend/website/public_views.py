@@ -795,7 +795,7 @@ def _events(site: SiteView, unit_slug: str | None):
     qs = _site_events(site, unit_slug)
     now = timezone.now()
     return occurrences(
-        qs.select_related("category", "department", "organization")
+        qs.select_related("category", "department", "organization", "registration_setup")
         .prefetch_related("attachments")
         .distinct(),
         now - datetime.timedelta(days=EVENT_DAYS_BACK),
@@ -847,7 +847,24 @@ def event_entry(site: SiteView, o) -> dict:
         "note": o.note,
         # Nur einzeln freigegebene Anhänge öffentlicher Termine (Ralf 14.11.2026)
         "attachments": _event_attachments(site, o.event),
+        "programme": o.event.programme,
+        # Öffentliche Anmeldung (A4): Stand, Preise, Link zum Formular; nie Teilnehmende
+        "registration": _event_registration(o.event),
     }
+
+
+def _event_registration(event) -> dict | None:
+    from django.core.exceptions import ObjectDoesNotExist
+
+    from registrations import public as registrations
+
+    try:
+        setup = event.registration_setup
+    except ObjectDoesNotExist:  # keine Anmeldung am Termin
+        return None
+    if setup is None or not registrations.public_allowed(setup):
+        return None
+    return registrations.site_brief(setup)
 
 
 def _event_attachments(site: SiteView, event) -> list[dict]:

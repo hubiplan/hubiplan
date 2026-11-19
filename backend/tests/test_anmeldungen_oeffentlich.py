@@ -164,3 +164,24 @@ def test_unbestaetigte_anmeldung_verfaellt(c, fest, django_capture_on_commit_cal
     )
     assert purge_pending(timezone.now() + datetime.timedelta(hours=25)) == 1
     assert Client().post(f"/api/public/registration/confirm/{token}/").status_code == 404
+
+
+def test_webseite_zeigt_anmeldung_am_termin(c, fest, club):
+    from .factories import make_website
+
+    club.enabled_modules = sorted({*club.enabled_modules, "website"})
+    club.save()
+    make_website(club, public_key="anmeldung-site", state="public")
+    data = _public(c, fest)
+    items = ok(Client().get("/api/public/site/v1/anmeldung-site/events/"))["events"]
+    item = next(i for i in items if i["title"] == "Vereinsausflug")
+    reg = item["registration"]
+    assert reg["url"] == data["offer"]["public_url"] and reg["can_join"] is True
+    assert reg["free"] == 5 and reg["state"] == "open"
+    # Nur Tarife für Nichtmitglieder, mit aktuellem Preis; keine Teilnehmenden
+    assert {p["name"] for p in reg["prices"]} == {"Erwachsene", "Kinder bis 14", "Gäste"}
+    assert "participants" not in reg and "taken" not in reg
+    # Ohne öffentliche Anmeldung: nichts
+    einrichten(c, fest, public=False)
+    items = ok(Client().get("/api/public/site/v1/anmeldung-site/events/"))["events"]
+    assert next(i for i in items if i["title"] == "Vereinsausflug")["registration"] is None
