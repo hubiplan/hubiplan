@@ -22,7 +22,7 @@ def mitglied(setup, api):  # noqa: F811
         admin,
         org,
         permissions=["infrastructure.edit", "material.edit", "members.view"],
-        name="Vorstand",
+        name="Schriftführung",
     )
     s["vorstand"] = api(admin)
     s["membership"] = make_member(org, "Erika", "Beispiel", email="erika@example.org")
