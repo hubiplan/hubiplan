@@ -579,12 +579,6 @@
       "ausschnitt": ""
     },
     {
-      "name": "daten-sichern",
-      "zugang": "vorstand@hubertus-grimlinghausen.test",
-      "seite": "/einstellungen/datenuebernahme",
-      "ausschnitt": ""
-    },
-    {
       "name": "online-antrag-einrichten",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/mitglieder/einrichtung/antrag",

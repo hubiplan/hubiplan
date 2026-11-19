@@ -20,6 +20,9 @@ nach `konzepte/hilfe-neustruktur.md` (HN1–HN4).
 | Zeig es mir | in der Seitenhilfe unter einer Anleitung: hebt auf der Seite das erste Bedienelement hervor, das die Anleitung **fett** nennt; auf `/hilfe/<name>` öffnet es erst die Seite |
 | Neuigkeiten | Reiter `/hilfe/neuigkeiten`: oben „Was ist neu“ nach Monaten aus `src/help/neuigkeiten/de.md` und `en.md` (je Monat eine Zeile „November 2026:“, neueste oben, die letzten drei Monate aufgeklappt; bei sichtbaren Neuerungen ergänzen), darunter die Änderungen je Release aus `CHANGELOG.md`/`CHANGELOG.en.md`. `/hilfe/was-ist-neu` leitet dorthin weiter |
 | Seitenhilfe: Begriffe | In der Leiste stehen unter „Begriffe auf dieser Seite“ bis zu sechs Glossarbegriffe, deren Name im Text der Seitenhilfe vorkommt; „Mehr zu …“ springt zum Menüpunkt im Reiter „Seiten“ |
+| Suche | Alle Wörter müssen vorkommen; gleichbedeutende Wörter zählen mit (`src/help/synonyms.ts`: „Homepage“ findet „Webseite“). Findet nichts alle Wörter, erscheinen bis zu acht Treffer, denen genau ein Wort fehlt, mit Hinweis |
+| Hat das geholfen? | unter jeder Anleitung und Seitenhilfe (Hilfe-Seite und Leiste): Ja oder Nein, bei Nein ein freiwilliger Satz „Was hat gefehlt?“. Gespeichert werden nur Hilfetext, Sprache, Fassung, Antwort, Satz und Tag, keine Person, keine Einheit, keine Adresse. In der Ansicht als Rolle ausgeblendet |
+| Plattform › Hilfe | Rückmeldungen je Hilfetext, meiste „Nein“ zuerst, mit den Sätzen (einzeln entfernbar), und Suchwörter ohne Treffer mit Zähler |
 | App | Mein Konto in der Android- und der iOS-App: „Hilfe und Anleitungen im Browser“ öffnet `/hilfe` der Instanz |
 
 Sichtbar ist nur, was zur Person passt: Das Modul (`modul`) muss freigeschaltet sein und die Person
@@ -114,3 +117,17 @@ sich eine Seite sichtbar, die Bilder dazu neu erzeugen. Der Test meldet fehlende
 lesen darf jede Rolle der Einheit, ändern nur „Organisationsdaten bearbeiten“.
 `PUT /api/orgs/<id>/help/notes/<guide.key>/` setzt den eigenen Hinweis (leer entfernt ihn). Beides
 steht im Änderungsprotokoll und in der Datenübernahme (`help_contacts`, `help_notes`).
+
+## Rückmeldungen und Suchen ohne Treffer
+
+`POST /api/help/feedback/` (`key`, `language`, `helpful`, `comment`) nimmt die Antwort auf „Hat das
+geholfen?“ von jeder angemeldeten Person an, höchstens 30 je Stunde und Konto; der Zähler dafür
+steht nur im Zwischenspeicher. Der Satz wird nur bei „Nein“ gespeichert (höchstens 300 Zeichen).
+`POST /api/help/search-miss/` (`term`, `language`) zählt Suchwörter ohne Treffer: klein geschrieben,
+höchstens vier Wörter und 60 Zeichen, nur Buchstaben; Eingaben mit Ziffern oder `@` werden verworfen.
+Die Oberfläche meldet eine Suche erst zwei Sekunden nach dem letzten Tastendruck.
+
+Die Tabellen `HelpFeedback` und `HelpSearchMiss` (App `organizations`) haben bewusst keinen Bezug zu
+Person, Konto oder Einheit. `GET /api/platform/help-feedback/` liefert der Plattformverwaltung beides;
+`DELETE …/comments/<id>/` leert den Satz einer Rückmeldung, `DELETE …/misses/<id>/` entfernt ein
+Suchwort.

@@ -13,5 +13,3 @@ stichworte: [Backup, Datensicherung, Sicherung, Sicherungskopie, alle Daten, Umz
 4. Bewahre die Datei verschlüsselt und getrennt vom Rechner auf. Sie enthält alle Personendaten.
 
 Der Export ist eure eigene Kopie, etwa für einen Umzug auf eine andere Instanz. Unabhängig davon sichert der Betreiber den Server; frag dort nach, wie oft. Benutzerkonten und Passwörter sind im Export nicht enthalten.
-
-![Ausgangspunkt: Daten sichern oder mitnehmen](bild:daten-sichern)
