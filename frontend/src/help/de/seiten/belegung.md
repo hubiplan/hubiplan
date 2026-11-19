@@ -40,6 +40,10 @@ läuft. Den Entwurf schreibst du unter Finanzen › Rechnungen fest und verschic
 Rechnung; die Buchung zeigt dann die Rechnungsnummer. Dafür brauchst du das Recht, Rechnungen zu
 bearbeiten.
 
+Stornierst du eine Buchung mit Rechnung, bleibt die Rechnung bestehen; HUBIplan weist
+vorher und an der Buchung darauf hin. Einen Entwurf löschst du unter Finanzen › Rechnungen, eine
+gestellte Rechnung stornierst du dort.
+
 ## Überschneidungen und Freigabe
 
 Überschneidungen: Ist das Objekt einschließlich Rüstzeit schon belegt, lehnt HUBIplan die

@@ -124,6 +124,17 @@ der Datenbank). Fehlende Einträge ergänzt es bei jedem Ausrollen, vorhandene b
 > `MFA_ENCRYPTION_KEYS` leeren und erneut `up -d`. Den alten Schlüssel erst löschen,
 > wenn kein Backup mit Datenbankstand vor dem Wechsel mehr gebraucht wird.
 >
+> Wechsel des `DJANGO_SECRET_KEY` (Gesamtaudit 19.11., S-11): An diesem Geheimnis hängen die
+> Sitzungen und alle signierten Links (Rückmeldung zu Terminen, Umfragen, Eintrittskarten,
+> öffentliche Anmeldung, Meldelink für Firmen, Gastzugänge der Musik). Geplanter Wechsel: neuen
+> Wert als `DJANGO_SECRET_KEY` eintragen, den bisherigen in `DJANGO_SECRET_KEY_FALLBACKS`
+> (mehrere durch Komma getrennt), dann `docker compose -f docker-compose.server.yml up -d`.
+> Verschickte Links und Sitzungen gelten weiter. Nach der längsten Laufzeit eines Links (Umfragen:
+> 30 Tage nach dem Ende) `DJANGO_SECRET_KEY_FALLBACKS` leeren und erneut `up -d`. Nach einem
+> Vorfall, bei dem das Geheimnis abgeflossen sein kann, den alten Wert nicht als Vorgänger
+> eintragen: Alle Sitzungen enden, alle verschickten Links werden ungültig und müssen neu
+> verschickt werden.
+>
 > Zwecke (Gesamtaudit 15.11., OPS-18): Aus dem `MFA_ENCRYPTION_KEY` leitet HUBIplan je Zweck einen
 > eigenen Schlüssel ab (2FA, Fremdkalender, Nextcloud-Dienstkonto, Facebook/Instagram;
 > `accounts/mfa.py`, `PURPOSES`). Diese Fassung liest solche Werte (`enc2:<zweck>:`), schreibt
@@ -663,7 +674,7 @@ acht Testkernen, kein Nachweis einer Produktionsdauer oder paralleler HTTP-Last.
 
 ## Backups
 
-- **Wann:** täglich um `BACKUP_TIME` (Standard 03:15); beim allerersten Start sofort.
+- **Wann:** täglich um `BACKUP_TIME` (Standard 03:15); beim allerersten Start sofort. Lief der Dienst zu dieser Zeit nicht (Neustart, Ausrollen), holt er die Sicherung nach dem Start nach; nach einem Fehlschlag versucht er es stündlich erneut.
 - **Was:** die Datenbank (`pg_dump`) und die Dateien (Logos, Mitgliederfotos,
   Import-/Exportdateien, Mails, Kassenbelege).
 - **Wie:** gzip-komprimiert und mit dem **öffentlichen Schlüssel** des Betreibers

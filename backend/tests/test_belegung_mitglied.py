@@ -90,6 +90,21 @@ def test_mitgliederbereich_zeigt_zugeordnete_buchung(mitglied, api):
     data = portal.get(url + f"?start={timezone.localdate() + datetime.timedelta(days=6)}").json()
     assert [b["id"] for b in data["own"]] == [booking["id"]]
     assert [(r["title"], r["own"]) for r in data["occurrences"]] == [("Training", True)]
+    # Wer sie als Verwaltung eingetragen hat, sieht sie im eigenen Mitgliederbereich nicht
+    # als seine Buchung und sagt sie dort nicht ab (Gesamtaudit 19.11., F-02)
+    from accounts.models import User
+
+    admin = User.objects.get(email="vorstand@example.org")
+    eigene = make_member(org, "Vera", "Vorstand", email="vorstand@example.org")
+    zugang = PortalAccess.objects.create(organization=org, membership=eigene, user=admin)
+    fremd = api(admin)
+    eigen_url = f"/api/portal/{zugang.pk}/bookings/"
+    assert fremd.get(eigen_url).json()["own"] == []
+    absage = fremd.post(
+        f"{eigen_url}{booking['id']}/cancel/", {"version": booking["version"]}, content_type=JSON
+    )
+    assert absage.status_code == 404
+    assert Booking.objects.get(pk=booking["id"]).status == booking["status"]
 
 
 def test_auskunft_nennt_belegungen(mitglied):

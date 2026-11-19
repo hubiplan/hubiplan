@@ -1,5 +1,5 @@
 #!/bin/sh
-# Wartet auf die eingestellte Uhrzeit und sichert dann einmal täglich.
+# Sichert einmal täglich ab der eingestellten Uhrzeit; ein verpasster Zeitpunkt wird nachgeholt.
 # Beim ersten Start ohne vorhandenes Backup wird sofort gesichert.
 set -eu
 
@@ -50,11 +50,17 @@ if [ -z "$(find "$DIR" -maxdepth 1 \( -name 'db_*.sql.gz.enc' -o -name 'db_*.sql
     run_once
 fi
 
+# Fällig ist die Sicherung ab der eingestellten Uhrzeit, solange heute noch keine gelungen ist.
+# Lief der Dienst zur eingestellten Minute nicht (Neustart, Ausrollen), holt er sie nach
+# (Gesamtaudit 19.11.2026, F-05). Nach einem Fehlschlag frühestens eine Stunde später erneut.
+due=$(echo "$BACKUP_TIME" | tr -d ':')
+tried=0
 while true; do
-    now=$(date +%H:%M)
+    now=$(date +%H%M)
     today=$(date +%F)
     last=$(cat "$DIR/.last-run" 2>/dev/null || true)
-    if [ "$now" = "$BACKUP_TIME" ] && [ "$last" != "$today" ]; then
+    if [ "1$now" -ge "1$due" ] && [ "$last" != "$today" ] && [ $(($(date +%s) - tried)) -ge 3600 ]; then
+        tried=$(date +%s)
         run_once
     fi
     sleep 30

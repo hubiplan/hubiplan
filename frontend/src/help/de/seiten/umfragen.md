@@ -33,7 +33,7 @@ Termin ab, verschwindet seine Antwort aus der Umfrage.
 Namen und Ergebnis: **offen** (alle Befragten sehen Namen), **nur die Verwaltung sieht Namen**
 oder **anonym**. Anonym heißt: Niemand sieht, wer was geantwortet hat, auch die Verwaltung
 nicht. HUBIplan speichert nur, dass jemand teilgenommen hat, getrennt von der Antwort. Anonyme
-Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab drei Antworten und erst
+Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab fünf Antworten und erst
 nach dem Ende, auch für die Verwaltung. Nach dem Start lassen sich Namen und Ergebnis nur noch
 strenger einstellen, nie offener. Das Ergebnis sehen Befragte nach der eigenen Antwort, immer,
 erst nach dem Ende oder gar nicht (nur die Verwaltung); bei anonymen Umfragen nur „erst nach dem

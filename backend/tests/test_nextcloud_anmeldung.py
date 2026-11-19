@@ -117,6 +117,29 @@ def test_discovery_und_schluessel(db):
     assert jwk["kty"] == "RSA" and jwk["alg"] == "RS256" and "d" not in jwk
 
 
+def test_schluesselwechsel_ohne_unterbrechung(db):
+    """Gesamtaudit 19.11., S-07: Nach dem Wechsel nennt die Liste beide Schlüssel."""
+    from django.core.management import call_command
+
+    keys.previous_path().unlink(missing_ok=True)
+    alt = keys.signing_key()
+    token = keys.jwt({"sub": "x"})
+    call_command("oidc_schluessel_wechseln")
+    neu = keys.signing_key()
+    assert neu.kid != alt.kid
+    listed = HttpClient().get("/api/oidc/jwks").json()["keys"]
+    assert [k["kid"] for k in listed] == [neu.kid, alt.kid]
+    # Neue Token tragen den neuen Schlüssel, alte bleiben über die Liste prüfbar
+    head = json.loads(b64d(keys.jwt({"sub": "x"}).split(".")[0]))
+    assert head["kid"] == neu.kid
+    assert json.loads(b64d(token.split(".")[0]))["kid"] == alt.kid
+    assert verify_jwt(keys.jwt({"sub": "y"}))["sub"] == "y"
+    call_command("oidc_schluessel_wechseln", "--alten-entfernen")
+    listed = HttpClient().get("/api/oidc/jwks").json()["keys"]
+    assert [k["kid"] for k in listed] == [neu.kid]
+    assert keys.drop_previous() is False
+
+
 def test_vorstand_meldet_sich_an(api, orgs, board_a):
     client, secret = make_client(orgs["a"])
     give_role(board_a, orgs["a"], [], name="Kassierer")

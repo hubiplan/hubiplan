@@ -38,6 +38,8 @@ echo 2 > "$T/repo/inhalt"
 "${G[@]}" -C "$T/repo" commit -q -am zwei
 "${G[@]}" -C "$T/repo" -c user.signingkey="$T/schluessel.pub" tag -s -m zwei v2026.12.0
 "${G[@]}" -C "$T/repo" tag -a -m unsigniert v2026.12.2
+# Echtes signiertes Tag unter fremdem Namen (Gesamtaudit 19.11.2026, S-12)
+"${G[@]}" -C "$T/repo" update-ref refs/tags/v2026.12.3 "$("${G[@]}" -C "$T/repo" rev-parse refs/tags/v2026.12.0)"
 echo 3 > "$T/repo/inhalt"
 "${G[@]}" -C "$T/repo" commit -q -am drei
 "${G[@]}" -C "$T/repo" -c user.signingkey="$T/fremd.pub" tag -s -m drei v2026.12.1
@@ -69,6 +71,9 @@ pruefe "fremder Schlüssel abgelehnt" "$(status)" fehler
 pruefe "  dabei nichts ausgerollt" "$([ -f "$T/setup.lauf" ] && echo ja || echo nein)" nein
 lauf "2026.12.2"
 pruefe "unsignierter Tag abgelehnt" "$(status)" fehler
+lauf "2026.12.3"
+pruefe "signiertes Tag unter fremdem Namen abgelehnt" "$(status)" fehler
+pruefe "  dabei nichts ausgerollt" "$([ -f "$T/setup.lauf" ] && echo ja || echo nein)" nein
 lauf "2026.13.0"
 pruefe "unbekannte Version abgelehnt" "$(status)" fehler
 lauf "../x"

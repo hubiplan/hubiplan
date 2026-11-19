@@ -107,7 +107,7 @@ def discovery() -> dict:
 
 
 def jwks() -> dict:
-    return {"keys": [keys.signing_key().jwk()]}
+    return {"keys": keys.public_keys()}
 
 
 def _hash(value: str) -> str:

@@ -727,7 +727,7 @@ function SurveyEditor({
       {form.names === 'anonymous' && (
         <p className="muted small">
           {t(
-            'Anonym: Niemand sieht, wer was geantwortet hat, auch die Verwaltung nicht. Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab drei Antworten.',
+            'Anonym: Niemand sieht, wer was geantwortet hat, auch die Verwaltung nicht. Antworten lassen sich nicht ändern, und das Ergebnis erscheint erst ab fünf Antworten.',
           )}{' '}
           {t('Das Ergebnis erscheint erst nach dem Ende, auch für die Verwaltung.')}
         </p>

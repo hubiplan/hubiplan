@@ -69,6 +69,22 @@ def answer(s, who, survey, answers, code=(200, 201)):
     )
 
 
+def mehr_leute(s, *names):
+    """Weitere Mitglieder mit Mitgliederbereich (anonyme Ergebnisse brauchen fünf Antworten)."""
+    from django.test import Client
+
+    from portal.models import PortalAccess
+
+    for first in names:
+        m = make_member(s["org"], first, "Muster", email=f"{first.lower()}@example.org")
+        user = make_user(f"{first.lower()}-konto@example.org")
+        access = PortalAccess.objects.create(organization=s["org"], membership=m, user=user)
+        client = Client()
+        client.force_login(user)
+        s["people"][first] = m
+        s["portals"][first] = (client, f"/api/portal/{access.pk}/surveys/")
+
+
 SINGLE = {
     "kind": "single",
     "text": "Wohin geht der Ausflug?",
@@ -122,8 +138,9 @@ def test_anlegen_starten_und_beantworten_mit_namen(setup):
     assert SurveyParticipation.objects.filter(survey_id=survey["id"]).count() == 0
 
 
-def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
+def test_anonym_nicht_aenderbar_und_erst_ab_fuenf(setup):
     s = setup
+    mehr_leute(s, "Emil")
     yesno = {"kind": "yesno", "text": "Neue Uniformjacken bestellen?"}
     # Anonym: Ergebnis erst nach dem Ende (Gesamtaudit 15.11., FF-22 (a))
     survey = new_survey(s, [yesno], names="anonymous", results="after_close")
@@ -135,7 +152,7 @@ def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
     answer(s, "Anna", survey, [{"question": q["id"], "value": "no"}], code=400)
     data = answer(s, "Bernd", survey, [{"question": q["id"], "value": "no"}])
     assert data["results"] is None and data["mine"] is None and not data["can_answer"]
-    # Auch die Verwaltung sieht während der Umfrage nichts, auch nicht ab drei Antworten
+    # Auch die Verwaltung sieht während der Umfrage nichts, auch nicht mit genug Antworten
     full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
     assert full["result"]["hidden"] and "pending" not in full
     data = answer(s, "Carla", survey, [{"question": q["id"], "value": "yes"}])
@@ -155,15 +172,35 @@ def test_anonym_nicht_aenderbar_und_erst_ab_drei(setup):
         content_type=JSON,
     )
     assert resp.status_code == 400
-    # Nach dem Ende: Ergebnis ab drei Antworten, ohne Namen
+    # Nach dem Ende: Ergebnis ab fünf Antworten, ohne Namen (Gesamtaudit 19.11., S-10)
+    answer(s, "Dieter", survey, [{"question": q["id"], "value": "yes"}])
+    answer(s, "Emil", survey, [{"question": q["id"], "value": "yes"}])
     ok(s["chef"].post(f"{s['url']}{survey['id']}/close/"))
     full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
     values = full["result"]["questions"][0]["values"]
-    assert values["yes"]["count"] == 2 and values["no"]["count"] == 1
+    assert values["yes"]["count"] == 4 and values["no"]["count"] == 1
     assert values["yes"]["names"] == []
     client, url = s["portals"]["Anna"]
     mine = next(x for x in ok(client.get(url))["surveys"] if x["id"] == survey["id"])
     assert mine["results"]["questions"][0]["values"]["no"]["count"] == 1
+
+
+def test_anonym_mit_vier_antworten_bleibt_verborgen(setup):
+    """Gesamtaudit 19.11., S-10: Bei drei oder vier Antworten ließe sich auf Einzelne schließen."""
+    s = setup
+    yesno = {"kind": "yesno", "text": "Neue Uniformjacken bestellen?"}
+    survey = new_survey(s, [yesno], names="anonymous", results="after_close")
+    start(s, survey)
+    client, url = s["portals"]["Anna"]
+    q = ok(client.get(url))["surveys"][0]["questions"][0]
+    for who in ("Anna", "Bernd", "Carla", "Dieter"):
+        answer(s, who, survey, [{"question": q["id"], "value": "yes"}])
+    ok(s["chef"].post(f"{s['url']}{survey['id']}/close/"))
+    full = ok(s["chef"].get(f"{s['url']}{survey['id']}/"))
+    assert full["result"]["hidden"] and not full["result"]["until_close"]
+    assert full["result"]["participants"] == 4 and full["result"]["questions"] == []
+    mine = next(x for x in ok(client.get(url))["surveys"] if x["id"] == survey["id"])
+    assert mine["results"] is None or mine["results"].get("hidden")
 
 
 def test_platzgrenze_wer_faehrt_mit(setup):

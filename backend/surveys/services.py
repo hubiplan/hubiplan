@@ -10,7 +10,7 @@ import datetime
 import logging
 import random
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -522,9 +522,23 @@ def mix_answers(survey: Survey) -> int:
     return len(rows)
 
 
+def _unmixed(survey: Survey) -> bool:
+    """Gibt es Antworten, die noch die Transaktionsnummer ihrer Teilnahme tragen? Nach dem
+    Mischen nicht mehr; erst eine neue Stimme bringt wieder eine solche Zeile."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT EXISTS (SELECT 1 FROM surveys_surveyparticipation p "
+            "JOIN surveys_surveyanswer a ON a.xmin = p.xmin AND a.survey_id = p.survey_id "
+            "WHERE p.survey_id = %s)",
+            [survey.pk],
+        )
+        return bool(cursor.fetchone()[0])
+
+
 def mix_open() -> int:
     """Alle 15 Minuten: offene anonyme Umfragen mischen. Gerade gesperrte (jemand stimmt ab) kommen
-    beim nächsten Lauf dran; beim Schließen wird ohnehin gemischt."""
+    beim nächsten Lauf dran; beim Schließen wird ohnehin gemischt. Ohne neue Stimme seit dem
+    letzten Mischen bleibt die Umfrage unberührt (Gesamtaudit 19.11., P-03)."""
     from core.tenancy import rls_bypass
 
     done = 0
@@ -541,7 +555,7 @@ def mix_open() -> int:
                     .filter(pk=pk, status=Survey.Status.OPEN)
                     .first()
                 )
-                if survey is not None and mix_answers(survey):
+                if survey is not None and _unmixed(survey) and mix_answers(survey):
                     done += 1
     return done
 

@@ -40,6 +40,28 @@ def test_schluesselliste_hat_vorrang():
     assert res.stdout.strip() == "neu,alt"
 
 
+def test_vorgaenger_des_geheimnisses_aus_der_umgebung():
+    """Gesamtaudit 19.11., S-11: Wechsel des Geheimnisses, ohne verschickte Links zu brechen."""
+    code = "import config.settings as s; print('|'.join(s.SECRET_KEY_FALLBACKS))"
+    base = {k: v for k, v in os.environ.items() if not k.startswith(("MFA_", "DJANGO_", "DATA_"))}
+    base.update(
+        DJANGO_SECRET_KEY="x" * 50,
+        DJANGO_DEBUG="false",
+        DATA_ENCRYPTION_KEY_FILE="/run/secrets/datenschluessel",
+        MFA_ENCRYPTION_KEY=KEY,
+    )
+    for value, expected in (("", ""), ("alt-eins, alt-zwei", "alt-eins|alt-zwei")):
+        res = subprocess.run(  # noqa: S603 (fester Aufruf im Test)
+            [sys.executable, "-c", code],
+            cwd=BACKEND,
+            env={**base, "DJANGO_SECRET_KEY_FALLBACKS": value},
+            capture_output=True,
+            text=True,
+        )
+        assert res.returncode == 0, res.stderr
+        assert res.stdout.strip() == expected
+
+
 def test_ohne_schluessel_startet_nicht():
     res = _load(MFA_ENCRYPTION_KEYS="")
     assert res.returncode != 0

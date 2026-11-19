@@ -34,7 +34,8 @@ Start: ``gunicorn pushgateway.app:application``. Einstellungen über Umgebungsva
 - ``PUSH_GATEWAY_TRUST_PROXY``: ``1``, wenn ein Webserver davor ``X-Forwarded-For`` setzt
 - ``PUSH_GATEWAY_ALLOW_UNBOUND``: ``0`` lehnt Endpunkte ohne Kennung ab (Standard ``1``)
 - ``PUSH_GATEWAY_ALLOWED_KEYS``: Kennungen (wie oben, durch Komma getrennt) der Instanzen,
-  deren Nachrichten das Gateway weiterreicht. Leer: jede Instanz.
+  deren Nachrichten das Gateway weiterreicht, oder ausdrücklich ``offen`` für jede Instanz.
+  Ohne Angabe startet das Gateway nicht (Gesamtaudit 19.11., S-08).
 
 Grenze der Kennung (Audit 02.11., PG-S01): Die Kennung im Pfad bindet ein Gerät nur an eine
 Instanz, solange niemand den Endpunkt umschreibt. Wer ein FCM-Token kennt, kann einen
@@ -537,9 +538,19 @@ def create() -> Gateway:
     )
 
 
+OPEN = "offen"  # PUSH_GATEWAY_ALLOWED_KEYS: jede Instanz darf senden
+
+
 def allowed_keys(text: str) -> frozenset[str]:
     """Kennungen aus ``PUSH_GATEWAY_ALLOWED_KEYS``; ungültige Einträge brechen den Start ab."""
+    if text.strip().lower() == OPEN:
+        return frozenset()
     keys = frozenset(k.strip().lower() for k in text.split(",") if k.strip())
+    if not keys:
+        raise RuntimeError(
+            "PUSH_GATEWAY_ALLOWED_KEYS fehlt: Kennungen der Instanzen eintragen oder "
+            "ausdrücklich „offen“ setzen"
+        )
     wrong = [k for k in keys if not KID_RE.match(k)]
     if wrong:
         raise RuntimeError("PUSH_GATEWAY_ALLOWED_KEYS: ungültige Kennung " + ", ".join(wrong))

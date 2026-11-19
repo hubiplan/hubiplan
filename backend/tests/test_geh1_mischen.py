@@ -14,7 +14,7 @@ from core.tenancy import rls_bypass
 from surveys import services
 from surveys.models import Survey, SurveyAnswer
 
-from .test_umfragen import JSON, answer, new_survey, ok, setup, start  # noqa: F401
+from .test_umfragen import JSON, answer, mehr_leute, new_survey, ok, setup, start  # noqa: F401
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -62,13 +62,28 @@ def test_mischen_trennt_antwort_und_teilnahme(setup):
     with rls_bypass():
         assert _xmin_matches(survey["id"]) == 0
         assert SurveyAnswer.objects.filter(survey_id=survey["id"]).count() == 4
+        ids = set(SurveyAnswer.objects.filter(survey_id=survey["id"]).values_list("pk", flat=True))
+    # Ohne neue Stimme schreibt der nächste Lauf nichts neu (Gesamtaudit 19.11., P-03)
+    assert services.mix_open() == 0
+    with rls_bypass():
+        assert (
+            set(SurveyAnswer.objects.filter(survey_id=survey["id"]).values_list("pk", flat=True))
+            == ids
+        )
+    mehr_leute(s, "Emil")
+    _vote(s, survey, {"Emil": "no"})
+    assert services.mix_open() == 1
+    with rls_bypass():
+        assert _xmin_matches(survey["id"]) == 0
+        assert SurveyAnswer.objects.filter(survey_id=survey["id"]).count() == 5
 
 
 def test_zaehlung_vor_und_nach_dem_mischen_gleich(setup):
     s = setup
+    mehr_leute(s, "Emil")  # anonyme Ergebnisse erst ab fünf Antworten
     survey = new_survey(s, [YESNO], names="anonymous", results="after_close")
     start(s, survey)
-    _vote(s, survey, {"Anna": "yes", "Bernd": "no", "Carla": "yes"})
+    _vote(s, survey, {"Anna": "yes", "Bernd": "no", "Carla": "yes", "Dieter": "no", "Emil": "no"})
     with rls_bypass():
         obj = Survey.objects.get(pk=survey["id"])
         obj.status = Survey.Status.CLOSED  # nur zum Vergleich der Zählung, ohne Mischen
@@ -112,9 +127,10 @@ def test_stimme_zwischen_lesen_und_loeschen_bleibt(setup):
 
 def test_ergebnis_erst_nach_schliessen_und_mischen(setup):
     s = setup
+    mehr_leute(s, "Emil")  # anonyme Ergebnisse erst ab fünf Antworten
     survey = new_survey(s, [YESNO], names="anonymous", results="after_close")
     start(s, survey)
-    _vote(s, survey, {"Anna": "yes", "Bernd": "no", "Carla": "yes"})
+    _vote(s, survey, {"Anna": "yes", "Bernd": "no", "Carla": "yes", "Dieter": "no", "Emil": "no"})
     ok(s["chef"].post(f"{s['url']}{survey['id']}/close/"))
     with rls_bypass():
         assert _xmin_matches(survey["id"]) == 0

@@ -219,7 +219,8 @@ FCM bekommt ihn base64-kodiert im Feld `b`) und speichert nichts.
   er so nicht schicken, das Gerät verwirft fremd verschlüsselte; wecken und Kontingente belegen
   kann er es aber. Abhilfe: `PUSH_GATEWAY_ALLOWED_KEYS` mit den Kennungen der bekannten
   Instanzen (durch Komma getrennt); dann reicht das Gateway nur deren Nachrichten weiter (sonst
-  403 „Absender nicht freigegeben“). Ältere Endpunkte ohne Kennung nimmt das
+  403 „Absender nicht freigegeben“). Die Angabe ist Pflicht: Wer jede Instanz zulassen will,
+  setzt ausdrücklich `PUSH_GATEWAY_ALLOWED_KEYS=offen`; ohne Angabe startet das Gateway nicht. Ältere Endpunkte ohne Kennung nimmt das
   Gateway weiter an, solange `PUSH_GATEWAY_ALLOW_UNBOUND=1` (Standard); nach dem Umstieg aller
   Apps auf 0 stellen.
 - **Weitere Grenzen am Gateway:** `PUSH_GATEWAY_RATE_TOKEN` (je Minute und Gerät, Standard 30)

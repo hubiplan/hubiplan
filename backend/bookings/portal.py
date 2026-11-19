@@ -92,9 +92,12 @@ class Base(APIView):
         return response
 
     def own(self):
-        # Eigene Anfragen und Buchungen, die die Verwaltung für dieses Mitglied eingetragen hat
+        # Eigene Anfragen und Buchungen, die die Verwaltung für dieses Mitglied eingetragen hat.
+        # Was jemand als Verwaltung für ein anderes Mitglied einträgt, ist nicht seine eigene
+        # Buchung (Gesamtaudit 19.11., F-02).
         return Booking.objects.filter(
-            Q(booked_by=self.request.user) | Q(member_id=self.access.membership_id),
+            Q(booked_by=self.request.user, member__isnull=True)
+            | Q(member_id=self.access.membership_id),
             organization=self.org,
             department__isnull=True,
         ).select_related("item")
@@ -117,9 +120,8 @@ class ListView(Base):
             .select_related("booking")
             .order_by("starts_at")[:1000]
         ):
-            mine = (
-                slot.booking.booked_by_id == request.user.pk
-                or slot.booking.member_id == self.access.membership_id
+            mine = slot.booking.member_id == self.access.membership_id or (
+                slot.booking.booked_by_id == request.user.pk and slot.booking.member_id is None
             )
             busy.append(
                 {

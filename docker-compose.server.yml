@@ -32,6 +32,8 @@ x-backend-env: &backend-env
   EINVOICE_GATEWAYS: ${EINVOICE_GATEWAYS:-}
   EINVOICE_GATEWAY_TOKENS: ${EINVOICE_GATEWAY_TOKENS:-}
   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY fehlt in .env}
+  # Wechsel des Geheimnisses: Vorgänger, durch Komma getrennt (siehe docs/betrieb.md)
+  DJANGO_SECRET_KEY_FALLBACKS: ${DJANGO_SECRET_KEY_FALLBACKS:-}
   # Verschlüsselt die 2FA-Geheimnisse in der Datenbank (nicht im Anwendungsbackup; die
   # optionale restic-Kopie enthält die .env, siehe docs/betrieb.md)
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY fehlt in .env}

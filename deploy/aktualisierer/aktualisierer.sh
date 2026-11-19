@@ -111,6 +111,10 @@ SCHLUESSEL="$ZIEL/deploy/release-schluessel"
 grep -q '^[^#[:space:]]' "$SCHLUESSEL" 2> /dev/null || fehler "Kein Release-Schlüssel in der laufenden Fassung."
 git -C "$QUELLE" -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
     fehler "Signatur von $TAG ist ungültig. Nichts geändert."
+# Die Signatur deckt den Namen im Tag mit ab. Er muss zum angeforderten Release passen, sonst
+# ließe sich ein echtes, anderes signiertes Tag unter diesem Namen unterschieben.
+NAME="$(git -C "$QUELLE" cat-file tag "refs/tags/$TAG" 2> /dev/null | sed -n '1,/^$/s/^tag //p')"
+[ "$NAME" = "$TAG" ] || fehler "Signiertes Tag heißt „$NAME“, nicht $TAG. Nichts geändert."
 
 # Kein Rückschritt: der laufende Stand steckt im neuen
 LAUFEND="$(tr -d '[:space:]' < "$ZIEL/.fassung" 2> /dev/null || true)"

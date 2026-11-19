@@ -301,7 +301,9 @@ class TestBindung:
             "0123456789abcdef",
             "fedcba9876543210",
         }
-        assert gw.allowed_keys("") == frozenset()
+        assert gw.allowed_keys(" Offen ") == frozenset()
+        with pytest.raises(RuntimeError):
+            gw.allowed_keys("")
         with pytest.raises(RuntimeError):
             gw.allowed_keys("kein-schluessel")
 
@@ -509,7 +511,13 @@ class TestApple:
         monkeypatch.setenv("PUSH_GATEWAY_APNS_KEY_ID", "ABCDE12345")
         monkeypatch.setenv("PUSH_GATEWAY_APNS_TEAM", "TEAM123456")
         monkeypatch.setenv("PUSH_GATEWAY_APNS_SANDBOX", "1")
+        # Ohne ausdrückliche Angabe, wer senden darf, startet das Gateway nicht (S-08)
+        monkeypatch.delenv("PUSH_GATEWAY_ALLOWED_KEYS", raising=False)
+        with pytest.raises(RuntimeError, match="PUSH_GATEWAY_ALLOWED_KEYS"):
+            gw.create()
+        monkeypatch.setenv("PUSH_GATEWAY_ALLOWED_KEYS", "offen")
         g = gw.create()
+        assert g.allowed_keys == frozenset()
         assert g.apns.topic == "de.hubiplan.app"
         assert g.apns.host == gw.APNS_HOST_SANDBOX
         assert g.handle("GET", "/health", {}, b"")[1]["apns"] is True

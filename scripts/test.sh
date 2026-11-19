@@ -640,6 +640,13 @@ if [ "$RUN_BACKEND" = 1 ]; then
         basis=$(git merge-base "$COMMIT" "$r" 2> /dev/null) && break
         basis=""
     done
+    # Betriebsdateien, die Tests lesen (Gesamtaudit 19.11., F-06): Ohne sie wurden die
+    # Prüfungen der Compose-Dateien im Testcontainer still übersprungen.
+    BETRIEBSDATEIEN=()
+    for f in docker-compose.server.yml docker-compose.clamav.yml deploy/server-setup.sh \
+        deploy/datenschluessel-wechseln.sh; do
+        [ -f "$WORK/$f" ] && BETRIEBSDATEIEN+=(-v "$WORK/$f:/$f:ro")
+    done
     if [ "$EIGENE_ARGS" -eq 0 ] && [ -n "$basis" ] && [ "$basis" != "$COMMIT" ]; then
         mapfile -t VORLAUF < <(git diff --name-only --diff-filter=AMR "$basis" "$COMMIT" -- 'backend/*test_*.py' \
             | sed 's#^backend/##')
@@ -653,6 +660,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
             -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
             -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
             -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+            "${BETRIEBSDATEIEN[@]}" \
             --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
             -m "not migration" -q "${VORLAUF[@]}" || rc=$?
         # 5: alle Tests der Dateien sind Migrationstests, sie laufen im Hauptlauf
@@ -689,6 +697,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
         -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
         -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
         -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+        "${BETRIEBSDATEIEN[@]}" \
         -v "$WORK/berichte:/berichte" -e MIG_AUSLASSEN="${MIG_AUS[*]}" \
         --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
         --junitxml=/berichte/pytest.xml --durations="${TEST_DURATIONS:-30}" \
@@ -719,6 +728,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
                 -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
                 -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
                 -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+                "${BETRIEBSDATEIEN[@]}" \
                 --entrypoint pytest "$BACKEND_IMG" -n 1 --reuse-db -q "${ROTE[@]}"; then
                 echo "Backend: wackelige Tests allein grün; bitte reparieren (Messprotokoll)."
                 ERGEBNIS=gruen-wackelig
