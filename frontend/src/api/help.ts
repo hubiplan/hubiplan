@@ -29,6 +29,28 @@ export interface OrgHelp {
   can_edit: boolean
 }
 
+/** Rückmeldungen zu einem Hilfetext (Plattformverwaltung), ohne Person und Einheit. */
+export interface HelpFeedbackEntry {
+  key: string
+  yes: number
+  no: number
+  comments: { id: number; text: string; day: string; language: string; version: string }[]
+}
+
+export interface HelpSearchMiss {
+  id: number
+  term: string
+  language: string
+  count: number
+  last_day: string
+}
+
+export interface HelpFeedbackState {
+  /** meiste „Nein“ zuerst */
+  entries: HelpFeedbackEntry[]
+  misses: HelpSearchMiss[]
+}
+
 const key = (k: string) => encodeURIComponent(k)
 
 export const helpApi = {
@@ -40,4 +62,15 @@ export const helpApi = {
   done: () => api.get<{ help_done: string[] }>('/api/me/help/'),
   check: (step: string) => api.post<{ help_done: string[] }>(`/api/me/help/${key(step)}/`, {}),
   uncheck: (step: string) => api.delWith<{ help_done: string[] }>(`/api/me/help/${key(step)}/`, {}),
+  /** „Hat das geholfen?“: gespeichert ohne Person und Einheit */
+  feedback: (entry: string, language: string, helpful: boolean, comment = '') =>
+    api.post<unknown>('/api/help/feedback/', { key: entry, language, helpful, comment }),
+  /** Suche ohne Treffer: nur die Suchwörter */
+  searchMiss: (term: string, language: string) =>
+    api.post<unknown>('/api/help/search-miss/', { term, language }),
+  platformFeedback: () => api.get<HelpFeedbackState>('/api/platform/help-feedback/'),
+  dropComment: (id: number) =>
+    api.delWith<HelpFeedbackState>(`/api/platform/help-feedback/comments/${id}/`, {}),
+  dropMiss: (id: number) =>
+    api.delWith<HelpFeedbackState>(`/api/platform/help-feedback/misses/${id}/`, {}),
 }

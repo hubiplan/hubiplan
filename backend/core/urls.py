@@ -85,6 +85,7 @@ from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, Settlem
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
+    help_feedback,
     help_views,
     imprint_views,
     setup_status,
@@ -1334,6 +1335,12 @@ urlpatterns = [
     path("me/appearance/", appearance.AppearanceView.as_view(), name="my-appearance"),
     path("me/session/", session_info.SessionInfoView.as_view(), name="my-session"),
     path("me/home-actions/", home_actions.HomeActionsView.as_view(), name="my-home-actions"),
+    path("help/feedback/", help_feedback.HelpFeedbackView.as_view(), name="help-feedback"),
+    path(
+        "help/search-miss/",
+        help_feedback.HelpSearchMissView.as_view(),
+        name="help-search-miss",
+    ),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
     path("me/learning/<slug:key>/hide/", learning.LearningHideView.as_view(), name="learning-hide"),
@@ -1495,6 +1502,21 @@ urlpatterns = [
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
     path("platform/icon/", org_views.PlatformIconView.as_view(), name="platform-icon"),
     path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
+    path(
+        "platform/help-feedback/",
+        help_feedback.PlatformHelpFeedbackView.as_view(),
+        name="platform-help-feedback",
+    ),
+    path(
+        "platform/help-feedback/comments/<int:pk>/",
+        help_feedback.PlatformHelpCommentView.as_view(),
+        name="platform-help-comment",
+    ),
+    path(
+        "platform/help-feedback/misses/<int:pk>/",
+        help_feedback.PlatformHelpMissView.as_view(),
+        name="platform-help-miss",
+    ),
     path("platform/imprint/", imprint_views.PlatformImprintView.as_view(), name="platform-imprint"),
     path(
         "platform/orgs/<int:pk>/board/",

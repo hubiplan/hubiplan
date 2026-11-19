@@ -17,9 +17,19 @@ import {
   type SourceKey,
   type TermKey,
 } from './content.ts'
+import { Link } from 'react-router-dom'
 import { Field } from '../components/ui.tsx'
+import PLACES_DATA from './places.json'
 import { useLearning } from './LearningContext.tsx'
 import { t } from '../i18n/index.ts'
+
+/** Erklärung → Seite, auf der sie steht (scripts/lernhilfen-stellen.mjs) */
+const PLACES: Partial<Record<DecisionKey, string>> = PLACES_DATA
+
+/** Beträge aus Gesetzen ändern sich: das Jahr der letzten Prüfung dazu */
+function AsOf({ year }: { year: number }) {
+  return <span className="muted small"> {t('(Beträge: Stand {x})', { x: year })}</span>
+}
 
 const byName = (a: string, b: string) => a.localeCompare(b, 'de', { sensitivity: 'base' })
 
@@ -131,6 +141,7 @@ export function GlossaryPage({ embedded = false }: { embedded?: boolean }) {
                   </dt>
                   <dd>
                     {tr(tm.meaning)}
+                    {tm.asOf && <AsOf year={tm.asOf} />}
                     <span className="glossary-example muted">{tr(tm.example)}</span>
                   </dd>
                 </div>
@@ -153,8 +164,23 @@ export function GlossaryPage({ embedded = false }: { embedded?: boolean }) {
                       <dt>
                         <strong>{tr(e.title)}</strong>{' '}
                         <span className="muted small">({tr(e.place)})</span>
+                        {PLACES[k] && (
+                          <>
+                            {' '}
+                            <Link
+                              to={PLACES[k]}
+                              className="small"
+                              aria-label={t('Zur Stelle: {x}', { x: tr(e.title) })}
+                            >
+                              {t('Zur Stelle')}
+                            </Link>
+                          </>
+                        )}
                       </dt>
-                      <dd>{tr(e.text)}</dd>
+                      <dd>
+                        {tr(e.text)}
+                        {e.asOf && <AsOf year={e.asOf} />}
+                      </dd>
                     </div>
                   )
                 })}

@@ -6,17 +6,19 @@ import type { ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Field } from '../components/ui.tsx'
 import { usePageTitle } from '../components/pageTitle.ts'
-import { t } from '../i18n/index.ts'
+import { helpApi } from '../api/help.ts'
+import { lang, t } from '../i18n/index.ts'
 import { DECISIONS, TERMS, decisionAnchor, termAnchor, tr } from '../learning/content.ts'
 import type { DecisionKey, TermKey } from '../learning/content.ts'
 import { GlossaryPage } from '../learning/GlossaryPage.tsx'
 import { useLearning } from '../learning/LearningContext.tsx'
 import { NewsPage } from '../news/NewsPage.tsx'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
-import { guidesOfPage, matchesQuery, pageHelpFor } from './content.ts'
+import { guidesOfPage, matchesLiteral, matchesQuery, missingWord, pageHelpFor } from './content.ts'
 import type { HelpEntry } from './content.ts'
 import { MEMBER_TOPICS, useBlocked } from './extras.ts'
 import { useHelp } from './HelpContext.tsx'
+import { HelpFeedback } from './HelpFeedback.tsx'
 import { BlockedGuide, ForYou, GuideNotes, HelpContacts, RightsHint } from './HelpExtras.tsx'
 import { HelpSections } from './HelpMarkdown.tsx'
 import { byMenu, groupLabel, itemLabel, partOf, partRank, placeOf } from './menu.ts'
@@ -73,9 +75,14 @@ export function memberOnly(entries: HelpEntry[]): boolean {
 /** Treffer im Titel zuerst, dann in den Stichworten, dann im Text. */
 // oxlint-disable-next-line react/only-export-components
 export function searchRank(query: string, e: Pick<HelpEntry, 'title' | 'keywords'>): number {
-  if (matchesQuery(query, e.title)) return 0
-  return matchesQuery(query, e.title, e.keywords.join(' ')) ? 1 : 2
+  if (matchesLiteral(query, e.title)) return 0
+  return matchesLiteral(query, e.title, e.keywords.join(' ')) ? 1 : 2
 }
+
+/** Wie viele Treffer mit einem fehlenden Wort die Suche zeigt */
+const PARTIAL_HITS = 8
+/** Pause nach dem Tippen, bevor eine Suche ohne Treffer gemeldet wird */
+const MISS_DELAY_MS = 2000
 
 const entryLink = (e: HelpEntry) => <Link to={`/hilfe/${e.slug}`}>{e.title}</Link>
 
@@ -134,6 +141,37 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
   }
   const foundGuides = found.filter((e) => e.kind === 'guide')
   const foundPages = found.filter((e) => e.kind === 'page')
+  const nothing = found.length + terms.length + decisions.length + blocked.length === 0
+  // Nichts mit allen Wörtern: Treffer, denen genau ein Wort fehlt, mit Hinweis (höchstens acht)
+  const partial = useMemo(
+    () =>
+      searching && nothing
+        ? (entries ?? [])
+            .map((e) => ({
+              entry: e,
+              without: missingWord(query, e.title, e.body, e.keywords.join(' ')),
+            }))
+            .filter((x): x is { entry: HelpEntry; without: string } => x.without !== null)
+            .sort(
+              (a, b) =>
+                Number(a.entry.kind === 'page') - Number(b.entry.kind === 'page') ||
+                byTitle(a.entry, b.entry),
+            )
+            .slice(0, PARTIAL_HITS)
+        : [],
+    [entries, query, searching, nothing],
+  )
+  // Suche ohne Treffer melden: nur die Suchwörter, ohne Person (Plattform › Hilfe). Erst,
+  // wenn eine Weile nicht mehr getippt wurde.
+  const loaded = !!entries
+  useEffect(() => {
+    const term = query.trim()
+    if (!loaded || !nothing || term.length < 3) return
+    const timer = window.setTimeout(() => {
+      helpApi.searchMiss(term, lang()).catch(() => {})
+    }, MISS_DELAY_MS)
+    return () => window.clearTimeout(timer)
+  }, [loaded, nothing, query])
 
   return (
     <section className="help-page">
@@ -175,8 +213,21 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
       {searching ? (
         entries ? (
           <div className="help-results">
-            {found.length + terms.length + decisions.length + blocked.length === 0 && (
-              <p role="status">{t('Nichts gefunden.')}</p>
+            {nothing && partial.length === 0 && <p role="status">{t('Nichts gefunden.')}</p>}
+            {partial.length > 0 && (
+              <section>
+                <p role="status">
+                  {t('Keine Hilfe enthält alle Suchwörter. Diese Treffer lassen ein Wort aus:')}
+                </p>
+                <ul className="help-list">
+                  {partial.map(({ entry, without }) => (
+                    <li key={entry.key}>
+                      {entryLink(entry)}{' '}
+                      <span className="muted small">({t('ohne „{x}“', { x: without })})</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
             {foundGuides.length > 0 && (
               <section>
@@ -521,6 +572,7 @@ export function HelpEntryPage() {
               </ul>
             </section>
           )}
+          <HelpFeedback key={entry.key} entry={entry} />
         </article>
       )}
     </section>

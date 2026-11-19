@@ -45,3 +45,9 @@ If the virus scanner is briefly unreachable, HUBIplan still accepts uploaded doc
 In the **Addresses per unit** section of the platform settings you assign further addresses to a unit, for example `mitglieder.sv-musterstadt.example` to Schützenverein Musterstadt. Anyone opening HUBIplan via that address sees the unit's name, colours, coat of arms and icon on the sign-in page; after signing in, the unit is preselected. Unknown addresses and the main address show the instance. Links in the unit's emails (invitation, sign-in link, events, volunteer shifts, tasks, membership card, photo link, circulars) lead to its address, otherwise to that of the next higher unit with its own address; “Forgot password” sends the link for the address on which it was requested.
 
 The unit uploads its own icon under Settings › Appearance; without one, HUBIplan uses its coat of arms. Sign-in applies per address. The address must point to the server via DNS. If the server has `HUBIPLAN_ADRESSEN_AUS_LISTE=1` set, it accepts listed addresses without further configuration and obtains the certificate on first access; otherwise the operator must allow them (`DJANGO_ALLOWED_HOSTS`, certificate). Nextcloud, the app connection and federation stay on the main address.
+
+## Feedback on the help
+
+Below every guide and page help you find “Did this help?”. The **Help** tab shows the answers per help text, most “No” first, with the sentence about what was missing. Only the help text, language, version, answer, sentence and day are stored, no person and no club. If a sentence does name someone, take it out with **Remove**; the answer still counts.
+
+Below that, **Searches without results** lists what people searched for in the help without finding anything, with a counter. Entries with digits or email addresses are not stored.

@@ -118,3 +118,103 @@ def test_abhaken_in_ansicht_als_rolle_gesperrt(orgs, api):
     assert ok.status_code == 200
     assert client.post("/api/me/help/start.profile/").status_code == 403
     assert client.get(f"/api/orgs/{org.pk}/help/").status_code == 200
+
+
+def test_rueckmeldung_ohne_person_und_einheit(orgs, api):
+    from access.catalog import PLATFORM_MANAGE
+    from organizations.models import HelpFeedback, Organization
+
+    mitglied = make_user("mitglied@example.org")
+    give_role(mitglied, orgs["a"], [MEMBERS_VIEW], name="Leser")
+    betrieb = make_user("betrieb@example.org")
+    give_role(betrieb, Organization.platform(), [PLATFORM_MANAGE], name="Betrieb")
+    url = "/api/help/feedback/"
+
+    ja = {"key": "guide.password", "language": "de", "helpful": True, "comment": "egal"}
+    assert api(mitglied).post(url, ja, content_type=JSON).status_code == 204
+    nein = {"key": "guide.password", "language": "en", "helpful": False, "comment": " Bild  fehlt "}
+    assert api(mitglied).post(url, nein, content_type=JSON).status_code == 204
+    assert api(mitglied).post(url, {**nein, "key": "x"}, content_type=JSON).status_code == 400
+    assert api(mitglied).post(url, {**nein, "language": "fr"}, content_type=JSON).status_code == 400
+    lang = {**nein, "comment": "x" * 301}
+    assert api(mitglied).post(url, lang, content_type=JSON).status_code == 400
+
+    # Nur Hilfetext, Sprache, Fassung, Antwort, Satz und Tag; der Satz nur bei „Nein“
+    felder = {f.name for f in HelpFeedback._meta.concrete_fields}
+    assert felder == {"id", "key", "language", "version", "helpful", "comment", "day"}
+    assert sorted(HelpFeedback.objects.values_list("helpful", "comment")) == [
+        (False, "Bild fehlt"),
+        (True, ""),
+    ]
+
+    liste = "/api/platform/help-feedback/"
+    assert api(mitglied).get(liste).status_code == 403
+    state = api(betrieb).get(liste).json()
+    assert [(e["key"], e["yes"], e["no"]) for e in state["entries"]] == [("guide.password", 1, 1)]
+    comment = state["entries"][0]["comments"][0]
+    assert comment["text"] == "Bild fehlt" and comment["language"] == "en"
+
+    weg = f"{liste}comments/{comment['id']}/"
+    assert api(mitglied).delete(weg).status_code == 403
+    after = api(betrieb).delete(weg).json()
+    assert after["entries"][0]["comments"] == [] and after["entries"][0]["no"] == 1
+
+
+def test_rueckmeldung_meiste_nein_zuerst_und_begrenzt(orgs, api):
+    from access.catalog import PLATFORM_MANAGE
+    from organizations import help_feedback
+    from organizations.models import HelpFeedback, Organization
+
+    user = make_user("viel@example.org")
+    give_role(user, orgs["a"], [MEMBERS_VIEW], name="Leser")
+    betrieb = make_user("betrieb2@example.org")
+    give_role(betrieb, Organization.platform(), [PLATFORM_MANAGE], name="Betrieb")
+    url = "/api/help/feedback/"
+    for key, helpful in [
+        ("guide.a", True),
+        ("guide.b", False),
+        ("guide.b", False),
+        ("page.c", False),
+    ]:
+        body = {"key": key, "language": "de", "helpful": helpful}
+        assert api(user).post(url, body, content_type=JSON).status_code == 204
+    state = api(betrieb).get("/api/platform/help-feedback/").json()
+    assert [e["key"] for e in state["entries"]] == ["guide.b", "page.c", "guide.a"]
+
+    rest = help_feedback.PER_HOUR - 4
+    body = {"key": "guide.a", "language": "de", "helpful": True}
+    for _ in range(rest):
+        assert api(user).post(url, body, content_type=JSON).status_code == 204
+    assert api(user).post(url, body, content_type=JSON).status_code == 429
+    assert HelpFeedback.objects.count() == help_feedback.PER_HOUR
+
+
+def test_suche_ohne_treffer_zaehlt_nur_woerter(orgs, api):
+    from access.catalog import PLATFORM_MANAGE
+    from organizations.help_feedback import clean_term
+    from organizations.models import HelpSearchMiss, Organization
+
+    assert clean_term("  Rück   Lastschrift ") == "rück lastschrift"
+    assert clean_term("ab") == ""
+    assert clean_term("anna@example.org") == ""
+    assert clean_term("Mitglied 4711") == ""
+    assert clean_term("eins zwei drei vier fünf") == ""
+    assert clean_term("x" * 61) == ""
+
+    user = make_user("sucht@example.org")
+    give_role(user, orgs["a"], [MEMBERS_VIEW], name="Leser")
+    betrieb = make_user("betrieb3@example.org")
+    give_role(betrieb, Organization.platform(), [PLATFORM_MANAGE], name="Betrieb")
+    url = "/api/help/search-miss/"
+    for term in ["Newsletter", "newsletter ", "Serienbrief", "Mitglied 4711"]:
+        body = {"term": term, "language": "de"}
+        assert api(user).post(url, body, content_type=JSON).status_code == 204
+    felder = {f.name for f in HelpSearchMiss._meta.concrete_fields}
+    assert felder == {"id", "term", "language", "count", "last_day"}
+
+    liste = "/api/platform/help-feedback/"
+    misses = api(betrieb).get(liste).json()["misses"]
+    assert [(m["term"], m["count"]) for m in misses] == [("newsletter", 2), ("serienbrief", 1)]
+    assert api(user).delete(f"{liste}misses/{misses[0]['id']}/").status_code == 403
+    after = api(betrieb).delete(f"{liste}misses/{misses[0]['id']}/").json()
+    assert [m["term"] for m in after["misses"]] == ["serienbrief"]

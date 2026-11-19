@@ -45,3 +45,9 @@ Ist der Virenscanner kurz nicht erreichbar, nimmt HUBIplan hochgeladene Dokument
 Im Abschnitt **Adressen je Einheit** der Plattform-Einstellungen ordnest du weitere Adressen einer Einheit zu, zum Beispiel `mitglieder.sv-musterstadt.example` dem Schützenverein Musterstadt. Wer HUBIplan über diese Adresse aufruft, sieht auf der Anmeldeseite Name, Farben, Wappen und Symbol der Einheit; nach der Anmeldung ist sie vorausgewählt. Unbekannte Adressen und die Hauptadresse zeigen die Instanz. Links in Mails der Einheit (Einladung, Anmeldelink, Termine, Helferdienste, Aufgaben, Ausweis, Fotolink, Rundschreiben) führen auf ihre Adresse, sonst auf die der nächsthöheren Einheit mit eigener Adresse; „Passwort vergessen“ schickt den Link für die Adresse, auf der es angefordert wurde.
 
 Ein eigenes Symbol lädt die Einheit unter Einstellungen › Erscheinungsbild hoch; ohne eigenes nimmt HUBIplan ihr Wappen. Die Anmeldung gilt je Adresse. Die Adresse muss per DNS auf den Server zeigen. Ist auf dem Server `HUBIPLAN_ADRESSEN_AUS_LISTE=1` gesetzt, nimmt er eingetragene Adressen ohne weitere Einstellung an und holt das Zertifikat beim ersten Aufruf; sonst muss der Betrieb sie selbst zulassen (`DJANGO_ALLOWED_HOSTS`, Zertifikat). Nextcloud, App-Verbindung und Verbund bleiben bei der Hauptadresse.
+
+## Rückmeldungen zur Hilfe
+
+Unter jeder Anleitung und Seitenhilfe steht „Hat das geholfen?“. Der Reiter **Hilfe** zeigt die Antworten je Hilfetext, die meisten „Nein“ zuerst, mit dem Satz dazu, was gefehlt hat. Gespeichert sind nur Hilfetext, Sprache, Fassung, Antwort, Satz und Tag, keine Person und kein Verein. Nennt ein Satz doch einen Namen, nimmst du ihn mit **Entfernen** heraus; die Antwort bleibt gezählt.
+
+Darunter steht unter **Suchen ohne Treffer**, wonach in der Hilfe gesucht und nichts gefunden wurde, mit Zähler. Eingaben mit Ziffern oder E-Mail-Adressen werden nicht gespeichert.

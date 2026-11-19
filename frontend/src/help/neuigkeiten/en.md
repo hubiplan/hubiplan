@@ -192,6 +192,7 @@ November 2026:
 
 #### Help and app
 
+- Help: **Did this help?** Below every guide and page help you say Yes or No, and if you like, in one sentence what was missing; this is stored without person or club. The search now knows words with the same meaning ("homepage" finds "website", "newsletter" finds "circular") and shows results that lack only one word. In the glossary, "Go there" leads to the matching page.
 - Help: **What to do when …** Ten new guides start from the occasion: returned direct debit, changing a fee, change of board, turn of the year, a move, a death, access and erasure requests, creating an account, emails not arriving and backing up data. Page help starts with a short introduction, details unfold, and "Common tasks" also lists related guides from other pages.
 - Learning aids: **Expenses, offices, import and more.** "Why?" and "?" now also appear for expenses (two approvals, your own expense, invoice made out to the club, missing receipt, travel costs), for terms of office and accounts, for the import and the full export, for the reduction with proof, for AI assistants, Nextcloud, external calendars, musicians' payments, membership applications and entries.
 - Learning aids: **23 new explanations.**

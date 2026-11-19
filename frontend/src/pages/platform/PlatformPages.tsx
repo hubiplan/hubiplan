@@ -69,6 +69,7 @@ const PLATFORM_TABS = [
   { to: '/plattform/postfach', label: t('Postfach') },
   { to: '/plattform/datenuebernahme', label: t('Datenübernahme') },
   { to: '/plattform/version', label: t('Version') },
+  { to: '/plattform/hilfe', label: t('Hilfe') },
 ]
 
 /** Freigeschaltete Module als Kennzeichen mit Zählung, aufklappbar (UX-Audit 08.11., W-20 e). */
