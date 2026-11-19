@@ -378,7 +378,11 @@ export interface CheckInRow {
   invoice_number?: string
   outstanding?: string
   checked_in_at: string | null
+  /** über welchen Scan-Link eingelassen (leer: in der Verwaltung) */
+  checked_in_via?: string
   minor: boolean
+  /** gebuchte Zusatzleistungen und wann sie eingelöst wurden */
+  bookings?: { name: string; redeemed_at: string | null }[]
 }
 
 export interface QualificationResult {
@@ -397,6 +401,142 @@ export interface CheckInList {
   participants: CheckInRow[]
   count: number
   checked_in: number
+}
+
+/** Scan-Link für Personal ohne Konto: Einlass oder eine Zusatzleistung */
+export interface ScanLink {
+  id: number
+  label: string
+  addon_id: number | null
+  material_id?: number | null
+  material_return?: boolean
+  kind?: ScanKind
+  station: string
+  expires_at: string
+  allow_search: boolean
+  /** Kassen-Link: nimmt offene Gebühren bar an */
+  cash?: boolean
+  cashier?: string
+  cash_account?: string
+  cash_total?: string
+  cash_takes?: { at: string; amount: string; invoice_number: string; name: string }[]
+  revoked: boolean
+  active: boolean
+  created_at: string
+  last_used_at: string | null
+  scans: number
+  url?: string
+}
+
+export interface Material {
+  id: number
+  name: string
+  returnable: boolean
+  is_active: boolean
+}
+
+export interface HandoutState {
+  handed_out_at: string
+  returned_at: string | null
+  via: string
+}
+
+export interface LabelOptions {
+  formats: string[]
+  fields: string[]
+  questions: { id: number; text: string }[]
+  default_fields: string[]
+}
+
+export interface MaterialBoard {
+  materials: Material[]
+  rows: {
+    id: number
+    name: string
+    number: string
+    price_name: string
+    items: Record<string, HandoutState | null>
+  }[]
+  counts: Record<string, { out: number; returned: number }>
+  can_edit: boolean
+  labels: LabelOptions
+}
+
+export interface ScanLinks {
+  links: ScanLink[]
+  addons: { id: number; name: string }[]
+  materials: Material[]
+  cash_accounts?: { id: number; name: string }[]
+  default_expires_at: string
+}
+
+/** Scan-Seite für das Personal (ohne Konto) */
+export interface ScanPage {
+  organization: string
+  event: string
+  starts_at: string
+  label: string
+  station: string
+  kind: ScanKind
+  expires_at: string
+  allow_search: boolean
+  cash?: boolean
+  cashier?: string
+}
+
+export type ScanKind = 'entry' | 'addon' | 'material_out' | 'material_return'
+
+export interface ScanHit {
+  id: number
+  name: string
+  birth_date: string | null
+  price_name: string
+  number: string
+  checked_in_at: string | null
+}
+
+export type ScanResultKind =
+  | 'paid'
+  | 'ok'
+  | 'already'
+  | 'unknown'
+  | 'other'
+  | 'cancelled'
+  | 'waiting'
+  | 'not_booked'
+  | 'not_out'
+
+export interface ScanResult {
+  result: ScanResultKind
+  valid: boolean
+  message: string
+  at: string | null
+  card: {
+    id?: number
+    /** Kassen-Link: offener Betrag, bar anzunehmen */
+    open_amount?: string | null
+    name: string
+    birth_date: string | null
+    minor: boolean
+    price_name: string
+    number: string
+    paid_state: PaidState
+    checked_in_at: string | null
+    bookings: {
+      id: number
+      addon_id: number
+      name: string
+      per_registration: boolean
+      redeemed_at: string | null
+    }[]
+    materials?: {
+      id: number
+      name: string
+      returnable: boolean
+      handed_out_at: string | null
+      returned_at: string | null
+    }[]
+  } | null
 }
 
 /** Termin des Dachverbands mit Sammelanmeldung (unter Meldungen, A8) */
@@ -474,11 +614,50 @@ export const registrationApi = {
   ) => api.post<ClubRegistrations>(`${url(base, eventId)}club/`, data),
   clubCancel: (base: CalendarBase, eventId: number, regId: number, participants: number[]) =>
     api.post<ClubRegistrations>(`${url(base, eventId)}club/${regId}/cancel/`, { participants }),
+  scanLinks: (base: CalendarBase, eventId: number) =>
+    api.get<ScanLinks>(`${url(base, eventId)}scan-links/`),
+  addScanLink: (
+    base: CalendarBase,
+    eventId: number,
+    data: {
+      label: string
+      addon: number | null
+      material?: number | null
+      material_return?: boolean
+      cash_account?: number | null
+      cashier?: string
+      expires_at?: string | null
+      allow_search?: boolean
+    },
+  ) => api.post<ScanLink>(`${url(base, eventId)}scan-links/`, data),
+  revokeScanLink: (base: CalendarBase, eventId: number, id: number) =>
+    api.del(`${url(base, eventId)}scan-links/${id}/`),
+  scanPage: (token: string) => api.get<ScanPage>(`/api/public/scan/${token}/`),
+  scan: (token: string, data: { code?: string; participant?: number }) =>
+    api.post<ScanResult>(`/api/public/scan/${token}/`, data),
+  scanCash: (token: string, data: { participant: number; request_key: string }) =>
+    api.post<ScanResult>(`/api/public/scan/${token}/cash/`, data),
+  scanSearch: (token: string, q: string) =>
+    api.get<{ results: ScanHit[] }>(`/api/public/scan/${token}/search/?q=${encodeURIComponent(q)}`),
   clubOffers: (org: number) =>
     api.get<{ federation: string; offers: ClubOffer[] }>(
       `/api/orgs/${org}/registrations/club-offers/`,
     ),
-  badgesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}badges/`,
+  badgesUrl: (base: CalendarBase, eventId: number, format = '', fields: string[] = []) =>
+    `${url(base, eventId)}badges/${
+      format ? `?format=${format}&fields=${encodeURIComponent(fields.join(','))}` : ''
+    }`,
+  materials: (base: CalendarBase, eventId: number) =>
+    api.get<MaterialBoard>(`${url(base, eventId)}materials/`),
+  addMaterial: (base: CalendarBase, eventId: number, data: { name: string; returnable: boolean }) =>
+    api.post<Material>(`${url(base, eventId)}materials/`, data),
+  removeMaterial: (base: CalendarBase, eventId: number, id: number) =>
+    api.del(`${url(base, eventId)}materials/${id}/`),
+  handout: (
+    base: CalendarBase,
+    eventId: number,
+    data: { participant: number; material: number; action: 'out' | 'return' | 'undo' },
+  ) => api.post<MaterialBoard>(`${url(base, eventId)}materials/handout/`, data),
   certificatesUrl: (base: CalendarBase, eventId: number) => `${url(base, eventId)}certificates/`,
   addQualification: (
     base: CalendarBase,
