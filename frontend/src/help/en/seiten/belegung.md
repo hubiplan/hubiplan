@@ -24,11 +24,15 @@ weekly, monthly or yearly. Instead of a time you can choose an event or a compet
 the booking then follows it when it is moved or cancelled. Booking a whole building also books
 all of its areas.
 
+## For members and guests
+
 Booking for a member: Under **For a member (optional)** you look up a member (this needs the
 permission to view members). You don't enter contact details again; they are in the member record.
 The booking shows the name in Bookings, appears in the member record under **Bookings** and in the
-member's members area. For guests without membership there is still **External booking
-(optional)** with name, email and phone.
+member's members area. For guests without membership there is still
+**External booking (optional)** with name, email and phone.
+
+## Overlaps and approval
 
 Overlaps: If the item, including set-up time, is already booked, HUBIplan refuses the
 booking and shows the booked time. If a linked event later moves onto a booked time, the
