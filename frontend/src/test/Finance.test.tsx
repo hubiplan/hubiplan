@@ -720,7 +720,7 @@ describe('Kategorien löschen und umbenennen', () => {
 })
 
 describe('Kassenzählung', () => {
-  it('erstellt einen Kassenbericht für ein Fest mit Aufteilung', async () => {
+  it('erstellt einen Kassenbericht für eine Veranstaltung mit Aufteilung', async () => {
     const org = testOrg({
       modules: ['members', 'finance'],
       permissions: ['finance.view', 'finance.edit'],
@@ -769,8 +769,8 @@ describe('Kassenzählung', () => {
     })
     renderApp('/finanzen/kassenzaehlung')
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Kassenbericht Fest' }))
-    await user.type(screen.getByLabelText('Fest bzw. Verkaufsstand'), 'Getränkezelt')
+    await user.click(await screen.findByRole('button', { name: 'Kassenbericht Veranstaltung' }))
+    await user.type(screen.getByLabelText('Veranstaltung bzw. Verkaufsstand'), 'Getränkezelt')
     await user.type(screen.getByLabelText('100 €'), '3')
     await user.type(screen.getByLabelText('50 €'), '1')
     expect(screen.getByText('Summe: 350,00 €')).toBeInTheDocument()

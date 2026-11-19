@@ -113,12 +113,15 @@ export function MyResponsePanel({
           <span className={mine.status === 'yes' ? 'badge badge-yes' : 'badge'}>
             {STATUS_LABEL[mine.status]}
           </span>
-          {mine.guests > 0 && tn(' mit {n} Begleitperson', ' mit {n} Begleitpersonen', mine.guests)}
+          {/* VW-15: ganze Sätze statt Satzteile */}
+          {mine.guests > 0 && (
+            <> {tn('Mit {n} Begleitperson', 'Mit {n} Begleitpersonen', mine.guests)}</>
+          )}
           {mine.source === 'board' && (
-            <span className="muted small">{t(' (vom Vorstand eingetragen)')}</span>
+            <span className="muted small"> {t('Von der Verwaltung eingetragen.')}</span>
           )}
           {mine.source === 'link' && (
-            <span className="muted small">{t(' (über den Link in der Mail)')}</span>
+            <span className="muted small"> {t('Über den Link in der Mail.')}</span>
           )}
           {mine.note && <span className="muted small"> · {mine.note}</span>}
         </p>
@@ -127,7 +130,7 @@ export function MyResponsePanel({
       )}
       {info.deadline && (
         <p className="muted small">
-          {t('Anmeldeschluss:')} {deadlineText(info.deadline)}
+          {t('Anmeldeschluss: {deadline}', { deadline: deadlineText(info.deadline) })}
         </p>
       )}
       {info.free !== undefined && (
@@ -288,7 +291,7 @@ export function ResponsesPanel({
           <h3 className="event-card-title">
             {t('Rückmeldungen')}
             {/* VW-13: Bezeichnung der Einheit statt fest „Zug“ */}
-            {data.scope === 'department' ? t(' (nur {unit})', { unit: tm.sg }) : ''}
+            {data.scope === 'department' ? <> {t('(nur {unit})', { unit: tm.sg })}</> : ''}
           </h3>
           {note && <span className="muted small">{note}</span>}
         </div>
@@ -365,12 +368,12 @@ export function ResponsesPanel({
                   <td>{r.departments}</td>
                   <td>
                     {r.status && STATUS_LABEL[r.status]}
-                    {r.guests > 0 && t(' + {guests}', { guests: r.guests })}
+                    {r.guests > 0 && <> {t('+ {guests} Begleitung', { guests: r.guests })}</>}
                     {r.source === 'board' && (
-                      <span className="muted small">{t(' (Vorstand)')}</span>
+                      <span className="muted small"> {t('(Verwaltung)')}</span>
                     )}
                     {r.source === 'link' && (
-                      <span className="muted small">{t(' (Mail-Link)')}</span>
+                      <span className="muted small"> {t('(Mail-Link)')}</span>
                     )}
                   </td>
                   <td>{r.note}</td>
@@ -399,8 +402,11 @@ export function ResponsesPanel({
       {data.open.length > 0 && (
         <details className="responses-open">
           <summary>
-            {t('Noch keine Rückmeldung ({n})', { n: data.summary.open })}
-            {canEnter && t(' – hier für Mitglieder ohne Zugang eintragen')}
+            {canEnter
+              ? t('Noch keine Rückmeldung ({n}) – hier für Mitglieder ohne Zugang eintragen', {
+                  n: data.summary.open,
+                })
+              : t('Noch keine Rückmeldung ({n})', { n: data.summary.open })}
           </summary>
           <Field
             label={t('Mitglied suchen')}
@@ -449,7 +455,7 @@ export function ResponsesPanel({
           </ul>
           {open.length > 200 && (
             <p className="muted small">
-              {t('Weitere')} {open.length - 200} {t('– bitte die Suche nutzen.')}
+              {t('Weitere {n} – bitte die Suche nutzen.', { n: open.length - 200 })}
             </p>
           )}
         </details>

@@ -141,7 +141,7 @@ export function StandEnd({
         <p className="muted">
           {missing.length
             ? t('Noch ohne Ergebnis: {n} ({x})', { n: missing.length, x: missing.join(', ') })
-            : t('Alle Schützen haben ein Ergebnis.')}
+            : sw('Alle Schützen haben ein Ergebnis.')}
           {ended ? sw(' · Schießen beendet, Ergebnisse vorläufig.') : ''}
         </p>
         {error && <p className="alert alert-error">{error}</p>}

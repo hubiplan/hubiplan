@@ -38,7 +38,7 @@ import { TimelineEditor } from './TimelineEditor.tsx'
 import { normalizeEntry } from './timeline.ts'
 import { imageLabel } from './imageTools.ts'
 import type { Unit } from './images.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 function status(tm: WebsiteTextSummary): string {
   if (!tm.is_published) return t('Entwurf, nicht veröffentlicht')
@@ -71,7 +71,7 @@ export function ContentPage() {
   if (!data) return <Loading />
 
   const groups: { title: string; kind: string }[] = [
-    { title: t('Startseite'), kind: 'greeting' },
+    { title: tc('Webseite', 'Startseite'), kind: 'greeting' },
     { title: t('Textseiten'), kind: 'page' },
     { title: t('Texte der Untereinheiten'), kind: 'unit' },
     ...(data.intro_areas ? [{ title: t('Einleitungen der Bereiche'), kind: 'intro' }] : []),

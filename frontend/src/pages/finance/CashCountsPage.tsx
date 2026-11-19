@@ -1,4 +1,4 @@
-// Kasse: Zählprotokoll (Kassensturz) und Kassenbericht für Feste (offene Ladenkasse).
+// Kasse: Zählprotokoll (Kassensturz) und Kassenbericht für Veranstaltungen (offene Ladenkasse).
 // Einmal gespeichert, lässt sich ein Protokoll nicht mehr ändern; Differenz bzw.
 // Tageseinnahme werden gebucht, das PDF hängt als Beleg an den Buchungen.
 import { useState } from 'react'
@@ -45,7 +45,7 @@ export function CashCountsPage({ canEdit }: { canEdit: boolean }) {
               {t('Kasse zählen')}
             </button>
             <button type="button" className="button button-ghost" onClick={() => setForm('event')}>
-              {t('Kassenbericht Fest')}
+              {t('Kassenbericht Veranstaltung')}
             </button>
           </span>
         )}
@@ -217,7 +217,7 @@ function CashCountForm({
 
   return (
     <form className="subcard" onSubmit={(e) => void submit(e)}>
-      <h3>{kind === 'count' ? t('Zählprotokoll') : t('Kassenbericht für ein Fest')}</h3>
+      <h3>{kind === 'count' ? t('Zählprotokoll') : t('Kassenbericht für eine Veranstaltung')}</h3>
       {accounts.data && cashAccounts.length === 0 && (
         <Alert kind="info">{t('Bitte zuerst unter Konten eine Barkasse anlegen.')}</Alert>
       )}
@@ -246,7 +246,7 @@ function CashCountForm({
       </div>
       {kind === 'event' && (
         <Field
-          label={t('Fest bzw. Verkaufsstand')}
+          label={t('Veranstaltung bzw. Verkaufsstand')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('z. B. Sommerfest Getränkestand')}
@@ -254,7 +254,9 @@ function CashCountForm({
         />
       )}
       <fieldset>
-        <legend>{kind === 'count' ? t('Gezähltes Bargeld') : t('Endbestand nach dem Fest')}</legend>
+        <legend>
+          {kind === 'count' ? t('Gezähltes Bargeld') : t('Endbestand nach der Veranstaltung')}
+        </legend>
         <div className="grid-4">
           {DENOMINATIONS.map((c) => (
             <Field

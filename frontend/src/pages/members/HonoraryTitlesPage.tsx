@@ -1,6 +1,7 @@
 // Mitglieder › Einrichtung › Ehrungen: Bezeichnungen der Organisation (Verein
 // oder Dachverband) mit optionaler Beitragsanpassung. Verliehen wird in der
 // Mitgliederakte.
+import { EmptyList } from '../../components/EmptyList.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { memberApi } from '../../api/members.ts'
@@ -196,6 +197,19 @@ export function HonoraryTitlesPage() {
           rowKey={(tmx) => tmx.id}
           columns={columns}
           emptyText={t('Noch keine Ehrungen angelegt.')}
+          empty={
+            editing === null ? (
+              <EmptyList
+                title={t('Noch keine Ehrungen angelegt.')}
+                canAdd={editable}
+                action={{ label: t('Neue Ehrung'), onClick: () => setEditing('new') }}
+              >
+                {t(
+                  'Ehrungen wie Ehrenmitglied oder Vereinsnadel verleiht ihr danach in der Mitgliedsakte.',
+                )}
+              </EmptyList>
+            ) : undefined
+          }
           rowClassName={(tmx) => (tmx.is_archived ? 'inactive' : undefined)}
           actions={
             editable

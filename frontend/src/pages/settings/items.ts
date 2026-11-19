@@ -38,7 +38,7 @@ export function settingsItems(active: OrgSummary): SettingsItem[] {
     ? [
         {
           to: '/einstellungen/einrichtung',
-          label: t('Einrichtung (Übersicht)'),
+          label: t('Einstellungen im Überblick'),
           section: t('Allgemein'),
         },
         ...items,

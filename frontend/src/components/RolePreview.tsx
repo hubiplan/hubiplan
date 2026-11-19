@@ -70,7 +70,7 @@ export function RolePreviewSelect({
         <option value="">{t('Eigene Ansicht')}</option>
         {roles.map((r) => (
           <option key={r.id} value={String(r.id)}>
-            {t('Ansicht als')} {r.name}
+            {t('Ansicht als „{name}“', { name: r.name })}
           </option>
         ))}
       </select>
@@ -105,9 +105,9 @@ export function RolePreviewBanner({
   return (
     <div className="role-preview-banner" role="status">
       <p>
-        <strong>{t('Ansicht als „{name}“', { name: active.name })}</strong>
+        <strong>{t('Ansicht als „{name}“', { name: active.name })}</strong>{' '}
         {t(
-          ': So sieht jemand mit dieser Rolle HUBIplan, soweit du die Rechte selbst hast. Ändern ist ausgeschaltet.',
+          'So sieht jemand mit dieser Rolle HUBIplan, soweit du die Rechte selbst hast. Ändern ist ausgeschaltet.',
         )}
       </p>
       <button type="button" className="button" onClick={() => void end()} disabled={busy}>

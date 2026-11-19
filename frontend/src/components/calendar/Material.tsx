@@ -1,5 +1,6 @@
 // Vor Ort (Anmeldung A6, Konzept 3.11): Namensschilder und Aufkleber mit wählbaren Angaben
 // drucken, Material (Namensschild, Tasche, Leihgerät …) ausgeben und zurücknehmen.
+import { useRowSort } from '../RowSort.tsx'
 import { useEffect, useState } from 'react'
 import type { CalendarBase } from '../../api/events.ts'
 import { registrationApi } from '../../api/registrations.ts'
@@ -112,6 +113,7 @@ export function MaterialPanel({ base, eventId }: { base: CalendarBase; eventId: 
   const [failed, setFailed] = useState<string | null>(null)
   const rows = data?.rows ?? []
   const search = useRowSearch(rows, (r) => `${r.name} ${r.number}`, t('Personen'))
+  const sorting = useRowSort(search.shown, { name: (r) => r.name })
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -214,14 +216,14 @@ export function MaterialPanel({ base, eventId }: { base: CalendarBase; eventId: 
             <table className="table">
               <thead>
                 <tr>
-                  <th>{t('Name')}</th>
+                  {sorting.head('name', t('Name'))}
                   {mats.map((m) => (
                     <th key={m.id}>{m.name}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {search.shown.map((r) => (
+                {sorting.rows.map((r) => (
                   <tr key={r.id}>
                     <td>
                       {r.name}

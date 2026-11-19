@@ -1,5 +1,6 @@
 // Mitglieder › Anträge: eingegangene Online-Anträge prüfen, zustimmen, aufnehmen
 // (konzepte/online-beitrittsformular.md B1–B5).
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { admissionApi } from '../../api/admission.ts'
@@ -63,6 +64,13 @@ function ApplicationList() {
     [org.id, status],
   )
   const data = loaded.data?.status === status ? loaded.data.d : null
+  const sorting = useRowSort(data?.results ?? [], {
+    number: (r) => r.number,
+    name: (r) => r.name,
+    type: (r) => r.member_type,
+    created: (r) => r.created_at,
+    status: (r) => r.status_label,
+  })
   const canEdit = org.permissions.includes(PERM.membersEdit)
   const ready = (r: ApplicationRow) =>
     r.status === 'open' && r.approvals_met !== false && !r.disputed
@@ -147,15 +155,15 @@ function ApplicationList() {
             <thead>
               <tr>
                 {bulk && <th aria-label={t('Auswahl')} />}
-                <th>{t('Antrag')}</th>
-                <th>{t('Name')}</th>
-                <th>{t('Mitgliedsart')}</th>
-                <th>{t('Eingang')}</th>
-                <th>{t('Status')}</th>
+                {sorting.head('number', t('Antrag'))}
+                {sorting.head('name', t('Name'))}
+                {sorting.head('type', t('Mitgliedsart'))}
+                {sorting.head('created', t('Eingang'))}
+                {sorting.head('status', t('Status'))}
               </tr>
             </thead>
             <tbody>
-              {data.results.map((r) => (
+              {sorting.rows.map((r) => (
                 <tr key={r.id}>
                   {bulk && (
                     <td>

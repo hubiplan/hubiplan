@@ -8,6 +8,14 @@ type Params = Record<string, string | number | null | undefined>
 type Pair = [(p?: Params) => string, (p?: Params) => string]
 
 const WORDS = {
+  ['Alle Schützen haben ein Ergebnis.']: [
+    (p) => t('Alle Schützen haben ein Ergebnis.', p),
+    (p) => t('Alle Teilnehmenden haben ein Ergebnis.', p),
+  ],
+  ['Name des Schützen, der Untereinheit oder Mannschaft']: [
+    (p) => t('Name des Schützen, der Untereinheit oder Mannschaft', p),
+    (p) => t('Name der teilnehmenden Person, der Untereinheit oder Mannschaft', p),
+  ],
   ['Schütze']: [(p) => t('Schütze', p), (p) => t('Teilnehmer/in', p)],
   ['Schützen']: [(p) => t('Schützen', p), (p) => t('Teilnehmende', p)],
   ['Noch keine Schützen.']: [

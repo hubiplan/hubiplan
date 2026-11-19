@@ -53,7 +53,13 @@ export function setupGroups(
     groups.push({
       key: 'wettbewerbe',
       label: t('Wettbewerbe'),
-      items: [{ to: '/wettbewerbe/einrichtung', label: t('Schießstände') }],
+      items: [
+        {
+          to: '/wettbewerbe/einrichtung',
+          // VW-13: Schießstände nur mit Modul Schießsport
+          label: on('shooting') ? t('Schießstände') : t('Einrichtung der Wettbewerbe'),
+        },
+      ],
     })
   }
   if (on('music') && can(PERM.musicView)) {

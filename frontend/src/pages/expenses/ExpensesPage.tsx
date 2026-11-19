@@ -1,5 +1,6 @@
 // Finanzen › Auslagen: prüfen, freigeben, auszahlen, Sammelüberweisung, Links für Personen
 // ohne Zugang und Einstellungen (docs/auslagen.md).
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
@@ -58,6 +59,13 @@ function ExpensesPage() {
   const [picked, setPicked] = useState<number[]>([])
   const [notice, setNotice] = useState('')
   const [failure, setFailure] = useState('')
+  const sorting = useRowSort(list.data?.claims ?? [], {
+    number: (c) => c.number,
+    name: (c) => c.name,
+    purpose: (c) => c.purpose,
+    amount: (c) => Number(c.amount_due),
+    status: (c) => c.status,
+  })
   if (detail.value)
     return (
       <ClaimPanel
@@ -148,15 +156,15 @@ function ExpensesPage() {
             <thead>
               <tr>
                 {tab === 'unreviewed' && <th>{t('Auswahl')}</th>}
-                <th>{t('Nummer')}</th>
-                <th>{t('Von')}</th>
-                <th>{t('Zweck')}</th>
-                <th>{t('Betrag')}</th>
-                <th>{t('Stand')}</th>
+                {sorting.head('number', t('Nummer'))}
+                {sorting.head('name', t('Von'))}
+                {sorting.head('purpose', t('Zweck'))}
+                {sorting.head('amount', t('Betrag'))}
+                {sorting.head('status', t('Stand'))}
               </tr>
             </thead>
             <tbody>
-              {data.claims.map((c) => (
+              {sorting.rows.map((c) => (
                 <tr key={c.id}>
                   {tab === 'unreviewed' && (
                     <td>

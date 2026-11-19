@@ -134,7 +134,7 @@ export function AccountsPage() {
       {canEdit && (
         <>
           <Checkbox
-            label={t('Zählprotokoll und Kassenbericht für Feste nutzen')}
+            label={t('Zählprotokoll und Kassenbericht für Veranstaltungen nutzen')}
             checked={!!org.cash_counts_enabled}
             onChange={(on) =>
               void (async () => {

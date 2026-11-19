@@ -10,10 +10,11 @@ import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components
 import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { useSportText, type SportText } from './words.ts'
 
 /** Platzhalter im Text der Urkunde */
-const placeholders = (): [string, string][] => [
-  ['name', t('Name des Schützen, der Untereinheit oder Mannschaft')],
+const placeholders = (sw: SportText): [string, string][] => [
+  ['name', sw('Name des Schützen, der Untereinheit oder Mannschaft')],
   ['einheit', t('Untereinheit (bei Einzelwertung)')],
   ['platz', t('Platz (Zahl)')],
   ['wertung', t('Name der Wertung')],
@@ -30,6 +31,7 @@ const placeholders = (): [string, string][] => [
 
 export function CertificateTemplatesPage() {
   const org = useActiveOrg()
+  const sw = useSportText()
   const canManage = org.permissions.includes(PERM.competitionsManage)
   const { data, error, reload } = useLoad(() => certificatesApi.list(org.id), [org.id])
   const [name, setName] = useState('')
@@ -87,7 +89,7 @@ export function CertificateTemplatesPage() {
       <details className="card card-wide">
         <summary>{t('Platzhalter im Text')}</summary>
         <ul>
-          {placeholders().map(([key, label]) => (
+          {placeholders(sw).map(([key, label]) => (
             <li key={key}>
               <code>{`{${key}}`}</code> {label}
             </li>

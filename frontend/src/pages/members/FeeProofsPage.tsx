@@ -1,5 +1,6 @@
 // Mitglieder › Beitragsnachweise: eingegangene Nachweise prüfen, Stand aller Mitglieder mit
 // Ermäßigung je Beitragsjahr und Vorschläge zum Beenden (docs/beitragsnachweise.md).
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { feeProofApi } from '../../api/feeProofs.ts'
@@ -223,6 +224,12 @@ function YearOverview() {
   const org = useActiveOrg()
   const [year, setYear] = useState<number | undefined>(undefined)
   const data = useLoad(() => feeProofApi.overview(org.id, year), [org.id, year])
+  const sorting = useRowSort(data.data?.rows ?? [], {
+    member: (r) => `${r.last_name} ${r.first_name}`,
+    discount: (r) => r.discount_name,
+    due: (r) => r.due,
+    state: (r) => r.state,
+  })
   if (data.error) return <LoadError message={data.error} onRetry={data.reload} />
   if (!data.data) return <Loading />
   const o = data.data
@@ -250,14 +257,14 @@ function YearOverview() {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Mitglied')}</th>
-                <th>{t('Ermäßigung')}</th>
-                <th>{t('Frist')}</th>
-                <th>{t('Stand')}</th>
+                {sorting.head('member', t('Mitglied'))}
+                {sorting.head('discount', t('Ermäßigung'))}
+                {sorting.head('due', t('Frist'))}
+                {sorting.head('state', t('Stand'))}
               </tr>
             </thead>
             <tbody>
-              {o.rows.map((r) => (
+              {sorting.rows.map((r) => (
                 <tr key={`${r.membership}-${r.discount}`}>
                   <td>
                     <Link to={`/mitglieder/${r.membership}`}>
@@ -290,9 +297,14 @@ function YearOverview() {
 function Stale() {
   const org = useActiveOrg()
   const data = useLoad(() => feeProofApi.stale(org.id), [org.id])
+  const staleSort = useRowSort(data.data?.stale ?? [], {
+    member: (r) => `${r.last_name} ${r.first_name}`,
+    discount: (r) => r.discount_name,
+    since: (r) => r.valid_from,
+  })
   if (data.error) return <LoadError message={data.error} onRetry={data.reload} />
   if (!data.data) return <Loading />
-  const rows = data.data.stale
+  const rows = staleSort.rows
   return (
     <div className="stack">
       <p className="muted">
@@ -307,9 +319,9 @@ function Stale() {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Mitglied')}</th>
-                <th>{t('Ermäßigung')}</th>
-                <th>{t('seit')}</th>
+                {staleSort.head('member', t('Mitglied'))}
+                {staleSort.head('discount', t('Ermäßigung'))}
+                {staleSort.head('since', t('seit'))}
               </tr>
             </thead>
             <tbody>

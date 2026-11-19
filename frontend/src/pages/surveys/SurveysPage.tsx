@@ -1,5 +1,6 @@
 // Umfragen und Meinungsbilder: anlegen, starten, Ergebnis, Export (Verein und Untereinheit).
 // Konzept: konzepte/umfragen-meinungsbilder.md.
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -108,6 +109,12 @@ function Surveys({ base, orgId, canEdit }: { base: string; orgId: number; canEdi
   const detail = useDetailParam('umfrage')
   const list = useLoad(() => surveyApi.list(base), [base])
   const [creating, setCreating] = useState(false)
+  const sorting = useRowSort(list.data ?? [], {
+    title: (s) => s.title,
+    end: (s) => s.closes_at,
+    answers: (s) => s.participants,
+    status: (s) => s.status,
+  })
   if (detail.value) {
     return (
       <SurveyDetail
@@ -125,7 +132,7 @@ function Surveys({ base, orgId, canEdit }: { base: string; orgId: number; canEdi
       />
     )
   }
-  const rows = list.data ?? []
+  const rows = sorting.rows
   return (
     <div className="surveys stack">
       <PageHeader
@@ -170,10 +177,10 @@ function Surveys({ base, orgId, canEdit }: { base: string; orgId: number; canEdi
             <table className="table">
               <thead>
                 <tr>
-                  <th>{t('Umfrage')}</th>
-                  <th>{t('Ende')}</th>
-                  <th>{t('Antworten')}</th>
-                  <th>{t('Stand')}</th>
+                  {sorting.head('title', t('Umfrage'))}
+                  {sorting.head('end', t('Ende'))}
+                  {sorting.head('answers', t('Antworten'))}
+                  {sorting.head('status', t('Stand'))}
                 </tr>
               </thead>
               <tbody>

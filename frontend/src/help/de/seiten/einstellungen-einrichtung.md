@@ -1,6 +1,6 @@
 ---
 key: page.settings_setup
-titel: Einstellungen › Einrichtung (Übersicht)
+titel: Einstellungen › Einstellungen im Überblick
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung, /einstellungen]
 stichworte: [Ersteinrichtung, einrichten, Fortschritt, Pflichtangaben, Mahnstufen]
