@@ -30,7 +30,7 @@ function ResultCard({
 }: {
   res: ScanResult
   page: ScanPage
-  onCash: (participant: number) => void
+  onCash: (participant: string) => void
 }) {
   const card = res.card
   const okTitle = {
@@ -68,7 +68,7 @@ function ResultCard({
           </p>
           {page.cash && card.open_amount && card.id && (
             <div className="button-row">
-              <button type="button" className="button" onClick={() => onCash(card.id ?? 0)}>
+              <button type="button" className="button" onClick={() => onCash(card.id ?? '')}>
                 {t('{amount} bar erhalten', { amount: euro(card.open_amount) })}
               </button>
             </div>
@@ -143,16 +143,17 @@ export function PublicScanPage() {
   }, [token])
 
   const send = useCallback(
-    async (value: string | number) => {
-      const text = typeof value === 'number' ? '' : value.trim()
-      if ((typeof value !== 'number' && !text) || busy.current) return
+    // byRef: Verweis auf eine Person aus der Namenssuche statt des Codes einer Karte
+    async (value: string, byRef = false) => {
+      const text = value.trim()
+      if (!text || busy.current) return
       busy.current = true
       setFailure(null)
       try {
         setRes(
           await registrationApi.scan(
             token,
-            typeof value === 'number' ? { participant: value } : { code: text },
+            byRef ? { participant: text } : { code: text },
           ),
         )
         if (navigator.vibrate) navigator.vibrate(120)
@@ -307,7 +308,7 @@ export function PublicScanPage() {
                           onClick={() => {
                             setHits(null)
                             setTerm('')
-                            void send(h.id)
+                            void send(h.id, true)
                           }}
                         >
                           {page.kind === 'entry'

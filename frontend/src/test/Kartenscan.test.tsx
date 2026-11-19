@@ -77,7 +77,7 @@ describe('Kartenscan für Personal', () => {
         body: {
           results: [
             {
-              id: 7,
+              id: 'ref-7',
               name: 'Anna Muster',
               birth_date: '1990-05-01',
               price_name: 'Erwachsene',
@@ -98,7 +98,7 @@ describe('Kartenscan für Personal', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Einbuchen' }))
     expect(await screen.findByText('Gültig: einlassen')).toBeInTheDocument()
     const post = calls.find((c) => c.key === `POST ${API}`)
-    expect(JSON.parse(String(post?.init?.body))).toEqual({ participant: 7 })
+    expect(JSON.parse(String(post?.init?.body))).toEqual({ participant: 'ref-7' })
   })
 
   it('nimmt am Kassen-Link Bargeld an', async () => {
@@ -111,7 +111,7 @@ describe('Kartenscan für Personal', () => {
           valid: false,
           message: 'Noch nicht bezahlt.',
           at: null,
-          card: { ...CARD, id: 7, paid_state: 'open', open_amount: '25.00' },
+          card: { ...CARD, id: 'ref-7', paid_state: 'open', open_amount: '25.00' },
         },
       }),
       [`POST ${API}cash/`]: () => ({
@@ -121,7 +121,7 @@ describe('Kartenscan für Personal', () => {
           valid: true,
           message: 'Barzahlung gebucht.',
           at: null,
-          card: { ...CARD, id: 7, open_amount: null },
+          card: { ...CARD, id: 'ref-7', open_amount: null },
         },
       }),
     })
@@ -132,7 +132,7 @@ describe('Kartenscan für Personal', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Barzahlung buchen' }))
     expect(await screen.findByText('Barzahlung gebucht.')).toBeInTheDocument()
     const post = calls.find((c) => c.key === `POST ${API}cash/`)
-    expect(JSON.parse(String(post?.init?.body))).toMatchObject({ participant: 7 })
+    expect(JSON.parse(String(post?.init?.body))).toMatchObject({ participant: 'ref-7' })
   })
 
   it('meldet einen gesperrten Link', async () => {

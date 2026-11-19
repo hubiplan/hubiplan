@@ -57,6 +57,15 @@ def deadline(user) -> datetime.datetime | None:
     return getattr(user, "mfa_required_by", None)
 
 
+def overdue(user) -> bool:
+    """Frist für den zweiten Faktor abgelaufen und keiner eingerichtet: Die Rechte ruhen.
+    Anders als ``gate`` setzt das keine Frist in Gang; ohne Frist gibt es keine Pflicht."""
+    if not getattr(user, "pk", None):
+        return False
+    due = user.mfa_required_by
+    return due is not None and timezone.now() > due and not has_mfa(user)
+
+
 def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
     """Rechte ohne zweiten Faktor abziehen: in der Frist die folgenreichsten, danach alle."""
     if not perms or not getattr(user, "pk", None) or has_mfa(user):

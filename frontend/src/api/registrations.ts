@@ -487,7 +487,8 @@ export interface ScanPage {
 export type ScanKind = 'entry' | 'addon' | 'material_out' | 'material_return'
 
 export interface ScanHit {
-  id: number
+  /** Verweis auf die Person, nur an diesem Link und einige Stunden gültig */
+  id: string
   name: string
   birth_date: string | null
   price_name: string
@@ -512,7 +513,8 @@ export interface ScanResult {
   message: string
   at: string | null
   card: {
-    id?: number
+    /** Verweis auf die Person (für die Kasse), keine fortlaufende Nummer */
+    id?: string
     /** Kassen-Link: offener Betrag, bar anzunehmen */
     open_amount?: string | null
     name: string
@@ -633,9 +635,9 @@ export const registrationApi = {
   revokeScanLink: (base: CalendarBase, eventId: number, id: number) =>
     api.del(`${url(base, eventId)}scan-links/${id}/`),
   scanPage: (token: string) => api.get<ScanPage>(`/api/public/scan/${token}/`),
-  scan: (token: string, data: { code?: string; participant?: number }) =>
+  scan: (token: string, data: { code?: string; participant?: string }) =>
     api.post<ScanResult>(`/api/public/scan/${token}/`, data),
-  scanCash: (token: string, data: { participant: number; request_key: string }) =>
+  scanCash: (token: string, data: { participant: string; request_key: string }) =>
     api.post<ScanResult>(`/api/public/scan/${token}/cash/`, data),
   scanSearch: (token: string, q: string) =>
     api.get<{ results: ScanHit[] }>(`/api/public/scan/${token}/search/?q=${encodeURIComponent(q)}`),

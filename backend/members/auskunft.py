@@ -853,28 +853,35 @@ def build(membership: Membership, org) -> bytes:
 
     from registrations.models import Registration
 
-    # Anmeldungen zu Terminen (mit Participant): eigene und solche, in denen die Person steht
+    # Anmeldungen zu Terminen (mit Participant): eigene und solche, in denen die Person steht.
+    # Wer nur mitangemeldet ist, bekommt die eigene Zeile, nicht die Angaben der buchenden
+    # Person und der übrigen Teilnehmenden (deren Daten gehören nicht in diese Auskunft).
+    def _anmeldung(r) -> dict:
+        own = r.membership_id == membership.pk
+        return {
+            "anmeldung": r.display_number,
+            "termin": r.setup.event.title,
+            "beginn": r.setup.event.starts_at,
+            "stand": r.status,
+            "angemeldet_von": r.name if own else "",
+            "email": r.email if own else "",
+            "telefon": r.phone if own else "",
+            "anschrift": r.address if own else "",
+            "bemerkung": r.note if own else "",
+            "summe": r.total if own else None,
+            "rechnung": r.invoice.display_number if own and r.invoice_id else "",
+            "angemeldet_am": r.created_at,
+            "abgemeldet_am": r.cancelled_at,
+            "personen": [
+                {"name": p.name, "tarif": p.price_name, "betrag": p.amount, "stand": p.status}
+                for p in r.participants.all()
+                if own or p.membership_id == membership.pk
+            ],
+        }
+
     files["anmeldungen.json"] = _dump(
         [
-            {
-                "anmeldung": r.display_number,
-                "termin": r.setup.event.title,
-                "beginn": r.setup.event.starts_at,
-                "stand": r.status,
-                "angemeldet_von": r.name,
-                "email": r.email,
-                "telefon": r.phone,
-                "anschrift": r.address,
-                "bemerkung": r.note,
-                "summe": r.total,
-                "rechnung": r.invoice.display_number if r.invoice_id else "",
-                "angemeldet_am": r.created_at,
-                "abgemeldet_am": r.cancelled_at,
-                "personen": [
-                    {"name": p.name, "tarif": p.price_name, "betrag": p.amount, "stand": p.status}
-                    for p in r.participants.all()
-                ],
-            }
+            _anmeldung(r)
             for r in Registration.objects.filter(
                 Q(membership=membership) | Q(participants__membership=membership)
             )
