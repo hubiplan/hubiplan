@@ -790,6 +790,16 @@ org_patterns = [
         name="event-registration-club",
     ),
     path(
+        "events/<int:pk>/registration/scan-links/",
+        registration_views.ScanLinksView.as_view(),
+        name="event-registration-scan-links",
+    ),
+    path(
+        "events/<int:pk>/registration/scan-links/<int:link_id>/",
+        registration_views.ScanLinkView.as_view(),
+        name="event-registration-scan-link",
+    ),
+    path(
         "registrations/club-offers/",
         registration_views.ClubOffersView.as_view(),
         name="registration-club-offers",
@@ -1186,6 +1196,16 @@ urlpatterns = [
         "public/registration/mine/<str:token>/cancel/",
         registration_public.MineCancelView.as_view(),
         name="public-registration-cancel",
+    ),
+    path(
+        "public/scan/<str:token>/search/",
+        registration_public.ScanSearchView.as_view(),
+        name="public-registration-scan-search",
+    ),
+    path(
+        "public/scan/<str:token>/",
+        registration_public.ScanView.as_view(),
+        name="public-registration-scan",
     ),
     path(
         "public/registration/<str:key>/",

@@ -447,6 +447,8 @@ class Participant(models.Model):
     checked_in_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Eingelassen über einen Scan-Link (Bezeichnung zur Zeit des Scans)
+    checked_in_via = models.CharField(max_length=100, blank=True, db_default="", default="")
 
     class Meta:
         verbose_name = "Teilnehmende"
@@ -522,4 +524,75 @@ class PendingRegistration(models.Model):
 
     def save(self, *args, **kwargs):
         self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class ScanLink(models.Model):
+    """Link für Scanpersonal ohne Konto (A6): öffnet auf dem Handy nur den Kartenscanner,
+    für den Einlass oder für eine Zusatzleistung (z. B. Essen). Gesucht wird über die
+    Prüfsumme des Schlüssels; der Schlüssel selbst liegt verschlüsselt, damit der Link sich
+    noch einmal anzeigen lässt."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    setup = models.ForeignKey(
+        RegistrationSetup, on_delete=models.CASCADE, related_name="scan_links"
+    )
+    label = models.CharField(_("Bezeichnung"), max_length=100)
+    # leer: Einlass; sonst wird diese Zusatzleistung eingelöst
+    addon = models.ForeignKey(
+        AddOn, on_delete=models.CASCADE, null=True, blank=True, related_name="scan_links"
+    )
+    token = EncryptedCharField(max_length=100, strict=True)
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField(_("gültig bis"))
+    # Ohne Karte: Personal darf Angemeldete per Namenssuche einbuchen (nach Ausweisabgleich)
+    allow_search = models.BooleanField(_("Namenssuche erlauben"), default=False)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    scans = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
+        return self.label
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.setup.organization_id
+        super().save(*args, **kwargs)
+
+
+class Redemption(models.Model):
+    """Eingelöste Zusatzleistung (z. B. Essen ausgegeben): einmal je gebuchter Leistung."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="redemption")
+    # wer die Karte vorgezeigt hat (bei Leistungen je Anmeldung eine der Personen)
+    participant = models.ForeignKey(
+        Participant, on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    at = models.DateTimeField()
+    link = models.ForeignKey(
+        ScanLink, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
+        return f"redemption {self.pk}"
+
+    def save(self, *args, **kwargs):
+        self.organization_id = self.booking.organization_id
         super().save(*args, **kwargs)

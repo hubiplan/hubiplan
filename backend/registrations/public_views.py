@@ -186,3 +186,69 @@ class MineCancelView(_Public):
                 )
             reg = _own(token) if reg.access_nonce else reg
             return Response(mine_payload(reg))
+
+
+# --- Scanpersonal mit Link (A6) ---
+
+SCAN_LIMIT = 600  # Scans je Minute und Link (Bremse gegen Durchprobieren)
+
+
+def _scan_link(token: str):
+    from . import scanning
+
+    link = scanning.link_by_token(token)
+    if link is None:
+        raise Http404
+    return link
+
+
+class ScanIn(serializers.Serializer):
+    code = serializers.CharField(max_length=200, allow_blank=True, required=False, default="")
+    participant = serializers.IntegerField(required=False, allow_null=True, default=None)
+
+
+class ScanView(_Public):
+    """``GET public/scan/<token>/``: Station und Termin · ``POST {code}``: Karte prüfen und
+    abhaken bzw. Zusatzleistung einlösen."""
+
+    def get(self, request, token: str):
+        from . import scanning
+
+        link = _scan_link(token)
+        with override(self.language(request)), tenant_context(link.organization_id):
+            return Response(scanning.page_data(link))
+
+    def post(self, request, token: str):
+        from . import scanning
+
+        link = _scan_link(token)
+        if too_many(f"registration-scan:{link.pk}", SCAN_LIMIT, 60):
+            return Response({"detail": gettext("Zu viele Scans. Bitte kurz warten.")}, status=429)
+        ser = ScanIn(data=request.data)
+        ser.is_valid(raise_exception=True)
+        with (
+            override(self.language(request)),
+            tenant_context(link.organization_id),
+            transaction.atomic(),
+        ):
+            v = ser.validated_data
+            return Response(scanning.scan(link, v["code"], participant=v["participant"]))
+
+
+class ScanSearchView(_Public):
+    """``GET public/scan/<token>/search/?q=``: Angemeldete zum Namen, nur wenn der Link die
+    Namenssuche erlaubt (Einbuchen ohne Karte nach Ausweisabgleich)."""
+
+    def get(self, request, token: str):
+        from . import scanning
+
+        link = _scan_link(token)
+        if not link.allow_search:
+            raise Http404
+        if too_many(f"registration-scan-search:{link.pk}", 120, 60):
+            return Response(
+                {"detail": gettext("Zu viele Anfragen. Bitte kurz warten.")}, status=429
+            )
+        with tenant_context(link.organization_id):
+            hits = scanning.search(link, request.query_params.get("q", "")[:100])
+        return Response({"results": hits})

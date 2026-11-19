@@ -36,7 +36,7 @@ from members.models import Membership
 from organizations.models import Organization
 
 from . import extras as ex
-from . import onsite, public, services, tickets
+from . import onsite, public, scanning, services, tickets
 from .models import (
     MAX_ADDONS,
     MAX_CHOICES,
@@ -1034,6 +1034,89 @@ class CheckInView(_OrgRegistrationMixin, APIView):
             "cancelled": gettext("Diese Person ist abgemeldet."),
         }
         return Response({"result": result, "message": messages[result], "participant": row})
+
+
+class ScanLinkIn(serializers.Serializer):
+    label = serializers.CharField(max_length=100)
+    addon = serializers.IntegerField(required=False, allow_null=True, default=None)
+    expires_at = serializers.DateTimeField(required=False, allow_null=True, default=None)
+    allow_search = serializers.BooleanField(required=False, default=False)
+
+
+class ScanLinksView(_OrgRegistrationMixin, APIView):
+    """Scan-Links für Personal ohne Konto (A6): GET Liste mit Links · POST ``{label, addon?,
+    expires_at?}`` neuer Link für den Einlass oder eine Zusatzleistung."""
+
+    def get(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        links = setup.scan_links.select_related("setup__organization", "setup__event", "addon")
+        return Response(
+            {
+                "links": [scanning.link_data(link, with_url=True) for link in links],
+                "addons": [
+                    {"id": a.pk, "name": a.name} for a in setup.addons.filter(is_active=True)
+                ],
+                "default_expires_at": scanning.default_expiry(setup),
+            }
+        )
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        data = ScanLinkIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        if setup.scan_links.filter(revoked_at__isnull=True).count() >= scanning.MAX_LINKS:
+            raise serializers.ValidationError(
+                gettext("Höchstens {n} Scan-Links je Termin.").format(n=scanning.MAX_LINKS)
+            )
+        addon = None
+        if v["addon"] is not None:
+            addon = setup.addons.filter(pk=v["addon"]).first()
+            if addon is None:
+                raise serializers.ValidationError({"addon": gettext("Unbekannte Zusatzleistung.")})
+        expires = v["expires_at"]
+        if expires is not None and expires <= timezone.now():
+            raise serializers.ValidationError(
+                {"expires_at": gettext("Das Ende muss in der Zukunft liegen.")}
+            )
+        link = scanning.create(
+            setup,
+            label=v["label"],
+            addon=addon,
+            expires_at=expires,
+            allow_search=v["allow_search"],
+            user=request.user,
+        )
+        record(
+            self.org,
+            request.user,
+            "update",
+            event,
+            {"Scan-Link": [None, f"{link.label} ({scanning.station(link)})"]},
+        )
+        return Response(scanning.link_data(link, with_url=True), status=status.HTTP_201_CREATED)
+
+
+class ScanLinkView(_OrgRegistrationMixin, APIView):
+    """DELETE: Scan-Link sperren (bleibt in der Liste, damit nachvollziehbar ist, wer wann
+    gescannt hat)."""
+
+    def delete(self, request, pk: int, link_id: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        link = setup.scan_links.filter(pk=link_id).first()
+        if link is None:
+            raise NotFound()
+        if link.revoked_at is None:
+            link.revoked_at = timezone.now()
+            link.save(update_fields=["revoked_at"])
+            record(self.org, request.user, "update", event, {"Scan-Link": [link.label, None]})
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def _pdf(content: bytes, name: str) -> HttpResponse:

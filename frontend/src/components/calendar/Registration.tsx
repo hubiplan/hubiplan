@@ -48,6 +48,7 @@ import { berlin, formatDay, toApi } from './time.ts'
 import { PaidBadge } from './PaidBadge.tsx'
 import { CheckInPanel } from './CheckIn.tsx'
 import { QualificationPanel } from './AfterEvent.tsx'
+import { ScanLinksPanel } from './ScanLinks.tsx'
 import { ClubRegistrationCard } from './ClubRegistration.tsx'
 import { Modal } from '../Modal.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
@@ -706,6 +707,7 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
   const [replacing, setReplacing] = useState<{ reg: Registration; p: Participant } | null>(null)
   const [checkIn, setCheckIn] = useState(false)
   const [qualifying, setQualifying] = useState(false)
+  const [scanLinks, setScanLinks] = useState(false)
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading small />
   const offer = data.offer
@@ -796,6 +798,11 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
             {t('Einlass')}
           </button>
         )}
+        {hasRegistered && data.can_edit && (
+          <button type="button" className="button button-ghost" onClick={() => setScanLinks(true)}>
+            {t('Scan-Links für Personal')}
+          </button>
+        )}
         {hasRegistered && (
           <a
             className="button button-ghost"
@@ -842,6 +849,15 @@ function BoardRegistrationCard({ base, event }: { base: CalendarBase; event: Eve
           }}
         >
           <CheckInPanel base={base} eventId={event.id} />
+        </Modal>
+      )}
+      {scanLinks && (
+        <Modal
+          title={t('Scan-Links für Personal: {title}', { title: event.title })}
+          guard={false}
+          onClose={() => setScanLinks(false)}
+        >
+          <ScanLinksPanel base={base} eventId={event.id} />
         </Modal>
       )}
       {qualifying && (
