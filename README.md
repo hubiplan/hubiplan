@@ -60,6 +60,9 @@ Schützenverein, Musikverein oder Sportverein.
 - Familien und Haushalte: gemeinsame Anschrift und Post, Familienbeitrag, ein Zahler für
   mehrere Mitglieder, Zugang für Erziehungsberechtigte; Firmen zahlen für ihre Mitarbeiter
 - Kündigung im Mitgliederbereich, die der Vorstand bestätigt
+- Ermäßigung mit Nachweis (Schüler, Studierende …): Nachweis jährlich hochladen, Frist,
+  Erinnerungen und regulärer Beitrag nach Fristablauf
+  ([docs/beitragsnachweise.md](docs/beitragsnachweise.md))
 - **Organisationen als Mitglieder** (Firmen, Vereine, Behörden): Rechtsform, Ansprechpartner
   mit eigenem Zugang, Rechnungsanschrift, Beitrag nach Größe, Firmenlastschrift (SEPA B2B)
 - Zusatzfelder (auch Jahreszeiträume), Mitgliederfotos mit Einwilligung
@@ -73,8 +76,9 @@ Schützenverein, Musikverein oder Sportverein.
 - Autospeichern, Rückgängig, Papierkorb und Änderungsprotokoll
 
 **Zugänge und Rechte**
-- Anmeldung mit E-Mail und Passwort oder mit Passkey, Zwei-Faktor-Anmeldung (TOTP oder
-  Passkey), Einladungen statt Startpasswörtern
+- Anmeldung mit E-Mail und Passwort oder mit Passkey (auch in den Apps), Zwei-Faktor-Anmeldung
+  (TOTP oder Passkey), Einladungen statt Startpasswörtern; Hinweis-Mail bei jeder Änderung an
+  den Anmeldedaten, Vorwarnung vor dem Sitzungsende
 - Pflicht-2FA für jede Rolle mit Rechten (kurze Frist zum Einrichten, in der die
   folgenreichsten Rechte schon ruhen; der eigene Mitgliederbereich geht ohne); heikle Aktionen
   wie vollständige Exporte, Rollen vergeben oder endgültiges Löschen verlangen einen frischen
@@ -86,25 +90,36 @@ Schützenverein, Musikverein oder Sportverein.
 - Anmeldung an der Nextcloud des Vereins mit dem HUBIplan-Konto (OpenID Connect,
   [docs/nextcloud.md](docs/nextcloud.md))
 - „Mein Bereich“ für Mitglieder, Arbeitsbereich für Untereinheiten, Zugänge für Kassierer
-  und Kassenprüfer; „Zu erledigen“ sammelt offene Punkte aus allen Bereichen
+  und Kassenprüfer; „Zu erledigen“ sammelt offene Punkte aus allen Bereichen; Konten lassen
+  sich selbst löschen
 - Startseite je Konto selbst zusammenstellen (Blöcke ziehen, Größe wählen, ausblenden), frei
-  gewählte Schnellaktionen; „Einrichtung (Übersicht)“ zeigt den Stand aller Einrichtungsseiten
+  gewählte Schnellaktionen; „Einrichtung (Übersicht)“ zeigt den Stand aller Einrichtungsseiten;
+  Schnellsuche im Kopf (Strg+K) findet Mitglieder, Seiten und Termine
 
 **Vereinsleben**
 - Kalender für Dachverband, Verein und Untereinheiten mit Serienterminen, Anhängen und
-  Sichtbarkeit je Termin; gespeicherte Orte mit Anfahrt und Routenlink; fremde Kalender (Vereinsplaner, iCal) übernehmen
-  ([docs/fremde-kalender.md](docs/fremde-kalender.md))
+  Sichtbarkeit je Termin (auch „nur Vorstand“, mit eigenem Kalender-Abo für den Vorstand);
+  gespeicherte Orte mit Anfahrt und Routenlink; fremde Kalender (Vereinsplaner, iCal)
+  übernehmen ([docs/fremde-kalender.md](docs/fremde-kalender.md))
 - Zu- und Absagen (auf Wunsch auch „Vielleicht“) mit Anmeldeschluss, Höchstzahl und
   Begleitpersonen, Teilnehmerlisten; Einladung, Änderung, Erinnerung und Rundschreiben zum
   Termin per E-Mail mit Rückmeldelink ohne Anmeldung, Jahresprogramm als PDF, Kalender-Abo (iCal)
+- Anmeldungen mit Teilnahmegebühr: Tarife mit Preisstaffeln, Zusatzleistungen und
+  Zusatzfragen, Rechnung und Zahlungsbestätigung, Warteliste, Abmeldefristen mit Stornostaffel
+  und Ersatzperson; öffentliche Anmeldung für Nichtmitglieder mit eigener Veranstaltungsseite
+  auf der Webseite, Infoschreiben an die Angemeldeten, Sammelanmeldung der Vereine zu Terminen
+  des Dachverbands; vor Ort Eintrittskarten mit QR-Code, Einlass und Abendkasse (auch über
+  Scan-Links für Helfer und in den Apps), Namensschilder und Teilnahmebescheinigungen.
+  Kostenlose Veranstaltungen gehen genauso
 - Aufgaben mit Fristen, Serien, Anhängen und Freigaben über Ebenen
   ([docs/aufgaben.md](docs/aufgaben.md))
 - Versammlungen und Sitzungen: Einladung mit Tagesordnung, Anträge, Anwesenheit, Protokoll,
   Beschlussbuch und Wahlen, die direkt ins Amt übernommen werden; Anmelden per QR-Code
-  und Online-Abstimmung
+  und Online-Abstimmung mit gemischten Stimmzetteln bei geheimer Wahl
   ([docs/versammlungen.md](docs/versammlungen.md))
 - Umfragen und Meinungsbilder: Termin finden, Essenswahl, freie Fragen, auf Wunsch anonym,
-  mit Übernahme der Zusage in den Termin ([docs/umfragen.md](docs/umfragen.md))
+  mit Übernahme der Zusage in den Termin; anonyme Antworten werden gemischt, Ergebnisse auf
+  Wunsch erst nach dem Schließen ([docs/umfragen.md](docs/umfragen.md))
 - Helferdienste: Schichtpläne mit Selbsteintragung, Kontingenten für Untereinheiten und
   Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md))
 - Fristenkalender für Vereinspflichten (Freistellungsbescheid, Kassenprüfung,
@@ -114,7 +129,9 @@ Schützenverein, Musikverein oder Sportverein.
   Erinnerung vor dem Ablauf und Hinweis bei der Einteilung in Helferdienste
   ([docs/qualifikationen.md](docs/qualifikationen.md))
 - Material, Räume und Anlagen mit Standort, Zustand und Verlauf; Belegung mit Anfragen aus
-  dem Mitgliederbereich, Wochenansicht und Kalender-Abo ([docs/material.md](docs/material.md))
+  dem Mitgliederbereich, Buchung für ein Mitglied, Wochen-, Monats- und Jahresansicht,
+  Kalender-Abo, Mietpreis am Objekt und Rechnung aus der Buchung
+  ([docs/material.md](docs/material.md))
 - Musik: Auftritte mit Besetzung, Verfügbarkeiten und Abrechnung, Proben, Programme und ein
   Notenarchiv mit Katalogimport ([docs/musik.md](docs/musik.md))
 
@@ -125,7 +142,8 @@ Schützenverein, Musikverein oder Sportverein.
   Live-Tabellen, Druckvorlagen, Urkunden und Startkarten
 - Scheibenkatalog mit Wertung aus dem Trefferpunkt; Treffer antippen oder aus einem Foto der
   Scheibe vorschlagen lassen (das Foto wird nur im Speicher ausgewertet)
-- Ergebnisse auf der Vereinswebseite und unter „Meine Ergebnisse“
+- Ergebnisse auf der Vereinswebseite und unter „Meine Ergebnisse“; Statistik mit Teilnahmen
+  einschließlich Gästen, Starter aus den Anmeldungen eines Termins
 - Meldungen an fremde Veranstalter (Mannschaften, Personen, Angaben) und Ausschreibungen an
   die eigenen Untereinheiten ([docs/wettbewerbe.md](docs/wettbewerbe.md),
   [docs/meldungen.md](docs/meldungen.md))
@@ -133,6 +151,8 @@ Schützenverein, Musikverein oder Sportverein.
 **Beiträge und Rechnungen**
 - Beitragssätze je Mitgliedsart und Altersstufe, Beitragslauf mit Rechnungen an Mitglieder
   und Sammelrechnungen an Untereinheiten, Verbandsbeitrag des Dachverbands
+- Anteiliger Beitrag bei Ein- und Austritt im Jahr wählbar: voll, je Monat, Quartal oder
+  Halbjahr
 - Rechnungen als PDF mit QR-Code, Versand per E-Mail, Mahnstufen
 - SEPA-Lastschrift mit Mandaten, Lastschriftdatei (pain.008) und Vorabankündigung
 - Rechnungen und Stornorechnungen als eigener Beleg
@@ -152,6 +172,9 @@ Schützenverein, Musikverein oder Sportverein.
 - Kasse mit Konten, Kategorien (mit Vorlagen), Splitbuchungen, Belegen, Projekten und eigenem
   Geschäftsjahr; Kontoauszüge (CAMT.053) werden eingelesen und offenen Posten zugeordnet
   ([docs/kontoauszug.md](docs/kontoauszug.md))
+- Auslagen erstatten: Mitglieder melden Ausgaben mit Belegfoto (auch in der App), die Kasse
+  prüft, gibt frei (Vier-Augen-Regel) und zahlt bar, per GiroCode oder als Sammelüberweisung
+  aus; Verzicht als Aufwandsspende ([docs/auslagen.md](docs/auslagen.md))
 - Digitale Quittungen mit Unterschrift auf dem Display, Zählprotokoll, DATEV-Export,
   ZIP-Export für die Prüfung nach GoBD
   ([Verfahrensdokumentation](docs/verfahrensdokumentation-kasse.md))
@@ -170,16 +193,19 @@ Schützenverein, Musikverein oder Sportverein.
 **Kommunikation und Dokumente**
 - Rundschreiben als E-Mail, Serienbrief, Mitteilung im Mitgliederbereich oder Push in die App
 - Mailverteiler, Postausgang mit Versand über SMTP
-- Briefbogen und Word-Briefvorlage je Einheit
+- Briefbogen und Word-Briefvorlage je Einheit, gestaltbar mit Linienfarbe, Schriften, eigenem
+  Logo und Namen im Briefkopf
 - Dokumentenablage mit Ordnern und Rechten, Satzung mit allen Fassungen
 - Impressum und Datenschutzhinweise je Einheit
 
 **Webseite und App**
-- Inhalte der Vereinswebseite (Startseite und Textseiten aus Abschnitten, Texte, Bilder und
-  Alben, Chronik, Belegung, eigene Beiträge von Instagram und Facebook) mit Entwurf, Vorschau
-  und Veröffentlichen
-- Gestaltung über Designpakete ([docs/designpakete.md](docs/designpakete.md)), Feinabstimmung
-  mit Reglern statt CSS, mitgelieferte Schriften zur Auswahl (ohne fremde Server), Vorschau
+- Inhalte der Vereinswebseite (Startseite, Textseiten und Seiten der Untereinheiten aus
+  Abschnitten, Texte, Bilder und Alben mit Bildnachweis, Chronik, Würdenträger, Belegung,
+  Veranstaltungsseiten mit Anmeldung, eigene Beiträge von Instagram und Facebook) mit
+  Entwurf, Vorschau und Veröffentlichen
+- Gestaltung über Designpakete, auch je Untereinheit ([docs/designpakete.md](docs/designpakete.md)),
+  Feinabstimmung mit Reglern statt CSS, nach Bereichen der Webseite gegliedert, mitgelieferte
+  Schriften zur Auswahl (ohne fremde Server), Titelfoto als Bühne oder Karussell, Vorschau
   als Handy, Tablet und Bildschirm, die letzten fünf Fassungen zum Zurückholen
 - Erscheinungsbild je Einheit mit Farbpalette, Verläufen und eigenem Logo für den Dunkelmodus
 - öffentliche, versionierte Schnittstelle für
@@ -187,10 +213,12 @@ Schützenverein, Musikverein oder Sportverein.
 - Schnittstelle für die Apps ([Android](https://github.com/hubiplan/hubiplan-android),
   [iOS](https://github.com/hubiplan/hubiplan-ios)): Verbinden per QR-Code, Geräteschlüssel
   je Gerät, Push über Web-Push/UnifiedPush und als verschlüsseltes Wecksignal über Apple
-  (APNs) ([docs/app.md](docs/app.md))
+  (APNs); Mindestversion der App je Plattform ([docs/app.md](docs/app.md))
 - KI-Schnittstelle (Model Context Protocol): KI-Assistenten durchsuchen die Hilfe ohne
   Anmeldung; mit Anmeldung und Zusatzrecht lesen sie die Webseite der Einheit und bearbeiten
-  sie als Entwurf ([docs/mcp.md](docs/mcp.md))
+  Texte, Startseite, Menü, Gestaltung und Chronik als Entwurf, ändern auf Nachfrage
+  Erscheinungsbild und Briefbogen und legen Beiträge für soziale Medien als Entwurf ab;
+  veröffentlichen kann nur ein Mensch ([docs/mcp.md](docs/mcp.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,
@@ -200,15 +228,21 @@ Schützenverein, Musikverein oder Sportverein.
   dort schreibgeschützt; Einwilligungen für Fotos und Veröffentlichung, Löschfristen
   ([docs/aufbewahrung.md](docs/aufbewahrung.md)); Einheiten werden zweistufig gelöscht,
   endgültig erst nach Ablauf der Aufbewahrungsfristen
+- Auskunft nach Art. 15 DSGVO mit allen Daten einer Person und ihres Kontos, Widerspruch gegen
+  die Nennung des Namens in allen öffentlichen Ausgaben, Foto-Einwilligung für Minderjährige;
+  verwaiste Konten werden nach 90 Tagen bereinigt
 
 **Sprache, Hilfe und Lernhilfen**
 - Oberfläche, Hinweis-Mails und Push auf Deutsch oder Englisch, je Benutzer wählbar, sobald
   der Betreiber Englisch freischaltet (`HUBIPLAN_LANGUAGES=de,en`,
   [docs/uebersetzung.md](docs/uebersetzung.md))
 - Oberfläche im Design „Frisch“: sachliche Formen, Seitenleiste in der Vereinsfarbe, Schrift
-  Inter (liegt in der Anwendung, keine fremden Server); Mitgliederseiten auch im Dunkelmodus
-- Hilfe-Seite mit Suche, Anleitungen mit Bildschirmfotos und „Hilfe zu dieser Seite“
-  (Taste `?`, [docs/hilfe.md](docs/hilfe.md))
+  Inter (liegt in der Anwendung, keine fremden Server); alle Seiten auch im Dunkelmodus;
+  Seitenleiste in benannten Gruppen (Alltag, Planen, Verein, Vereinsleben, Kommunikation,
+  Verwaltung)
+- Hilfe-Seite mit Suche (auch nach Synonymen), Anleitungen nach Anlass mit Bildschirmfotos,
+  „Hilfe zu dieser Seite“ (Taste `?`) und Rückmeldung „Hat das geholfen?“
+  ([docs/hilfe.md](docs/hilfe.md))
 - Erklärungen und Glossar direkt in der Oberfläche, Prüflisten für wiederkehrende Aufgaben
   ([docs/lernhilfen.md](docs/lernhilfen.md)); barrierearm bedienbar
 
@@ -279,13 +313,15 @@ docker compose exec backend python manage.py seed_testdata --password <eigenes-P
 
 Danach unter http://localhost:5173 anmelden, z. B. als `vorstand@hubertus-grimlinghausen.test`
 mit dem gewählten Passwort. Weitere Demozugänge: [docs/testserver.md](docs/testserver.md#demodaten).
+Zwei weitere erfundene Vereine legen `seed_demoverein` (Schützenverein Musterstadt) und
+`seed_demokapelle` (Musikkapelle Musterdorf) an.
 Einen eigenen Administrator legt `docker compose exec backend python manage.py createsuperuser` an.
 
 | Adresse | Inhalt |
 | --- | --- |
 | http://localhost:5173 | Oberfläche |
-| http://localhost:8000/admin/ | Django-Admin |
 | http://localhost:8000/api/docs/ | API-Dokumentation (OpenAPI, nur angemeldet; im Serverbetrieb aus) |
+| http://localhost:8000/admin/ | Django-Admin (standardmäßig aus, `DJANGO_ADMIN_ENABLED=true`, nur mit Zwei-Faktor-Anmeldung) |
 
 Änderungen in `backend/` und `frontend/src/` werden ohne Neustart übernommen. Ohne weitere
 Angaben gelten Standardwerte für die Entwicklung; zum Anpassen `.env.example` nach `.env`
@@ -339,8 +375,14 @@ Das Skript prüft nur den eingecheckten Stand (`git archive`) in Wegwerf-Contain
 vermerkt einen grünen Stand als getestet; nur solche Stände rollt `deploy/deploy.sh` aus.
 Damit sich mehrere Testläufe auf einem Rechner nicht gegenseitig ausbremsen, holt es sich
 über [`scripts/testplatz.sh`](scripts/testplatz.sh) einen Testplatz; Plätze und Kerne stellt
-jeder Rechner lokal ein. Tests laufen nie auf einem Server. GitHub Actions gibt es nur zum
-Starten von Hand.
+jeder Rechner lokal ein. Während der Lauf wartet, findet `scripts/vorpruefung.sh` die
+häufigsten Fehler in Sekunden. Tests laufen nie auf einem Server. GitHub Actions gibt es nur
+zum Starten von Hand.
+
+**Pull Requests** werden über den Merge-Zug getestet und gemergt: `scripts/zug.sh <PR>`
+mischt den PR auf den neuesten main, testet genau diesen Stand und nennt bei Grün die PRs in
+der Reihenfolge, in der sie zu mergen sind; main ist danach ohne eigenen Lauf ausrollbar
+([docs/testserver.md](docs/testserver.md#merge-zug-regel-für-alle-threads-in-hubiplan)).
 
 ## Selbst betreiben
 
@@ -354,6 +396,8 @@ DEPLOY_HOST=root@hubiplan.example.org SITE_HOST=hubiplan.example.org deploy/depl
 
 - Das Skript überträgt den eingecheckten Stand, baut die Images auf dem Server und startet
   alles neu. Schlägt der Start fehl, geht es automatisch zur vorigen Fassung zurück.
+- Ausgerollt werden nur Stände, deren Quellcode öffentlich erreichbar ist, damit der Link
+  unter „Lizenzen“ immer stimmt (AGPL § 13).
 - Beim ersten Ausrollen entsteht auf dem Server eine `.env` mit zufälligen Geheimnissen
   (Vorlage [.env.server.example](.env.server.example)). Sie verlässt den Server nie;
   Passphrase und Schlüssel für Backups und 2FA unbedingt zusätzlich sicher verwahren.
@@ -369,8 +413,9 @@ Signatur ([Selbstupdate](docs/betrieb.md#selbstupdate), standardmäßig aus). Je
 behält einen Rückweg zur vorigen Fassung (`deploy/zurueck.sh`).
 
 Im Betrieb laufen die Dienste `web` (Caddy), `backend` (gunicorn), `worker` und `beat`
-(Celery), `backup` (tägliches, mit age verschlüsseltes Backup mit Rücksicherungstest),
-`postgres` und `redis`. Die Container laufen schreibgeschützt und ohne Zusatzrechte; die
+(Celery, tägliche Jobs zu festen Uhrzeiten mit sichtbarem letztem Lauf), `backup` (tägliches,
+mit age verschlüsseltes Backup mit Rücksicherungstest und auf Wunsch einem zweiten Ort, der
+gegen Löschen vom Server geschützt werden kann), `postgres` und `redis`. Die Container laufen schreibgeschützt und ohne Zusatzrechte; die
 Anwendung nutzt keinen Datenbank-Superuser. Geheimnisse, Backups, Rücksicherung, E-Mail,
 Virenprüfung, Alarm-Mails und Updates: [docs/betrieb.md](docs/betrieb.md).
 
@@ -400,8 +445,11 @@ backend/
   audit/           Änderungsprotokoll
   portal/          Mitgliederbereich, Bereich für Untereinheiten, Anmeldelinks
   billing/         Beiträge, Beitragsläufe, Rechnungen, E-Rechnungen, Rechnungspostfach, SEPA, Geschäftspartner
+  feeproofs/       Ermäßigung mit Nachweis (Beitragsnachweise)
   finance/         Kasse, Quittungen, Kassenprüfung, Steuern, Rücklagen, Anlagen, Zuwendungen, GoBD-Export
+  expenses/        Auslagen erstatten
   events/          Termine, Zu- und Absagen, Kalender-Abos
+  registrations/   Anmeldungen mit Teilnahmegebühr, Eintrittskarten, Einlass
   places/          gespeicherte Orte mit Anfahrt
   competitions/    Wettbewerbe, Standmodus, Scheiben und Fotoerkennung, Urkunden
   entries/         Meldungen und Ausschreibungen
@@ -435,7 +483,7 @@ frontend/
   src/theme/       Farben und Logo als CSS-Variablen
   lizenzen/        erzeugt die Lizenzliste der Browser-Bibliotheken
 deploy/            Caddy, Ausrollen und Rückweg, Servereinrichtung, Backup, Aktualisierer, HestiaCP-Vorlagen
-scripts/           test.sh (vollständiger Test), testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe), pakete-sperren.sh, release.sh
+scripts/           test.sh (vollständiger Test), zug.sh (Merge-Zug), vorpruefung.sh, testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe), pakete-sperren.sh, release.sh
 docs/              Betrieb und Beschreibungen einzelner Bereiche
 ```
 
@@ -463,6 +511,8 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/e-rechnungen.md](docs/e-rechnungen.md) | Leistungsrechnungen, E-Rechnungen, Rechnungspostfach |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
 | [docs/haushaltsplan.md](docs/haushaltsplan.md) | Haushaltsplan: Plan und Ist |
+| [docs/auslagen.md](docs/auslagen.md) | Auslagen erstatten |
+| [docs/beitragsnachweise.md](docs/beitragsnachweise.md) | Ermäßigung mit Nachweis (Beitragsnachweise) |
 | [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |
 | [docs/rueckgaengig.md](docs/rueckgaengig.md) | Autospeichern, Rückgängig, Papierkorb |
