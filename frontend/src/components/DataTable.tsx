@@ -15,12 +15,13 @@
 // Sortiert, gefiltert und geblättert wird im Browser; das reicht für Listen bis
 // zu einigen tausend Zeilen (Abteilungen, Vereine). Für sehr große Listen wie die
 // Mitgliederliste bleibt die serverseitige Variante.
+import { compareCells, type CellValue } from './sorting.ts'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { t, tn } from '../i18n/index.ts'
 import { PageNav } from './ListControls.tsx'
 
-export type CellValue = string | number | boolean | null | undefined
+export type { CellValue }
 
 export interface Column<T> {
   key: string
@@ -78,17 +79,6 @@ export interface DataTableProps<T> {
   fixedLayout?: boolean
 }
 
-const collator = new Intl.Collator('de', { numeric: true, sensitivity: 'base' })
-
-function compare(a: CellValue, b: CellValue): number {
-  const emptyA = a === null || a === undefined || a === ''
-  const emptyB = b === null || b === undefined || b === ''
-  if (emptyA || emptyB) return emptyA === emptyB ? 0 : emptyA ? 1 : -1
-  if (typeof a === 'number' && typeof b === 'number') return a - b
-  if (typeof a === 'boolean' && typeof b === 'boolean') return Number(b) - Number(a)
-  return collator.compare(String(a), String(b))
-}
-
 const asText = (v: CellValue) => (v === null || v === undefined ? '' : String(v))
 
 function filterSpec<T>(c: Column<T>) {
@@ -136,7 +126,7 @@ export function DataTable<T>({
         const options =
           spec.options ??
           [...new Set(rows.map((r) => asText(c.value(r))).filter(Boolean))]
-            .sort(collator.compare)
+            .sort(compareCells)
             .map((v) => ({ value: v, label: v }))
         return [
           { column: c, allLabel: spec.allLabel ?? t('{label}: alle', { label: c.label }), options },
@@ -171,7 +161,7 @@ export function DataTable<T>({
       // stabile Sortierung: bei Gleichstand bleibt die ursprüngliche Reihenfolge
       result = result
         .map((row, i) => ({ row, i }))
-        .sort((a, b) => factor * compare(col.value(a.row), col.value(b.row)) || a.i - b.i)
+        .sort((a, b) => factor * compareCells(col.value(a.row), col.value(b.row)) || a.i - b.i)
         .map((x) => x.row)
     }
     return result

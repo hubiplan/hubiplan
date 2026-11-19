@@ -1,5 +1,6 @@
 // Einlass vor Ort (Anmeldung A6, Konzept 3.11): Eintrittskarte scannen (Handscanner tippt den
 // Code ins Feld, Kamera wo der Browser QR-Codes lesen kann) oder in der Liste abhaken.
+import { useRowSort } from '../RowSort.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { CalendarBase } from '../../api/events.ts'
 import { registrationApi } from '../../api/registrations.ts'
@@ -84,6 +85,12 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
   const [camera, setCamera] = useState(false)
   const rows = data?.participants ?? []
   const search = useRowSearch(rows, (r) => `${r.name} ${r.number} ${r.contact}`, t('Personen'))
+  const sorting = useRowSort(search.shown, {
+    name: (r) => r.name,
+    number: (r) => r.number,
+    paid: (r) => r.paid_state,
+    entry: (r) => r.checked_in_at,
+  })
 
   function apply(res: CheckInResult) {
     setResult(res)
@@ -181,14 +188,14 @@ export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: n
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Name')}</th>
-              <th>{t('Anmeldung')}</th>
-              <th>{t('Stand')}</th>
-              <th>{t('Einlass')}</th>
+              {sorting.head('name', t('Name'))}
+              {sorting.head('number', t('Anmeldung'))}
+              {sorting.head('paid', t('Stand'))}
+              {sorting.head('entry', t('Einlass'))}
             </tr>
           </thead>
           <tbody>
-            {search.shown.map((r: CheckInRow) => (
+            {sorting.rows.map((r: CheckInRow) => (
               <tr key={r.id}>
                 <td>
                   {r.name}

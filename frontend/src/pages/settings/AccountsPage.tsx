@@ -1,6 +1,7 @@
 // Einstellungen › Konten: wer sich anmelden kann, mit Filtern und Sammelversand
 // (Rollen-Vorschlag R4, konzepte/rollen-zugaenge.md).
 import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { accountsApi } from '../../api/accounts.ts'
@@ -55,9 +56,17 @@ export function AccountsPage() {
     (a) => `${a.name} ${a.email}`,
     t('Konten'),
   )
+  const sorting = useRowSort(search.shown, {
+    name: (a) => a.name,
+    email: (a) => a.email,
+    roles: (a) => a.roles.join(', '),
+    area: (a) => a.member_area,
+    login: (a) => a.last_login,
+    mfa: (a) => (a.has_mfa ? 2 : a.mfa_missing ? 0 : 1),
+  })
   if (accounts.error) return <LoadError message={accounts.error} onRetry={accounts.reload} />
   if (!accounts.data) return <Loading />
-  const rows = search.shown
+  const rows = sorting.rows
   const picked = rows.filter((a) => chosen.has(a.id))
   const allPicked = rows.length > 0 && picked.length === rows.length
 
@@ -135,12 +144,12 @@ export function AccountsPage() {
                     />
                   </th>
                 )}
-                <th scope="col">{t('Name')}</th>
-                <th scope="col">{t('E-Mail-Adresse')}</th>
-                <th scope="col">{t('Rollen')}</th>
-                <th scope="col">{t('Mitgliederbereich')}</th>
-                <th scope="col">{t('Letzte Anmeldung')}</th>
-                <th scope="col">{t('Zwei-Faktor')}</th>
+                {sorting.head('name', t('Name'))}
+                {sorting.head('email', t('E-Mail-Adresse'))}
+                {sorting.head('roles', t('Rollen'))}
+                {sorting.head('area', t('Mitgliederbereich'))}
+                {sorting.head('login', t('Letzte Anmeldung'))}
+                {sorting.head('mfa', t('Zwei-Faktor'))}
               </tr>
             </thead>
             <tbody>

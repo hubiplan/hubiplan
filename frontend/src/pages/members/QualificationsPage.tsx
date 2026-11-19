@@ -1,5 +1,6 @@
 // Mitglieder › Qualifikationen: maßgebliche Nachweise aller aktuellen Mitglieder, wahlweise nur
 // abgelaufene und bald ablaufende, je Art filterbar. Der Link aus „Zu erledigen“ setzt die Filter.
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useRowSearch } from '../../components/RowSearch.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
@@ -26,6 +27,12 @@ export function QualificationsPage() {
     (r) => `${r.last_name} ${r.first_name} ${r.kind_name}`,
     t('Qualifikationen'),
   )
+  const sorting = useRowSort(search.shown, {
+    member: (r) => `${r.last_name} ${r.first_name}`,
+    kind: (r) => r.kind_name,
+    since: (r) => r.acquired_on,
+    valid: (r) => r.valid_until,
+  })
   const canSetup = org.permissions.includes(PERM.orgEdit)
 
   function setFilter(key: string, value: string) {
@@ -84,14 +91,14 @@ export function QualificationsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Mitglied')}</th>
-                <th>{t('Qualifikation')}</th>
-                <th>{t('seit')}</th>
-                <th>{t('gültig')}</th>
+                {sorting.head('member', t('Mitglied'))}
+                {sorting.head('kind', t('Qualifikation'))}
+                {sorting.head('since', t('seit'))}
+                {sorting.head('valid', t('gültig'))}
               </tr>
             </thead>
             <tbody>
-              {search.shown.map((r) => (
+              {sorting.rows.map((r) => (
                 <tr key={r.id}>
                   <td>
                     <Link to={`/mitglieder/${r.member}`}>

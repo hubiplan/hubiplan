@@ -1,4 +1,5 @@
 // Verein: Rechnungen des Dachverbands an den Verein.
+import { useRowSort } from '../../components/RowSort.tsx'
 import { useRowSearch } from '../../components/RowSearch.tsx'
 import { billingApi } from '../../api/billing.ts'
 import { euro } from '../../api/finance.ts'
@@ -18,6 +19,14 @@ export function ReceivedPage() {
     (inv) => `${inv.number} ${inv.subject}`,
     t('Rechnungen'),
   )
+  const sorting = useRowSort(search.shown, {
+    number: (inv) => inv.number,
+    subject: (inv) => inv.subject,
+    due: (inv) => inv.due_date,
+    status: (inv) => inv.status,
+    total: (inv) => Number(inv.total),
+    open: (inv) => Number(inv.outstanding),
+  })
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <Loading />
   if (!data.federation)
@@ -41,17 +50,17 @@ export function ReceivedPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Nummer')}</th>
-                <th>{t('Betreff')}</th>
-                <th>{t('fällig')}</th>
-                <th>{t('Status')}</th>
-                <th className="num">{t('Betrag')}</th>
-                <th className="num">{t('offen')}</th>
+                {sorting.head('number', t('Nummer'))}
+                {sorting.head('subject', t('Betreff'))}
+                {sorting.head('due', t('fällig'))}
+                {sorting.head('status', t('Status'))}
+                {sorting.head('total', t('Betrag'), { className: 'num' })}
+                {sorting.head('open', t('offen'), { className: 'num' })}
                 <th />
               </tr>
             </thead>
             <tbody>
-              {search.shown.map((inv) => (
+              {sorting.rows.map((inv) => (
                 <tr key={inv.id}>
                   <td>{inv.number}</td>
                   <td>
