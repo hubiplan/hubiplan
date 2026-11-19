@@ -6066,6 +6066,86 @@ label:has(> .file-input:focus-visible) {
   max-width: 32rem;
 }
 
+/* Eigene Vorschlagsliste (components/SuggestInput.tsx) statt <datalist>: Das Browsermenü lässt
+   sich nicht gestalten und kommt je nach System schwarz (Ralf 19.11.). Farben aus den Tokens,
+   damit Hell, Dunkel und Vereinsfarben stimmen. */
+.suggest {
+  position: relative;
+  min-width: 0;
+}
+.suggest > input {
+  width: 100%;
+  padding-inline-end: calc(var(--control-padding-x) + 1.75rem);
+}
+.suggest-toggle {
+  position: absolute;
+  inset-block: 1px;
+  inset-inline-end: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.suggest-toggle:hover {
+  color: var(--color-text);
+}
+.suggest.is-open .suggest-toggle svg {
+  transform: rotate(180deg);
+}
+.suggest-list {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + var(--space-1));
+  z-index: 60;
+  max-height: min(18rem, 50vh);
+  margin: 0;
+  padding: var(--space-1);
+  overflow-y: auto;
+  list-style: none;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(16, 24, 20, 0.16);
+}
+.suggest-list[hidden] {
+  display: none;
+}
+.suggest-list [role='option'] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.suggest-list [role='option'].is-active {
+  background: var(--color-brand-soft);
+  color: var(--color-link);
+}
+.suggest-value {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.suggest-detail {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+@media (forced-colors: active) {
+  .suggest-list [role='option'].is-active {
+    outline: 2px solid Highlight;
+  }
+}
+
 /* Ortsfeld mit gespeicherten Orten (components/PlaceField.tsx) */
 .place-field {
   display: flex;
