@@ -64,6 +64,7 @@ def test_material_ausgeben_zuruecknehmen_und_scannen(c, fest, club):
     assert resp.status_code == 400
     # Über Scan-Links: Ausgabe und Rückgabe des Funkgeräts
     links = f"{fest['url']}scan-links/"
+    assert [m["name"] for m in ok(c.get(links))["materials"]] == ["Namensschild", "Funkgerät"]
     out = ok(c.post(links, {"label": "Ausgabe", "material": radio["id"]}, content_type=JSON))
     back = ok(
         c.post(

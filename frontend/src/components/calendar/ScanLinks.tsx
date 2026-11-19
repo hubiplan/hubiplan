@@ -173,12 +173,12 @@ export function ScanLinksPanel({ base, eventId }: { base: CalendarBase; eventId:
               {a.name}
             </option>
           ))}
-          {data.materials.map((m) => (
+          {(data.materials ?? []).map((m) => (
             <option key={`m${m.id}`} value={`m${m.id}`}>
               {t('Ausgabe: {name}', { name: m.name })}
             </option>
           ))}
-          {data.materials
+          {(data.materials ?? [])
             .filter((m) => m.returnable)
             .map((m) => (
               <option key={`r${m.id}`} value={`r${m.id}`}>

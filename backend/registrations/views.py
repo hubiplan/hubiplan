@@ -1061,6 +1061,9 @@ class ScanLinksView(_OrgRegistrationMixin, APIView):
                 "addons": [
                     {"id": a.pk, "name": a.name} for a in setup.addons.filter(is_active=True)
                 ],
+                "materials": [
+                    materials.material_data(m) for m in setup.materials.filter(is_active=True)
+                ],
                 "default_expires_at": scanning.default_expiry(setup),
             }
         )
