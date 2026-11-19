@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from core.i18n import date_text, datetime_text, language_of_org, org_language
 from core.tenancy import rls_bypass
@@ -437,6 +438,14 @@ def cancellation(
         return _send(reg, subject, lines, "abmeldung", attachments)
 
 
+def plain_name(value: str, limit: int = 40) -> str:
+    """Name für Mails an unbestätigte Adressen: nur Buchstaben, Leerzeichen, Bindestrich und
+    Apostroph, gekürzt. Punkte, Schrägstriche, Ziffern und @ fallen weg, damit aus dem Feld
+    weder ein Link noch eine Adresse noch eine Werbezeile wird."""
+    kept = "".join(ch for ch in str(value or "") if ch.isalpha() or ch in " -'’")
+    return " ".join(kept.split())[:limit].strip()
+
+
 def confirm_email(setup_pk: int, data: dict, token: str, language: str) -> bool:
     """Öffentliches Formular: Link zum Bestätigen der E-Mail-Adresse (24 Stunden gültig)."""
     from django.utils.translation import override
@@ -458,9 +467,12 @@ def confirm_email(setup_pk: int, data: dict, token: str, language: str) -> bool:
     event = setup.event
     url = f"{base_url(org)}/anmeldung/bestaetigen/{token}"
     with override(language):
-        names = ", ".join(p["name"] for p in data.get("persons", []))
+        # Die Angaben stammen aus einem öffentlichen Formular und gehen an eine noch nicht
+        # bestätigte Adresse: kein frei eingegebener Text (Namen der Personen, Antworten) und
+        # der Name der Anrede nur gekürzt und ohne Zeichen, aus denen ein Link würde.
+        count = len(data.get("persons", []))
         lines = [
-            _("Hallo {name},").format(name=data.get("name", "")),
+            _("Hallo {name},").format(name=plain_name(data.get("name", ""))),
             "",
             _(
                 "bitte bestätige deine Anmeldung zu „{title}“ ({when}) mit diesem Link. Erst dann "
@@ -469,7 +481,9 @@ def confirm_email(setup_pk: int, data: dict, token: str, language: str) -> bool:
             "",
             url,
             "",
-            _("Angemeldet werden: {names}").format(names=names),
+            ngettext(
+                "Angemeldet wird {count} Person.", "Angemeldet werden {count} Personen.", count
+            ).format(count=count),
             _(
                 "Der Link gilt {hours} Stunden. Wenn du dich nicht angemeldet hast, ignoriere "
                 "diese Mail einfach; die Angaben werden dann gelöscht."

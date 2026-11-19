@@ -429,6 +429,18 @@ class TestKalenderAbo:
         c.delete(f"{portal(access)}events/feed/")
         assert Client().get(member_url).status_code == 404
         assert Client().get(url).status_code == 200
+        # Frist für den zweiten Faktor abgelaufen: Die Rechte ruhen, das Vorstands-Abo und
+        # die Vorstandstermine im Mitgliederbereich auch (Gesamtaudit 19.11.2026, S-02)
+        from accounts.models import User
+
+        late = timezone.now() - datetime.timedelta(minutes=1)
+        User.objects.filter(pk=user.pk).update(mfa_required_by=late)
+        assert Client().get(url).status_code == 404
+        listing = f"{portal(access)}events/?from={SOON}&to={SOON}"
+        assert "Vorstandssitzung" not in str(api(user).get(listing).json()["items"])
+        User.objects.filter(pk=user.pk).update(mfa_required_by=None)
+        assert Client().get(url).status_code == 200
+        assert "Vorstandssitzung" in str(api(user).get(listing).json()["items"])
         # Amtszeit beendet: Link liefert nichts mehr, Angebot verschwindet
         with rls_bypass():
             amt.valid_until = timezone.localdate() - datetime.timedelta(days=1)

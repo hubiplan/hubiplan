@@ -95,7 +95,45 @@ def _invoice_brief(inv) -> dict | None:
     }
 
 
-def registration_data(reg: Registration, *, full: bool) -> dict:
+def _own_part(reg: Registration, members: set[int]) -> dict:
+    """Sicht einer Person, die nur mitangemeldet ist: die eigene Zeile und die der eigenen
+    Familie. Alles, was der buchenden Person gehört (andere Teilnehmende, Antworten zur
+    Anmeldung, Rechnung, Gesamtbetrag), bleibt weg. Gleiche Felder wie sonst, damit die Apps
+    ohne Änderung damit umgehen."""
+    own = [p for p in reg.participants.all() if p.membership_id in members]
+    return {
+        "id": reg.pk,
+        "number": reg.display_number,
+        "status": reg.status,
+        "name": ", ".join(p.name for p in own),
+        "total": str(sum((p.amount for p in own), Decimal("0.00"))),
+        "paid_state": services.paid_state(reg),
+        "created_at": reg.created_at,
+        "cancelled_at": reg.cancelled_at,
+        "participants": [participant_data(p) for p in own],
+        "bookings": [],
+        "answers": {},
+        "invoice": None,
+        "waitlist_position": services.waitlist_position(reg),
+        "moved_up_at": reg.moved_up_at,
+        "free_cancel_until": None,
+        "cancel_fee": "0.00",
+        "fee_invoice": None,
+        "has_tickets": tickets.has_tickets(reg, members),
+        "can_cancel": False,
+        "can_substitute": False,
+        # Abmelden und Ändern kann nur, wer angemeldet hat
+        "booked_by_other": True,
+    }
+
+
+def registration_data(
+    reg: Registration, *, full: bool, own_members: set[int] | None = None
+) -> dict:
+    """``own_members``: nur für den Mitgliederbereich. Ist gesetzt, wer die Anmeldung nicht
+    selbst gebucht hat, sieht nur die eigenen Zeilen (siehe ``_own_part``)."""
+    if own_members is not None:
+        return _own_part(reg, own_members)
     inv = reg.invoice
     data = {
         "id": reg.pk,
@@ -960,10 +998,10 @@ class RegistrationCancelView(_OrgRegistrationMixin, APIView):
         return Response(self.payload(event, setup))
 
 
-def tickets_response(reg: Registration) -> HttpResponse:
-    if not tickets.has_tickets(reg):
+def tickets_response(reg: Registration, members: set[int] | None = None) -> HttpResponse:
+    if not tickets.has_tickets(reg, members):
         raise NotFound(gettext("Für diese Anmeldung gibt es keine Eintrittskarten."))
-    resp = HttpResponse(tickets.pdf(reg), content_type="application/pdf")
+    resp = HttpResponse(tickets.pdf(reg, members), content_type="application/pdf")
     resp["Content-Disposition"] = f'inline; filename="{tickets.filename(reg)}"'
     resp["Cache-Control"] = "private, no-store"
     return resp
@@ -1771,6 +1809,11 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
             pk=self.viewer.membership_id
         )
 
+    def own_members(self, reg: Registration) -> set[int] | None:
+        if not hasattr(self, "_family_ids"):
+            self._family_ids = family_ids(self.viewer.membership_id)
+        return own_members_of(self.viewer.membership_id, reg, self._family_ids)
+
     def mine(self, setup):
         member_id = self.viewer.membership_id
         return (
@@ -1803,7 +1846,10 @@ class _PortalRegistrationMixin(PortalCalendarMixin):
                 }
                 for m in [member, *family]
             ],
-            "mine": [registration_data(r, full=False) for r in self.mine(setup)],
+            "mine": [
+                registration_data(r, full=False, own_members=self.own_members(r))
+                for r in self.mine(setup)
+            ],
         }
 
 
@@ -1811,6 +1857,20 @@ def models_q_member(member_id: int):
     from django.db.models import Q
 
     return Q(membership_id=member_id) | Q(participants__membership_id=member_id)
+
+
+def family_ids(member_id: int) -> set[int]:
+    """Die eigene Mitgliedschaft und die der eigenen Familie (Eltern sehen so die Zeilen
+    ihrer Kinder)."""
+    member = Membership.objects.filter(pk=member_id).first()
+    family = services.family_of(member) if member is not None else []
+    return {member_id, *(m.pk for m in family)}
+
+
+def own_members_of(member_id: int, reg: Registration, family: set[int]) -> set[int] | None:
+    """None: Das Mitglied hat selbst gebucht und sieht die ganze Anmeldung. Sonst die
+    Mitgliedschaften, deren Zeilen es sehen darf."""
+    return None if reg.membership_id == member_id else family
 
 
 class MemberRegistrationView(_PortalRegistrationMixin, APIView):
@@ -1868,7 +1928,7 @@ class MemberTicketsView(_PortalRegistrationMixin, APIView):
         reg = self.mine(setup).filter(pk=reg_id).first()
         if reg is None:
             raise NotFound()
-        return tickets_response(reg)
+        return tickets_response(reg, self.own_members(reg))
 
 
 class MemberCancelView(_PortalRegistrationMixin, APIView):
@@ -1949,6 +2009,7 @@ class MemberRegistrationsView(PortalCalendarMixin, APIView):
     def get(self, request, **kwargs):
         if not services.module_on(self.viewer.org):
             raise NotFound()
+        family = family_ids(self.viewer.membership_id)
         regs = (
             Registration.objects.filter(models_q_member(self.viewer.membership_id))
             .filter(setup__event__in=self.viewer.events())
@@ -1961,7 +2022,11 @@ class MemberRegistrationsView(PortalCalendarMixin, APIView):
             {
                 "items": [
                     {
-                        **registration_data(r, full=False),
+                        **registration_data(
+                            r,
+                            full=False,
+                            own_members=own_members_of(self.viewer.membership_id, r, family),
+                        ),
                         "event": {
                             "id": r.setup.event_id,
                             "title": r.setup.event.title,

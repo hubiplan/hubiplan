@@ -146,8 +146,22 @@ def test_ohne_karte_per_namenssuche(c, fest, club):
     # Mit Erlaubnis: erst ab drei Zeichen, nur Treffer
     assert ok(staff.get(f"{api}search/?q=An"))["results"] == []
     hits = ok(staff.get(f"{api}search/?q=muster"))["results"]
-    assert [h["name"] for h in hits] == ["Anna Muster"] and hits[0]["id"] == pid
+    assert [h["name"] for h in hits] == ["Anna Muster"]
+    # Die Suche liefert einen Verweis, keine fortlaufende Nummer (Gesamtaudit 19.11., S-04)
+    ref = hits[0]["id"]
+    assert isinstance(ref, str) and ref != str(pid)
     assert ok(staff.get(f"{api}search/?q=Bernd"))["results"] == []  # nicht angemeldet
-    done = ok(staff.post(api, {"participant": pid}, content_type=JSON))
+    # Die Nummer allein bucht niemanden ein, auch nicht als Text
+    for guess in (pid, str(pid)):
+        assert ok(staff.post(api, {"participant": guess}, content_type=JSON))["result"] == (
+            "unknown"
+        )
+    # Ein Verweis gilt nur an dem Link, der ihn ausgegeben hat
+    other = ok(c.post(links_url, {"label": "Kasse 2", "allow_search": True}, content_type=JSON))
+    other_api = f"/api/public/scan/{_token(other['url'])}/"
+    assert ok(staff.post(other_api, {"participant": ref}, content_type=JSON))["result"] == (
+        "unknown"
+    )
+    done = ok(staff.post(api, {"participant": ref}, content_type=JSON))
     assert done["result"] == "ok" and done["card"]["name"] == "Anna Muster"
     assert ok(staff.get(f"{api}search/?q=muster"))["results"][0]["checked_in_at"]

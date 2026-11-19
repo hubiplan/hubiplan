@@ -63,6 +63,9 @@ def test_kassen_link_nimmt_bar_an(c, fest, club, setup):
         assert len(pays) == 1 and pays[0].method == "cash"
         assert pays[0].booking.account_id == setup["cash"]
         assert "Abendkasse" in pays[0].booking.text and "Kim Kasse" in pays[0].booking.text
+        # Am Link kassiert Personal ohne Konto: Die Buchung gehört keinem Benutzer, wer es
+        # war, steht im Text (Gesamtaudit 19.11., S-05)
+        assert pays[0].booking.created_by_id is None
         assert Invoice.objects.get(pk=anna.registration.invoice_id).status == "paid"
     # Nichts mehr offen
     again = staff.post(
@@ -71,6 +74,13 @@ def test_kassen_link_nimmt_bar_an(c, fest, club, setup):
         content_type=JSON,
     )
     assert again.status_code == 400
+    # Die fortlaufende Nummer der Person reicht nicht (S-04)
+    plain = staff.post(
+        f"{api}cash/",
+        {"participant": str(anna.pk), "request_key": str(uuid.uuid4())},
+        content_type=JSON,
+    )
+    assert plain.status_code == 400
     # Kassenabschluss je Link
     row = ok(c.get(links))["links"][0]
     assert row["cash_total"] == str(open_amount) and len(row["cash_takes"]) == 1
@@ -87,7 +97,7 @@ def test_ohne_kasse_kein_bargeld(c, fest, club, setup):
         anna = Participant.objects.get(membership=fest["anna"])
     resp = staff.post(
         f"{api}cash/",
-        {"participant": anna.pk, "request_key": str(uuid.uuid4())},
+        {"participant": str(anna.pk), "request_key": str(uuid.uuid4())},
         content_type=JSON,
     )
     assert resp.status_code == 404

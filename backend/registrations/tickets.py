@@ -39,10 +39,12 @@ def participant_of(value: str) -> int | None:
     return int(raw[len(PREFIX) :])
 
 
-def has_tickets(reg: Registration) -> bool:
-    """Eintrittskarten gibt es für verbindliche Anmeldungen mit aktiven Personen."""
+def has_tickets(reg: Registration, members: set[int] | None = None) -> bool:
+    """Eintrittskarten gibt es für verbindliche Anmeldungen mit aktiven Personen.
+    Mit ``members`` zählen nur die Personen dieser Mitgliedschaften."""
     return reg.status == Registration.Status.REGISTERED and any(
-        p.status == Participant.Status.ACTIVE for p in reg.participants.all()
+        p.status == Participant.Status.ACTIVE and (members is None or p.membership_id in members)
+        for p in reg.participants.all()
     )
 
 
@@ -50,8 +52,9 @@ def filename(reg: Registration) -> str:
     return f"eintrittskarten-{reg.display_number}.pdf".replace("/", "-")
 
 
-def pdf(reg: Registration) -> bytes:
-    """Eintrittskarten einer Anmeldung als PDF, eine Karte je aktiver Person."""
+def pdf(reg: Registration, members: set[int] | None = None) -> bytes:
+    """Eintrittskarten einer Anmeldung als PDF, eine Karte je aktiver Person.
+    Mit ``members`` nur die Karten der Personen dieser Mitgliedschaften."""
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -82,6 +85,8 @@ def pdf(reg: Registration) -> bytes:
     story = []
     for p in reg.participants.all():
         if p.status != Participant.Status.ACTIVE:
+            continue
+        if members is not None and p.membership_id not in members:
             continue
         text = [
             Paragraph(escape(reg.organization.name), small),

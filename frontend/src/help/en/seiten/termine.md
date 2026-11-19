@@ -94,7 +94,9 @@ Date, place, directions, programme, prices, cancellation rule, terms of particip
 
 ## Tickets and admission
 
-Every binding registration has **Tickets** as a PDF, one ticket per person with a QR code. The code contains no names, only a verified identifier. For free events the tickets come with the registration confirmation, otherwise with the payment confirmation; they are also in the members' area, behind the “view registration” link and, for the administration, with each registration under **Tickets**. On site, **Admission** opens the list of everyone registered with their payment status. With a hand scanner you scan the ticket into the **Ticket code** field; on a phone, tablet or laptop, **Scan with the camera** works too.
+Every binding registration has **Tickets** as a PDF, one ticket per person with a QR code. The code contains no names, only a verified identifier. For free events the tickets come with the registration confirmation, otherwise with the payment confirmation; they are also in the members' area, behind the “view registration” link and, for the administration, with each registration under **Tickets**.
+
+Anyone who was registered by someone else sees only their own line and their own ticket in the members' area and the app (parents also those of their children); the whole registration with the invoice is visible to whoever made it. On site, **Admission** opens the list of everyone registered with their payment status. With a hand scanner you scan the ticket into the **Ticket code** field; on a phone, tablet or laptop, **Scan with the camera** works too.
 
 Without a ticket, tick the person off in the list with **Admit**. HUBIplan tells you if someone has already been admitted, the ticket belongs to another event, the person has cancelled or has not paid yet. **Undo** reverses an admission. Whoever may edit invoices sees **Take cash** for unpaid registrations: it opens the invoice, where you book the cash payment, with a signed receipt if you like (box office). In the HUBIplan app, admission is under Administration › Events with a camera scanner and box office; the list stays readable without a network.
 
@@ -104,7 +106,9 @@ The admission list reloads every 10 seconds, so you see live who has been scanne
 
 For scanning staff without an account, create one or more links under **Scan links for staff**, each with a **Label** (e.g. “North entrance”) and a **Station**: **Admission** ticks the person off, an extra (e.g. lunch) is redeemed. Pass the link on with **Copy link** or let someone scan the QR code. On the phone or tablet there is then only the ticket scanner: it shows whether the ticket is valid, the name and date of birth to compare with an ID, the tariff, booked extras with the time they were redeemed and whether the ticket has already been scanned. Staff do not see a participant list.
 
-The link is valid until the day after the event; **Block** ends it at once. The camera works in all common browsers, including Safari on the iPhone; alternatively, enter the code with a hand scanner or by hand. With **Allow name search**, staff can book in registered people without a ticket: they search by name from three letters on, see only the matches with their date of birth and book them in after checking their ID.
+The link is valid until the day after the event at the latest; **Block** ends it at once.
+
+A scan link also expires when the person who created it loses their role or account; create a new link in that case. The camera works in all common browsers, including Safari on the iPhone; alternatively, enter the code with a hand scanner or by hand. With **Allow name search**, staff can book in registered people without a ticket: they search by name from three letters on, see only the matches with their date of birth and book them in after checking their ID.
 
 Cashiers also work via a link: whoever may edit invoices chooses a cash box under **Accept cash payment** when creating the link and enters the **Cashier**. When scanning or after a name search, staff then see the open amount and book the cash payment onto the invoice with one tap, into the chosen cash box. Free registrations have nothing open. In the list of scan links, each cash link shows the number of payments and the total as its cash closing, to compare with the cash.
 

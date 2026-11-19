@@ -57,6 +57,15 @@ def allowed_codes(org_type: str) -> set[str]:
     return effective(codes_for(org_type))
 
 
+def assigned_permissions(user, org: Organization) -> set[str]:
+    """Rechte aus den aktiven Rollen, ohne Sperre durch den zweiten Faktor und ohne Ansicht
+    als Rolle. Nur für Prüfungen ohne angemeldete Person (z. B. „gilt ein Link noch, den
+    diese Person angelegt hat?“); für Anfragen gilt ``permissions_in``."""
+    if not user.is_active or not org.is_active or org.is_remote:
+        return set()
+    return _assigned(user, org)
+
+
 def _assigned(user, org: Organization) -> set[str]:
     perms: set[str] = set()
     assignments = RoleAssignment.objects.active().filter(user=user, organization=org)

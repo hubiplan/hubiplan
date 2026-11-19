@@ -51,11 +51,16 @@ def federation_of(org: Organization) -> Organization | None:
 
 
 def is_board(user, org: Organization) -> bool:
+    """Vorstandsmitglied der Einheit (sieht Termine „nur Vorstand“, auch im Mitgliederbereich
+    und im Vorstands-Abo). Ruhen die Rechte, weil die Frist für den zweiten Faktor abgelaufen
+    ist, ruht auch das (Gesamtaudit 19.11.2026, S-02)."""
+    from accounts.mfa_policy import overdue
+
     return (
         RoleAssignment.objects.active()
         .filter(user=user, organization=org, role__is_board=True)
         .exists()
-    )
+    ) and not overdue(user)
 
 
 def _shared_of(org: Organization) -> Q:

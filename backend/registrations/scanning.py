@@ -15,6 +15,7 @@ import hashlib
 import secrets
 from decimal import Decimal
 
+from django.core import signing
 from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -25,6 +26,8 @@ from . import materials, services, tickets
 from .models import Booking, CashTake, Participant, Redemption, Registration, ScanLink
 
 MAX_LINKS = 20
+# So lange gilt der Verweis auf eine Person, den Suche und Scan der Seite mitgeben
+REF_HOURS = 12
 
 
 def hash_token(token: str) -> str:
@@ -37,6 +40,33 @@ def default_expiry(setup) -> datetime.datetime:
     end = timezone.localtime(event.ends_at or event.starts_at)
     day = end.date() + datetime.timedelta(days=1)
     return timezone.make_aware(datetime.datetime.combine(day, datetime.time(23, 59)))
+
+
+def clamp_expiry(setup, expires_at=None) -> datetime.datetime:
+    """Ablauf eines Links: höchstens bis zum Ende des Tags nach der Veranstaltung."""
+    latest = default_expiry(setup)
+    return min(expires_at, latest) if expires_at else latest
+
+
+def ref(link: ScanLink, participant_id: int) -> str:
+    """Verweis auf eine Person für die Scan-Seite: nur an diesem Link und nur einige Stunden
+    gültig. Die Seite bekommt ihn aus der Namenssuche oder nach dem Scan einer Karte; mit
+    fortlaufenden Nummern ließen sich Angemeldete durchzählen und einbuchen."""
+    return signing.TimestampSigner(salt=f"registrations.scanref.{link.pk}").sign(
+        str(participant_id)
+    )
+
+
+def participant_of_ref(link: ScanLink, value) -> int | None:
+    if not isinstance(value, str) or not value or len(value) > 200:
+        return None
+    try:
+        raw = signing.TimestampSigner(salt=f"registrations.scanref.{link.pk}").unsign(
+            value, max_age=REF_HOURS * 3600
+        )
+    except signing.BadSignature:
+        return None
+    return int(raw) if raw.isdigit() else None
 
 
 def create(
@@ -61,7 +91,7 @@ def create(
         material_return=bool(material) and material_return,
         token=token,
         token_hash=hash_token(token),
-        expires_at=expires_at or default_expiry(setup),
+        expires_at=clamp_expiry(setup, expires_at),
         allow_search=allow_search,
         cash_account=cash_account,
         cashier=cashier.strip()[:100] if cash_account else "",
@@ -75,6 +105,24 @@ def url(link: ScanLink) -> str:
     return f"{base_url(link.setup.organization)}/kartenscan/{link.token}"
 
 
+def creator_entitled(link: ScanLink) -> bool:
+    """Darf die Person, die den Link angelegt hat, das heute noch? Der Link handelt in ihrem
+    Namen (Einlass, bei Kassen-Links Barzahlungen); verliert sie die Rolle oder das Konto,
+    erlischt er. Ein abgelaufener zweiter Faktor allein sperrt den Link nicht, damit der
+    Einlass nicht mitten in der Veranstaltung ausfällt."""
+    from access.catalog import BILLING_EDIT, REGISTRATIONS_EDIT
+    from access.permissions import assigned_permissions
+
+    user = link.created_by
+    if user is None or not user.is_active:
+        return False
+    with rls_bypass():
+        perms = assigned_permissions(user, link.setup.organization)
+    if REGISTRATIONS_EDIT not in perms:
+        return False
+    return not link.cash_account_id or BILLING_EDIT in perms
+
+
 def usable(link: ScanLink, now: datetime.datetime | None = None) -> bool:
     now = now or timezone.now()
     org = link.setup.organization
@@ -84,6 +132,7 @@ def usable(link: ScanLink, now: datetime.datetime | None = None) -> bool:
         and org.is_active
         and services.module_on(org)
         and not link.setup.event.is_cancelled
+        and creator_entitled(link)
     )
 
 
@@ -198,7 +247,7 @@ def search(link: ScanLink, term: str) -> list[dict]:
     )
     return [
         {
-            "id": p.pk,
+            "id": ref(link, p.pk),
             "name": p.name,
             "birth_date": p.birth_date,
             "price_name": p.price_name,
@@ -234,7 +283,8 @@ def _card(p: Participant, now: datetime.datetime, link: ScanLink | None = None) 
     birth = p.birth_date
     inv = reg.invoice if reg.invoice_id else None
     return {
-        "id": p.pk,
+        # Verweis für die Kasse (nur an Links; die Verwaltung arbeitet mit der Nummer)
+        "id": ref(link, p.pk) if link is not None else p.pk,
         "name": p.name,
         # Kassen-Link: offener Betrag der Rechnung, bar anzunehmen
         "open_amount": str(inv.outstanding)
@@ -286,13 +336,14 @@ def message(result: str, link: ScanLink) -> str:
     }[result]
 
 
-def scan(link: ScanLink, scanned: str = "", participant: int | None = None) -> dict:
+def scan(link: ScanLink, scanned: str = "", participant: str | None = None) -> dict:
     """Karte an der Station des Links prüfen und abhaken bzw. einlösen. Läuft im Bereich
-    der Einheit (``tenant_context``) und in einer Transaktion."""
+    der Einheit (``tenant_context``) und in einer Transaktion. ``participant``: Verweis aus
+    der Namenssuche (``ref``), keine Nummer."""
     now = timezone.now()
     ScanLink.objects.filter(pk=link.pk).update(scans=F("scans") + 1, last_used_at=now)
     # Ohne Karte nur mit Namenssuche (Ausweisabgleich durch das Personal)
-    pk = participant if participant is not None and link.allow_search else None
+    pk = participant_of_ref(link, participant) if participant and link.allow_search else None
     if pk is None:
         pk = tickets.participant_of(scanned)
     p = None
@@ -360,23 +411,34 @@ def cashable(invoice, link: ScanLink) -> bool:
     )
 
 
-def take_cash(link: ScanLink, participant: int, request_key, amount: Decimal | None = None):
+def take_cash(link: ScanLink, participant: str, request_key, amount: Decimal | None = None):
     """Barzahlung zur Rechnung der Anmeldung buchen (in die Barkasse des Links). Liefert die
-    Antwort für die Scan-Seite; ``ValidationError`` bei Problemen."""
+    Antwort für die Scan-Seite; ``ValidationError`` bei Problemen. ``participant``: Verweis
+    aus dem Scan oder der Suche (``ref``). Läuft in einer Transaktion."""
     from django.core.exceptions import ValidationError
 
     from billing import services as billing_services
 
     if not link.cash_account_id:
         raise ValidationError(_("Dieser Link nimmt kein Bargeld an."))
-    done = CashTake.objects.filter(link=link, request_key=request_key).first()
+    pk = participant_of_ref(link, participant)
     p = (
         Participant.objects.select_related("registration__invoice", "registration__setup")
-        .filter(pk=participant, registration__setup_id=link.setup_id)
+        .filter(pk=pk, registration__setup_id=link.setup_id)
         .first()
+        if pk is not None
+        else None
     )
     if p is None:
         raise ValidationError(_("Ungültige Karte."))
+    # Die Rechnung sperren: Zwei Geräte (oder ein doppelter Tipp) buchen nacheinander, der
+    # zweite Aufruf sieht dann den ersten.
+    if p.registration.invoice_id:
+        type(p.registration.invoice).objects.select_for_update().filter(
+            pk=p.registration.invoice_id
+        ).first()
+        p.registration.invoice.refresh_from_db()
+    done = CashTake.objects.filter(link=link, request_key=request_key).first()
     if done is None:
         inv = p.registration.invoice
         if inv is None or not cashable(inv, link):
@@ -388,7 +450,9 @@ def take_cash(link: ScanLink, participant: int, request_key, amount: Decimal | N
             amount=amount,
             method="cash",
             account=link.cash_account,
-            user=link.created_by,
+            # Am Link sitzt Personal ohne Konto: Die Zahlung gehört keinem Benutzer; wer
+            # kassiert hat, steht im Buchungstext (Bezeichnung des Links und Kassenperson).
+            user=None,
         )
         who = f" · {link.cashier}" if link.cashier else ""
         booking = payment.booking

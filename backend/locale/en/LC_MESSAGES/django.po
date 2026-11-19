@@ -14637,8 +14637,10 @@ msgstr ""
 "please confirm your registration for “{title}” ({when}) with this link. Only"
 " then is it binding, and you will receive the confirmation with the invoice."
 
-msgid "Angemeldet werden: {names}"
-msgstr "Being registered: {names}"
+msgid "Angemeldet wird {count} Person."
+msgid_plural "Angemeldet werden {count} Personen."
+msgstr[0] "{count} person is being registered."
+msgstr[1] "{count} people are being registered."
 
 msgid ""
 "Der Link gilt {hours} Stunden. Wenn du dich nicht angemeldet hast, ignoriere"
