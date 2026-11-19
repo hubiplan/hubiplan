@@ -143,7 +143,9 @@ describe('Kalender', () => {
     })
     expect(hideEnd).toBeChecked()
     await user.click(hideEnd)
-    await user.click(within(editForm).getByRole('button', { name: 'Schließen' }))
+    // nur ein „Schließen“ (im Kopf); unten führt „Fertig“ zurück zur Terminansicht
+    expect(within(dialog).getAllByRole('button', { name: 'Schließen' })).toHaveLength(1)
+    await user.click(within(editForm).getByRole('button', { name: 'Fertig' }))
     const patch = calls.find((c) => c.key === `PATCH ${base}events/1/`)
     const body = JSON.parse(String(patch?.init?.body))
     expect(body.hide_end_time).toBe(false)

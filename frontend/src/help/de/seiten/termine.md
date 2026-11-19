@@ -34,7 +34,11 @@ Mit **Rundschreiben dazu schreiben** in der Knopfleiste legst du einen Entwurf a
 
 ## Termin anlegen und bearbeiten
 
-Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen. „nach außen öffentlich“ heißt: auf der Webseite und ohne Anmeldung zu sehen. In HUBIplan selbst sehen den Termin die Mitglieder der Ebene, die ihn anlegt; andere Einheiten sehen ihn nur, wenn er nach oben oder unten weitergegeben wird.
+Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen.
+
+Beim Bearbeiten speichert der Dialog jede Änderung sofort: **Fertig** unten führt zurück zur Terminansicht, **Schließen** oben schließt den Dialog. Im Feld **Ort** öffnet sich beim Tippen, per Klick oder mit Pfeil nach unten die Liste der gespeicherten Orte; mit den Pfeiltasten und Eingabe wählst du, Esc schließt nur die Liste. „nach außen öffentlich“ heißt: auf der Webseite und ohne Anmeldung zu sehen. In HUBIplan selbst sehen den Termin die Mitglieder der Ebene, die ihn anlegt; andere Einheiten sehen ihn nur, wenn er nach oben oder unten weitergegeben wird.
+
+Termine „nur Vorstand“ sehen die Mitglieder mit einer Vorstandsrolle der Einheit, in der Verwaltung, unter **Meine Termine** und in der App. Ins Kalender-Abo kommen sie nicht.
 
 Unter **Anfahrt** trägst du Hinweise wie Parken oder Eingang ein. Ohne weitere Angabe führen die Links **Route in OpenStreetMap** und **Route in Google Maps** zur Anschrift. Reicht die Anschrift nicht (Wiese, Hütte im Wald), gibst du **Breite** und **Länge** an oder fügst unter **Punkt aus Kartenlink übernehmen** einen Link aus OpenStreetMap oder Google Maps ein. Anfahrt und Routenlinks erscheinen im Termin, in den Mails, auf der Rückmeldeseite und im Kalender-Abo; eine Karte wird nicht eingebettet. Wählst du einen gespeicherten Ort, übernimmt der Termin Anschrift, Anfahrt und Punkt als Kopie.
 

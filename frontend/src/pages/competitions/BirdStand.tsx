@@ -19,6 +19,7 @@ import { StandFinish } from './StandFinish.tsx'
 import { describe, guestOrigin, useStandStore, type LocalStarter } from './standStore.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { SuggestInput } from '../../components/SuggestInput.tsx'
 
 export function BirdStand({
   api,
@@ -675,18 +676,12 @@ function AddShooter({
         {chosen.kind === 'guest' && (
           <label className="field">
             <span>{t('Verein oder Einheit (optional)')}</span>
-            <input
+            <SuggestInput
               className="stand-input"
-              list="vogel-einheiten"
-              autoComplete="off"
+              suggestions={units.map((u) => ({ value: u.name }))}
               value={club}
               onChange={(e) => setClub(e.target.value)}
             />
-            <datalist id="vogel-einheiten">
-              {units.map((u) => (
-                <option key={u.id} value={u.name} />
-              ))}
-            </datalist>
           </label>
         )}
         {chosen.kind === 'guest' && (

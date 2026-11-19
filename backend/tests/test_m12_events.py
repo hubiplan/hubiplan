@@ -342,6 +342,35 @@ class TestSichtbarkeit:
         )
         assert resp.status_code == 405
 
+    def test_mitgliederbereich_vorstand_sieht_vorstandstermine(self, kalender, zug, api):
+        # Vorstandsmitglied im Mitgliederbereich (und damit in der App): auch die
+        # Termine „nur Vorstand“ der eigenen Einheit, nicht die des Dachverbands
+        # oder interne der Untereinheiten
+        _, user, access = member_with_access(kalender["a"], "Vorsitz", depts=[zug])
+        give_role(user, kalender["a"], ["events.view"], name="Vorsitz")
+        base = f"/api/portal/{access.pk}/"
+        assert sorted(titles(api(user), base)) == [
+            "Königsschießen",
+            "Schützenfest BSV",
+            "Vorstand A",
+            "Zugabend",
+        ]
+        intern = Event.objects.get(title="Vorstand A")
+        detail = api(user).get(f"{base}events/{intern.pk}/")
+        assert detail.status_code == 200 and detail.json()["visibility"] == "board"
+        # Rolle ohne Vorstand: weiter nichts Internes
+        _, user2, access2 = member_with_access(kalender["a"], "Helfer", depts=[zug])
+        helper = give_role(user2, kalender["a"], ["events.view"], name="Helfer")
+        with rls_bypass():
+            helper.role.is_board = False
+            helper.role.save()
+        base2 = f"/api/portal/{access2.pk}/"
+        assert "Vorstand A" not in titles(api(user2), base2)
+        assert api(user2).get(f"{base2}events/{intern.pk}/").status_code == 404
+        # Einfaches Mitglied ohne Rolle
+        _, user3, access3 = member_with_access(kalender["a"], "Mitglied", depts=[zug])
+        assert "Vorstand A" not in titles(api(user3), f"/api/portal/{access3.pk}/")
+
     def test_abteilung_eigener_kalender(self, kalender, zug, zug2, api):
         m, user, _ = member_with_access(kalender["a"], "Zugführer", depts=[zug])
         dept_role(zug, m, ["dept.members.view", "dept.events.manage"])
