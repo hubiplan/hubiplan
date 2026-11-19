@@ -54,6 +54,8 @@ class Circular(models.Model):
         DEPARTMENTS = "departments", gettext_lazy("Rolleninhaber der Abteilungen")
         # Inhaber von Rollen des Vereins selbst (Vorstand, Kassierer, Schriftführer …)
         ROLES = "roles", gettext_lazy("Rolleninhaber des Vereins")
+        # Angemeldete eines Termins mit verbindlicher Anmeldung, auch Gäste (Infoschreiben, A5)
+        REGISTERED = "registered", gettext_lazy("Angemeldete des Termins")
 
     class Status(models.TextChoices):
         DRAFT = "draft", gettext_lazy("Entwurf")
@@ -191,6 +193,14 @@ class CircularRecipient(models.Model):
     )
     membership = models.ForeignKey(
         "members.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="circulars",
+    )
+    # Anmeldung zum Termin (Infoschreiben an Angemeldete, auch Gäste ohne Mitgliedschaft)
+    registration = models.ForeignKey(
+        "registrations.Registration",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

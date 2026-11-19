@@ -471,6 +471,9 @@ function DraftEditor({
                     {a.label}
                   </option>
                 ))}
+                {v.audience === 'registered' && (
+                  <option value="registered">{t('Angemeldete des Termins')}</option>
+                )}
               </SelectField>
             )
           )}

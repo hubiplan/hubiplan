@@ -50,6 +50,7 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "location",
             "address",
             "directions",
+            "programme",
             "latitude",
             "longitude",
             "category",

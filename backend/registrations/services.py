@@ -480,7 +480,15 @@ def register(
         reg.invoice = create_invoice(reg, user)
         reg.save(update_fields=["invoice", "updated_at"])
     transaction.on_commit(lambda: notify.confirmation(pk))
+    transaction.on_commit(lambda: _latecomer(pk))
     return reg
+
+
+def _latecomer(pk: int) -> None:
+    """Spätere Anmeldung: schon verschickte Infoschreiben mitschicken (A5)."""
+    from circulars.services import send_to_latecomer
+
+    send_to_latecomer(pk)
 
 
 def _language(org) -> str:
@@ -809,6 +817,7 @@ def move_up(setup: RegistrationSetup, user=None) -> list[Registration]:
 
         pk = reg.pk
         transaction.on_commit(lambda pk=pk: notify.moved_up(pk))
+        transaction.on_commit(lambda pk=pk: _latecomer(pk))
         moved.append(reg)
     return moved
 
@@ -1029,6 +1038,17 @@ def purge_due(now: datetime.datetime | None = None) -> int:
                     reg.address = ""
                     fields += ["name", "email", "phone", "address"]
                 reg.note = ""
+                if reg.membership_id is None:
+                    # Infoschreiben an Gäste: Name und Adressen im Versandprotokoll löschen
+                    for row in reg.circulars.all():
+                        row.first_name = ""
+                        row.last_name = gettext("gelöscht")
+                        row.email = ""
+                        row.address = ""
+                        row.values = {}
+                        row.save(
+                            update_fields=["first_name", "last_name", "email", "address", "values"]
+                        )
                 reg.purged_at = now
                 reg.save(update_fields=fields + ["note"])
                 done += 1

@@ -28,7 +28,7 @@ Name lists use a fixed alphabetical order: accented letters are placed with thei
 
 ## Circular for an event
 
-You create a circular about an event in the open event with **Write a circular about it** in the button bar; it is then listed there under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply.
+You create a circular about an event in the open event with **Write a circular about it** in the button bar; it is then listed there under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply. For an event with registrations, an information letter goes to the registrants, including guests (see Events).
 
 ## Received
 
