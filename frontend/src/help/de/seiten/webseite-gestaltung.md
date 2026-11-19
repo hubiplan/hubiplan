@@ -23,7 +23,9 @@ Unter **Design und Farben** wählt ihr Aussehen, Farben und Logo der Webseite. D
 
 ## Farben zuordnen
 
-Beim Zuordnen der Farben wählt ihr für jede Stelle des Designs (Kopf, Menü, Zierlinien, Fuß, Farbbänder, Datumsfeld) eine Farbe der Palette, Weiß oder Dunkel. Kopf, Fuß, Farbbänder und Zierlinien können statt einer Farbe auch einen Verlauf aus dem Erscheinungsbild bekommen; Menü, Knöpfe und Datumsfeld bleiben einfarbig, abgerundete Kanten zeigen die erste Farbe des Verlaufs. Darunter legt ihr unter **Text, Flächen und Hintergrund** fest, welche Farbe Fließtext, Sekundärtext, Flächen (Karten, Tabellenzeilen) und der Seitenhintergrund haben. „Vorgabe“ nimmt die Farbe, die unter Einstellungen › Erscheinungsbild bei **Verwendet für** angekreuzt ist, sonst bleibt das Design, wie es ist; Tabellenzeilen bekommen dann abwechselnd die Flächenfarbe; ein gewählter Seitenhintergrund geht dem Regler „Hintergrund“ der Feinabstimmung vor. Wird Text auf Flächen oder Hintergrund schlecht lesbar (unter 4,5 : 1), erscheint ein Hinweis.
+Beim Zuordnen der Farben wählt ihr für jede Stelle des Designs (Kopf, Menü, Zierlinien, Fuß, Farbbänder, Datumsfeld) eine Farbe der Palette, Weiß oder Dunkel. Kopf, Fuß, Farbbänder und Zierlinien können statt einer Farbe auch einen Verlauf aus dem Erscheinungsbild bekommen; Menü, Knöpfe und Datumsfeld bleiben einfarbig, abgerundete Kanten zeigen die erste Farbe des Verlaufs.
+
+Darunter legt ihr unter **Text, Flächen und Hintergrund** fest, welche Farbe Fließtext, Sekundärtext, Flächen (Karten, Tabellenzeilen) und der Seitenhintergrund haben. „Vorgabe“ nimmt die Farbe, die unter Einstellungen › Erscheinungsbild bei **Verwendet für** angekreuzt ist, sonst bleibt das Design, wie es ist; Tabellenzeilen bekommen dann abwechselnd die Flächenfarbe; ein gewählter Seitenhintergrund geht dem Regler „Hintergrund“ der Feinabstimmung vor. Wird Text auf Flächen oder Hintergrund schlecht lesbar (unter 4,5 : 1), erscheint ein Hinweis.
 
 ## Entwurf und Veröffentlichen
 

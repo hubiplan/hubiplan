@@ -18,16 +18,6 @@ HUBIplan holt die Termine danach stündlich ab; mit **Jetzt abrufen** sofort. Di
 
 ![Ausgangspunkt: Termine eines fremden Kalenders zeigen](bild:fremde-kalender)
 
-Fremde Quellen starten mit Sichtbarkeit für Mitglieder; öffentlich werden ihre
-Kopien nur durch eine gesonderte bewusste Auswahl. Bei einem Abruffehler bleiben
-die letzten Kopien unverändert erhalten. Angezeigt werden der Fehler, der Zeitpunkt
-des letzten Versuchs und der letzte erfolgreiche Abruf. Bei älteren Beständen oder
-nie erfolgreichem Abruf ist der Erfolgszeitpunkt ausdrücklich unbekannt. Klappt
-14 Tage lang kein Abruf, werden die Termine ausgeblendet: im Kalender, im
-Mitgliederbereich, in der App und auf der Webseite. Sie bleiben gespeichert und
-erscheinen wieder, sobald ein Abruf klappt. Alle mit Terminverwaltung bekommen
-beim Ausblenden einmal eine E-Mail.
-Beim erfolgreichen Abgleich verschwinden entfernte, ausgeblendete oder außerhalb
-des Abruffensters liegende Termine. Beim Ausschalten des Abrufs verschwinden alle
-Kopien sofort; auch eine inaktive Neuanlage ruft nichts ab. Beim Löschen der Quelle
-werden deren Kopien und Ausblendungen mitgelöscht.
+Fremde Quellen starten mit Sichtbarkeit für Mitglieder; öffentlich werden ihre Kopien nur durch eine gesonderte bewusste Auswahl. Bei einem Abruffehler bleiben die letzten Kopien unverändert erhalten. Angezeigt werden der Fehler, der Zeitpunkt des letzten Versuchs und der letzte erfolgreiche Abruf. Bei älteren Beständen oder nie erfolgreichem Abruf ist der Erfolgszeitpunkt ausdrücklich unbekannt. Klappt 14 Tage lang kein Abruf, werden die Termine ausgeblendet: im Kalender, im Mitgliederbereich, in der App und auf der Webseite.
+
+Sie bleiben gespeichert und erscheinen wieder, sobald ein Abruf klappt. Alle mit Terminverwaltung bekommen beim Ausblenden einmal eine E-Mail. Beim erfolgreichen Abgleich verschwinden entfernte, ausgeblendete oder außerhalb des Abruffensters liegende Termine. Beim Ausschalten des Abrufs verschwinden alle Kopien sofort; auch eine inaktive Neuanlage ruft nichts ab. Beim Löschen der Quelle werden deren Kopien und Ausblendungen mitgelöscht.

@@ -28,6 +28,8 @@ Hier prüft die Kasse die Auslagen der Mitglieder. **Zu prüfen** zeigt eingerei
 
 Wähle für jede Position die **Kategorie** für die Buchung und dann **Freigeben**, **Rückfrage stellen** oder **Ablehnen**. Weniger freigeben geht nur mit Grund; die Person sieht ihn. Ab dem eingestellten Betrag geben zwei verschiedene Personen frei. Eine eigene Auslage gibt immer jemand anderes frei. Nur bis zur Kleinbetragsgrenze (Vorgabe 200 €) darf die Kasse eine eigene Auslage selbst freigeben; eine zweite Person sichtet sie dann unter **Nachträglich sichten**.
 
+## Im Einzelnen
+
 Freigegebene Auslagen zahlst du einzeln aus: Konto oder Kasse und Datum wählen, **Ausgezahlt: buchen**. HUBIplan bucht die Ausgabe (bei mehreren Kategorien als Splitbuchung) und hängt die Belege an die Buchung. Für die Banking-App steht ein GiroCode bereit. Unter **Sammelüberweisung** fasst du mehrere Auslagen zu einer SEPA-Datei für das Onlinebanking zusammen; gebucht wird beim ersten Herunterladen, vorher lässt sich der Lauf aufheben. Ein Storno der Buchung im Kassenbuch macht die Auslage wieder frei.
 
 Mit **Für jemanden erfassen** trägst du eine Auslage für ein Mitglied oder eine andere Person ein, etwa für einen abgegebenen Kassenzettel; ohne Beleg nur mit Begründung (Eigenbeleg). Zahlungen, die die Kasse selbst direkt leistet, sind keine Auslagen und gehören ins Kassenbuch.

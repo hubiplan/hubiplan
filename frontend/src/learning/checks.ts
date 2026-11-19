@@ -791,3 +791,112 @@ export function circularSendChecks(c: CircularSendInput): CheckItem[] {
     })
   return items
 }
+
+// --- vor „Auszahlen und buchen“ (Auslagen) ---
+
+export interface ExpensePayInput {
+  kind: 'expense' | 'mileage' | 'advance'
+  fileCount: number
+  /** Beträge ohne Kategorie */
+  linesWithoutCategory: number
+  invoiceTo: 'club' | 'member' | 'none'
+  payout: 'bank' | 'cash' | 'waiver'
+  hasIban: boolean
+  selfApproved: boolean
+  reviewed: boolean
+}
+
+export function expensePayChecks(c: ExpensePayInput): CheckItem[] {
+  const items: CheckItem[] = []
+  if (c.kind === 'expense')
+    items.push({
+      key: 'receipt',
+      ok: c.fileCount > 0,
+      text:
+        c.fileCount > 0
+          ? t('Ein Beleg hängt an der Auslage.')
+          : t('Kein Beleg: Die Begründung dient als Eigenbeleg.'),
+      fix: t('Fordere den Beleg nach, wenn es ihn noch gibt.'),
+      why: 'expense_no_receipt',
+    })
+  items.push({
+    key: 'category',
+    ok: c.linesWithoutCategory === 0,
+    text:
+      c.linesWithoutCategory === 0
+        ? t('Jeder Betrag hat eine Kategorie.')
+        : t('Mindestens ein Betrag hat noch keine Kategorie.'),
+    fix: t('Ohne Kategorie fehlt die Ausgabe später in den Auswertungen.'),
+  })
+  if (c.payout === 'bank')
+    items.push({
+      key: 'iban',
+      ok: c.hasIban,
+      text: c.hasIban
+        ? t('Die IBAN für die Überweisung ist hinterlegt.')
+        : t('Für die Überweisung fehlt eine IBAN.'),
+    })
+  if (c.selfApproved)
+    items.push({
+      key: 'self',
+      ok: c.reviewed,
+      text: c.reviewed
+        ? t('Selbst freigegeben und von einer zweiten Person gesichtet.')
+        : t('Selbst freigegeben, noch nicht von einer zweiten Person gesichtet.'),
+      why: 'expense_own',
+    })
+  if (c.kind === 'expense' && c.invoiceTo === 'member')
+    items.push({
+      key: 'invoice_to',
+      ok: true,
+      info: true,
+      text: t('Die Rechnung lautet nicht auf den Verein: kein Vorsteuerabzug.'),
+      why: 'expense_invoice_to',
+    })
+  return items
+}
+
+// --- vor „Jetzt importieren“ (Mitglieder importieren) ---
+
+export interface ImportInput {
+  ok: number
+  errors: number
+  duplicates: number
+}
+
+export function importChecks(c: ImportInput): CheckItem[] {
+  const items: CheckItem[] = [
+    {
+      key: 'errors',
+      ok: c.errors === 0,
+      text:
+        c.errors === 0
+          ? t('Keine Zeile hat Fehler.')
+          : t('{n} Zeilen mit Fehlern werden nicht importiert.', { n: c.errors }),
+      fix: t('Die Fehlerliste zeigt, was in der Datei zu berichtigen ist.'),
+    },
+    {
+      key: 'duplicates',
+      ok: c.duplicates === 0,
+      text:
+        c.duplicates === 0
+          ? t('Keine der Personen scheint es schon zu geben.')
+          : t('{n} Personen gibt es vermutlich schon.', { n: c.duplicates }),
+      fix: t('Sieh in der Vorschau nach, ob sie verknüpft oder neu angelegt werden.'),
+    },
+    {
+      key: 'columns',
+      ok: true,
+      info: true,
+      text: t('Nur Spalten übernommen, die der Verein braucht.'),
+      why: 'import_columns',
+    },
+    {
+      key: 'undo',
+      ok: true,
+      info: true,
+      text: t('„Rückgängig“ bleibt nach dem Import 30 Tage möglich.'),
+    },
+  ]
+  return items
+}

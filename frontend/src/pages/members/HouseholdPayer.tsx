@@ -19,7 +19,7 @@ import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Alert, Field, Loading, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
-import { Why } from '../../learning/Aids.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
 
 const KIND_LABELS: Record<PayerKind, string> = {
   member: t('Mitglied'),
@@ -98,7 +98,9 @@ function PayerDetails({
 
   return (
     <div className="subcard stack">
-      <h3>{t('Zahler')}</h3>
+      <h3>
+        <Term k="payer">{t('Zahler')}</Term>
+      </h3>
       {message && <Alert kind="success">{message}</Alert>}
       {editing ? (
         <PayerForm

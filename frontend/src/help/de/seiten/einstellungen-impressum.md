@@ -3,6 +3,7 @@ key: page.settings_imprint
 titel: Einstellungen › Impressum
 rechte: [org.edit]
 routen: [/einstellungen/impressum]
+siehe: [guide.website_publish, guide.club_setup]
 stichworte: [Impressum, Anbieterkennzeichnung, verantwortlich]
 ---
 

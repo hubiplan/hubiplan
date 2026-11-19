@@ -3,6 +3,7 @@ key: page.department_roles
 titel: Unit › Offices
 rechte: []
 routen: [/abteilung/rollen]
+siehe: [guide.unit_lead, guide.office_fill]
 stichworte: [Office, role, holder, appoint, permissions]
 ---
 

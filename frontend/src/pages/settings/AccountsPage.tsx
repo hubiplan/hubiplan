@@ -12,6 +12,7 @@ import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts
 import { Alert, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Filter = '' | 'rights' | 'never' | 'expired' | 'mfa'
 
@@ -107,6 +108,7 @@ export function AccountsPage() {
     <div className="stack">
       <div className="card card-wide">
         <h2>{t('Konten')}</h2>
+        <Why k="account_review" />
         <p className="muted small">
           {t(
             'Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit und alle, die den Mitgliederbereich nutzen dürfen. Rollen besetzt ihr unter Mitglieder › Ämter, einzelne Konten bearbeitet ihr in der Mitgliederakte.',

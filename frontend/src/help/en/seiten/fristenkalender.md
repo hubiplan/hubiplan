@@ -30,6 +30,8 @@ Adding an obligation: **New obligation** asks for a name, the next deadline, the
 reminder. In the note you can record, for example, the legal basis or where the documents are
 kept.
 
+## In detail
+
 Responsible: An obligation belongs to a role, not to a person, for example the treasurer. When
 the office changes hands, HUBIplan reminds the new holders automatically. Without a role, the
 reminders go to everyone who may maintain the deadline calendar.
@@ -47,13 +49,8 @@ office folder”. A recurring obligation moves on to the next deadline, a one-of
 under **Completed**. The **History** shows who completed which deadline and when. Everyone who
 maintains the deadline calendar and the holders of the responsible role may mark it as done.
 
-After a board election: When minutes are approved in [Meetings](/versammlungen) that contain an
-accepted election to an office that represents the club, HUBIplan creates the task “Report the change of the board to the register court”. It names those elected, is due 14 days after the
-meeting and is linked to the election in the resolution book. Representing roles are those marked
-“represents the unit (§ 26 BGB)”; the office in the minutes must have the same name as the
-role. If no role is marked, all board roles count. This happens for clubs that are entered in the
-register according to their legal notice. If you adopt the suggestion, you can change the
-deadline and the responsible role or switch the task off. If the Tasks module is switched off, a
-one-off obligation appears in the deadline calendar instead.
+After a board election: When minutes are approved in [Meetings](/versammlungen) that contain an accepted election to an office that represents the club, HUBIplan creates the task “Report the change of the board to the register court”. It names those elected, is due 14 days after the meeting and is linked to the election in the resolution book. Representing roles are those marked “represents the unit (§ 26 BGB)”; the office in the minutes must have the same name as the role.
+
+If no role is marked, all board roles count. This happens for clubs that are entered in the register according to their legal notice. If you adopt the suggestion, you can change the deadline and the responsible role or switch the task off. If the Tasks module is switched off, a one-off obligation appears in the deadline calendar instead.
 
 You switch the module on under Settings › Modules.

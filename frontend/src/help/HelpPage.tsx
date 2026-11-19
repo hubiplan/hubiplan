@@ -13,7 +13,7 @@ import { GlossaryPage } from '../learning/GlossaryPage.tsx'
 import { useLearning } from '../learning/LearningContext.tsx'
 import { NewsPage } from '../news/NewsPage.tsx'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
-import { matchesQuery, pageHelpFor } from './content.ts'
+import { guidesOfPage, matchesQuery, pageHelpFor } from './content.ts'
 import type { HelpEntry } from './content.ts'
 import { MEMBER_TOPICS, useBlocked } from './extras.ts'
 import { useHelp } from './HelpContext.tsx'
@@ -423,8 +423,12 @@ export function HelpEntryPage() {
   const related = !entry
     ? []
     : entry.kind === 'page'
-      ? (entries ?? []).filter(
-          (e) => e.kind === 'guide' && e.routes.some((r) => entry.routes.includes(r)),
+      ? guidesOfPage(
+          entries ?? [],
+          entry,
+          (entries ?? []).filter(
+            (e) => e.kind === 'guide' && e.routes.some((r) => entry.routes.includes(r)),
+          ),
         )
       : (entries ?? []).filter((e) => e.kind === 'guide' && e.key !== entry.key && sameItem(e))
   // Anleitung: die Erklärung der Seite, auf der sie beginnt

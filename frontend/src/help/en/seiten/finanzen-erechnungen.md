@@ -17,6 +17,8 @@ reason. XRechnung requires the supplier's contact name and phone number.
 Without a VAT identifier, the supplier needs a unique business partner identifier,
 such as the supplier number agreed with the customer.
 
+## In detail
+
 **Validate e-invoice** displays errors and warnings. **Validate and issue** validates
 again and assigns the final invoice number only on success. Issued invoices and
 addresses cannot be changed. Download the XML, validation report and readable view.

@@ -15,3 +15,5 @@ stichworte: [DATEV, tax adviser, export, posting batch, chart of accounts]
 5. Click "DATEV" next to the financial year and pass the file to the tax adviser.
 
 The file is a posting batch in DATEV format. Bookings with a tax rate get the matching tax key.
+
+![Starting point: Export bookings for the tax adviser (DATEV)](bild:jahresabschluss)

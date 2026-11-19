@@ -15,3 +15,5 @@ stichworte: [Storno, Stornorechnung, Gutschrift, Korrektur, falsche Rechnung]
 5. Berichtige den neuen Entwurf und gib die Rechnung aus.
 
 Die ausgegebene Rechnung bleibt unverändert; die Stornorechnung hat eine eigene Nummer. Rechnungen aus einem Beitragslauf berechnest du im Beitragslauf neu.
+
+![Ausgangspunkt: Rechnung stornieren und berichtigen](bild:rechnung-schreiben)

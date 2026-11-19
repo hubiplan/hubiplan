@@ -3,6 +3,7 @@ key: page.settings_privacy
 titel: Settings › Privacy
 rechte: [org.edit]
 routen: [/einstellungen/datenschutz]
+siehe: [guide.privacy_request]
 stichworte: [privacy, GDPR, privacy notice, retention periods]
 ---
 

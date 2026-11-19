@@ -8,6 +8,8 @@ import { t } from '../i18n/index.ts'
 import { TileIcon } from './icons.tsx'
 import type { TileIconName } from './icons.tsx'
 import { useAnnounce } from './announce.ts'
+import { Term } from '../learning/Aids.tsx'
+import type { TermKey } from '../learning/content.ts'
 import { useOnline } from './OfflineBanner.tsx'
 
 /**
@@ -19,19 +21,29 @@ function FieldFrame({
   label,
   error,
   hint,
+  term,
   children,
 }: {
   id: string
   label: string
   error?: string
   hint?: string
+  /** Fachbegriff aus dem Glossar: „?“ hinter der Beschriftung, nicht Teil des Feldnamens */
+  term?: TermKey
   children: ReactNode
 }) {
   return (
     <div className={`field${error ? ' field-invalid' : ''}`}>
-      <label className="field-label" htmlFor={id}>
-        {label}
-      </label>
+      {term ? (
+        <div className="field-label">
+          <label htmlFor={id}>{label}</label>
+          <Term k={term}>{null}</Term>
+        </div>
+      ) : (
+        <label className="field-label" htmlFor={id}>
+          {label}
+        </label>
+      )}
       {children}
       {hint && !error && (
         <small className="muted" id={`${id}-hinweis`}>
@@ -56,13 +68,19 @@ export function Field({
   label,
   error,
   hint,
+  term,
   id,
   ...input
-}: InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & {
+  label: string
+  error?: string
+  hint?: string
+  term?: TermKey
+}) {
   const own = useId()
   const fieldId = id ?? own
   return (
-    <FieldFrame id={fieldId} label={label} error={error} hint={hint}>
+    <FieldFrame id={fieldId} label={label} error={error} hint={hint} term={term}>
       <input
         {...input}
         id={fieldId}
@@ -80,14 +98,20 @@ export function SelectField({
   label,
   error,
   hint,
+  term,
   id,
   children,
   ...select
-}: SelectHTMLAttributes<HTMLSelectElement> & { label: string; error?: string; hint?: string }) {
+}: SelectHTMLAttributes<HTMLSelectElement> & {
+  label: string
+  error?: string
+  hint?: string
+  term?: TermKey
+}) {
   const own = useId()
   const fieldId = id ?? own
   return (
-    <FieldFrame id={fieldId} label={label} error={error} hint={hint}>
+    <FieldFrame id={fieldId} label={label} error={error} hint={hint} term={term}>
       <select
         {...select}
         id={fieldId}

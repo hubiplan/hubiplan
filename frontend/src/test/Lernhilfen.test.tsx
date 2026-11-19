@@ -16,6 +16,8 @@ import {
   feeRunChecks,
   isBankBusinessDay,
   circularSendChecks,
+  expensePayChecks,
+  importChecks,
   meetingInviteChecks,
   MIN_DUE_DAYS,
   auditCloseChecks,
@@ -33,6 +35,7 @@ import {
   tr,
   type Text,
 } from '../learning/content.ts'
+import { Field } from '../components/ui.tsx'
 import { GlossaryPage } from '../learning/GlossaryPage.tsx'
 import { LearningCard } from '../learning/LearningCard.tsx'
 import { LearningProvider, NoLearningAids } from '../learning/LearningContext.tsx'
@@ -175,6 +178,8 @@ describe('Inhalte', () => {
     const whys = used(/<Why k="(\w+)"/g)
     const terms = [
       ...used(/<Term k="(\w+)"/g),
+      // Begriff an einem Feld: <Field term="…">
+      ...used(/\bterm="(\w+)"/g),
       // Begriffe über eine Zuordnung (z. B. steuerliche Bereiche)
       ...used(/: '(\w+)',?$/gm).filter((k) => k in TERMS),
     ]
@@ -511,6 +516,7 @@ describe('Glossar', () => {
       'circulars',
       'music',
       'docs',
+      'expenses',
     ])
     await waitFor(() => expect(document.getElementById(termAnchor('mandate'))).not.toBeNull())
     for (const k of Object.keys(TERMS))
@@ -702,6 +708,51 @@ describe('Prüflisten', () => {
       ['attachments', true, true],
     ])
     expect(notice[2].why).toBe('circular_invite_form')
+  })
+
+  it('Begriff an einem Feld: „?“ hinter der Beschriftung, Feldname bleibt unverändert', async () => {
+    renderAids(<Field label="Laufzeit in Jahren" term="term_of_office" defaultValue="3" />, true)
+    expect(
+      await screen.findByRole('button', { name: 'Amtszeit: Was heißt das?' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Laufzeit in Jahren' })).toHaveValue('3')
+  })
+
+  it('12: Prüflisten vor dem Auszahlen einer Auslage und vor dem Import', () => {
+    const open = expensePayChecks({
+      kind: 'expense',
+      fileCount: 0,
+      linesWithoutCategory: 1,
+      invoiceTo: 'member',
+      payout: 'bank',
+      hasIban: false,
+      selfApproved: true,
+      reviewed: false,
+    })
+    expect(open.map((c) => [c.key, c.ok, !!c.info])).toEqual([
+      ['receipt', false, false],
+      ['category', false, false],
+      ['iban', false, false],
+      ['self', false, false],
+      ['invoice_to', true, true],
+    ])
+    const mileage = expensePayChecks({
+      kind: 'mileage',
+      fileCount: 0,
+      linesWithoutCategory: 0,
+      invoiceTo: 'none',
+      payout: 'cash',
+      hasIban: false,
+      selfApproved: false,
+      reviewed: false,
+    })
+    expect(mileage.map((c) => [c.key, c.ok])).toEqual([['category', true]])
+    expect(importChecks({ ok: 40, errors: 2, duplicates: 0 }).map((c) => [c.key, c.ok])).toEqual([
+      ['errors', false],
+      ['duplicates', true],
+      ['columns', true],
+      ['undo', true],
+    ])
   })
 
   it('12: Prüfliste vor dem Abschluss der Kassenprüfung', () => {

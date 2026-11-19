@@ -4,6 +4,7 @@ titel: Webseite › Kontaktformular
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/kontakt]
+siehe: [guide.website_text]
 stichworte: [Kontakt, Formular, Anfrage, Spam]
 ---
 

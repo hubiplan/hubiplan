@@ -15,3 +15,5 @@ stichworte: [cancellation, cancellation invoice, credit note, correction, wrong 
 5. Correct the new draft and issue the invoice.
 
 The issued invoice stays unchanged; the cancellation invoice has its own number. Invoices from a fee run are recalculated in the fee run.
+
+![Starting point: Cancel and correct an invoice](bild:rechnung-schreiben)

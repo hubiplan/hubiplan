@@ -9,6 +9,8 @@ stichworte:
 
 Hier speicherst du Orte, die immer wieder vorkommen, etwa Vereinsheim, Sportplatz oder Probenraum. In Terminen, Wettbewerben, Helferdiensten und Versammlungen wählst du sie dann im Feld **Ort** aus, statt sie jedes Mal einzutippen.
 
+## Im Einzelnen
+
 - **Neuer Ort**: Name, Anschrift und **Anfahrt und Hinweise** (z. B. Parkplatz oder Eingang). Unter **Genauer Kartenpunkt (optional)** trägst du Breite und Länge ein, wenn die Anschrift nicht reicht.
 - Räume: Liegen mehrere Räume im selben Gebäude (Saal, Küche, Versammlungsraum), legst du das Gebäude einmal als Ort mit Anschrift an und darunter mit **Raum hinzufügen** die Räume. Ein Raum hat nur einen Namen und auf Wunsch einen **Hinweis zum Raum** (z. B. „Eingang über den Hof“); Anschrift, Anfahrt und Kartenpunkt kommen vom Ort. In den Formularen steht er als „Ort, Raum“ zur Auswahl, etwa „Bürgerhaus, Saal“. Über **Gehört zu** machst du einen bestehenden Ort nachträglich zum Raum.
 - **Vorschläge aus bisherigen Einträgen** zeigt Orte, die in den letzten zwei Jahren mehrfach eingetippt wurden. **Übernehmen** speichert einen davon.

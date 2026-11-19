@@ -9,6 +9,8 @@ Das ist dein Bereich als Mitglied. Hier findest du deinen Ausweis, deine Rechnun
 
 Als Ansprechpartner einer Organisation siehst du hier die Daten der Organisation und meldest Änderungen für sie; Vorname, Geburtsdatum und Geschlecht gibt es dort nicht. Bist du zugleich selbst Mitglied, stehen unter **Mein Konto** beide Bereiche getrennt, der Bereich der Organisation mit dem Zusatz „als Ansprechpartner“.
 
+## Im Einzelnen
+
 Ausweis, Termine und Rechnungen erreichst du auch aus jeder anderen Ansicht: oben rechts unter **Mein Konto** steht der Abschnitt **Mein Bereich** mit **Mein Ausweis**, **Meine Termine** und **Meine Rechnungen**. Bist du in mehreren Vereinen Mitglied, steht dort jeder Verein mit seinem Namen. Die Auswahl der Einheit oben zeigt dagegen nur die Bereiche, in denen du mitarbeitest.
 
 Unter **Wettbewerbe** stehen deine Meldungen („Wofür bin ich gemeldet?“) und deine Ergebnisse auf einer Seite.

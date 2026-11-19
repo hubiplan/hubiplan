@@ -3,6 +3,7 @@ key: page.finance_setup
 titel: Finanzen › Einrichten
 rechte: [finance.edit, billing.edit]
 routen: [/finanzen/einrichtung]
+siehe: [guide.fee_rates, guide.club_setup]
 stichworte: [Einrichtung, Konten, Kategorien, Beitragssätze]
 ---
 

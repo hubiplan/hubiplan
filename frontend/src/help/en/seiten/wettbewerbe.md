@@ -27,15 +27,9 @@ Changes to conditions or calculations require confirmation when results exist. C
 
 Members under 18 and members without a date of birth appear by name only with the consent “Competition results under 18”. Guests have no date of birth: tick “of age” when recording a new guest, otherwise the website shows “without name”. You can add this later under **Evaluation** in the section **Guests on the website**, also for closed competitions; prize winners entered by name only (for example after a starter was removed) are listed there too, and **Mark all as of age** handles a whole competition at once.
 
-Under **Set up** → **Output & sharing** → **Publicly visible**, **prize places with names** publishes
-individual places up to the number of **prize places** configured for each scoring.
-Two prize places show places 1 and 2; five prize places show places 1 to 5.
-This also applies to the results block on the home page and to external competitions.
-The results page shows the latest published competition directly;
-older competitions can be opened through links.
-Zero prize places show no individual places. Tied prize places are shown in full;
-existing consent and objections still apply. Unit and team rankings also show only their prize places, likewise
-with **only the scoring of subunits and teams**. All places appear only with **full ranking**.
+Under **Set up** → **Output & sharing** → **Publicly visible**, **prize places with names** publishes individual places up to the number of **prize places** configured for each scoring. Two prize places show places 1 and 2; five prize places show places 1 to 5. This also applies to the results block on the home page and to external competitions.
+
+The results page shows the latest published competition directly; older competitions can be opened through links. Zero prize places show no individual places. Tied prize places are shown in full; existing consent and objections still apply. Unit and team rankings also show only their prize places, likewise with **only the scoring of subunits and teams**. All places appear only with **full ranking**.
 
 ## Address on the website
 

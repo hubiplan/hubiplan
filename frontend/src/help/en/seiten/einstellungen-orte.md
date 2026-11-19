@@ -21,6 +21,8 @@ stichworte:
 
 Here you save places that come up again and again, such as the clubhouse, sports ground or rehearsal room. In events, competitions, volunteer duties and meetings you then choose them in the **Place** field instead of typing them every time.
 
+## In detail
+
 - **New place**: name, address and **Directions and notes** (e.g. parking or entrance). Under **Exact map point (optional)** you enter latitude and longitude if the address is not enough.
 - Rooms: If several rooms are in the same building (hall, kitchen, meeting room), you add the building once as a place with address and then the rooms below it with **Add room**. A room only has a name and optionally a **Note on the room** (e.g. “entrance via the courtyard”); address, directions and map point come from the place. Forms offer it as “Place, Room”, e.g. “Community centre, Hall”. With **Belongs to** you turn an existing place into a room later.
 - **Suggestions from earlier entries** shows places that were typed in several times in the last two years. **Apply** saves one of them.

@@ -14,6 +14,7 @@ import { useAuth } from '../../auth/AuthContext.tsx'
 import { RoleForm, RoleTable } from '../../components/RoleEditor.tsx'
 import { ALL_ROLE_FIELDS } from '../../components/roles.ts'
 import { t, tn } from '../../i18n/index.ts'
+import { Term, Why } from '../../learning/Aids.tsx'
 
 const INVITATION_DAYS = 7
 
@@ -195,7 +196,9 @@ export function UsersCard({
 
   return (
     <div className="card card-wide">
-      <h2>{t('Amtszeiten')}</h2>
+      <h2>
+        <Term k="term_of_office">{t('Amtszeiten')}</Term>
+      </h2>
       <p className="muted small">
         {t(
           'Wer welche Rolle von wann bis wann hat. Ein Konto ist die Anmeldung einer Person; es kann Rollen in mehreren Organisationen haben. Jede Amtszeit hat einen Zeitraum – so bleibt die Historie erhalten.',
@@ -246,6 +249,8 @@ export function UsersCard({
           {t('. Dort endet die Amtszeit des Vorgängers gleich mit.')}
         </p>
       )}
+      <Why k="office_term_end" />
+      <Why k="board_change" />
       {!readOnly && !isClub && (
         <form className="subcard" onSubmit={add}>
           <h3>{t('Rolle besetzen')}</h3>
@@ -571,6 +576,9 @@ function AssignmentRow({
               <button type="button" className="link-button" onClick={() => void resetMfa()}>
                 {t('2FA zurücksetzen')}
               </button>
+            )}
+            {span > 0 && a.is_active && a.has_mfa && a.user_email !== user?.email && (
+              <Why k="mfa_reset" />
             )}
           </div>
         )}

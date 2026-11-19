@@ -18,6 +18,7 @@ import { Alert, Field, SelectField } from '../../components/ui.tsx'
 import { formatEuro } from '../../i18n/format.ts'
 import { t } from '../../i18n/index.ts'
 import './expenses.css'
+import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 
 const STATUS_BADGE: Record<ExpenseStatus, string> = {
   draft: 'badge',
@@ -92,7 +93,9 @@ export function ClaimFacts({ claim }: { claim: ExpenseClaim }) {
       )}
       {claim.advance_number && (
         <>
-          <dt>{t('Abrechnung des Vorschusses')}</dt>
+          <dt>
+            <Term k="advance">{t('Abrechnung des Vorschusses')}</Term>
+          </dt>
           <dd>{claim.advance_number}</dd>
         </>
       )}
@@ -346,6 +349,7 @@ export function ClaimForm({
             })}
             onChange={(e) => setKm(e.target.value)}
           />
+          <HowTo k="calc_mileage" />
         </>
       ) : (
         <fieldset className="stack">
@@ -426,6 +430,7 @@ export function ClaimForm({
           <option value="none">{t('ohne Namen (Kassenbon)')}</option>
         </SelectField>
       )}
+      {kind === 'expense' && <Why k="expense_invoice_to" />}
       {kind === 'expense' && !!choices.open_advances?.length && (
         <SelectField
           label={t('Rechnet einen Vorschuss ab')}
@@ -511,6 +516,7 @@ export function ClaimForm({
           />
         </label>
       )}
+      {treasury && <Why k="expense_no_receipt" />}
       {withFiles && kind === 'expense' && (
         <fieldset className="stack">
           <legend>{t('Belege')}</legend>

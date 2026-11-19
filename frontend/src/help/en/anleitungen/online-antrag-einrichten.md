@@ -15,3 +15,5 @@ stichworte: [online application, joining form, become a member, QR code, booth m
 5. Under **Share the form**, copy the address or download the QR code, e.g. for the website, flyers or a notice board.
 
 For a tablet at the club booth, create a link with label and validity under **Booth mode** and open it on the device. People sign on the screen there; no email confirmation is needed.
+
+![Starting point: Set up the online membership application](bild:online-antrag-einrichten)

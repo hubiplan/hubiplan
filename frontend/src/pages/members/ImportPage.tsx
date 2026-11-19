@@ -19,6 +19,9 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { fillTerms, useTerms } from '../../org/terms.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
+import { Checklist } from '../../learning/Checklist.tsx'
+import { importChecks } from '../../learning/checks.ts'
 
 const EXIT_REASONS = [
   { value: 'exit', label: t('Austritt') },
@@ -232,6 +235,7 @@ function ImportWizard({
       {editable && (
         <div className="card card-wide">
           <h2>{t('2. Spalten zuordnen')}</h2>
+          <Why k="import_columns" />
           {targets.error && (
             <LoadError
               message={t(
@@ -408,6 +412,14 @@ function ImportWizard({
               : ''}
             .
           </p>
+          <Checklist
+            title={t('Vor dem Import')}
+            items={importChecks({
+              ok: job.counts.ok ?? 0,
+              errors: job.counts.errors ?? 0,
+              duplicates: job.counts.duplicates ?? 0,
+            })}
+          />
           <button
             type="button"
             className="button button-primary"

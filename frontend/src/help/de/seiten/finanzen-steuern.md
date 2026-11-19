@@ -4,6 +4,7 @@ titel: Finanzen › Steuern
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/steuern]
+siehe: [guide.vat_return, guide.year_closing]
 stichworte:
   [
     Steuern,
@@ -16,6 +17,8 @@ stichworte:
 ---
 
 Der Punkt **Steuern** zeigt die steuerliche Auswertung eines Geschäftsjahres. Er gehört zum Modul Steuern & Gemeinnützigkeit. Außerdem müssen die Kategorien steuerlichen Bereichen zugeordnet sein (Einrichten › Kategorien). Ihr seht:
+
+## Im Einzelnen
 
 - **Freigrenze**: die Einnahmen des wirtschaftlichen Geschäftsbetriebs einschließlich Umsatzsteuer im Vergleich zur Freigrenze (seit 2026 50.000 €, vorher 45.000 €), dazu die beiden Vorjahre. Ab 80 % gibt es einen Hinweis, darüber eine Warnung.
 - **Nach steuerlichem Bereich**: Einnahmen, Ausgaben und Ergebnis je Bereich. Stornos sind mit der stornierten Buchung verrechnet. Bei einem Verlust im wirtschaftlichen Geschäftsbetrieb erscheint ein Hinweis.

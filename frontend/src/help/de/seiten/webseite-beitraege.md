@@ -4,6 +4,7 @@ titel: Webseite › Social Media
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/beitraege]
+siehe: [guide.mcp_tasks]
 stichworte: [Instagram, Facebook, Beitrag, Social Media]
 ---
 

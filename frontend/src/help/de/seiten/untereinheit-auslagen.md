@@ -4,6 +4,7 @@ titel: Untereinheit › Auslagen
 modul: expenses
 rechte: [expenses.view]
 routen: [/auslagen]
+siehe: [guide.expense_claim, guide.expense_review]
 stichworte: [Auslage, sachlich bestätigen, Leitung, Untereinheit]
 ---
 

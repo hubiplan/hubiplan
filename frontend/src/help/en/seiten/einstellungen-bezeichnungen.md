@@ -3,6 +3,7 @@ key: page.settings_terms
 titel: Settings › Names and terms
 rechte: [org.edit]
 routen: [/einstellungen/bezeichnungen]
+siehe: [guide.club_setup]
 stichworte: [term, platoon, corps, section, sub-unit, article, English]
 ---
 

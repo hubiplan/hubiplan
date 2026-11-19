@@ -4,6 +4,7 @@ titel: Finanzen › Auswertung
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/auswertung]
+siehe: [guide.year_closing, guide.cash_audit]
 stichworte: [Auswertung, Kassenbericht, Konten, Kategorie, Saldo, Geschäftsjahr]
 ---
 

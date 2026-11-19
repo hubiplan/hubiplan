@@ -12,6 +12,7 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
+import { Why } from '../../learning/Aids.tsx'
 
 const DEFAULT_KINDS = [
   'Immatrikulationsbescheinigung',
@@ -160,6 +161,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
   return (
     <div className="card card-wide">
       <h2>{t('Ermäßigung mit Nachweis')}</h2>
+      <Why k="fee_proof_basis" />
       <p className="muted small">
         {t(
           'Zum Beispiel für Studierende: Der ermäßigte Beitrag gilt nur mit einem Nachweis, der jedes Jahr bis zur Frist vorliegen muss. HUBIplan erinnert die Mitglieder, nimmt Nachweise per App, Mitgliederbereich, Link oder Antwort-Mail an und berechnet ohne Nachweis den normalen Beitrag. Zugeordnet wird in der Mitgliedsakte.',
@@ -246,6 +248,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
           onChange={(value) => void setAuto(value)}
         />
       )}
+      {settings.data && list.data.length > 0 && <Why k="fee_proof_auto" />}
       {settings.data && !settings.data.mail_replies && list.data.length > 0 && (
         <p className="muted small">
           {t(
@@ -325,6 +328,7 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
             />
             <Field
               label={t('Kulanzzeit in Tagen (freiwillig)')}
+              term="grace_period"
               type="number"
               min={0}
               max={365}

@@ -120,3 +120,11 @@ Kündigung durch das Mitglied (Frist nach § 39 BGB, Ablauf beim Bestätigen), V
 (Teilnahme aus der Ferne, geheime Abstimmung), Umfragen (kein Beschluss, anonym), Haushaltsplan,
 Umsatzsteuer-Voranmeldung und Vorsteuerpauschale, Sponsoring und Vertragsverlängerung,
 Fristenkalender und Qualifikationen (Einsichtsvermerk beim Führungszeugnis).
+
+Seit November 2026 stehen Lernhilfen auch bei Auslagen (zwei Freigaben, eigene Auslage, Rechnung
+auf den Verein, fehlender Beleg, Fahrtkosten; Prüfliste vor dem Auszahlen), bei Amtszeiten,
+Vorstandswechsel und Konten, beim Import (Prüfliste vor „Jetzt importieren“) und beim
+vollständigen Export, bei der Ermäßigung mit Nachweis, bei KI-Assistenten, Nextcloud, fremden
+Kalendern, Musikervergütungen, Mitgliedsanträgen und Meldungen (Quellen zusätzlich BRKG).
+Begriffe an Feldern hängen über `term="…"` an `Field` und `SelectField`; das „?“ steht dann
+hinter der Beschriftung und gehört nicht zum Namen des Feldes.

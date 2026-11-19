@@ -4,6 +4,7 @@ titel: Finance › Fixed assets
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/anlagen]
+siehe: [guide.booking, guide.year_closing]
 stichworte: [Assets, asset register, depreciation, useful life]
 ---
 

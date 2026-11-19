@@ -12,6 +12,8 @@ Hier prüft der Vorstand die Nachweise für ermäßigte Beiträge, etwa Immatrik
 
 **Zu prüfen** zeigt die eingegangenen Nachweise mit Weg (Mitgliederbereich, App, Link, Antwort per E-Mail, Antrag) und der Ampel der Vorprüfung: Bei einem PDF sucht HUBIplan Name, Geburtsdatum, Studium oder Promotion und die Gültigkeit und schlägt „gültig bis“ vor. Fotos liest du selbst. Mit **Anerkennen**, **Rückfrage** oder **Ablehnen** entscheidest du; das Mitglied bekommt eine E-Mail. Danach wird die Datei gelöscht, es bleibt nur der Vermerk.
 
+## Im Einzelnen
+
 **Übersicht** zeigt je Beitragsjahr den Stand aller Mitglieder mit Ermäßigung: anerkannt, in Prüfung, Rückfrage, Frist läuft oder normaler Beitrag. Solange die Frist läuft oder ein Nachweis noch nicht geprüft ist, gilt die Ermäßigung vorläufig; danach berechnet der Beitragslauf ohne anerkannten Nachweis den normalen Beitrag.
 
 **Zwei Jahre ohne Nachweis** listet Mitglieder, die zwei Beitragsjahre hintereinander keinen Nachweis gebracht haben. Liegen die Voraussetzungen nicht mehr vor, trägst du in der Mitgliedsakte ein Ende der Ermäßigung ein.

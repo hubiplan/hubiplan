@@ -3,6 +3,7 @@ key: page.settings_imprint
 titel: Settings › Legal notice
 rechte: [org.edit]
 routen: [/einstellungen/impressum]
+siehe: [guide.website_publish, guide.club_setup]
 stichworte: [legal notice, imprint, responsible person]
 ---
 

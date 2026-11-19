@@ -4,6 +4,7 @@ titel: Manage rooms and facilities
 modul: infrastructure
 rechte: [infrastructure.view]
 routen: [/infrastruktur]
+siehe: [guide.booking_create, guide.material_add]
 stichworte: [Shooting range, Clubhouse, Hall, Room, Area, Key, Shooting lanes]
 ---
 
@@ -19,6 +20,8 @@ For the type **Shooting range**, enter the number of lanes per discipline under
 **Shooting lanes**, for example ten 10 m air rifle lanes. In the shooting facility settings
 the club can choose **Take from facilities**. Target selection in competitions then
 recommends targets that suit these lanes.
+
+## In detail
 
 Add parts of a facility on its detail page with **Create area**, for example a hall, kitchen
 or individual ranges. An area uses the address of its facility; areas cannot contain further

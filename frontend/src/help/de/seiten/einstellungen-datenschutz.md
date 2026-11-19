@@ -3,6 +3,7 @@ key: page.settings_privacy
 titel: Einstellungen › Datenschutz
 rechte: [org.edit]
 routen: [/einstellungen/datenschutz]
+siehe: [guide.privacy_request]
 stichworte: [Datenschutz, DSGVO, Datenschutzhinweise, Löschfristen]
 ---
 

@@ -5,6 +5,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { useQueryLoad } from '../../components/forms.ts'
 import { LoadError, Loading } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString(locale(), { dateStyle: 'medium', timeStyle: 'short' })
@@ -60,6 +61,7 @@ export function McpConnectionsCard() {
           {error}
         </p>
       )}
+      <Why k="mcp_connect" />
       <h3>{t('Verbundene Assistenten')}</h3>
       {data.connections.length === 0 ? (
         <p className="muted">{t('Noch kein Assistent verbunden.')}</p>

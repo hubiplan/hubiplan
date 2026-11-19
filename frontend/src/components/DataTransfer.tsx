@@ -10,6 +10,7 @@ import { errorMessage, formatDateTime, useForm, useLoad, useUnmountSignal } from
 import { Alert, Checkbox, Field, LoadError, SelectField } from './ui.tsx'
 import { fillTerms, useTerms } from '../org/terms.ts'
 import { t } from '../i18n/index.ts'
+import { Why } from '../learning/Aids.tsx'
 
 const RUNNING = ['pending', 'running']
 
@@ -65,6 +66,7 @@ export function ExportSection({
   return (
     <div className="card card-wide">
       <h2>{t('Vollständiger Export')}</h2>
+      <Why k="full_export" />
       <p className="muted small">
         {t(
           'Alle Daten als eine Datei: Stammdaten, Rollen, Mitgliedsarten, Zusatzfelder, {pl}, Mitglieder mit allen Zeiträumen, Kasse, Beiträge und Rechnungen sowie die Satzung. Benutzerkonten und Passwörter sind nicht enthalten. Jeder Export wird protokolliert, die Datei wird nach 7 Tagen gelöscht.',

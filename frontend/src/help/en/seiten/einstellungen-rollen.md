@@ -10,7 +10,11 @@ For each area, a role sets what its holders may do: **no access**, **read** or *
 
 In the role list, areas are grouped by level, for example “Edit: Cash book, Dues” and “Read: Members”. Areas without levels appear as single tags; “(partly)” means only some of their rights are granted. **Individual permissions** expands all rights of the role.
 
-If someone has several roles, the highest level per area applies. Roles are assigned under Members › Offices with **Assign**; there the predecessor’s term can end in the same step. All accounts with their roles are listed under Settings › Accounts; without member management you assign a role there under **Terms of office**, optionally for a limited time. If the role has permissions and the person has no account yet, they receive an invitation by email. An account is a person's sign-in; a role without permissions needs none. Anyone who has not set a password yet is marked “Password not set yet”; **Resend invitation** sends a new link. With the “view as role” right you check under **My account** at the top right what a role sees. Anyone who may only read roles sees roles, rights and holders but changes nothing.
+## In detail
+
+If someone has several roles, the highest level per area applies. Roles are assigned under Members › Offices with **Assign**; there the predecessor’s term can end in the same step. All accounts with their roles are listed under Settings › Accounts; without member management you assign a role there under **Terms of office**, optionally for a limited time. If the role has permissions and the person has no account yet, they receive an invitation by email.
+
+An account is a person's sign-in; a role without permissions needs none. Anyone who has not set a password yet is marked “Password not set yet”; **Resend invitation** sends a new link. With the “view as role” right you check under **My account** at the top right what a role sees. Anyone who may only read roles sees roles, rights and holders but changes nothing.
 
 You set the order of the roles by grabbing a role at its handle and dragging it. The order applies wherever roles are listed: in the role list, on the website and for the authorised representatives in the imprint, privacy notice and letterhead. For example, put the chair before the deputy and the treasurer.
 

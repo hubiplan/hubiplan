@@ -10,6 +10,8 @@ stichworte:
 
 Hier richtest du das Formular ein, mit dem Interessierte online Mitglied werden können. Jeder Verein hat ein eigenes Formular mit eigener Adresse.
 
+## Im Einzelnen
+
 - **Mitgliedsarten im Formular**: welche Arten man beantragen kann, mit Bezeichnung und kurzer Erklärung. Den Jahresbeitrag zeigt das Formular, wenn unter Finanzen ein Beitragssatz für die Art steht.
 - **Felder**: Telefon, Geschlecht, Geburtsdatum, Untereinheit, Eintrittswunsch und Nachricht sind Pflicht, freiwillig oder werden nicht abgefragt. Zusatzfelder kommen auf Wunsch dazu.
 - **Beitrag und Lastschrift**: Das SEPA-Mandat kann im Antrag angeboten oder verlangt werden, sobald die Gläubiger-ID eingetragen ist.

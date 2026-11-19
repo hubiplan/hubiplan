@@ -12,6 +12,8 @@ auch bei fehlerhaften Rechnungen. Ein erneuter Import derselben Datei erzeugt ke
 zweiten Eingang. Andere Dateien mit derselben Rechnungsnummer musst du selbst auf
 Dubletten prüfen.
 
+## Im Einzelnen
+
 **Rechnungspostfach**: Ist auf dem Server ein Rechnungspostfach eingerichtet, steht oben
 die Adresse deiner Einheit, z. B. `rechnung+k7m2q9ab@example.org`. Gib sie deinen Lieferanten.
 HUBIplan holt das Postfach jede Minute ab und übernimmt XML-Anhänge und ZUGFeRD/Factur-X-PDFs
@@ -34,6 +36,8 @@ warnt HUBIplan deutlich. Ruf den Rechnungssteller unter einer dir bekannten Numm
 unter der aus der Rechnung, und setze vor der Freigabe **Neue IBAN telefonisch bestätigt**.
 Die bestätigte IBAN speichert HUBIplan beim Geschäftspartner. So schützt du dich vor
 gefälschten Rechnungen mit fremder Bankverbindung.
+
+## Prüfung und Freigabe
 
 Die technische Prüfung (KoSIT) läuft nach dem Import im Hintergrund. Bis sie fertig ist,
 steht beim Eingang **Wird geprüft**; das dauert meist unter einer Minute, die Seite

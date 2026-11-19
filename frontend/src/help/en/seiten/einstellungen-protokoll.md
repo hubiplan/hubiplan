@@ -3,6 +3,7 @@ key: page.settings_audit
 titel: Settings › Log
 rechte: [audit.view]
 routen: [/einstellungen/protokoll]
+siehe: [guide.privacy_request, guide.backup]
 stichworte: [log, changes, who, traceability]
 ---
 

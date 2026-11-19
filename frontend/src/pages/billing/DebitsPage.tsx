@@ -128,7 +128,9 @@ function NewRun({
 
   return (
     <form className="card card-wide" onSubmit={create}>
-      <h2>{t('Neuer Lastschriftlauf')}</h2>
+      <h2>
+        <Term k="debit_run">{t('Neuer Lastschriftlauf')}</Term>
+      </h2>
       {notice && <Alert kind={notice.kind}>{notice.text}</Alert>}
       <Why k="sepa_use" />
       {proposals.invoices.length === 0 ? (
@@ -145,7 +147,9 @@ function NewRun({
                 <tr>
                   <th />
                   <th>{t('Rechnung')}</th>
-                  <th>{t('Zahler')}</th>
+                  <th>
+                    <Term k="payer">{t('Zahler')}</Term>
+                  </th>
                   <th>
                     <Term k="mandate">{t('Mandat')}</Term>
                   </th>
@@ -472,7 +476,9 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
           <table className="table">
             <thead>
               <tr>
-                <th>{t('Zahler')}</th>
+                <th>
+                  <Term k="payer">{t('Zahler')}</Term>
+                </th>
                 <th>
                   <Term k="mandate_reference">{t('Mandatsreferenz')}</Term>
                 </th>

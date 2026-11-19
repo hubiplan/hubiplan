@@ -15,3 +15,5 @@ stichworte: [Mitgliedsantrag, Aufnahme, Zustimmung, Einwand, Rückfrage, ablehne
 5. Klicke auf **Aufnehmen …**, prüfe das Eintrittsdatum und klicke auf **Jetzt aufnehmen**. Auf Wunsch geht eine Begrüßungsmail mit Einladung zum Mitgliederbereich hinaus.
 
 Mit **Ablehnen …** beendest du den Antrag; eine Absage per Mail geht nur, wenn du sie auswählst. In der Liste lassen sich mehrere fertige Anträge auf einmal aufnehmen.
+
+![Ausgangspunkt: Mitgliedsantrag prüfen und aufnehmen](bild:mitgliedsantrag-pruefen)

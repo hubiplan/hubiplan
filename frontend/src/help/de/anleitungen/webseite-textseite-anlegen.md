@@ -16,3 +16,5 @@ stichworte: [Seite, Textseite, Über uns, Satzung, Abschnitte]
 6. Klicke auf **Veröffentlichen**.
 
 Fehlt ein Foto noch, schreibst du bei **Text mit Bild** eine Notiz zum Bildplatz; die veröffentlichte Seite zeigt den leeren Platz nicht.
+
+![Ausgangspunkt: Eigene Textseite anlegen](bild:webseite-textseite-anlegen)

@@ -203,6 +203,7 @@ export function AwardsCard({ org, comp }: { org: number; comp: CompetitionDetail
             )}
             <SelectField
               label={t('Wanderpokal')}
+              term="challenge_cup"
               value={v.trophy}
               hint={t('Wanderpokale legt ihr unter Wettbewerbe › Wanderpokale an')}
               onChange={(e) => setV({ ...v, trophy: e.target.value })}

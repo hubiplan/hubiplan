@@ -47,6 +47,7 @@ rechte: [members.edit]         # optional: eines davon nötig
 routen: [/mein-konto/anmeldung]
 reihe: 10                      # optional: Reihenfolge im Menüpunkt (Ablauf), sonst nach Titel
 menue: /mein-konto             # optional: Menüpunkt, wenn nicht die erste Route gilt
+siehe: [guide.two_factor]     # optional, nur Seitenhilfen: verwandte Anleitungen
 stichworte: [Kennwort, vergessen]
 ```
 
@@ -64,9 +65,15 @@ Regeln (geprüft von `src/test/Hilfe.test.tsx`):
 - Knopf- und Feldnamen stehen **fett** und genau so, wie die Oberfläche sie zeigt (deutsch: Schlüssel
   in `src/i18n/en.json`, englisch: deren Werte).
 - Höchstens zehn Schritte je Anleitung, jeder ein Satz.
-- Seitenhilfen mit mehr als 450 Wörtern sind mit `## Überschrift` in mindestens zwei Abschnitte
-  gegliedert. Die Leiste zeigt die Einleitung, dann die Anleitungen der Seite und die Abschnitte
-  zum Aufklappen; die Hilfe-Seite zeigt ab drei Abschnitten eine Inhaltsübersicht.
+- Seitenhilfen bleiben kurz: Die Einleitung (vor der ersten `## Überschrift`) hat höchstens
+  150 Wörter, jeder Abschnitt höchstens 350 (Englisch 170 und 400). Die Leiste zeigt die Einleitung,
+  dann die Anleitungen der Seite und die Abschnitte zum Aufklappen; die Hilfe-Seite zeigt ab drei
+  Abschnitten eine Inhaltsübersicht. Was über „Was ist das, was mache ich zuerst, was ist wichtig“
+  hinausgeht, gehört in einen Abschnitt oder in eine Anleitung.
+- Kein Absatz und kein Listenpunkt hat mehr als 120 Wörter.
+- `siehe: [guide.fee_run]` im Kopf einer Seitenhilfe nennt verwandte Anleitungen, die nicht zur
+  selben Route gehören; sie erscheinen mit unter „Häufige Aufgaben“.
+- Ein Eintrag der Neuigkeiten hat höchstens 90 Wörter; die Einzelheiten stehen in der Hilfe.
 - Jede Adresse aus dem Menü (`NAV_ROUTES`) steht mit genauer Adresse in einer Seitenhilfe, damit
   Unterseiten nicht die Hilfe der übergeordneten Seite zeigen.
 - Die Neuigkeiten eines Monats sind mit `#### Bereich` gegliedert, „Das Wichtigste“ steht oben.

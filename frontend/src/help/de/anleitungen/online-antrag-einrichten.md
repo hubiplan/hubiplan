@@ -15,3 +15,5 @@ stichworte: [Online-Antrag, Beitrittsformular, Mitglied werden, QR-Code, Stand-M
 5. Kopiere unter **Formular verteilen** die Adresse oder lade den QR-Code herunter, etwa für Webseite, Flyer oder Aushang.
 
 Für ein Tablet am Vereinsstand legst du unter **Stand-Modus** einen Link mit Bezeichnung und Gültigkeit an und öffnest ihn auf dem Gerät. Dort wird auf dem Bildschirm unterschrieben; eine Bestätigung per Mail ist nicht nötig.
+
+![Ausgangspunkt: Online-Mitgliedsantrag einrichten](bild:online-antrag-einrichten)

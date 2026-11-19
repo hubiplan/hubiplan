@@ -11,6 +11,8 @@ Die Liste zeigt alle Mitglieder der gewählten Einheit. Oben suchst du nach Name
 Nummer; daneben filterst du nach Status, Mitgliedsart oder Geschlecht. Ein Klick auf einen Namen
 öffnet die Akte mit allen Zeiträumen, Ehrungen und Kontaktdaten.
 
+## Im Einzelnen
+
 Mehrere Suchwörter müssen jeweils passen; dabei darf ein Wort im Namen und ein anderes
 in der E-Mail-Adresse oder Nummer stehen. E-Mail-Adressen findest du über die ganze Adresse
 (`erika@example.org`) oder ab dem @ (`@example.org` für alle mit dieser Domain); Teile davon

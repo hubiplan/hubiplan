@@ -50,6 +50,9 @@ Under **Home page** you build the home page from sections and see every change s
 - **Excerpt from the chronicle** (the latest timeline entries with a link to the chronicle)
 - **Facts at a glance** (two to six numbers with a short text)
 - **Divider** (line or space)
+
+## More sections
+
 - **Countdown** (counts down days, hours, minutes and seconds to the start of a public event or to a date and time of your choice; under **Afterwards** you choose whether the section then disappears or shows a text of your own, such as “The festival has started!”)
 - **Become a member** (an invitation with a button to the “Become a member” page; only appears when the online application is switched on)
 - **Call for donations** (text, bank details, payment reference, optionally a target with a progress bar and a link to a donation page)
@@ -79,7 +82,11 @@ For “Current results”, **Results of a competition**, **Gallery overview** an
 
 ## Background, width and column
 
-For each section you choose the **Background** (**None**, **Light**, a palette colour or a gradient, each with a matching text colour) and the **Section width** (**Text width**, **Content width** or **Full width**). In the “Newspaper” design, **Column** sets whether a section is in the **Main column** or the **Side column**. With a background you can add a **Watermark** behind it: the **Crest** or an **Image** from the image library, large, very faint and cropped on the right, for example a plain white heraldic animal on a transparent background; the text then stays on the left at reading width. For the “Image carousel” block you enter **Title lines on the cover photo (optional)** (one per line, at most six) and an **Overline (optional)**. They appear when **Width** is set to “in content width” or “edge to edge” under Fine-tuning › Title image and home page; several title lines change with the carousel images. In the “Newspaper” design, **Column** sets whether a section is in the **Main column** or the **Side column**. Buttons and tiles lead to a page of the website, the contact form, the page of a **Sub-unit** (such as a platoon), an event or, as an **External link**, to a new window. A link to an address on your own website opens in the same window. With **Button text (optional)** a tile with a target gets a button at the bottom, such as “Get in touch”; the title is then no longer a link. The buttons in a row line up at the same height and stay easy to read on a coloured background.
+For each section you choose the **Background** (**None**, **Light**, a palette colour or a gradient, each with a matching text colour) and the **Section width** (**Text width**, **Content width** or **Full width**). In the “Newspaper” design, **Column** sets whether a section is in the **Main column** or the **Side column**. With a background you can add a **Watermark** behind it: the **Crest** or an **Image** from the image library, large, very faint and cropped on the right, for example a plain white heraldic animal on a transparent background; the text then stays on the left at reading width.
+
+For the “Image carousel” block you enter **Title lines on the cover photo (optional)** (one per line, at most six) and an **Overline (optional)**. They appear when **Width** is set to “in content width” or “edge to edge” under Fine-tuning › Title image and home page; several title lines change with the carousel images. In the “Newspaper” design, **Column** sets whether a section is in the **Main column** or the **Side column**.
+
+Buttons and tiles lead to a page of the website, the contact form, the page of a **Sub-unit** (such as a platoon), an event or, as an **External link**, to a new window. A link to an address on your own website opens in the same window. With **Button text (optional)** a tile with a target gets a button at the bottom, such as “Get in touch”; the title is then no longer a link. The buttons in a row line up at the same height and stay easy to read on a coloured background.
 
 ## Buttons and tiles
 

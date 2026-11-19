@@ -57,3 +57,5 @@ deinem Passwortmanager gespeichert ist.
 
 Klappt es nicht, verbindest du die App wie bisher per QR-Code unter **Mein Konto** › App &
 andere Instanzen.
+
+![Ausgangspunkt: Mit Passkey anmelden](bild:konto-passwort)

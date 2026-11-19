@@ -15,3 +15,5 @@ stichworte: [membership application, admission, approval, objection, question, d
 5. Click **Admit …**, check the start date and click **Admit now**. If you like, a welcome email with an invitation to the member area goes out.
 
 **Decline …** ends the application; a rejection email is only sent if you choose it. In the list, several ready applications can be admitted at once.
+
+![Starting point: Review and admit a membership application](bild:mitgliedsantrag-pruefen)

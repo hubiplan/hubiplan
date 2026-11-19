@@ -4,6 +4,7 @@ titel: Webseite › Datenschutzhinweise
 modul: website
 rechte: [website.manage]
 routen: [/webseite/datenschutz]
+siehe: [guide.website_publish]
 stichworte: [Datenschutz, Datenschutzerklärung, Datenschutzhinweise, DSGVO]
 ---
 

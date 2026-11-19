@@ -12,6 +12,8 @@ einrichten; für die Plattform-Verwaltung gilt das sofort. Vor heiklen Aktionen 
 vollständigen Export fragt HUBIplan erneut nach einem Code (Anleitung „Zwei-Faktor-Anmeldung
 einrichten“).
 
+## E-Mail, Bestätigung und Sperre
+
 Eine neue Adresse unter **Anmelde-E-Mail ändern** gilt erst, wenn du sie mit dem Link an die neue Adresse bestätigt
 hast. Hast du kein eigenes Passwort und meldest dich nur über Links an, musst du den Wechsel
 zusätzlich mit dem Link an deine bisherige Adresse bestätigen. Nach dem Wechsel sind deine anderen

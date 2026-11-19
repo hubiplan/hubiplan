@@ -4,6 +4,7 @@ titel: Website › Contact form
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/kontakt]
+siehe: [guide.website_text]
 stichworte: [contact, form, enquiry, spam]
 ---
 
