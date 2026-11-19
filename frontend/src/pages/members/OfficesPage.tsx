@@ -21,6 +21,7 @@ import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MembersSection } from '../MembersPage.tsx'
 import { CandidateSelect, PersonField } from './ChroniclePage.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 export function OfficesPage() {
   const org = useActiveOrg()
@@ -397,6 +398,7 @@ function EntryForm({
           onChange={(checked) => set('name_public', checked)}
         />
       )}
+      {v.person === null && <Why k="web_consent" />}
       <div className="grid-2">
         <Field
           label={t('von (Jahr)')}

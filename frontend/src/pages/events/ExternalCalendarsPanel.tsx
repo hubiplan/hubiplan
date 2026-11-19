@@ -16,6 +16,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { formatDay } from '../../i18n/format.ts'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 type Message = { kind: 'error' | 'success'; text: string } | null
 
@@ -166,6 +167,7 @@ function AddExternal({
   return (
     <form className="card card-wide stack-sm" onSubmit={submit}>
       <h3>{t('Fremden Kalender hinzufügen')}</h3>
+      <Why k="external_calendar" />
       {fail && <Alert kind="error">{fail}</Alert>}
       <div className="grid-2">
         <SelectField

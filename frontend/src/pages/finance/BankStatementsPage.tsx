@@ -417,7 +417,9 @@ function LinesCard({
           <thead>
             <tr>
               <th>{t('Datum')}</th>
-              <th>{t('Gegenseite und Verwendungszweck')}</th>
+              <th>
+                <Term k="payment_reference">{t('Gegenseite und Verwendungszweck')}</Term>
+              </th>
               <th className="num">{t('Betrag')}</th>
               <th>{t('Vorschlag bzw. Stand')}</th>
               <th />

@@ -521,12 +521,28 @@
  "glossary": {
   "de": [
    {
+    "key": "account_review",
+    "kind": "decision",
+    "name": "Wer braucht noch ein Konto mit Rolle?",
+    "text": "Zugriff auf Mitgliederdaten soll nur haben, wer ihn für sein Amt braucht (Art. 5 Abs. 1 lit. f, Art. 32 DSGVO). Geh die Liste nach jeder Wahl durch und beende Rollen von Personen, die kein Amt mehr haben. Ohne Rolle bleibt einem Konto nur der eigene Mitgliederbereich.",
+    "example": "",
+    "section": "Einstellungen → Konten"
+   },
+   {
     "key": "active_passive",
     "kind": "term",
     "name": "aktiv / passiv",
     "text": "Kennzeichen einer Mitgliedsart: aktive Mitglieder nehmen voll am Vereinsleben teil, passive unterstützen vor allem mit ihrem Beitrag. Was das für Rechte und Beitrag bedeutet, regelt die Satzung.",
     "example": "Beispiel: 112 aktive und 38 passive Mitglieder: Der Dachverband berechnet seinen Beitrag für beide Gruppen getrennt.",
     "section": "Mitglieder"
+   },
+   {
+    "key": "advance",
+    "kind": "term",
+    "name": "Vorschuss",
+    "text": "Geld, das der Verein vor einem Kauf auszahlt. Nach dem Kauf wird mit den Belegen abgerechnet, und der Rest geht zurück an die Kasse.",
+    "example": "Beispiel: 300,00 € Vorschuss für den Einkauf zum Fest, Belege über 268,40 €: 31,60 € gehen zurück an die Kasse.",
+    "section": "Kasse und Abschluss"
    },
    {
     "key": "advance_invoice",
@@ -545,12 +561,28 @@
     "section": "Beitragsregeln → Altersstufen"
    },
    {
+    "key": "agenda",
+    "kind": "term",
+    "name": "Tagesordnung",
+    "text": "Liste der Punkte, über die die Versammlung berät und beschließt. Ein Beschluss ist nur gültig, wenn sein Gegenstand schon in der Einladung bezeichnet war (§ 32 Abs. 1 Satz 2 BGB).",
+    "example": "Beispiel: TOP 7 „Beitragserhöhung“ steht in der Einladung; über eine Satzungsänderung, die dort fehlt, kann die Versammlung nicht gültig beschließen.",
+    "section": "Versammlungen"
+   },
+   {
     "key": "application_consents",
     "kind": "decision",
     "name": "Welche Einwilligungen abfragen?",
     "text": "Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was der Verein nach einem Widerruf auch wieder abstellen kann.",
     "example": "",
     "section": "Mitglieder → Online-Antrag"
+   },
+   {
+    "key": "application_decision",
+    "kind": "decision",
+    "name": "Wer entscheidet über die Aufnahme?",
+    "text": "Wer über die Aufnahme entscheidet, regelt die Satzung; meist ist es der Vorstand (§ 58 Nr. 1 BGB). Halte den Beschluss fest, etwa im Protokoll der Vorstandssitzung, bevor du aufnimmst. Mit der Aufnahme beginnen Mitgliedschaft und Beitragspflicht zum eingetragenen Datum.",
+    "example": "",
+    "section": "Mitglieder → Anträge → Aufnehmen"
    },
    {
     "key": "application_fee_rules",
@@ -689,6 +721,14 @@
     "section": "Recht und Datenschutz"
    },
    {
+    "key": "board_change",
+    "kind": "decision",
+    "name": "Was gehört zu einem Vorstandswechsel?",
+    "text": "Jede Änderung des Vorstands muss der Vorstand zur Eintragung ins Vereinsregister anmelden (§ 67 Abs. 1 BGB). Beende zugleich die Amtszeit des Vorgängers, damit seine Zugriffsrechte enden (Art. 32 DSGVO). Denk auch an Bankvollmacht, Impressum und Schlüssel.",
+    "example": "",
+    "section": "Rollen → Amtszeiten → neue Amtszeit"
+   },
+   {
     "key": "board_pay",
     "kind": "decision",
     "name": "Vorstand mit Pauschale vergüten?",
@@ -783,6 +823,14 @@
     "text": "Jeder Eintrag im Änderungsprotokoll enthält eine Prüfsumme seines Vorgängers; wird einer geändert oder gelöscht, passt die Kette nicht mehr. So bleibt nachweisbar, dass Änderungen nicht unterdrückt wurden (§ 146 Abs. 4 AO, GoBD).",
     "example": "Beispiel: Eintrag Nr. 1205 verweist auf die Prüfsumme von Nr. 1204; fehlt Nr. 1204, meldet die tägliche Prüfung „Nr. 1204 bis 1204 fehlen“.",
     "section": "Recht und Datenschutz"
+   },
+   {
+    "key": "challenge_cup",
+    "kind": "term",
+    "name": "Wanderpokal",
+    "text": "Pokal, der nach jedem Wettbewerb an den neuen Sieger weitergeht. Ob ihn jemand nach mehreren Siegen behalten darf, regelt die Ausschreibung.",
+    "example": "Beispiel: Wer den Pokal 3-mal in Folge gewinnt, darf ihn behalten; 2025 und 2026 gewann ihn Paul.",
+    "section": "Wettbewerbe"
    },
    {
     "key": "chronicle_public",
@@ -1225,6 +1273,14 @@
     "section": "Finanzen → Einrichtung → Konten"
    },
    {
+    "key": "debit_run",
+    "kind": "term",
+    "name": "Lastschriftlauf",
+    "text": "Ein Durchgang, in dem HUBIplan fällige Rechnungen mit Mandat zu einer Datei für die Bank bündelt. Die Bank zieht alle Beträge am selben Tag ein.",
+    "example": "Beispiel: Lauf vom 2. März mit 142 Lastschriften über zusammen 8.520,00 €, Einzug am 9. März.",
+    "section": "SEPA-Lastschrift"
+   },
+   {
     "key": "deletion_period",
     "kind": "decision",
     "name": "Wie lange Daten nach dem Austritt behalten?",
@@ -1401,6 +1457,14 @@
     "section": "Rechnungen → Leistungsrechnung"
    },
    {
+    "key": "entry_person_fields",
+    "kind": "decision",
+    "name": "Welche Angaben je Person weitergeben?",
+    "text": "Jede angekreuzte Angabe geht an den Veranstalter und an alle, die dort die Meldung bearbeiten. Kreuze nur an, was für Start, Wertung oder Klasseneinteilung nötig ist, etwa Jahrgang statt Geburtsdatum (Art. 5 Abs. 1 lit. c DSGVO). Der Name steht immer in der Meldung.",
+    "example": "",
+    "section": "Meldungen → Ausschreibung → Angaben je Person"
+   },
+   {
     "key": "event_cash",
     "kind": "decision",
     "name": "Warum die Tageseinnahme am Fest rückwärts ermitteln?",
@@ -1417,6 +1481,14 @@
     "section": "Termin bearbeiten"
    },
    {
+    "key": "exemption_limit",
+    "kind": "term",
+    "name": "Freigrenze",
+    "text": "Bleiben die Einnahmen aus wirtschaftlichen Geschäftsbetrieben einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an (§ 64 Abs. 3 AO). Liegen sie darüber, ist der ganze Gewinn steuerpflichtig, nicht nur der Teil über der Grenze.",
+    "example": "Beispiel: 48.300 € Einnahmen aus Festen und Werbung liegen unter der Grenze; bei 50.400 € wäre der gesamte Gewinn zu versteuern.",
+    "section": "Steuer"
+   },
+   {
     "key": "exemption_notice",
     "kind": "term",
     "name": "Freistellungsbescheid",
@@ -1425,12 +1497,68 @@
     "section": "Spenden"
    },
    {
+    "key": "expense_claim",
+    "kind": "term",
+    "name": "Auslage",
+    "text": "Geld, das jemand für den Verein vorgestreckt hat und gegen Beleg zurückbekommt. Wer im Auftrag des Vereins handelt, kann Ersatz der erforderlichen Aufwendungen verlangen (§ 670 BGB).",
+    "example": "Beispiel: Anna kauft für 42,80 € Getränke für das Sommerfest, lädt den Kassenbon hoch und bekommt den Betrag überwiesen.",
+    "section": "Kasse und Abschluss"
+   },
+   {
     "key": "expense_donation",
     "kind": "term",
     "name": "Aufwandsspende",
     "text": "Jemand verzichtet auf die Erstattung von Auslagen, die ihm der Verein schuldet; der Verzicht gilt dann als Geldspende (§ 10b Abs. 3 Satz 5 und 6 EStG).",
     "example": "Beispiel: 120 km Fahrt zum Verbandstag zu 0,30 € nach Reisekostenregelung, also 36 €, und der Kassierer bestätigt 36 € als Spende.",
     "section": "Spenden"
+   },
+   {
+    "key": "expense_invoice_to",
+    "kind": "decision",
+    "name": "Warum soll die Rechnung auf den Verein lauten?",
+    "text": "Vorsteuer zieht der Verein nur aus Rechnungen, die auf ihn ausgestellt sind (§ 15 Abs. 1 UStG). Bis 250 € genügt ein Kassenbon ohne Namen des Käufers (§ 33 UStDV). Wichtig ist das nur, wenn der Verein Umsatzsteuer abführt; lass größere Rechnungen trotzdem immer auf den Verein ausstellen.",
+    "example": "",
+    "section": "Auslagen → Auslage melden → Rechnung"
+   },
+   {
+    "key": "expense_mileage",
+    "kind": "decision",
+    "name": "Fahrtkosten pauschal je Kilometer erstatten?",
+    "text": "Wer im Auftrag des Vereins fährt, kann Ersatz seiner Aufwendungen verlangen (§ 670 BGB); eine Pauschale je Kilometer erspart Tankbelege. Üblich sind bis 0,30 € je Kilometer, der höchste Satz des Bundesreisekostengesetzes (§ 5 Abs. 2 BRKG). Lege Satz und Anlässe in einem Vorstandsbeschluss oder einer Reisekostenordnung fest, damit alle gleich behandelt werden.",
+    "example": "",
+    "section": "Auslagen → Einstellungen → Fahrtkosten"
+   },
+   {
+    "key": "expense_no_receipt",
+    "kind": "decision",
+    "name": "Was tun, wenn der Beleg fehlt?",
+    "text": "Keine Buchung ohne Beleg (GoBD). Fehlt er, etwa weil ein Kassenbon verloren ging, ersetzt ihn ein Eigenbeleg mit Datum, Betrag, Empfänger, Anlass und dem Grund, warum der Beleg fehlt. Er soll die Ausnahme bleiben, und Vorsteuer lässt sich daraus nicht ziehen (§ 15 Abs. 1 UStG).",
+    "example": "",
+    "section": "Auslagen → Auslage erfassen → Ohne Beleg"
+   },
+   {
+    "key": "expense_own",
+    "kind": "decision",
+    "name": "Warum gibst du deine eigene Auslage nicht frei?",
+    "text": "Wer für den Verein handelt, darf kein Geschäft mit sich selbst abschließen, wenn es ihm nicht gestattet ist (§ 181 BGB). Deshalb gibt eine andere Person deine eigene Auslage frei. Eine Ausnahme für kleine Beträge legt der Verein in den Einstellungen fest; dann sichtet eine zweite Person nachträglich.",
+    "example": "",
+    "section": "Auslagen → Freigeben"
+   },
+   {
+    "key": "expense_second_approval",
+    "kind": "decision",
+    "name": "Ab welchem Betrag zwei Freigaben?",
+    "text": "Ab diesem Betrag geben zwei Personen frei, das Vier-Augen-Prinzip. Es schützt die Kasse vor Fehlern und den Kassierer vor Verdacht, kostet aber Zeit. Das Gesetz nennt keinen Betrag; der Vorstand muss nur jederzeit Rechenschaft geben können (§ 27 Abs. 3, § 666 BGB).",
+    "example": "",
+    "section": "Auslagen → Einstellungen → Zwei Freigaben"
+   },
+   {
+    "key": "external_calendar",
+    "kind": "decision",
+    "name": "Fremden Kalender einbinden?",
+    "text": "Termine aus einem fremden Kalender erscheinen ungeprüft im Kalender des Vereins. Das spart doppelte Pflege, etwa für Termine des Dachverbands. Zeigst du sie auch auf der Webseite, gelten sie nach außen als Angaben des Vereins, für die er verantwortlich ist (§ 7 Abs. 1 DDG).",
+    "example": "",
+    "section": "Termine → Kalender → Fremden Kalender hinzufügen"
    },
    {
     "key": "family_fee",
@@ -1447,6 +1575,22 @@
     "text": "Nummer, unter der der Dachverband ein Mitglied führt, damit Meldungen und Ehrungen eindeutig zugeordnet werden. Sie gehört zu den Daten, die an den Dachverband gehen (Art. 5 Abs. 1 lit. c DSGVO).",
     "example": "Beispiel: Verbandsnr. 1920-0457: dasselbe Mitglied, auch wenn es den Zug wechselt.",
     "section": "Mitglieder"
+   },
+   {
+    "key": "fee_proof_auto",
+    "kind": "decision",
+    "name": "Eindeutige Nachweise automatisch anerkennen?",
+    "text": "Automatisch anerkannt werden nur Nachweise, die HUBIplan als eindeutig einstuft; alle anderen und jede Ablehnung prüft weiter ein Mensch. Das spart Arbeit bei vielen Nachweisen, dafür sieht bei den eindeutigen niemand mehr hin. Nach der Entscheidung löscht HUBIplan die Datei und behält nur den Vermerk (Art. 5 Abs. 1 lit. c und e DSGVO).",
+    "example": "",
+    "section": "Beitragssätze → Ermäßigung mit Nachweis → automatisch anerkennen"
+   },
+   {
+    "key": "fee_proof_basis",
+    "kind": "decision",
+    "name": "Wann ist eine Ermäßigung mit Nachweis sinnvoll?",
+    "text": "Eine Ermäßigung, etwa für Schüler, Studierende oder Rentner, braucht eine Grundlage in Satzung oder Beitragsordnung (§ 58 Nr. 2 BGB). Der Nachweis sorgt dafür, dass die Regel für alle gleich gilt. Fehlt er bis zur Frist, rechnet HUBIplan den normalen Beitrag ab.",
+    "example": "",
+    "section": "Beitragssätze → Ermäßigung mit Nachweis"
    },
    {
     "key": "fee_run",
@@ -1473,6 +1617,22 @@
     "section": "Kasse und Abschluss"
    },
    {
+    "key": "four_eyes",
+    "kind": "term",
+    "name": "Vier-Augen-Prinzip",
+    "text": "Eine zweite Person prüft und gibt frei, bevor Geld fließt. So fallen Fehler auf, und niemand entscheidet allein über eine Zahlung.",
+    "example": "Beispiel: Auslage über 620,00 €: Kassiererin und 1. Vorsitzender geben nacheinander frei.",
+    "section": "Kasse und Abschluss"
+   },
+   {
+    "key": "full_export",
+    "kind": "decision",
+    "name": "Wie mit der Exportdatei umgehen?",
+    "text": "Die Datei enthält alle Personendaten, Kasse und Rechnungen der Einheit und verlässt mit dem Herunterladen den Schutz von HUBIplan. Gib sie nur verschlüsselt und nur an Personen weiter, die sie für ihre Aufgabe brauchen (Art. 32 DSGVO). Lösche Kopien, sobald der Zweck erledigt ist (Art. 5 Abs. 1 lit. e DSGVO).",
+    "example": "",
+    "section": "Einstellungen → Datenübernahme → Vollständiger Export"
+   },
+   {
     "key": "gema",
     "kind": "term",
     "name": "GEMA – Gesellschaft für musikalische Aufführungs- und mechanische Vervielfältigungsrechte",
@@ -1487,6 +1647,14 @@
     "text": "Der QR-Code enthält Empfänger, IBAN, Betrag und Verwendungszweck, sodass Mitglieder ihn mit der Banking-App scannen, statt abzutippen (EPC069-12). Das vermeidet Tippfehler und falsche Verwendungszwecke; nicht jede Banking-App liest ihn. Er lohnt sich, sobald Mitglieder überweisen statt per Lastschrift zu zahlen.",
     "example": "",
     "section": "Beitragsregeln → Abrechnung und Rechnung"
+   },
+   {
+    "key": "grace_period",
+    "kind": "term",
+    "name": "Kulanzzeit",
+    "text": "Zusätzliche Tage nach der Frist, in denen ein Nachweis noch als rechtzeitig gilt. Erst danach berechnet HUBIplan den normalen Beitrag.",
+    "example": "Beispiel: Frist 31. Januar, 14 Tage Kulanz: Ein Nachweis vom 10. Februar zählt noch.",
+    "section": "Beiträge und Rechnungen"
    },
    {
     "key": "helpers_names",
@@ -1529,6 +1697,14 @@
     "section": "Webseite → Bilder → Urheber/in"
    },
    {
+    "key": "import_columns",
+    "kind": "decision",
+    "name": "Welche Spalten übernehmen?",
+    "text": "Alte Listen enthalten oft mehr, als der Verein heute braucht, etwa Beruf oder Geburtsort. Übernimm nur Spalten, die einem Zweck des Vereins dienen (Art. 5 Abs. 1 lit. c DSGVO). Fehlendes lässt sich später nachtragen; Überflüssiges müsstest du später wieder löschen.",
+    "example": "",
+    "section": "Mitglieder → Import → Spalten zuordnen"
+   },
+   {
     "key": "imprint",
     "kind": "term",
     "name": "Impressum",
@@ -1543,6 +1719,14 @@
     "text": "Wer bestellt oder die Leistung erhalten hat, bestätigt, dass sie wie berechnet erbracht wurde; erst dann zahlt die Kasse. So prüfen zwei Personen, was sonst eine allein entscheidet, und Fehler oder doppelte Rechnungen fallen früher auf (GoBD, internes Kontrollsystem). In kleinen Vereinen, in denen eine Person alles macht, kann die Freigabe der Vorsitz übernehmen.",
     "example": "",
     "section": "Rechnungen → Eingang"
+   },
+   {
+    "key": "input_tax",
+    "kind": "term",
+    "name": "Vorsteuer",
+    "text": "Umsatzsteuer, die der Verein selbst auf Einkäufe zahlt. Führt er Umsatzsteuer ab, darf er sie aus Rechnungen für sein Unternehmen davon abziehen (§ 15 Abs. 1 UStG).",
+    "example": "Beispiel: Getränke für das Fest 1.190,00 € brutto: 190,00 € Vorsteuer mindern die Umsatzsteuer, die der Verein ans Finanzamt zahlt.",
+    "section": "Steuer"
    },
    {
     "key": "invoice_date",
@@ -1607,6 +1791,14 @@
     "text": "Was dem Verein gehört, bleibt Vereinseigentum, auch wenn es bei einem Mitglied zu Hause liegt. Wer es für den Verein verwahrt, muss es herausgeben, spätestens wenn Amt oder Aufgabe enden (§ 667 BGB, für den Vorstand über § 27 Abs. 3 BGB). Trag den Standort ein, damit nach einem Wechsel klar ist, wo die Sachen sind.",
     "example": "",
     "section": "Material → Standort"
+   },
+   {
+    "key": "mcp_connect",
+    "kind": "decision",
+    "name": "Was sieht ein verbundener KI-Assistent?",
+    "text": "Ein verbundener Assistent darf nie mehr als du: Er liest die Webseite der Einheit und bearbeitet sie, Texte nur als Entwurf. Was er liest, verarbeitet sein Anbieter, also auch Namen und Bilder in den Texten. Kläre vorher, ob der Verein das darf, und nenn den Anbieter in den Datenschutzhinweisen (Art. 13 Abs. 1 lit. e, Art. 28 DSGVO).",
+    "example": "",
+    "section": "Einstellungen → KI-Assistenten"
    },
    {
     "key": "meeting_invite",
@@ -1705,6 +1897,30 @@
     "section": "Mitglieder"
    },
    {
+    "key": "mfa_reset",
+    "kind": "decision",
+    "name": "Wann die Zwei-Faktor-Anmeldung zurücksetzen?",
+    "text": "Zurücksetzen hilft, wenn jemand sein Telefon verloren hat, nimmt dem Konto aber den zweiten Schutz, bis die Person ihn neu einrichtet. Setz nur zurück, wenn du sicher bist, wer fragt, etwa nach einem Rückruf unter der bekannten Nummer. Den Zugang angemessen zu schützen ist Pflicht des Vereins (Art. 32 DSGVO).",
+    "example": "",
+    "section": "Rollen → Amtszeiten → 2FA zurücksetzen"
+   },
+   {
+    "key": "mileage_rate",
+    "kind": "term",
+    "name": "Kilometerpauschale",
+    "text": "Fester Betrag je gefahrenem Kilometer statt einzelner Tank- und Parkbelege. Den Satz legt der Verein fest; üblich sind bis 0,30 € (§ 5 Abs. 2 BRKG).",
+    "example": "Beispiel: 84 km zum Bezirkstag und zurück × 0,30 € = 25,20 €.",
+    "section": "Kasse und Abschluss"
+   },
+   {
+    "key": "musician_pay",
+    "kind": "decision",
+    "name": "Was gilt für Vergütungen an Musiker?",
+    "text": "Nebenberufliche künstlerische Tätigkeit für einen gemeinnützigen Verein ist bis 3.300 € im Jahr steuerfrei (§ 3 Nr. 26 EStG). Die Grenze gilt je Person für alle Auftraggeber zusammen; lass dir deshalb bestätigen, dass sie nicht anderswo ausgeschöpft ist. Honorare an selbständige Musiker können außerdem Künstlersozialabgabe auslösen (§ 24 Abs. 2 KSVG).",
+    "example": "",
+    "section": "Musik → Auftritt → Musikervergütungen"
+   },
+   {
     "key": "net_assets",
     "kind": "term",
     "name": "Vermögensübersicht",
@@ -1713,12 +1929,28 @@
     "section": "Kasse und Abschluss"
    },
    {
+    "key": "nextcloud_auto_disable",
+    "kind": "decision",
+    "name": "Nextcloud-Konten automatisch deaktivieren?",
+    "text": "Endet eine Rolle oder Mitgliedschaft, soll auch der Zugang zur Nextcloud enden, sonst liest ein früherer Vorstand weiter Protokolle und Listen (Art. 32 DSGVO). Automatisch geht das ohne dein Zutun, braucht aber ein Dienstkonto in der Nextcloud. Ohne den Schalter musst du Konten dort von Hand sperren.",
+    "example": "",
+    "section": "Einstellungen → Nextcloud → Konten automatisch deaktivieren"
+   },
+   {
     "key": "obligations_calendar",
     "kind": "decision",
     "name": "Welche Pflichten eintragen?",
     "text": "Typisch sind die Steuererklärung, die das Finanzamt bei gemeinnützigen Vereinen meist alle drei Jahre anfordert (§ 149 AO), und die Anmeldung eines neuen Vorstands beim Registergericht (§ 67 BGB). Dazu kommen Fristen aus Verträgen, Versicherungen und Zuschüssen, die in keinem Gesetz stehen. Eine Erinnerung mit Zuständigkeit sorgt dafür, dass eine Frist auch nach einem Vorstandswechsel nicht vergessen wird.",
     "example": "",
     "section": "Fristenkalender"
+   },
+   {
+    "key": "office_term_end",
+    "kind": "decision",
+    "name": "Wann endet eine Amtszeit?",
+    "text": "Wie lange ein Vorstandsamt dauert, steht nicht im Gesetz, sondern in der Satzung (§ 27 Abs. 1, § 58 Nr. 3 BGB). Trag das Ende ein, wenn die Satzung eine feste Amtszeit nennt; mit dem Ende entfallen die Rechte der Rolle. Ob der Vorstand bis zur Neuwahl im Amt bleibt, regelt ebenfalls nur die Satzung.",
+    "example": "",
+    "section": "Rollen → Amtszeiten"
    },
    {
     "key": "open_till",
@@ -1799,6 +2031,22 @@
     "text": "Anmeldung mit einem Schlüsselpaar statt mit Passwort; der geheime Teil bleibt auf dem eigenen Gerät. Er lässt sich nicht erraten und nicht auf gefälschten Seiten abgreifen und ist damit eine Schutzmaßnahme nach dem Stand der Technik (Art. 32 Abs. 1 DSGVO).",
     "example": "Beispiel: Die Kassiererin meldet sich mit dem Fingerabdruck am Handy an; ein Passwort mit 12 Zeichen muss sie sich nicht mehr merken.",
     "section": "Recht und Datenschutz"
+   },
+   {
+    "key": "payer",
+    "kind": "term",
+    "name": "Zahler",
+    "text": "Person oder Stelle, die den Beitrag eines Mitglieds zahlt und die Rechnung bekommt. Das kann das Mitglied selbst sein, ein Elternteil, der Haushalt oder ein Arbeitgeber.",
+    "example": "Beispiel: Die Mutter zahlt für 2 Kinder: Beide Beiträge stehen auf ihrer Rechnung und werden von ihrem Konto eingezogen.",
+    "section": "Beiträge und Rechnungen"
+   },
+   {
+    "key": "payment_reference",
+    "kind": "term",
+    "name": "Verwendungszweck",
+    "text": "Text, den der Zahler einer Überweisung mitgibt. Steht dort die Rechnungsnummer, lässt sich der Eingang leicht der richtigen Rechnung zuordnen.",
+    "example": "Beispiel: „RE 2026-0041 Beitrag Muster“: Die 60,00 € gehören zur Rechnung 2026-0041.",
+    "section": "Kasse und Abschluss"
    },
    {
     "key": "peering_named",
@@ -1913,6 +2161,14 @@
     "section": "Recht und Datenschutz"
    },
    {
+    "key": "rejoin",
+    "kind": "term",
+    "name": "Wiedereintritt",
+    "text": "Jemand war schon einmal Mitglied und tritt erneut ein. Die frühere Zeit bleibt in der Akte und zählt für die Mitgliedsdauer mit, die Lücke dazwischen nicht.",
+    "example": "Beispiel: Mitglied von 1998 bis 2010, Wiedereintritt 2014: Im Jahr 2026 sind es zusammen 24 Jahre.",
+    "section": "Mitglieder"
+   },
+   {
     "key": "reopen_closing",
     "kind": "decision",
     "name": "Warum braucht das Aufheben eines Abschlusses einen Grund?",
@@ -1975,6 +2231,14 @@
     "text": "Lastschrift, die zurückkommt, etwa weil das Konto nicht gedeckt ist oder das Mitglied widerspricht; einer autorisierten Lastschrift kann es bis acht Wochen nach Belastung widersprechen (§ 675x Abs. 2 und 4 BGB, EPC-Regelwerk). Oft kommen Bankgebühren dazu.",
     "example": "Beispiel: Beitrag 60 € eingezogen am 1. März, zurück am 6. März mit Grund „AM04“ (Konto nicht gedeckt) und 3 € Gebühr.",
     "section": "SEPA-Lastschrift"
+   },
+   {
+    "key": "reversal",
+    "kind": "term",
+    "name": "Storno",
+    "text": "Eine Rechnung wird nicht gelöscht, sondern durch eine Stornorechnung mit eigener Nummer aufgehoben. So bleibt nachvollziehbar, was berechnet und was zurückgenommen wurde (GoBD).",
+    "example": "Beispiel: Rechnung 2026-0041 über 60,00 € wird mit Stornorechnung 2026-0057 über −60,00 € aufgehoben.",
+    "section": "Beiträge und Rechnungen"
    },
    {
     "key": "role_permissions",
@@ -2089,6 +2353,14 @@
     "section": "Finanzen → Einrichtung → Kategorien"
    },
    {
+    "key": "term_of_office",
+    "kind": "term",
+    "name": "Amtszeit",
+    "text": "Zeitraum, für den jemand in ein Amt gewählt oder bestellt ist. Die Dauer legt die Satzung fest; das Gesetz nennt keine (§ 27 Abs. 1, § 58 Nr. 3 BGB).",
+    "example": "Beispiel: Wahl am 14. März 2025 für 3 Jahre: Die Amtszeit endet mit der Versammlung im Frühjahr 2028.",
+    "section": "Recht und Datenschutz"
+   },
+   {
     "key": "text_form",
     "kind": "term",
     "name": "Textform",
@@ -2135,6 +2407,14 @@
     "text": "Abteilungen, Züge oder Gruppen mit eigener Kasse sind steuerlich fast immer Teil des Vereins. Ihre Einnahmen zählen dort zusammen, auch für die Freigrenze des wirtschaftlichen Geschäftsbetriebs; ein Verein darf sich dafür nicht in Abteilungen aufteilen (§ 64 Abs. 4 AO). Schalte den Schalter nur ein, wenn die Einheit ein eigener Verein mit eigener Steuernummer und eigenem Bescheid ist.",
     "example": "",
     "section": "Einstellungen → Untereinheiten → Eigener Arbeitsbereich"
+   },
+   {
+    "key": "useful_life",
+    "kind": "term",
+    "name": "Nutzungsdauer",
+    "text": "Jahre, über die sich der Kaufpreis einer Anlage als Abschreibung verteilt (§ 7 Abs. 1 EStG). Anhaltspunkte geben die AfA-Tabellen der Finanzverwaltung.",
+    "example": "Beispiel: Zapfanlage für 2.400 €, Nutzungsdauer 8 Jahre: 300 € Abschreibung je Jahr.",
+    "section": "Steuer"
    },
    {
     "key": "vat",
@@ -2243,12 +2523,28 @@
   ],
   "en": [
    {
+    "key": "account_review",
+    "kind": "decision",
+    "name": "Who still needs an account with a role?",
+    "text": "Only those who need it for their office should have access to member data (Art. 5(1)(f), Art. 32 GDPR). Go through the list after every election and end the roles of people who no longer hold office. Without a role, an account only keeps its own member area.",
+    "example": "",
+    "section": "Settings → accounts"
+   },
+   {
     "key": "active_passive",
     "kind": "term",
     "name": "active / passive (aktiv / passiv)",
     "text": "Property of a membership type: active members take full part in club life, passive members mainly support with their fee. What this means for rights and fee is governed by the constitution.",
     "example": "Example: 112 active and 38 passive members: the umbrella association calculates its fee separately for both groups.",
     "section": "Members"
+   },
+   {
+    "key": "advance",
+    "kind": "term",
+    "name": "Advance",
+    "text": "Money the club pays out before a purchase. After the purchase it is settled with the receipts, and the remainder goes back to the treasury.",
+    "example": "Example: €300.00 advance for shopping for the festival, receipts for €268.40: €31.60 go back to the treasury.",
+    "section": "Treasury and closing"
    },
    {
     "key": "advance_invoice",
@@ -2267,12 +2563,28 @@
     "section": "Fee rules → age bands"
    },
    {
+    "key": "agenda",
+    "kind": "term",
+    "name": "Agenda",
+    "text": "List of the items the meeting discusses and decides on. A resolution is only valid if its subject was already named in the invitation (§ 32(1) sentence 2 BGB).",
+    "example": "Example: item 7 “fee increase” is in the invitation; the meeting cannot validly decide on an amendment to the constitution that is missing there.",
+    "section": "Meetings"
+   },
+   {
     "key": "application_consents",
     "kind": "decision",
     "name": "Which consents should you ask for?",
     "text": "What membership requires, such as address and bank details, the club processes without consent because it needs it for the membership (Art. 6 Abs. 1 lit. b GDPR). Consents belong only to voluntary things such as photos or the birthday on the website, each one separately and with no disadvantage for a no (Art. 7 GDPR). They can be withdrawn at any time, so only offer what the club can switch off again after a withdrawal.",
     "example": "",
     "section": "Members → Online application"
+   },
+   {
+    "key": "application_decision",
+    "kind": "decision",
+    "name": "Who decides on admission?",
+    "text": "The constitution governs who decides on admission; usually it is the board (§ 58 no. 1 BGB). Record the decision, for example in the minutes of the board meeting, before you admit. With admission, membership and the duty to pay fees begin on the date entered.",
+    "example": "",
+    "section": "Members → applications → admit"
    },
    {
     "key": "application_fee_rules",
@@ -2411,6 +2723,14 @@
     "section": "Law and data protection"
    },
    {
+    "key": "board_change",
+    "kind": "decision",
+    "name": "What does a change of board involve?",
+    "text": "The board must register every change of the board with the register of associations (§ 67(1) BGB). At the same time end the predecessor’s term so that their access rights end (Art. 32 GDPR). Also think of bank authority, legal notice and keys.",
+    "example": "",
+    "section": "Roles → terms of office → new term"
+   },
+   {
     "key": "board_pay",
     "kind": "decision",
     "name": "Pay the board an allowance?",
@@ -2505,6 +2825,14 @@
     "text": "Every entry in the change log contains a checksum of its predecessor; if one is changed or deleted, the chain no longer fits. This keeps it provable that changes were not suppressed (§ 146(4) AO, GoBD).",
     "example": "Example: entry no. 1205 refers to the checksum of no. 1204; if no. 1204 is missing, the daily check reports “no. 1204 to 1204 missing”.",
     "section": "Law and data protection"
+   },
+   {
+    "key": "challenge_cup",
+    "kind": "term",
+    "name": "Challenge cup",
+    "text": "Cup that passes to the new winner after each competition. Whether someone may keep it after several wins is governed by the call for entries.",
+    "example": "Example: whoever wins the cup 3 times in a row may keep it; Paul won it in 2025 and 2026.",
+    "section": "Competitions"
    },
    {
     "key": "chronicle_public",
@@ -2947,6 +3275,14 @@
     "section": "Finance → Setup → Accounts"
    },
    {
+    "key": "debit_run",
+    "kind": "term",
+    "name": "Direct debit run",
+    "text": "One pass in which HUBIplan bundles due invoices with a mandate into a file for the bank. The bank collects all amounts on the same day.",
+    "example": "Example: run of 2 March with 142 direct debits totalling €8,520.00, collection on 9 March.",
+    "section": "SEPA direct debit"
+   },
+   {
     "key": "deletion_period",
     "kind": "decision",
     "name": "How long to keep data after leaving?",
@@ -3123,6 +3459,14 @@
     "section": "Invoices → service invoice"
    },
    {
+    "key": "entry_person_fields",
+    "kind": "decision",
+    "name": "Which details to pass on per person?",
+    "text": "Every ticked detail goes to the organiser and to everyone who handles the entry there. Only tick what is needed for start, scoring or classification, for example year of birth instead of date of birth (Art. 5(1)(c) GDPR). The name is always part of the entry.",
+    "example": "",
+    "section": "Entries → call for entries → details per person"
+   },
+   {
     "key": "event_cash",
     "kind": "decision",
     "name": "Why work out the festival's day's takings backwards?",
@@ -3139,6 +3483,14 @@
     "section": "Edit event"
    },
    {
+    "key": "exemption_limit",
+    "kind": "term",
+    "name": "Exemption limit",
+    "text": "If income from commercial operations including VAT stays at or below €50,000 a year, no corporation or trade tax is due on it (§ 64(3) AO). If it is higher, the whole profit is taxable, not just the part above the limit.",
+    "example": "Example: €48,300 income from festivals and advertising is below the limit; at €50,400 the whole profit would be taxable.",
+    "section": "Tax"
+   },
+   {
     "key": "exemption_notice",
     "kind": "term",
     "name": "Exemption notice (Freistellungsbescheid)",
@@ -3147,12 +3499,68 @@
     "section": "Donations"
    },
    {
+    "key": "expense_claim",
+    "kind": "term",
+    "name": "Expense",
+    "text": "Money someone has advanced for the club and gets back against a receipt. Anyone acting on behalf of the club can claim reimbursement of the necessary expenses (§ 670 BGB).",
+    "example": "Example: Anna buys drinks for the summer party for €42.80, uploads the till receipt and gets the amount transferred.",
+    "section": "Treasury and closing"
+   },
+   {
     "key": "expense_donation",
     "kind": "term",
     "name": "Donation by waiver of expenses (Aufwandsspende)",
     "text": "Someone waives reimbursement of expenses that the club owes them; the waiver then counts as a monetary donation (§ 10b(3) sentences 5 and 6 EStG).",
     "example": "Example: 120 km trip to the association conference at €0.30 under the travel expense rule, so €36, and the treasurer confirms €36 as a donation.",
     "section": "Donations"
+   },
+   {
+    "key": "expense_invoice_to",
+    "kind": "decision",
+    "name": "Why should the invoice be made out to the club?",
+    "text": "The club can only deduct input VAT from invoices made out to it (§ 15(1) UStG). Up to €250 a till receipt without the buyer’s name is enough (§ 33 UStDV). This only matters if the club pays VAT; still, always have larger invoices made out to the club.",
+    "example": "",
+    "section": "Expenses → submit expense → invoice"
+   },
+   {
+    "key": "expense_mileage",
+    "kind": "decision",
+    "name": "Reimburse travel costs at a flat rate per kilometre?",
+    "text": "Anyone driving on behalf of the club can claim reimbursement of their expenses (§ 670 BGB); a flat rate per kilometre saves fuel receipts. Up to €0.30 per kilometre is usual, the highest rate of the Federal Travel Expenses Act (§ 5(2) BRKG). Set the rate and occasions in a board resolution or travel expense rules so that everyone is treated equally.",
+    "example": "",
+    "section": "Expenses → settings → travel costs"
+   },
+   {
+    "key": "expense_no_receipt",
+    "kind": "decision",
+    "name": "What to do if the receipt is missing?",
+    "text": "No entry without a voucher (GoBD). If it is missing, for example because a till receipt was lost, a self-issued voucher replaces it, stating date, amount, recipient, occasion and why the voucher is missing. It should remain the exception, and no input VAT can be deducted from it (§ 15(1) UStG).",
+    "example": "",
+    "section": "Expenses → record expense → without receipt"
+   },
+   {
+    "key": "expense_own",
+    "kind": "decision",
+    "name": "Why can you not approve your own expense?",
+    "text": "Anyone acting for the club may not conclude a transaction with themselves unless permitted (§ 181 BGB). That is why another person approves your own expense. The club sets an exception for small amounts in the settings; a second person then reviews afterwards.",
+    "example": "",
+    "section": "Expenses → approve"
+   },
+   {
+    "key": "expense_second_approval",
+    "kind": "decision",
+    "name": "From what amount two approvals?",
+    "text": "From this amount two people approve, the four-eyes principle. It protects the treasury from errors and the treasurer from suspicion, but takes time. The law names no amount; the board only has to be able to account for its actions at any time (§ 27(3), § 666 BGB).",
+    "example": "",
+    "section": "Expenses → settings → two approvals"
+   },
+   {
+    "key": "external_calendar",
+    "kind": "decision",
+    "name": "Include an external calendar?",
+    "text": "Events from an external calendar appear unchecked in the club’s calendar. This saves double upkeep, for example for the umbrella association’s events. If you also show them on the website, they count outwardly as the club’s own information, for which it is responsible (§ 7(1) DDG).",
+    "example": "",
+    "section": "Events → calendars → add external calendar"
    },
    {
     "key": "family_fee",
@@ -3169,6 +3577,22 @@
     "text": "Number under which the umbrella association lists a member, so that reports and honours are assigned unambiguously. It is part of the data that goes to the umbrella association (Art. 5(1)(c) GDPR).",
     "example": "Example: association no. 1920-0457: the same member, even if they change platoon.",
     "section": "Members"
+   },
+   {
+    "key": "fee_proof_auto",
+    "kind": "decision",
+    "name": "Accept clear proofs automatically?",
+    "text": "Only proofs that HUBIplan classifies as clear are accepted automatically; all others and every rejection are still checked by a person. This saves work with many proofs, but nobody looks at the clear ones any more. After the decision HUBIplan deletes the file and keeps only the note (Art. 5(1)(c) and (e) GDPR).",
+    "example": "",
+    "section": "Fee rates → reduction with proof → accept automatically"
+   },
+   {
+    "key": "fee_proof_basis",
+    "kind": "decision",
+    "name": "When does a reduction with proof make sense?",
+    "text": "A reduction, for example for pupils, students or pensioners, needs a basis in the constitution or fee regulations (§ 58 no. 2 BGB). The proof makes sure the rule applies equally to everyone. If it is missing by the deadline, HUBIplan bills the regular fee.",
+    "example": "",
+    "section": "Fee rates → reduction with proof"
    },
    {
     "key": "fee_run",
@@ -3195,6 +3619,22 @@
     "section": "Treasury and closing"
    },
    {
+    "key": "four_eyes",
+    "kind": "term",
+    "name": "Four-eyes principle",
+    "text": "A second person checks and approves before money flows. This way errors are noticed, and nobody decides on a payment alone.",
+    "example": "Example: expense of €620.00: treasurer and 1st chairperson approve one after the other.",
+    "section": "Treasury and closing"
+   },
+   {
+    "key": "full_export",
+    "kind": "decision",
+    "name": "How to handle the export file?",
+    "text": "The file contains all personal data, treasury and invoices of the unit and leaves the protection of HUBIplan when downloaded. Only pass it on encrypted and only to people who need it for their task (Art. 32 GDPR). Delete copies as soon as the purpose is fulfilled (Art. 5(1)(e) GDPR).",
+    "example": "",
+    "section": "Settings → data transfer → full export"
+   },
+   {
     "key": "gema",
     "kind": "term",
     "name": "GEMA – Society for musical performing and mechanical reproduction rights",
@@ -3209,6 +3649,14 @@
     "text": "The QR code contains recipient, IBAN, amount and reference, so members scan it with their banking app instead of typing (EPC069-12). That avoids typos and wrong references; not every banking app reads it. It is worthwhile as soon as members pay by transfer rather than direct debit.",
     "example": "",
     "section": "Fee rules → billing and invoice"
+   },
+   {
+    "key": "grace_period",
+    "kind": "term",
+    "name": "Grace period",
+    "text": "Additional days after the deadline in which a proof still counts as on time. Only after that does HUBIplan bill the regular fee.",
+    "example": "Example: deadline 31 January, 14 days’ grace: a proof dated 10 February still counts.",
+    "section": "Fees and invoices"
    },
    {
     "key": "helpers_names",
@@ -3251,6 +3699,14 @@
     "section": "Website → pictures → author"
    },
    {
+    "key": "import_columns",
+    "kind": "decision",
+    "name": "Which columns to import?",
+    "text": "Old lists often contain more than the club needs today, such as occupation or place of birth. Only import columns that serve a purpose of the club (Art. 5(1)(c) GDPR). What is missing can be added later; what is superfluous you would have to delete again later.",
+    "example": "",
+    "section": "Members → import → map columns"
+   },
+   {
     "key": "imprint",
     "kind": "term",
     "name": "Legal notice (Impressum)",
@@ -3265,6 +3721,14 @@
     "text": "Whoever ordered or received the service confirms that it was delivered as invoiced; only then does the treasurer pay. Two people check what one would otherwise decide alone, and errors or duplicate invoices are caught earlier (GoBD, internal control system). In small clubs where one person does everything, the chair can give the approval.",
     "example": "",
     "section": "Invoices → incoming"
+   },
+   {
+    "key": "input_tax",
+    "kind": "term",
+    "name": "Input VAT",
+    "text": "VAT the club itself pays on purchases. If it pays VAT, it may deduct this from invoices for its business (§ 15(1) UStG).",
+    "example": "Example: drinks for the festival €1,190.00 gross: €190.00 input VAT reduce the VAT the club pays to the tax office.",
+    "section": "Tax"
    },
    {
     "key": "invoice_date",
@@ -3329,6 +3793,14 @@
     "text": "What belongs to the club remains club property, even if it is kept at a member’s home. Whoever keeps it for the club must hand it over, at the latest when the office or task ends (§ 667 BGB, for the board via § 27(3) BGB). Enter the location so that after a change it is clear where the things are.",
     "example": "",
     "section": "Material → location"
+   },
+   {
+    "key": "mcp_connect",
+    "kind": "decision",
+    "name": "What does a connected AI assistant see?",
+    "text": "A connected assistant may never do more than you: it reads the unit’s website and edits it, texts only as drafts. What it reads is processed by its provider, including names and pictures in the texts. Clarify beforehand whether the club may do this, and name the provider in the privacy notice (Art. 13(1)(e), Art. 28 GDPR).",
+    "example": "",
+    "section": "Settings → AI assistants"
    },
    {
     "key": "meeting_invite",
@@ -3427,6 +3899,30 @@
     "section": "Members"
    },
    {
+    "key": "mfa_reset",
+    "kind": "decision",
+    "name": "When to reset two-factor sign-in?",
+    "text": "Resetting helps when someone has lost their phone, but removes the account’s second protection until the person sets it up again. Only reset if you are sure who is asking, for example after calling back on the known number. Protecting access appropriately is the club’s duty (Art. 32 GDPR).",
+    "example": "",
+    "section": "Roles → terms of office → reset 2FA"
+   },
+   {
+    "key": "mileage_rate",
+    "kind": "term",
+    "name": "Mileage rate",
+    "text": "Fixed amount per kilometre driven instead of individual fuel and parking receipts. The club sets the rate; up to €0.30 is usual (§ 5(2) BRKG).",
+    "example": "Example: 84 km to the district meeting and back × €0.30 = €25.20.",
+    "section": "Treasury and closing"
+   },
+   {
+    "key": "musician_pay",
+    "kind": "decision",
+    "name": "What applies to payments to musicians?",
+    "text": "Part-time artistic work for a non-profit club is tax-free up to €3,300 a year (§ 3 no. 26 EStG). The limit applies per person across all clients; so have it confirmed that it has not been used up elsewhere. Fees to self-employed musicians can also trigger the artists’ social levy (§ 24(2) KSVG).",
+    "example": "",
+    "section": "Music → performance → musicians’ payments"
+   },
+   {
     "key": "net_assets",
     "kind": "term",
     "name": "Statement of assets (Vermögensübersicht)",
@@ -3435,12 +3931,28 @@
     "section": "Treasury and closing"
    },
    {
+    "key": "nextcloud_auto_disable",
+    "kind": "decision",
+    "name": "Deactivate Nextcloud accounts automatically?",
+    "text": "When a role or membership ends, access to the Nextcloud should end too, otherwise a former board member keeps reading minutes and lists (Art. 32 GDPR). Automatically this happens without your doing, but needs a service account in the Nextcloud. Without the switch you have to block accounts there by hand.",
+    "example": "",
+    "section": "Settings → Nextcloud → deactivate accounts automatically"
+   },
+   {
     "key": "obligations_calendar",
     "kind": "decision",
     "name": "Which obligations should you enter?",
     "text": "Typical ones are the tax return, which the tax office usually requests from non-profit clubs every three years (§ 149 AO), and registering a new board with the register court (§ 67 BGB). Add deadlines from contracts, insurance and grants that are in no law. A reminder with a responsible person ensures that a deadline is not forgotten even after a change of board.",
     "example": "",
     "section": "Deadline calendar"
+   },
+   {
+    "key": "office_term_end",
+    "kind": "decision",
+    "name": "When does a term of office end?",
+    "text": "How long a board office lasts is not set by law but by the constitution (§ 27(1), § 58 no. 3 BGB). Enter the end if the constitution names a fixed term; when it ends, the rights of the role lapse. Whether the board stays in office until the next election is likewise governed only by the constitution.",
+    "example": "",
+    "section": "Roles → terms of office"
    },
    {
     "key": "open_till",
@@ -3521,6 +4033,22 @@
     "text": "Sign-in with a key pair instead of a password; the secret part stays on your own device. It cannot be guessed or captured on fake pages and is thus a state-of-the-art safeguard (Art. 32(1) GDPR).",
     "example": "Example: The treasurer signs in with her fingerprint on the phone; she no longer has to remember a 12-character password.",
     "section": "Law and data protection"
+   },
+   {
+    "key": "payer",
+    "kind": "term",
+    "name": "Payer",
+    "text": "Person or body that pays a member’s fee and receives the invoice. This can be the member themselves, a parent, the household or an employer.",
+    "example": "Example: the mother pays for 2 children: both fees are on her invoice and are collected from her account.",
+    "section": "Fees and invoices"
+   },
+   {
+    "key": "payment_reference",
+    "kind": "term",
+    "name": "Payment reference",
+    "text": "Text the payer adds to a transfer. If it contains the invoice number, the incoming payment is easy to match to the right invoice.",
+    "example": "Example: “RE 2026-0041 fee Muster”: the €60.00 belong to invoice 2026-0041.",
+    "section": "Treasury and closing"
    },
    {
     "key": "peering_named",
@@ -3635,6 +4163,14 @@
     "section": "Law and data protection"
    },
    {
+    "key": "rejoin",
+    "kind": "term",
+    "name": "Rejoining",
+    "text": "Someone was a member before and joins again. The earlier period stays in the file and counts towards the membership duration, the gap in between does not.",
+    "example": "Example: member from 1998 to 2010, rejoined in 2014: in 2026 that makes 24 years in total.",
+    "section": "Members"
+   },
+   {
     "key": "reopen_closing",
     "kind": "decision",
     "name": "Why does reopening a closing need a reason?",
@@ -3697,6 +4233,14 @@
     "text": "A direct debit that comes back, for example because the account has insufficient funds or the member objects; a member can object to an authorised direct debit up to eight weeks after the debit (§ 675x(2) and (4) BGB, EPC rulebook). Bank charges are often added.",
     "example": "Example: €60 fee collected on 1 March, returned on 6 March with reason “AM04” (insufficient funds) and a €3 charge.",
     "section": "SEPA direct debit"
+   },
+   {
+    "key": "reversal",
+    "kind": "term",
+    "name": "Cancellation",
+    "text": "An invoice is not deleted but cancelled by a cancellation invoice with its own number. This keeps traceable what was billed and what was withdrawn (GoBD).",
+    "example": "Example: invoice 2026-0041 for €60.00 is cancelled by cancellation invoice 2026-0057 for −€60.00.",
+    "section": "Fees and invoices"
    },
    {
     "key": "role_permissions",
@@ -3811,6 +4355,14 @@
     "section": "Finance → Setup → Categories"
    },
    {
+    "key": "term_of_office",
+    "kind": "term",
+    "name": "Term of office",
+    "text": "Period for which someone is elected or appointed to an office. The constitution sets the length; the law names none (§ 27(1), § 58 no. 3 BGB).",
+    "example": "Example: election on 14 March 2025 for 3 years: the term ends with the meeting in spring 2028.",
+    "section": "Law and data protection"
+   },
+   {
     "key": "text_form",
     "kind": "term",
     "name": "Text form",
@@ -3857,6 +4409,14 @@
     "text": "Departments, platoons or groups with their own cash book are almost always part of the club for tax purposes. Their income is added up there, including for the tax-free limit of the commercial operation; a club may not split itself into departments to stay below it (§ 64 (4) AO). Only switch this on if the unit is a club of its own with its own tax number and its own exemption notice.",
     "example": "",
     "section": "Settings → Sub-units → Own workspace"
+   },
+   {
+    "key": "useful_life",
+    "kind": "term",
+    "name": "Useful life",
+    "text": "Years over which the purchase price of an asset is spread as depreciation (§ 7(1) EStG). The tax authorities’ depreciation tables give guidance.",
+    "example": "Example: beer tap system for €2,400, useful life 8 years: €300 depreciation per year.",
+    "section": "Tax"
    },
    {
     "key": "vat",

@@ -4,6 +4,7 @@ import type { CommercialInvoice } from '../../api/einvoices.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { Term } from '../../learning/Aids.tsx'
 
 const statuses: Record<string, () => string> = {
   prepared: () => t('Vorbereitet'),
@@ -60,7 +61,9 @@ export function InvoiceDocumentsPanel({
           delivery && ['submitted', 'delivered', 'rejected'].includes(delivery.status)
         return (
           <div className="stack" key={document}>
-            <h4>{cancel ? t('Stornorechnung') : t('Rechnungsoriginal')}</h4>
+            <h4>
+              {cancel ? <Term k="reversal">{t('Stornorechnung')}</Term> : t('Rechnungsoriginal')}
+            </h4>
             <div className="actions">
               {exists ? (
                 <a

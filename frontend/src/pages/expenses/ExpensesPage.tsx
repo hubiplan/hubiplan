@@ -32,6 +32,9 @@ import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { ClaimEvents, ClaimFacts, ClaimFiles, ClaimForm, StatusBadge } from './ExpenseParts.tsx'
 import { amountText, euro, formErrors } from './format.ts'
+import { Term, Why } from '../../learning/Aids.tsx'
+import { Checklist } from '../../learning/Checklist.tsx'
+import { expensePayChecks } from '../../learning/checks.ts'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
@@ -241,7 +244,9 @@ function TreasuryCreate({ onDone }: { onDone: (claim: ExpenseClaim | null) => vo
   }
   return (
     <section className="card stack">
-      <h2>{t('Auslage für jemanden erfassen')}</h2>
+      <h2>
+        <Term k="expense_claim">{t('Auslage für jemanden erfassen')}</Term>
+      </h2>
       <p className="muted">
         {t(
           'Zum Beispiel für einen Kassenzettel, der in Papierform abgegeben wurde. Ohne Beleg braucht es eine Begründung (Eigenbeleg).',
@@ -447,7 +452,9 @@ function ClaimPanel({ id, onBack }: { id: number; onBack: () => void }) {
         <ClaimFiles claim={claim} url={url} />
         {inReview && !claim.own && !claim.needs_confirm && (
           <fieldset className="stack">
-            <legend>{t('Freigeben')}</legend>
+            <legend>
+              <Term k="four_eyes">{t('Freigeben')}</Term>
+            </legend>
             {claim.needs_second && (
               <p className="muted small">
                 {claim.approved_once
@@ -520,7 +527,10 @@ function ClaimPanel({ id, onBack }: { id: number; onBack: () => void }) {
                 </div>
               </fieldset>
             ) : (
-              <Alert kind="info">{t('Deine eigene Auslage gibt eine andere Person frei.')}</Alert>
+              <>
+                <Alert kind="info">{t('Deine eigene Auslage gibt eine andere Person frei.')}</Alert>
+                <Why k="expense_own" />
+              </>
             )}
           </>
         )}
@@ -577,6 +587,19 @@ function ClaimPanel({ id, onBack }: { id: number; onBack: () => void }) {
               type="date"
               value={payDay}
               onChange={(e) => setPayDay(e.target.value)}
+            />
+            <Checklist
+              title={t('Vor dem Auszahlen')}
+              items={expensePayChecks({
+                kind: claim.kind,
+                fileCount: claim.file_count,
+                linesWithoutCategory: claim.lines.filter((l) => l.category === null).length,
+                invoiceTo: claim.invoice_to,
+                payout: claim.payout,
+                hasIban: !!claim.payee?.iban,
+                selfApproved: claim.self_approved,
+                reviewed: claim.reviewed,
+              })}
             />
             <div className="button-row">
               <button
@@ -976,6 +999,7 @@ function SettingsForm({ value, onSaved }: { value: ExpenseSettings; onSaved: () 
         disabled={!edit}
         onChange={(e) => set('second_from', e.target.value || null)}
       />
+      <Why k="expense_second_approval" />
       <Field
         label={t('Hinweis bei Käufen älter als (Monate)')}
         type="number"
@@ -1011,6 +1035,7 @@ function SettingsForm({ value, onSaved }: { value: ExpenseSettings; onSaved: () 
           ))}
         </fieldset>
       )}
+      <Why k="expense_mileage" />
       <Checkbox
         label={t('Fahrtkosten nach Kilometern')}
         checked={v.mileage_enabled}
@@ -1020,6 +1045,7 @@ function SettingsForm({ value, onSaved }: { value: ExpenseSettings; onSaved: () 
       {v.mileage_enabled && (
         <Field
           label={t('Satz je Kilometer (€)')}
+          term="mileage_rate"
           inputMode="decimal"
           value={v.km_rate}
           disabled={!edit}
@@ -1042,6 +1068,7 @@ function SettingsForm({ value, onSaved }: { value: ExpenseSettings; onSaved: () 
       {v.donations_enabled && (
         <fieldset className="stack">
           <legend>{t('Verzicht als Spende (Aufwandsspende)')}</legend>
+          <Why k="donation_waiver" />
           <p className="muted small">
             {t(
               'Nur mit einem Anspruch auf Erstattung, der vorher festgelegt war (Satzung, Vorstandsbeschluss oder Vertrag). Ohne Angabe gibt es keinen Verzicht.',

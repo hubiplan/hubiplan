@@ -14,6 +14,7 @@ import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { formatDayTime } from '../../i18n/format.ts'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 function Copyable({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false)
@@ -457,6 +458,7 @@ function ClientCard({
             checked={Boolean(values.manage_accounts)}
             onChange={(v) => set('manage_accounts', v)}
           />
+          <Why k="nextcloud_auto_disable" />
         </fieldset>
         <Checkbox
           label={t('Eingeschaltet')}

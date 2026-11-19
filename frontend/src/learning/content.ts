@@ -154,6 +154,10 @@ const SOURCES_DATA = {
     full: 'Gesetz über den Schutz von Marken und sonstigen Kennzeichen (Markengesetz, MarkenG) vom 25. Oktober 1994 (BGBl. I S. 3082; 1995 I S. 156; 1996 I S. 682), in der jeweils geltenden Fassung.',
     url: 'https://www.gesetze-im-internet.de/markeng/',
   },
+  brkg: {
+    full: 'Bundesreisekostengesetz (BRKG) vom 26. Mai 2005 (BGBl. I S. 1418), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/brkg_2005/',
+  },
 } satisfies Record<string, Source>
 
 export type SourceKey = keyof typeof SOURCES_DATA
@@ -195,6 +199,7 @@ export type Feature =
   | 'circulars'
   | 'music'
   | 'docs'
+  | 'expenses'
 
 export interface Decision {
   title: Text
@@ -1396,6 +1401,197 @@ const DECISIONS_DATA = {
     place: d('Dokumente → Papierkorb'),
     phase: 'communication',
     feature: 'docs',
+  },
+  expense_second_approval: {
+    title: d('Ab welchem Betrag zwei Freigaben?'),
+    text: d(
+      'Ab diesem Betrag geben zwei Personen frei, das Vier-Augen-Prinzip. Es schützt die Kasse vor Fehlern und den Kassierer vor Verdacht, kostet aber Zeit. Das Gesetz nennt keinen Betrag; der Vorstand muss nur jederzeit Rechenschaft geben können (§ 27 Abs. 3, § 666 BGB).',
+    ),
+    sources: ['bgb'],
+    place: d('Auslagen → Einstellungen → Zwei Freigaben'),
+    phase: 'closing',
+    feature: 'expenses',
+  },
+  expense_own: {
+    title: d('Warum gibst du deine eigene Auslage nicht frei?'),
+    text: d(
+      'Wer für den Verein handelt, darf kein Geschäft mit sich selbst abschließen, wenn es ihm nicht gestattet ist (§ 181 BGB). Deshalb gibt eine andere Person deine eigene Auslage frei. Eine Ausnahme für kleine Beträge legt der Verein in den Einstellungen fest; dann sichtet eine zweite Person nachträglich.',
+    ),
+    sources: ['bgb'],
+    place: d('Auslagen → Freigeben'),
+    phase: 'closing',
+    basic: true,
+    feature: 'expenses',
+  },
+  expense_invoice_to: {
+    title: d('Warum soll die Rechnung auf den Verein lauten?'),
+    text: d(
+      'Vorsteuer zieht der Verein nur aus Rechnungen, die auf ihn ausgestellt sind (§ 15 Abs. 1 UStG). Bis 250 € genügt ein Kassenbon ohne Namen des Käufers (§ 33 UStDV). Wichtig ist das nur, wenn der Verein Umsatzsteuer abführt; lass größere Rechnungen trotzdem immer auf den Verein ausstellen.',
+    ),
+    sources: ['ustg', 'ustdv'],
+    place: d('Auslagen → Auslage melden → Rechnung'),
+    phase: 'closing',
+    basic: true,
+    feature: 'expenses',
+  },
+  expense_no_receipt: {
+    title: d('Was tun, wenn der Beleg fehlt?'),
+    text: d(
+      'Keine Buchung ohne Beleg (GoBD). Fehlt er, etwa weil ein Kassenbon verloren ging, ersetzt ihn ein Eigenbeleg mit Datum, Betrag, Empfänger, Anlass und dem Grund, warum der Beleg fehlt. Er soll die Ausnahme bleiben, und Vorsteuer lässt sich daraus nicht ziehen (§ 15 Abs. 1 UStG).',
+    ),
+    sources: ['gobd', 'ustg'],
+    place: d('Auslagen → Auslage erfassen → Ohne Beleg'),
+    phase: 'closing',
+    basic: true,
+    feature: 'expenses',
+  },
+  expense_mileage: {
+    title: d('Fahrtkosten pauschal je Kilometer erstatten?'),
+    text: d(
+      'Wer im Auftrag des Vereins fährt, kann Ersatz seiner Aufwendungen verlangen (§ 670 BGB); eine Pauschale je Kilometer erspart Tankbelege. Üblich sind bis 0,30 € je Kilometer, der höchste Satz des Bundesreisekostengesetzes (§ 5 Abs. 2 BRKG). Lege Satz und Anlässe in einem Vorstandsbeschluss oder einer Reisekostenordnung fest, damit alle gleich behandelt werden.',
+    ),
+    sources: ['bgb', 'brkg'],
+    place: d('Auslagen → Einstellungen → Fahrtkosten'),
+    phase: 'closing',
+    feature: 'expenses',
+  },
+  office_term_end: {
+    title: d('Wann endet eine Amtszeit?'),
+    text: d(
+      'Wie lange ein Vorstandsamt dauert, steht nicht im Gesetz, sondern in der Satzung (§ 27 Abs. 1, § 58 Nr. 3 BGB). Trag das Ende ein, wenn die Satzung eine feste Amtszeit nennt; mit dem Ende entfallen die Rechte der Rolle. Ob der Vorstand bis zur Neuwahl im Amt bleibt, regelt ebenfalls nur die Satzung.',
+    ),
+    sources: ['bgb'],
+    place: d('Rollen → Amtszeiten'),
+    phase: 'setup',
+    basic: true,
+  },
+  board_change: {
+    title: d('Was gehört zu einem Vorstandswechsel?'),
+    text: d(
+      'Jede Änderung des Vorstands muss der Vorstand zur Eintragung ins Vereinsregister anmelden (§ 67 Abs. 1 BGB). Beende zugleich die Amtszeit des Vorgängers, damit seine Zugriffsrechte enden (Art. 32 DSGVO). Denk auch an Bankvollmacht, Impressum und Schlüssel.',
+    ),
+    sources: ['bgb', 'dsgvo'],
+    place: d('Rollen → Amtszeiten → neue Amtszeit'),
+    phase: 'setup',
+    basic: true,
+  },
+  mfa_reset: {
+    title: d('Wann die Zwei-Faktor-Anmeldung zurücksetzen?'),
+    text: d(
+      'Zurücksetzen hilft, wenn jemand sein Telefon verloren hat, nimmt dem Konto aber den zweiten Schutz, bis die Person ihn neu einrichtet. Setz nur zurück, wenn du sicher bist, wer fragt, etwa nach einem Rückruf unter der bekannten Nummer. Den Zugang angemessen zu schützen ist Pflicht des Vereins (Art. 32 DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Rollen → Amtszeiten → 2FA zurücksetzen'),
+    phase: 'privacy',
+  },
+  account_review: {
+    title: d('Wer braucht noch ein Konto mit Rolle?'),
+    text: d(
+      'Zugriff auf Mitgliederdaten soll nur haben, wer ihn für sein Amt braucht (Art. 5 Abs. 1 lit. f, Art. 32 DSGVO). Geh die Liste nach jeder Wahl durch und beende Rollen von Personen, die kein Amt mehr haben. Ohne Rolle bleibt einem Konto nur der eigene Mitgliederbereich.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Einstellungen → Konten'),
+    phase: 'privacy',
+    basic: true,
+  },
+  import_columns: {
+    title: d('Welche Spalten übernehmen?'),
+    text: d(
+      'Alte Listen enthalten oft mehr, als der Verein heute braucht, etwa Beruf oder Geburtsort. Übernimm nur Spalten, die einem Zweck des Vereins dienen (Art. 5 Abs. 1 lit. c DSGVO). Fehlendes lässt sich später nachtragen; Überflüssiges müsstest du später wieder löschen.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Mitglieder → Import → Spalten zuordnen'),
+    phase: 'privacy',
+  },
+  full_export: {
+    title: d('Wie mit der Exportdatei umgehen?'),
+    text: d(
+      'Die Datei enthält alle Personendaten, Kasse und Rechnungen der Einheit und verlässt mit dem Herunterladen den Schutz von HUBIplan. Gib sie nur verschlüsselt und nur an Personen weiter, die sie für ihre Aufgabe brauchen (Art. 32 DSGVO). Lösche Kopien, sobald der Zweck erledigt ist (Art. 5 Abs. 1 lit. e DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Einstellungen → Datenübernahme → Vollständiger Export'),
+    phase: 'privacy',
+    basic: true,
+  },
+  fee_proof_basis: {
+    title: d('Wann ist eine Ermäßigung mit Nachweis sinnvoll?'),
+    text: d(
+      'Eine Ermäßigung, etwa für Schüler, Studierende oder Rentner, braucht eine Grundlage in Satzung oder Beitragsordnung (§ 58 Nr. 2 BGB). Der Nachweis sorgt dafür, dass die Regel für alle gleich gilt. Fehlt er bis zur Frist, rechnet HUBIplan den normalen Beitrag ab.',
+    ),
+    sources: ['bgb'],
+    place: d('Beitragssätze → Ermäßigung mit Nachweis'),
+    phase: 'setup',
+    basic: true,
+    feature: 'billing',
+  },
+  fee_proof_auto: {
+    title: d('Eindeutige Nachweise automatisch anerkennen?'),
+    text: d(
+      'Automatisch anerkannt werden nur Nachweise, die HUBIplan als eindeutig einstuft; alle anderen und jede Ablehnung prüft weiter ein Mensch. Das spart Arbeit bei vielen Nachweisen, dafür sieht bei den eindeutigen niemand mehr hin. Nach der Entscheidung löscht HUBIplan die Datei und behält nur den Vermerk (Art. 5 Abs. 1 lit. c und e DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Beitragssätze → Ermäßigung mit Nachweis → automatisch anerkennen'),
+    phase: 'setup',
+    feature: 'billing',
+  },
+  mcp_connect: {
+    title: d('Was sieht ein verbundener KI-Assistent?'),
+    text: d(
+      'Ein verbundener Assistent darf nie mehr als du: Er liest die Webseite der Einheit und bearbeitet sie, Texte nur als Entwurf. Was er liest, verarbeitet sein Anbieter, also auch Namen und Bilder in den Texten. Kläre vorher, ob der Verein das darf, und nenn den Anbieter in den Datenschutzhinweisen (Art. 13 Abs. 1 lit. e, Art. 28 DSGVO).',
+    ),
+    sources: ['dsgvo'],
+    place: d('Einstellungen → KI-Assistenten'),
+    phase: 'privacy',
+    basic: true,
+  },
+  nextcloud_auto_disable: {
+    title: d('Nextcloud-Konten automatisch deaktivieren?'),
+    text: d(
+      'Endet eine Rolle oder Mitgliedschaft, soll auch der Zugang zur Nextcloud enden, sonst liest ein früherer Vorstand weiter Protokolle und Listen (Art. 32 DSGVO). Automatisch geht das ohne dein Zutun, braucht aber ein Dienstkonto in der Nextcloud. Ohne den Schalter musst du Konten dort von Hand sperren.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Einstellungen → Nextcloud → Konten automatisch deaktivieren'),
+    phase: 'privacy',
+  },
+  external_calendar: {
+    title: d('Fremden Kalender einbinden?'),
+    text: d(
+      'Termine aus einem fremden Kalender erscheinen ungeprüft im Kalender des Vereins. Das spart doppelte Pflege, etwa für Termine des Dachverbands. Zeigst du sie auch auf der Webseite, gelten sie nach außen als Angaben des Vereins, für die er verantwortlich ist (§ 7 Abs. 1 DDG).',
+    ),
+    sources: ['ddg'],
+    place: d('Termine → Kalender → Fremden Kalender hinzufügen'),
+    phase: 'website',
+    feature: 'events',
+  },
+  musician_pay: {
+    title: d('Was gilt für Vergütungen an Musiker?'),
+    text: d(
+      'Nebenberufliche künstlerische Tätigkeit für einen gemeinnützigen Verein ist bis 3.300 € im Jahr steuerfrei (§ 3 Nr. 26 EStG). Die Grenze gilt je Person für alle Auftraggeber zusammen; lass dir deshalb bestätigen, dass sie nicht anderswo ausgeschöpft ist. Honorare an selbständige Musiker können außerdem Künstlersozialabgabe auslösen (§ 24 Abs. 2 KSVG).',
+    ),
+    sources: ['estg', 'ksvg'],
+    place: d('Musik → Auftritt → Musikervergütungen'),
+    phase: 'music',
+    basic: true,
+    feature: 'music',
+  },
+  application_decision: {
+    title: d('Wer entscheidet über die Aufnahme?'),
+    text: d(
+      'Wer über die Aufnahme entscheidet, regelt die Satzung; meist ist es der Vorstand (§ 58 Nr. 1 BGB). Halte den Beschluss fest, etwa im Protokoll der Vorstandssitzung, bevor du aufnimmst. Mit der Aufnahme beginnen Mitgliedschaft und Beitragspflicht zum eingetragenen Datum.',
+    ),
+    sources: ['bgb'],
+    place: d('Mitglieder → Anträge → Aufnehmen'),
+    phase: 'setup',
+    basic: true,
+  },
+  entry_person_fields: {
+    title: d('Welche Angaben je Person weitergeben?'),
+    text: d(
+      'Jede angekreuzte Angabe geht an den Veranstalter und an alle, die dort die Meldung bearbeiten. Kreuze nur an, was für Start, Wertung oder Klasseneinteilung nötig ist, etwa Jahrgang statt Geburtsdatum (Art. 5 Abs. 1 lit. c DSGVO). Der Name steht immer in der Meldung.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Meldungen → Ausschreibung → Angaben je Person'),
+    phase: 'competitions',
   },
 } satisfies Record<string, Decision>
 
@@ -2602,6 +2798,194 @@ const TERMS_DATA = {
     sources: ['dsgvo'],
     section: 'law',
   },
+  expense_claim: {
+    name: d('Auslage'),
+    meaning: d(
+      'Geld, das jemand für den Verein vorgestreckt hat und gegen Beleg zurückbekommt. Wer im Auftrag des Vereins handelt, kann Ersatz der erforderlichen Aufwendungen verlangen (§ 670 BGB).',
+    ),
+    example: d(
+      'Beispiel: Anna kauft für 42,80 € Getränke für das Sommerfest, lädt den Kassenbon hoch und bekommt den Betrag überwiesen.',
+    ),
+    sources: ['bgb'],
+    section: 'cash',
+    feature: 'expenses',
+  },
+  advance: {
+    name: d('Vorschuss'),
+    meaning: d(
+      'Geld, das der Verein vor einem Kauf auszahlt. Nach dem Kauf wird mit den Belegen abgerechnet, und der Rest geht zurück an die Kasse.',
+    ),
+    example: d(
+      'Beispiel: 300,00 € Vorschuss für den Einkauf zum Fest, Belege über 268,40 €: 31,60 € gehen zurück an die Kasse.',
+    ),
+    sources: [],
+    section: 'cash',
+    feature: 'expenses',
+  },
+  four_eyes: {
+    name: d('Vier-Augen-Prinzip'),
+    meaning: d(
+      'Eine zweite Person prüft und gibt frei, bevor Geld fließt. So fallen Fehler auf, und niemand entscheidet allein über eine Zahlung.',
+    ),
+    example: d(
+      'Beispiel: Auslage über 620,00 €: Kassiererin und 1. Vorsitzender geben nacheinander frei.',
+    ),
+    sources: [],
+    section: 'cash',
+    feature: 'expenses',
+  },
+  mileage_rate: {
+    name: d('Kilometerpauschale'),
+    meaning: d(
+      'Fester Betrag je gefahrenem Kilometer statt einzelner Tank- und Parkbelege. Den Satz legt der Verein fest; üblich sind bis 0,30 € (§ 5 Abs. 2 BRKG).',
+    ),
+    example: d('Beispiel: 84 km zum Bezirkstag und zurück × 0,30 € = 25,20 €.'),
+    sources: ['brkg'],
+    section: 'cash',
+    feature: 'expenses',
+  },
+  input_tax: {
+    name: d('Vorsteuer'),
+    meaning: d(
+      'Umsatzsteuer, die der Verein selbst auf Einkäufe zahlt. Führt er Umsatzsteuer ab, darf er sie aus Rechnungen für sein Unternehmen davon abziehen (§ 15 Abs. 1 UStG).',
+    ),
+    example: d(
+      'Beispiel: Getränke für das Fest 1.190,00 € brutto: 190,00 € Vorsteuer mindern die Umsatzsteuer, die der Verein ans Finanzamt zahlt.',
+    ),
+    sources: ['ustg'],
+    section: 'tax',
+    feature: 'finance',
+  },
+  exemption_limit: {
+    name: d('Freigrenze'),
+    meaning: d(
+      'Bleiben die Einnahmen aus wirtschaftlichen Geschäftsbetrieben einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an (§ 64 Abs. 3 AO). Liegen sie darüber, ist der ganze Gewinn steuerpflichtig, nicht nur der Teil über der Grenze.',
+    ),
+    example: d(
+      'Beispiel: 48.300 € Einnahmen aus Festen und Werbung liegen unter der Grenze; bei 50.400 € wäre der gesamte Gewinn zu versteuern.',
+    ),
+    sources: ['ao'],
+    section: 'tax',
+    feature: 'tax',
+  },
+  term_of_office: {
+    name: d('Amtszeit'),
+    meaning: d(
+      'Zeitraum, für den jemand in ein Amt gewählt oder bestellt ist. Die Dauer legt die Satzung fest; das Gesetz nennt keine (§ 27 Abs. 1, § 58 Nr. 3 BGB).',
+    ),
+    example: d(
+      'Beispiel: Wahl am 14. März 2025 für 3 Jahre: Die Amtszeit endet mit der Versammlung im Frühjahr 2028.',
+    ),
+    sources: ['bgb'],
+    section: 'law',
+  },
+  grace_period: {
+    name: d('Kulanzzeit'),
+    meaning: d(
+      'Zusätzliche Tage nach der Frist, in denen ein Nachweis noch als rechtzeitig gilt. Erst danach berechnet HUBIplan den normalen Beitrag.',
+    ),
+    example: d(
+      'Beispiel: Frist 31. Januar, 14 Tage Kulanz: Ein Nachweis vom 10. Februar zählt noch.',
+    ),
+    sources: [],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  agenda: {
+    name: d('Tagesordnung'),
+    meaning: d(
+      'Liste der Punkte, über die die Versammlung berät und beschließt. Ein Beschluss ist nur gültig, wenn sein Gegenstand schon in der Einladung bezeichnet war (§ 32 Abs. 1 Satz 2 BGB).',
+    ),
+    example: d(
+      'Beispiel: TOP 7 „Beitragserhöhung“ steht in der Einladung; über eine Satzungsänderung, die dort fehlt, kann die Versammlung nicht gültig beschließen.',
+    ),
+    sources: ['bgb'],
+    section: 'meetings',
+    feature: 'meetings',
+  },
+  reversal: {
+    name: d('Storno'),
+    meaning: d(
+      'Eine Rechnung wird nicht gelöscht, sondern durch eine Stornorechnung mit eigener Nummer aufgehoben. So bleibt nachvollziehbar, was berechnet und was zurückgenommen wurde (GoBD).',
+    ),
+    example: d(
+      'Beispiel: Rechnung 2026-0041 über 60,00 € wird mit Stornorechnung 2026-0057 über −60,00 € aufgehoben.',
+    ),
+    sources: ['gobd'],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  payer: {
+    name: d('Zahler'),
+    meaning: d(
+      'Person oder Stelle, die den Beitrag eines Mitglieds zahlt und die Rechnung bekommt. Das kann das Mitglied selbst sein, ein Elternteil, der Haushalt oder ein Arbeitgeber.',
+    ),
+    example: d(
+      'Beispiel: Die Mutter zahlt für 2 Kinder: Beide Beiträge stehen auf ihrer Rechnung und werden von ihrem Konto eingezogen.',
+    ),
+    sources: [],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  payment_reference: {
+    name: d('Verwendungszweck'),
+    meaning: d(
+      'Text, den der Zahler einer Überweisung mitgibt. Steht dort die Rechnungsnummer, lässt sich der Eingang leicht der richtigen Rechnung zuordnen.',
+    ),
+    example: d(
+      'Beispiel: „RE 2026-0041 Beitrag Muster“: Die 60,00 € gehören zur Rechnung 2026-0041.',
+    ),
+    sources: [],
+    section: 'cash',
+    feature: 'finance',
+  },
+  debit_run: {
+    name: d('Lastschriftlauf'),
+    meaning: d(
+      'Ein Durchgang, in dem HUBIplan fällige Rechnungen mit Mandat zu einer Datei für die Bank bündelt. Die Bank zieht alle Beträge am selben Tag ein.',
+    ),
+    example: d(
+      'Beispiel: Lauf vom 2. März mit 142 Lastschriften über zusammen 8.520,00 €, Einzug am 9. März.',
+    ),
+    sources: [],
+    section: 'sepa',
+    feature: 'billing',
+  },
+  useful_life: {
+    name: d('Nutzungsdauer'),
+    meaning: d(
+      'Jahre, über die sich der Kaufpreis einer Anlage als Abschreibung verteilt (§ 7 Abs. 1 EStG). Anhaltspunkte geben die AfA-Tabellen der Finanzverwaltung.',
+    ),
+    example: d(
+      'Beispiel: Zapfanlage für 2.400 €, Nutzungsdauer 8 Jahre: 300 € Abschreibung je Jahr.',
+    ),
+    sources: ['estg'],
+    section: 'tax',
+    feature: 'tax',
+  },
+  challenge_cup: {
+    name: d('Wanderpokal'),
+    meaning: d(
+      'Pokal, der nach jedem Wettbewerb an den neuen Sieger weitergeht. Ob ihn jemand nach mehreren Siegen behalten darf, regelt die Ausschreibung.',
+    ),
+    example: d(
+      'Beispiel: Wer den Pokal 3-mal in Folge gewinnt, darf ihn behalten; 2025 und 2026 gewann ihn Paul.',
+    ),
+    sources: [],
+    section: 'competitions',
+    feature: 'competitions',
+  },
+  rejoin: {
+    name: d('Wiedereintritt'),
+    meaning: d(
+      'Jemand war schon einmal Mitglied und tritt erneut ein. Die frühere Zeit bleibt in der Akte und zählt für die Mitgliedsdauer mit, die Lücke dazwischen nicht.',
+    ),
+    example: d(
+      'Beispiel: Mitglied von 1998 bis 2010, Wiedereintritt 2014: Im Jahr 2026 sind es zusammen 24 Jahre.',
+    ),
+    sources: [],
+    section: 'members',
+  },
 } satisfies Record<string, TermEntry>
 
 export type TermKey = keyof typeof TERMS_DATA
@@ -3039,6 +3423,22 @@ const HOWTOS_DATA = {
       'Beim Bestätigen trägt HUBIplan den Austritt zum angegebenen Datum ein, das du vorher noch anpassen kannst; Mitgliedsart, Untereinheiten und Ämter enden am selben Tag. Das Mitglied bekommt die Bestätigung per E-Mail und in der App, beim Ablehnen mit deiner Begründung. Rechnungen und Lastschriftmandat ändert das Bestätigen nicht, prüfe also vor dem Austritt, ob noch etwas offen ist.',
     ),
     sources: [],
+  },
+  calc_mileage: {
+    kind: 'calc',
+    title: d('Fahrtkosten'),
+    text: d(
+      'Gefahrene Kilometer für Hin- und Rückweg mal dem Satz je Kilometer, kaufmännisch auf Cent gerundet. Den Satz legt der Verein in den Einstellungen fest.',
+    ),
+    example: {
+      head: ['Strecke', 'Kilometer', 'Satz', 'Erstattung'],
+      rows: [
+        ['Bezirkstag, hin und zurück', '84', '0,30 €', '25,20 €'],
+        ['Einkauf Großmarkt, hin und zurück', '23,5', '0,30 €', '7,05 €'],
+      ],
+    },
+    sources: [],
+    feature: 'expenses',
   },
 } satisfies Record<string, HowEntry>
 

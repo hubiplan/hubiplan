@@ -923,7 +923,9 @@ function AgendaEditor({
   if (!editable) {
     return (
       <section className="card">
-        <h2>{t('Tagesordnung')}</h2>
+        <h2>
+          <Term k="agenda">{t('Tagesordnung')}</Term>
+        </h2>
         <ol className="agenda-list">
           {items.map((item, index) => (
             <li key={item.key} className={item.level ? 'agenda-sub' : undefined}>
@@ -939,7 +941,9 @@ function AgendaEditor({
   }
   return (
     <form className="card stack" onSubmit={(e) => e.preventDefault()}>
-      <h2>{t('Tagesordnung')}</h2>
+      <h2>
+        <Term k="agenda">{t('Tagesordnung')}</Term>
+      </h2>
       {complete ? (
         <SaveStatus auto={auto} />
       ) : (

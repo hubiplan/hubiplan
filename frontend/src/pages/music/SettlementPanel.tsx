@@ -13,6 +13,7 @@ import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { CommercialForm } from '../billing/EInvoicesPage.tsx'
 import { FeeBatchPanel } from './FeeBatchPanel.tsx'
 import { PageNav } from '../../components/ListControls.tsx'
+import { Why } from '../../learning/Aids.tsx'
 
 type Claim = {
   id: number
@@ -196,6 +197,7 @@ export function SettlementPanel({
         </Link>
       ))}
       <h2>{t('Musikervergütungen')}</h2>
+      <Why k="musician_pay" />
       <Link to="/finanzen/sammelauszahlungen">{t('Sammelauszahlungen')}</Link>
       {canEdit && (
         <FeeBatchPanel
@@ -292,6 +294,7 @@ export function SettlementPanel({
         </article>
       ))}
       <h2>{t('Weitere Auftrittsausgaben')}</h2>
+      <Why k="artist_fee_mark" />
       {canEdit && <PaymentLink onSave={(booking) => act({ action: 'payment', booking })} />}
       <p>
         {t(

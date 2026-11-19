@@ -47,6 +47,7 @@ import { EntryResultsCard } from './EntryResults.tsx'
 import { ClubOffersCard } from './ClubOffers.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { Why } from '../../learning/Aids.tsx'
 
 export function EntriesPage() {
   return (
@@ -1689,6 +1690,7 @@ function CallEditor({
           </SelectField>
         </div>
         <h3>{t('Angaben je Person')}</h3>
+        <Why k="entry_person_fields" />
         <p className="muted small">
           {t('Nur angekreuzte Angaben gehen an den Veranstalter. Der Name steht immer drin.')}
         </p>

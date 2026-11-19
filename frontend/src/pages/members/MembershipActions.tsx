@@ -458,7 +458,9 @@ function Reentry({
   }
   return (
     <form className="subcard" onSubmit={save}>
-      <h3>{t('Wiedereintritt')}</h3>
+      <h3>
+        <Term k="rejoin">{t('Wiedereintritt')}</Term>
+      </h3>
       <p className="muted small">
         {t(
           'Es entsteht ein neuer Zeitraum. Frühere Zeiträume und die Verbandsnummer bleiben erhalten.',

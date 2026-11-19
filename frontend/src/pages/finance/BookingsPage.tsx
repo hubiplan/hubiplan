@@ -991,6 +991,7 @@ function BookingForm({
             {showVat && kind === 'expense' && (v.vat_rate === '19' || v.vat_rate === '7') && (
               <Field
                 label={t('Vorsteuer abziehbar (%)')}
+                term="input_tax"
                 hint={t('Bei gemischt genutzten Ausgaben den unternehmerischen Anteil.')}
                 type="number"
                 min={0}

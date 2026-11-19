@@ -11,6 +11,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { Alert, Checkbox, EmptyState, Field, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { Why } from '../../learning/Aids.tsx'
 
 const FILTERS = [
   { value: 'offen', label: () => t('offen') },
@@ -529,6 +530,7 @@ function Detail({
                 {t('Aufnehmen …')}
               </button>
             )}
+            <Why k="application_decision" />
             {app.status !== 'query' && (
               <button type="button" className="button button-ghost" onClick={() => setMode('ask')}>
                 {t('Rückfrage …')}

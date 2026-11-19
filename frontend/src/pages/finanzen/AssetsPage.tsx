@@ -152,6 +152,7 @@ function AssetForm({
           {v.method === 'linear' && (
             <Field
               label={t('Nutzungsdauer in Jahren')}
+              term="useful_life"
               type="number"
               min={1}
               max={50}

@@ -191,7 +191,9 @@ export function TaxPage() {
       )}
 
       <div className="card card-wide">
-        <h2>{t('Freigrenze')}</h2>
+        <h2>
+          <Term k="exemption_limit">{t('Freigrenze')}</Term>
+        </h2>
         <FreeLimitMeter report={data} />
         <p className="muted small">
           {t(
