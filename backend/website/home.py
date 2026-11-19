@@ -67,7 +67,10 @@ KIND_HINTS = {
     "banner": "ein breites Bild, auf Wunsch mit einer Zeile darauf",
     "buttons": "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen",
     "tiles": "zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf",
-    "event": "ein Termin groß mit „noch N Tage“; verschwindet danach",
+    "event": (
+        "ein Termin groß mit „noch N Tage“, bei öffentlicher Anmeldung mit Preisen und "
+        "Anmeldeknopf; verschwindet danach"
+    ),
     "album": "vier bis acht Bilder aus einem Album der Galerie",
     "quote": "ein kurzer Text mit Namen",
     "contacts": "ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“",

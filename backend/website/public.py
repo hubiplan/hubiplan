@@ -1411,21 +1411,27 @@ class SiteView:
         return images[0] if images else None
 
     def menu(self) -> list[dict]:
+        from . import event_page
+
         return [
             {"slug": t.slug, "title": t.published_title}
             for t in self.published_texts()
             .filter(kind=WebsiteText.Kind.PAGE, show_in_menu=True)
+            .select_related("event")
             .order_by("menu_position", "published_title")
+            if event_page.in_menu(t, self.today)
         ]
 
     def page(self, slug: str) -> dict | None:
+        from . import event_page
+
         t = (
             self.published_texts()
             .filter(kind=WebsiteText.Kind.PAGE, slug=slug)
-            .select_related("published_image")
+            .select_related("published_image", "event")
             .first()
         )
-        if t is None:
+        if t is None or event_page.hidden(t, self.today):
             return None
         return {
             "slug": t.slug,
@@ -1442,6 +1448,8 @@ class SiteView:
             "updated_at": t.published_at,
             # Abschnitte (G4); ohne eigene Abschnitte nur der feste „body“
             "sections": self.page_sections(t),
+            # Veranstaltungsseite (A4): Eckdaten, Preise, Anmeldung aus dem Termin
+            "event": event_page.public_data(self, t.event) if t.event_id else None,
         }
 
     def notice(self) -> dict | None:

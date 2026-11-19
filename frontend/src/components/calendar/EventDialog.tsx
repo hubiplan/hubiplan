@@ -27,6 +27,7 @@ import { EventRow } from './EventRow.tsx'
 import { berlin, formatDay, formatRange, toApi } from './time.ts'
 import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { circularApi } from '../../api/circulars.ts'
+import { contentApi } from '../../api/website.ts'
 import { Modal } from '../Modal.tsx'
 import type { CloseGuard } from './EventForm.tsx'
 import { t, tc } from '../../i18n/index.ts'
@@ -73,6 +74,68 @@ function useCircularWriter(base: string, event: EventDetail) {
     }
   }
   return { busy, error, write }
+}
+
+/**
+ * Eigene Veranstaltungsseite auf der Webseite (Anmeldung A4, nur bei öffentlichen Terminen):
+ * Titel, Text und Abschnitte unter Webseite › Inhalte, Eckdaten und Anmeldeknopf aus dem Termin.
+ */
+function WebPageRow({ orgId, event }: { orgId: number; event: EventDetail }) {
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const page = event.web_page
+  async function create() {
+    setBusy(true)
+    setError(null)
+    try {
+      const text = await contentApi.eventPage(orgId, event.id)
+      navigate(`/webseite/inhalte?text=${text.id}`)
+    } catch (err) {
+      setError(errorMessage(err))
+      setBusy(false)
+    }
+  }
+  return (
+    <EventRow
+      label={t('Webseite')}
+      actions={
+        page ? (
+          <Link
+            className="button button-ghost"
+            to={`/webseite/inhalte?text=${page.id}`}
+            aria-label={t('Veranstaltungsseite bearbeiten')}
+          >
+            {t('Bearbeiten')}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={busy}
+            onClick={() => void create()}
+            aria-label={t('Eigene Seite auf der Webseite anlegen')}
+          >
+            <span aria-hidden="true">+</span> {t('Anlegen')}
+          </button>
+        )
+      }
+    >
+      {page ? (
+        <>
+          {t('Veranstaltungsseite: {title}', { title: page.title })}{' '}
+          <span className="muted small">
+            {page.is_published ? t('veröffentlicht') : t('Entwurf, nicht veröffentlicht')}
+          </span>
+        </>
+      ) : (
+        <span className="muted small">
+          {t('keine eigene Seite; Termin erscheint in der Terminliste')}
+        </span>
+      )}
+      {error && <Alert kind="error">{error}</Alert>}
+    </EventRow>
+  )
 }
 
 /**
@@ -196,6 +259,7 @@ function RelatedCard({
           )}
         </EventRow>
       )}
+      {event.web_page !== undefined && org && <WebPageRow orgId={org.id} event={event} />}
       <EventTaskRow base={base} eventId={event.id} />
       {music && (
         <EventRow

@@ -80,6 +80,11 @@ org_patterns = [
     path("website/held/<int:pk>/", views.HeldDetailView.as_view(), name="website-held-message"),
     path("website/texts/", content_views.TextListView.as_view(), name="website-texts"),
     path(
+        "website/texts/event-page/",
+        content_views.EventPageView.as_view(),
+        name="website-event-page",
+    ),
+    path(
         "website/texts/reorder/",
         content_views.PageOrderView.as_view(),
         name="website-texts-reorder",

@@ -217,6 +217,7 @@ def _texts(args: dict, ctx: ClubContext) -> str:
             "entwurf_geaendert": t["has_changes"],
             "im_menue": t["show_in_menu"],
             "untereinheit": t.get("department_name"),
+            **({"termin": t["event"]["title"]} if t.get("event") else {}),
             **(
                 {"bereich": t["slug"], "bereich_name": t.get("area_label")}
                 if t["kind"] == "intro"
@@ -405,7 +406,38 @@ def _text_change(args: dict, ctx: ClubContext) -> str:
     )
 
 
+def _event_page_create(args: dict, ctx: ClubContext) -> str:
+    """Veranstaltungsseite (Anmeldung A4): Textseite zu einem öffentlichen Termin."""
+    _v, content_views = _views()
+    event = args.get("termin")
+    if not isinstance(event, int) or isinstance(event, bool) or event < 1:
+        raise ToolError(_("„termin“ muss eine Terminnummer sein."))
+    t = ctx.call(content_views.EventPageView, "POST", "website/texts/event-page/", {"event": event})
+    changes = {}
+    if args.get("titel"):
+        changes["title"] = _str(args, "titel", MAX_TITLE).strip()
+    if args.get("text"):
+        changes["body"] = _str(args, "text", MAX_BODY)
+    _image_args(args, changes, carousel=False)
+    if changes:
+        t = ctx.call(
+            content_views.TextDetailView, "PUT", f"website/texts/{t['id']}/", changes, pk=t["id"]
+        )
+    return (
+        _(
+            "Veranstaltungsseite „{title}“ (Nummer {pk}, Adresse {slug}). Datum, Ort, Programm, "
+            "Preise und Anmeldeknopf kommen aus dem Termin; Text und Abschnitte darunter "
+            "pflegst du wie bei jeder Textseite."
+        ).format(title=t["title"], pk=t["id"], slug=t["slug"])
+        + " "
+        + _draft_hint()
+        + _alt_hint(ctx, _chosen_images(changes))
+    )
+
+
 def _page_create(args: dict, ctx: ClubContext) -> str:
+    if args.get("termin") is not None:
+        return _event_page_create(args, ctx)
     _v, content_views = _views()
     title = _str(args, "titel", MAX_TITLE, required=True).strip()
     slug = _str(args, "adresse", 80, required=True).strip()
@@ -699,7 +731,10 @@ CLUB_TOOLS: tuple[Tool, ...] = (
         title=gettext_lazy("Textseite anlegen (Entwurf)"),
         description=gettext_lazy(
             "Legt eine neue Textseite an, auf Wunsch mit Bild oben auf der Seite. Sie bleibt "
-            "unveröffentlicht, bis jemand sie in HUBIplan veröffentlicht."
+            "unveröffentlicht, bis jemand sie in HUBIplan veröffentlicht. Mit „termin“ entsteht "
+            "eine Veranstaltungsseite zu einem öffentlichen Termin (Terminnummer aus "
+            "startseite_bausteine, auswahl.events): Datum, Ort, Programm, Preise und "
+            "Anmeldeknopf kommen dann aus dem Termin, „titel“ und „adresse“ sind freiwillig."
         ),
         schema=_schema(
             {
@@ -714,8 +749,15 @@ CLUB_TOOLS: tuple[Tool, ...] = (
                 },
                 "text": {"type": "string", "maxLength": MAX_BODY},
                 "bild": IMAGE_OR_NULL,
+                "termin": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": gettext_lazy(
+                        "Terminnummer: Veranstaltungsseite zu diesem öffentlichen Termin anlegen "
+                        "(gibt es schon eine, wird sie geliefert)."
+                    ),
+                },
             },
-            ["titel", "adresse"],
         ),
         run=_page_create,
         writes=True,

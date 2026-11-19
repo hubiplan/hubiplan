@@ -340,6 +340,24 @@ def related_data(event: Event, viewer: services.Viewer) -> dict:
             {"id": p.pk, "title": p.title, "status_label": p.get_status_display()} for p in plans
         ]
         data["can_create_helper_plan"] = "helpers.edit" in perms
+    if (
+        "website" in modules
+        and perms & {"website.content", "website.manage"}
+        and viewer.kind == "org"
+        and event.visibility == Event.Visibility.PUBLIC
+    ):
+        # Veranstaltungsseite (Anmeldung A4): Textseite der Webseite zu diesem Termin
+        from website import event_page
+        from website.services import website_of
+
+        site = website_of(viewer.org)
+        page = event_page.page_for(event, site) if site is not None else None
+        if site is not None:
+            data["web_page"] = (
+                {"id": page.pk, "title": page.title, "is_published": page.is_published}
+                if page
+                else None
+            )
     if "bookings" in modules and perms & {"bookings.view", "bookings.edit"}:
         rows = (
             event.bookings.filter(status__in=["requested", "confirmed"])

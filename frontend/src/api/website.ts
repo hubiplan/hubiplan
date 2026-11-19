@@ -727,6 +727,16 @@ export interface WebsiteTextSummary {
   has_changes: boolean
   published_at: string | null
   updated_at: string
+  /** Veranstaltungsseite (Anmeldung A4): zugehöriger Termin; fehlt bei älteren Ständen */
+  event?: {
+    id: number
+    title: string
+    starts_at: string
+    ends_at: string | null
+    is_public: boolean
+  } | null
+  /** Veranstaltungsseite nach dem Ende von der Webseite nehmen */
+  hide_after_event?: boolean
 }
 
 export interface WebsiteText extends WebsiteTextSummary {
@@ -768,6 +778,7 @@ export interface TextDraft {
   timeline?: TimelineEntry[]
   timeline_newest_first?: boolean
   sections?: HomeSection[]
+  hide_after_event?: boolean
 }
 
 /** Eintrag der Zeitleiste: ein Jahr oder ein Zeitraum (`until`), kurz gehalten.
@@ -813,6 +824,9 @@ export const contentApi = {
     }>(`${base(org)}texts/`),
   text: (org: number, id: number) => api.get<WebsiteText>(`${base(org)}texts/${id}/`),
   create: (org: number, data: TextDraft) => api.post<WebsiteText>(`${base(org)}texts/`, data),
+  /** Veranstaltungsseite zu einem öffentlichen Termin anlegen oder die vorhandene holen */
+  eventPage: (org: number, event: number) =>
+    api.post<WebsiteText>(`${base(org)}texts/event-page/`, { event }),
   save: (org: number, id: number, data: TextDraft) =>
     api.put<WebsiteText>(`${base(org)}texts/${id}/`, data),
   remove: (org: number, id: number) => api.del(`${base(org)}texts/${id}/`),

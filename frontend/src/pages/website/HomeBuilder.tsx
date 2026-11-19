@@ -120,7 +120,9 @@ function kindHint(kind: HomeKind): string {
     banner: t('ein breites Bild, auf Wunsch mit einer Zeile darauf'),
     buttons: t('ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen'),
     tiles: t('zwei bis sechs Kacheln mit Bild, Titel, Ziel und auf Wunsch einem Knopf'),
-    event: t('ein Termin groß mit „noch N Tage“; verschwindet danach'),
+    event: t(
+      'ein Termin groß mit „noch N Tage“, bei öffentlicher Anmeldung mit Preisen und Anmeldeknopf; verschwindet danach',
+    ),
     album: t('vier bis acht Bilder aus einem Album der Galerie'),
     quote: t('ein kurzer Text mit Namen'),
     contacts: t('ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“'),

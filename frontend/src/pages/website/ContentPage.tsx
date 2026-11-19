@@ -126,6 +126,7 @@ export function ContentPage() {
                           : tm.title || tm.kind_label}
                     </button>
                     {tm.kind === 'page' && <span className="muted small"> /{tm.slug}</span>}
+                    {tm.event && <span className="muted small"> · {t('Veranstaltungsseite')}</span>}
                     <span className="muted small"> · {status(tm)}</span>
                     {open === tm.id && (
                       <TextPanel
@@ -410,6 +411,7 @@ function TextForm({
     timeline: (text.timeline ?? []).map(normalizeEntry),
     timeline_newest_first: text.timeline_newest_first ?? false,
     sections: text.sections ?? [],
+    hide_after_event: text.hide_after_event ?? false,
   })
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(text)
@@ -582,6 +584,32 @@ function TextForm({
             onChange={(on) => set('show_in_menu', on)}
           />
         </div>
+      )}
+      {text.kind === 'page' && text.event && (
+        <section className="field" aria-labelledby={`veranstaltung-${text.id}`}>
+          <h3 id={`veranstaltung-${text.id}`}>{t('Veranstaltungsseite')}</h3>
+          <p className="muted small">
+            {t(
+              'Gehört zum Termin „{title}“ am {when}. Datum, Ort, Programm, Preise, freie Plätze und der Knopf zur Anmeldung kommen aus dem Termin und erscheinen oben auf der Seite. Hier pflegst du nur Text und Abschnitte darunter.',
+              { title: text.event.title, when: formatDateTime(text.event.starts_at) },
+            )}
+          </p>
+          {!text.event.is_public && (
+            <Alert kind="info">
+              {t(
+                'Der Termin ist nicht mehr „nach außen öffentlich“. Die Seite zeigt deshalb keine Eckdaten und keinen Anmeldeknopf.',
+              )}
+            </Alert>
+          )}
+          <Checkbox
+            label={t('Nach dem Ende der Veranstaltung von der Webseite nehmen')}
+            hint={t(
+              'Der Menüpunkt verschwindet in jedem Fall am Tag nach dem Ende. Ohne Haken bleibt die Seite als Rückblick erreichbar.',
+            )}
+            checked={v.hide_after_event}
+            onChange={(on) => set('hide_after_event', on)}
+          />
+        </section>
       )}
       {text.has_timeline && (
         <p className="muted small">

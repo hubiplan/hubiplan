@@ -185,3 +185,68 @@ def test_webseite_zeigt_anmeldung_am_termin(c, fest, club):
     einrichten(c, fest, public=False)
     items = ok(Client().get("/api/public/site/v1/anmeldung-site/events/"))["events"]
     assert next(i for i in items if i["title"] == "Vereinsausflug")["registration"] is None
+
+
+def test_veranstaltungsseite(c, fest, club):
+    """Konzept 3.8a: Textseite zum Termin mit Eckdaten, Preisen und Anmeldeknopf; Menüpunkt
+    bis zum Ende, danach wahlweise ausgeblendet."""
+    from website import event_page
+    from website.content_models import WebsiteText
+
+    from .factories import make_website
+
+    club.enabled_modules = sorted({*club.enabled_modules, "website"})
+    club.save()
+    make_website(club, public_key="fest-site", state="public")
+    org = fest["org"]
+    event_id = fest["event"]["id"]
+    # Nur bei öffentlichen Terminen
+    resp = c.post(f"{org}/website/texts/event-page/", {"event": event_id}, content_type=JSON)
+    assert resp.status_code == 400 and "öffentlich" in resp.content.decode()
+    data = _public(c, fest)
+    page = ok(
+        c.post(f"{org}/website/texts/event-page/", {"event": event_id}, content_type=JSON), 201
+    )
+    assert page["kind"] == "page" and page["slug"] == "vereinsausflug"
+    assert page["event"]["id"] == event_id and not page["is_published"]
+    detail = ok(c.get(f"{org}/events/{event_id}/"))
+    assert detail["web_page"]["id"] == page["id"] and detail["web_page"]["is_published"] is False
+    # Zweimal: dieselbe Seite
+    again = ok(c.post(f"{org}/website/texts/event-page/", {"event": event_id}, content_type=JSON))
+    assert again["id"] == page["id"]
+    # Entwurf: noch nicht öffentlich
+    public = "/api/public/site/v1/fest-site"
+    assert Client().get(f"{public}/pages/vereinsausflug/").status_code == 404
+    ok(c.post(f"{org}/website/texts/{page['id']}/publish/"))
+    shown = ok(Client().get(f"{public}/pages/vereinsausflug/"))
+    ev = shown["event"]
+    assert ev["title"] == "Vereinsausflug" and ev["ended"] is False
+    reg = ev["registration"]
+    assert reg["url"] == data["offer"]["public_url"] and reg["can_join"] is True
+    assert "cancel_text" in reg and "terms" in reg and "participants" not in reg
+    nav = ok(Client().get(f"{public}/"))["nav"]
+    entry = next(n for n in nav if n.get("slug") == "vereinsausflug")
+    assert entry["event"] is True
+    items = ok(Client().get(f"{public}/events/"))["events"]
+    assert next(i for i in items if i["title"] == "Vereinsausflug")["page"] == "vereinsausflug"
+    # Nach dem Ende: kein Menüpunkt, Seite bleibt als Rückblick oder wird ausgeblendet
+    with rls_bypass():
+        text = WebsiteText.objects.select_related("event").get(pk=page["id"])
+    after = event_page.last_day(text.event) + datetime.timedelta(days=1)
+    assert event_page.in_menu(text, after - datetime.timedelta(days=1))
+    assert not event_page.in_menu(text, after) and not event_page.hidden(text, after)
+    ok(
+        c.put(
+            f"{org}/website/texts/{page['id']}/",
+            {"hide_after_event": True},
+            content_type=JSON,
+        )
+    )
+    with rls_bypass():
+        text.refresh_from_db()
+    assert event_page.hidden(text, after) and not event_page.hidden(
+        text, after - datetime.timedelta(days=1)
+    )
+    # Termin nicht mehr öffentlich: Seite ohne Eckdaten, Termin ohne Verweis
+    ok(c.patch(f"{org}/events/{event_id}/", {"visibility": "members"}, content_type=JSON))
+    assert ok(Client().get(f"{public}/pages/vereinsausflug/"))["event"] is None

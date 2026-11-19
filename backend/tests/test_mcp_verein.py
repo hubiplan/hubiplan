@@ -580,3 +580,34 @@ def test_einleitung_anlegen_nur_mit_entwurfsrecht(club, site, editor):
     )
     assert resp.json()["error"]["code"] == -32602
     assert not WebsiteText.objects.filter(website=site, kind="intro").exists()
+
+
+def test_veranstaltungsseite_anlegen(club, site, editor):
+    """Anmeldung A4: Textseite zu einem öffentlichen Termin über die KI-Schnittstelle."""
+    from events.models import Event
+
+    start = timezone.now() + datetime.timedelta(days=30)
+    with rls_bypass():
+        public = Event.objects.create(
+            organization=club,
+            title="Sommerfest",
+            starts_at=start,
+            ends_at=start + datetime.timedelta(hours=4),
+            visibility="public",
+        )
+        internal = Event.objects.create(
+            organization=club,
+            title="Vorstandssitzung",
+            starts_at=start,
+            ends_at=start + datetime.timedelta(hours=2),
+            visibility="members",
+        )
+    token = connect(editor, club)["access_token"]
+    text, failed = call(token, "webseite_textseite_anlegen", termin=public.pk, text="Kommt alle!")
+    assert not failed, text
+    page = WebsiteText.objects.get(website=site, event=public)
+    assert page.slug == "sommerfest" and page.body == "Kommt alle!" and not page.is_published
+    _text, failed = call(token, "webseite_textseite_anlegen", termin=internal.pk)
+    assert failed
+    text, failed = call(token, "webseite_texte")
+    assert not failed and "Sommerfest" in text and "termin" in text
