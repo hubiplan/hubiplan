@@ -170,6 +170,9 @@ const SOURCES_DATA = {
 export type SourceKey = keyof typeof SOURCES_DATA
 export const SOURCES: Record<SourceKey, Source> = SOURCES_DATA
 
+/** Nennt der Text einen Geldbetrag? Solche Texte mit Quelle brauchen `asOf`. */
+export const AMOUNT = /\d[\d.]*(?:,\d+)?\s*(?:€|Euro|Cent)/
+
 // --- Entscheidungen („Warum?“) ---
 
 export const PHASES = {
@@ -216,6 +219,8 @@ export interface Decision {
   sources: SourceKey[]
   /** Ort in der Anwendung, fürs Glossar */
   place: Text
+  /** Jahr, in dem die genannten Beträge am Gesetz geprüft wurden (Pflicht bei Beträgen) */
+  asOf?: number
   phase: PhaseKey
   /** Grundlagen: nur bei eingeschalteten Lernhilfen */
   basic?: boolean
@@ -363,6 +368,7 @@ const DECISIONS_DATA = {
       'Gemeinnützige Vereine trennen ideellen Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlichen Geschäftsbetrieb, weil nur Letzterer steuerpflichtig sein kann (§§ 14, 64, 65 AO). Bleiben die Einnahmen aus Verkauf, Festen und Werbung einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an. Liegen alle wirtschaftlichen Einnahmen samt Zweckbetrieben unter dieser Grenze, entfällt meist auch die Prüfung, ob ein Zweckbetrieb vorliegt (§ 64 Abs. 3 AO); schalte die Zuordnung ein, bevor der Verein sie erreicht.',
     ),
     sources: ['ao'],
+    asOf: 2026,
     place: d('Finanzen → Einrichtung → Kategorien'),
     phase: 'setup',
     feature: 'finance',
@@ -538,6 +544,7 @@ const DECISIONS_DATA = {
       'Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden; Vereine mit Einnahmen bis 100.000 € im Jahr sind davon befreit (§ 55 Abs. 1 Nr. 5 AO). Wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck.',
     ),
     sources: ['ao'],
+    asOf: 2026,
     place: d('Finanzen → Rücklagen'),
     phase: 'closing',
     feature: 'finance',
@@ -679,6 +686,7 @@ const DECISIONS_DATA = {
       'Die Sammelbestätigung fasst alle Geldzuwendungen eines Spenders aus einem Kalenderjahr zusammen und spart Arbeit und Porto, die Einzelbestätigung kommt sofort; beide stehen im amtlichen Muster (§ 50 Abs. 1 EStDV). Bis 300 € reicht dem Spender oft schon der Kontoauszug zusammen mit einem Beleg des Vereins (§ 50 Abs. 4 Satz 1 Nr. 2 EStDV). Üblich ist: Großspenden sofort einzeln, alles andere im Januar gesammelt.',
     ),
     sources: ['estdv'],
+    asOf: 2026,
     place: d('Finanzen → Zuwendungsbestätigungen'),
     phase: 'donations',
     feature: 'finance',
@@ -689,6 +697,7 @@ const DECISIONS_DATA = {
       'Nur wenn die Zahlung zu einem umsatzsteuerpflichtigen Bereich gehört und der Verein kein Kleinunternehmer ist (§ 19 UStG). Wer Steuer ausweist, ohne dazu berechtigt zu sein, schuldet sie trotzdem dem Finanzamt (§ 14c Abs. 2 UStG). Bis 250 € genügt eine Kleinbetragsrechnung mit Steuersatz statt Steuerbetrag (§ 33 UStDV).',
     ),
     sources: ['ustg', 'ustdv'],
+    asOf: 2026,
     place: d('Finanzen → Quittungen'),
     phase: 'closing',
     feature: 'finance',
@@ -1031,6 +1040,7 @@ const DECISIONS_DATA = {
       'Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Beauftragt der Verein Künstler nur für eigene Feste oder Werbung, beginnt die Abgabepflicht erst über 1.000 € Honorar im Kalenderjahr; bei höchstens drei Veranstaltungen im Jahr bleiben deren Honorare frei (§ 24 Abs. 2 KSVG).',
     ),
     sources: ['ksvg'],
+    asOf: 2026,
     place: d('Finanzen → Steuern → Künstlersozialabgabe'),
     phase: 'closing',
     feature: 'tax',
@@ -1041,6 +1051,7 @@ const DECISIONS_DATA = {
       'Bis 800 € netto darf ein Gegenstand im Jahr der Anschaffung voll abgeschrieben werden (§ 6 Abs. 2 EStG), von 250 bis 1.000 € wahlweise als Sammelposten über 5 Jahre (§ 6 Abs. 2a EStG). Teurere Anlagen verteilen sich linear über die Nutzungsdauer laut AfA-Tabelle (§ 7 Abs. 1 EStG). Steuerlich zählt das nur im wirtschaftlichen Geschäftsbetrieb, und die Wahl für den Sammelposten gilt dann für alle Anschaffungen des Jahres.',
     ),
     sources: ['estg'],
+    asOf: 2026,
     place: d('Finanzen → Anlagenverzeichnis → Anlage bearbeiten'),
     phase: 'closing',
     feature: 'tax',
@@ -1051,6 +1062,7 @@ const DECISIONS_DATA = {
       'Ein Zahlungsvorgang kann mehrere Kategorien betreffen, etwa die Kasse eines Festes mit Eintritt und Getränkeverkauf. Für die Freigrenze von 50.000 € zählen nur die Einnahmen des wirtschaftlichen Geschäftsbetriebs (§ 64 Abs. 3 AO), deshalb gehört jeder Teil in seine Kategorie und damit in seinen steuerlichen Bereich. Teile auf, wenn die Kategorien verschieden sind; sonst genügt eine Buchung.',
     ),
     sources: ['ao'],
+    asOf: 2026,
     place: d('Kassenbuch → Buchung aufteilen'),
     phase: 'closing',
     feature: 'finance',
@@ -1219,6 +1231,7 @@ const DECISIONS_DATA = {
       'Statt jede Vorsteuer aus Belegen zu sammeln, zieht der Verein pauschal 7 % der steuerpflichtigen Umsätze ab (§ 23a Abs. 1 UStG). Das spart Arbeit und lohnt sich, wenn die tatsächliche Vorsteuer kleiner ist; HUBIplan zeigt beide Beträge zum Vergleich. Erlaubt ist es nur gemeinnützigen Vereinen ohne Buchführungspflicht bis 50.000 € steuerpflichtigem Umsatz im Vorjahr, und die Wahl bindet mindestens fünf Kalenderjahre (§ 23a Abs. 2 und 3 UStG).',
     ),
     sources: ['ustg'],
+    asOf: 2026,
     place: d('Finanzen → Umsatzsteuer'),
     phase: 'closing',
     feature: 'finance',
@@ -1456,6 +1469,7 @@ const DECISIONS_DATA = {
       'Vorsteuer zieht der Verein nur aus Rechnungen, die auf ihn ausgestellt sind (§ 15 Abs. 1 UStG). Bis 250 € genügt ein Kassenbon ohne Namen des Käufers (§ 33 UStDV). Wichtig ist das nur, wenn der Verein Umsatzsteuer abführt; lass größere Rechnungen trotzdem immer auf den Verein ausstellen.',
     ),
     sources: ['ustg', 'ustdv'],
+    asOf: 2026,
     place: d('Auslagen → Auslage melden → Rechnung'),
     phase: 'closing',
     basic: true,
@@ -1478,6 +1492,7 @@ const DECISIONS_DATA = {
       'Wer im Auftrag des Vereins fährt, kann Ersatz seiner Aufwendungen verlangen (§ 670 BGB); eine Pauschale je Kilometer erspart Tankbelege. Üblich sind bis 0,30 € je Kilometer, der höchste Satz des Bundesreisekostengesetzes (§ 5 Abs. 2 BRKG). Lege Satz und Anlässe in einem Vorstandsbeschluss oder einer Reisekostenordnung fest, damit alle gleich behandelt werden.',
     ),
     sources: ['bgb', 'brkg'],
+    asOf: 2026,
     place: d('Auslagen → Einstellungen → Fahrtkosten'),
     phase: 'closing',
     feature: 'expenses',
@@ -1596,6 +1611,7 @@ const DECISIONS_DATA = {
       'Nebenberufliche künstlerische Tätigkeit für einen gemeinnützigen Verein ist bis 3.300 € im Jahr steuerfrei (§ 3 Nr. 26 EStG). Die Grenze gilt je Person für alle Auftraggeber zusammen; lass dir deshalb bestätigen, dass sie nicht anderswo ausgeschöpft ist. Honorare an selbständige Musiker können außerdem Künstlersozialabgabe auslösen (§ 24 Abs. 2 KSVG).',
     ),
     sources: ['estg', 'ksvg'],
+    asOf: 2026,
     place: d('Musik → Auftritt → Musikervergütungen'),
     phase: 'music',
     basic: true,
@@ -1654,6 +1670,8 @@ export interface TermEntry {
   /** einfache Begriffe: „?“ nur beim ersten Vorkommen pro Seite */
   simple?: boolean
   feature?: Feature
+  /** Jahr, in dem die genannten Beträge am Gesetz geprüft wurden (Pflicht bei Beträgen) */
+  asOf?: number
 }
 
 const TERMS_DATA = {
@@ -2028,6 +2046,7 @@ const TERMS_DATA = {
       'Beispiel: Getränkeverkauf am Sommerfest, 14.000,00 €: steuerpflichtiger Bereich, aber unter der Freigrenze.',
     ),
     sources: ['ao'],
+    asOf: 2026,
     section: 'tax',
     feature: 'finance',
   },
@@ -2051,6 +2070,7 @@ const TERMS_DATA = {
       'Beispiel: 18.000 € aus Festbetrieb und Werbung im Vorjahr: Der Verein bleibt Kleinunternehmer.',
     ),
     sources: ['ustg'],
+    asOf: 2026,
     section: 'tax',
     feature: 'finance',
   },
@@ -2164,6 +2184,7 @@ const TERMS_DATA = {
       'Beispiel: 50 € Spende per Überweisung: Kontoauszug und der Spendenbeleg aus dem Vereinsheft reichen.',
     ),
     sources: ['estdv'],
+    asOf: 2026,
     section: 'donations',
     feature: 'finance',
   },
@@ -2635,6 +2656,7 @@ const TERMS_DATA = {
       'Beispiel: Die Jugendtrainerin bekommt 12 × 250 € = 3.000 € im Jahr; das liegt unter 3.300 € und bleibt steuerfrei.',
     ),
     sources: ['estg'],
+    asOf: 2026,
     section: 'tax',
     feature: 'tax',
   },
@@ -2647,6 +2669,7 @@ const TERMS_DATA = {
       'Beispiel: Der Platzwart erhält 80 € im Monat, also 960 € im Jahr; mehr wäre steuerpflichtig.',
     ),
     sources: ['estg'],
+    asOf: 2026,
     section: 'tax',
     feature: 'tax',
   },
@@ -2770,6 +2793,7 @@ const TERMS_DATA = {
       'Beispiel: Vorjahressteuer 3.200 €, also vierteljährlich; die Meldung für Juli bis September ist am 10. Oktober fällig.',
     ),
     sources: ['ustg'],
+    asOf: 2026,
     section: 'tax',
     feature: 'finance',
   },
@@ -2888,6 +2912,7 @@ const TERMS_DATA = {
     ),
     example: d('Beispiel: 84 km zum Bezirkstag und zurück × 0,30 € = 25,20 €.'),
     sources: ['brkg'],
+    asOf: 2026,
     section: 'cash',
     feature: 'expenses',
   },
@@ -2912,6 +2937,7 @@ const TERMS_DATA = {
       'Beispiel: 48.300 € Einnahmen aus Festen und Werbung liegen unter der Grenze; bei 50.400 € wäre der gesamte Gewinn zu versteuern.',
     ),
     sources: ['ao'],
+    asOf: 2026,
     section: 'tax',
     feature: 'tax',
   },

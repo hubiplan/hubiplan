@@ -9,6 +9,7 @@ import { useLearning } from '../learning/LearningContext.tsx'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { guidesFor, guidesOfPage, pageHelpFor, routeMatches } from './content.ts'
 import type { HelpEntry } from './content.ts'
+import { HelpFeedback } from './HelpFeedback.tsx'
 import { useHelp } from './HelpContext.tsx'
 import type { HelpState } from './HelpContext.tsx'
 import { BlockedGuide, GuideNotes, HelpContacts, ShowMe } from './HelpExtras.tsx'
@@ -168,6 +169,7 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
           <HelpMarkdown body={guide.body} />
           <ShowMe entry={guide} />
           <GuideNotes entry={guide} />
+          <HelpFeedback key={guide.key} entry={guide} />
         </>
       )}
       {help.entries && !guide && (
@@ -200,6 +202,7 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
           )}
         </>
       )}
+      {help.entries && !guide && page && <HelpFeedback key={page.key} entry={page} />}
       {help.entries && !guide && <HelpContacts compact />}
       <p className="help-panel-foot">
         {place && (

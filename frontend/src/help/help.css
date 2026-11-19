@@ -328,3 +328,21 @@
 .help-area {
   scroll-margin-top: 4rem;
 }
+
+.help-feedback {
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.help-feedback-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.help-feedback-list td,
+.help-feedback-list th {
+  vertical-align: top;
+}
+.help-feedback-comments {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+}
