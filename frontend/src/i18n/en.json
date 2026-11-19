@@ -7975,7 +7975,7 @@
   "Überschrift, Text und ein Bild daneben, darüber oder darunter": "heading, text and an image beside, above or below it",
   "ein breites Bild, auf Wunsch mit einer Zeile darauf": "a wide image, optionally with a line of text on it",
   "ein bis drei Knöpfe zu Seiten, zum Kontakt oder nach außen": "one to three buttons to pages, the contact form or external sites",
-  "ein Termin groß mit „noch N Tage“; verschwindet danach": "one event shown large with “N days to go”; disappears afterwards",
+  "ein Termin groß mit „noch N Tage“, bei öffentlicher Anmeldung mit Preisen und Anmeldeknopf; verschwindet danach": "one event shown large with “N days to go”, with prices and a registration button for public registration; disappears afterwards",
   "vier bis acht Bilder aus einem Album der Galerie": "four to eight images from a gallery album",
   "ein kurzer Text mit Namen": "a short text with a name",
   "ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“": "one to four roles with photo, name and “Write a message”",
@@ -10215,5 +10215,14 @@
   "Diesen Link gibt es nicht mehr. Ein halbes Jahr nach der Veranstaltung werden die Angaben gelöscht.": "This link no longer exists. The details are deleted six months after the event.",
   "Danke, du bist verbindlich angemeldet. Die Bestätigung mit der Rechnung kommt per E-Mail.": "Thank you, your registration is binding. The confirmation with the invoice will follow by email.",
   "Anmeldung {number}": "Registration {number}",
-  "Abmelden geht jetzt nur noch über den Verein. Antworte dafür auf die Bestätigung.": "Cancelling is now only possible through the club. Reply to the confirmation to do so."
+  "Abmelden geht jetzt nur noch über den Verein. Antworte dafür auf die Bestätigung.": "Cancelling is now only possible through the club. Reply to the confirmation to do so.",
+  "Veranstaltungsseite bearbeiten": "Edit event page",
+  "Eigene Seite auf der Webseite anlegen": "Create a page of its own on the website",
+  "Veranstaltungsseite: {title}": "Event page: {title}",
+  "keine eigene Seite; Termin erscheint in der Terminliste": "no page of its own; the event appears in the events list",
+  "Veranstaltungsseite": "Event page",
+  "Gehört zum Termin „{title}“ am {when}. Datum, Ort, Programm, Preise, freie Plätze und der Knopf zur Anmeldung kommen aus dem Termin und erscheinen oben auf der Seite. Hier pflegst du nur Text und Abschnitte darunter.": "Belongs to the event “{title}” on {when}. Date, place, programme, prices, places left and the registration button come from the event and appear at the top of the page. Here you only maintain the text and the sections below.",
+  "Der Termin ist nicht mehr „nach außen öffentlich“. Die Seite zeigt deshalb keine Eckdaten und keinen Anmeldeknopf.": "The event is no longer “public”. The page therefore shows no key details and no registration button.",
+  "Nach dem Ende der Veranstaltung von der Webseite nehmen": "Remove from the website after the event has ended",
+  "Der Menüpunkt verschwindet in jedem Fall am Tag nach dem Ende. Ohne Haken bleibt die Seite als Rückblick erreichbar.": "The menu item disappears on the day after the end in any case. Without the tick the page stays available as a look back."
 }

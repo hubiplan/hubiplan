@@ -86,8 +86,9 @@ def setup_by_key(key: str) -> RegistrationSetup | None:
     return setup
 
 
-def site_brief(setup: RegistrationSetup) -> dict:
-    """Kurzfassung für die Vereinswebseite: Stand, freie Plätze, Preise, Link (A4)."""
+def site_brief(setup: RegistrationSetup, full: bool = False) -> dict:
+    """Kurzfassung für die Vereinswebseite: Stand, freie Plätze, Preise, Link (A4); ``full``
+    zusätzlich Teilnahmebedingungen und Abmelderegel (Veranstaltungsseite)."""
     from core.i18n import datetime_text
 
     value = services.state(setup)
@@ -108,7 +109,7 @@ def site_brief(setup: RegistrationSetup) -> dict:
                 "until_date": step.until_date,
             }
         )
-    return {
+    data = {
         "state": value,
         "state_text": services.state_text(setup, value),
         "opens_at": setup.opens_at,
@@ -120,6 +121,10 @@ def site_brief(setup: RegistrationSetup) -> dict:
         "url": form_url(setup),
         "can_join": services.can_join(setup, value),
     }
+    if full:
+        data["terms"] = setup.terms
+        data["cancel_text"] = cancel_text(setup)
+    return data
 
 
 def guest_prices(offer: dict) -> list[dict]:

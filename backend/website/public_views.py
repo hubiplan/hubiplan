@@ -25,7 +25,7 @@ from core.version import running_version
 from organizations import brand_icon
 from organizations.platform_public import unit_icon
 
-from . import contact, designs, gallery, home, menu, results, services, style, variants
+from . import contact, designs, event_page, gallery, home, menu, results, services, style, variants
 from .models import BLOCKS, Website, WebsiteDomain
 from .public import SiteView
 
@@ -850,10 +850,14 @@ def event_entry(site: SiteView, o) -> dict:
         "programme": o.event.programme,
         # Öffentliche Anmeldung (A4): Stand, Preise, Link zum Formular; nie Teilnehmende
         "registration": _event_registration(o.event),
+        # Eigene Veranstaltungsseite (A4): Adresse der Textseite, sonst None
+        "page": event_page.slugs(site).get(o.event.pk),
     }
 
 
-def _event_registration(event) -> dict | None:
+def _event_registration(event, full: bool = False) -> dict | None:
+    """Kurzfassung der öffentlichen Anmeldung; ``full`` mit Teilnahme- und Abmelderegeln
+    (Veranstaltungsseite)."""
     from django.core.exceptions import ObjectDoesNotExist
 
     from registrations import public as registrations
@@ -864,7 +868,7 @@ def _event_registration(event) -> dict | None:
         return None
     if setup is None or not registrations.public_allowed(setup):
         return None
-    return registrations.site_brief(setup)
+    return registrations.site_brief(setup, full=full)
 
 
 def _event_attachments(site: SiteView, event) -> list[dict]:

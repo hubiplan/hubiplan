@@ -86,9 +86,12 @@ def items(
             **extra,
         }
 
+    from . import event_page
+
     pages = list(
         WebsiteText.objects.filter(website=website, kind=WebsiteText.Kind.PAGE)
         .exclude(slug__in=(HISTORY_SLUG, MEMORIAL_SLUG))
+        .select_related("event")
         .order_by("menu_position", "title", "pk")
     )
     for key in _block_keys():
@@ -103,12 +106,18 @@ def items(
                     state.append("noch nicht veröffentlicht")
                 if not p.show_in_menu:
                     state.append("unter Webseite › Texte aus dem Menü genommen")
+                # Veranstaltungsseite (A4): Menüpunkt nur bis zum Ende der Veranstaltung
+                current = event_page.in_menu(p, site.today)
+                if not current:
+                    state.append("Veranstaltung vorbei")
+                kind = "Veranstaltungsseite" if p.event_id else "eigene Textseite"
                 add(
                     f"page:{p.pk}",
                     p.title or p.published_title or p.slug,
-                    hint="eigene Textseite" + (f" · {', '.join(state)}" if state else ""),
+                    hint=kind + (f" · {', '.join(state)}" if state else ""),
                     slug=p.slug,
-                    visible=p.published_at is not None and p.show_in_menu,
+                    visible=p.published_at is not None and p.show_in_menu and current,
+                    event_page=p.event_id is not None,
                     public_label=p.published_title or p.slug,
                 )
         # Bausteine abgeschalteter Module fehlen; „Würdenträger“ bleibt für die Ehrungen
@@ -295,6 +304,8 @@ def _entry(site, known: dict, key: str) -> dict:
     out = {"key": key.split(":", 1)[0], "label": item.get("public_label") or item["label"]}
     if key.startswith("page:"):
         out["slug"] = item["slug"]
+        if item.get("event_page"):
+            out["event"] = True  # Veranstaltungsseite: /veranstaltung/<slug>/ (A4)
     if key.startswith(("dignity:", "membertype:")):
         out["id"] = item["id"]
     if key.startswith("link:"):

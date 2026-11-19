@@ -212,6 +212,8 @@ export interface EventDetail {
   meeting?: { id: number; status_label: string } | null
   helper_plans?: { id: number; title: string; status_label: string }[]
   can_create_helper_plan?: boolean
+  /** Veranstaltungsseite auf der Webseite (A4): null = noch keine; fehlt ohne Webseite/Recht */
+  web_page?: { id: number; title: string; is_published: boolean } | null
   /** Rundschreiben zu diesem Termin (nur Bearbeitende, mit Modul Rundschreiben) */
   circulars?: EventCircular[]
   can_circular?: boolean

@@ -106,6 +106,17 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
         "has_changes": t.has_changes,
         "published_at": t.published_at,
         "updated_at": t.updated_at,
+        # Veranstaltungsseite (A4): zugehöriger Termin, Eckdaten kommen von dort
+        "event": {
+            "id": t.event_id,
+            "title": t.event.title,
+            "starts_at": t.event.starts_at,
+            "ends_at": t.event.ends_at,
+            "is_public": t.event.visibility == "public",
+        }
+        if t.event_id
+        else None,
+        "hide_after_event": t.hide_after_event,
     }
     if full:
         data.update(
@@ -172,6 +183,7 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "timeline",
             "timeline_newest_first",
             "sections",
+            "hide_after_event",
         ]
         extra_kwargs = {"kind": {"required": False}}
 
@@ -308,7 +320,7 @@ class TextListView(_ContentMixin, APIView):
         can_edit = bool(self.org_permissions & {WEBSITE_CONTENT, WEBSITE_MANAGE})
         if can_edit:
             content.greeting(website)
-        texts = WebsiteText.objects.filter(website=website).select_related("department")
+        texts = WebsiteText.objects.filter(website=website).select_related("department", "event")
         units = services.in_tree_order(services.units_below(self.org))
         data = {
             "texts": [text_data(self.org.pk, t) for t in texts],
@@ -337,6 +349,42 @@ class TextListView(_ContentMixin, APIView):
         return Response(text_data(self.org.pk, text, full=True), status=status.HTTP_201_CREATED)
 
 
+class EventPageView(_ContentMixin, APIView):
+    """POST ``{"event": id}``: Veranstaltungsseite zu einem öffentlichen Termin anlegen (als
+    Entwurf) oder die vorhandene liefern (Anmeldung A4)."""
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        from events.models import Event
+
+        from . import event_page
+
+        website = self.website()
+        try:
+            pk = int(request.data.get("event"))
+        except (TypeError, ValueError):
+            raise ValidationError({"event": gettext("Bitte einen Termin angeben.")}) from None
+        event = Event.objects.filter(pk=pk, organization=services.data_area(self.org)).first()
+        if event is None:
+            raise NotFound()
+        if not event_page.shown(event, website):
+            raise ValidationError(
+                {
+                    "event": gettext(
+                        "Eine Veranstaltungsseite gibt es nur bei Terminen mit der Sichtbarkeit "
+                        "„nach außen öffentlich“."
+                    )
+                }
+            )
+        text, created = event_page.create(event, website, request.user)
+        if created:
+            record(self.org, request.user, "create", text, diff({}, snapshot(text)))
+        return Response(
+            text_data(self.org.pk, text, full=True),
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+
 class PageOrderView(_ContentMixin, APIView):
     """POST: Reihenfolge der eigenen Seiten im Menü (per Ziehen)."""
 
@@ -350,7 +398,7 @@ class _TextMixin(_ContentMixin):
 
     def text(self) -> WebsiteText:
         text = get_object_or_404(
-            WebsiteText.objects.select_related("department", "image"),
+            WebsiteText.objects.select_related("department", "image", "event"),
             website=self.website(),
             pk=self.kwargs["pk"],
         )

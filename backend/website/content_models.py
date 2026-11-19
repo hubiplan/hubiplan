@@ -125,6 +125,20 @@ class WebsiteText(models.Model):
     published_timeline_newest_first = models.BooleanField(default=False)
     published_sections = models.JSONField(default=list, db_default=[], blank=True)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
+    # Veranstaltungsseite (Anmeldung A4): Textseite zu einem öffentlichen Termin; Eckdaten,
+    # Preise und Anmeldeknopf kommen aus dem Termin. Der Menüpunkt verschwindet am Tag nach
+    # dem Ende, die Seite bleibt als Rückblick oder wird ausgeblendet.
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="web_pages",
+        verbose_name="Termin",
+    )
+    hide_after_event = models.BooleanField(
+        "nach dem Ende ausblenden", default=False, db_default=False
+    )
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
