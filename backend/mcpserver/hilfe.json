@@ -524,7 +524,7 @@
     "key": "active_passive",
     "kind": "term",
     "name": "aktiv / passiv",
-    "text": "Kennzeichen einer Mitgliedsart: aktive Mitglieder nehmen voll am Vereinsleben teil, passive unterstützen vor allem mit ihrem Beitrag. Was das für Rechte und Beitrag bedeutet, regelt die Satzung (§ 25 BGB).",
+    "text": "Kennzeichen einer Mitgliedsart: aktive Mitglieder nehmen voll am Vereinsleben teil, passive unterstützen vor allem mit ihrem Beitrag. Was das für Rechte und Beitrag bedeutet, regelt die Satzung.",
     "example": "Beispiel: 112 aktive und 38 passive Mitglieder: Der Dachverband berechnet seinen Beitrag für beide Gruppen getrennt.",
     "section": "Mitglieder"
    },
@@ -548,7 +548,7 @@
     "key": "application_consents",
     "kind": "decision",
     "name": "Welche Einwilligungen abfragen?",
-    "text": "Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was ihr nach einem Widerruf auch wieder abstellen könnt.",
+    "text": "Was für die Mitgliedschaft nötig ist, etwa Anschrift und Bankverbindung, verarbeitet der Verein ohne Einwilligung, weil er es für die Mitgliedschaft braucht (Art. 6 Abs. 1 lit. b DSGVO). Einwilligungen gehören nur zu Freiwilligem wie Fotos oder dem Geburtstag auf der Webseite, jede einzeln und ohne Nachteil bei einem Nein (Art. 7 DSGVO). Sie lassen sich jederzeit widerrufen, also biete nur an, was der Verein nach einem Widerruf auch wieder abstellen kann.",
     "example": "",
     "section": "Mitglieder → Online-Antrag"
    },
@@ -580,7 +580,7 @@
     "key": "artist_fee_mark",
     "kind": "decision",
     "name": "Welche Ausgaben als Künstlerhonorar kennzeichnen?",
-    "text": "Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Ob der Verein überhaupt abgabepflichtig ist, hängt davon ab, wie oft er Künstler beauftragt (§ 24 KSVG).",
+    "text": "Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Beauftragt der Verein Künstler nur für eigene Feste oder Werbung, beginnt die Abgabepflicht erst über 1.000 € Honorar im Kalenderjahr; bei höchstens drei Veranstaltungen im Jahr bleiben deren Honorare frei (§ 24 Abs. 2 KSVG).",
     "example": "",
     "section": "Finanzen → Steuern → Künstlersozialabgabe"
    },
@@ -636,7 +636,7 @@
     "key": "auditors",
     "kind": "term",
     "name": "Kassenprüfer",
-    "text": "Von der Mitgliederversammlung gewählte Mitglieder, die die Kasse prüfen und darüber berichten; ihre Aufgaben bestimmt die Satzung. Sie gehören nicht zum Vorstand, den sie prüfen (§ 25 BGB).",
+    "text": "Von der Mitgliederversammlung gewählte Mitglieder, die die Kasse prüfen und darüber berichten; ihre Aufgaben bestimmt die Satzung. Sie gehören nicht zum Vorstand, den sie prüfen.",
     "example": "Beispiel: zwei Kassenprüfer prüfen 312 Buchungen stichprobenartig und empfehlen die Entlastung.",
     "section": "Kasse und Abschluss"
    },
@@ -660,7 +660,7 @@
     "key": "balance",
     "kind": "term",
     "name": "Saldo",
-    "text": "Differenz von Einnahmen und Ausgaben, etwa je Kategorie. Positiv heißt: mehr eingenommen als ausgegeben (§ 259 Abs. 1 BGB).",
+    "text": "Differenz von Einnahmen und Ausgaben, etwa je Kategorie. Positiv heißt: mehr eingenommen als ausgegeben.",
     "example": "Beispiel: Kategorie Sommerfest: Einnahmen 3.100,00 €, Ausgaben 2.700,00 €, Saldo 400,00 €.",
     "section": "Kasse und Abschluss"
    },
@@ -692,7 +692,7 @@
     "key": "board_pay",
     "kind": "decision",
     "name": "Vorstand mit Pauschale vergüten?",
-    "text": "Ohne Regel in der Satzung arbeitet der Vorstand unentgeltlich und bekommt nur seine Auslagen ersetzt (§ 27 Abs. 3 BGB). Eine Vergütung ohne Grundlage in der Satzung kann die Gemeinnützigkeit gefährden, weil Mittel satzungswidrig fließen (§ 55 Abs. 1 Nr. 1 AO). Kreuze das nur an, wenn eure Satzung eine Vergütung des Vorstands ausdrücklich erlaubt.",
+    "text": "Ohne Regel in der Satzung arbeitet der Vorstand unentgeltlich und bekommt nur seine Auslagen ersetzt (§ 27 Abs. 3 BGB). Eine Vergütung ohne Grundlage in der Satzung kann die Gemeinnützigkeit gefährden, weil Mittel satzungswidrig fließen (§ 55 Abs. 1 Nr. 1 AO). Kreuze das nur an, wenn die Satzung eine Vergütung des Vorstands ausdrücklich erlaubt.",
     "example": "",
     "section": "Finanzen → Pauschalen"
    },
@@ -732,7 +732,7 @@
     "key": "cancellation_notice",
     "kind": "decision",
     "name": "Welche Kündigungsfrist eintragen?",
-    "text": "Trag genau die Frist und den Termin aus eurer Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.",
+    "text": "Trag genau die Frist und den Termin aus der Satzung ein; HUBIplan rechnet daraus das früheste Austrittsdatum. Austreten darf jedes Mitglied, und die Satzung darf den Austritt höchstens an eine Frist von zwei Jahren binden (§ 39 BGB). Steht in der Satzung nichts, wähle keine Frist.",
     "example": "",
     "section": "Mitglieder → Einstellungen"
    },
@@ -820,7 +820,7 @@
     "key": "closing_balance",
     "kind": "term",
     "name": "Endbestand",
-    "text": "Geld auf einem Konto am Ende des Zeitraums: Anfangsbestand plus Einnahmen minus Ausgaben, plus oder minus Umbuchungen. Er muss zum Kontoauszug passen (§ 259 Abs. 1 BGB).",
+    "text": "Geld auf einem Konto am Ende des Zeitraums: Anfangsbestand plus Einnahmen minus Ausgaben, plus oder minus Umbuchungen. Er muss zum Kontoauszug passen.",
     "example": "Beispiel: 4.250,00 € + 9.800,00 € − 8.900,00 € = 5.150,00 €: Der Kontoauszug zum 31. Dezember zeigt denselben Betrag.",
     "section": "Kasse und Abschluss"
    },
@@ -852,7 +852,7 @@
     "key": "commercial_operation",
     "kind": "term",
     "name": "wGB – wirtschaftlicher Geschäftsbetrieb",
-    "text": "Eine selbstständige, nachhaltige Tätigkeit, mit der der Verein Einnahmen erzielt und die über Vermögensverwaltung hinausgeht (§ 14 AO). Steuer fällt erst an, wenn diese Einnahmen einschließlich Umsatzsteuer 50.000 € im Jahr übersteigen (§ 64 Abs. 3 AO).",
+    "text": "Eine selbstständige, nachhaltige Tätigkeit, mit der der Verein Einnahmen erzielt und die über Vermögensverwaltung hinausgeht (§ 14 AO). Körperschaft- und Gewerbesteuer fallen erst an, wenn diese Einnahmen einschließlich Umsatzsteuer 50.000 € im Jahr übersteigen (§ 64 Abs. 3 AO).",
     "example": "Beispiel: Getränkeverkauf am Sommerfest, 14.000,00 €: steuerpflichtiger Bereich, aber unter der Freigrenze.",
     "section": "Steuer"
    },
@@ -860,7 +860,7 @@
     "key": "comp_bird_rules",
     "kind": "decision",
     "name": "Ausscheiden und feste Reihenfolge?",
-    "text": "Scheidet aus, wer ein Pfand errungen hat, kommen mehr Schützen zu einem Preis. In fester Reihenfolge wird Pfand für Pfand geschossen, und HUBIplan bietet nach jedem Treffer gleich das nächste an. Welche Regel gilt, steht in der Schießordnung des Vereins (§ 25 BGB).",
+    "text": "Scheidet aus, wer ein Pfand errungen hat, kommen mehr Schützen zu einem Preis. In fester Reihenfolge wird Pfand für Pfand geschossen, und HUBIplan bietet nach jedem Treffer gleich das nächste an. Welche Regel gilt, steht in der Schießordnung des Vereins.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Pfänder & Ablauf"
    },
@@ -892,7 +892,7 @@
     "key": "comp_final_term",
     "kind": "term",
     "name": "endgültig",
-    "text": "Zustand nach dem Abschluss: Eingaben sind gesperrt, die Ergebnisse gelten. Nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht (Art. 5 Abs. 1 lit. d DSGVO).",
+    "text": "Zustand nach dem Abschluss: Eingaben sind gesperrt, die Ergebnisse gelten. Nur endgültige Ergebnisse sind für Webseite und Ehrungen gedacht.",
     "example": "Beispiel: Nach dem 2. Stechen schließt der Schießmeister ab, danach lässt sich kein Wert mehr ändern.",
     "section": "Wettbewerbe"
    },
@@ -917,14 +917,14 @@
     "kind": "term",
     "name": "Innenzehner",
     "text": "Besonders guter Zehner: Auf der DSB-Luftgewehrscheibe ist es einer, der den weißen Zehnerpunkt ganz wegschießt (DSB-Sportordnung). Mehr Innenzehner entscheiden oft einen Gleichstand.",
-    "example": "Beispiel: Ein Treffer 0,8 mm neben der Mitte ist ein Innenzehner, einer 2 mm daneben nur ein Zehner.",
+    "example": "Beispiel: Ein Treffer 0,8 mm neben der Mitte ist ein Innenzehner, einer 2,3 mm daneben nur ein Zehner.",
     "section": "Wettbewerbe"
    },
    {
     "key": "comp_lot",
     "kind": "term",
     "name": "Losnummer",
-    "text": "Nummer aus dem Hut, die beim Vogelschießen die Reihenfolge der Schützen bestimmt. Nachzügler ziehen eine noch freie Nummer; das Verfahren regelt die Schießordnung (§ 25 BGB).",
+    "text": "Nummer aus dem Hut, die beim Vogelschießen die Reihenfolge der Schützen bestimmt. Nachzügler ziehen eine noch freie Nummer; das Verfahren regelt die Schießordnung.",
     "example": "Beispiel: Wer Los 7 zieht, schießt nach Nummer 6 und vor Nummer 8.",
     "section": "Wettbewerbe"
    },
@@ -932,7 +932,7 @@
     "key": "comp_lots",
     "kind": "decision",
     "name": "Wozu „Lose im Hut“?",
-    "text": "Ohne diese Angabe zieht „Nummer ziehen“ nur bis zur Zahl der bisherigen Schützen, und ein Nachzügler bekommt meist die nächste Nummer. Mit der Zahl der Lose im Hut zieht HUBIplan wie aus einem echten Hut; wer lieber alle zugleich auslost, nimmt „Alle ohne Nummer auslosen“. Wie die Reihenfolge bestimmt wird, regelt die Schießordnung (§ 25 BGB).",
+    "text": "Ohne diese Angabe zieht „Nummer ziehen“ nur bis zur Zahl der bisherigen Schützen, und ein Nachzügler bekommt meist die nächste Nummer. Mit der Zahl der Lose im Hut zieht HUBIplan wie aus einem echten Hut; wer lieber alle zugleich auslost, nimmt „Alle ohne Nummer auslosen“. Wie die Reihenfolge bestimmt wird, regelt die Schießordnung.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Pfänder & Ablauf"
    },
@@ -948,15 +948,15 @@
     "key": "comp_organizer",
     "kind": "term",
     "name": "Ausrichter",
-    "text": "Verein oder Verband, der einen fremden Wettbewerb veranstaltet und wertet. Er legt Regeln und Preise fest (§ 25 BGB).",
-    "example": "Beispiel: Beim Bezirksschießen 2027 ist der Bezirksverband der Ausrichter; ihr tragt nur eure Plätze ein, etwa Platz 3 mit 287 Ringen.",
+    "text": "Verein oder Verband, der einen fremden Wettbewerb veranstaltet und wertet. Er legt Regeln und Preise fest.",
+    "example": "Beispiel: Beim Bezirksschießen 2027 ist der Bezirksverband der Ausrichter; du trägst nur die Plätze der eigenen Teilnehmer ein, etwa Platz 3 mit 287 Ringen.",
     "section": "Wettbewerbe"
    },
    {
     "key": "comp_own",
     "kind": "decision",
     "name": "Eigener oder fremder Wettbewerb?",
-    "text": "Beim eigenen Wettbewerb erfasst ihr Schützen und Werte selbst, und HUBIplan rechnet Plätze, Zugwertung und Stechen. Beim fremden tragt ihr nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert eurer Teilnehmer. Wie dort gewertet wird, regelt die Schießordnung des Ausrichters (§ 25 BGB).",
+    "text": "Beim eigenen Wettbewerb erfasst du Schützen und Werte selbst, und HUBIplan rechnet Plätze, Zugwertung und Stechen. Beim fremden trägst du nur ein, was der Ausrichter bekannt gegeben hat: Platz und Wert der eigenen Teilnehmer. Wie dort gewertet wird, regelt die Schießordnung des Ausrichters.",
     "example": "",
     "section": "Wettbewerbe → Neuer Wettbewerb"
    },
@@ -964,7 +964,7 @@
     "key": "comp_photo",
     "kind": "decision",
     "name": "Warum ist das Foto nur ein Vorschlag?",
-    "text": "Bei mehreren Löchern ineinander, auf dunkler Unterlage oder knapp an einer Ringlinie kann die Erkennung irren; maßgeblich ist die Auswertung der Scheibe nach der DSB-Sportordnung bzw. eurer Schießordnung. Deshalb setzt das Foto die Treffer nur ins Antipp-Bild, und erst „Speichern“ übernimmt sie. Das Foto selbst wird nur ausgewertet und nie gespeichert, so entsteht kein Bild mit Bezug zum Schützen (Art. 5 Abs. 1 lit. c DSGVO).",
+    "text": "Bei mehreren Löchern ineinander, auf dunkler Unterlage oder knapp an einer Ringlinie kann die Erkennung irren; maßgeblich ist die Auswertung der Scheibe nach der DSB-Sportordnung oder der Schießordnung des Vereins. Deshalb setzt das Foto die Treffer nur ins Antipp-Bild, und erst „Speichern“ übernimmt sie. Das Foto selbst wird nur ausgewertet und nie gespeichert, so entsteht kein Bild mit Bezug zum Schützen (Art. 5 Abs. 1 lit. c DSGVO).",
     "example": "",
     "section": "Standmodus → Foto der Scheibe"
    },
@@ -972,7 +972,7 @@
     "key": "comp_photo_samples",
     "kind": "decision",
     "name": "Spiegelausschnitte sammeln?",
-    "text": "Echte, bestätigte Scheiben sind der einzige Weg zu prüfen, wie gut die Fotoerkennung wirklich ist; ohne sie wird nur an künstlichen Fotos gemessen. Gespeichert wird nur der Ausschnitt des Spiegels mit der Trefferlage, ohne Namen, Wettbewerb oder Uhrzeit, also ohne Bezug zu einer Person (Art. 4 Nr. 1 DSGVO). Schalte es ein, wenn ihr die Erkennung oft nutzt; ausschalten und alles löschen geht jederzeit.",
+    "text": "Echte, bestätigte Scheiben sind der einzige Weg zu prüfen, wie gut die Fotoerkennung wirklich ist; ohne sie wird nur an künstlichen Fotos gemessen. Gespeichert wird nur der Ausschnitt des Spiegels mit der Trefferlage, ohne Namen, Wettbewerb oder Uhrzeit, also ohne Bezug zu einer Person (Art. 4 Nr. 1 DSGVO). Schalte es ein, wenn der Verein die Erkennung oft nutzt; ausschalten und alles löschen geht jederzeit.",
     "example": "",
     "section": "Einstellungen → Datenschutz → Fotoerkennung verbessern"
    },
@@ -980,7 +980,7 @@
     "key": "comp_photo_sum",
     "kind": "decision",
     "name": "Summe und Foto weichen ab, was gilt?",
-    "text": "Gespeichert wird die eingegebene Summe; das Foto ist nur eine zweite Meinung, die Tippfehler und verzählte Ringe auffallen lässt. Bei einer Abweichung die Scheibe noch einmal ansehen, im Zweifel entscheidet die Aufsicht bzw. der Auswerter nach der DSB-Sportordnung oder eurer Schießordnung. „Treffer ansehen“ zeigt, wo die Erkennung die Löcher sieht.",
+    "text": "Gespeichert wird die eingegebene Summe; das Foto ist nur eine zweite Meinung, die Tippfehler und verzählte Ringe auffallen lässt. Sieh dir bei einer Abweichung die Scheibe noch einmal an; im Zweifel entscheidet die Aufsicht oder der Auswerter nach der DSB-Sportordnung oder der Schießordnung des Vereins. „Treffer ansehen“ zeigt, wo die Erkennung die Löcher sieht.",
     "example": "",
     "section": "Standmodus → Nur die Summe eingeben → Foto der Scheibe"
    },
@@ -988,7 +988,7 @@
     "key": "comp_prize",
     "kind": "term",
     "name": "Pfand",
-    "text": "Teil des Vogels, für dessen Abschuss es einen Preis gibt, etwa Kopf, Flügel oder Schweif. Wer es herunterholt, hat das Pfand errungen; Pfänder und Preise legt die Schießordnung fest (§ 25 BGB).",
+    "text": "Teil des Vogels, für dessen Abschuss es einen Preis gibt, etwa Kopf, Flügel oder Schweif. Wer es herunterholt, hat das Pfand errungen; Pfänder und Preise legt die Schießordnung fest.",
     "example": "Beispiel: Paul holt mit Schuss 54 den linken Flügel herunter und erhält den Flügelorden.",
     "section": "Wettbewerbe"
    },
@@ -1012,7 +1012,7 @@
     "key": "comp_provisional",
     "kind": "decision",
     "name": "Wann ist das Schießen beendet?",
-    "text": "HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Stechen kennt nur die Schießleitung. „Schießen beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Stechen bleiben möglich. Gebt vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für richtig und fertig hält (Art. 5 Abs. 1 lit. d DSGVO).",
+    "text": "HUBIplan erkennt das Ende nicht selbst, denn Nachzügler, Fehlende und Stechen kennt nur die Schießleitung. „Schießen beenden“ kennzeichnet die Ergebnisse als vorläufig, Nachträge und Stechen bleiben möglich. Gib vorläufige Listen nur mit diesem Hinweis heraus, damit niemand sie für fertig hält.",
     "example": "",
     "section": "Wettbewerb → Auswertung → Wettbewerb und Abschluss; Standmodus → Abschluss"
    },
@@ -1020,7 +1020,7 @@
     "key": "comp_provisional_term",
     "kind": "term",
     "name": "vorläufig",
-    "text": "Zustand nach „Schießen beenden“: Ergebnisse stehen, Nachträge und Stechen sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält (Art. 5 Abs. 1 lit. d DSGVO).",
+    "text": "Zustand nach „Schießen beenden“: Ergebnisse stehen, Nachträge und Stechen sind noch möglich. Listen tragen den Hinweis „vorläufig“, damit niemand sie für fertig hält.",
     "example": "Beispiel: Am Abend hängt die vorläufige Liste aus; ein Stechen am nächsten Morgen ändert noch Platz 3.",
     "section": "Wettbewerbe"
    },
@@ -1028,7 +1028,7 @@
     "key": "comp_reset",
     "kind": "decision",
     "name": "Was passiert beim Zurücksetzen?",
-    "text": "Zurücksetzen löscht alle erfassten Werte, Stechen, Schüsse und gefallenen Pfänder; Regeln, Pfänder, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Schießordnung (§ 25 BGB), rückgängig machen lässt es sich nicht.",
+    "text": "Zurücksetzen löscht alle erfassten Werte, Stechen, Schüsse und gefallenen Pfänder; Regeln, Pfänder, Standzugang und Termin bleiben. Tablets, die ohne Empfang noch alte Eingaben gespeichert haben, verwerfen sie beim nächsten Abgleich. Ob ein Durchgang wiederholt wird, regelt die Schießordnung; rückgängig machen lässt sich das Zurücksetzen nicht.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Weitere Aktionen"
    },
@@ -1060,7 +1060,7 @@
     "key": "comp_shots",
     "kind": "decision",
     "name": "Wozu Schusszahl und Höchstwert je Schuss?",
-    "text": "Mit gewerteten Schüssen und Höchstwert weist HUBIplan unmögliche Werte beim Erfassen ab, etwa 31 bei 3 gewerteten Schüssen mit höchstens 10. So fallen Tippfehler am Stand auf, bevor sie Plätze verschieben. Die Zahlen stehen in der Schießordnung des Vereins oder in der DSB-Sportordnung.",
+    "text": "Mit gewerteten Schüssen und Höchstwert weist HUBIplan unmögliche Werte beim Erfassen ab, etwa 31 bei 3 gewerteten Schüssen mit höchstens 10 Ringen. So fallen Tippfehler am Stand auf, bevor sie Plätze verschieben. Die Zahlen stehen in der Schießordnung des Vereins oder in der DSB-Sportordnung.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Schießbedingungen und Wertungen"
    },
@@ -1068,7 +1068,7 @@
     "key": "comp_shots_for",
     "kind": "term",
     "name": "Schüsse für das Pfand",
-    "text": "Schüsse seit dem vorher gefallenen Pfand bis zu dem, der dieses Pfand heruntergeholt hat. Beim ersten Pfand zählen alle Schüsse seit Beginn; wofür es Preise gibt, regelt die Schießordnung (§ 25 BGB).",
+    "text": "Schüsse seit dem vorher gefallenen Pfand bis zu dem, der dieses Pfand heruntergeholt hat. Beim ersten Pfand zählen alle Schüsse seit Beginn; wofür es Preise gibt, regelt die Schießordnung.",
     "example": "Beispiel: Der Kopf fällt mit Schuss 30, der Schweif mit Schuss 75: für den Schweif waren es 45 Schüsse.",
     "section": "Wettbewerbe"
    },
@@ -1108,7 +1108,7 @@
     "key": "comp_target",
     "kind": "decision",
     "name": "Wozu Scheibe und Wertungsart?",
-    "text": "Kennt HUBIplan die Scheibe, rechnet es aus jedem Trefferpunkt Ring, Zehntel, Innenzehner und Teiler nach der DSB-Sportordnung: Berührt der Lochrand die Ringlinie, zählt der höhere Ring. Ohne erfasste Treffer bleibt alles wie bisher, ihr gebt die Summe ein, und bei Gleichstand entscheidet das Stechen. Die Ergebnisse sind vereinsintern, nicht amtlich.",
+    "text": "Kennt HUBIplan die Scheibe, rechnet es aus jedem Trefferpunkt Ring, Zehntel, Innenzehner und Teiler nach der DSB-Sportordnung: Berührt der Lochrand die Ringlinie, zählt der höhere Ring. Ohne erfasste Treffer bleibt alles wie bisher, du gibst die Summe ein, und bei Gleichstand entscheidet das Stechen. Die Ergebnisse sind vereinsintern, nicht amtlich.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Schießbedingungen und Wertungen"
    },
@@ -1140,7 +1140,7 @@
     "key": "comp_tie_breaks",
     "kind": "decision",
     "name": "Welche Regeln bei Gleichstand?",
-    "text": "Mit Regeln aus den Treffern entscheidet HUBIplan einen Gleichstand ohne Stechen, etwa nach der DSB-Sportordnung erst über die Serien von hinten, dann über mehr Zehner und mehr Innenzehner. Das spart Zeit am Stand, verlangt aber, dass für alle Gleichen Treffer erfasst sind; sonst bleibt es beim Stechen. Nimm die Reihenfolge aus eurer Schießordnung oder der Ausschreibung; steht dort nichts, bleibt das Stechen die übliche Lösung.",
+    "text": "Mit Regeln aus den Treffern entscheidet HUBIplan einen Gleichstand ohne Stechen, etwa nach der DSB-Sportordnung erst über die Serien von hinten, dann über mehr Zehner und mehr Innenzehner. Das spart Zeit am Stand, verlangt aber, dass für alle Gleichen Treffer erfasst sind; sonst bleibt es beim Stechen. Nimm die Reihenfolge aus der Schießordnung des Vereins oder der Ausschreibung; steht dort nichts, bleibt das Stechen die übliche Lösung.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Wertungen → Gleichstand und Stechen"
    },
@@ -1156,7 +1156,7 @@
     "key": "comp_website",
     "kind": "decision",
     "name": "Ergebnisse auf der Webseite?",
-    "text": "Namen mit Ergebnissen zu zeigen stützt sich meist auf das berechtigte Interesse des Vereins (Art. 6 Abs. 1 lit. f DSGVO); Mitglieder können widersprechen (Art. 21 DSGVO), bei Minderjährigen fragt die Eltern. Für Fotos der Sieger gelten zusätzlich §§ 22 und 23 KUG. „Nach Abschluss“ zeigt nur geprüfte Ergebnisse, „live“ auch Zwischenstände.",
+    "text": "Namen mit Ergebnissen zu zeigen stützt sich meist auf das berechtigte Interesse des Vereins (Art. 6 Abs. 1 lit. f DSGVO); Mitglieder können widersprechen (Art. 21 DSGVO), bei Minderjährigen frag die Eltern. Für Fotos der Sieger gelten zusätzlich §§ 22 und 23 KUG. „Nach Abschluss“ zeigt nur geprüfte Ergebnisse, „live“ auch Zwischenstände.",
     "example": "",
     "section": "Wettbewerb → Einrichten → Ausgabe & Freigabe"
    },
@@ -1204,7 +1204,7 @@
     "key": "cutoff_date",
     "kind": "term",
     "name": "Stichtag",
-    "text": "Der Tag, für den ein Stand gezählt oder berechnet wird, z. B. Mitglieder, Alter oder Kontostand. Wer an diesem Tag Mitglied ist, zählt mit (§ 259 Abs. 1 BGB).",
+    "text": "Der Tag, für den ein Stand gezählt oder berechnet wird, etwa Mitglieder, Alter oder Kontostand. Wer an diesem Tag Mitglied ist, zählt mit.",
     "example": "Beispiel: Stichtag 1. Januar 2026, 150 Mitglieder: Wer am 2. Januar eintritt, zählt erst beim nächsten Stichtag.",
     "section": "Mitglieder"
    },
@@ -1220,7 +1220,7 @@
     "key": "datev_accounts",
     "kind": "decision",
     "name": "Warum braucht jede Kategorie ein DATEV-Konto?",
-    "text": "Die Steuerberatung bucht nach einem Kontenrahmen wie SKR 42 oder SKR 49; jede Einnahme und Ausgabe muss dort einem Sachkonto zugeordnet sein, sonst landet sie auf einem Sammelkonto und muss von Hand umgebucht werden (GoBD). Einmal sauber zugeordnet, geht der Export jedes Jahr ohne Nacharbeit. Stimme die Konten vorher mit der Steuerberatung ab, statt sie zu raten.",
+    "text": "Die Steuerberatung bucht nach einem Kontenrahmen (SKR 42 oder SKR 49). Jede Einnahme und Ausgabe braucht dort ein Sachkonto, sonst landet sie auf einem Sammelkonto und muss von Hand umgebucht werden (GoBD). Stimme die Konten vorher mit der Steuerberatung ab, dann geht der Export jedes Jahr ohne Nacharbeit.",
     "example": "",
     "section": "Finanzen → Einrichtung → Konten"
    },
@@ -1260,7 +1260,7 @@
     "key": "doc_visibility",
     "kind": "decision",
     "name": "Wer soll die Dokumente eines Ordners sehen?",
-    "text": "Je weiter ein Ordner sichtbar ist, desto leichter finden Mitglieder Satzung und Protokolle, desto größer ist aber das Risiko, dass Personendaten zu weit gehen (Art. 5 Abs. 1 lit. c und f DSGVO). Allgemeines wie die Satzung kann breit sichtbar sein, Protokolle mit Namen, Verträge und Listen nur für den Vorstand. Fang im Zweifel eng an und erweitere später.",
+    "text": "Je weiter ein Ordner sichtbar ist, desto leichter finden Mitglieder Satzung und Protokolle. Zugleich wächst das Risiko, dass Personendaten zu weit gehen (Art. 5 Abs. 1 lit. c und f DSGVO). Allgemeines wie die Satzung kann breit sichtbar sein; Protokolle mit Namen, Verträge und Listen im Zweifel nur für den Vorstand.",
     "example": "",
     "section": "Dokumente → Ordner"
    },
@@ -1324,7 +1324,7 @@
     "key": "donation_waiver",
     "kind": "decision",
     "name": "Wann ist ein Verzicht auf Auslagen eine Spende?",
-    "text": "Nur wenn ein Anspruch auf Erstattung vorher durch Vertrag oder Satzung bestand und dann darauf verzichtet wurde; der Anspruch darf nicht schon unter der Bedingung des Verzichts eingeräumt sein (§ 10b Abs. 3 Satz 5 und 6 EStG). Typisch sind Fahrtkosten nach einer Reisekostenregelung des Vereins. Fehlt so eine Regelung, ist der Verzicht keine abziehbare Spende.",
+    "text": "Nur wenn vorher durch Vertrag oder Satzung ein Anspruch auf Erstattung bestand und die Person dann darauf verzichtet. Der Anspruch darf nicht schon unter der Bedingung des Verzichts eingeräumt sein (§ 10b Abs. 3 Satz 5 und 6 EStG). Typisch sind Fahrtkosten nach einer Reisekostenregelung des Vereins; fehlt sie, ist der Verzicht keine abziehbare Spende.",
     "example": "",
     "section": "Finanzen → Zuwendungsbestätigungen → Zuwendung erfassen"
    },
@@ -1348,7 +1348,7 @@
     "key": "due_date",
     "kind": "term",
     "name": "fällig",
-    "text": "Ab der Fälligkeit darf der Verein die Zahlung verlangen; sie ergibt sich aus Rechnungsdatum und Zahlungsziel. Spätestens 30 Tage danach gerät ein Mitglied in Verzug, wenn die Rechnung darauf hinweist (§§ 271, 286 Abs. 3 BGB).",
+    "text": "Ab der Fälligkeit darf der Verein die Zahlung verlangen; sie ergibt sich aus Rechnungsdatum und Zahlungsziel. Zahlt das Mitglied danach trotz Mahnung nicht, ist es in Verzug (§§ 271, 286 Abs. 1 BGB).",
     "example": "Beispiel: Rechnung vom 1. März, Zahlungsziel 14 Tage, also fällig am 15. März.",
     "section": "Beiträge und Rechnungen"
    },
@@ -1356,7 +1356,7 @@
     "key": "due_days",
     "kind": "decision",
     "name": "Wie lang soll das Zahlungsziel sein?",
-    "text": "Das Zahlungsziel ist die Frist vom Rechnungsdatum bis zur Fälligkeit. Ohne Mahnung gerät ein Mitglied spätestens 30 Tage nach Fälligkeit und Zugang der Rechnung in Verzug, bei Verbrauchern aber nur, wenn die Rechnung darauf hinweist (§ 286 Abs. 3 BGB). Eine kurze Frist bringt das Geld früher, aber mehr Mahnungen; eine lange Frist wirkt umgekehrt.",
+    "text": "Das Zahlungsziel ist die Frist vom Rechnungsdatum bis zur Fälligkeit. Sicher in Verzug kommt ein Mitglied erst durch eine Mahnung nach der Fälligkeit (§ 286 Abs. 1 BGB). Eine kurze Frist bringt das Geld früher, aber mehr Mahnungen; eine lange Frist wirkt umgekehrt.",
     "example": "",
     "section": "Beitragsregeln → Abrechnung und Rechnung"
    },
@@ -1460,7 +1460,7 @@
     "key": "fiscal_year",
     "kind": "decision",
     "name": "Kalenderjahr oder abweichendes Geschäftsjahr?",
-    "text": "Das Kalenderjahr passt zur Steuer, denn die Körperschaftsteuer wird nach dem Kalenderjahr ermittelt (§ 7 Abs. 3 KStG). Ein abweichendes Geschäftsjahr passt, wenn sich das Vereinsjahr nach einer Saison oder einem Fest richtet, kann aber zusätzliche Aufstellungen für das Finanzamt nötig machen. Maßgeblich ist, was die Satzung bestimmt (§ 25 BGB).",
+    "text": "Das Kalenderjahr passt zur Steuer, denn die Körperschaftsteuer wird nach dem Kalenderjahr ermittelt (§ 7 Abs. 3 KStG). Ein abweichendes Geschäftsjahr passt, wenn sich das Vereinsjahr nach einer Saison oder einem Fest richtet, kann aber zusätzliche Aufstellungen für das Finanzamt nötig machen. Maßgeblich ist, was die Satzung bestimmt.",
     "example": "",
     "section": "Organisation bearbeiten → Geschäftsjahr"
    },
@@ -1468,7 +1468,7 @@
     "key": "fiscal_year_term",
     "kind": "term",
     "name": "Geschäftsjahr",
-    "text": "Der Zeitraum, für den der Verein abrechnet und einen Kassenbericht vorlegt, meist das Kalenderjahr. Die Satzung kann ein anderes Jahr festlegen (§ 25 BGB).",
+    "text": "Der Zeitraum, für den der Verein abrechnet und einen Kassenbericht vorlegt, meist das Kalenderjahr. Die Satzung kann ein anderes Jahr festlegen.",
     "example": "Beispiel: Geschäftsjahr 1. Juli 2025 bis 30. Juni 2026: Das Sommerfest im Juni fällt ans Ende desselben Jahres.",
     "section": "Kasse und Abschluss"
    },
@@ -1548,7 +1548,7 @@
     "key": "invoice_date",
     "kind": "decision",
     "name": "Welches Rechnungsdatum für den Beitragslauf?",
-    "text": "Ab dem Rechnungsdatum läuft das Zahlungsziel und damit auch die Frist bis zum Verzug (§ 286 Abs. 3 BGB). Ein Datum kurz vor dem Versand ist richtig; ein rückdatiertes verkürzt den Mitgliedern die Frist, ein spätes verschiebt den Geldeingang.",
+    "text": "Ab dem Rechnungsdatum läuft das Zahlungsziel; an dessen Ende ist der Betrag fällig (§ 271 BGB). Ein Datum kurz vor dem Versand ist richtig; ein rückdatiertes verkürzt den Mitgliedern die Frist, ein spätes verschiebt den Geldeingang.",
     "example": "",
     "section": "Neuer Beitragslauf"
    },
@@ -1644,7 +1644,7 @@
     "key": "meeting_proxies",
     "kind": "decision",
     "name": "Vertretung mit Vollmacht zulassen?",
-    "text": "Das Stimmrecht ist nach dem Gesetz persönlich und kann keinem anderen überlassen werden (§ 38 Satz 2 BGB). Die Satzung darf Vollmachten erlauben (§ 40 BGB); das hilft Mitgliedern, die nicht kommen können, birgt aber das Risiko, dass wenige viele Stimmen sammeln. Schalte es nur ein, wenn eure Satzung Vollmachten vorsieht.",
+    "text": "Das Stimmrecht ist nach dem Gesetz persönlich und kann keinem anderen überlassen werden (§ 38 Satz 2 BGB). Die Satzung darf Vollmachten erlauben (§ 40 BGB); das hilft Mitgliedern, die nicht kommen können, birgt aber das Risiko, dass wenige viele Stimmen sammeln. Schalte es nur ein, wenn die Satzung Vollmachten vorsieht.",
     "example": "",
     "section": "Versammlungen → Arten und Fristen"
    },
@@ -1652,7 +1652,7 @@
     "key": "meeting_quorum",
     "kind": "decision",
     "name": "Mindestzahl für die Beschlussfähigkeit?",
-    "text": "Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn eure Satzung ihn vorschreibt (§ 40 BGB).",
+    "text": "Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn die Satzung ihn vorschreibt (§ 40 BGB).",
     "example": "",
     "section": "Versammlungen → Arten und Fristen"
    },
@@ -1676,7 +1676,7 @@
     "key": "member_type_active",
     "kind": "decision",
     "name": "Wann ist eine Mitgliedsart „aktiv“?",
-    "text": "Aktive Mitglieder zählen getrennt, etwa beim Verbandsbeitrag je aktivem Mitglied und in der Entwicklung; passive zahlen oft weniger und nehmen weniger am Vereinsleben teil. Eine feine Einteilung hilft bei Meldung und Beitrag, kostet aber Pflege, wenn Mitglieder oft wechseln. Richte dich nach Satzung oder Beitragsordnung, die festlegen, welche Gruppen es gibt und was sie zahlen (§§ 25, 58 Nr. 2 BGB).",
+    "text": "Aktive Mitglieder zählen getrennt, etwa beim Verbandsbeitrag je aktivem Mitglied und in der Entwicklung; passive zahlen oft weniger und nehmen weniger am Vereinsleben teil. Eine feine Einteilung hilft bei Meldung und Beitrag, kostet aber Pflege, wenn Mitglieder oft wechseln. Richte dich nach Satzung oder Beitragsordnung, die festlegen, welche Gruppen es gibt und was sie zahlen (§ 58 Nr. 2 BGB).",
     "example": "",
     "section": "Mitgliedsart bearbeiten"
    },
@@ -1684,7 +1684,7 @@
     "key": "member_type_duration",
     "kind": "decision",
     "name": "Welche Zeiten zählen für die Mitgliedsdauer?",
-    "text": "Zählt eine Art für die Dauer, fließen ihre Zeiten in Jubiläen und Ehrungen ein. Dafür spricht, dass Treue auch als passives Mitglied gewürdigt wird; dagegen, wenn eure Ehrenordnung nur aktive Jahre zählt. Übernimm die Regel aus Satzung oder Ehrenordnung, damit Ehrungen für alle gleich berechnet werden (§ 25 BGB).",
+    "text": "Zählt eine Art für die Dauer, fließen ihre Zeiten in Jubiläen und Ehrungen ein. Dafür spricht, dass Treue auch als passives Mitglied gewürdigt wird; dagegen, wenn die Ehrenordnung nur aktive Jahre zählt. Übernimm die Regel aus Satzung oder Ehrenordnung, damit Ehrungen für alle gleich berechnet werden.",
     "example": "",
     "section": "Mitgliedsart bearbeiten"
    },
@@ -1700,7 +1700,7 @@
     "key": "membership_duration",
     "kind": "term",
     "name": "Mitgliedsdauer",
-    "text": "Summe der Zeiten, in denen jemand Mitglied war, ohne Lücken zwischen Austritt und Wiedereintritt. Es zählen nur Mitgliedsarten mit dem Kennzeichen „zählt für Dauer“ (§ 25 BGB).",
+    "text": "Summe der Zeiten, in denen jemand Mitglied war, ohne Lücken zwischen Austritt und Wiedereintritt. Es zählen nur Mitgliedsarten mit dem Kennzeichen „zählt für Dauer“.",
     "example": "Beispiel: 1998 bis 2010 und wieder ab 2014 ergibt im Jahr 2026 zusammen 24 Jahre, das 25-jährige Jubiläum folgt 2027.",
     "section": "Mitglieder"
    },
@@ -1740,7 +1740,7 @@
     "key": "opening_balance_term",
     "kind": "term",
     "name": "Anfangsbestand",
-    "text": "Geld auf einem Konto oder in der Barkasse zu Beginn des Zeitraums, meist der Endbestand des Vorjahrs. Er ist der Ausgangspunkt jeder Kassenrechnung (§ 259 Abs. 1 BGB).",
+    "text": "Geld auf einem Konto oder in der Barkasse zu Beginn des Zeitraums, meist der Endbestand des Vorjahrs. Er ist der Ausgangspunkt jeder Kassenrechnung.",
     "example": "Beispiel: Anfangsbestand 4.250,00 € am 1. Januar: So viel lag auf dem Girokonto, bevor das Jahr begann.",
     "section": "Kasse und Abschluss"
    },
@@ -1772,7 +1772,7 @@
     "key": "paper_mandate",
     "kind": "decision",
     "name": "Was gehört zu einem schriftlichen Mandat?",
-    "text": "Ein Mandat nennt unter anderem Zahler, IBAN, Gläubiger-ID, Mandatsreferenz, Datum und Unterschrift (EPC016-06). Bewahre das Original auf, solange du darauf einziehst, und danach, solange Rückfragen möglich sind; ohne Nachweis muss der Verein eine bestrittene Lastschrift noch bis 13 Monate später erstatten (§§ 675u, 676b Abs. 2 BGB). Mandate aus dem Mitgliederbereich speichert HUBIplan selbst.",
+    "text": "Ein Mandat nennt unter anderem Zahler, IBAN, Gläubiger-ID, Mandatsreferenz, Datum und Unterschrift (EPC016-06). Bewahre das Original auf, solange du darauf einziehst und danach Rückfragen möglich sind; Mandate aus dem Mitgliederbereich speichert HUBIplan selbst. Ohne Nachweis muss der Verein eine bestrittene Lastschrift noch bis 13 Monate später erstatten (§§ 675u, 676b Abs. 2 BGB).",
     "example": "",
     "section": "Lastschrift → Mandate → Schriftliches Mandat erfassen"
    },
@@ -1828,7 +1828,7 @@
     "key": "photo_consent",
     "kind": "decision",
     "name": "Fotos nur mit Einwilligung?",
-    "text": "Ein Foto erleichtert das Erkennen am Ausweis, zeigt aber eine Person erkennbar; dafür stützt sich der Verein in der Regel auf ihre Einwilligung (§ 22 KUG, Art. 6 Abs. 1 lit. a DSGVO). Die Einwilligung ist freiwillig und jederzeit widerrufbar, danach muss das Foto weg (Art. 7 Abs. 3 DSGVO). Der Ausweis funktioniert auch ohne Foto, also frag nur, wenn es wirklich hilft.",
+    "text": "Ein Foto erleichtert das Erkennen am Ausweis, zeigt aber eine Person erkennbar. Dafür braucht der Verein in der Regel ihre Einwilligung; sie ist freiwillig und jederzeit widerrufbar, danach muss das Foto weg (§ 22 KUG, Art. 6 Abs. 1 lit. a, Art. 7 Abs. 3 DSGVO). Der Ausweis funktioniert auch ohne Foto, also frag nur, wenn es wirklich hilft.",
     "example": "",
     "section": "Mitgliedsakte → Foto"
    },
@@ -1852,7 +1852,7 @@
     "key": "pro_rata",
     "kind": "decision",
     "name": "Beitrag bei Eintritt im laufenden Zeitraum anteilig?",
-    "text": "Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre; je Halbjahr heißt bei einem Geschäftsjahr wie dem Kalenderjahr: Eintritt bis 30. Juni voller Jahresbeitrag, ab 1. Juli die Hälfte. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).",
+    "text": "Anteilig heißt: Wer im Lauf des Zeitraums eintritt oder austritt, zahlt nur die angefangenen Abschnitte, je nach Wahl Monate, Quartale oder Halbjahre. Je Monat wirkt am gerechtesten, macht die Beträge aber krumm; Quartal und Halbjahr ergeben runde Beträge. Steht dazu nichts in Satzung oder Beitragsordnung, sollte der Vorstand eine Regel beschließen und für alle gleich anwenden (§ 58 Nr. 2 BGB).",
     "example": "",
     "section": "Beitragsregeln → Abrechnung und Rechnung"
    },
@@ -1876,7 +1876,7 @@
     "key": "qualification_inspection",
     "kind": "decision",
     "name": "Nur Einsichtsvermerk festhalten?",
-    "text": "Beim erweiterten Führungszeugnis für Betreuer von Kindern und Jugendlichen darf der Verein nur festhalten, dass er es eingesehen hat, das Datum des Zeugnisses und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).",
+    "text": "Beim erweiterten Führungszeugnis darf der Verein nur festhalten, dass er es eingesehen hat, von wann es ist und ob eine einschlägige Verurteilung vorliegt (§ 72a Abs. 5 SGB VIII). Das Zeugnis selbst wird nicht kopiert oder hochgeladen, und die Angaben sind spätestens sechs Monate nach Ende der Tätigkeit zu löschen. Ein Ablaufdatum lohnt sich nur bei Nachweisen, die wirklich auslaufen, etwa Erste Hilfe (Art. 5 Abs. 1 lit. c DSGVO).",
     "example": "",
     "section": "Mitglieder → Qualifikationen"
    },
@@ -1932,7 +1932,7 @@
     "key": "reserves",
     "kind": "decision",
     "name": "Wann braucht der Verein eine Rücklage?",
-    "text": "Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden (§ 55 Abs. 1 Nr. 5 AO); wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck. Kleine Vereine unter der Einnahmengrenze in § 55 Abs. 1 Nr. 5 AO müssen nicht zeitnah verwenden, eine Rücklage hilft dann trotzdem bei der Planung.",
+    "text": "Ein steuerbegünstigter Verein muss seine Mittel grundsätzlich bis Ende des übernächsten Jahres verwenden; Vereine mit Einnahmen bis 100.000 € im Jahr sind davon befreit (§ 55 Abs. 1 Nr. 5 AO). Wer für ein Vorhaben spart, etwa eine größere Anschaffung oder ein Jubiläumsfest, bildet dafür eine Rücklage (§ 62 Abs. 1 AO). Rücklagen machen Sparen nachvollziehbar, binden aber Geld und brauchen einen Beschluss mit Zweck.",
     "example": "",
     "section": "Finanzen → Rücklagen"
    },
@@ -1948,7 +1948,7 @@
     "key": "result",
     "kind": "term",
     "name": "Ergebnis",
-    "text": "Alle Einnahmen minus alle Ausgaben eines Zeitraums oder einer Veranstaltung, ohne Umbuchungen. Ein negatives Ergebnis heißt, der Verein hat aus Rücklagen oder Beständen zugezahlt (§ 259 Abs. 1 BGB).",
+    "text": "Alle Einnahmen minus alle Ausgaben eines Zeitraums oder einer Veranstaltung, ohne Umbuchungen. Ein negatives Ergebnis heißt, der Verein hat aus Rücklagen oder Beständen zugezahlt.",
     "example": "Beispiel: Ergebnis 2026: +900,00 €: Der Verein hat im Jahr 900,00 € mehr eingenommen als ausgegeben.",
     "section": "Kasse und Abschluss"
    },
@@ -1956,7 +1956,7 @@
     "key": "retention_end",
     "kind": "decision",
     "name": "Wann dürfen alte Kassendaten weg?",
-    "text": "Belege sind 8 Jahre, Bücher und Abschlüsse 10 Jahre aufzubewahren, gerechnet ab Ende des Kalenderjahres (§ 147 Abs. 3 und 4 AO); danach verlangt der Datenschutz, Personendaten zu löschen (Art. 5 Abs. 1 lit. e DSGVO). Bereinigen schützt ehemalige Mitglieder und Spender, ist aber endgültig. Bereinige nicht, solange Steuern dieser Jahre noch festgesetzt werden können, etwa während einer Betriebsprüfung, denn so lange läuft die Frist nicht ab (§ 147 Abs. 3 AO).",
+    "text": "Belege sind 8 Jahre, Bücher und Abschlüsse 10 Jahre aufzubewahren, gerechnet ab Ende des Kalenderjahres (§ 147 Abs. 3 und 4 AO). Danach verlangt der Datenschutz, Personendaten zu löschen; das schützt ehemalige Mitglieder und Spender, ist aber endgültig (Art. 5 Abs. 1 lit. e DSGVO). Bereinige nicht, solange Steuern dieser Jahre noch festgesetzt werden können, etwa während einer Betriebsprüfung (§ 147 Abs. 3 AO).",
     "example": "",
     "section": "Abschluss → Jahresabschluss"
    },
@@ -2068,7 +2068,7 @@
     "key": "survey_anonymous",
     "kind": "decision",
     "name": "Namen zeigen oder anonym fragen?",
-    "text": "Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl braucht ihr die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).",
+    "text": "Anonyme Antworten sind oft ehrlicher, etwa bei Kritik am Vorstand. Dafür kann niemand nachfragen, und für Absprachen wie Fahrgemeinschaften oder Essenswahl brauchst du die Namen. Frag nur so viel Persönliches ab, wie der Zweck verlangt (Art. 5 Abs. 1 lit. c DSGVO).",
     "example": "",
     "section": "Umfragen → Namen und Ergebnis"
    },
@@ -2084,7 +2084,7 @@
     "key": "tax_areas",
     "kind": "decision",
     "name": "Kategorien steuerlichen Bereichen zuordnen?",
-    "text": "Gemeinnützige Vereine trennen ideellen Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlichen Geschäftsbetrieb, weil nur Letzterer steuerpflichtig sein kann (§§ 14, 64, 65 AO). Die Zuordnung erleichtert die Steuererklärung, verlangt aber saubere Kategorien. Schalte sie ein, sobald der Verein Einnahmen aus Verkauf, Festen oder Werbung hat; bleiben diese einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an (§ 64 Abs. 3 AO, seit 2026; vorher 45.000 €).",
+    "text": "Gemeinnützige Vereine trennen ideellen Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlichen Geschäftsbetrieb, weil nur Letzterer steuerpflichtig sein kann (§§ 14, 64, 65 AO). Bleiben die Einnahmen aus Verkauf, Festen und Werbung einschließlich Umsatzsteuer bis 50.000 € im Jahr, fallen darauf keine Körperschaft- und Gewerbesteuer an. Liegen alle wirtschaftlichen Einnahmen samt Zweckbetrieben unter dieser Grenze, entfällt meist auch die Prüfung, ob ein Zweckbetrieb vorliegt (§ 64 Abs. 3 AO); schalte die Zuordnung ein, bevor der Verein sie erreicht.",
     "example": "",
     "section": "Finanzen → Einrichtung → Kategorien"
    },
@@ -2108,7 +2108,7 @@
     "key": "transfer",
     "kind": "term",
     "name": "Umbuchung",
-    "text": "Geld wandert zwischen zwei eigenen Konten, etwa von der Barkasse auf das Girokonto. Das ist weder Einnahme noch Ausgabe und ändert das Ergebnis nicht (§ 259 Abs. 1 BGB).",
+    "text": "Geld wandert zwischen zwei eigenen Konten, etwa von der Barkasse auf das Girokonto. Das ist weder Einnahme noch Ausgabe und ändert das Ergebnis nicht.",
     "example": "Beispiel: 600,00 € Kasseneinnahmen vom Fest auf das Girokonto eingezahlt: Kasse −600,00 €, Girokonto +600,00 €, Ergebnis unverändert.",
     "section": "Kasse und Abschluss"
    },
@@ -2172,7 +2172,7 @@
     "key": "vat_show",
     "kind": "decision",
     "name": "Umsatzsteuer auf Rechnungen ausweisen?",
-    "text": "Echte Mitgliedsbeiträge, die alle für den Vereinszweck zahlen, sind kein steuerbarer Umsatz; auf sie gehört keine Umsatzsteuer (UStAE 1.4). Steuer weist du nur für Leistungen gegen Entgelt aus, etwa Verkauf oder Werbung, und nur, wenn der Verein kein Kleinunternehmer ist (§ 19 UStG: Vorjahr bis 25.000 €, laufendes Jahr bis 100.000 €). Wer Steuer ausweist, ohne sie zu schulden, schuldet sie trotzdem (§ 14c UStG); frag im Zweifel das Finanzamt oder eine Steuerberatung.",
+    "text": "Echte Mitgliedsbeiträge, die alle für den Vereinszweck zahlen, sind kein steuerbarer Umsatz; auf sie gehört keine Umsatzsteuer (UStAE 1.4). Steuer weist du nur für Leistungen gegen Entgelt aus, etwa Verkauf oder Werbung, und nur, wenn der Verein kein Kleinunternehmer ist (§ 19 UStG). Wer Steuer ausweist, ohne sie zu schulden, schuldet sie trotzdem (§ 14c UStG); frag im Zweifel das Finanzamt oder eine Steuerberatung.",
     "example": "",
     "section": "Beitragsregeln → Umsatzsteuer"
    },
@@ -2180,7 +2180,7 @@
     "key": "video_link",
     "kind": "decision",
     "name": "Warum nur ein Link zum Video?",
-    "text": "Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf eurer Seite.",
+    "text": "Ein Link lädt nichts von fremden Servern, solange niemand klickt. Ein eingebettetes Video überträgt schon beim Aufruf der Seite Daten der Besucher an den Anbieter und setzt oft Cookies; das braucht eine Einwilligung (§ 25 Abs. 1 TDDDG, Art. 6 Abs. 1 lit. a DSGVO). Mit dem Link kommt die Webseite ohne Einwilligungsabfrage aus, dafür läuft das Video beim Anbieter und nicht auf der Vereinsseite.",
     "example": "",
     "section": "Webseite → Startseite → Abschnitt „Video“"
    },
@@ -2246,7 +2246,7 @@
     "key": "active_passive",
     "kind": "term",
     "name": "active / passive (aktiv / passiv)",
-    "text": "Property of a membership type: active members take full part in club life, passive members mainly support with their fee. What this means for rights and fee is governed by the constitution (§ 25 BGB).",
+    "text": "Property of a membership type: active members take full part in club life, passive members mainly support with their fee. What this means for rights and fee is governed by the constitution.",
     "example": "Example: 112 active and 38 passive members: the umbrella association calculates its fee separately for both groups.",
     "section": "Members"
    },
@@ -2270,7 +2270,7 @@
     "key": "application_consents",
     "kind": "decision",
     "name": "Which consents should you ask for?",
-    "text": "What membership requires, such as address and bank details, the club processes without consent because it needs it for the membership (Art. 6 Abs. 1 lit. b GDPR). Consents belong only to voluntary things such as photos or the birthday on the website, each one separately and with no disadvantage for a no (Art. 7 GDPR). They can be withdrawn at any time, so only offer what you can switch off again after a withdrawal.",
+    "text": "What membership requires, such as address and bank details, the club processes without consent because it needs it for the membership (Art. 6 Abs. 1 lit. b GDPR). Consents belong only to voluntary things such as photos or the birthday on the website, each one separately and with no disadvantage for a no (Art. 7 GDPR). They can be withdrawn at any time, so only offer what the club can switch off again after a withdrawal.",
     "example": "",
     "section": "Members → Online application"
    },
@@ -2302,7 +2302,7 @@
     "key": "artist_fee_mark",
     "kind": "decision",
     "name": "Which expenses to mark as artist fees?",
-    "text": "The levy applies to fees paid to self-employed artists and journalists, such as a band, DJ, photographer or graphic designer, even if they are not insured with the artists’ social insurance fund themselves (§ 25 KSVG). Payments to a limited company, separately shown VAT and tax-free travel expenses do not count (§ 25(2) KSVG). Whether the club has to pay the levy at all depends on how often it engages artists (§ 24 KSVG).",
+    "text": "The levy applies to fees paid to self-employed artists and journalists, such as a band, DJ, photographer or graphic designer, even if they are not insured with the artists’ social insurance fund themselves (§ 25 KSVG). Payments to a limited company, separately shown VAT and tax-free travel expenses do not count (§ 25(2) KSVG). If the club engages artists only for its own festivals or advertising, the levy only becomes due above €1,000 in fees per calendar year; with no more than three events a year, the fees for those events stay exempt (§ 24(2) KSVG).",
     "example": "",
     "section": "Finance → Taxes → Artists' social security levy"
    },
@@ -2358,7 +2358,7 @@
     "key": "auditors",
     "kind": "term",
     "name": "Cash auditors (Kassenprüfer)",
-    "text": "Members elected by the general meeting who audit the treasury and report on it; the constitution sets their tasks. They are not part of the board they audit (§ 25 BGB).",
+    "text": "Members elected by the general meeting who audit the treasury and report on it; the constitution sets their tasks. They are not part of the board they audit.",
     "example": "Example: two cash auditors check 312 entries by sampling and recommend discharge.",
     "section": "Treasury and closing"
    },
@@ -2382,7 +2382,7 @@
     "key": "balance",
     "kind": "term",
     "name": "Balance (Saldo)",
-    "text": "Difference between income and expenses, for example per category. Positive means: more taken in than spent (§ 259(1) BGB).",
+    "text": "Difference between income and expenses, for example per category. Positive means: more taken in than spent.",
     "example": "Example: category summer party: income €3,100.00, expenses €2,700.00, balance €400.00.",
     "section": "Treasury and closing"
    },
@@ -2414,7 +2414,7 @@
     "key": "board_pay",
     "kind": "decision",
     "name": "Pay the board an allowance?",
-    "text": "Without a rule in the constitution the board works unpaid and only has its expenses refunded (§ 27(3) BGB). Paying the board without a basis in the constitution can put charitable status at risk, because funds are used against the constitution (§ 55(1) no. 1 AO). Only tick this if your constitution expressly allows paying the board.",
+    "text": "Without a rule in the constitution the board works unpaid and only has its expenses refunded (§ 27(3) BGB). Paying the board without a basis in the constitution can put charitable status at risk, because funds are used against the constitution (§ 55(1) no. 1 AO). Only tick this if the constitution expressly allows paying the board.",
     "example": "",
     "section": "Finance → Allowances"
    },
@@ -2454,7 +2454,7 @@
     "key": "cancellation_notice",
     "kind": "decision",
     "name": "Which notice period should you enter?",
-    "text": "Enter exactly the period and date from your statutes; HUBIplan calculates the earliest exit date from them. Every member may leave, and the statutes may bind leaving to a notice period of at most two years (§ 39 BGB). If your statutes say nothing, choose no notice period.",
+    "text": "Enter exactly the period and date from the statutes; HUBIplan calculates the earliest exit date from them. Every member may leave, and the statutes may bind leaving to a notice period of at most two years (§ 39 BGB). If your statutes say nothing, choose no notice period.",
     "example": "",
     "section": "Members → Settings"
    },
@@ -2542,7 +2542,7 @@
     "key": "closing_balance",
     "kind": "term",
     "name": "Closing balance (Endbestand)",
-    "text": "Money in an account at the end of the period: opening balance plus income minus expenses, plus or minus transfers. It must match the bank statement (§ 259(1) BGB).",
+    "text": "Money in an account at the end of the period: opening balance plus income minus expenses, plus or minus transfers. It must match the bank statement.",
     "example": "Example: €4,250.00 + €9,800.00 − €8,900.00 = €5,150.00: the bank statement for 31 December shows the same amount.",
     "section": "Treasury and closing"
    },
@@ -2574,7 +2574,7 @@
     "key": "commercial_operation",
     "kind": "term",
     "name": "wGB – Commercial operation (wirtschaftlicher Geschäftsbetrieb)",
-    "text": "An independent, ongoing activity by which the club earns income and that goes beyond asset management (§ 14 AO). Tax is only due when this income including VAT exceeds €50,000 a year (§ 64(3) AO).",
+    "text": "An independent, ongoing activity by which the club earns income and that goes beyond asset management (§ 14 AO). Corporation and trade tax are only due when this income including VAT exceeds €50,000 a year (§ 64(3) AO).",
     "example": "Example: drinks sales at the summer party, €14,000.00: taxable area, but below the threshold.",
     "section": "Tax"
    },
@@ -2582,7 +2582,7 @@
     "key": "comp_bird_rules",
     "kind": "decision",
     "name": "Elimination and fixed order?",
-    "text": "If whoever has won a prize drops out, more marksmen get a prize. In fixed order, prize after prize is shot, and HUBIplan offers the next one right after each hit. Which rule applies is in the club's shooting rules (§ 25 BGB).",
+    "text": "If whoever has won a prize drops out, more marksmen get a prize. In fixed order, prize after prize is shot, and HUBIplan offers the next one right after each hit. Which rule applies is in the club's shooting rules.",
     "example": "",
     "section": "Competition → Setup → Prizes and procedure"
    },
@@ -2614,7 +2614,7 @@
     "key": "comp_final_term",
     "kind": "term",
     "name": "final (endgültig)",
-    "text": "Status after closing: entries are locked, the results stand. Only final results are intended for the website and honours (Art. 5(1)(d) GDPR).",
+    "text": "Status after closing: entries are locked, the results stand. Only final results are intended for the website and honours.",
     "example": "Example: after the 2nd shoot-off the shooting master closes the competition; after that no score can be changed.",
     "section": "Competitions"
    },
@@ -2639,14 +2639,14 @@
     "kind": "term",
     "name": "Inner ten (Innenzehner)",
     "text": "A particularly good ten: on the DSB air rifle target it is one that shoots away the white ten dot completely (DSB sport regulations). More inner tens often decide a tie.",
-    "example": "Example: a hit 0.8 mm from the centre is an inner ten, one 2 mm off only a ten.",
+    "example": "Example: a hit 0.8 mm from the centre is an inner ten, one 2.3 mm off only a ten.",
     "section": "Competitions"
    },
    {
     "key": "comp_lot",
     "kind": "term",
     "name": "Lot number (Losnummer)",
-    "text": "Number from the hat that sets the order of marksmen in the bird shoot. Latecomers draw a number still free; the procedure is governed by the shooting rules (§ 25 BGB).",
+    "text": "Number from the hat that sets the order of marksmen in the bird shoot. Latecomers draw a number still free; the procedure is governed by the shooting rules.",
     "example": "Example: whoever draws lot 7 shoots after number 6 and before number 8.",
     "section": "Competitions"
    },
@@ -2654,7 +2654,7 @@
     "key": "comp_lots",
     "kind": "decision",
     "name": "What is “lots in the hat” for?",
-    "text": "Without this, “Draw number” only draws up to the number of marksmen so far, and a latecomer usually gets the next number. With the number of lots in the hat, HUBIplan draws as if from a real hat; if you prefer to draw for everyone at once, use “Draw all without number”. How the order is decided is governed by the shooting rules (§ 25 BGB).",
+    "text": "Without this, “Draw number” only draws up to the number of marksmen so far, and a latecomer usually gets the next number. With the number of lots in the hat, HUBIplan draws as if from a real hat; if you prefer to draw for everyone at once, use “Draw all without number”. How the order is decided is governed by the shooting rules.",
     "example": "",
     "section": "Competition → Setup → Prizes and procedure"
    },
@@ -2670,7 +2670,7 @@
     "key": "comp_organizer",
     "kind": "term",
     "name": "Organiser (Ausrichter)",
-    "text": "Club or association that holds and scores an external competition. It sets rules and prizes (§ 25 BGB).",
+    "text": "Club or association that holds and scores an external competition. It sets rules and prizes.",
     "example": "Example: at the district shoot 2027 the district association is the organiser; you only enter your places, for example 3rd place with 287 rings.",
     "section": "Competitions"
    },
@@ -2678,7 +2678,7 @@
     "key": "comp_own",
     "kind": "decision",
     "name": "Own or external competition?",
-    "text": "In your own competition you record marksmen and scores yourselves, and HUBIplan calculates places, unit ranking and shoot-offs. In an external one you only enter what the organiser has announced: place and score of your participants. How scoring works there is governed by the organiser's shooting rules (§ 25 BGB).",
+    "text": "In your own competition you record marksmen and scores yourself, and HUBIplan calculates places, unit ranking and shoot-offs. In an external one you only enter what the organiser has announced: place and score of your own participants. How scoring works there is governed by the organiser's shooting rules.",
     "example": "",
     "section": "Competitions → New competition"
    },
@@ -2686,7 +2686,7 @@
     "key": "comp_photo",
     "kind": "decision",
     "name": "Why is the photo only a suggestion?",
-    "text": "With several holes inside each other, on a dark background or close to a ring line, recognition can be wrong; what counts is the evaluation of the target under the DSB sport regulations or your shooting rules. That is why the photo only places the hits in the tap view, and only “Save” takes them over. The photo itself is only evaluated and never stored, so no image linked to the marksman is created (Art. 5(1)(c) GDPR).",
+    "text": "With several holes inside each other, on a dark background or close to a ring line, recognition can be wrong; what counts is the evaluation of the target under the DSB sport regulations or the club's shooting rules. That is why the photo only places the hits in the tap view, and only “Save” takes them over. The photo itself is only evaluated and never stored, so no image linked to the marksman is created (Art. 5(1)(c) GDPR).",
     "example": "",
     "section": "Range mode → Photo of the target"
    },
@@ -2694,7 +2694,7 @@
     "key": "comp_photo_samples",
     "kind": "decision",
     "name": "Collect bullseye crops?",
-    "text": "Real, confirmed targets are the only way to check how good photo recognition really is; without them it is only measured on artificial photos. Only the crop of the bullseye with the hit positions is stored, without name, competition or time, so without reference to a person (Art. 4 no. 1 GDPR). Switch it on if you use recognition often; switching off and deleting everything is possible at any time.",
+    "text": "Real, confirmed targets are the only way to check how good photo recognition really is; without them it is only measured on artificial photos. Only the crop of the bullseye with the hit positions is stored, without name, competition or time, so without reference to a person (Art. 4 no. 1 GDPR). Switch it on if the club uses recognition often; switching off and deleting everything is possible at any time.",
     "example": "",
     "section": "Settings → Privacy → Improve photo recognition"
    },
@@ -2702,7 +2702,7 @@
     "key": "comp_photo_sum",
     "kind": "decision",
     "name": "Total and photo differ, which applies?",
-    "text": "The total entered is what is saved; the photo is only a second opinion that makes typing errors and miscounted rings stand out. If they differ, look at the target again; if in doubt, the supervisor or scorer decides under the DSB sport regulations or your shooting rules. “View hits” shows where recognition sees the holes.",
+    "text": "The total entered is what is saved; the photo is only a second opinion that makes typing errors and miscounted rings stand out. If they differ, look at the target again; if in doubt, the supervisor or scorer decides under the DSB sport regulations or the club's shooting rules. “View hits” shows where recognition sees the holes.",
     "example": "",
     "section": "Range mode → Enter total only → Photo of the target"
    },
@@ -2710,7 +2710,7 @@
     "key": "comp_prize",
     "kind": "term",
     "name": "Prize piece (Pfand)",
-    "text": "Part of the bird for whose shooting down there is a prize, such as head, wing or tail. Whoever brings it down has won the prize piece; prize pieces and prizes are set by the shooting rules (§ 25 BGB).",
+    "text": "Part of the bird for whose shooting down there is a prize, such as head, wing or tail. Whoever brings it down has won the prize piece; prize pieces and prizes are set by the shooting rules.",
     "example": "Example: Paul brings down the left wing with shot 54 and receives the wing medal.",
     "section": "Competitions"
    },
@@ -2734,7 +2734,7 @@
     "key": "comp_provisional",
     "kind": "decision",
     "name": "When is the shooting finished?",
-    "text": "HUBIplan does not detect the end itself, because only the range officer knows about latecomers, absentees and shoot-offs. “Finish shooting” marks the results as provisional; additions and shoot-offs remain possible. Only hand out provisional lists with this note so that nobody takes them as correct and final (Art. 5(1)(d) GDPR).",
+    "text": "HUBIplan does not detect the end itself, because only the range officer knows about latecomers, absentees and shoot-offs. “Finish shooting” marks the results as provisional; additions and shoot-offs remain possible. Only hand out provisional lists with this note so that nobody takes them as final.",
     "example": "",
     "section": "Competition → Results → Competition and completion; range mode → Finish"
    },
@@ -2742,7 +2742,7 @@
     "key": "comp_provisional_term",
     "kind": "term",
     "name": "provisional (vorläufig)",
-    "text": "Status after “Finish shooting”: results are in, additions and shoot-offs are still possible. Lists carry the note “provisional” so that nobody takes them as final (Art. 5(1)(d) GDPR).",
+    "text": "Status after “Finish shooting”: results are in, additions and shoot-offs are still possible. Lists carry the note “provisional” so that nobody takes them as final.",
     "example": "Example: in the evening the provisional list is put up; a shoot-off the next morning still changes 3rd place.",
     "section": "Competitions"
    },
@@ -2750,7 +2750,7 @@
     "key": "comp_reset",
     "kind": "decision",
     "name": "What happens when resetting?",
-    "text": "Resetting deletes all recorded scores, shoot-offs, shots and fallen prizes; rules, prizes, range access and event remain. Tablets that still have old entries stored without reception discard them at the next sync. Whether a round is repeated is governed by the shooting rules (§ 25 BGB); it cannot be undone.",
+    "text": "Resetting deletes all recorded scores, shoot-offs, shots and fallen prizes; rules, prizes, range access and event remain. Tablets that still have old entries stored without reception discard them at the next sync. Whether a round is repeated is governed by the shooting rules; resetting cannot be undone.",
     "example": "",
     "section": "Competition → Setup → Further actions"
    },
@@ -2790,7 +2790,7 @@
     "key": "comp_shots_for",
     "kind": "term",
     "name": "Shots for the prize piece (Schüsse für das Pfand)",
-    "text": "Shots since the previously fallen prize piece up to the one that brought down this prize piece. For the first prize piece all shots since the start count; what prizes exist for is governed by the shooting rules (§ 25 BGB).",
+    "text": "Shots since the previously fallen prize piece up to the one that brought down this prize piece. For the first prize piece all shots since the start count; what prizes exist for is governed by the shooting rules.",
     "example": "Example: the head falls with shot 30, the tail with shot 75: for the tail it took 45 shots.",
     "section": "Competitions"
    },
@@ -2862,7 +2862,7 @@
     "key": "comp_tie_breaks",
     "kind": "decision",
     "name": "Which rules for ties?",
-    "text": "With rules based on the hits, HUBIplan decides a tie without a shoot-off, for example under the DSB sport regulations first by the series from the back, then by more tens and more inner tens. This saves time at the range but requires hits to be recorded for everyone tied; otherwise it stays with the shoot-off. Take the order from your shooting rules or the call for entries; if nothing is stated there, the shoot-off remains the usual solution.",
+    "text": "With rules based on the hits, HUBIplan decides a tie without a shoot-off, for example under the DSB sport regulations first by the series from the back, then by more tens and more inner tens. This saves time at the range but requires hits to be recorded for everyone tied; otherwise it stays with the shoot-off. Take the order from the club's shooting rules or the call for entries; if nothing is stated there, the shoot-off remains the usual solution.",
     "example": "",
     "section": "Competition → Setup → Rankings → Ties and shoot-offs"
    },
@@ -2926,7 +2926,7 @@
     "key": "cutoff_date",
     "kind": "term",
     "name": "Cut-off date (Stichtag)",
-    "text": "The day for which a figure is counted or calculated, e.g. members, age or account balance. Whoever is a member on that day counts (§ 259(1) BGB).",
+    "text": "The day for which a figure is counted or calculated, such as members, age or account balance. Whoever is a member on that day counts.",
     "example": "Example: cut-off date 1 January 2026, 150 members: whoever joins on 2 January only counts at the next cut-off date.",
     "section": "Members"
    },
@@ -2942,7 +2942,7 @@
     "key": "datev_accounts",
     "kind": "decision",
     "name": "Why does every category need a DATEV account?",
-    "text": "The tax adviser books according to a chart of accounts such as SKR 42 or SKR 49; every income and expense must be assigned to a ledger account there, otherwise it ends up in a suspense account and must be rebooked by hand (GoBD). Once assigned cleanly, the export works every year without rework. Agree the accounts with the tax adviser beforehand instead of guessing them.",
+    "text": "The tax adviser books according to a chart of accounts (SKR 42 or SKR 49). Every income and expense needs a ledger account there, otherwise it ends up in a suspense account and must be rebooked by hand (GoBD). Agree the accounts with the tax adviser beforehand, then the export works every year without rework.",
     "example": "",
     "section": "Finance → Setup → Accounts"
    },
@@ -2982,7 +2982,7 @@
     "key": "doc_visibility",
     "kind": "decision",
     "name": "Who should see the documents in a folder?",
-    "text": "The more widely a folder is visible, the more easily members find the constitution and minutes, but the greater the risk that personal data goes too far (Art. 5(1)(c) and (f) GDPR). General items such as the constitution can be widely visible; minutes with names, contracts and lists only for the board. If in doubt, start narrow and widen later.",
+    "text": "The more widely a folder is visible, the more easily members find the constitution and minutes. At the same time the risk grows that personal data goes too far (Art. 5(1)(c) and (f) GDPR). General items such as the constitution can be widely visible; minutes with names, contracts and lists, if in doubt, only for the board.",
     "example": "",
     "section": "Documents → folder"
    },
@@ -3046,7 +3046,7 @@
     "key": "donation_waiver",
     "kind": "decision",
     "name": "When is waiving expenses a donation?",
-    "text": "Only if a claim to reimbursement existed beforehand by contract or constitution and was then waived; the claim must not already have been granted on condition of the waiver (§ 10b(3) sentences 5 and 6 EStG). Travel costs under a club travel expense rule are typical. Without such a rule, the waiver is not a deductible donation.",
+    "text": "Only if a claim to reimbursement existed beforehand by contract or constitution and the person then waives it. The claim must not already have been granted on condition of the waiver (§ 10b(3) sentences 5 and 6 EStG). Travel costs under a club travel expense rule are typical; without one, the waiver is not a deductible donation.",
     "example": "",
     "section": "Finance → Donation receipts → Record donation"
    },
@@ -3070,7 +3070,7 @@
     "key": "due_date",
     "kind": "term",
     "name": "due (fällig)",
-    "text": "From the due date the club may demand payment; it results from invoice date and payment term. At the latest 30 days later a member is in default if the invoice points this out (§§ 271, 286(3) BGB).",
+    "text": "From the due date the club may demand payment; it results from invoice date and payment term. If the member then does not pay despite a reminder, they are in default (§§ 271, 286(1) BGB).",
     "example": "Example: invoice dated 1 March, payment term 14 days, so due on 15 March.",
     "section": "Fees and invoices"
    },
@@ -3078,7 +3078,7 @@
     "key": "due_days",
     "kind": "decision",
     "name": "How long should the payment term be?",
-    "text": "The payment term is the period from the invoice date to the due date. Without a reminder, a member is in default at the latest 30 days after the due date and receipt of the invoice, but consumers only if the invoice points this out (§ 286(3) BGB). A short term brings the money in sooner but means more reminders; a long term the opposite.",
+    "text": "The payment term is the period from the invoice date to the due date. A member is only safely in default after a reminder sent once the amount is due (§ 286(1) BGB). A short term brings the money in sooner but means more reminders; a long term the opposite.",
     "example": "",
     "section": "Fee rules → billing and invoice"
    },
@@ -3182,7 +3182,7 @@
     "key": "fiscal_year",
     "kind": "decision",
     "name": "Calendar year or different financial year?",
-    "text": "The calendar year suits tax, because corporation tax is assessed by calendar year (§ 7(3) KStG). A different financial year suits clubs whose year follows a season or festival, but may require additional statements for the tax office. What the constitution says is decisive (§ 25 BGB).",
+    "text": "The calendar year suits tax, because corporation tax is assessed by calendar year (§ 7(3) KStG). A different financial year suits clubs whose year follows a season or festival, but may require additional statements for the tax office. What the constitution says is decisive.",
     "example": "",
     "section": "Edit organisation → financial year"
    },
@@ -3190,7 +3190,7 @@
     "key": "fiscal_year_term",
     "kind": "term",
     "name": "Financial year (Geschäftsjahr)",
-    "text": "The period for which the club accounts and presents a treasurer's report, usually the calendar year. The constitution can set a different year (§ 25 BGB).",
+    "text": "The period for which the club accounts and presents a treasurer's report, usually the calendar year. The constitution can set a different year.",
     "example": "Example: financial year 1 July 2025 to 30 June 2026: the summer party in June falls at the end of the same year.",
     "section": "Treasury and closing"
    },
@@ -3270,7 +3270,7 @@
     "key": "invoice_date",
     "kind": "decision",
     "name": "Which invoice date for the fee run?",
-    "text": "The payment term, and with it the period until default, runs from the invoice date (§ 286(3) BGB). A date shortly before sending is right; a backdated one shortens the members' term, a late one delays the money coming in.",
+    "text": "The payment term runs from the invoice date; at its end the amount is due (§ 271 BGB). A date shortly before sending is right; a backdated one shortens the members' term, a late one delays the money coming in.",
     "example": "",
     "section": "New fee run"
    },
@@ -3366,7 +3366,7 @@
     "key": "meeting_proxies",
     "kind": "decision",
     "name": "Allow voting by proxy?",
-    "text": "By law the right to vote is personal and cannot be handed to anyone else (§ 38 sentence 2 BGB). The constitution may allow proxies (§ 40 BGB); this helps members who cannot attend but risks a few people collecting many votes. Only switch it on if your constitution provides for proxies.",
+    "text": "By law the right to vote is personal and cannot be handed to anyone else (§ 38 sentence 2 BGB). The constitution may allow proxies (§ 40 BGB); this helps members who cannot attend but risks a few people collecting many votes. Only switch it on if the constitution provides for proxies.",
     "example": "",
     "section": "Meetings → types and deadlines"
    },
@@ -3374,7 +3374,7 @@
     "key": "meeting_quorum",
     "kind": "decision",
     "name": "Minimum attendance for a quorum?",
-    "text": "The law sets no minimum: a properly convened meeting can pass resolutions however many attend (§ 32 BGB). A minimum protects against decisions by small groups but can paralyse the meeting if too few turn up. Only enter a value if your constitution requires one (§ 40 BGB).",
+    "text": "The law sets no minimum: a properly convened meeting can pass resolutions however many attend (§ 32 BGB). A minimum protects against decisions by small groups but can paralyse the meeting if too few turn up. Only enter a value if the constitution requires one (§ 40 BGB).",
     "example": "",
     "section": "Meetings → types and deadlines"
    },
@@ -3398,7 +3398,7 @@
     "key": "member_type_active",
     "kind": "decision",
     "name": "When is a membership type “active”?",
-    "text": "Active members are counted separately, for example for the association fee per active member and in the development figures; passive members often pay less and take less part in club life. A fine-grained division helps with reporting and fees but takes upkeep if members change often. Follow the constitution or fee regulations, which set out which groups exist and what they pay (§§ 25, 58 no. 2 BGB).",
+    "text": "Active members are counted separately, for example for the association fee per active member and in the development figures; passive members often pay less and take less part in club life. A fine-grained division helps with reporting and fees but takes upkeep if members change often. Follow the constitution or fee regulations, which set out which groups exist and what they pay (§ 58 no. 2 BGB).",
     "example": "",
     "section": "Edit membership type"
    },
@@ -3406,7 +3406,7 @@
     "key": "member_type_duration",
     "kind": "decision",
     "name": "Which periods count towards length of membership?",
-    "text": "If a type counts towards duration, its periods feed into anniversaries and honours. In favour: loyalty is also recognised as a passive member; against: if your honours regulations only count active years. Adopt the rule from the constitution or honours regulations so that honours are calculated the same for everyone (§ 25 BGB).",
+    "text": "If a type counts towards duration, its periods feed into anniversaries and honours. In favour: loyalty is also recognised as a passive member; against: if the honours regulations only count active years. Adopt the rule from the constitution or honours regulations so that honours are calculated the same for everyone.",
     "example": "",
     "section": "Edit membership type"
    },
@@ -3422,7 +3422,7 @@
     "key": "membership_duration",
     "kind": "term",
     "name": "Length of membership (Mitgliedsdauer)",
-    "text": "Total of the periods in which someone was a member, without gaps between leaving and rejoining. Only membership types marked “counts towards duration” count (§ 25 BGB).",
+    "text": "Total of the periods in which someone was a member, without gaps between leaving and rejoining. Only membership types marked “counts towards duration” count.",
     "example": "Example: 1998 to 2010 and again from 2014 gives 24 years in total in 2026; the 25-year anniversary follows in 2027.",
     "section": "Members"
    },
@@ -3462,7 +3462,7 @@
     "key": "opening_balance_term",
     "kind": "term",
     "name": "Opening balance (Anfangsbestand)",
-    "text": "Money in an account or the cash box at the start of the period, usually the previous year's closing balance. It is the starting point of every cash calculation (§ 259(1) BGB).",
+    "text": "Money in an account or the cash box at the start of the period, usually the previous year's closing balance. It is the starting point of every cash calculation.",
     "example": "Example: opening balance €4,250.00 on 1 January: this much was in the current account before the year began.",
     "section": "Treasury and closing"
    },
@@ -3494,7 +3494,7 @@
     "key": "paper_mandate",
     "kind": "decision",
     "name": "What belongs in a written mandate?",
-    "text": "A mandate states, among other things, payer, IBAN, creditor ID, mandate reference, date and signature (EPC016-06). Keep the original as long as you collect on it, and afterwards as long as queries are possible; without proof, the club must refund a disputed direct debit up to 13 months later (§§ 675u, 676b(2) BGB). HUBIplan stores mandates from the member area itself.",
+    "text": "A mandate states, among other things, payer, IBAN, creditor ID, mandate reference, date and signature (EPC016-06). Keep the original as long as you collect on it and queries are possible afterwards; HUBIplan stores mandates from the member area itself. Without proof, the club must refund a disputed direct debit up to 13 months later (§§ 675u, 676b(2) BGB).",
     "example": "",
     "section": "Direct debit → mandates → record written mandate"
    },
@@ -3550,7 +3550,7 @@
     "key": "photo_consent",
     "kind": "decision",
     "name": "Photos only with consent?",
-    "text": "A photo makes recognition on the ID card easier but shows a person recognisably; for this the club usually relies on their consent (§ 22 KUG, Art. 6(1)(a) GDPR). Consent is voluntary and can be withdrawn at any time, after which the photo must go (Art. 7(3) GDPR). The ID card also works without a photo, so only ask if it really helps.",
+    "text": "A photo makes recognition on the ID card easier but shows a person recognisably. For this the club usually needs their consent; it is voluntary and can be withdrawn at any time, after which the photo must go (§ 22 KUG, Art. 6(1)(a), Art. 7(3) GDPR). The ID card also works without a photo, so only ask if it really helps.",
     "example": "",
     "section": "Member record → photo"
    },
@@ -3574,7 +3574,7 @@
     "key": "pro_rata",
     "kind": "decision",
     "name": "Pro rata fee when joining during the period?",
-    "text": "Pro rata means: whoever joins or leaves during the period only pays for the started parts, as chosen months, quarters or half-years; per half-year means, with a financial year equal to the calendar year: joining by 30 June pays the full annual fee, from 1 July half. Per month seems fairest but gives odd amounts; quarters and half-years give round amounts. If the constitution or fee regulations say nothing, the board should decide on a rule and apply it equally to all (§ 58 no. 2 BGB).",
+    "text": "Pro rata means: whoever joins or leaves during the period only pays for the started parts, as chosen months, quarters or half-years. Per month seems fairest but gives odd amounts; quarters and half-years give round amounts. If the constitution or fee regulations say nothing, the board should decide on a rule and apply it equally to all (§ 58 no. 2 BGB).",
     "example": "",
     "section": "Fee rules → billing and invoice"
    },
@@ -3598,7 +3598,7 @@
     "key": "qualification_inspection",
     "kind": "decision",
     "name": "Record only that it was inspected?",
-    "text": "For the extended certificate of good conduct of people supervising children and young people, the club may only record that it inspected it, the date of the certificate and whether there is a relevant conviction (§ 72a Abs. 5 SGB VIII). The certificate itself is not copied or uploaded, and the data must be deleted at the latest six months after the activity ends. An expiry date is only worthwhile for certificates that really expire, such as first aid (Art. 5 Abs. 1 lit. c GDPR).",
+    "text": "For the extended certificate of good conduct, the club may only record that it inspected it, the date of the certificate and whether there is a relevant conviction (§ 72a Abs. 5 SGB VIII). The certificate itself is not copied or uploaded, and the data must be deleted at the latest six months after the activity ends. An expiry date is only worthwhile for certificates that really expire, such as first aid (Art. 5 Abs. 1 lit. c GDPR).",
     "example": "",
     "section": "Members → Qualifications"
    },
@@ -3654,7 +3654,7 @@
     "key": "reserves",
     "kind": "decision",
     "name": "When does the club need a reserve?",
-    "text": "A tax-privileged club must in principle use its funds by the end of the year after next (§ 55(1) no. 5 AO); whoever saves for a project, such as a larger purchase or an anniversary festival, creates a reserve for it (§ 62(1) AO). Reserves make saving traceable but tie up money and need a decision with a purpose. Small clubs below the income limit in § 55(1) no. 5 AO do not have to use funds promptly, but a reserve still helps with planning.",
+    "text": "A tax-privileged club must in principle use its funds by the end of the year after next; clubs with income of up to €100,000 a year are exempt from this (§ 55(1) no. 5 AO). Whoever saves for a project, such as a larger purchase or an anniversary festival, creates a reserve for it (§ 62(1) AO). Reserves make saving traceable but tie up money and need a decision with a purpose.",
     "example": "",
     "section": "Finance → reserves"
    },
@@ -3670,7 +3670,7 @@
     "key": "result",
     "kind": "term",
     "name": "Result (Ergebnis)",
-    "text": "All income minus all expenses of a period or event, without transfers. A negative result means the club paid in from reserves or balances (§ 259(1) BGB).",
+    "text": "All income minus all expenses of a period or event, without transfers. A negative result means the club paid in from reserves or balances.",
     "example": "Example: result 2026: +€900.00: the club took in €900.00 more than it spent during the year.",
     "section": "Treasury and closing"
    },
@@ -3678,7 +3678,7 @@
     "key": "retention_end",
     "kind": "decision",
     "name": "When may old treasury data go?",
-    "text": "Documents must be kept for 8 years, books and closings for 10 years, counted from the end of the calendar year (§ 147(3) and (4) AO); after that data protection requires deleting personal data (Art. 5(1)(e) GDPR). Cleaning up protects former members and donors but is final. Do not clean up while taxes for those years can still be assessed, for example during a tax audit, because the period does not expire until then (§ 147(3) AO).",
+    "text": "Documents must be kept for 8 years, books and closings for 10 years, counted from the end of the calendar year (§ 147(3) and (4) AO). After that data protection requires deleting personal data; this protects former members and donors but is final (Art. 5(1)(e) GDPR). Do not clean up while taxes for those years can still be assessed, for example during a tax audit (§ 147(3) AO).",
     "example": "",
     "section": "Closing → year-end closing"
    },
@@ -3806,7 +3806,7 @@
     "key": "tax_areas",
     "kind": "decision",
     "name": "Assign categories to tax areas?",
-    "text": "Non-profit clubs separate the non-profit sphere, asset management, special-purpose operations and commercial operations, because only the last can be taxable (§§ 14, 64, 65 AO). The assignment makes the tax return easier but requires clean categories. Switch it on as soon as the club has income from sales, festivals or advertising; if this stays at or below €50,000 a year including VAT, no corporation or trade tax is due on it (§ 64(3) AO, since 2026; previously €45,000).",
+    "text": "Non-profit clubs separate the non-profit sphere, asset management, special-purpose operations and commercial operations, because only the last can be taxable (§§ 14, 64, 65 AO). If income from sales, festivals and advertising stays at or below €50,000 a year including VAT, no corporation or trade tax is due on it. If all commercial income including special-purpose operations stays below this limit, the club usually no longer has to check whether a special-purpose operation exists (§ 64(3) AO); switch the assignment on before the club reaches it.",
     "example": "",
     "section": "Finance → Setup → Categories"
    },
@@ -3830,7 +3830,7 @@
     "key": "transfer",
     "kind": "term",
     "name": "Transfer (Umbuchung)",
-    "text": "Money moves between two of your own accounts, for example from the cash box to the current account. It is neither income nor expense and does not change the result (§ 259(1) BGB).",
+    "text": "Money moves between two of your own accounts, for example from the cash box to the current account. It is neither income nor expense and does not change the result.",
     "example": "Example: €600.00 cash takings from the festival paid into the current account: cash box −€600.00, current account +€600.00, result unchanged.",
     "section": "Treasury and closing"
    },
@@ -3894,7 +3894,7 @@
     "key": "vat_show",
     "kind": "decision",
     "name": "Show VAT on invoices?",
-    "text": "Genuine membership fees that everyone pays for the club's purpose are not a taxable supply; no VAT belongs on them (UStAE 1.4). You only show tax for services in return for payment, such as sales or advertising, and only if the club is not a small business (§ 19 UStG: previous year up to €25,000, current year up to €100,000). Whoever shows tax without owing it owes it anyway (§ 14c UStG); if in doubt, ask the tax office or a tax adviser.",
+    "text": "Genuine membership fees that everyone pays for the club's purpose are not a taxable supply; no VAT belongs on them (UStAE 1.4). You only show tax for services in return for payment, such as sales or advertising, and only if the club is not a small business (§ 19 UStG). Whoever shows tax without owing it owes it anyway (§ 14c UStG); if in doubt, ask the tax office or a tax adviser.",
     "example": "",
     "section": "Fee rules → VAT"
    },
@@ -3902,7 +3902,7 @@
     "key": "video_link",
     "kind": "decision",
     "name": "Why only a link to the video?",
-    "text": "A link loads nothing from third-party servers as long as nobody clicks. An embedded video transfers visitors’ data to the provider as soon as the page is opened and often sets cookies; that needs consent (§ 25(1) TDDDG, Art. 6(1)(a) GDPR). With the link the website gets by without a consent prompt; in return the video plays at the provider and not on your page.",
+    "text": "A link loads nothing from third-party servers as long as nobody clicks. An embedded video transfers visitors’ data to the provider as soon as the page is opened and often sets cookies; that needs consent (§ 25(1) TDDDG, Art. 6(1)(a) GDPR). With the link the website gets by without a consent prompt; in return the video plays at the provider and not on the club's page.",
     "example": "",
     "section": "Website → home page → “Video” section"
    },
