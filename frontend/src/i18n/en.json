@@ -10224,5 +10224,22 @@
   "Gehört zum Termin „{title}“ am {when}. Datum, Ort, Programm, Preise, freie Plätze und der Knopf zur Anmeldung kommen aus dem Termin und erscheinen oben auf der Seite. Hier pflegst du nur Text und Abschnitte darunter.": "Belongs to the event “{title}” on {when}. Date, place, programme, prices, places left and the registration button come from the event and appear at the top of the page. Here you only maintain the text and the sections below.",
   "Der Termin ist nicht mehr „nach außen öffentlich“. Die Seite zeigt deshalb keine Eckdaten und keinen Anmeldeknopf.": "The event is no longer “public”. The page therefore shows no key details and no registration button.",
   "Nach dem Ende der Veranstaltung von der Webseite nehmen": "Remove from the website after the event has ended",
-  "Der Menüpunkt verschwindet in jedem Fall am Tag nach dem Ende. Ohne Haken bleibt die Seite als Rückblick erreichbar.": "The menu item disappears on the day after the end in any case. Without the tick the page stays available as a look back."
+  "Der Menüpunkt verschwindet in jedem Fall am Tag nach dem Ende. Ohne Haken bleibt die Seite als Rückblick erreichbar.": "The menu item disappears on the day after the end in any case. Without the tick the page stays available as a look back.",
+  "Die Kamera lässt sich nicht öffnen.": "The camera cannot be opened.",
+  "{n} von {total} Personen eingelassen.": "{n} of {total} people admitted.",
+  "Code der Eintrittskarte": "Ticket code",
+  "Mit einem Handscanner hier hineinscannen; Enter lässt ein.": "Scan into this field with a hand scanner; Enter admits.",
+  "Einlassen": "Admit",
+  "Kamera aus": "Camera off",
+  "Mit der Kamera scannen": "Scan with the camera",
+  "um {time}": "at {time}",
+  "Zahlung offen": "payment outstanding",
+  "Einlass": "Admission",
+  "da seit {time}": "here since {time}",
+  "Einlass von {name} zurücknehmen": "Undo admission of {name}",
+  "{name} einlassen": "Admit {name}",
+  "Eintrittskarten von {number}": "Tickets for {number}",
+  "Eintrittskarten": "Tickets",
+  "Eintrittskarten (PDF)": "Tickets (PDF)",
+  "Einlass: {title}": "Admission: {title}"
 }

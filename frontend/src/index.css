@@ -7267,3 +7267,12 @@ html {
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
+
+/* Einlass vor Ort (Anmeldung A6) */
+.checkin-camera {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  border-radius: var(--radius);
+  margin-top: 0.5rem;
+}

@@ -424,6 +424,11 @@ class Participant(models.Model):
     health = EncryptedTextField(_("Allergien und Unverträglichkeiten"), blank=True, db_default="")
     # Unter 18: Erziehungsberechtigte [{"name", "phone", "email", "address"}, …] (F13)
     guardians = EncryptedJSONField(default=list, blank=True, db_default=[])
+    # Einlass vor Ort (A6): wann und von wem abgehakt
+    checked_in_at = models.DateTimeField(_("eingelassen am"), null=True, blank=True)
+    checked_in_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
 
     class Meta:
         verbose_name = "Teilnehmende"

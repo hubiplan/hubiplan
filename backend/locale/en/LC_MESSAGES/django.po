@@ -14705,3 +14705,48 @@ msgid ""
 msgstr ""
 "Event number: create an event page for this public event (if one exists "
 "already, it is returned)."
+
+msgid "Zahlung offen"
+msgstr "payment outstanding"
+
+msgid "Anmeldung {number} · {state}"
+msgstr "Registration {number} · {state}"
+
+msgid "Eintrittskarte, bitte beim Einlass zeigen."
+msgstr "Ticket, please show it at the entrance."
+
+msgid "Eintrittskarten: {title}"
+msgstr "Tickets: {title}"
+
+msgid "Keine Eintrittskarten."
+msgstr "No tickets."
+
+msgid "Für diese Anmeldung gibt es keine Eintrittskarten."
+msgstr "There are no tickets for this registration."
+
+msgid "Bitte einen Code angeben."
+msgstr "Please enter a code."
+
+msgid "Eingelassen."
+msgstr "Admitted."
+
+msgid "Schon eingelassen."
+msgstr "Already admitted."
+
+msgid "Einlass zurückgenommen."
+msgstr "Admission undone."
+
+msgid "Unbekannter Code."
+msgstr "Unknown code."
+
+msgid "Diese Karte gilt für einen anderen Termin."
+msgstr "This ticket is for another event."
+
+msgid "Diese Person ist abgemeldet."
+msgstr "This person has cancelled."
+
+msgid "Die Eintrittskarten liegen bei; bitte beim Einlass zeigen."
+msgstr "The tickets are attached; please show them at the entrance."
+
+msgid "eingelassen am"
+msgstr "admitted on"

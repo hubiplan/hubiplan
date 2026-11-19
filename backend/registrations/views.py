@@ -28,7 +28,7 @@ from exchange.export import safe_cell
 from members.models import Membership
 
 from . import extras as ex
-from . import public, services
+from . import public, services, tickets
 from .models import (
     MAX_ADDONS,
     MAX_CHOICES,
@@ -68,6 +68,8 @@ def participant_data(p: Participant, *, full: bool = False) -> dict:
     if full:
         # Gesundheitsangaben nur für die Verwaltung (F11)
         data["health"] = p.health
+        # Einlass vor Ort (A6)
+        data["checked_in_at"] = p.checked_in_at
     return data
 
 
@@ -106,6 +108,8 @@ def registration_data(reg: Registration, *, full: bool) -> dict:
         "fee_invoice": _invoice_brief(reg.fee_invoice)
         if reg.fee_invoice_id != reg.invoice_id
         else None,
+        # Eintrittskarten mit QR-Code (A6)
+        "has_tickets": tickets.has_tickets(reg),
     }
     if not full:
         data["can_cancel"] = services.member_may_cancel(reg)
@@ -921,6 +925,79 @@ class RegistrationCancelView(_OrgRegistrationMixin, APIView):
         return Response(self.payload(event, setup))
 
 
+def tickets_response(reg: Registration) -> HttpResponse:
+    if not tickets.has_tickets(reg):
+        raise NotFound(gettext("Für diese Anmeldung gibt es keine Eintrittskarten."))
+    resp = HttpResponse(tickets.pdf(reg), content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="{tickets.filename(reg)}"'
+    resp["Cache-Control"] = "private, no-store"
+    return resp
+
+
+class RegistrationTicketsView(RegistrationCancelView):
+    """GET: Eintrittskarten einer Anmeldung als PDF (A6)."""
+
+    def get(self, request, pk: int, reg_id: int, **kwargs):
+        _event, _setup, reg = self.registration(pk, reg_id)
+        return tickets_response(reg)
+
+    def post(self, request, *args, **kwargs):
+        raise NotFound()
+
+
+class CheckInIn(serializers.Serializer):
+    code = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    participant = serializers.IntegerField(required=False, allow_null=True, default=None)
+    undo = serializers.BooleanField(required=False, default=False)
+
+
+class CheckInView(_OrgRegistrationMixin, APIView):
+    """Einlass vor Ort (A6): GET alle Personen verbindlicher Anmeldungen mit Stand ·
+    POST ``{code}`` (gescannte Eintrittskarte) oder ``{participant}`` abhaken, ``undo`` zurück."""
+
+    def get(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        setup = self.setup_for(event)
+        rows = tickets.entries(setup)
+        return Response(
+            {
+                "event_id": event.pk,
+                "title": event.title,
+                "can_edit": REGISTRATIONS_EDIT in self.viewer.perms and self.viewer.can_edit(event),
+                "participants": rows,
+                "count": len(rows),
+                "checked_in": sum(1 for r in rows if r["checked_in_at"]),
+            }
+        )
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.event(pk)
+        self.require_edit(event)
+        setup = self.setup_for(event)
+        data = CheckInIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        if v["participant"] is None and not v["code"].strip():
+            raise serializers.ValidationError({"code": gettext("Bitte einen Code angeben.")})
+        with transaction.atomic():
+            result, row = tickets.check_in(
+                setup,
+                participant=v["participant"],
+                scanned=v["code"],
+                user=request.user,
+                undo=v["undo"],
+            )
+        messages = {
+            "ok": gettext("Eingelassen."),
+            "already": gettext("Schon eingelassen."),
+            "undone": gettext("Einlass zurückgenommen."),
+            "unknown": gettext("Unbekannter Code."),
+            "other": gettext("Diese Karte gilt für einen anderen Termin."),
+            "cancelled": gettext("Diese Person ist abgemeldet."),
+        }
+        return Response({"result": result, "message": messages[result], "participant": row})
+
+
 class SubstituteIn(serializers.Serializer):
     membership_id = serializers.IntegerField(required=False, allow_null=True, default=None)
     name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
@@ -1229,6 +1306,20 @@ class MemberRegistrationView(_PortalRegistrationMixin, APIView):
                 {f"Anmeldung {reg.display_number}": [None, reg.name]},
             )
         return Response(self.payload(event, setup), status=status.HTTP_201_CREATED)
+
+
+class MemberTicketsView(_PortalRegistrationMixin, APIView):
+    """GET: Eintrittskarten einer eigenen Anmeldung (oder einer, bei der man dabei ist) (A6)."""
+
+    def get(self, request, pk: int, reg_id: int, **kwargs):
+        event = self.visible_event(pk)
+        setup = services.setup_of(event)
+        if setup is None:
+            raise NotFound()
+        reg = self.mine(setup).filter(pk=reg_id).first()
+        if reg is None:
+            raise NotFound()
+        return tickets_response(reg)
 
 
 class MemberCancelView(_PortalRegistrationMixin, APIView):

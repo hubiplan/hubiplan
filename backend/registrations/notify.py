@@ -174,6 +174,11 @@ def confirmation(pk: int) -> bool:
             attachments.append(("termin.ics", ics(reg), "text/calendar"))
         except Exception:  # noqa: BLE001
             logger.exception("Kalenderdatei zur Anmeldung %s", reg.pk)
+        # Ohne offene Zahlung gleich mit Eintrittskarten, sonst mit der Zahlungsbestätigung (A6)
+        from .services import paid_state
+
+        if paid_state(reg) in ("free", "paid"):
+            attachments += _tickets(reg, lines)
         subject = _("Anmeldebestätigung: {title}").format(title=event.title)
         sent = _send(reg, subject, lines, "anmeldung", attachments)
         if sent:
@@ -208,8 +213,24 @@ def payment_received(pk: int) -> bool:
             "",
             org.name,
         ]
+        attachments = _tickets(reg, lines)
         subject = _("Zahlung eingegangen: {title}").format(title=reg.setup.event.title)
-        return _send(reg, subject, lines, "zahlungsbestaetigung")
+        return _send(reg, subject, lines, "zahlungsbestaetigung", attachments)
+
+
+def _tickets(reg: Registration, lines: list[str]) -> list:
+    """Eintrittskarten als PDF-Anhang (A6); der Hinweis steht vor dem Gruß."""
+    from . import tickets
+
+    if not tickets.has_tickets(reg):
+        return []
+    try:
+        content = tickets.pdf(reg)
+    except Exception:  # noqa: BLE001 – Mail geht auch ohne Eintrittskarten raus
+        logger.exception("Eintrittskarten zur Anmeldung %s", reg.pk)
+        return []
+    lines[-2:-2] = ["", _("Die Eintrittskarten liegen bei; bitte beim Einlass zeigen.")]
+    return [(tickets.filename(reg), content, "application/pdf")]
 
 
 def _invoice_attachment(invoice, lines: list[str], text: str) -> list:

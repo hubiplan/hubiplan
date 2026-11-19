@@ -1,0 +1,241 @@
+// Einlass vor Ort (Anmeldung A6, Konzept 3.11): Eintrittskarte scannen (Handscanner tippt den
+// Code ins Feld, Kamera wo der Browser QR-Codes lesen kann) oder in der Liste abhaken.
+import { useEffect, useRef, useState } from 'react'
+import type { CalendarBase } from '../../api/events.ts'
+import { registrationApi } from '../../api/registrations.ts'
+import type { CheckInResult, CheckInRow } from '../../api/registrations.ts'
+import { errorMessage, useLoad } from '../forms.ts'
+import { Alert, Field, Loading } from '../ui.tsx'
+import { useRowSearch } from '../RowSearch.tsx'
+import { PaidBadge } from './PaidBadge.tsx'
+import { t } from '../../i18n/index.ts'
+
+interface Detector {
+  detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]>
+}
+type DetectorClass = new (options: { formats: string[] }) => Detector
+
+function detectorClass(): DetectorClass | null {
+  const w = window as unknown as { BarcodeDetector?: DetectorClass }
+  return typeof w.BarcodeDetector === 'function' ? w.BarcodeDetector : null
+}
+
+function time(iso: string): string {
+  return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+}
+
+/** Kamera mit QR-Erkennung des Browsers; ruft onCode einmal je neuem Code. */
+function CameraScanner({ onCode }: { onCode: (code: string) => void }) {
+  const video = useRef<HTMLVideoElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  const last = useRef({ code: '', at: 0 })
+  useEffect(() => {
+    const Klass = detectorClass()
+    if (!Klass) return
+    const detector = new Klass({ formats: ['qr_code'] })
+    let stream: MediaStream | null = null
+    let timer = 0
+    let stopped = false
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } })
+      .then((s) => {
+        if (stopped) {
+          s.getTracks().forEach((track) => track.stop())
+          return
+        }
+        stream = s
+        if (video.current) {
+          video.current.srcObject = s
+          void video.current.play()
+        }
+        timer = window.setInterval(() => {
+          const v = video.current
+          if (!v || v.readyState < 2) return
+          void detector.detect(v).then((codes) => {
+            const value = codes[0]?.rawValue
+            const now = Date.now()
+            // Derselbe Code erst nach drei Sekunden wieder
+            if (value && (value !== last.current.code || now - last.current.at > 3000)) {
+              last.current = { code: value, at: now }
+              onCode(value)
+            }
+          })
+        }, 350)
+      })
+      .catch(() => setError(t('Die Kamera lässt sich nicht öffnen.')))
+    return () => {
+      stopped = true
+      window.clearInterval(timer)
+      stream?.getTracks().forEach((track) => track.stop())
+    }
+  }, [onCode])
+  if (error) return <Alert kind="error">{error}</Alert>
+  return <video ref={video} className="checkin-camera" muted playsInline aria-hidden="true" />
+}
+
+export function CheckInPanel({ base, eventId }: { base: CalendarBase; eventId: number }) {
+  const { data, error, setData } = useLoad(
+    () => registrationApi.checkIns(base, eventId),
+    [base, eventId],
+  )
+  const [code, setCode] = useState('')
+  const [result, setResult] = useState<CheckInResult | null>(null)
+  const [failure, setFailure] = useState<string | null>(null)
+  const [camera, setCamera] = useState(false)
+  const rows = data?.participants ?? []
+  const search = useRowSearch(rows, (r) => `${r.name} ${r.number} ${r.contact}`, t('Personen'))
+
+  function apply(res: CheckInResult) {
+    setResult(res)
+    const row = res.participant
+    if (!row) return
+    setData((d) => {
+      if (!d) return d
+      const participants = d.participants.map((p) => (p.id === row.id ? row : p))
+      return {
+        ...d,
+        participants,
+        checked_in: participants.filter((p) => p.checked_in_at).length,
+      }
+    })
+  }
+
+  async function send(body: { code?: string; participant?: number; undo?: boolean }) {
+    setFailure(null)
+    try {
+      apply(await registrationApi.checkIn(base, eventId, body))
+    } catch (err) {
+      setFailure(errorMessage(err))
+    }
+  }
+
+  async function scan(value: string) {
+    const text = value.trim()
+    if (!text) return
+    setCode('')
+    await send({ code: text })
+  }
+
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <Loading small />
+  const good = result && (result.result === 'ok' || result.result === 'undone')
+  const unpaid = result?.participant && ['open', 'partly'].includes(result.participant.paid_state)
+  return (
+    <div className="checkin">
+      <p>{t('{n} von {total} Personen eingelassen.', { n: data.checked_in, total: data.count })}</p>
+      {data.can_edit && (
+        <form
+          className="checkin-scan"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void scan(code)
+          }}
+        >
+          <Field
+            label={t('Code der Eintrittskarte')}
+            hint={t('Mit einem Handscanner hier hineinscannen; Enter lässt ein.')}
+            value={code}
+            autoComplete="off"
+            enterKeyHint="go"
+            onChange={(e) => setCode(e.target.value)}
+          />
+          <div className="button-row">
+            <button type="submit" className="button" disabled={!code.trim()}>
+              {t('Einlassen')}
+            </button>
+            {detectorClass() && (
+              <button
+                type="button"
+                className="button button-ghost"
+                aria-pressed={camera}
+                onClick={() => setCamera(!camera)}
+              >
+                {camera ? t('Kamera aus') : t('Mit der Kamera scannen')}
+              </button>
+            )}
+          </div>
+          {camera && <CameraScanner onCode={(value) => void scan(value)} />}
+        </form>
+      )}
+      <div aria-live="polite">
+        {result && (
+          <Alert kind={good ? 'success' : 'error'}>
+            {result.message}
+            {result.participant && (
+              <>
+                {' '}
+                <strong>{result.participant.name}</strong> · {result.participant.price_name}
+                {result.result === 'already' &&
+                  result.participant.checked_in_at &&
+                  ` · ${t('um {time}', { time: time(result.participant.checked_in_at) })}`}
+                {unpaid && ` · ${t('Zahlung offen')}`}
+                {result.participant.minor && ` · ${t('minderjährig')}`}
+              </>
+            )}
+          </Alert>
+        )}
+        {failure && <Alert kind="error">{failure}</Alert>}
+      </div>
+      {search.field}
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Name')}</th>
+              <th>{t('Anmeldung')}</th>
+              <th>{t('Stand')}</th>
+              <th>{t('Einlass')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {search.shown.map((r: CheckInRow) => (
+              <tr key={r.id}>
+                <td>
+                  {r.name}
+                  <div className="muted small">{r.price_name}</div>
+                </td>
+                <td>
+                  {r.number}
+                  <div className="muted small">{r.contact}</div>
+                </td>
+                <td>
+                  <PaidBadge state={r.paid_state} />
+                </td>
+                <td>
+                  {r.checked_in_at ? (
+                    <>
+                      <span className="badge badge-yes">
+                        {t('da seit {time}', { time: time(r.checked_in_at) })}
+                      </span>{' '}
+                      {data.can_edit && (
+                        <button
+                          type="button"
+                          className="button button-ghost small"
+                          aria-label={t('Einlass von {name} zurücknehmen', { name: r.name })}
+                          onClick={() => void send({ participant: r.id, undo: true })}
+                        >
+                          {t('Zurücknehmen')}
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    data.can_edit && (
+                      <button
+                        type="button"
+                        className="button button-ghost small"
+                        aria-label={t('{name} einlassen', { name: r.name })}
+                        onClick={() => void send({ participant: r.id })}
+                      >
+                        {t('Einlassen')}
+                      </button>
+                    )
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
