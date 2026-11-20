@@ -12984,6 +12984,50 @@ msgstr "Draft text (Markdown; images as ![description](bild:key), see webseite_b
 msgid "Bitte einen Text angeben."
 msgstr "Please enter a text."
 
+#: access/modules.py
+msgid "Pinnwand"
+msgstr "Notice board"
+
+#: access/catalog.py
+msgid "Beiträge der Pinnwand sehen"
+msgstr "View notice board posts"
+
+#: access/catalog.py
+msgid "Beiträge an die Pinnwand schreiben, ändern und löschen, auch aus der App"
+msgstr "Write, change and delete notice board posts, also from the app"
+
+#: access/catalog.py
+msgid "Pinnwand {gen}"
+msgstr "Notice board {gen}"
+
+#: access/modules.py
+msgid "Kurze Neuigkeiten mit Foto im Mitgliederbereich und in der App, auf Wunsch mit Push"
+msgstr "Short news with photos in the member area and the app, optionally with push"
+
+#: pinboard/services.py
+msgid "Anzeigen bis"
+msgstr "Show until"
+
+#: pinboard/notify.py
+msgid "Pinnwand: {owner}"
+msgstr "Notice board: {owner}"
+
+#: pinboard/services.py
+msgid "Höchstens {n} Zeichen."
+msgstr "At most {n} characters."
+
+#: pinboard/services.py
+msgid "Bitte ein gültiges Datum wählen."
+msgstr "Please choose a valid date."
+
+#: pinboard/services.py
+msgid "Höchstens {n} Fotos je Beitrag."
+msgstr "At most {n} photos per post."
+
+#: pinboard/views.py
+msgid "Der Beitrag wurde inzwischen geändert. Bitte neu laden."
+msgstr "The post has been changed in the meantime. Please reload."
+
 msgid "Höchstens {x0} Titelzeilen auf dem Titelfoto."
 msgstr "At most {x0} title lines on the cover photo."
 
