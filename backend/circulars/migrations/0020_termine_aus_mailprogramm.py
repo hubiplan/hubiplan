@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     (nur hinzugefügt, mit db_default bzw. null)."""
 
     dependencies = [
-        ("circulars", "0018_infoschreiben"),
+        ("circulars", "0019_glueckwunsch"),
         ("events", "0018_termine_aus_mailprogramm"),
     ]
 
