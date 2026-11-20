@@ -5,4 +5,4 @@ routen: [/mein-bereich/rundschreiben]
 stichworte: [messages, circular, unsubscribe, email]
 ---
 
-Here you read the messages (circulars) your club has sent you. The app calls them “Messages” too. You can unsubscribe from circulars of the “information” type; you will still receive official notices such as invitations.
+Here you read the messages (circulars) your club has sent you. The app calls them “Messages” too. You can unsubscribe from circulars of the “information” type; you will still receive official notices such as invitations. If your club sends birthday or anniversary greetings, you can also object to them here with **Receive greetings on birthdays and club anniversaries**.
