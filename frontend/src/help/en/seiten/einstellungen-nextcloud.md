@@ -4,7 +4,7 @@ titel: Settings › Nextcloud
 rechte: [org.edit]
 routen: [/einstellungen/nextcloud]
 siehe: [guide.account_create]
-stichworte: [Nextcloud, sign-in, file storage, calendar, CalDAV]
+stichworte: [Nextcloud, sign-in, file storage, calendar, CalDAV, groups, group folders]
 ---
 
 Here you connect your club's Nextcloud with HUBIplan so members can sign in there with their HUBIplan account.
@@ -12,6 +12,14 @@ Here you connect your club's Nextcloud with HUBIplan so members can sign in ther
 With **Disable accounts automatically**, HUBIplan switches the Nextcloud account off as soon as someone no longer has access with you, for example because their role ends. Sessions and sync apps are signed out; the files are kept. If the person gets a role again, the account is switched back on. This needs a separate service account with an app password in Nextcloud. Use **Check connection** to test it.
 
 Under “Accounts via HUBIplan” you see who has already signed in via HUBIplan and what the next synchronisation would do. If the synchronisation stops because too many accounts would be affected at once, check the roles and then confirm with **Synchronise now**.
+
+## Keep groups in sync
+
+Otherwise Nextcloud only takes over groups at sign-in. Sync apps on phones and computers never sign in again: someone who gives up a role but keeps an account would keep the group, such as “Kassierer”, with all its group folders. With **Keep groups in sync**, HUBIplan sets the groups right after every change to roles, offices or units, and every night.
+
+Under **Groups HUBIplan keeps in sync**, enter which groups HUBIplan may set and remove, for example “Vorstand, Mitglieder, Kassierer”. The group of accounts via HUBIplan is always included. HUBIplan never touches groups you maintain by hand, or “admin”. The service account must be group admin of each of these groups in Nextcloud.
+
+**Compare groups** shows beforehand who joins which group and who drops out of which; it does not change anything yet. If more than three accounts would lose groups at once, synchronisation stops and everyone who manages roles gets an email. Then check the roles and confirm with **Synchronise groups now**. Files are never lost, only access to the group's folders.
 
 ## Events in the Nextcloud calendar
 

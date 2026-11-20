@@ -4,7 +4,7 @@ titel: Einstellungen › Nextcloud
 rechte: [org.edit]
 routen: [/einstellungen/nextcloud]
 siehe: [guide.account_create]
-stichworte: [Nextcloud, Anmeldung, Dateiablage, Kalender, CalDAV]
+stichworte: [Nextcloud, Anmeldung, Dateiablage, Kalender, CalDAV, Gruppen, Gruppenordner]
 ---
 
 Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglieder dort mit ihrem HUBIplan-Konto anmelden können.
@@ -12,6 +12,14 @@ Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglie
 Mit **Konten automatisch deaktivieren** schaltet HUBIplan das Nextcloud-Konto ab, sobald jemand bei euch keinen Zugang mehr hat, zum Beispiel weil die Rolle endet. Sitzungen und Sync-Apps werden dabei abgemeldet, die Dateien bleiben. Bekommt die Person wieder eine Rolle, wird das Konto wieder eingeschaltet. Dafür braucht es in der Nextcloud ein eigenes Dienstkonto mit App-Passwort. Mit **Verbindung prüfen** testet ihr es.
 
 Unter „Konten über HUBIplan“ seht ihr, wer sich schon über HUBIplan angemeldet hat und was der nächste Abgleich täte. Hält der Abgleich an, weil zu viele Konten auf einmal betroffen wären, prüft die Rollen und bestätigt dann mit **Jetzt abgleichen**.
+
+## Gruppen laufend abgleichen
+
+Die Nextcloud übernimmt Gruppen sonst nur beim Anmelden. Sync-Apps auf Handy und Rechner melden sich nie neu an: Wer eine Rolle abgibt, aber weiter ein Konto hat, behielte die Gruppe, etwa „Kassierer“, mit allen Gruppenordnern. Mit **Gruppen laufend abgleichen** setzt HUBIplan die Gruppen gleich nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht.
+
+Tragt unter **Gruppen, die HUBIplan abgleicht** ein, welche Gruppen HUBIplan setzen und entfernen darf, zum Beispiel „Vorstand, Mitglieder, Kassierer“. Die Gruppe der Konten über HUBIplan gehört immer dazu. Gruppen, die ihr von Hand pflegt, und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss in der Nextcloud Gruppen-Admin jeder dieser Gruppen sein.
+
+Mit **Gruppen vergleichen** seht ihr vorher, wer in welche Gruppe kommt und wer aus welcher herausfällt; das ändert noch nichts. Würden mehr als drei Konten auf einmal Gruppen verlieren, hält der Abgleich an und alle, die Rollen verwalten, bekommen eine Mail. Prüft dann die Rollen und bestätigt mit **Gruppen jetzt abgleichen**. Dateien gehen dabei nie verloren, nur der Zugriff auf die Ordner der Gruppe.
 
 ## Termine im Kalender der Nextcloud
 

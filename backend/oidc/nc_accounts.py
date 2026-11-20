@@ -16,7 +16,7 @@ import base64
 import json
 import logging
 from dataclasses import dataclass
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -36,17 +36,24 @@ TIMEOUT = 15
 
 
 class NextcloudError(Exception):
-    """Die Nextcloud hat den Auftrag nicht angenommen (Text für die Oberfläche)."""
+    """Die Nextcloud hat den Auftrag nicht angenommen (Text für die Oberfläche).
+
+    ``code``: Statuscode der OCS-Antwort (oder HTTP-Status), falls bekannt."""
+
+    def __init__(self, message: str, code: int | None = None):
+        super().__init__(message)
+        self.code = code
 
 
 # --- Schnittstelle der Nextcloud ---
 
 
-def _ocs(client: Client, method: str, path: str) -> dict:
+def _ocs(client: Client, method: str, path: str, params: dict | None = None) -> dict:
     if not client.service_user or not client.service_password:
         raise NextcloudError(gettext("Dienstkonto und App-Passwort fehlen."))
     auth = f"{client.service_user}:{decrypt(client.service_password, purpose='nextcloud')}"
-    url = f"{client.base_url.rstrip('/')}/ocs/v2.php/{path}?format=json"
+    query = urlencode({**(params or {}), "format": "json"})
+    url = f"{client.base_url.rstrip('/')}/ocs/v2.php/{path}?{query}"
     try:
         resp = safehttp.request(
             method,
@@ -63,7 +70,7 @@ def _ocs(client: Client, method: str, path: str) -> dict:
     except safehttp.SafeHTTPError as exc:
         raise NextcloudError(str(exc)) from exc
     if resp.status == 401:
-        raise NextcloudError(gettext("Die Nextcloud lehnt Dienstkonto oder App-Passwort ab."))
+        raise NextcloudError(gettext("Die Nextcloud lehnt Dienstkonto oder App-Passwort ab."), 401)
     try:
         meta = json.loads(resp.body or b"{}").get("ocs", {})
     except ValueError:
@@ -72,13 +79,14 @@ def _ocs(client: Client, method: str, path: str) -> dict:
     if resp.status == 200 and code in (100, 200):
         return meta.get("data") or {}
     if resp.status == 404 or code in (404, 998):
-        raise NextcloudError(gettext("Das Konto gibt es in der Nextcloud nicht (mehr)."))
+        raise NextcloudError(gettext("Das Konto gibt es in der Nextcloud nicht (mehr)."), 404)
     if resp.status == 403 or code in (403, 997):
         raise NextcloudError(
-            gettext("Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?).")
+            gettext("Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."), 403
         )
     raise NextcloudError(
-        gettext("Die Nextcloud antwortet mit Fehler {status}.").format(status=code or resp.status)
+        gettext("Die Nextcloud antwortet mit Fehler {status}.").format(status=code or resp.status),
+        code or resp.status,
     )
 
 
@@ -275,7 +283,7 @@ def _finish(client: Client, error: str, now) -> None:
         Client.objects.filter(pk=client.pk).update(sync_error=client.sync_error, synced_at=now)
 
 
-def _notify(client: Client, error: str, done: list[str]) -> None:
+def _notify(client: Client, error: str, done: list[str], *, what: str = "accounts") -> None:
     """E-Mail an alle, die Rollen der Einheit festlegen und besetzen."""
     from access.catalog import ROLES_MANAGE, effective
     from access.models import RoleAssignment
@@ -293,11 +301,19 @@ def _notify(client: Client, error: str, done: list[str]) -> None:
         )
     if not to:
         return
-    subject = gettext("Nextcloud „{name}“: Konten abgeglichen").format(name=client.name)
-    lines = [
-        gettext(
+    if what == "groups":
+        subject = gettext("Nextcloud „{name}“: Gruppen abgeglichen").format(name=client.name)
+        intro = gettext(
+            "HUBIplan hat die Gruppen in der Nextcloud „{name}“ ({host}) mit den Rollen "
+            "abgeglichen."
+        )
+    else:
+        subject = gettext("Nextcloud „{name}“: Konten abgeglichen").format(name=client.name)
+        intro = gettext(
             "HUBIplan hat die Konten in der Nextcloud „{name}“ ({host}) mit den Rollen abgeglichen."
-        ).format(name=client.name, host=client.host),
+        )
+    lines = [
+        intro.format(name=client.name, host=client.host),
         "",
         *done,
     ]

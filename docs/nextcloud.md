@@ -120,6 +120,39 @@ Einrichtung in der Nextcloud:
 4. Konten, die schon vorher da waren, kommen bei ihrer nächsten Anmeldung über HUBIplan in die
    Gruppe. Erst dann kann das Dienstkonto sie deaktivieren.
 
+## Gruppen laufend abgleichen
+
+`user_oidc` setzt Gruppen nur beim Anmelden. Endet eine Rolle, bleibt das Konto aber aktiv (andere
+Rolle, Mitgliederzugang), behielt die Person die Gruppe samt Gruppenordnern und geteilten
+Kalendern; Sync-Apps melden sich nie neu an. Mit „Gruppen laufend abgleichen“ (`sync_groups`)
+setzt HUBIplan die Gruppen selbst (`oidc/nc_groups.py`, OCS Provisioning API
+`GET/POST/DELETE /ocs/v2.php/cloud/users/<name>/groups`).
+
+- Abgeglichen werden nur die Gruppen unter „Gruppen, die HUBIplan abgleicht“
+  (`sync_groups_list`) und die Kontengruppe (`Client.managed_groups()`), nie `admin`. Von Hand
+  gepflegte Gruppen (z. B. Ordnergruppen) bleiben unberührt.
+- Soll ist dieselbe Berechnung wie im Token (`claims.profile`). Wer keinen Zugang mehr hat,
+  behält nur die Kontengruppe, damit das Dienstkonto das Konto weiter verwalten kann (die
+  Nextcloud lässt einen Gruppen-Admin niemanden aus seiner letzten Gruppe nehmen).
+- Nur Konten, die sich über HUBIplan angemeldet haben (`oidc_account`), ohne Verwaltungs- und
+  Dienstkonten.
+- Auslöser wie beim Kontenabgleich (Rolle, Amt, Mitgliederzugang, Mitgliedschaftszeitraum, Konto)
+  und zusätzlich Wechsel der Untereinheit; nach dem Speichern der Einstellungen
+  (`oidc.tasks.sync_client_groups`); jede Nacht mit `oidc.tasks.sync_all`.
+- Obergrenze: Verlören mehr als 3 Konten (oder mehr als die Hälfte) auf einmal Gruppen, hält der
+  Lauf an (Hinweis, Mail an alle mit „Rollen und Rechte verwalten“); „Gruppen jetzt abgleichen“
+  bestätigt. Jede Änderung im Änderungsprotokoll und per Mail.
+- „Gruppen vergleichen“ (`GET …/nextcloud/<eintrag>/groups/`) zeigt Soll und Ist je Konto und,
+  soweit die Nextcloud es dem Dienstkonto verrät (`subadmin` in `cloud/user`), Gruppen ohne
+  Gruppen-Admin-Recht. Es ändert nichts.
+- Einschalten und Ändern der Liste verlangen eine frische Bestätigung; dafür braucht es
+  Dienstkonto, App-Passwort und Kontengruppe.
+
+Einrichtung: Dienstkonto in der Nextcloud zum Gruppen-Admin jeder abgeglichenen Gruppe machen
+(Benutzerverwaltung › Konto › „Gruppen-Admin für“). Vorher mit „Gruppen vergleichen“ prüfen, wer
+herausfiele: Wer heute von Hand in einer abgeglichenen Gruppe steht, ohne die Rolle zu haben,
+verliert sie. Ordnerrechte ohne Amt besser über eigene, nicht abgeglichene Gruppen vergeben.
+
 ## Termine in den Kalender der Nextcloud
 
 HUBIplan schreibt Termine per CalDAV in Kalender des Dienstkontos (`oidc/nc_calendars.py`) und
@@ -248,6 +281,7 @@ verhält.
 | `/api/oidc/userinfo` | Angaben mit Zugriffsschlüssel |
 | `/api/orgs/<id>/nextcloud/` | Einträge der Einheit; `<eintrag>/secret/` erneuert das Geheimnis |
 | `/api/orgs/<id>/nextcloud/<eintrag>/calendars/` | POST: Kalender jetzt abgleichen |
+| `/api/orgs/<id>/nextcloud/<eintrag>/groups/` | GET: Gruppen vergleichen, POST: Gruppen jetzt abgleichen |
 
 Kennung als Anbieter (`issuer`): `FRONTEND_URL/api/oidc`, änderbar mit `OIDC_ISSUER`.
 

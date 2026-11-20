@@ -144,6 +144,19 @@ class Client(models.Model):
     )
     calendar_error = models.CharField(max_length=500, blank=True, default="", db_default="")
     calendar_synced_at = models.DateTimeField(null=True, blank=True)
+    # Gruppen auch zwischen den Anmeldungen abgleichen (siehe ``nc_groups``): ``user_oidc``
+    # setzt Gruppen nur beim Anmelden, Sync-Apps melden sich nie neu an. HUBIplan ändert nur die
+    # hier genannten Gruppen (und die Kontengruppe); das Dienstkonto muss ihr Gruppen-Admin sein.
+    sync_groups = models.BooleanField("Gruppen laufend abgleichen", default=False, db_default=False)
+    sync_groups_list = models.CharField(
+        "Gruppen, die HUBIplan abgleicht",
+        max_length=500,
+        blank=True,
+        default="",
+        db_default="",
+    )
+    groups_error = models.CharField(max_length=500, blank=True, default="", db_default="")
+    groups_synced_at = models.DateTimeField(null=True, blank=True)
     # Letzter Fehler oder Halt des Abgleichs (für die Oberfläche)
     sync_error = models.CharField(max_length=500, blank=True, default="")
     synced_at = models.DateTimeField(null=True, blank=True)
@@ -177,6 +190,8 @@ class Client(models.Model):
             "calendar_members_group",
             "calendar_board",
             "calendar_board_group",
+            "sync_groups",
+            "sync_groups_list",
             "is_active",
         }
     )
@@ -205,6 +220,14 @@ class Client(models.Model):
 
     def groups_for_role(self, role_id: int) -> list[str]:
         return clean_groups((self.role_groups or {}).get(str(role_id)))
+
+    def managed_groups(self) -> list[str]:
+        """Gruppen, die der Abgleich setzen und entfernen darf: die Liste und die Kontengruppe;
+        die Administratorgruppe nie."""
+        groups = clean_groups(self.sync_groups_list)
+        if self.account_group:
+            groups = clean_groups([*groups, self.account_group])
+        return [g for g in groups if g.casefold() not in {"admin"}]
 
     def blocked_usernames(self) -> frozenset[str]:
         """Benutzernamen, die nie zugeordnet werden: Verwaltung und Dienstkonto."""

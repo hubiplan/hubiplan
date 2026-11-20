@@ -170,6 +170,7 @@ November 2026:
 
 #### Einstellungen, Sicherheit und Plattform
 
+- **Gruppen der Nextcloud laufend abgleichen.** Unter Einstellungen › Nextcloud setzt HUBIplan die Gruppen nicht mehr nur beim Anmelden, sondern nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht. Wer eine Rolle abgibt, verliert damit auch die Gruppe und ihre Ordner, selbst wenn die Sync-App weiterläuft. **Gruppen vergleichen** zeigt vorher, was sich ändern würde.
 - **Termine im Kalender der Nextcloud.** Unter Einstellungen › Nextcloud schreibt HUBIplan die Termine für Mitglieder und auf Wunsch die Termine „nur Vorstand“ in zwei Kalender der Nextcloud, nur zum Lesen für die Gruppen „Mitglieder“ und „Vorstand“ freigegeben. Bearbeitet wird weiter in HUBIplan; Änderungen kommen alle 15 Minuten an.
 - **Briefbogen: eigenes Logo und Name im Briefkopf.** Unter Einstellungen › Briefbogen setzt ihr ein **Logo nur für Briefe**, etwa eine querformatige Wort-Bild-Marke, während in HUBIplan das Wappen bleibt. Mit **Name im Briefkopf** bestimmt ihr selbst, wie ein langer Name auf zwei Zeilen umbricht, die zweite auf Wunsch kleiner.
 - **Briefbogen nach eigenem Styleguide**: Unter Einstellungen › Briefbogen wählt ihr jetzt eigene Schriften für Text und Überschriften (auch die Schriften der Webseite, im PDF eingebettet), die Größe von Logo/Wappen, ob der Name neben dem Logo steht, die Linienfarbe aus eurer Palette, Kopf- und Fußlinie getrennt, die Farbe von Titel und Betreff sowie Linien und Streifen der Rechnungstabellen.

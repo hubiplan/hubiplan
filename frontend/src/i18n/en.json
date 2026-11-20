@@ -10427,5 +10427,21 @@
   "Für diese Gruppe freigeben": "Share with this group",
   "leer: nur das Dienstkonto sieht den Kalender": "empty: only the service account sees the calendar",
   "Termine „nur Vorstand“": "“Board only” events",
-  "wie im Vorstands-Abo; nur für eine Gruppe, in der allein der Vorstand ist": "as in the board subscription; only for a group that contains just the board"
+  "wie im Vorstands-Abo; nur für eine Gruppe, in der allein der Vorstand ist": "as in the board subscription; only for a group that contains just the board",
+  "Gruppen jetzt abgleichen?": "Synchronise groups now?",
+  "{count} Konten verlieren dabei Gruppen und damit den Zugriff auf deren Ordner und Kalender. Dateien bleiben erhalten.": "{count} accounts will lose groups and with them access to those groups' folders and calendars. Files are kept.",
+  "Abgleichen": "Synchronise",
+  "Aufgenommen: {added}, entfernt: {removed}, Fehler: {errors}": "Added: {added}, removed: {removed}, errors: {errors}",
+  "Das Dienstkonto ist nicht Gruppen-Admin von: {groups}": "The service account is not group admin of: {groups}",
+  "Alle Konten sind in den richtigen Gruppen.": "All accounts are in the right groups.",
+  "Heute in": "Currently in",
+  "Kommt hinzu": "Will be added",
+  "Fällt weg": "Will be removed",
+  "Gruppen vergleichen": "Compare groups",
+  "Gruppen jetzt abgleichen": "Synchronise groups now",
+  "Gruppen laufend abgleichen": "Keep groups in sync",
+  "Die Nextcloud setzt Gruppen sonst nur beim Anmelden. Sync-Apps melden sich nie neu an: Wer eine Rolle abgibt, behielte die Gruppe mit ihren Ordnern. Mit dem Abgleich setzt HUBIplan die Gruppen gleich nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht. Verlören mehr als drei Konten auf einmal Gruppen, hält der Abgleich an, bis jemand ihn hier bestätigt.": "Otherwise Nextcloud only sets groups at sign-in. Sync apps never sign in again: anyone who gives up a role would keep the group and its folders. With synchronisation, HUBIplan sets the groups right after every change to roles, offices or units, and every night. If more than three accounts would lose groups at once, synchronisation stops until someone confirms it here.",
+  "Gruppen, die HUBIplan abgleicht": "Groups HUBIplan keeps in sync",
+  "mit Komma getrennt; dazu kommt immer die Gruppe der Konten über HUBIplan. Andere Gruppen (z. B. von Hand gepflegte Ordnergruppen) und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss Gruppen-Admin jeder dieser Gruppen sein.": "separated by commas; the group of accounts via HUBIplan is always included. HUBIplan never touches other groups (e.g. folder groups maintained by hand) or “admin”. The service account must be group admin of each of these groups.",
+  "vorher mit „Gruppen vergleichen“ unten prüfen, was sich ändern würde": "check first with “Compare groups” below what would change"
 }

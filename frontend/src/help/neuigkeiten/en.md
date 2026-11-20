@@ -170,6 +170,7 @@ November 2026:
 
 #### Settings, security and platform
 
+- **Keep Nextcloud groups in sync.** Under Settings › Nextcloud, HUBIplan no longer sets groups only at sign-in, but after every change to roles, offices or units, and every night. Anyone who gives up a role also loses the group and its folders, even while their sync app keeps running. **Compare groups** shows beforehand what would change.
 - **Events in the Nextcloud calendar.** Under Settings › Nextcloud, HUBIplan writes the events for members and, if you like, the “board only” events into two Nextcloud calendars, shared read-only with the groups “Mitglieder” and “Vorstand”. Editing still happens in HUBIplan; changes arrive every 15 minutes.
 - **Letterhead: own logo and name in the letterhead.** Under Settings › Letterhead you can set a **logo only for letters**, such as a landscape word-and-image mark, while HUBIplan keeps the coat of arms. With **Name in the letterhead** you decide how a long name breaks over two lines, the second one smaller if you like.
 - **Letterhead following your style guide**: Under Settings › Letterhead you can now choose fonts for text and headings (including the website fonts, embedded in PDFs), the logo/crest size, whether the name appears next to the logo, the line colour from your palette, header and footer lines separately, the colour of title and subject, and the lines and stripes of invoice tables.

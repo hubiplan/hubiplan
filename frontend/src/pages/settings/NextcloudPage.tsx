@@ -5,6 +5,7 @@ import { nextcloudApi } from '../../api/nextcloud.ts'
 import type {
   NextcloudAccount,
   NextcloudClient,
+  NextcloudGroupReport,
   NextcloudInput,
   NextcloudRoleChoice,
 } from '../../api/nextcloud.ts'
@@ -223,6 +224,137 @@ function AccountList({
   )
 }
 
+// Soll und Ist der abgeglichenen Gruppen: erst auf Knopfdruck, weil HUBIplan dafür jedes Konto
+// in der Nextcloud abfragt
+function GroupStatus({
+  org,
+  client,
+  onChanged,
+}: {
+  org: number
+  client: NextcloudClient
+  onChanged: (c: NextcloudClient) => void
+}) {
+  const [report, setReport] = useState<NextcloudGroupReport | null>(null)
+  const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+  if (!client.sync_groups_list.trim() && !client.sync_groups) return null
+
+  async function load() {
+    setMessage(null)
+    setBusy(true)
+    try {
+      setReport(await nextcloudApi.groups(org, client.id))
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function run() {
+    const losing = report?.accounts.filter((a) => a.remove.length).length ?? 0
+    if (
+      losing > 0 &&
+      !(await confirmDialog({
+        final: false,
+        title: t('Gruppen jetzt abgleichen?'),
+        message: t(
+          '{count} Konten verlieren dabei Gruppen und damit den Zugriff auf deren Ordner und Kalender. Dateien bleiben erhalten.',
+          { count: losing },
+        ),
+        confirmLabel: t('Abgleichen'),
+      }))
+    )
+      return
+    setMessage(null)
+    setBusy(true)
+    try {
+      const r = await nextcloudApi.syncGroups(org, client.id, true)
+      onChanged(r.client)
+      setMessage({
+        kind: r.result.errors ? 'error' : 'success',
+        text: t('Aufgenommen: {added}, entfernt: {removed}, Fehler: {errors}', {
+          added: r.result.added,
+          removed: r.result.removed,
+          errors: r.result.errors,
+        }),
+      })
+      setReport(await nextcloudApi.groups(org, client.id))
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const changes = report?.accounts.filter((a) => a.add.length || a.remove.length || a.error) ?? []
+  return (
+    <>
+      <h3>{t('Gruppen in der Nextcloud')}</h3>
+      {client.groups_error && <Alert kind="error">{client.groups_error}</Alert>}
+      <p className="muted small">
+        {client.groups_synced_at
+          ? t('Zuletzt abgeglichen: {when}', { when: formatDayTime(client.groups_synced_at) })
+          : t('Noch nicht abgeglichen.')}
+      </p>
+      {report && report.missing_admin.length > 0 && (
+        <Alert kind="error">
+          {t('Das Dienstkonto ist nicht Gruppen-Admin von: {groups}', {
+            groups: report.missing_admin.join(', '),
+          })}
+        </Alert>
+      )}
+      {report && !changes.length && (
+        <Alert kind="success">{t('Alle Konten sind in den richtigen Gruppen.')}</Alert>
+      )}
+      {changes.length > 0 && (
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('Person')}</th>
+                <th>{t('Heute in')}</th>
+                <th>{t('Kommt hinzu')}</th>
+                <th>{t('Fällt weg')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {changes.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    {a.name}
+                    <div className="muted small">
+                      <code className="break-all">{a.nc_user}</code>
+                    </div>
+                  </td>
+                  <td>{a.current.join(', ') || '–'}</td>
+                  <td>{a.add.join(', ') || '–'}</td>
+                  <td>
+                    {a.remove.join(', ') || '–'}
+                    {a.error && <div className="error small">{a.error}</div>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <div className="button-row">
+        <button type="button" className="button" disabled={busy} onClick={() => void load()}>
+          {t('Gruppen vergleichen')}
+        </button>
+        {client.sync_groups && report && (
+          <button type="button" className="button" disabled={busy} onClick={() => void run()}>
+            {t('Gruppen jetzt abgleichen')}
+          </button>
+        )}
+      </div>
+    </>
+  )
+}
+
 function CalendarStatus({
   org,
   client,
@@ -316,6 +448,8 @@ function ClientCard({
     calendar_members_group: client.calendar_members_group,
     calendar_board: client.calendar_board,
     calendar_board_group: client.calendar_board_group,
+    sync_groups: client.sync_groups,
+    sync_groups_list: client.sync_groups_list,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -523,6 +657,30 @@ function ClientCard({
           <Why k="nextcloud_auto_disable" />
         </fieldset>
         <fieldset>
+          <legend>{t('Gruppen laufend abgleichen')}</legend>
+          <p className="muted small">
+            {t(
+              'Die Nextcloud setzt Gruppen sonst nur beim Anmelden. Sync-Apps melden sich nie neu an: Wer eine Rolle abgibt, behielte die Gruppe mit ihren Ordnern. Mit dem Abgleich setzt HUBIplan die Gruppen gleich nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht. Verlören mehr als drei Konten auf einmal Gruppen, hält der Abgleich an, bis jemand ihn hier bestätigt.',
+            )}
+          </p>
+          <Field
+            label={t('Gruppen, die HUBIplan abgleicht')}
+            value={values.sync_groups_list ?? ''}
+            maxLength={500}
+            placeholder="Vorstand, Mitglieder, Kassierer"
+            onChange={(e) => set('sync_groups_list', e.target.value)}
+            hint={t(
+              'mit Komma getrennt; dazu kommt immer die Gruppe der Konten über HUBIplan. Andere Gruppen (z. B. von Hand gepflegte Ordnergruppen) und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss Gruppen-Admin jeder dieser Gruppen sein.',
+            )}
+          />
+          <Checkbox
+            label={t('Gruppen laufend abgleichen')}
+            checked={Boolean(values.sync_groups)}
+            onChange={(v) => set('sync_groups', v)}
+            hint={t('vorher mit „Gruppen vergleichen“ unten prüfen, was sich ändern würde')}
+          />
+        </fieldset>
+        <fieldset>
           <legend>{t('Termine in den Kalender der Nextcloud')}</legend>
           <p className="muted small">
             {t(
@@ -575,6 +733,7 @@ function ClientCard({
       </form>
 
       <AccountList org={org} client={client} onChanged={onChanged} />
+      <GroupStatus org={org} client={client} onChanged={onChanged} />
       <CalendarStatus org={org} client={client} onChanged={onChanged} />
 
       <h3>{t('In der Nextcloud eintragen')}</h3>

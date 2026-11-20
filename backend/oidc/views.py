@@ -30,7 +30,7 @@ from audit.log import record
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.ratelimit import TooMany, client_ip, too_many
 
-from . import nc_accounts, nc_calendars, provider
+from . import nc_accounts, nc_calendars, nc_groups, provider
 from .models import USERNAME_RE, Account, Client, clean_groups, parse_usernames
 
 TOKEN_RATE = (60, 60)
@@ -196,6 +196,10 @@ class ClientSerializer(serializers.ModelSerializer):
             "calendar_board_group",
             "calendar_error",
             "calendar_synced_at",
+            "sync_groups",
+            "sync_groups_list",
+            "groups_error",
+            "groups_synced_at",
             "is_active",
             "created_at",
             "last_used_at",
@@ -210,6 +214,8 @@ class ClientSerializer(serializers.ModelSerializer):
             "synced_at",
             "calendar_error",
             "calendar_synced_at",
+            "groups_error",
+            "groups_synced_at",
         ]
 
     def get_has_service_password(self, obj) -> bool:
@@ -237,6 +243,19 @@ class ClientSerializer(serializers.ModelSerializer):
         if len(value) > GROUP_MAX:
             raise serializers.ValidationError(gettext("Höchstens 64 Zeichen."))
         return value
+
+    def validate_sync_groups_list(self, value):
+        groups = clean_groups(value)
+        if any(len(g) > GROUP_MAX for g in groups):
+            raise serializers.ValidationError(gettext("Höchstens 64 Zeichen je Gruppe."))
+        if any(g.casefold() == "admin" for g in groups):
+            raise serializers.ValidationError(
+                gettext("Die Administratorgruppe gleicht HUBIplan nie ab.")
+            )
+        text = ", ".join(groups)
+        if len(text) > 500:
+            raise serializers.ValidationError(gettext("Höchstens 500 Zeichen."))
+        return text
 
     def validate_calendar_members_group(self, value):
         return self.validate_account_group(value)
@@ -352,6 +371,19 @@ class ClientSerializer(serializers.ModelSerializer):
                         )
                     }
                 )
+        if attrs.get("sync_groups", inst.sync_groups if inst else False):
+            user = attrs.get("service_user", inst.service_user if inst else "")
+            password = attrs.get("service_password", inst.service_password if inst else "")
+            group = attrs.get("account_group", inst.account_group if inst else "")
+            if not user or not password or not group:
+                raise serializers.ValidationError(
+                    {
+                        "sync_groups": gettext(
+                            "Dafür braucht es Dienstkonto, App-Passwort und die Gruppe der "
+                            "Konten über HUBIplan."
+                        )
+                    }
+                )
         calendars = any(
             attrs.get(name, getattr(inst, name) if inst else False)
             for name in ("calendar_members", "calendar_board")
@@ -412,6 +444,20 @@ def _groups(value, known: set[str]) -> dict[str, list[str]]:
     return out
 
 
+# Ändert sich eines davon, gleicht HUBIplan die Gruppen gleich ab (mit Obergrenze)
+GROUP_FIELDS = (
+    "sync_groups",
+    "sync_groups_list",
+    "account_group",
+    "role_groups",
+    "groups_board",
+    "groups_roles",
+    "groups_units",
+    "groups_members",
+    "audience",
+    "is_active",
+)
+
 CALENDAR_FIELDS = (
     "calendar_members",
     "calendar_members_group",
@@ -426,6 +472,13 @@ def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
     Vorstandstermine in der Nextcloud sieht (Kalender an oder andere Gruppe)."""
     data = serializer.validated_data
     if "calendar_board" in data and data["calendar_board"] and not client.calendar_board:
+        return True
+    # Gruppenabgleich einschalten oder seine Liste ändern bestimmt, wer welche Gruppe hat
+    if "sync_groups" in data and data["sync_groups"] and not client.sync_groups:
+        return True
+    if "sync_groups_list" in data and clean_groups(data["sync_groups_list"]) != clean_groups(
+        client.sync_groups_list
+    ):
         return True
     if (
         "calendar_board_group" in data
@@ -472,6 +525,7 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         client = self.get_object()
         before = {"usernames": client.usernames, "role_groups": client.role_groups}
         calendars_before = {name: getattr(client, name) for name in CALENDAR_FIELDS}
+        groups_before = {name: getattr(client, name) for name in GROUP_FIELDS}
         serializer = self.get_serializer(
             client, data=request.data, partial=kwargs.get("partial", False)
         )
@@ -492,6 +546,8 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                     nc_calendars.Kind.BOARD: calendars_before["calendar_board_group"],
                 },
             )
+        if client.sync_groups and any(getattr(client, k) != v for k, v in groups_before.items()):
+            _sync_groups_later(client)
         return response
 
     def perform_create(self, serializer):
@@ -555,6 +611,42 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         client.refresh_from_db()
         return Response({"result": result, "client": self.get_serializer(client).data})
 
+    @action(detail=True, methods=["get", "post"], url_path="groups")
+    def groups(self, request, *args, **kwargs):
+        """GET: Soll und Ist der abgeglichenen Gruppen je Konto (fragt die Nextcloud).
+        POST: Gruppen jetzt abgleichen (mit ``confirm`` ohne Obergrenze)."""
+        client = self.get_object()
+        if not client.managed_groups():
+            raise ValidationError(
+                {"detail": gettext("Es ist keine Gruppe für den Abgleich eingetragen.")}
+            )
+        if request.method == "POST":
+            if not client.sync_groups:
+                raise ValidationError({"detail": gettext("„Gruppen laufend abgleichen“ ist aus.")})
+            result = nc_groups.sync(client, confirmed=bool(request.data.get("confirm")))
+            client.refresh_from_db()
+            return Response({"result": result, "client": self.get_serializer(client).data})
+        plans = sorted(nc_groups.plan(client), key=lambda p: p.account.nc_user)
+        return Response(
+            {
+                "managed": client.managed_groups(),
+                "missing_admin": nc_groups.missing_admin(client),
+                "accounts": [
+                    {
+                        "id": p.account.pk,
+                        "nc_user": p.account.nc_user,
+                        "email": p.account.user.email,
+                        "name": p.account.user.get_full_name() or p.account.user.email,
+                        "current": p.current,
+                        "add": p.add,
+                        "remove": p.remove,
+                        "error": p.error,
+                    }
+                    for p in plans
+                ],
+            }
+        )
+
     @action(detail=True, methods=["post"], url_path="calendars")
     def calendars(self, request, *args, **kwargs):
         """Kalender jetzt abgleichen (Termine in die Nextcloud schreiben)."""
@@ -565,6 +657,13 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         result = nc_calendars.sync_client(client.pk)
         client.refresh_from_db()
         return Response({"result": result, "client": self.get_serializer(client).data})
+
+
+def _sync_groups_later(client: Client) -> None:
+    from .tasks import sync_client_groups
+
+    pk = client.pk
+    transaction.on_commit(lambda: sync_client_groups.delay(pk))
 
 
 def _sync_calendars_later(client: Client, unshare: dict | None = None) -> None:

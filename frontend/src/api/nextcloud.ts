@@ -38,6 +38,12 @@ export interface NextcloudClient {
   calendar_board_group: string
   calendar_error: string
   calendar_synced_at: string | null
+  // Gruppen laufend abgleichen (nicht nur beim Anmelden)
+  sync_groups: boolean
+  // Gruppen, die HUBIplan setzt und entfernt, als Text „A, B“
+  sync_groups_list: string
+  groups_error: string
+  groups_synced_at: string | null
   is_active: boolean
   created_at: string
   last_used_at: string | null
@@ -75,6 +81,8 @@ export type NextcloudInput = Partial<
     | 'calendar_members_group'
     | 'calendar_board'
     | 'calendar_board_group'
+    | 'sync_groups'
+    | 'sync_groups_list'
     | 'is_active'
   >
 > & {
@@ -115,6 +123,30 @@ export interface NextcloudCalendarResult {
   client: NextcloudClient
 }
 
+export interface NextcloudGroupAccount {
+  id: number
+  nc_user: string
+  email: string
+  name: string
+  // Abgeglichene Gruppen, in denen das Konto heute ist
+  current: string[]
+  add: string[]
+  remove: string[]
+  error: string
+}
+
+export interface NextcloudGroupReport {
+  managed: string[]
+  // Gruppen, für die das Dienstkonto kein Gruppen-Admin ist (soweit bekannt)
+  missing_admin: string[]
+  accounts: NextcloudGroupAccount[]
+}
+
+export interface NextcloudGroupSyncResult {
+  result: { added: number; removed: number; errors: number; held: boolean }
+  client: NextcloudClient
+}
+
 const base = (org: number) => `/api/orgs/${org}/nextcloud/`
 
 export const nextcloudApi = {
@@ -129,6 +161,10 @@ export const nextcloudApi = {
     api.post<{ ok: boolean; detail: string }>(`${base(org)}${id}/check/`),
   sync: (org: number, id: number, confirm = false) =>
     api.post<NextcloudSyncResult>(`${base(org)}${id}/sync/`, { confirm }),
+  groups: (org: number, id: number) =>
+    api.get<NextcloudGroupReport>(`${base(org)}${id}/groups/`),
+  syncGroups: (org: number, id: number, confirm = false) =>
+    api.post<NextcloudGroupSyncResult>(`${base(org)}${id}/groups/`, { confirm }),
   calendars: (org: number, id: number) =>
     api.post<NextcloudCalendarResult>(`${base(org)}${id}/calendars/`),
 }
