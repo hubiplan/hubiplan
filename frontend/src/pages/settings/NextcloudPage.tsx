@@ -667,7 +667,7 @@ function ClientCard({
             label={t('Gruppen, die HUBIplan abgleicht')}
             value={values.sync_groups_list ?? ''}
             maxLength={500}
-            placeholder="Vorstand, Mitglieder, Kassierer"
+            placeholder={t('Vorstand, Mitglieder, Kassierer')}
             onChange={(e) => set('sync_groups_list', e.target.value)}
             hint={t(
               'mit Komma getrennt; dazu kommt immer die Gruppe der Konten über HUBIplan. Andere Gruppen (z. B. von Hand gepflegte Ordnergruppen) und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss Gruppen-Admin jeder dieser Gruppen sein.',
