@@ -402,7 +402,7 @@ def apply(entry, rsvp: bool | None = None, video: bool | None = None) -> Event:
 
     with rls_bypass(), transaction.atomic():
         entry = (
-            InboundMail.objects.select_for_update()
+            InboundMail.objects.select_for_update(of=("self",))
             .select_related("mailing_list", "mailing_list__pattern", "organization", "user")
             .get(pk=entry.pk)
         )
