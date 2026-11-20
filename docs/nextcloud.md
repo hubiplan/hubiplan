@@ -217,6 +217,26 @@ Konto). Die App „Kalender“ muss in der Nextcloud an sein. Die Gruppen `Mitgl
 ist Teilen nur innerhalb eigener Gruppen erlaubt, muss das Dienstkonto in diesen Gruppen sein.
 Den Vorstandskalender nur für eine Gruppe freigeben, in der allein der Vorstand ist.
 
+## Videoraum am Termin (Talk)
+
+`talk_enabled` am Eintrag schaltet den Videoraum ein (braucht Dienstkonto und App-Passwort sowie
+Talk in der Nextcloud). Wer einen Termin bearbeiten darf, sieht in der Termin-Antwort
+`video_available` und legt mit `POST …/events/<id>/video/` ein Gespräch an (`oidc/nc_talk.py`):
+öffentliches Talk-Gespräch (`roomType=3`) im Dienstkonto, Name „Titel (Datum)“, mit einem
+zufälligen Passwort (16 Zeichen, Groß, klein, Ziffer, Sonderzeichen), das HUBIplan verschlüsselt
+in `oidc_talkroom` speichert. Lässt sich das Passwort nicht setzen, löscht HUBIplan den Raum
+gleich wieder. `DELETE …/video/` löscht ihn.
+
+Link und Passwort stehen als `video` (`url`, `password`, `created_at`) in Termin und Terminliste
+für alle, die den Termin sehen (Verwaltung, Mitgliederbereich, Apps), dazu in Einladung und
+Erinnerung und in der Beschreibung der Termine im Kalender der Nextcloud. Öffentliche Webseite,
+Kalender-Abos (ICS) und Rückmelde-Links tragen ihn nie.
+
+Täglich (`oidc.tasks.purge_talk`, 4:50) löscht HUBIplan Räume, deren Termin seit
+`talk_keep_days` Tagen (voreingestellt 7) vorbei ist (Serien: ab `repeat_until`, offene Serien
+nie) oder gelöscht wurde. Antwortet die Nextcloud nicht, bleibt der Eintrag für den nächsten
+Versuch.
+
 ## Wie lange eine Anmeldung gilt
 
 HUBIplan stellt nur den Code und einen kurzen Zugriffsschlüssel aus (keine Refresh-Token). Wie
@@ -319,6 +339,7 @@ verhält.
 | `/api/orgs/<id>/nextcloud/<eintrag>/groups/` | GET: Gruppen vergleichen, POST: Gruppen jetzt abgleichen |
 | `/api/orgs/<id>/nextcloud-dateien/` | GET: Stand, POST: Datei ablegen |
 | `/api/orgs/<id>/nextcloud-dateien/quelle/` | GET: Ordner zum Übernehmen listen; `datei/`: Datei holen |
+| `/api/orgs/<id>/events/<termin>/video/` | POST: Videoraum anlegen, DELETE: löschen (auch `/api/depts/…`) |
 
 Kennung als Anbieter (`issuer`): `FRONTEND_URL/api/oidc`, änderbar mit `OIDC_ISSUER`.
 

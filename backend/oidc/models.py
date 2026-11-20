@@ -193,6 +193,12 @@ class Client(models.Model):
         "Ordner zum Übernehmen", max_length=300, blank=True, default="", db_default=""
     )
     files_error = models.CharField(max_length=500, blank=True, default="", db_default="")
+    # Videoraum am Termin (Talk, siehe ``nc_talk``): Gespräch im Dienstkonto mit Link und
+    # Passwort, nach dem Termin gelöscht
+    talk_enabled = models.BooleanField("Videoraum am Termin", default=False, db_default=False)
+    talk_keep_days = models.PositiveSmallIntegerField(
+        "Videoraum löschen nach … Tagen", default=7, db_default=7
+    )
     # Letzter Fehler oder Halt des Abgleichs (für die Oberfläche)
     sync_error = models.CharField(max_length=500, blank=True, default="")
     synced_at = models.DateTimeField(null=True, blank=True)
@@ -235,6 +241,8 @@ class Client(models.Model):
             "files_members_group",
             "files_retention",
             "files_source",
+            "talk_enabled",
+            "talk_keep_days",
             "is_active",
         }
     )
@@ -404,3 +412,37 @@ class FileItem(models.Model):
 
     def __str__(self) -> str:
         return self.path
+
+
+class TalkRoom(models.Model):
+    """Videoraum (Talk-Gespräch im Dienstkonto) zu einem Termin; nach dem Termin gelöscht."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="talk_rooms")
+    # Leer: Termin gelöscht, der Raum geht beim nächsten Aufräumen weg
+    event = models.OneToOneField(
+        "events.Event", on_delete=models.SET_NULL, null=True, blank=True, related_name="talk_room"
+    )
+    token = models.CharField(max_length=64)
+    # Passwort des Links, verschlüsselt (``accounts.mfa.encrypt``, Zweck „nextcloud“)
+    password = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    audit_fields = frozenset({"token"})
+
+    class Meta:
+        verbose_name = "Videoraum"
+        verbose_name_plural = "Videoräume"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.token
+
+    @property
+    def url(self) -> str:
+        return f"{self.client.base_url.rstrip('/')}/call/{self.token}"

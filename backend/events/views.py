@@ -33,6 +33,7 @@ from core.api_base import OrgScopedMixin, has_needed
 from core.listing import page_of
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import DepartmentMembership, Membership, today
+from oidc import nc_talk
 from organizations.models import Organization
 from organizations.terms import fill
 from organizations.tree import UnitTree
@@ -89,9 +90,13 @@ def category_data(cat: EventCategory | None) -> dict | None:
 
 
 def occurrence_data(
-    occ: Occurrence, viewer: services.Viewer, mine: dict[int, str] | None = None
+    occ: Occurrence,
+    viewer: services.Viewer,
+    mine: dict[int, str] | None = None,
+    video: dict[int, dict] | None = None,
 ) -> dict:
-    """``mine``: eigene Rückmeldungen (Mitgliederbereich), Termin → Zu-/Absage."""
+    """``mine``: eigene Rückmeldungen (Mitgliederbereich), Termin → Zu-/Absage.
+    ``video``: Videoräume (Talk) je Termin."""
     event = occ.event
     data = {
         "key": occ.key,
@@ -121,6 +126,8 @@ def occurrence_data(
         "rsvp_enabled": event.rsvp_enabled,
         # App: Hinweis „Rückmeldung fehlt“ vor dem Anmeldeschluss
         "rsvp_deadline": event.rsvp_deadline if event.rsvp_enabled else None,
+        # Videoraum (Nextcloud Talk): Link und Passwort
+        "video": (video or {}).get(event.pk),
     }
     if viewer.kind == "member":
         data["my_response"] = (mine or {}).get(event.pk) if event.rsvp_enabled else None
@@ -298,7 +305,12 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
             and viewer.can_manage
             and viewer.owns(event)
         ),
+        # Videoraum (Nextcloud Talk): Link und Passwort
+        "video": nc_talk.room_data(nc_talk.room_of(event)),
     }
+    if can_edit and viewer.kind == "org" and not event.external_source_id:
+        # Videoraum anlegen geht, wenn die Einheit Talk eingerichtet hat
+        data["video_available"] = nc_talk.client_for(event.organization) is not None
     if can_edit:
         # Weitergabe: Angabe am Termin (leer = Voreinstellung) und die Voreinstellung
         owner = event.department if event.department_id else event.organization
@@ -667,11 +679,12 @@ class _EventList(APIView):
                     event_id__in={o.event.pk for o in items if o.event.rsvp_enabled},
                 ).values_list("event_id", "status")
             )
+        video = nc_talk.rooms_for(items)
         return Response(
             {
                 "from": start,
                 "to": end,
-                "items": [occurrence_data(o, self.viewer, mine) for o in items],
+                "items": [occurrence_data(o, self.viewer, mine, video) for o in items],
                 "can_manage": self.viewer.can_manage,
                 # Zu- und Absagen und E-Mails bei Terminen eines Vereins oder Zugs
                 "rsvp_allowed": self.viewer.can_manage
@@ -823,6 +836,38 @@ class _EventNotify(APIView):
         else:
             raise serializers.ValidationError({"kind": gettext("Passt nicht zum Termin.")})
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class _EventVideo(APIView):
+    """POST: Videoraum (Nextcloud Talk) zum Termin anlegen · DELETE: Raum löschen."""
+
+    def post(self, request, pk: int, **kwargs):
+        event = self.own_event(pk)
+        if event.external_source_id or event.is_cancelled:
+            raise serializers.ValidationError(
+                {"detail": gettext("Zu diesem Termin lässt sich kein Videoraum anlegen.")}
+            )
+        try:
+            nc_talk.create(event, request.user)
+        except nc_talk.FilesError as exc:
+            raise serializers.ValidationError({"detail": str(exc)}) from exc
+        event = self.visible_event(event.pk)
+        return Response(event_data(event, self.viewer, self.base_url), status=201)
+
+    def delete(self, request, pk: int, **kwargs):
+        event = self.own_event(pk)
+        room = nc_talk.room_of(event)
+        if room is not None and not nc_talk.delete(room, request.user):
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Die Nextcloud hat den Videoraum nicht gelöscht. HUBIplan versucht es "
+                        "nachts erneut."
+                    )
+                }
+            )
+        event = self.visible_event(event.pk)
+        return Response(event_data(event, self.viewer, self.base_url))
 
 
 class _EventOccurrence(APIView):
@@ -1903,6 +1948,10 @@ class OrgEventNotifyView(OrgCalendarMixin, _EventNotify):
     pass
 
 
+class OrgEventVideoView(OrgCalendarMixin, _EventVideo):
+    pass
+
+
 class OrgEventProjectView(OrgCalendarMixin, APIView):
     """Termin einer Veranstaltung (Finanzen) zuordnen, eine neue dafür anlegen oder lösen.
 
@@ -2029,6 +2078,10 @@ class DeptEventDetailView(DeptCalendarMixin, _EventDetail):
 
 
 class DeptEventNotifyView(DeptCalendarMixin, _EventNotify):
+    pass
+
+
+class DeptEventVideoView(DeptCalendarMixin, _EventVideo):
     pass
 
 

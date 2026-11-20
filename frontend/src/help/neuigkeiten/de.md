@@ -170,6 +170,7 @@ November 2026:
 
 #### Einstellungen, Sicherheit und Plattform
 
+- **Videoraum am Termin.** Ist unter Einstellungen › Nextcloud **Videoraum am Termin** eingeschaltet, legt **Videoraum anlegen** im Termin ein Gespräch in Talk mit Link und Passwort an. Beides sehen alle, die den Termin sehen, auch in den Apps, in der Einladung und im Kalender der Nextcloud; nach dem Termin löscht HUBIplan den Raum.
 - **Dateien in die Nextcloud ablegen und aus ihr übernehmen.** Neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokoll, Beschlussbuch und Dokumenten legt **In Nextcloud ablegen** die Datei in einen Ordner, den nur eine Gruppe lesen darf, mit einer Frist je Art (Protokolle dauerhaft, Kassenunterlagen 10 Jahre, Personenlisten 3 Monate). Beim Hochladen holt **Aus Nextcloud** eine Datei aus einem freigegebenen Ordner.
 - **Gruppen der Nextcloud laufend abgleichen.** Unter Einstellungen › Nextcloud setzt HUBIplan die Gruppen nicht mehr nur beim Anmelden, sondern nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht. Wer eine Rolle abgibt, verliert damit auch die Gruppe und ihre Ordner, selbst wenn die Sync-App weiterläuft. **Gruppen vergleichen** zeigt vorher, was sich ändern würde.
 - **Termine im Kalender der Nextcloud.** Unter Einstellungen › Nextcloud schreibt HUBIplan die Termine für Mitglieder und auf Wunsch die Termine „nur Vorstand“ in zwei Kalender der Nextcloud, nur zum Lesen für die Gruppen „Mitglieder“ und „Vorstand“ freigegeben. Bearbeitet wird weiter in HUBIplan; Änderungen kommen alle 15 Minuten an.

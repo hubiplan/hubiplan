@@ -766,6 +766,7 @@ org_patterns = [
     path("events/<int:pk>/hide/", event_views.OrgEventHideView.as_view(), name="event-hide"),
     path("events/<int:pk>/", event_views.OrgEventDetailView.as_view(), name="event"),
     path("events/<int:pk>/notify/", event_views.OrgEventNotifyView.as_view(), name="event-notify"),
+    path("events/<int:pk>/video/", event_views.OrgEventVideoView.as_view(), name="event-video"),
     path(
         "events/<int:pk>/project/", event_views.OrgEventProjectView.as_view(), name="event-project"
     ),
@@ -979,6 +980,11 @@ dept_patterns = [
         "events/<int:pk>/notify/",
         event_views.DeptEventNotifyView.as_view(),
         name="dept-event-notify",
+    ),
+    path(
+        "events/<int:pk>/video/",
+        event_views.DeptEventVideoView.as_view(),
+        name="dept-event-video",
     ),
     path(
         "events/<int:pk>/occurrence/",

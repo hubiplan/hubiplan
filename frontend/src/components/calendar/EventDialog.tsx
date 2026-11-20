@@ -3,6 +3,7 @@
 // „Zu diesem Termin“ als Karte mit einer Zeile je Bereich, Löschen allein unten.
 import { NextcloudPick } from '../NextcloudFiles.tsx'
 import { RouteLinks } from './RouteLinks.tsx'
+import { VideoRoom } from './VideoRoom.tsx'
 import { EventTaskRow } from '../TodoEventLink.tsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
@@ -765,6 +766,7 @@ export function EventDialog({
                 </dd>
               </>
             )}
+            {!occurrence.is_cancelled && <VideoRoom base={base} event={data} onChanged={changed} />}
             <dt>{t('Kalender')}</dt>
             <dd>
               {data.owner} <VisibilityBadge visibility={data.visibility} />

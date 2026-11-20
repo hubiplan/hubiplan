@@ -68,6 +68,9 @@ def body(
         lines.append(f"Wo: {', '.join(x for x in (event.location, event.address) if x)}")
     if kind != CANCEL:
         lines += maps.mail_lines(event)
+        from oidc import nc_talk
+
+        lines += nc_talk.mail_lines(event)
     if kind == CANCEL and event.cancel_note:
         lines.append(f"Hinweis: {event.cancel_note}")
     if event.description and kind in (INVITE, REMIND):

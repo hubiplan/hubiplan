@@ -518,6 +518,8 @@ function ClientCard({
     files_members_group: client.files_members_group,
     files_retention: client.files_retention ?? {},
     files_source: client.files_source,
+    talk_enabled: client.talk_enabled,
+    talk_keep_days: client.talk_keep_days ?? 7,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -806,6 +808,31 @@ function ClientCard({
               'Für „Aus Nextcloud“ beim Hochladen: einen Ordner in der Nextcloud an das Dienstkonto freigeben und hier seinen Namen eintragen, wie er beim Dienstkonto heißt. Wer in HUBIplan Dateien hochladen darf, sieht alles darin. Leer: aus.',
             )}
           />
+        </fieldset>
+        <fieldset>
+          <legend>{t('Videoraum am Termin')}</legend>
+          <p className="muted small">
+            {t(
+              'Am Termin erscheint „Videoraum anlegen“. HUBIplan legt dann im Dienstkonto ein Talk-Gespräch mit Link und Passwort an. Beides sehen alle, die den Termin sehen (auch in den Apps, in Einladung und Erinnerung und im Kalender der Nextcloud), nie die öffentliche Webseite. Ohne eigenen Videodienst der Nextcloud klappt Video nur mit wenigen Teilnehmern gut.',
+            )}
+          </p>
+          <Checkbox
+            label={t('Videoraum am Termin')}
+            checked={Boolean(values.talk_enabled)}
+            onChange={(v) => set('talk_enabled', v)}
+            hint={t('braucht Talk in der Nextcloud und Dienstkonto mit App-Passwort')}
+          />
+          {values.talk_enabled && (
+            <Field
+              label={t('Raum löschen nach … Tagen')}
+              type="number"
+              min={0}
+              max={90}
+              value={String(values.talk_keep_days ?? 7)}
+              onChange={(e) => set('talk_keep_days', Number(e.target.value || 0))}
+              hint={t('gezählt ab dem Ende des Termins, bei Serien ab dem Ende der Wiederholung')}
+            />
+          )}
         </fieldset>
         <fieldset>
           <legend>{t('Termine in den Kalender der Nextcloud')}</legend>

@@ -55,13 +55,14 @@ def calendar(
     *,
     caldav: bool = False,
     stamp: str = "",
+    video: dict[int, dict] | None = None,
 ) -> bytes:
     """``url_for(occ)`` liefert optional einen Link zum Termin.
 
     ``description``: Beschreibung des Kalenders (z. B. Link zum Impressum).
     ``caldav``: ein einzelner Termin für einen CalDAV-Kalender (RFC 4791: ohne METHOD und
     ohne Angaben zum Abo). ``stamp`` ersetzt dann DTSTAMP, damit gleicher Inhalt gleiche
-    Bytes ergibt.
+    Bytes ergibt. ``video``: Videoräume je Termin (nur Kalender der Nextcloud, nie Abos).
     """
     stamp = stamp or _utc(timezone.now())
     lines = [
@@ -107,6 +108,12 @@ def calendar(
             text = f"{text}\n\n{hint}" if text else hint
         if occ.note:
             text = f"{occ.note}\n\n{text}" if text else occ.note
+        room = (video or {}).get(event.pk)
+        if room:
+            hint = f"Videoraum: {room['url']}"
+            if room.get("password"):
+                hint += f"\nPasswort: {room['password']}"
+            text = f"{hint}\n\n{text}" if text else hint
         if text:
             lines.append(f"DESCRIPTION:{_escape(text)}")
         if event.category_id:

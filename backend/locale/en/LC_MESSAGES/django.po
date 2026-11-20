@@ -15210,3 +15210,41 @@ msgstr "Reports to associations"
 #: oidc/models.py
 msgid "Personenbezogene Listen"
 msgstr "Lists with personal data"
+
+#: oidc/nc_talk.py
+msgid "Für diese Einheit ist kein Videoraum in der Nextcloud eingerichtet."
+msgstr "No video room is set up in Nextcloud for this unit."
+
+#: oidc/nc_talk.py
+#, python-brace-format
+msgid "Talk in der Nextcloud antwortet nicht wie erwartet ({error})."
+msgstr "Talk in Nextcloud does not respond as expected ({error})."
+
+#: oidc/nc_talk.py
+msgid "Talk in der Nextcloud hat keinen Raum angelegt."
+msgstr "Talk in Nextcloud did not create a room."
+
+#: oidc/nc_talk.py
+msgid "Videoraum aus HUBIplan, wird nach dem Termin gelöscht."
+msgstr "Video room from HUBIplan, deleted after the event."
+
+#: oidc/nc_talk.py
+#, python-brace-format
+msgid "Der Videoraum ließ sich nicht mit Passwort schützen ({error})."
+msgstr "The video room could not be protected with a password ({error})."
+
+#: events/views.py
+msgid "Zu diesem Termin lässt sich kein Videoraum anlegen."
+msgstr "No video room can be created for this event."
+
+#: events/views.py
+msgid "Die Nextcloud hat den Videoraum nicht gelöscht. HUBIplan versucht es nachts erneut."
+msgstr "Nextcloud did not delete the video room. HUBIplan will try again overnight."
+
+#: oidc/views.py
+msgid "Für Videoräume braucht es Dienstkonto und App-Passwort."
+msgstr "Video rooms need a service account and app password."
+
+#: oidc/views.py
+msgid "Bitte 0 bis 90 Tage angeben."
+msgstr "Please enter 0 to 90 days."

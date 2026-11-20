@@ -170,6 +170,7 @@ November 2026:
 
 #### Settings, security and platform
 
+- **Video room for events.** With **Video room for events** switched on under Settings › Nextcloud, **Create video room** in an event creates a Talk conversation with link and password. Everyone who can see the event sees both, also in the apps, the invitation and the Nextcloud calendar; HUBIplan deletes the room after the event.
 - **Save files to Nextcloud and take files from it.** Next to the cash report, tax evaluation, cash count, minutes, resolution book and documents, **Save to Nextcloud** puts the file into a folder only one group can read, with a period per type (minutes permanently, accounting records 10 years, lists of people 3 months). When uploading, **From Nextcloud** fetches a file from a shared folder.
 - **Keep Nextcloud groups in sync.** Under Settings › Nextcloud, HUBIplan no longer sets groups only at sign-in, but after every change to roles, offices or units, and every night. Anyone who gives up a role also loses the group and its folders, even while their sync app keeps running. **Compare groups** shows beforehand what would change.
 - **Events in the Nextcloud calendar.** Under Settings › Nextcloud, HUBIplan writes the events for members and, if you like, the “board only” events into two Nextcloud calendars, shared read-only with the groups “Mitglieder” and “Vorstand”. Editing still happens in HUBIplan; changes arrive every 15 minutes.

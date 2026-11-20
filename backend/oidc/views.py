@@ -208,6 +208,8 @@ class ClientSerializer(serializers.ModelSerializer):
             "files_retention",
             "files_source",
             "files_error",
+            "talk_enabled",
+            "talk_keep_days",
             "is_active",
             "created_at",
             "last_used_at",
@@ -277,6 +279,11 @@ class ClientSerializer(serializers.ModelSerializer):
     def validate_files_root(self, value):
         value = self._folder(value, "files_root")
         return value or "HUBIplan"
+
+    def validate_talk_keep_days(self, value):
+        if value is None or not 0 <= value <= 90:
+            raise serializers.ValidationError(gettext("Bitte 0 bis 90 Tage angeben."))
+        return value
 
     def validate_files_source(self, value):
         return self._folder(value, "files_source")
@@ -432,6 +439,17 @@ class ClientSerializer(serializers.ModelSerializer):
                         "sync_groups": gettext(
                             "Dafür braucht es Dienstkonto, App-Passwort und die Gruppe der "
                             "Konten über HUBIplan."
+                        )
+                    }
+                )
+        if attrs.get("talk_enabled", inst.talk_enabled if inst else False):
+            user = attrs.get("service_user", inst.service_user if inst else "")
+            password = attrs.get("service_password", inst.service_password if inst else "")
+            if not user or not password:
+                raise serializers.ValidationError(
+                    {
+                        "talk_enabled": gettext(
+                            "Für Videoräume braucht es Dienstkonto und App-Passwort."
                         )
                     }
                 )

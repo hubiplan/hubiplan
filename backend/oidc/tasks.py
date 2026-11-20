@@ -65,3 +65,12 @@ def purge_files() -> int:
     from . import nc_files
 
     return nc_files.purge_due()
+
+
+@shared_task(soft_time_limit=1500, time_limit=1560)
+@einzeln
+def purge_talk() -> int:
+    """Täglich: Videoräume vergangener oder gelöschter Termine in der Nextcloud löschen."""
+    from . import nc_talk
+
+    return nc_talk.purge_due()

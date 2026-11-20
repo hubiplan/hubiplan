@@ -37,6 +37,12 @@ Under **Events in the Nextcloud calendar**, HUBIplan writes your events into the
 
 Events are still edited in HUBIplan. Every 15 minutes HUBIplan writes changes across; **Synchronise calendars now** does it straight away. This needs the service account and app password. If you switch a calendar off, it also disappears from Nextcloud. Please share the board calendar only with a group that contains just the board.
 
+## Video room for events
+
+With **Video room for events**, every event you may edit gets a **Create video room** button. HUBIplan then creates a Talk conversation in the service account, with link and password. Everyone who can see the event sees both: in HUBIplan, in the member area, in the apps, in the invitation and reminder and in the Nextcloud calendar. The public website and calendar subscriptions never show the video room. This needs Talk in Nextcloud and a service account with app password.
+
+After **Delete room after … days** (7 by default, counted from the end of the event, for series from the end of the recurrence) HUBIplan deletes the conversation and its chat in Nextcloud; the same happens when the event is deleted. Without a dedicated video backend for Nextcloud, video works well only with a few participants; with more people it helps to leave cameras off. If a general meeting should also take place online, the statutes or the notice of meeting must provide for it.
+
 ## In detail
 
 Under **Adjust groups for individual roles** you choose which Nextcloud groups a role is put in, for example “1st treasurer” and “2nd treasurer” both in “Treasurer”. Separate several groups with commas. Without an entry, the group has the same name as the role. If you rename a role, the assignment stays.

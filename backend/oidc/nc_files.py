@@ -183,7 +183,11 @@ def _call(
 
 
 def _fail(status: int) -> FilesError:
-    return FilesError(gettext("Die Nextcloud antwortet mit Fehler {status}.").format(status=status))
+    error = FilesError(
+        gettext("Die Nextcloud antwortet mit Fehler {status}.").format(status=status)
+    )
+    error.status = status
+    return error
 
 
 def _ocs(client: Client, method: str, path: str, params: dict | None = None):

@@ -37,6 +37,12 @@ Unter **Termine in den Kalender der Nextcloud** schreibt HUBIplan eure Termine i
 
 Bearbeitet werden die Termine weiter in HUBIplan. Alle 15 Minuten schreibt HUBIplan Änderungen nach, mit **Kalender jetzt abgleichen** sofort. Dafür braucht es Dienstkonto und App-Passwort. Schaltet ihr einen Kalender aus, verschwindet er auch in der Nextcloud. Den Vorstandskalender gebt bitte nur für eine Gruppe frei, in der allein der Vorstand ist.
 
+## Videoraum am Termin
+
+Mit **Videoraum am Termin** erscheint in jedem Termin, den ihr bearbeiten dürft, der Knopf **Videoraum anlegen**. HUBIplan legt dann im Dienstkonto ein Gespräch in Talk an, mit Link und Passwort. Beides sehen alle, die den Termin sehen: in HUBIplan, im Mitgliederbereich, in den Apps, in Einladung und Erinnerung und im Kalender der Nextcloud. Die öffentliche Webseite und die Kalender-Abos zeigen den Videoraum nie. Dafür braucht es Talk in der Nextcloud und Dienstkonto mit App-Passwort.
+
+Nach **Raum löschen nach … Tagen** (voreingestellt 7, gezählt ab dem Ende des Termins, bei Serien ab dem Ende der Wiederholung) löscht HUBIplan das Gespräch samt Chat in der Nextcloud; ebenso, wenn der Termin gelöscht wird. Ohne eigenen Videodienst der Nextcloud klappt Video nur mit wenigen Teilnehmern gut; mit mehr Teilnehmern hilft es, die Kamera auszulassen. Soll eine Mitgliederversammlung auch online stattfinden, muss die Satzung oder die Einberufung das vorsehen.
+
 ## Im Einzelnen
 
 Unter **Gruppen für einzelne Rollen anpassen** legt ihr fest, in welche Nextcloud-Gruppen eine Rolle kommt, zum Beispiel „1. Kassierer“ und „2. Kassierer“ beide in „Kassierer“. Mehrere Gruppen trennt ihr mit Komma. Ohne Eintrag heißt die Gruppe wie die Rolle. Benennt ihr eine Rolle um, bleibt die Zuordnung erhalten.

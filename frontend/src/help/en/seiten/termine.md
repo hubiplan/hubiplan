@@ -28,6 +28,10 @@ In the **Attachments** row you attach files: + **Add file** uploads a file (PDF,
 
 To link, you need the right to edit the event and to see the document store. If the document is in the trash, it disappears from the event and comes back when restored. **remove** only removes the link; the document stays in the document store. For recurring events, the attachments apply to all occurrences. For public events, each attachment has **show on the website**: only ticked attachments appear on the website in the event window; all others stay internal. If the event later becomes internal, they disappear there again.
 
+## Video room
+
+If your unit has switched on **Video room for events** under Settings › Nextcloud, **Create video room** creates a Talk conversation. Link and password then appear in the **Video room** row, in the member area, in the apps and in the invitation and reminder; **Copy link** takes both. **Remove video room** deletes the room at once, otherwise it goes by itself a few days after the event.
+
 ## Circular for the event
 
 **Write a circular about it** in the button bar creates a draft to those invited. It contains title, time, place, description and the reply deadline, and the event's PDF attachments go along as attachments. In the circular you can pick only those invited with **no reply yet**, **accepted** or **declined**, for example for a reminder. All circulars for the event are then listed in the **Circulars** row. **Reminder to everyone without a reply** creates such a draft right away to everyone who has not replied yet (and, if “Maybe” is allowed, to those as well). You see the replies in the event's participant list.

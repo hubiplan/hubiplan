@@ -55,6 +55,9 @@ export interface NextcloudClient {
   // Aus Nextcloud übernehmen: Ordner, den der Verein dem Dienstkonto freigegeben hat
   files_source: string
   files_error: string
+  // Videoraum am Termin (Talk); nach so vielen Tagen nach dem Termin gelöscht
+  talk_enabled: boolean
+  talk_keep_days: number
   is_active: boolean
   created_at: string
   last_used_at: string | null
@@ -101,6 +104,8 @@ export type NextcloudInput = Partial<
     | 'files_members_group'
     | 'files_retention'
     | 'files_source'
+    | 'talk_enabled'
+    | 'talk_keep_days'
     | 'is_active'
   >
 > & {

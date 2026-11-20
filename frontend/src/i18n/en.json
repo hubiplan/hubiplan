@@ -10485,5 +10485,19 @@
   "leer: nur das Dienstkonto sieht den Ordner": "empty: only the service account sees the folder",
   "Ordner zum Übernehmen": "Folder to take files from",
   "An HUBIplan": "An HUBIplan",
-  "Für „Aus Nextcloud“ beim Hochladen: einen Ordner in der Nextcloud an das Dienstkonto freigeben und hier seinen Namen eintragen, wie er beim Dienstkonto heißt. Wer in HUBIplan Dateien hochladen darf, sieht alles darin. Leer: aus.": "For “From Nextcloud” when uploading: share a folder in Nextcloud with the service account and enter its name here as the service account sees it. Anyone who may upload files in HUBIplan sees everything in it. Empty: off."
+  "Für „Aus Nextcloud“ beim Hochladen: einen Ordner in der Nextcloud an das Dienstkonto freigeben und hier seinen Namen eintragen, wie er beim Dienstkonto heißt. Wer in HUBIplan Dateien hochladen darf, sieht alles darin. Leer: aus.": "For “From Nextcloud” when uploading: share a folder in Nextcloud with the service account and enter its name here as the service account sees it. Anyone who may upload files in HUBIplan sees everything in it. Empty: off.",
+  "{url} (Passwort: {password})": "{url} (password: {password})",
+  "Videoraum entfernen?": "Remove video room?",
+  "Der Raum wird in der Nextcloud gelöscht, mit seinem Chat. Wer den Link hat, kommt nicht mehr hinein.": "The room is deleted in Nextcloud, together with its chat. Anyone with the link can no longer get in.",
+  "Videoraum": "Video room",
+  "Videoraum öffnen": "Open video room",
+  "Passwort:": "Password:",
+  "Videoraum entfernen": "Remove video room",
+  "Videoraum anlegen": "Create video room",
+  "Legt in der Nextcloud ein Gespräch mit Link und Passwort an. Beides sehen alle, die den Termin sehen, auch in Einladung und Erinnerung. Nach dem Termin wird der Raum gelöscht.": "Creates a conversation with link and password in Nextcloud. Everyone who can see the event sees both, also in the invitation and reminder. The room is deleted after the event.",
+  "Videoraum am Termin": "Video room for events",
+  "Am Termin erscheint „Videoraum anlegen“. HUBIplan legt dann im Dienstkonto ein Talk-Gespräch mit Link und Passwort an. Beides sehen alle, die den Termin sehen (auch in den Apps, in Einladung und Erinnerung und im Kalender der Nextcloud), nie die öffentliche Webseite. Ohne eigenen Videodienst der Nextcloud klappt Video nur mit wenigen Teilnehmern gut.": "Events get a “Create video room” button. HUBIplan then creates a Talk conversation with link and password in the service account. Everyone who can see the event sees both (also in the apps, the invitation and reminder and the Nextcloud calendar), never the public website. Without a dedicated video backend for Nextcloud, video works well only with a few participants.",
+  "braucht Talk in der Nextcloud und Dienstkonto mit App-Passwort": "needs Talk in Nextcloud and a service account with app password",
+  "Raum löschen nach … Tagen": "Delete room after … days",
+  "gezählt ab dem Ende des Termins, bei Serien ab dem Ende der Wiederholung": "counted from the end of the event, for series from the end of the recurrence"
 }

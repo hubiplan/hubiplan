@@ -28,6 +28,10 @@ In der Zeile **Anhänge** hängst du Dateien an: + **Datei hinzufügen** lädst 
 
 Zum Verknüpfen brauchst du das Recht, den Termin zu bearbeiten und die Ablage zu sehen. Liegt das Dokument im Papierkorb, verschwindet es am Termin und kommt mit dem Wiederherstellen zurück. **entfernen** löst nur die Verknüpfung, das Dokument bleibt in der Ablage. Bei Serien gelten die Anhänge für alle Wiederholungen. Bei öffentlichen Terminen steht an jedem Anhang **auf der Webseite zeigen**: Nur angekreuzte Anhänge erscheinen auf der Webseite im Fenster des Termins, alle anderen bleiben intern. Wird der Termin später intern, verschwinden sie dort wieder.
 
+## Videoraum
+
+Hat eure Einheit unter Einstellungen › Nextcloud den **Videoraum am Termin** eingeschaltet, legst du mit **Videoraum anlegen** ein Gespräch in Talk an. Link und Passwort stehen dann in der Zeile **Videoraum**, im Mitgliederbereich, in den Apps, in Einladung und Erinnerung; **Link kopieren** nimmt beides mit. **Videoraum entfernen** löscht den Raum gleich, sonst geht er einige Tage nach dem Termin von selbst.
+
 ## Rundschreiben zum Termin
 
 Mit **Rundschreiben dazu schreiben** in der Knopfleiste legst du einen Entwurf an die Eingeladenen an. Er enthält Titel, Zeit, Ort, Beschreibung und Anmeldeschluss, die PDF-Anhänge des Termins gehen als Anhang mit. Im Rundschreiben wählst du auf Wunsch nur die Eingeladenen mit **noch keine Rückmeldung**, **zugesagt** oder **abgesagt**, etwa für eine Erinnerung. Alle Rundschreiben zum Termin stehen danach in der Zeile **Rundschreiben**. **Erinnerung an alle ohne Rückmeldung** legt gleich einen solchen Entwurf an alle an, die noch nicht geantwortet haben (bei erlaubtem „Vielleicht“ auch an diese). Den Rücklauf siehst du in der Teilnehmerliste des Termins.
