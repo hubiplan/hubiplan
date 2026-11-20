@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "registrations",
     "expenses",
     "obligations",
+    "greetings",
     "qualifications",
     "feeproofs",
     "places",
@@ -353,6 +354,8 @@ CELERY_BEAT_SCHEDULE = {
     "anmeldungen-aufraeumen": {"task": "registrations.tasks.daily", "schedule": taeglich(3, 5)},
     # Auslagen: Belege abgelehnter Anträge nach 6 Monaten, alte Entwürfe (AE-11)
     "auslagen-aufraeumen": {"task": "expenses.tasks.daily", "schedule": taeglich(2, 45)},
+    # Glückwünsche: Entwürfe vorbereiten, ab der eingestellten Stunde versenden
+    "glueckwuensche": {"task": "greetings.tasks.hourly", "schedule": crontab(minute=12)},
     "fristenkalender-erinnerungen": {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,

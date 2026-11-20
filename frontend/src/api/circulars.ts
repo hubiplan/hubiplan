@@ -290,6 +290,11 @@ export interface ReceivedCircular {
 export interface OptOutState {
   info_opt_out: boolean
   since?: string | null
+  /** Widerspruch gegen Glückwünsche zu Geburtstag und Jubiläum */
+  greetings_opt_out?: boolean
+  greetings_since?: string | null
+  /** Der Verein gratuliert (sonst Schalter nur bei bestehendem Widerspruch) */
+  greetings_active?: boolean
 }
 
 export const portalCircularApi = {
@@ -299,6 +304,10 @@ export const portalCircularApi = {
   settings: (access: number) => api.get<OptOutState>(`/api/portal/${access}/circulars/settings/`),
   setOptOut: (access: number, value: boolean) =>
     api.put<OptOutState>(`/api/portal/${access}/circulars/settings/`, { info_opt_out: value }),
+  setGreetingsOptOut: (access: number, value: boolean) =>
+    api.put<OptOutState>(`/api/portal/${access}/circulars/settings/`, {
+      greetings_opt_out: value,
+    }),
 }
 
 export interface PublicOptOut {

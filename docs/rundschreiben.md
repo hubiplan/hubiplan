@@ -209,3 +209,19 @@ Je Rundschreiben (und im Muster eines Verteilers) wählt man die Zustellung:
 - **nur per E-Mail**: niemand per App.
 
 Ohne Mailadresse gibt es wie bisher einen Brief (Kurzmitteilung: nur im Mitgliederbereich).
+
+## Glückwünsche (Geburtstag und Jubiläum)
+
+Unter Rundschreiben › Glückwünsche (nur Verein, Recht `circulars.send`) stellt der Vorstand ein,
+zu welchen Geburtstagen (keine, besondere, alle; ab einem Alter jedes Jahr) und ob zu
+Vereinsjubiläen gratuliert wird (App `greetings`).
+
+- `greetings.tasks.hourly` legt `lead_days` Tage vorher je Tag und Anlass ein Rundschreiben der
+  Art `greeting` als Entwurf an (`GreetingBatch`) und gleicht es an, solange es Entwurf ist. Ab
+  `send_hour` am Tag (auch noch am Folgetag) versendet er es, außer mit Freigabe (`approval`).
+- Empfänger: Filter `members` (genau diese Mitgliedschaften), Werte je Mitglied in `greeting`
+  (Platzhalter `{Alter}`, `{Jubiläumsjahre}`); Haushalte werden nicht zusammengefasst.
+- Widerspruch: `Membership.greetings_opt_out_at` (Mitgliederbereich, Mitgliedsakte); wer
+  widersprochen hat, bekommt weder Mail noch Brief. Ohne Empfänger wird der Tag ausgelassen.
+- Glückwünsche stehen nicht in der Liste der Rundschreiben und lassen sich dort nicht ändern;
+  Jubiläen nur mit Tag oder Monat (jahresgenaue haben kein Datum), nur die des Vereins.

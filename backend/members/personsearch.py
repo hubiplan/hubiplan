@@ -5,12 +5,15 @@ Annotationen, Fachfilter und Beziehungen; seine Reihenfolge enthält nur Zeilen-
 Keine zusätzliche Freigabe von Personen außerhalb der Kandidaten.
 
 Entschlüsselte Namen (Gesamtaudit 15.11., PF-24): Jede Suche entschlüsselte alle Namen der
-Einheit neu. Ein kleiner Zwischenspeicher je Prozess hält entschlüsselte Werte für die Suche
-(die Sortierung bleibt beim direkten Abruf, dort war er nach Messung nicht schneller),
+Einheit neu. Ein kleiner Zwischenspeicher je Prozess hält entschlüsselte Werte für die Suche,
 Schlüssel ist das Chiffrat selbst (mit Feld): Ändert sich ein Name, ändert sich das Chiffrat,
-und der alte Eintrag wird nie wieder getroffen. Nur im Arbeitsspeicher, nie in Redis, Logs oder
-Fehlermeldungen; feste Obergrenze und Ablaufzeit, damit gelöschte oder anonymisierte Namen nicht
-beliebig lange im Prozess liegen (Fachfrage F1 zu Block 6: Namen bleiben verschlüsselt).
+und der alte Eintrag wird nie wieder getroffen. Die Sortierung hält nach derselben Regel die
+fertigen Sortierschlüssel (Gesamtaudit 19.11., P-04): Bei 10.000 Mitgliedern steckten rund
+zwei Drittel der Zeit einer Listenseite im Entschlüsseln und Normalisieren aller Namen; der
+Klartext allein im Speicher sparte dort zu wenig, weil das Normalisieren blieb.
+Nur im Arbeitsspeicher, nie in Redis, Logs oder Fehlermeldungen; feste Obergrenze und
+Ablaufzeit, damit gelöschte oder anonymisierte Namen nicht beliebig lange im Prozess liegen
+(Fachfrage F1 zu Block 6: Namen bleiben verschlüsselt).
 """
 
 from __future__ import annotations
@@ -81,6 +84,10 @@ class _PlainCache:
 
 
 PLAIN = _PlainCache(PLAIN_MAX, PLAIN_TTL)
+# Sortierschlüssel verschlüsselter Namen: (Feld, Chiffrat) -> text_key(Klartext). Gleiche Regeln
+# wie PLAIN (nur Arbeitsspeicher, Obergrenze, Ablaufzeit); doppelt so groß, weil eine Liste
+# Vor- und Nachname jedes Mitglieds braucht.
+SORT_KEYS = _PlainCache(2 * PLAIN_MAX, PLAIN_TTL)
 
 
 def _field(model, path: str):
@@ -174,6 +181,31 @@ def filter_names(qs, search: str, *, variants=None, max_words=3):
     return qs.filter(pk__in=ids)
 
 
+class _SortKey:
+    """Fertiger Sortierschlüssel eines verschlüsselten Werts (unterscheidbar von Tupeln,
+    die eine Datenbankspalte selbst liefern könnte)."""
+
+    __slots__ = ("key",)
+
+    def __init__(self, key):
+        self.key = key
+
+
+def _sort_key(field, cipher):
+    """Sortierschlüssel zum Chiffrat einer verschlüsselten Spalte; None bleibt None."""
+    if cipher is None:
+        return None
+    cache_key = (field.model._meta.label_lower, field.attname, cipher)
+    hit = SORT_KEYS.get(cache_key)
+    if hit is None:
+        plain = field.decrypt_db_value(cipher)
+        if plain is None:
+            return None
+        hit = _SortKey(text_key(plain) if isinstance(plain, str) else plain)
+        SORT_KEYS.put(cache_key, hit)
+    return hit
+
+
 class OrderedRows(Sequence):
     """Sortierte Zeilen, die erst beim Seitenschnitt geladen werden.
 
@@ -229,7 +261,26 @@ def ordered(qs, *ordering, limit=None, lazy=False):
             desc = term.descending
             nulls_first = bool(term.nulls_first or (desc and not term.nulls_last))
         terms.append((field, desc, nulls_first))
-    rows = list(qs.order_by().values_list("pk", *(field for field, _, _ in terms)))
+    # Verschlüsselte Spalten kommen als Chiffrat und werden über den Zwischenspeicher zu
+    # fertigen Sortierschlüsseln; alles andere liefert die Datenbank wie bisher.
+    fields = [_field(qs.model, field) for field, _, _ in terms]
+    secret = [isinstance(f, EncryptedMixin) for f in fields]
+    columns = [
+        Cast(F(field), output_field=TextField()) if enc else field
+        for (field, _, _), enc in zip(terms, secret, strict=True)
+    ]
+    rows = list(qs.order_by().values_list("pk", *columns))
+    if any(secret):
+        rows = [
+            (
+                row[0],
+                *(
+                    _sort_key(f, v) if enc else v
+                    for v, f, enc in zip(row[1:], fields, secret, strict=True)
+                ),
+            )
+            for row in rows
+        ]
     # DISTINCT mit Beziehungen darf dieselbe Eingangszeile nicht vervielfachen.
     rows = list({row[0]: row for row in rows}.values())
     rows.sort(key=lambda row: row[0])
@@ -239,7 +290,11 @@ def ordered(qs, *ordering, limit=None, lazy=False):
         missing = [row for row in rows if row[index + 1] is None]
         known.sort(
             key=lambda row, i=index: (
-                text_key(row[i + 1]) if isinstance(row[i + 1], str) else row[i + 1]
+                row[i + 1].key
+                if isinstance(row[i + 1], _SortKey)
+                else text_key(row[i + 1])
+                if isinstance(row[i + 1], str)
+                else row[i + 1]
             ),
             reverse=desc,
         )

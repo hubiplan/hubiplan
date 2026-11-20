@@ -15057,3 +15057,90 @@ msgstr "This is an event invitation."
 
 msgid "Der Videolink muss mit https:// beginnen."
 msgstr "The video link must start with https://."
+
+msgid "Glückwunsch"
+msgstr "Greeting"
+
+msgid "Glückwünsche entstehen automatisch."
+msgstr "Greetings are created automatically."
+
+msgid "Glückwünsche bitte unter Rundschreiben › Glückwünsche ändern."
+msgstr "Please change greetings under Circulars › Greetings."
+
+msgid "nur zu besonderen Geburtstagen"
+msgstr "only on special birthdays"
+
+msgid "zu jedem Geburtstag"
+msgstr "on every birthday"
+
+msgid "Einstellung für Glückwünsche"
+msgstr "Greeting settings"
+
+msgid "Geburtstag"
+msgstr "Birthday"
+
+msgid "Jubiläum"
+msgstr "Anniversary"
+
+msgid "Herzlichen Glückwunsch zum Geburtstag"
+msgstr "Happy birthday"
+
+msgid ""
+"{Anrede Du},\n"
+"\n"
+"herzlichen Glückwunsch zu deinem {Alter}. Geburtstag! Wir wünschen dir alles Gute, Gesundheit und viele schöne Stunden.\n"
+"\n"
+"Herzliche Grüße\n"
+"{Verein}"
+msgstr ""
+"{Anrede Du},\n"
+"\n"
+"happy birthday on turning {Alter}! We wish you all the best, good health and many happy hours.\n"
+"\n"
+"Kind regards\n"
+"{Verein}"
+
+msgid "Herzlichen Glückwunsch zum Vereinsjubiläum"
+msgstr "Congratulations on your membership anniversary"
+
+msgid ""
+"{Anrede Du},\n"
+"\n"
+"seit {Jubiläumsjahre} Jahren bist du Mitglied bei uns. Dafür sagen wir herzlich Danke und gratulieren dir zu deinem Jubiläum!\n"
+"\n"
+"Herzliche Grüße\n"
+"{Verein}"
+msgstr ""
+"{Anrede Du},\n"
+"\n"
+"you have been a member of our club for {Jubiläumsjahre} years. Thank you very much, and congratulations on your anniversary!\n"
+"\n"
+"Kind regards\n"
+"{Verein}"
+
+msgid "Dieser Glückwunsch ist schon versendet."
+msgstr "This greeting has already been sent."
+
+msgid "Dieser Glückwunsch ist schon erledigt."
+msgstr "This greeting has already been dealt with."
+
+msgid "Bitte Lebensjahre durch Komma getrennt angeben, z. B. 50, 60, 70."
+msgstr "Please enter ages separated by commas, e.g. 50, 60, 70."
+
+msgid "Bitte ein Alter bis 120 angeben."
+msgstr "Please enter an age of up to 120."
+
+msgid "Höchstens {n} Tage vorher."
+msgstr "At most {n} days in advance."
+
+msgid "Bitte eine Uhrzeit zwischen 6 und 20 Uhr."
+msgstr "Please choose a time between 6 am and 8 pm."
+
+msgid "Unbekannte Platzhalter: {names}."
+msgstr "Unknown placeholders: {names}."
+
+msgid "ausgelassen"
+msgstr "skipped"
+
+msgid "Nur ausgelassene Glückwünsche ab heute lassen sich wieder vorsehen."
+msgstr "Only skipped greetings from today onwards can be scheduled again."

@@ -19,8 +19,10 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(autouse=True)
 def leer():
     personsearch.PLAIN.clear()
+    personsearch.SORT_KEYS.clear()
     yield
     personsearch.PLAIN.clear()
+    personsearch.SORT_KEYS.clear()
 
 
 @pytest.fixture
@@ -143,3 +145,36 @@ def test_abgelaufener_klartext_verlaesst_den_speicher(monkeypatch):
     cache.put(("m", "last_name", "enc1:neu"), "Anonym")
     assert all(value != "Erika Geheim" for _expires, value in cache.items.values())
     assert len(cache.items) == 1
+
+
+def test_sortierung_aus_dem_speicher_wie_ohne(verein):
+    """Gesamtaudit 19.11., P-04: Die Liste hält die Sortierschlüssel der Namen im Speicher.
+    Reihenfolge wie beim ersten Aufruf, Schlüssel ist nur das Chiffrat."""
+    club, c = verein
+    base = f"/api/orgs/{club.pk}/members/"
+    first = _names(c.get(base))
+    assert first == ["Ida Beispiel", "Erika Geheim", "Max Muster"]
+    keys = list(personsearch.SORT_KEYS.items)
+    assert len(keys) == 6  # Vor- und Nachname von drei Mitgliedern
+    for _label, _attname, value in keys:
+        assert value.startswith("enc1:") and "Geheim" not in value
+    # Zweiter Aufruf aus dem Speicher: gleiche Reihenfolge, auch absteigend
+    assert _names(c.get(base)) == first
+    assert _names(c.get(base + "?sortierung=-name")) == first[::-1]
+    assert len(personsearch.SORT_KEYS.items) == 6
+
+
+def test_geaenderter_name_sortiert_neu(verein):
+    club, c = verein
+    base = f"/api/orgs/{club.pk}/members/"
+    assert _names(c.get(base))[0] == "Ida Beispiel"
+    with rls_bypass():
+        target = next(
+            p
+            for p in Person.objects.filter(memberships__organization=club)
+            if p.last_name == "Muster"
+        )
+        target.last_name = "Ahorn"
+        target.save()
+    # Neues Chiffrat, neuer Schlüssel: der alte Eintrag wird nicht mehr getroffen
+    assert _names(c.get(base)) == ["Max Ahorn", "Ida Beispiel", "Erika Geheim"]

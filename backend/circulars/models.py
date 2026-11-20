@@ -6,12 +6,14 @@ Abteilung. Die Empfänger werden beim Versand festgehalten (``CircularRecipient`
 Wer eine E-Mail-Adresse hat, bekommt eine Mail, alle anderen einen Brief
 (Serienbrief-PDF zum Drucken).
 
-Zwei Arten:
+Arten:
 
 - ``info``   Information: Mitglieder können sich davon abmelden.
 - ``notice`` Vereinsmitteilung (z. B. Einladung zur Versammlung): geht immer raus.
 - ``short``  Kurzmitteilung (bis 500 Zeichen, ohne Anhang, nie als Brief), gedacht
   für die App („Antreten heute 18 Uhr am Zelt“).
+- ``greeting`` Glückwunsch zu Geburtstag oder Jubiläum (App ``greetings``): geht an die
+  Mitglieder, die nicht widersprochen haben, und erscheint nicht in der Rundschreibenliste.
 
 Wer die HUBIplan-App mit Push hat, bekommt das Rundschreiben per App
 (``via_app``), sonst per Mail (mit ``also_mail`` zusätzlich per Mail); ohne Mail
@@ -47,6 +49,8 @@ class Circular(models.Model):
         INFO = "info", gettext_lazy("Information")
         NOTICE = "notice", gettext_lazy("Vereinsmitteilung")
         SHORT = "short", gettext_lazy("Kurzmitteilung")
+        # Glückwunsch zu Geburtstag oder Jubiläum, angelegt von ``greetings`` (nie von Hand)
+        GREETING = "greeting", gettext_lazy("Glückwunsch")
 
     class Audience(models.TextChoices):
         MEMBERS = "members", gettext_lazy("Mitglieder")
