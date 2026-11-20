@@ -8,7 +8,14 @@ from audit.models import AuditEntry
 from events.models import EventAttachment
 
 from .factories import make_user
-from .test_m12_events import cal, create, member_with_access, org_base, private_root, zug  # noqa: F401
+from .test_m12_events import (  # noqa: F401
+    cal,
+    create,
+    member_with_access,
+    org_base,
+    private_root,
+    zug,
+)
 
 JSON = "application/json"
 

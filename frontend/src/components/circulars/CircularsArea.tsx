@@ -1,6 +1,7 @@
 // Rundschreiben: Liste, Editor mit Empfängerauswahl, Versand und Versandprotokoll.
 // Dieselben Seiten dienen dem Vorstand (Mitglieder › Rundschreiben) und den
 // Abteilungsrollen (Abteilung › Rundschreiben); nur die API-Adresse unterscheidet sich.
+import { NextcloudPick } from '../NextcloudFiles.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -584,6 +585,15 @@ function DraftEditor({
             >
               {t('PDF anhängen')}
             </button>
+            <NextcloudPick
+              accept={['.pdf']}
+              onFile={(file) =>
+                act(async () => {
+                  const c = await circularApi.upload(base, initial.id, file)
+                  setAttachments(c.attachments)
+                })
+              }
+            />
             <p className="muted small">
               {t(
                 'Bis {max_attachment_mb} MB je Datei. In Briefen stehen Anhänge als „Anlagen“ und werden separat gedruckt.',

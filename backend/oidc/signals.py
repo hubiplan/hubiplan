@@ -1,20 +1,21 @@
 """Ändern sich Rollen, Ämter, Mitgliederzugang oder Konto, die Nextcloud-Konten abgleichen.
 
 Nur wenn der Benutzer ein über HUBIplan angemeldetes Konto bei einem Dienst mit „Konten
-automatisch deaktivieren“ hat; sonst passiert nichts. Der Abgleich läuft nach dem Speichern
-als Hintergrundauftrag.
+automatisch deaktivieren“ oder „Gruppen laufend abgleichen“ hat; sonst passiert nichts. Der
+Abgleich läuft nach dem Speichern als Hintergrundauftrag.
 """
 
 from __future__ import annotations
 
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from access.models import RoleAssignment
 from accounts.models import User
 from core.tenancy import rls_bypass
-from members.models import DepartmentRoleHolder, MembershipPeriod
+from members.models import DepartmentMembership, DepartmentRoleHolder, MembershipPeriod
 from portal.models import PortalAccess
 
 from .models import Account
@@ -26,9 +27,9 @@ def _queue(user_ids: set[int]) -> None:
         return
     with rls_bypass():
         known = set(
-            Account.objects.filter(user_id__in=user_ids, client__manage_accounts=True).values_list(
-                "user_id", flat=True
-            )
+            Account.objects.filter(user_id__in=user_ids)
+            .filter(Q(client__manage_accounts=True) | Q(client__sync_groups=True))
+            .values_list("user_id", flat=True)
         )
     for user_id in known:
         from .tasks import sync_user
@@ -60,6 +61,7 @@ def _access_changed(sender, instance, **kwargs):
 
 
 @receiver([post_save, post_delete], sender=MembershipPeriod)
+@receiver([post_save, post_delete], sender=DepartmentMembership)
 def _period_changed(sender, instance, **kwargs):
     _queue(_users_of_membership(instance.membership_id))
 

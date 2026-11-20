@@ -1,5 +1,6 @@
 // Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V7): Übersicht,
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -2345,6 +2346,14 @@ function ReleaseCard({
         >
           {done ? t('Protokoll als PDF') : t('Vorschau als PDF')}
         </button>
+        {done && (
+          <NextcloudSave
+            source={() => meetingApi.minutesPdf(base, meeting)}
+            filename={`protokoll-${meeting.starts_at.slice(0, 10)}.pdf`}
+            category="records"
+            target="board"
+          />
+        )}
       </div>
     </section>
   )

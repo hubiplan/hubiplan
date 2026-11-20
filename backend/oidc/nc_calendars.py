@@ -203,10 +203,10 @@ def resource_name(kind: str, occ_key: str) -> str:
     return "hp-" + hashlib.sha256(f"{kind}:{occ_key}".encode()).hexdigest()[:32] + ".ics"
 
 
-def render(occ, host: str) -> bytes:
+def render(occ, host: str, video: dict | None = None) -> bytes:
     from events import ical
 
-    return ical.calendar(occ.event.title, [occ], host, caldav=True, stamp=STAMP)
+    return ical.calendar(occ.event.title, [occ], host, caldav=True, stamp=STAMP, video=video)
 
 
 # --- Abgleich ---
@@ -225,12 +225,17 @@ def sync_kind(client: Client, kind: str) -> dict:
     base = _collection(client, kind)
     seen: set[str] = set()
     counts = {"written": 0, "deleted": 0, "unchanged": 0}
-    for occ in occurrences_for(client, kind):
+    occs = occurrences_for(client, kind)
+    # Videoräume (Talk) stehen in der Beschreibung
+    from .nc_talk import rooms_for
+
+    video = rooms_for(occs)
+    for occ in occs:
         name = resource_name(kind, occ.key)
         if name in seen:
             continue
         seen.add(name)
-        body = render(occ, host)
+        body = render(occ, host, video)
         digest = hashlib.sha256(body).hexdigest()
         item = items.get(name)
         if item is not None and item.digest == digest:

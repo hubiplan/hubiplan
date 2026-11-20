@@ -1,4 +1,5 @@
 // Kasse: Jahresabschluss mit Kassenbericht; danach ist das Geschäftsjahr gesperrt.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import { financeApi } from '../../api/finance.ts'
 import type { Closings, Retention } from '../../api/finance.ts'
@@ -382,6 +383,12 @@ export function ClosingsPage() {
                 >
                   {t('Kassenbericht')}
                 </a>{' '}
+                <NextcloudSave
+                  source={financeApi.reportUrl(org.id, y.year)}
+                  filename={`kassenbericht-${y.year}.pdf`}
+                  category="finance"
+                  target="finance"
+                />{' '}
                 <a
                   className="link-button"
                   href={financeApi.exportUrl(org.id, y.year)}

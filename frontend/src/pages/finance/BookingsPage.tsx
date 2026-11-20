@@ -1,4 +1,5 @@
 // Kasse: Buchungen erfassen, suchen und mit Belegen versehen.
+import { NextcloudPick } from '../../components/NextcloudFiles.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
@@ -1210,7 +1211,7 @@ function Receipts({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function upload(files: FileList | null) {
+  async function upload(files: FileList | File[] | null) {
     if (!files?.length) return
     setBusy(true)
     setError(null)
@@ -1343,6 +1344,13 @@ function Receipts({
             }}
           />
         </label>
+      )}
+      {canEdit && !busy && (
+        <NextcloudPick
+          accept={['.pdf', 'image/', '.xml']}
+          multiple
+          onFile={(file) => upload([file])}
+        />
       )}
       {error && <Alert kind="error">{error}</Alert>}
     </div>

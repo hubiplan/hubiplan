@@ -219,6 +219,7 @@ msgstr "Overview"
 #: members/census.py
 msgid "über 60"
 msgstr "over 60"
+
 #: oidc/nc_calendars.py
 #, python-brace-format
 msgid "{name} – Termine"
@@ -8035,6 +8036,7 @@ msgstr "An area cannot contain further areas."
 
 msgid "Diese Infrastruktur hat selbst Bereiche."
 msgstr "This facility has areas of its own."
+
 #: accounts/self_service.py
 #, python-brace-format
 msgid ""
@@ -8151,6 +8153,7 @@ msgstr "Only a series allows cancelling a single date."
 
 msgid "Dieses Vorkommen gehört nicht zur Serie."
 msgstr "This date does not belong to the series."
+
 #: core/safehttp.py organizations/homepage_preview.py
 msgid "Zeitüberschreitung."
 msgstr "Timed out."
@@ -15330,6 +15333,193 @@ msgstr "The calendars need a service account and app password."
 #: oidc/nc_calendars.py
 msgid "Es ist kein Kalender eingeschaltet."
 msgstr "No calendar is switched on."
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "Die Gruppe „{group}“ gibt es in der Nextcloud nicht."
+msgstr "The group “{group}” does not exist in Nextcloud."
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "Das Dienstkonto ist nicht Gruppen-Admin von „{group}“."
+msgstr "The service account is not group admin of “{group}”."
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "Angehalten: {count} Konten hätten auf einmal Gruppen verloren. Bitte Rollen prüfen und unter Einstellungen › Nextcloud den Gruppenabgleich bestätigen."
+msgstr "Stopped: {count} accounts would have lost groups at once. Please check the roles and confirm the group synchronisation under Settings › Nextcloud."
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "Gruppe „{group}“"
+msgstr "Group “{group}”"
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "in „{group}“ aufgenommen"
+msgstr "added to “{group}”"
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "aus „{group}“ entfernt"
+msgstr "removed from “{group}”"
+
+#: oidc/nc_groups.py
+#, python-brace-format
+msgid "{count} Gruppenänderungen gingen nicht."
+msgstr "{count} group changes failed."
+
+#: oidc/nc_accounts.py
+#, python-brace-format
+msgid "Nextcloud „{name}“: Gruppen abgeglichen"
+msgstr "Nextcloud “{name}”: groups synchronised"
+
+#: oidc/nc_accounts.py
+#, python-brace-format
+msgid "HUBIplan hat die Gruppen in der Nextcloud „{name}“ ({host}) mit den Rollen abgeglichen."
+msgstr "HUBIplan has synchronised the groups in the Nextcloud “{name}” ({host}) with the roles."
+
+#: oidc/views.py
+msgid "Höchstens 64 Zeichen je Gruppe."
+msgstr "At most 64 characters per group."
+
+#: oidc/views.py
+msgid "Die Administratorgruppe gleicht HUBIplan nie ab."
+msgstr "HUBIplan never synchronises the administrator group."
+
+#: oidc/views.py
+msgid "Höchstens 500 Zeichen."
+msgstr "At most 500 characters."
+
+#: oidc/views.py
+msgid "Dafür braucht es Dienstkonto, App-Passwort und die Gruppe der Konten über HUBIplan."
+msgstr "This needs the service account, app password and the group of accounts via HUBIplan."
+
+#: oidc/views.py
+msgid "Es ist keine Gruppe für den Abgleich eingetragen."
+msgstr "No group is entered for synchronisation."
+
+#: oidc/views.py
+msgid "„Gruppen laufend abgleichen“ ist aus."
+msgstr "“Keep groups in sync” is off."
+
+#: oidc/nc_files.py
+msgid "Ungültiger Pfad."
+msgstr "Invalid path."
+
+#: oidc/nc_files.py
+msgid "Bitte einen Dateinamen angeben."
+msgstr "Please give a file name."
+
+#: oidc/nc_files.py
+msgid "Zu viele Dateien mit diesem Namen."
+msgstr "Too many files with this name."
+
+#: oidc/nc_files.py
+msgid "„In Nextcloud ablegen“ ist aus."
+msgstr "“Save to Nextcloud” is off."
+
+#: oidc/nc_files.py
+msgid "Unbekanntes Ziel."
+msgstr "Unknown destination."
+
+#: oidc/nc_files.py
+msgid "Listen mit Personendaten nie in den Ordner „Mitglieder“."
+msgstr "Never put lists with personal data in the “Mitglieder” folder."
+
+#: oidc/nc_files.py
+msgid "Die Datei ist zu groß (höchstens 50 MB)."
+msgstr "The file is too large (at most 50 MB)."
+
+#: oidc/nc_files.py
+msgid "Es ist kein Ordner zum Übernehmen eingetragen."
+msgstr "No folder to take files from has been entered."
+
+#: oidc/nc_files.py
+msgid "Den Ordner gibt es in der Nextcloud nicht (mehr)."
+msgstr "This folder does not exist in Nextcloud (any more)."
+
+#: oidc/nc_files.py
+msgid "Die Antwort der Nextcloud ist nicht lesbar."
+msgstr "Nextcloud's answer cannot be read."
+
+#: oidc/nc_files.py
+msgid "Die Datei gibt es in der Nextcloud nicht (mehr)."
+msgstr "This file does not exist in Nextcloud (any more)."
+
+#: oidc/files_views.py
+msgid "Bitte bestätigen, dass die Datei Personendaten enthält."
+msgstr "Please confirm that the file contains personal data."
+
+#: oidc/views.py
+msgid "Ungültige Fristen."
+msgstr "Invalid periods."
+
+#: oidc/views.py
+msgid "Frist zwischen 0 und 100 Jahren."
+msgstr "Period between 0 and 100 years."
+
+#: oidc/views.py
+msgid "Für Dateien braucht es Dienstkonto und App-Passwort."
+msgstr "Files need the service account and app password."
+
+#: oidc/models.py
+msgid "Beschlüsse und Grundlagen"
+msgstr "Resolutions and foundations"
+
+#: oidc/models.py
+msgid "Kassen- und Steuerunterlagen"
+msgstr "Accounting and tax records"
+
+#: oidc/models.py
+msgid "Planung und Statistik ohne Personen"
+msgstr "Planning and statistics without personal data"
+
+#: oidc/models.py
+msgid "Meldungen an Verbände"
+msgstr "Reports to associations"
+
+#: oidc/models.py
+msgid "Personenbezogene Listen"
+msgstr "Lists with personal data"
+
+#: oidc/nc_talk.py
+msgid "Für diese Einheit ist kein Videoraum in der Nextcloud eingerichtet."
+msgstr "No video room is set up in Nextcloud for this unit."
+
+#: oidc/nc_talk.py
+#, python-brace-format
+msgid "Talk in der Nextcloud antwortet nicht wie erwartet ({error})."
+msgstr "Talk in Nextcloud does not respond as expected ({error})."
+
+#: oidc/nc_talk.py
+msgid "Talk in der Nextcloud hat keinen Raum angelegt."
+msgstr "Talk in Nextcloud did not create a room."
+
+#: oidc/nc_talk.py
+msgid "Videoraum aus HUBIplan, wird nach dem Termin gelöscht."
+msgstr "Video room from HUBIplan, deleted after the event."
+
+#: oidc/nc_talk.py
+#, python-brace-format
+msgid "Der Videoraum ließ sich nicht mit Passwort schützen ({error})."
+msgstr "The video room could not be protected with a password ({error})."
+
+#: events/views.py
+msgid "Zu diesem Termin lässt sich kein Videoraum anlegen."
+msgstr "No video room can be created for this event."
+
+#: events/views.py
+msgid "Die Nextcloud hat den Videoraum nicht gelöscht. HUBIplan versucht es nachts erneut."
+msgstr "Nextcloud did not delete the video room. HUBIplan will try again overnight."
+
+#: oidc/views.py
+msgid "Für Videoräume braucht es Dienstkonto und App-Passwort."
+msgstr "Video rooms need a service account and app password."
+
+#: oidc/views.py
+msgid "Bitte 0 bis 90 Tage angeben."
+msgstr "Please enter 0 to 90 days."
 
 msgid "Glückwunsch"
 msgstr "Greeting"

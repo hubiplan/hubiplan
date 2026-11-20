@@ -5,6 +5,7 @@ import { nextcloudApi } from '../../api/nextcloud.ts'
 import type {
   NextcloudAccount,
   NextcloudClient,
+  NextcloudGroupReport,
   NextcloudInput,
   NextcloudRoleChoice,
 } from '../../api/nextcloud.ts'
@@ -223,6 +224,198 @@ function AccountList({
   )
 }
 
+// Frist je Art der abgelegten Dateien; leer heißt Voreinstellung, 0 dauerhaft
+const RETENTION: { key: string; label: () => string; standard: () => string }[] = [
+  {
+    key: 'records',
+    label: () => t('Beschlüsse und Grundlagen'),
+    standard: () => t('dauerhaft'),
+  },
+  {
+    key: 'finance',
+    label: () => t('Kassen- und Steuerunterlagen'),
+    standard: () => t('10 Jahre nach Jahresende'),
+  },
+  {
+    key: 'statistics',
+    label: () => t('Planung und Statistik ohne Personen'),
+    standard: () => t('dauerhaft'),
+  },
+  {
+    key: 'reports',
+    label: () => t('Meldungen an Verbände'),
+    standard: () => t('6 Jahre nach Jahresende'),
+  },
+  { key: 'personal', label: () => t('Personenbezogene Listen'), standard: () => t('3 Monate') },
+  { key: 'other', label: () => t('Sonstiges'), standard: () => t('2 Jahre') },
+]
+
+function RetentionFields({
+  value,
+  onChange,
+}: {
+  value: Record<string, number>
+  onChange: (v: Record<string, number>) => void
+}) {
+  return (
+    <details className="small">
+      <summary>{t('Fristen je Art anpassen')}</summary>
+      {RETENTION.map((r) => (
+        <SelectField
+          key={r.key}
+          label={r.label()}
+          value={value[r.key] === undefined ? '' : String(value[r.key])}
+          onChange={(e) => {
+            const next = { ...value }
+            if (e.target.value === '') delete next[r.key]
+            else next[r.key] = Number(e.target.value)
+            onChange(next)
+          }}
+        >
+          <option value="">{t('Voreinstellung: {x}', { x: r.standard() })}</option>
+          <option value="0">{t('dauerhaft')}</option>
+          {[2, 3, 5, 6, 10].map((y) => (
+            <option key={y} value={String(y)}>
+              {t('{years} Jahre', { years: y })}
+            </option>
+          ))}
+        </SelectField>
+      ))}
+    </details>
+  )
+}
+
+// Soll und Ist der abgeglichenen Gruppen: erst auf Knopfdruck, weil HUBIplan dafür jedes Konto
+// in der Nextcloud abfragt
+function GroupStatus({
+  org,
+  client,
+  onChanged,
+}: {
+  org: number
+  client: NextcloudClient
+  onChanged: (c: NextcloudClient) => void
+}) {
+  const [report, setReport] = useState<NextcloudGroupReport | null>(null)
+  const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+  if (!(client.sync_groups_list ?? '').trim() && !client.sync_groups) return null
+
+  async function load() {
+    setMessage(null)
+    setBusy(true)
+    try {
+      setReport(await nextcloudApi.groups(org, client.id))
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function run() {
+    const losing = report?.accounts.filter((a) => a.remove.length).length ?? 0
+    if (
+      losing > 0 &&
+      !(await confirmDialog({
+        final: false,
+        title: t('Gruppen jetzt abgleichen?'),
+        message: t(
+          '{count} Konten verlieren dabei Gruppen und damit den Zugriff auf deren Ordner und Kalender. Dateien bleiben erhalten.',
+          { count: losing },
+        ),
+        confirmLabel: t('Abgleichen'),
+      }))
+    )
+      return
+    setMessage(null)
+    setBusy(true)
+    try {
+      const r = await nextcloudApi.syncGroups(org, client.id, true)
+      onChanged(r.client)
+      setMessage({
+        kind: r.result.errors ? 'error' : 'success',
+        text: t('Aufgenommen: {added}, entfernt: {removed}, Fehler: {errors}', {
+          added: r.result.added,
+          removed: r.result.removed,
+          errors: r.result.errors,
+        }),
+      })
+      setReport(await nextcloudApi.groups(org, client.id))
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const changes = report?.accounts.filter((a) => a.add.length || a.remove.length || a.error) ?? []
+  return (
+    <>
+      <h3>{t('Gruppen in der Nextcloud')}</h3>
+      {client.groups_error && <Alert kind="error">{client.groups_error}</Alert>}
+      <p className="muted small">
+        {client.groups_synced_at
+          ? t('Zuletzt abgeglichen: {when}', { when: formatDayTime(client.groups_synced_at) })
+          : t('Noch nicht abgeglichen.')}
+      </p>
+      {report && report.missing_admin.length > 0 && (
+        <Alert kind="error">
+          {t('Das Dienstkonto ist nicht Gruppen-Admin von: {groups}', {
+            groups: report.missing_admin.join(', '),
+          })}
+        </Alert>
+      )}
+      {report && !changes.length && (
+        <Alert kind="success">{t('Alle Konten sind in den richtigen Gruppen.')}</Alert>
+      )}
+      {changes.length > 0 && (
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('Person')}</th>
+                <th>{t('Heute in')}</th>
+                <th>{t('Kommt hinzu')}</th>
+                <th>{t('Fällt weg')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {changes.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    {a.name}
+                    <div className="muted small">
+                      <code className="break-all">{a.nc_user}</code>
+                    </div>
+                  </td>
+                  <td>{a.current.join(', ') || '–'}</td>
+                  <td>{a.add.join(', ') || '–'}</td>
+                  <td>
+                    {a.remove.join(', ') || '–'}
+                    {a.error && <div className="error small">{a.error}</div>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <div className="button-row">
+        <button type="button" className="button" disabled={busy} onClick={() => void load()}>
+          {t('Gruppen vergleichen')}
+        </button>
+        {client.sync_groups && report && (
+          <button type="button" className="button" disabled={busy} onClick={() => void run()}>
+            {t('Gruppen jetzt abgleichen')}
+          </button>
+        )}
+      </div>
+    </>
+  )
+}
+
 function CalendarStatus({
   org,
   client,
@@ -316,6 +509,17 @@ function ClientCard({
     calendar_members_group: client.calendar_members_group,
     calendar_board: client.calendar_board,
     calendar_board_group: client.calendar_board_group,
+    sync_groups: client.sync_groups,
+    sync_groups_list: client.sync_groups_list,
+    files_enabled: client.files_enabled,
+    files_root: client.files_root,
+    files_board_group: client.files_board_group,
+    files_finance_group: client.files_finance_group,
+    files_members_group: client.files_members_group,
+    files_retention: client.files_retention ?? {},
+    files_source: client.files_source,
+    talk_enabled: client.talk_enabled,
+    talk_keep_days: client.talk_keep_days ?? 7,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -523,6 +727,114 @@ function ClientCard({
           <Why k="nextcloud_auto_disable" />
         </fieldset>
         <fieldset>
+          <legend>{t('Gruppen laufend abgleichen')}</legend>
+          <p className="muted small">
+            {t(
+              'Die Nextcloud setzt Gruppen sonst nur beim Anmelden. Sync-Apps melden sich nie neu an: Wer eine Rolle abgibt, behielte die Gruppe mit ihren Ordnern. Mit dem Abgleich setzt HUBIplan die Gruppen gleich nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht. Verlören mehr als drei Konten auf einmal Gruppen, hält der Abgleich an, bis jemand ihn hier bestätigt.',
+            )}
+          </p>
+          <Field
+            label={t('Gruppen, die HUBIplan abgleicht')}
+            value={values.sync_groups_list ?? ''}
+            maxLength={500}
+            placeholder={t('Vorstand, Mitglieder, Kassierer')}
+            onChange={(e) => set('sync_groups_list', e.target.value)}
+            hint={t(
+              'mit Komma getrennt; dazu kommt immer die Gruppe der Konten über HUBIplan. Andere Gruppen (z. B. von Hand gepflegte Ordnergruppen) und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss Gruppen-Admin jeder dieser Gruppen sein.',
+            )}
+          />
+          <Checkbox
+            label={t('Gruppen laufend abgleichen')}
+            checked={Boolean(values.sync_groups)}
+            onChange={(v) => set('sync_groups', v)}
+            hint={t('vorher mit „Gruppen vergleichen“ unten prüfen, was sich ändern würde')}
+          />
+        </fieldset>
+        <fieldset>
+          <legend>{t('Dateien in der Nextcloud')}</legend>
+          <p className="muted small">
+            {t(
+              'Mit „In Nextcloud ablegen“ erscheint neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokollen, Beschlussbuch und Dokumenten ein Knopf, der die Datei in einen Ordner des Dienstkontos legt. Jeder Ordner ist nur zum Lesen an eine Gruppe freigegeben. Nach der Frist je Art löscht HUBIplan die Datei dort wieder (in den Papierkorb des Dienstkontos).',
+            )}
+          </p>
+          {client.files_error && <Alert kind="error">{client.files_error}</Alert>}
+          <Checkbox
+            label={t('In Nextcloud ablegen')}
+            checked={Boolean(values.files_enabled)}
+            onChange={(v) => set('files_enabled', v)}
+          />
+          {values.files_enabled && (
+            <>
+              <Field
+                label={t('Ordner im Dienstkonto')}
+                value={values.files_root ?? ''}
+                maxLength={100}
+                placeholder="HUBIplan"
+                onChange={(e) => set('files_root', e.target.value)}
+                hint={t('darin die Ordner „Vorstand“, „Kasse“ und „Mitglieder“')}
+              />
+              <Field
+                label={t('Ordner „Vorstand“: lesen darf die Gruppe')}
+                value={values.files_board_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_board_group', e.target.value)}
+              />
+              <Field
+                label={t('Ordner „Kasse“: lesen darf die Gruppe')}
+                value={values.files_finance_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_finance_group', e.target.value)}
+              />
+              <Field
+                label={t('Ordner „Mitglieder“: lesen darf die Gruppe')}
+                value={values.files_members_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_members_group', e.target.value)}
+                hint={t('leer: nur das Dienstkonto sieht den Ordner')}
+              />
+              <RetentionFields
+                value={values.files_retention ?? {}}
+                onChange={(v) => set('files_retention', v)}
+              />
+            </>
+          )}
+          <Field
+            label={t('Ordner zum Übernehmen')}
+            value={values.files_source ?? ''}
+            maxLength={300}
+            placeholder={t('An HUBIplan')}
+            onChange={(e) => set('files_source', e.target.value)}
+            hint={t(
+              'Für „Aus Nextcloud“ beim Hochladen: einen Ordner in der Nextcloud an das Dienstkonto freigeben und hier seinen Namen eintragen, wie er beim Dienstkonto heißt. Wer in HUBIplan Dateien hochladen darf, sieht alles darin. Leer: aus.',
+            )}
+          />
+        </fieldset>
+        <fieldset>
+          <legend>{t('Videoraum am Termin')}</legend>
+          <p className="muted small">
+            {t(
+              'Am Termin erscheint „Videoraum anlegen“. HUBIplan legt dann im Dienstkonto ein Talk-Gespräch mit Link und Passwort an. Beides sehen alle, die den Termin sehen (auch in den Apps, in Einladung und Erinnerung und im Kalender der Nextcloud), nie die öffentliche Webseite. Ohne eigenen Videodienst der Nextcloud klappt Video nur mit wenigen Teilnehmern gut.',
+            )}
+          </p>
+          <Checkbox
+            label={t('Videoraum am Termin')}
+            checked={Boolean(values.talk_enabled)}
+            onChange={(v) => set('talk_enabled', v)}
+            hint={t('braucht Talk in der Nextcloud und Dienstkonto mit App-Passwort')}
+          />
+          {values.talk_enabled && (
+            <Field
+              label={t('Raum löschen nach … Tagen')}
+              type="number"
+              min={0}
+              max={90}
+              value={String(values.talk_keep_days ?? 7)}
+              onChange={(e) => set('talk_keep_days', Number(e.target.value || 0))}
+              hint={t('gezählt ab dem Ende des Termins, bei Serien ab dem Ende der Wiederholung')}
+            />
+          )}
+        </fieldset>
+        <fieldset>
           <legend>{t('Termine in den Kalender der Nextcloud')}</legend>
           <p className="muted small">
             {t(
@@ -575,6 +887,7 @@ function ClientCard({
       </form>
 
       <AccountList org={org} client={client} onChanged={onChanged} />
+      <GroupStatus org={org} client={client} onChanged={onChanged} />
       <CalendarStatus org={org} client={client} onChanged={onChanged} />
 
       <h3>{t('In der Nextcloud eintragen')}</h3>

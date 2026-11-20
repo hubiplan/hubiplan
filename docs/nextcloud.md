@@ -120,6 +120,74 @@ Einrichtung in der Nextcloud:
 4. Konten, die schon vorher da waren, kommen bei ihrer nächsten Anmeldung über HUBIplan in die
    Gruppe. Erst dann kann das Dienstkonto sie deaktivieren.
 
+## Gruppen laufend abgleichen
+
+`user_oidc` setzt Gruppen nur beim Anmelden. Endet eine Rolle, bleibt das Konto aber aktiv (andere
+Rolle, Mitgliederzugang), behielt die Person die Gruppe samt Gruppenordnern und geteilten
+Kalendern; Sync-Apps melden sich nie neu an. Mit „Gruppen laufend abgleichen“ (`sync_groups`)
+setzt HUBIplan die Gruppen selbst (`oidc/nc_groups.py`, OCS Provisioning API
+`GET/POST/DELETE /ocs/v2.php/cloud/users/<name>/groups`).
+
+- Abgeglichen werden nur die Gruppen unter „Gruppen, die HUBIplan abgleicht“
+  (`sync_groups_list`) und die Kontengruppe (`Client.managed_groups()`), nie `admin`. Von Hand
+  gepflegte Gruppen (z. B. Ordnergruppen) bleiben unberührt.
+- Soll ist dieselbe Berechnung wie im Token (`claims.profile`). Wer keinen Zugang mehr hat,
+  behält nur die Kontengruppe, damit das Dienstkonto das Konto weiter verwalten kann (die
+  Nextcloud lässt einen Gruppen-Admin niemanden aus seiner letzten Gruppe nehmen).
+- Nur Konten, die sich über HUBIplan angemeldet haben (`oidc_account`), ohne Verwaltungs- und
+  Dienstkonten.
+- Auslöser wie beim Kontenabgleich (Rolle, Amt, Mitgliederzugang, Mitgliedschaftszeitraum, Konto)
+  und zusätzlich Wechsel der Untereinheit; nach dem Speichern der Einstellungen
+  (`oidc.tasks.sync_client_groups`); jede Nacht mit `oidc.tasks.sync_all`.
+- Obergrenze: Verlören mehr als 3 Konten (oder mehr als die Hälfte) auf einmal Gruppen, hält der
+  Lauf an (Hinweis, Mail an alle mit „Rollen und Rechte verwalten“); „Gruppen jetzt abgleichen“
+  bestätigt. Jede Änderung im Änderungsprotokoll und per Mail.
+- „Gruppen vergleichen“ (`GET …/nextcloud/<eintrag>/groups/`) zeigt Soll und Ist je Konto und,
+  soweit die Nextcloud es dem Dienstkonto verrät (`subadmin` in `cloud/user`), Gruppen ohne
+  Gruppen-Admin-Recht. Es ändert nichts.
+- Einschalten und Ändern der Liste verlangen eine frische Bestätigung; dafür braucht es
+  Dienstkonto, App-Passwort und Kontengruppe.
+
+Einrichtung: Dienstkonto in der Nextcloud zum Gruppen-Admin jeder abgeglichenen Gruppe machen
+(Benutzerverwaltung › Konto › „Gruppen-Admin für“). Vorher mit „Gruppen vergleichen“ prüfen, wer
+herausfiele: Wer heute von Hand in einer abgeglichenen Gruppe steht, ohne die Rolle zu haben,
+verliert sie. Ordnerrechte ohne Amt besser über eigene, nicht abgeglichene Gruppen vergeben.
+
+## Dateien ablegen und übernehmen
+
+`oidc/nc_files.py` (WebDAV `remote.php/dav/files/<dienstkonto>/`, Freigaben über
+`apps/files_sharing/api/v1/shares`), Schnittstelle `oidc/files_views.py`.
+
+**In Nextcloud ablegen** (`files_enabled`): Knopf neben Kassenbericht (Jahresabschluss und
+Übersicht), Steuerauswertung, Kassenzählung, Protokoll (freigegeben), Beschlussbuch und Dokumenten
+der Ablage (`components/NextcloudFiles.tsx`, `NextcloudSave`). Der Browser holt die Datei wie beim
+Herunterladen und schickt sie an `POST /api/orgs/<id>/nextcloud-dateien/` (Ziel, Art, Dateiname).
+
+- Ziele: Ordner `<files_root>/Vorstand`, `…/Kasse`, `…/Mitglieder` im Dienstkonto, je nur lesend
+  (Recht 1) an eine Gruppe freigegeben (`files_board_group`, `files_finance_group`,
+  `files_members_group`, voreingestellt `Vorstand`, `Kassierer`, `Mitglieder`). Andere Gruppe:
+  HUBIplan nimmt seine alte Freigabe zurück (`files_shares`). Von Hand erweiterte Rechte setzt der
+  nächste Upload auf „lesen“ zurück.
+- Ablegen dürfen: Vorstand `docs.manage`, `finance.view` oder `roles.manage`; Kasse
+  `finance.view`; Mitglieder `docs.manage`.
+- Nie überschreiben (`If-None-Match: *`, sonst „name (2).pdf“), höchstens 50 MB.
+- Frist je Art (`FileItem.category`, Entscheidung 20.11.): Beschlüsse und Grundlagen sowie
+  Statistik ohne Personen dauerhaft, Kassen- und Steuerunterlagen 10 Jahre und Meldungen an
+  Verbände 6 Jahre nach Jahresende, personenbezogene Listen 92 Tage, Sonstiges 2 Jahre;
+  `files_retention` (Jahre, 0 dauerhaft) geht vor. `oidc.tasks.purge_files` löscht täglich in den
+  Papierkorb des Dienstkontos. Personenbezogene Listen nur mit Bestätigung und nie nach
+  „Mitglieder“.
+- Jede Ablage und jedes Löschen im Änderungsprotokoll (`oidc_fileitem`, RLS).
+
+**Aus Nextcloud übernehmen** (`files_source`): Der Verein gibt einen Ordner an das Dienstkonto frei.
+`GET …/nextcloud-dateien/quelle/?pfad=` listet ihn (PROPFIND, Tiefe 1, defusedxml), `…/datei/`
+liefert eine Datei (`application/octet-stream`, `nosniff`, höchstens 50 MB) an den Browser, der sie
+in den vorhandenen Hochladen-Weg gibt (gleiche Prüfungen wie vom eigenen Rechner). Pfade mit `..`,
+versteckte Teile und Steuerzeichen werden abgelehnt. Blättern darf, wer irgendwo hochladen darf
+(`docs.manage`, `finance.edit`, `website.*`, `events.manage`, `circulars.send`, `photos.edit`).
+
+Einstellen von Ablage, Gruppen und Ordner zum Übernehmen verlangt eine frische Bestätigung.
+
 ## Termine in den Kalender der Nextcloud
 
 HUBIplan schreibt Termine per CalDAV in Kalender des Dienstkontos (`oidc/nc_calendars.py`) und
@@ -148,6 +216,26 @@ Konto). Die App „Kalender“ muss in der Nextcloud an sein. Die Gruppen `Mitgl
 `Vorstand` legt die Anmeldung über HUBIplan an („Gruppe „Vorstand““, „Gruppe „Mitglieder““);
 ist Teilen nur innerhalb eigener Gruppen erlaubt, muss das Dienstkonto in diesen Gruppen sein.
 Den Vorstandskalender nur für eine Gruppe freigeben, in der allein der Vorstand ist.
+
+## Videoraum am Termin (Talk)
+
+`talk_enabled` am Eintrag schaltet den Videoraum ein (braucht Dienstkonto und App-Passwort sowie
+Talk in der Nextcloud). Wer einen Termin bearbeiten darf, sieht in der Termin-Antwort
+`video_available` und legt mit `POST …/events/<id>/video/` ein Gespräch an (`oidc/nc_talk.py`):
+öffentliches Talk-Gespräch (`roomType=3`) im Dienstkonto, Name „Titel (Datum)“, mit einem
+zufälligen Passwort (16 Zeichen, Groß, klein, Ziffer, Sonderzeichen), das HUBIplan verschlüsselt
+in `oidc_talkroom` speichert. Lässt sich das Passwort nicht setzen, löscht HUBIplan den Raum
+gleich wieder. `DELETE …/video/` löscht ihn.
+
+Link und Passwort stehen als `video` (`url`, `password`, `created_at`) in Termin und Terminliste
+für alle, die den Termin sehen (Verwaltung, Mitgliederbereich, Apps), dazu in Einladung und
+Erinnerung und in der Beschreibung der Termine im Kalender der Nextcloud. Öffentliche Webseite,
+Kalender-Abos (ICS) und Rückmelde-Links tragen ihn nie.
+
+Täglich (`oidc.tasks.purge_talk`, 4:50) löscht HUBIplan Räume, deren Termin seit
+`talk_keep_days` Tagen (voreingestellt 7) vorbei ist (Serien: ab `repeat_until`, offene Serien
+nie) oder gelöscht wurde. Antwortet die Nextcloud nicht, bleibt der Eintrag für den nächsten
+Versuch.
 
 ## Wie lange eine Anmeldung gilt
 
@@ -248,6 +336,10 @@ verhält.
 | `/api/oidc/userinfo` | Angaben mit Zugriffsschlüssel |
 | `/api/orgs/<id>/nextcloud/` | Einträge der Einheit; `<eintrag>/secret/` erneuert das Geheimnis |
 | `/api/orgs/<id>/nextcloud/<eintrag>/calendars/` | POST: Kalender jetzt abgleichen |
+| `/api/orgs/<id>/nextcloud/<eintrag>/groups/` | GET: Gruppen vergleichen, POST: Gruppen jetzt abgleichen |
+| `/api/orgs/<id>/nextcloud-dateien/` | GET: Stand, POST: Datei ablegen |
+| `/api/orgs/<id>/nextcloud-dateien/quelle/` | GET: Ordner zum Übernehmen listen; `datei/`: Datei holen |
+| `/api/orgs/<id>/events/<termin>/video/` | POST: Videoraum anlegen, DELETE: löschen (auch `/api/depts/…`) |
 
 Kennung als Anbieter (`issuer`): `FRONTEND_URL/api/oidc`, änderbar mit `OIDC_ISSUER`.
 

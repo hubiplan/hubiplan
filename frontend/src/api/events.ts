@@ -45,6 +45,8 @@ export interface Occurrence {
   own: boolean
   can_edit: boolean
   rsvp_enabled: boolean
+  /** Videoraum (Nextcloud Talk) */
+  video?: VideoRoomInfo | null
   /** Fremder Kalender (Vereinsplaner, iCal), aus dem der Termin stammt */
   source?: string | null
   /** Nur im Mitgliederbereich: eigene Rückmeldung (null = noch offen) */
@@ -169,8 +171,21 @@ export interface SeriesException {
   note: string
 }
 
+/** Videoraum (Nextcloud Talk) am Termin */
+export interface VideoRoomInfo {
+  url: string
+  password: string
+  created_at: string | null
+  /** true: Raum von HUBIplan (Talk), false: fremder Videolink des Termins */
+  talk?: boolean
+}
+
 export interface EventDetail {
   id: number
+  /** Videoraum (Nextcloud Talk): Link und Passwort */
+  video?: VideoRoomInfo | null
+  /** Nur wer den Termin bearbeitet: Videoraum lässt sich anlegen */
+  video_available?: boolean
   title: string
   description: string
   location: string
@@ -381,6 +396,10 @@ export const eventApi = {
     api.post<EventDetail>(`${base}events/${id}/project/`, data),
   notify: (base: CalendarBase, id: number, kind: 'change' | 'cancel') =>
     api.post(`${base}events/${id}/notify/`, { kind }),
+  createVideo: (base: CalendarBase, id: number) =>
+    api.post<EventDetail>(`${base}events/${id}/video/`, {}),
+  removeVideo: (base: CalendarBase, id: number) =>
+    api.delWith<EventDetail>(`${base}events/${id}/video/`, {}),
   setOccurrence: (
     base: CalendarBase,
     id: number,

@@ -1,5 +1,6 @@
 // Beschlussbuch (konzepte/versammlungen.md, Schritt V5): alle freigegebenen Beschlüsse und
 // Wahlen mit Suche, Filtern, Stand der Umsetzung, Aufgabe und Excel-Liste.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import { orgApi } from '../../api/orgs.ts'
@@ -158,6 +159,12 @@ export function ResolutionBook({
         >
           {t('Liste als Excel')}
         </button>
+        <NextcloudSave
+          source={() => meetingApi.bookExport(base, query)}
+          filename="beschlussbuch.xlsx"
+          category="records"
+          target="board"
+        />
       </div>
       {(book.error || error) && <p role="alert">{book.error || error}</p>}
       {book.data && rows.length === 0 ? (

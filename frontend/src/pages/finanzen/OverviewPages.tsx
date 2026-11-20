@@ -1,4 +1,5 @@
 // Finanzen: Übersicht (Startseite des Bereichs) und Auswertung je Geschäftsjahr.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
@@ -316,6 +317,12 @@ export function EvaluationPage() {
         >
           {t('Kassenbericht (PDF)')}
         </a>
+        <NextcloudSave
+          source={financeApi.reportUrl(org.id, data.year)}
+          filename={`kassenbericht-${data.year}.pdf`}
+          category="finance"
+          target="finance"
+        />
       </div>
 
       <div className="card card-wide">

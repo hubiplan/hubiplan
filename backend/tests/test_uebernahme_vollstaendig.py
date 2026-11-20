@@ -38,6 +38,9 @@ NICHT = {
     "portal.LoginLink": "Anmeldelink, kurzlebig",
     "billing.IncomingMailbox": "Zugangsdaten des Postfachs, am Ziel neu einrichten",
     "billing.IncomingMail": "Eingang des Postfachs der alten Instanz",
+    "oidc.FileItem": "In der Nextcloud abgelegte Datei der alten Instanz (Frist dort); die "
+    "Datei bleibt in der Nextcloud",
+    "oidc.TalkRoom": "Videoraum im Talk der alten Instanz, am Ziel neu anlegen",
     "cards.MemberCard": "Ausweise tragen Schlüssel der alten Instanz, am Ziel neu ausstellen",
     "events.PersonalCalendar": "Kalender-Abo (Link), am Ziel neu abonnieren",
     "circulars.InboundMail": "Eingang der Verteiler der alten Instanz",

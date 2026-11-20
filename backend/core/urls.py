@@ -82,6 +82,7 @@ from music.practice_portal import OwnPractice, OwnScoreFile
 from music.rehearsal_guest import GuestRehearsalView, RehearsalGuestAccessView
 from music.score_folders import OwnFolders, ScoreFolderItemViewSet, ScoreFolderViewSet
 from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
+from oidc import files_views as oidc_files
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
@@ -280,6 +281,9 @@ platform_router.register("addresses", org_views.InstanceAddressViewSet, basename
 
 org_patterns = [
     *admission_urls.org_patterns,
+    path("nextcloud-dateien/", oidc_files.FilesView.as_view()),
+    path("nextcloud-dateien/quelle/", oidc_files.SourceListView.as_view()),
+    path("nextcloud-dateien/quelle/datei/", oidc_files.SourceFileView.as_view()),
     path("music/equipment/", EquipmentView.as_view()),
     path("music/custody-reminders/", CustodyReminderView.as_view()),
     path("music/payout-runs/", PayoutRuns.as_view()),
@@ -776,6 +780,7 @@ org_patterns = [
     path("events/<int:pk>/hide/", event_views.OrgEventHideView.as_view(), name="event-hide"),
     path("events/<int:pk>/", event_views.OrgEventDetailView.as_view(), name="event"),
     path("events/<int:pk>/notify/", event_views.OrgEventNotifyView.as_view(), name="event-notify"),
+    path("events/<int:pk>/video/", event_views.OrgEventVideoView.as_view(), name="event-video"),
     path(
         "events/<int:pk>/project/", event_views.OrgEventProjectView.as_view(), name="event-project"
     ),
@@ -995,6 +1000,11 @@ dept_patterns = [
         "events/<int:pk>/notify/",
         event_views.DeptEventNotifyView.as_view(),
         name="dept-event-notify",
+    ),
+    path(
+        "events/<int:pk>/video/",
+        event_views.DeptEventVideoView.as_view(),
+        name="dept-event-video",
     ),
     path(
         "events/<int:pk>/occurrence/",

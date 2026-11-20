@@ -4,7 +4,7 @@ titel: Einstellungen › Nextcloud
 rechte: [org.edit]
 routen: [/einstellungen/nextcloud]
 siehe: [guide.account_create]
-stichworte: [Nextcloud, Anmeldung, Dateiablage, Kalender, CalDAV]
+stichworte: [Nextcloud, Anmeldung, Dateiablage, Kalender, CalDAV, Gruppen, Gruppenordner]
 ---
 
 Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglieder dort mit ihrem HUBIplan-Konto anmelden können.
@@ -13,11 +13,35 @@ Mit **Konten automatisch deaktivieren** schaltet HUBIplan das Nextcloud-Konto ab
 
 Unter „Konten über HUBIplan“ seht ihr, wer sich schon über HUBIplan angemeldet hat und was der nächste Abgleich täte. Hält der Abgleich an, weil zu viele Konten auf einmal betroffen wären, prüft die Rollen und bestätigt dann mit **Jetzt abgleichen**.
 
+## Gruppen laufend abgleichen
+
+Die Nextcloud übernimmt Gruppen sonst nur beim Anmelden. Sync-Apps auf Handy und Rechner melden sich nie neu an: Wer eine Rolle abgibt, aber weiter ein Konto hat, behielte die Gruppe, etwa „Kassierer“, mit allen Gruppenordnern. Mit **Gruppen laufend abgleichen** setzt HUBIplan die Gruppen gleich nach jeder Änderung an Rollen, Ämtern oder Untereinheiten und jede Nacht.
+
+Tragt unter **Gruppen, die HUBIplan abgleicht** ein, welche Gruppen HUBIplan setzen und entfernen darf, zum Beispiel „Vorstand, Mitglieder, Kassierer“. Die Gruppe der Konten über HUBIplan gehört immer dazu. Gruppen, die ihr von Hand pflegt, und „admin“ fasst HUBIplan nie an. Das Dienstkonto muss in der Nextcloud Gruppen-Admin jeder dieser Gruppen sein.
+
+Mit **Gruppen vergleichen** seht ihr vorher, wer in welche Gruppe kommt und wer aus welcher herausfällt; das ändert noch nichts. Würden mehr als drei Konten auf einmal Gruppen verlieren, hält der Abgleich an und alle, die Rollen verwalten, bekommen eine Mail. Prüft dann die Rollen und bestätigt mit **Gruppen jetzt abgleichen**. Dateien gehen dabei nie verloren, nur der Zugriff auf die Ordner der Gruppe.
+
+## Dateien in der Nextcloud
+
+Mit **In Nextcloud ablegen** erscheint neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokoll, Beschlussbuch und Dokumenten ein Knopf **In Nextcloud ablegen**. Die Datei landet in einem Ordner des Dienstkontos: „Vorstand“, „Kasse“ oder „Mitglieder“ unter dem **Ordner im Dienstkonto** (voreingestellt „HUBIplan“). Jeder Ordner ist nur zum Lesen an eine Gruppe freigegeben, voreingestellt „Vorstand“, „Kassierer“ und „Mitglieder“. Nichts wird überschrieben; gibt es den Namen schon, hängt HUBIplan eine Nummer an.
+
+Jede Datei bekommt beim Ablegen eine Art, und danach richtet sich, wie lange sie in der Nextcloud bleibt: Beschlüsse und Grundlagen sowie Planung und Statistik ohne Personen dauerhaft, Kassen- und Steuerunterlagen 10 Jahre und Meldungen an Verbände 6 Jahre nach Jahresende, personenbezogene Listen 3 Monate, Sonstiges 2 Jahre. Unter **Fristen je Art anpassen** stellt ihr das anders ein. Nach Ablauf löscht HUBIplan die Datei in den Papierkorb des Dienstkontos. Listen mit Personendaten legt HUBIplan nur nach ausdrücklicher Bestätigung ab und nie in den Ordner „Mitglieder“.
+
+Bedenkt: In der Nextcloud gelten Verschlüsselung, Rechte und Protokoll von HUBIplan nicht. Wer eine Sync-App nutzt, hat die Dateien auch auf seinem Gerät.
+
+Mit **Ordner zum Übernehmen** erscheint beim Hochladen von Dokumenten, Bildern der Webseite, Anhängen an Terminen und Rundschreiben und Belegen ein Knopf **Aus Nextcloud**. Gebt dafür in der Nextcloud einen Ordner an das Dienstkonto frei, zum Beispiel „An HUBIplan“, und tragt seinen Namen hier ein. HUBIplan holt eine Kopie und prüft sie wie jede hochgeladene Datei; in der Nextcloud bleibt alles, wie es ist. Wer in HUBIplan Dateien hochladen darf, sieht alles in diesem Ordner.
+
 ## Termine im Kalender der Nextcloud
 
 Unter **Termine in den Kalender der Nextcloud** schreibt HUBIplan eure Termine in den Kalender der Nextcloud. Es gibt zwei Kalender: **Termine für Mitglieder** mit allem, was jedes Mitglied sieht, und **Termine „nur Vorstand“**. Jeder Kalender wird nur zum Lesen für eine Gruppe freigegeben, voreingestellt „Mitglieder“ und „Vorstand“. Wer in der Gruppe ist, sieht ihn in der Kalender-App der Nextcloud und auf dem Handy.
 
 Bearbeitet werden die Termine weiter in HUBIplan. Alle 15 Minuten schreibt HUBIplan Änderungen nach, mit **Kalender jetzt abgleichen** sofort. Dafür braucht es Dienstkonto und App-Passwort. Schaltet ihr einen Kalender aus, verschwindet er auch in der Nextcloud. Den Vorstandskalender gebt bitte nur für eine Gruppe frei, in der allein der Vorstand ist.
+
+## Videoraum am Termin
+
+Mit **Videoraum am Termin** erscheint in jedem Termin, den ihr bearbeiten dürft, der Knopf **Videoraum anlegen**. HUBIplan legt dann im Dienstkonto ein Gespräch in Talk an, mit Link und Passwort. Beides sehen alle, die den Termin sehen: in HUBIplan, im Mitgliederbereich, in den Apps, in Einladung und Erinnerung und im Kalender der Nextcloud. Die öffentliche Webseite und die Kalender-Abos zeigen den Videoraum nie. Dafür braucht es Talk in der Nextcloud und Dienstkonto mit App-Passwort.
+
+Nach **Raum löschen nach … Tagen** (voreingestellt 7, gezählt ab dem Ende des Termins, bei Serien ab dem Ende der Wiederholung) löscht HUBIplan das Gespräch samt Chat in der Nextcloud; ebenso, wenn der Termin gelöscht wird. Ohne eigenen Videodienst der Nextcloud klappt Video nur mit wenigen Teilnehmern gut; mit mehr Teilnehmern hilft es, die Kamera auszulassen. Soll eine Mitgliederversammlung auch online stattfinden, muss die Satzung oder die Einberufung das vorsehen.
 
 ## Im Einzelnen
 
