@@ -13,6 +13,8 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
 - ``organizations_any_age``  Organisationsmitglieder (ohne Alter) bleiben trotz Altersfilter
   (Einladung zur Versammlung, J4)
 - ``jubilee_year``  Jubilare dieses Jahres (Verein oder Dachverband)
+- ``members``       nur diese Mitgliedschaften (Nummern; Glückwünsche)
+- ``greeting``      Werte je Mitglied für Glückwünsche: ``{"<Nummer>": {"age": 60, "years": 25}}``
 - ``honorary_titles``  Inhaber dieser Ehrungen (des Vereins oder des Dachverbands)
 - ``households_merge``  Briefe (und Mails an dieselbe Adresse) an einen Familienhaushalt
   zusammenfassen; fehlt die Angabe, gilt „ja“ (Konzept Familien, Haushalte und Firmen, H1)
@@ -72,6 +74,7 @@ from .models import Circular
 
 MAX_RECIPIENTS = 20000
 NOTE_OPT_OUT = "hat Informationen per E-Mail abbestellt"
+NOTE_GREETING_OPT_OUT = "möchte keine Glückwünsche"
 NOTE_LETTER = "keine E-Mail-Adresse: Brief"
 NOTE_APP = "per App"
 NOTE_APP_MAIL = "per App und E-Mail"
@@ -121,6 +124,8 @@ class Candidate:
     household_people: list[tuple[str, str, str, str]] = field(default_factory=list)
     # Infoschreiben an Angemeldete: die Anmeldung (auch ohne Mitgliedschaft)
     registration_id: int | None = None
+    # Abgemeldet von Glückwünschen statt von Informationen
+    greeting: bool = False
 
     @property
     def channel(self) -> str | None:
@@ -135,7 +140,7 @@ class Candidate:
     @property
     def note(self) -> str:
         if self.opted_out:
-            return NOTE_OPT_OUT
+            return NOTE_GREETING_OPT_OUT if self.greeting else NOTE_OPT_OUT
         if self.merged_into:
             return NOTE_MERGED
         if self.app_access:
@@ -234,6 +239,9 @@ def club_filtered(club: Organization, qs, filters: dict):
     jubilees: dict[int, int] = {}
     if nobody_selected(filters):
         return qs.none(), jubilees
+    if "members" in filters:
+        # Glückwünsche: genau diese Mitgliedschaften (leer heißt niemand)
+        qs = qs.filter(pk__in=as_ints(filters.get("members")))
     types = as_ints(filters.get("member_types"))
     if types:
         qs = qs.filter(current_type_id__in=types)
@@ -828,19 +836,26 @@ def select(circular: Circular, only_registration: int | None = None) -> Selectio
     # Abmelden können sich Mitglieder nur von Informationen an die Mitglieder,
     # nicht von Post an Vorstände und Rolleninhaber
     info = circular.kind == Circular.Kind.INFO and circular.audience == Circular.Audience.MEMBERS
+    # Glückwünschen kann jedes Mitglied widersprechen (Mitgliederbereich oder Akte)
+    greeting = circular.kind == Circular.Kind.GREETING
     opted = set()
-    if info:
+    if info or greeting:
         ids = [c.membership_id for c in candidates if c.membership_id]
+        field = "greetings_opt_out_at__isnull" if greeting else "info_opt_out_at__isnull"
         with rls_bypass():
             opted = set(
-                Membership.objects.filter(pk__in=ids, info_opt_out_at__isnull=False).values_list(
-                    "pk", flat=True
-                )
+                Membership.objects.filter(pk__in=ids, **{field: False}).values_list("pk", flat=True)
             )
+    if greeting:
+        values = (circular.filters or {}).get("greeting") or {}
+        for key, row in values.items():
+            if str(key).isdigit() and isinstance(row, dict) and row.get("years"):
+                jubilees[int(key)] = as_int(row.get("years")) or 0
     for c in candidates:
         c.excluded = c.key in exclude
         # Abgemeldet: keine Mail und auch kein Brief für Informationen
-        c.opted_out = info and c.membership_id in opted
+        c.opted_out = (info or greeting) and c.membership_id in opted
+        c.greeting = greeting
         c.short = circular.kind == Circular.Kind.SHORT
     if circular.via_app:
         from devices.push import app_accesses
@@ -857,7 +872,7 @@ def select(circular: Circular, only_registration: int | None = None) -> Selectio
 
 
 # Platzhalter mit Werten je Person: Schreiben dann nicht zusammenfassen
-PERSONAL_PLACEHOLDERS = {"Mitgliedsjahre", "Jubiläumsjahre"}
+PERSONAL_PLACEHOLDERS = {"Mitgliedsjahre", "Jubiläumsjahre", "Alter"}
 
 
 def merging_households(circular: Circular) -> bool:
@@ -871,6 +886,8 @@ def merging_households(circular: Circular) -> bool:
     if circular.audience != Circular.Audience.MEMBERS or circular.event_id:
         return False
     if (circular.filters or {}).get("households_merge") is False:
+        return False
+    if circular.kind == Circular.Kind.GREETING:
         return False
     return not (used_placeholders(circular) & PERSONAL_PLACEHOLDERS)
 
@@ -948,6 +965,7 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
             ):
                 years[m.pk] = Duration.of(club_ranges(m), on, m.organization.date_precision).years
     dept_name = circular.department.name if circular.department_id else ""
+    greeting = (circular.filters or {}).get("greeting") or {}
     regs = _registration_values(selection) if used & REGISTRATION_PLACEHOLDERS else {}
     for c in selection.candidates:
         c.values = {
@@ -969,8 +987,16 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
                 if c.membership_id in selection.jubilees
                 else ""
             ),
+            "Alter": _greeting_age(greeting, c.membership_id),
             **regs.get(c.registration_id, {}),
         }
+
+
+def _greeting_age(values: dict, membership_id: int | None) -> str:
+    """Alter am Geburtstag (nur bei Glückwünschen hinterlegt)."""
+    row = values.get(str(membership_id)) if membership_id else None
+    age = as_int(row.get("age")) if isinstance(row, dict) else None
+    return str(age) if age else ""
 
 
 REGISTRATION_PLACEHOLDERS = {"Anmeldenummer", "Personen", "Offener Betrag"}

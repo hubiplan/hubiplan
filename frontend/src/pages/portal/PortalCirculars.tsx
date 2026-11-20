@@ -41,6 +41,26 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
     setParams(next)
   }
 
+  async function setGreetings(value: boolean) {
+    if (busy) return
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      const confirmed = await portalCircularApi.setGreetingsOptOut(accessId, value)
+      settings.setData(confirmed)
+      setNotice(
+        confirmed.greetings_opt_out
+          ? t('Du bekommst keine Glückwünsche mehr.')
+          : t('Glückwünsche sind wieder erwünscht.'),
+      )
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function setOptOut(value: boolean) {
     if (busy) return
     setBusy(true)
@@ -143,6 +163,14 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
           checked={!settings.data.info_opt_out}
           busy={busy}
           onChange={(on) => void setOptOut(!on)}
+        />
+      )}
+      {settings.data && (settings.data.greetings_active || settings.data.greetings_opt_out) && (
+        <Checkbox
+          label={t('Glückwünsche zu Geburtstag und Vereinsjubiläum erhalten')}
+          checked={!settings.data.greetings_opt_out}
+          busy={busy}
+          onChange={(on) => void setGreetings(!on)}
         />
       )}
       {error && <Alert kind="error">{error}</Alert>}

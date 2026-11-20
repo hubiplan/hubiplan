@@ -58,6 +58,8 @@ NICHT = {
     "competitions.StandAccess": "Standzugang (Link), am Ziel neu vergeben",
     "peering.SpinOff": "Ausgründung, gehört zur Kopplung der alten Instanz",
     "oidc.Client": "Anmeldung für Nextcloud, am Ziel neu einrichten",
+    "oidc.CalendarItem": "Abgleich mit dem Nextcloud-Kalender der alten Instanz, entsteht am "
+    "Ziel neu",
     "mcpserver.McpGrant": "Freigabe der KI-Schnittstelle, am Ziel neu erteilen",
     "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
     "(McpGrant) und verfällt nach 30 Tagen",
