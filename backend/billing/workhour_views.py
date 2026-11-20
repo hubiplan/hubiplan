@@ -66,7 +66,7 @@ class WorkHoursView(BillingMixin, APIView):
             return None
         field = serializers.DecimalField(max_digits=digits, decimal_places=2, min_value=0)
         try:
-            return field.to_internal_value(raw)
+            return field.run_validation(raw)
         except serializers.ValidationError as exc:
             raise serializers.ValidationError({key: exc.detail}) from exc
 
@@ -76,7 +76,7 @@ class WorkHoursView(BillingMixin, APIView):
             return None
         field = serializers.IntegerField(min_value=0, max_value=120)
         try:
-            return field.to_internal_value(raw)
+            return field.run_validation(raw)
         except serializers.ValidationError as exc:
             raise serializers.ValidationError({key: exc.detail}) from exc
 
