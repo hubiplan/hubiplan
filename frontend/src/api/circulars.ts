@@ -349,6 +349,9 @@ export interface InboundEntry {
   status_label: string
   reason: string
   circular_id: number | null
+  /** Termineinladung (Termine aus dem Mailprogramm) und der übernommene Termin */
+  is_event?: boolean
+  event_id?: number | null
   /** nur beim Probe-Eingang */
   confirm_url?: string
 }
@@ -373,6 +376,11 @@ export interface MailingList {
   open_senders?: boolean
   /** Offener Verteiler: bis zu so vielen Empfängern ohne Freigabe (FQ15) */
   open_direct_max?: number
+  /** Termine aus dem Mailprogramm: Zu- und Absagen anbieten, Videoraum anlegen */
+  event_rsvp?: boolean
+  event_video?: boolean
+  /** nur in der Einzelansicht: Nextcloud Talk eingerichtet */
+  talk_available?: boolean
   /** Ausgewählte Absender (Konto-IDs); leer: alle mit dem Recht */
   senders: number[]
   /** nur in der Einzelansicht: wer das Recht hat und ausgewählt werden kann */
@@ -401,6 +409,8 @@ export type MailingListChanges = Partial<
     | 'is_active'
     | 'open_senders'
     | 'open_direct_max'
+    | 'event_rsvp'
+    | 'event_video'
     | 'senders'
   >
 >
@@ -430,10 +440,36 @@ export interface PublicConfirm {
   body: string
   attachments: string[]
   counts: RecipientCounts | SentCounts | null
+  /** Termineinladung statt Rundschreiben (Termine aus dem Mailprogramm) */
+  event: PublicConfirmEvent | null
+}
+
+export interface PublicConfirmEvent {
+  action: 'new' | 'update' | 'cancel'
+  title: string
+  starts_at: string
+  ends_at: string
+  all_day: boolean
+  location: string
+  description: string
+  video_url: string
+  repeat: string
+  attachments: string[]
+  skipped: string[]
+  /** nur solange die Bestätigung aussteht */
+  options: {
+    rsvp_possible: boolean
+    rsvp: boolean
+    video_possible: boolean
+    video: boolean
+  } | null
+  visibility?: 'members' | 'board'
+  /** nach dem Übernehmen: Link zum Termin in HUBIplan */
+  event_url: string
 }
 
 export const publicConfirmApi = {
   get: (token: string) => api.get<PublicConfirm>(`/api/public/circulars/confirm/${token}/`),
-  act: (token: string, action: 'send' | 'discard') =>
-    api.post<PublicConfirm>(`/api/public/circulars/confirm/${token}/`, { action }),
+  act: (token: string, action: 'send' | 'discard', options?: { rsvp?: boolean; video?: boolean }) =>
+    api.post<PublicConfirm>(`/api/public/circulars/confirm/${token}/`, { action, ...options }),
 }

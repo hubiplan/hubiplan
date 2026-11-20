@@ -261,6 +261,8 @@ type SettingsValues = {
   is_active: boolean
   open_senders: boolean
   open_direct_max: number
+  event_rsvp: boolean
+  event_video: boolean
   senders: number[]
 }
 
@@ -282,6 +284,8 @@ function ListSettings({
     is_active: initial.is_active,
     open_senders: initial.open_senders ?? false,
     open_direct_max: initial.open_direct_max ?? 50,
+    event_rsvp: initial.event_rsvp ?? true,
+    event_video: initial.event_video ?? false,
     senders: initial.senders,
   })
   const { values: v, errors, set } = form
@@ -519,6 +523,37 @@ function ListSettings({
           )}
         </p>
       </fieldset>
+      <fieldset className="subcard stack-sm">
+        <legend>{t('Termine aus dem Mailprogramm')}</legend>
+        <p className="muted small">
+          {t(
+            'Lädt jemand mit Terminrecht diesen Verteiler im Mailprogramm zu einem Termin ein, legt HUBIplan den Termin an und informiert die Empfänger des Verteilers. Änderungen und Absagen aus dem Mailprogramm werden übernommen.',
+          )}{' '}
+          {initial.audience === 'members'
+            ? t('Der Termin ist für Mitglieder sichtbar, nie öffentlich.')
+            : t('Der Termin ist „nur Vorstand“.')}
+        </p>
+        {initial.audience === 'members' && (
+          <Checkbox
+            label={t('Zu- und Absagen anbieten')}
+            checked={v.event_rsvp}
+            onChange={(on) => set('event_rsvp', on)}
+          />
+        )}
+        <Checkbox
+          label={t('Videoraum anlegen, wenn die Einladung keinen Videolink hat')}
+          checked={v.event_video}
+          disabled={!initial.talk_available && !v.event_video}
+          onChange={(on) => set('event_video', on)}
+        />
+        {!initial.talk_available && (
+          <p className="muted small">
+            {t(
+              'Videoräume gibt es, sobald Nextcloud Talk unter Einstellungen › Nextcloud eingerichtet ist.',
+            )}
+          </p>
+        )}
+      </fieldset>
       <div className="button-row">
         <button
           type="button"
@@ -688,6 +723,7 @@ function Inbound({
                 <td>{formatDateTime(r.received_at)}</td>
                 <td>{r.sender}</td>
                 <td>
+                  {r.is_event && <span className="muted small">{t('Termin:')} </span>}
                   {r.circular_id ? (
                     <Link to={`${circularsRoot}/${r.circular_id}`}>
                       {r.subject || t('(ohne Betreff)')}

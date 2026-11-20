@@ -1015,6 +1015,8 @@ class MailingListSerializer(serializers.ModelSerializer):
             "is_active",
             "open_senders",
             "open_direct_max",
+            "event_video",
+            "event_rsvp",
             "senders",
         ]
         # Eindeutigkeit prüft clean_local_part über alle Vereine (RLS verbirgt fremde)
@@ -1078,6 +1080,9 @@ def inbound_data(e: InboundMail) -> dict:
         "status_label": e.get_status_display(),
         "reason": e.reason,
         "circular_id": e.circular_id,
+        # Termineinladung (Termine aus dem Mailprogramm)
+        "is_event": bool(e.event_data),
+        "event_id": e.event_id,
     }
 
 
@@ -1107,6 +1112,8 @@ def mailing_list_data(ml: MailingList) -> dict:
         "audience": pattern.audience,
         "open_senders": ml.open_senders,
         "open_direct_max": ml.open_direct_max,
+        "event_video": ml.event_video,
+        "event_rsvp": ml.event_rsvp,
         "senders": sorted(ml.senders.values_list("pk", flat=True)),
         "last_inbound": inbound_data(last) if last else None,
     }
@@ -1188,8 +1195,16 @@ class _Lists(_ListsMixin, APIView):
 
 class _ListDetail(_ListsMixin, APIView):
     def get(self, request, list_id: int, **kwargs):
+        from events.mail_intake import talk_available
+
         ml = self.get_list(list_id)
-        return Response({**mailing_list_data(ml), "sender_options": sender_options(ml)})
+        return Response(
+            {
+                **mailing_list_data(ml),
+                "sender_options": sender_options(ml),
+                "talk_available": talk_available(ml.organization),
+            }
+        )
 
     @transaction.atomic
     def patch(self, request, list_id: int, **kwargs):
@@ -1200,6 +1215,8 @@ class _ListDetail(_ListsMixin, APIView):
             "is_active": ml.is_active,
             "open_senders": ml.open_senders,
             "open_direct_max": ml.open_direct_max,
+            "event_video": ml.event_video,
+            "event_rsvp": ml.event_rsvp,
         }
         senders_before = sorted(ml.senders.values_list("email", flat=True))
         ser = MailingListSerializer(ml, data=request.data, partial=True)
@@ -1497,6 +1514,36 @@ class PublicOptOutView(APIView):
 # --- Bestätigungslink aus der Mail an den Absender eines Verteilers ---
 
 
+def confirm_event_data(entry: InboundMail) -> dict:
+    """Termin einer Einladung für die Bestätigungsseite."""
+    from events import mail_intake
+
+    data = entry.event_data or {}
+    out = {
+        "action": data.get("action", "new"),
+        "title": data.get("title", ""),
+        "starts_at": data.get("starts_at"),
+        "ends_at": data.get("ends_at"),
+        "all_day": bool(data.get("all_day")),
+        "location": data.get("location", ""),
+        "description": data.get("description", ""),
+        "video_url": data.get("video_url", ""),
+        "repeat": data.get("repeat", ""),
+        "attachments": [f["name"] for f in data.get("files") or []],
+        "skipped": list(data.get("skipped") or []),
+        "options": None,
+        "event_url": "",
+    }
+    if entry.status == InboundMail.Status.WAITING and entry.mailing_list_id:
+        with rls_bypass():
+            out["options"] = mail_intake.options_for(entry)
+            out["visibility"] = mail_intake.visibility_for(entry.mailing_list)
+    if entry.event_id:
+        with rls_bypass():
+            out["event_url"] = mail_intake.event_link(entry.event)
+    return out
+
+
 class PublicConfirmView(APIView):
     """GET: was verschickt würde · POST ``{"action": "send"|"discard"}``.
 
@@ -1529,7 +1576,10 @@ class PublicConfirmView(APIView):
             "body": "",
             "attachments": [],
             "counts": None,
+            "event": None,
         }
+        if entry.event_data:
+            out["event"] = confirm_event_data(entry)
         circular = entry.circular
         if circular is not None:
             with rls_bypass():
@@ -1551,6 +1601,14 @@ class PublicConfirmView(APIView):
         action = request.data.get("action", "send")
         if action == "discard":
             inbound.discard(entry)
+        elif action == "send" and entry.event_data:
+            from events import mail_intake
+
+            def choice(name):
+                value = request.data.get(name)
+                return value if isinstance(value, bool) else None
+
+            mail_intake.apply(entry, rsvp=choice("rsvp"), video=choice("video"))
         elif action == "send":
             counts = inbound.confirm(entry)
             with rls_bypass():

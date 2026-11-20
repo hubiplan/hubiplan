@@ -314,6 +314,12 @@ class MailingList(models.Model):
     open_direct_max = models.PositiveIntegerField(
         "ohne Freigabe höchstens an", default=50, db_default=50
     )
+    # Termineinladungen an den Verteiler (Termine aus dem Mailprogramm): Videoraum anlegen,
+    # wenn die Einladung keinen Link hat; Zu- und Absagen (nur bei Mitgliederterminen)
+    event_video = models.BooleanField(
+        "Videoraum anlegen, wenn kein Link", default=False, db_default=False
+    )
+    event_rsvp = models.BooleanField("Zu- und Absagen", default=True, db_default=True)
     pattern = models.OneToOneField(Circular, on_delete=models.CASCADE, related_name="list_pattern")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -356,6 +362,12 @@ class InboundMail(models.Model):
     )
     circular = models.ForeignKey(
         Circular, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    # Termineinladung (Termine aus dem Mailprogramm): gelesener Termin und, sobald
+    # übernommen, der Termin in HUBIplan
+    event_data = models.JSONField(null=True, blank=True)
+    event = models.ForeignKey(
+        "events.Event", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     status = models.CharField(max_length=10, choices=Status.choices)
     reason = models.CharField("Grund", max_length=300, blank=True)

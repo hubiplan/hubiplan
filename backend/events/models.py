@@ -159,6 +159,18 @@ class Event(models.Model):
     source_stale = models.BooleanField(
         "Quelle veraltet (ausgeblendet)", default=False, db_default=False, editable=False
     )
+    # Aus einer Einladung im Mailprogramm (iMIP an einen Verteiler): Kennung, Fassung und
+    # Organisator der Einladung, damit spätere Änderungen und Absagen ankommen
+    mail_uid = models.CharField(
+        max_length=255, blank=True, default="", db_default="", db_index=True, editable=False
+    )
+    mail_sequence = models.IntegerField(default=0, db_default=0, editable=False)
+    mail_organizer = models.CharField(
+        max_length=254, blank=True, default="", db_default="", editable=False
+    )
+    # Videolink, der nicht von HUBIplan stammt (z. B. aus der Einladung: Talk, Teams, Zoom);
+    # einen eigenen Talk-Raum legt HUBIplan getrennt davon an
+    video_url = models.URLField("Videolink", max_length=500, blank=True, default="", db_default="")
     # Zeit oder Ort nach dem Anlegen geändert: im Kalender markiert
     changed_at = models.DateTimeField("Zeit oder Ort geändert am", null=True, blank=True)
     # Zu- und Absagen (Meilenstein 13): nur einmalige Termine eines Vereins oder Zugs
@@ -407,6 +419,7 @@ class EventResponse(models.Model):
         MEMBER = "member", gettext_lazy("Mitglied")
         BOARD = "board", gettext_lazy("Vorstand")
         LINK = "link", gettext_lazy("Mail-Link")
+        MAIL = "mail", gettext_lazy("Mailprogramm")
 
     # Verein des Termins (Mandantentrennung)
     organization = models.ForeignKey(

@@ -15039,3 +15039,21 @@ msgstr "Change letterhead: layout, logo, fonts, line and table colours and foote
 #: website/views.py
 msgid "Höchstens {x0} Kopfbilder."
 msgstr "At most {x0} header images."
+
+msgid "Mailprogramm"
+msgstr "Email program"
+
+msgid "Diese Einladung wurde schon bearbeitet."
+msgstr "This invitation has already been processed."
+
+msgid "Du darfst für diesen Verteiler keine Termine mehr anlegen."
+msgstr "You may no longer create events for this mailing list."
+
+msgid "Den Termin gibt es nicht mehr."
+msgstr "This event no longer exists."
+
+msgid "Das ist eine Termineinladung."
+msgstr "This is an event invitation."
+
+msgid "Der Videolink muss mit https:// beginnen."
+msgstr "The video link must start with https://."

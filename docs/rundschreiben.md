@@ -157,6 +157,39 @@ Einstellungen (`.env`): `INBOUND_DOMAINS`, `INBOUND_IMAP_HOST`, `INBOUND_IMAP_PO
 (`INBOX`), `MAIL_RATE_PER_HOUR`. Einrichtung auf dem Hestia-Server:
 [echtbetrieb.md](echtbetrieb.md#mailverteiler).
 
+### Termine aus dem Mailprogramm
+
+Eine Mail an eine Verteileradresse mit Kalenderteil (iMIP, RFC 6047: `text/calendar` oder
+`.ics`-Anhang mit `METHOD:REQUEST`/`CANCEL`) wird kein Rundschreiben, sondern geht an
+`events/mail_intake.py` (Lesen und Schreiben der Kalenderteile: `events/imip.py`):
+
+1. Absender braucht `events.manage` für die Einheit des Verteilers (Untereinheit:
+   `dept.events.manage`) und muss, falls eingestellt, unter den Absendern stehen.
+   „Jeder darf schreiben“ gilt für Termine nicht. Kommt die Einladung von einem Kalenderserver
+   (Nextcloud: `noreply@…`), zählt der Organisator, wenn er im Antwort-an steht; direkt
+   übernommen wird dann nie.
+2. Der Eingang (`InboundMail.event_data`) wartet auf den Bestätigungslink (gleiche Seite wie beim
+   Rundschreiben); nur Modus „direkt“ mit DMARC-Pass des Absenders selbst übernimmt sofort.
+   PDF-Anhänge liegen bis dahin verschlüsselt unter `events/eingang/`.
+3. Übernehmen: Termin über `Event.mail_uid` anlegen, ändern (höhere `SEQUENCE`) oder absagen.
+   Sichtbarkeit nach dem Empfängerkreis des Musters: `roles`, `boards`, `departments` → „nur
+   Vorstand“ (ohne Zu- und Absagen), sonst „Mitglieder“; nie öffentlich. Serien nur wöchentlich,
+   monatlich oder jährlich mit Abstand und Ende.
+4. Einladung als Rundschreiben nach dem Muster des Verteilers (bei Mitgliederterminen mit
+   `Circular.event`, also mit Rückmeldelink), Videolink aus `CONFERENCE`, `URL`, Ort oder
+   Beschreibung (`Event.video_url`), sonst je Verteiler (`event_video`) ein neuer Talk-Raum
+   (`oidc.nc_talk`, wo eingerichtet).
+5. An den Organisator geht `METHOD:REPLY` „angenommen“ für die Verteileradresse.
+
+Antworten auf HUBIplans eigene Einladungen: Einladungen und Rundschreiben zu Terminen mit Zu- und
+Absage tragen einen Kalenderteil (`METHOD:REQUEST`, UID wie im Kalender-Abo) mit dem Organisator
+`termin+<Termin>-<Mitgliedschaft>-<HMAC>@<Verteiler-Domain>` (der lokale Teil `termin` ist
+reserviert). „Annehmen/Mit Vorbehalt/Ablehnen“ im Mailprogramm schickt `METHOD:REPLY` dorthin;
+der Abruf speichert es als Zu- oder Absage (Quelle „Mailprogramm“), wenn Code und Absender zum
+Mitglied passen. Ohne Sammelpostfach (`INBOUND_IMAP_HOST`), für Mitglieder mit eigenem
+Kalender-Abo und für den Organisator einer Einladung aus dem Mailprogramm gibt es keinen
+Kalenderteil.
+
 ## An einen Verteiler
 
 Hat die Einheit Verteiler, zeigt „An“ im Rundschreiben nur diese (Ralf 2026-10-31).
