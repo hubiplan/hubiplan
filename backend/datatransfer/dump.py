@@ -519,6 +519,7 @@ class Dumper:
             "club_number": m.club_number,
             "pays_fee_self": m.pays_fee_self,
             "info_opt_out_at": plain(m.info_opt_out_at),
+            "greetings_opt_out_at": plain(m.greetings_opt_out_at),
             "photo_consent_at": plain(m.photo_consent_at),
             "photo_consent_source": m.photo_consent_source,
             "purged_at": plain(m.purged_at),

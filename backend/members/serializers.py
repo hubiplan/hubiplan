@@ -702,6 +702,7 @@ class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
     club_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
     pays_fee_self = serializers.BooleanField(required=False)
     info_opt_out = serializers.BooleanField(required=False)
+    greetings_opt_out = serializers.BooleanField(required=False)
     email = serializers.EmailField(required=False, allow_blank=True)
     phone = serializers.CharField(required=False, allow_blank=True, max_length=50)
     street = serializers.CharField(max_length=200, required=False)
@@ -831,6 +832,7 @@ def member_detail(membership: Membership, org) -> dict:
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,
+        "greetings_opt_out_at": membership.greetings_opt_out_at,
         "managed_by": {
             "id": membership.managed_by_id,
             "name": membership.managed_by.remote_unit.name,
