@@ -15,4 +15,4 @@ stichworte: [Outlook, Thunderbird, Einladung, Besprechung, Talk, Videokonferenz,
 
 Die Empfänger des Verteilers bekommen die Einladung von HUBIplan; lade sie nicht zusätzlich selbst ein, sonst kommt sie doppelt. Den Talk-Link legt der Nextcloud-Kalender mit „Talk-Raum hinzufügen“ schon beim Anlegen an; sonst legt HUBIplan einen neuen Raum an, wenn das beim Verteiler eingestellt ist. Verschiebst du den Termin später im Mailprogramm oder sagst ihn ab, kommt wieder ein Bestätigungslink. Welche Verteiler es gibt, steht unter [Rundschreiben](/rundschreiben) im Reiter „Verteiler“.
 
-**In der App:** Eine Einladung als Kalenderdatei (.ics) kannst du auch an die HUBIplan-App teilen bzw. mit ihr öffnen. Nach dem Freischalten der Verwaltung öffnet sich **Neuer Termin**, ausgefüllt mit Titel, Zeit, Ort und Videolink. Prüfe die Angaben und tippe auf **Anlegen**.
+In der App: Eine Einladung als Kalenderdatei (.ics) kannst du auch an die HUBIplan-App teilen bzw. mit ihr öffnen. Nach dem Freischalten der Verwaltung öffnet sich **Neuer Termin**, ausgefüllt mit Titel, Zeit, Ort und Videolink. Prüfe die Angaben und tippe auf **Anlegen**.
