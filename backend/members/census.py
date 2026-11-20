@@ -215,14 +215,19 @@ def census(src: _Source, params, *, membership_ids=None) -> dict:
     addresses = _addresses(people)
     places: dict[str, _Table] = {}
     codes: dict[str, set[str]] = defaultdict(set)
-    names: dict[str, str] = {}
+    spellings: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for mid in people:
         plz, city = addresses.get(mid, ("", ""))
         key = city.casefold()
-        names.setdefault(key, city)
+        spellings[key][city] += 1
         if plz:
             codes[key].add(plz)
         places.setdefault(key, _Table(len(scheme))).add(groups_of[mid], genders.get(mid) or "")
+    # Schreibweise eines Orts: die häufigste, bei Gleichstand die mit Großbuchstaben vorn
+    names = {
+        key: max(found, key=lambda c: (found[c], c[:1].isupper(), c))
+        for key, found in spellings.items()
+    }
     place_rows = []
     for key, table in places.items():
         place_rows.append(
