@@ -1,6 +1,6 @@
 // Mitgliederentwicklung: Bestand, Ein- und Austritte, Arten, Abteilungen bzw.
 // Vereine und Altersstruktur im gewählten Zeitraum.
-import { statsApi } from '../../api/statistics.ts'
+import { censusBase, statsApi } from '../../api/statistics.ts'
 import type { AgeSummary, MemberStats, RangeQuery } from '../../api/statistics.ts'
 import { BarList, ChartCard, TimeChart } from '../../components/charts/Charts.tsx'
 import {
@@ -14,35 +14,55 @@ import {
 import { RangePicker } from '../../components/charts/RangePicker.tsx'
 import { useRange } from '../../components/charts/range.ts'
 import { formatDate, useQueryLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Tabs } from '../../components/ui.tsx'
+import { MemberCensus } from './CensusPage.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo } from '../../learning/Aids.tsx'
-import { ownMembers } from './access.ts'
+import { developmentTabs, ownMembers } from './access.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 /** Mitglieder › Entwicklung: eigene Mitglieder (``own``) oder alle Einheiten darunter
- *  (``all``, mit Freigabe der Plattform). */
-export function MembersDevelopmentPage({ view = 'own' }: { view?: 'own' | 'all' }) {
+ *  (``all``, mit Freigabe der Plattform). Reiter: Verlauf und Stichtag. */
+export function MembersDevelopmentPage({
+  view = 'own',
+  path = '/mitglieder/entwicklung',
+  census = false,
+}: {
+  view?: 'own' | 'all'
+  /** Pfad des Menüpunkts (Reiter darunter) */
+  path?: string
+  /** Reiter „Stichtag“ statt „Verlauf“ */
+  census?: boolean
+}) {
   const tm = useTerms()
   const org = useActiveOrg()
   // Ohne eigene Mitglieder gibt es nur die Sicht auf alle darunter
   const federation = view === 'all' || (org.type === 'federation' && !ownMembers(org))
+  const note = federation
+    ? t('Gezählt werden Mitgliedschaften mit einer an {e_akk} gemeldeten Mitgliedsart.', {
+        e_akk: tm.e_akk,
+      })
+    : undefined
+  const scope = `org-${org.id}-${federation ? 'all' : 'own'}`
   return (
     <section>
       <PageHeader />
-      <MemberDevelopment
-        scope={`org-${org.id}-${federation ? 'all' : 'own'}`}
-        load={(q) => (federation ? statsApi.federation(org.id, q) : statsApi.club(org.id, q))}
-        note={
-          federation
-            ? t('Gezählt werden Mitgliedschaften mit einer an {e_akk} gemeldeten Mitgliedsart.', {
-                e_akk: tm.e_akk,
-              })
-            : undefined
-        }
-      />
+      <Tabs items={developmentTabs(path)} />
+      {census ? (
+        <MemberCensus
+          scope={scope}
+          base={federation ? censusBase.federation(org.id) : censusBase.club(org.id)}
+          note={note}
+        />
+      ) : (
+        <MemberDevelopment
+          scope={scope}
+          load={(q) => (federation ? statsApi.federation(org.id, q) : statsApi.club(org.id, q))}
+          note={note}
+        />
+      )}
     </section>
   )
 }

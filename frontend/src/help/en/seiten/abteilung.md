@@ -5,6 +5,7 @@ routen:
   [
     /abteilung,
     /abteilung/entwicklung,
+    /abteilung/entwicklung/stichtag,
     /abteilung/rechnungen,
     /abteilung/meldungen,
     /abteilung/export,
@@ -18,6 +19,8 @@ This is the work area of the sub-unit where you have a role. You see its members
 ## Trends
 
 Shows how the unit's membership has developed: joiners, leavers and age structure in the selected period.
+
+Under **Cut-off date** it counts the members on one day by age, gender and place of residence, also as PDF, Excel or CSV for a report.
 
 ## Invoices
 

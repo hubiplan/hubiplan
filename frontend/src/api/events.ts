@@ -175,7 +175,9 @@ export interface SeriesException {
 export interface VideoRoomInfo {
   url: string
   password: string
-  created_at: string
+  created_at: string | null
+  /** true: Raum von HUBIplan (Talk), false: fremder Videolink des Termins */
+  talk?: boolean
 }
 
 export interface EventDetail {

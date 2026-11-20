@@ -56,6 +56,8 @@ Bei den Zu- und Absagen eines Termins schaltest du auf Wunsch **Antwort „Viell
 
 Jede Mail zum Termin (Einladung, Erinnerung, Rundschreiben zum Termin) enthält für jedes Mitglied einen eigenen Link „Zu- oder absagen (ohne Anmeldung)“. Er öffnet eine Seite mit Zeit, Ort, Beschreibung und Anhängen; dort wählt das Mitglied „Ich komme“, „Vielleicht“ oder „Ich komme nicht“ und speichert. Das bloße Öffnen speichert nichts. Über denselben Link lässt sich die Antwort bis zum Anmeldeschluss ändern, ebenso im Mitgliederbereich und in der App. Die Einladung nimmt die Anhänge des Termins direkt als Mailanhang mit (bis 5 Dateien, je 10 MB); größere stehen auf der Seite hinter dem Link.
 
+Außerdem trägt die Einladung einen Kalendereintrag: Outlook, Thunderbird und Handys zeigen dann „Annehmen“, „Mit Vorbehalt“ und „Ablehnen“. Die Antwort kommt als Zu- oder Absage an („eingetragen von: Mailprogramm“). Mitglieder mit eigenem Kalender-Abo bekommen keinen Kalendereintrag in der Mail, damit der Termin nicht doppelt in ihrem Kalender steht.
+
 ## Verbindliche Anmeldung mit Teilnahmegebühr
 
 Mit dem Modul Anmeldungen (unter Einstellungen › Module, braucht Termine und Rechnungen) bekommt ein Termin statt Zu- und Absagen eine verbindliche Anmeldung. Ein Termin hat das eine oder das andere. Im geöffneten Termin richtest du sie mit **Verbindliche Anmeldung einrichten** ein: Anmeldestart (optional), Anmeldeschluss (bis dahin können sich Mitglieder auch selbst abmelden), Plätze, Personen je Anmeldung, ob Mitglieder Gäste mit anmelden dürfen, Zahlungsziel, Kategorie in der Kasse und Teilnahmebedingungen.

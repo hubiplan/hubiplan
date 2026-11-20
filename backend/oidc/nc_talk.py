@@ -84,7 +84,25 @@ def password_of(room: TalkRoom) -> str:
 def room_data(room: TalkRoom | None) -> dict | None:
     if room is None:
         return None
-    return {"url": room.url, "password": password_of(room), "created_at": room.created_at}
+    return {
+        "url": room.url,
+        "password": password_of(room),
+        "created_at": room.created_at,
+        "talk": True,
+    }
+
+
+def link_data(event) -> dict | None:
+    """Fremder Videolink am Termin (aus einer Einladung oder von Hand), wenn kein Raum da ist."""
+    url = getattr(event, "video_url", "") or ""
+    if not url:
+        return None
+    return {"url": url, "password": "", "created_at": None, "talk": False}
+
+
+def video_of(event) -> dict | None:
+    """Videoraum von HUBIplan, sonst der fremde Videolink des Termins."""
+    return room_data(room_of(event)) or link_data(event)
 
 
 def room_of(event) -> TalkRoom | None:
@@ -96,13 +114,15 @@ def room_of(event) -> TalkRoom | None:
 
 
 def rooms_for(occurrences) -> dict[int, dict]:
-    """Videoräume der Termine einer Liste (eine Abfrage), Termin → ``room_data``."""
-    ids = {o.event.pk for o in occurrences}
-    if not ids:
+    """Videoräume (sonst fremde Videolinks) der Termine einer Liste (eine Abfrage)."""
+    events = {o.event.pk: o.event for o in occurrences}
+    if not events:
         return {}
+    out = {pk: link for pk, e in events.items() if (link := link_data(e))}
     with rls_bypass():
-        rooms = TalkRoom.objects.select_related("client").filter(event_id__in=ids)
-        return {r.event_id: room_data(r) for r in rooms}
+        rooms = TalkRoom.objects.select_related("client").filter(event_id__in=events)
+        out.update({r.event_id: room_data(r) for r in rooms})
+    return out
 
 
 def create(event, user) -> TalkRoom:
@@ -204,11 +224,11 @@ def purge_due(now: datetime.datetime | None = None) -> int:
 
 def mail_lines(event) -> list[str]:
     """Zeilen für Einladung und Erinnerung."""
-    room = room_of(event)
-    if room is None:
+    video = video_of(event)
+    if video is None:
         return []
-    password = password_of(room)
-    lines = [f"Videoraum: {room.url}"]
+    password = video["password"]
+    lines = [f"Videoraum: {video['url']}"]
     if password:
         lines.append(f"Passwort für den Videoraum: {password}")
     return lines

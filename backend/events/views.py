@@ -290,6 +290,9 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "exceptions": [exception_data(e) for e in event.exceptions.all()],
         "rsvp": rsvp_data(event, viewer),
         "registration": registration_data(event, viewer),
+        # Videolink aus einer Einladung oder von Hand (Talk-Räume von HUBIplan: T2)
+        "video_url": event.video_url,
+        "from_mail": bool(event.mail_uid),
         "source": (
             {
                 "name": event.external_source.name,
@@ -305,8 +308,8 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
             and viewer.can_manage
             and viewer.owns(event)
         ),
-        # Videoraum (Nextcloud Talk): Link und Passwort
-        "video": nc_talk.room_data(nc_talk.room_of(event)),
+        # Videoraum (Nextcloud Talk) mit Link und Passwort, sonst der fremde Videolink
+        "video": nc_talk.video_of(event),
     }
     if can_edit and viewer.kind == "org" and not event.external_source_id:
         # Videoraum anlegen geht, wenn die Einheit Talk eingerichtet hat

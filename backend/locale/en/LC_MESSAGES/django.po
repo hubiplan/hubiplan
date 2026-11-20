@@ -12,6 +12,219 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: members/census.py
+msgid "14 bis 17"
+msgstr "14 to 17"
+
+#: members/census.py
+msgid "15 bis 18"
+msgstr "15 to 18"
+
+#: members/census.py
+msgid "18 bis 26"
+msgstr "18 to 26"
+
+#: members/census.py
+msgid "18 bis 29"
+msgstr "18 to 29"
+
+#: members/census.py
+msgid "19 bis 26"
+msgstr "19 to 26"
+
+#: members/census.py
+msgid "27 bis 40"
+msgstr "27 to 40"
+
+#: members/census.py
+msgid "27 und älter"
+msgstr "27 and older"
+
+#: members/census.py
+msgid "30 bis 39"
+msgstr "30 to 39"
+
+#: members/census.py
+msgid "40 bis 49"
+msgstr "40 to 49"
+
+#: members/census.py
+msgid "41 bis 60"
+msgstr "41 to 60"
+
+#: members/census.py
+msgid "50 bis 59"
+msgstr "50 to 59"
+
+#: members/census.py
+msgid "6 bis 13"
+msgstr "6 to 13"
+
+#: members/census.py
+msgid "60 bis 69"
+msgstr "60 to 69"
+
+#: members/census.py
+msgid "7 bis 14"
+msgstr "7 to 14"
+
+#: members/census.py
+msgid "70 bis 79"
+msgstr "70 to 79"
+
+#: members/census.py
+msgid "80 und älter"
+msgstr "80 and older"
+
+#: members/census.py
+msgid "Alter am Stichtag"
+msgstr "Age on the cut-off date"
+
+#: members/census.py
+msgid "Alter nach Jahrgang"
+msgstr "Age by year of birth"
+
+#: members/census.py
+msgid "Alter und Geschlecht"
+msgstr "Age and gender"
+
+#: members/census.py
+msgid "Altersgruppe"
+msgstr "Age group"
+
+#: members/census.py
+msgid "Angabe"
+msgstr "Item"
+
+#: members/census.py
+msgid "Bereich"
+msgstr "Section"
+
+#: members/census.py
+msgid "Bitte ein Datum im Format JJJJ-MM-TT angeben."
+msgstr "Please enter a date in the format YYYY-MM-DD."
+
+#: members/census.py
+msgid "Der Stichtag liegt außerhalb des möglichen Zeitraums."
+msgstr "The cut-off date is outside the possible range."
+
+#: members/census.py
+msgid "Die Altersgruppen je Ort stehen in der Excel-Datei."
+msgstr "The age groups per place are in the Excel file."
+
+#: members/census.py
+msgid "Einheit"
+msgstr "Unit"
+
+#: members/census.py
+msgid "Grundlage"
+msgstr "Basis"
+
+#: members/census.py
+msgid "Gruppe"
+msgstr "Group"
+
+#: members/census.py
+msgid "Gruppen"
+msgstr "Groups"
+
+#: members/census.py
+msgid "Jugendförderung (unter 6, 6–13, 14–17, 18–26, ab 27)"
+msgstr "Youth funding (under 6, 6–13, 14–17, 18–26, 27 and over)"
+
+#: members/census.py
+msgid "Mitglieder am {date}"
+msgstr "Members on {date}"
+
+#: members/census.py
+msgid "Mitglieder gesamt"
+msgstr "Members in total"
+
+#: members/census.py
+msgid "Mitgliedsarten: {names}"
+msgstr "Membership types: {names}"
+
+#: members/census.py
+msgid "Sportbund (bis 6, 7–14, 15–18, 19–26, 27–40, 41–60, über 60)"
+msgstr "Sports federation (up to 6, 7–14, 15–18, 19–26, 27–40, 41–60, over 60)"
+
+#: members/census.py
+msgid "Stichtag"
+msgstr "Cut-off date"
+
+#: members/census.py
+msgid "Unbekannte Altersgruppen."
+msgstr "Unknown age groups."
+
+#: members/census.py
+msgid "Unbekannte Zählweise."
+msgstr "Unknown counting method."
+
+#: members/census.py
+msgid "Wer mehreren Gruppen ({title}) angehört, zählt in jeder."
+msgstr "Anyone belonging to several groups ({title}) is counted in each."
+
+#: members/census.py
+msgid "Wert"
+msgstr "Value"
+
+#: members/census.py
+msgid "Wohnort"
+msgstr "Place of residence"
+
+#: members/census.py
+msgid "Wohnorte"
+msgstr "Places of residence"
+
+#: members/census.py
+msgid "Zehnjahresgruppen (unter 18, 18–29 … 80 und älter)"
+msgstr "Ten-year groups (under 18, 18–29 … 80 and older)"
+
+#: members/census.py
+msgid "bis 6"
+msgstr "up to 6"
+
+#: members/census.py
+msgid "davon Organisationen"
+msgstr "of which organisations"
+
+#: members/census.py
+msgid "davon Personen"
+msgstr "of which persons"
+
+#: members/census.py
+msgid "gesamt"
+msgstr "total"
+
+#: members/census.py
+msgid "ohne Anschrift"
+msgstr "no address"
+
+#: members/census.py
+msgid "unter 18"
+msgstr "under 18"
+
+#: members/census.py
+msgid "unter 6"
+msgstr "under 6"
+
+#: members/census.py
+msgid "{total} Mitglieder, davon {persons} Personen und {orgs} Organisationen"
+msgstr "{total} members, of which {persons} persons and {orgs} organisations"
+
+#: members/census.py
+msgid "Übersicht"
+msgstr "Overview"
+
+#: members/census.py
+msgid "über 60"
+msgstr "over 60"
+
+#: oidc/nc_calendars.py
+#, python-brace-format
+msgid "{name} – Termine"
+msgstr "{name} – events"
+
 msgid "Mitglieder"
 msgstr "Members"
 
@@ -7823,6 +8036,7 @@ msgstr "An area cannot contain further areas."
 
 msgid "Diese Infrastruktur hat selbst Bereiche."
 msgstr "This facility has areas of its own."
+
 #: accounts/self_service.py
 #, python-brace-format
 msgid ""
@@ -7939,6 +8153,7 @@ msgstr "Only a series allows cancelling a single date."
 
 msgid "Dieses Vorkommen gehört nicht zur Serie."
 msgstr "This date does not belong to the series."
+
 #: core/safehttp.py organizations/homepage_preview.py
 msgid "Zeitüberschreitung."
 msgstr "Timed out."
@@ -12984,6 +13199,50 @@ msgstr "Draft text (Markdown; images as ![description](bild:key), see webseite_b
 msgid "Bitte einen Text angeben."
 msgstr "Please enter a text."
 
+#: access/modules.py
+msgid "Pinnwand"
+msgstr "Notice board"
+
+#: access/catalog.py
+msgid "Beiträge der Pinnwand sehen"
+msgstr "View notice board posts"
+
+#: access/catalog.py
+msgid "Beiträge an die Pinnwand schreiben, ändern und löschen, auch aus der App"
+msgstr "Write, change and delete notice board posts, also from the app"
+
+#: access/catalog.py
+msgid "Pinnwand {gen}"
+msgstr "Notice board {gen}"
+
+#: access/modules.py
+msgid "Kurze Neuigkeiten mit Foto im Mitgliederbereich und in der App, auf Wunsch mit Push"
+msgstr "Short news with photos in the member area and the app, optionally with push"
+
+#: pinboard/services.py
+msgid "Anzeigen bis"
+msgstr "Show until"
+
+#: pinboard/notify.py
+msgid "Pinnwand: {owner}"
+msgstr "Notice board: {owner}"
+
+#: pinboard/services.py
+msgid "Höchstens {n} Zeichen."
+msgstr "At most {n} characters."
+
+#: pinboard/services.py
+msgid "Bitte ein gültiges Datum wählen."
+msgstr "Please choose a valid date."
+
+#: pinboard/services.py
+msgid "Höchstens {n} Fotos je Beitrag."
+msgstr "At most {n} photos per post."
+
+#: pinboard/views.py
+msgid "Der Beitrag wurde inzwischen geändert. Bitte neu laden."
+msgstr "The post has been changed in the meantime. Please reload."
+
 msgid "Höchstens {x0} Titelzeilen auf dem Titelfoto."
 msgstr "At most {x0} title lines on the cover photo."
 
@@ -15040,10 +15299,23 @@ msgstr "Change letterhead: layout, logo, fonts, line and table colours and foote
 msgid "Höchstens {x0} Kopfbilder."
 msgstr "At most {x0} header images."
 
-#: oidc/nc_calendars.py
-#, python-brace-format
-msgid "{name} – Termine"
-msgstr "{name} – events"
+msgid "Mailprogramm"
+msgstr "Email program"
+
+msgid "Diese Einladung wurde schon bearbeitet."
+msgstr "This invitation has already been processed."
+
+msgid "Du darfst für diesen Verteiler keine Termine mehr anlegen."
+msgstr "You may no longer create events for this mailing list."
+
+msgid "Den Termin gibt es nicht mehr."
+msgstr "This event no longer exists."
+
+msgid "Das ist eine Termineinladung."
+msgstr "This is an event invitation."
+
+msgid "Der Videolink muss mit https:// beginnen."
+msgstr "The video link must start with https://."
 
 #: oidc/nc_calendars.py
 #, python-brace-format
@@ -15062,7 +15334,6 @@ msgstr "The calendars need a service account and app password."
 msgid "Es ist kein Kalender eingeschaltet."
 msgstr "No calendar is switched on."
 
-<<<<<<< HEAD
 #: oidc/nc_groups.py
 #, python-brace-format
 msgid "Die Gruppe „{group}“ gibt es in der Nextcloud nicht."
@@ -15249,7 +15520,7 @@ msgstr "Video rooms need a service account and app password."
 #: oidc/views.py
 msgid "Bitte 0 bis 90 Tage angeben."
 msgstr "Please enter 0 to 90 days."
-=======
+
 msgid "Glückwunsch"
 msgstr "Greeting"
 
@@ -15336,4 +15607,492 @@ msgstr "skipped"
 
 msgid "Nur ausgelassene Glückwünsche ab heute lassen sich wieder vorsehen."
 msgstr "Only skipped greetings from today onwards can be scheduled again."
->>>>>>> origin/main
+
+msgid "Verzeichnis von Verarbeitungstätigkeiten"
+msgstr "Record of processing activities"
+
+msgid "nicht gemeldet"
+msgstr "not reported"
+
+msgid "Datenpanne: {title}"
+msgstr "Data breach: {title}"
+
+msgid "Vertreten durch"
+msgstr "Represented by"
+
+msgid "Datenschutzbeauftragte/r"
+msgstr "Data protection officer"
+
+msgid "kein Vertrag zur Auftragsverarbeitung hinterlegt"
+msgstr "no data processing agreement on file"
+
+msgid "Bekannt geworden"
+msgstr "Discovered"
+
+msgid "Zeitpunkt der Panne"
+msgstr "Time of the breach"
+
+msgid "Was ist passiert?"
+msgstr "What happened?"
+
+msgid "Betroffene Daten"
+msgstr "Data concerned"
+
+msgid "Betroffene Personen"
+msgstr "Persons concerned"
+
+msgid "Wahrscheinliche Folgen"
+msgstr "Likely consequences"
+
+msgid "Einschätzung"
+msgstr "Assessment"
+
+msgid "Ergriffene Maßnahmen"
+msgstr "Measures taken"
+
+msgid "Frist für die Meldung"
+msgstr "Reporting deadline"
+
+msgid "Meldung an die Aufsichtsbehörde"
+msgstr "Report to the supervisory authority"
+
+msgid "Betroffene benachrichtigt"
+msgstr "Persons concerned notified"
+
+msgid "Abgeschlossen"
+msgstr "Closed"
+
+msgid "nach Art. 30 Abs. 1 DSGVO"
+msgstr "under Art. 30(1) GDPR"
+
+msgid "Verantwortlicher"
+msgstr "Controller"
+
+msgid "nicht benannt"
+msgstr "not appointed"
+
+msgid "Auftragsverarbeiter"
+msgstr "Processors"
+
+msgid "Technische und organisatorische Maßnahmen (Art. 32 DSGVO)"
+msgstr "Technical and organisational measures (Art. 32 GDPR)"
+
+msgid "Dokumentation nach Art. 33 Abs. 5 DSGVO"
+msgstr "Documentation under Art. 33(5) GDPR"
+
+msgid "Vertrag zur Auftragsverarbeitung seit {date}"
+msgstr "data processing agreement since {date}"
+
+msgid "Rechtsgrundlage"
+msgstr "Legal basis"
+
+msgid "Betroffene"
+msgstr "Data subjects"
+
+msgid "Datenkategorien"
+msgstr "Categories of data"
+
+msgid "Empfänger"
+msgstr "Recipients"
+
+msgid "Übermittlung in Drittländer"
+msgstr "Transfers to third countries"
+
+msgid "Löschfrist"
+msgstr "Erasure period"
+
+msgid "Meldefrist abgelaufen am {date}"
+msgstr "reporting deadline expired on {date}"
+
+msgid "Meldung an die Aufsichtsbehörde bis {date}"
+msgstr "report to the supervisory authority by {date}"
+
+msgid "noch nicht abgeschlossen"
+msgstr "not closed yet"
+
+msgid "Datenpanne"
+msgstr "Data breach"
+
+msgid "Mitglieder, ehemalige Mitglieder, Erziehungsberechtigte"
+msgstr "Members, former members, parents or guardians"
+
+msgid "keine Weitergabe außerhalb des Vereins"
+msgstr "no disclosure outside the club"
+
+msgid "Zugang nur mit persönlichem Konto, Zwei-Faktor-Anmeldung für Funktionsträger; Rechte je Rolle nach dem Bedarf des Amts; verschlüsselte Übertragung (HTTPS); verschlüsselte Speicherung besonders schützenswerter Felder; Trennung der Vereine in der Datenbank (Zeilenschutz); Änderungsprotokoll; tägliche Sicherung; automatische Löschung nach festen Fristen."
+msgstr "Access only with a personal account, two-factor sign-in for officers; permissions per role as the office requires; encrypted transfer (HTTPS); encrypted storage of particularly sensitive fields; separation of clubs in the database (row-level security); change log; daily backup; automatic erasure after fixed periods."
+
+msgid "Mitgliederverwaltung"
+msgstr "Membership administration"
+
+msgid "Begründung und Durchführung der Mitgliedschaft nach der Satzung"
+msgstr "Establishing and administering membership under the constitution"
+
+msgid "Art. 6 Abs. 1 lit. b DSGVO (Mitgliedschaft)"
+msgstr "Art. 6(1)(b) GDPR (membership)"
+
+msgid "Name, Anschrift, Geburtsdatum, Kontaktdaten, Mitgliedsart, Eintritt und Austritt, Ämter, Zusatzfelder"
+msgstr "Name, address, date of birth, contact details, membership type, joining and leaving, offices, custom fields"
+
+msgid "Vorstand und berechtigte Funktionsträger; übergeordnete Verbände, soweit die Satzung eine Meldung vorsieht"
+msgstr "Board and authorised officers; umbrella associations where the constitution requires reporting"
+
+msgid "Nach Ende der Mitgliedschaft und Ablauf der Löschfrist (Standard 24 Monate) gelöscht; Name, Geburtsjahr und Mitgliedszeiten bleiben für die Vereinsgeschichte"
+msgstr "Erased after membership ends and the erasure period expires (24 months by default); name, year of birth and membership periods remain for the club history"
+
+msgid "Mitgliedsanträge"
+msgstr "Membership applications"
+
+msgid "Aufnahme neuer Mitglieder, auch über den Online-Antrag"
+msgstr "Admitting new members, including via the online application"
+
+msgid "Art. 6 Abs. 1 lit. b DSGVO (Anbahnung der Mitgliedschaft)"
+msgstr "Art. 6(1)(b) GDPR (steps prior to membership)"
+
+msgid "Antragsteller, Erziehungsberechtigte"
+msgstr "Applicants, parents or guardians"
+
+msgid "Angaben des Antrags, Unterschrift, gegebenenfalls SEPA-Mandat"
+msgstr "Application details, signature, SEPA mandate if any"
+
+msgid "Angaben nach der Antragsfrist entfernt, das PDF mit den Mitgliedsdaten gelöscht"
+msgstr "Details removed after the application period, the PDF erased with the member data"
+
+msgid "Beiträge, Rechnungen und Lastschrift"
+msgstr "Fees, invoices and direct debit"
+
+msgid "Erhebung der Beiträge und Gebühren, Einzug per SEPA-Lastschrift"
+msgstr "Collecting fees and charges, SEPA direct debit"
+
+msgid "Art. 6 Abs. 1 lit. b und c DSGVO, § 147 AO"
+msgstr "Art. 6(1)(b) and (c) GDPR, § 147 AO"
+
+msgid "Mitglieder, Zahler von Haushalten, Kunden"
+msgstr "Members, household payers, customers"
+
+msgid "Name, Anschrift, Kontoverbindung, Mandatsreferenz, Beträge, Zahlungsstand"
+msgstr "Name, address, bank details, mandate reference, amounts, payment status"
+
+msgid "Kreditinstitut des Vereins, Steuerberater, Finanzamt bei Prüfungen"
+msgstr "Club's bank, tax adviser, tax office during audits"
+
+msgid "Rechnungen 8 Jahre, SEPA-Mandate mit den Büchern; danach Kontodaten anonymisiert"
+msgstr "Invoices 8 years, SEPA mandates with the books; bank details anonymised afterwards"
+
+msgid "Buchführung und Kasse"
+msgstr "Bookkeeping and cash"
+
+msgid "Ordnungsgemäße Buchführung und Nachweis gegenüber dem Finanzamt"
+msgstr "Proper bookkeeping and evidence for the tax office"
+
+msgid "Art. 6 Abs. 1 lit. c DSGVO, § 147 AO"
+msgstr "Art. 6(1)(c) GDPR, § 147 AO"
+
+msgid "Mitglieder, Geschäftspartner, Spender"
+msgstr "Members, business partners, donors"
+
+msgid "Namen in Buchungen und Belegen, Beträge, Kontoauszüge"
+msgstr "Names in entries and receipts, amounts, bank statements"
+
+msgid "Kassenprüfer, Steuerberater, Finanzamt"
+msgstr "Auditors, tax adviser, tax office"
+
+msgid "Belege nach 8 Jahren gelöscht, Bücher nach 10 Jahren anonymisiert"
+msgstr "Receipts erased after 8 years, books anonymised after 10 years"
+
+msgid "Auslagenerstattung"
+msgstr "Expense reimbursement"
+
+msgid "Erstattung von Auslagen der Mitglieder"
+msgstr "Reimbursing members' expenses"
+
+msgid "Name, Kontoverbindung, Belege, Beträge"
+msgstr "Name, bank details, receipts, amounts"
+
+msgid "Kreditinstitut des Vereins, Kassenprüfer"
+msgstr "Club's bank, auditors"
+
+msgid "Ausgezahlt wie Belege und Bücher; abgelehnt: Belege und Bankverbindung nach 6 Monaten"
+msgstr "Paid: like receipts and books; rejected: receipts and bank details after 6 months"
+
+msgid "Spenden und Zuwendungsbestätigungen"
+msgstr "Donations and donation receipts"
+
+msgid "Ausstellung von Zuwendungsbestätigungen nach amtlichem Muster"
+msgstr "Issuing donation receipts using the official template"
+
+msgid "Art. 6 Abs. 1 lit. c DSGVO, § 50 EStDV"
+msgstr "Art. 6(1)(c) GDPR, § 50 EStDV"
+
+msgid "Name, Anschrift, Betrag, Datum der Zuwendung"
+msgstr "Name, address, amount, date of donation"
+
+msgid "Finanzamt bei Prüfungen"
+msgstr "Tax office during audits"
+
+msgid "Wie Belege: 8 Jahre"
+msgstr "Like receipts: 8 years"
+
+msgid "Zusammenarbeit mit Lieferanten, Dienstleistern und Sponsoren"
+msgstr "Working with suppliers, service providers and sponsors"
+
+msgid "Art. 6 Abs. 1 lit. b und f DSGVO"
+msgstr "Art. 6(1)(b) and (f) GDPR"
+
+msgid "Ansprechpartner von Geschäftspartnern"
+msgstr "Contacts at business partners"
+
+msgid "Name, Funktion, Kontaktdaten, Vereinbarungen"
+msgstr "Name, position, contact details, agreements"
+
+msgid "Bis zum Ende der Zusammenarbeit; Belege wie in der Buchführung"
+msgstr "Until the cooperation ends; receipts as in bookkeeping"
+
+msgid "Termine und Rückmeldungen"
+msgstr "Events and responses"
+
+msgid "Planung von Terminen, Zu- und Absagen"
+msgstr "Planning events, acceptances and declines"
+
+msgid "Art. 6 Abs. 1 lit. b DSGVO"
+msgstr "Art. 6(1)(b) GDPR"
+
+msgid "Name, Rückmeldung, Bemerkung"
+msgstr "Name, response, comment"
+
+msgid "Bemerkungen mit den Mitgliedsdaten gelöscht"
+msgstr "Comments erased with the member data"
+
+msgid "Anmeldungen zu Veranstaltungen"
+msgstr "Event registrations"
+
+msgid "Anmeldung, Teilnahmegebühr und Einlass bei Veranstaltungen"
+msgstr "Registration, participation fee and admission at events"
+
+msgid "Teilnehmende, auch Gäste"
+msgstr "Participants, including guests"
+
+msgid "Name, Kontaktdaten, Antworten auf Fragen, Zahlung, Einlass"
+msgstr "Name, contact details, answers to questions, payment, admission"
+
+msgid "Nach der Veranstaltung und dem Zahlungsnachweis wie Belege"
+msgstr "After the event and proof of payment like receipts"
+
+msgid "Einladung, Anwesenheit, Abstimmungen und Protokoll nach der Satzung"
+msgstr "Invitation, attendance, votes and minutes under the constitution"
+
+msgid "Art. 6 Abs. 1 lit. b und c DSGVO"
+msgstr "Art. 6(1)(b) and (c) GDPR"
+
+msgid "Name, Anwesenheit, Vollmachten, Wortmeldungen im Protokoll"
+msgstr "Name, attendance, proxies, contributions in the minutes"
+
+msgid "Registergericht (Protokollauszug bei Vorstandswahlen)"
+msgstr "Register court (extract of minutes for board elections)"
+
+msgid "Protokolle dauerhaft als Vereinsunterlage"
+msgstr "Minutes kept permanently as club records"
+
+msgid "Einteilung von Helferinnen und Helfern bei Veranstaltungen"
+msgstr "Scheduling helpers at events"
+
+msgid "Mitglieder und Helfer ohne Mitgliedschaft"
+msgstr "Members and helpers without membership"
+
+msgid "Name, Telefon, Schicht"
+msgstr "Name, phone, shift"
+
+msgid "Name und Telefon mit den Mitgliedsdaten gelöscht"
+msgstr "Name and phone erased with the member data"
+
+msgid "Rundschreiben und Glückwünsche"
+msgstr "Circulars and greetings"
+
+msgid "Information der Mitglieder per Mail, Brief und App"
+msgstr "Informing members by email, letter and app"
+
+msgid "Name, Anschrift, Mailadresse, Geburtstag und Jubiläum bei Glückwünschen"
+msgstr "Name, address, email address, birthday and anniversary for greetings"
+
+msgid "Mail-Dienst der Instanz"
+msgstr "Instance's email service"
+
+msgid "Mailtexte im Postausgang nach 30 Tagen geleert; Empfängerdaten mit den Mitgliedsdaten gelöscht"
+msgstr "Email texts in the outbox cleared after 30 days; recipient data erased with the member data"
+
+msgid "Vereinswebseite"
+msgstr "Club website"
+
+msgid "Öffentliche Darstellung des Vereins, Kontaktformular"
+msgstr "Public presentation of the club, contact form"
+
+msgid "Art. 6 Abs. 1 lit. a und f DSGVO"
+msgstr "Art. 6(1)(a) and (f) GDPR"
+
+msgid "Mitglieder mit Funktion, Abgebildete, Besucher der Webseite"
+msgstr "Members holding positions, people pictured, website visitors"
+
+msgid "Name und Funktion, Fotos mit Einwilligung, Anfragen über das Kontaktformular"
+msgstr "Name and position, photos with consent, enquiries via the contact form"
+
+msgid "Öffentlichkeit (nur veröffentlichte Inhalte)"
+msgstr "The public (published content only)"
+
+msgid "Bis zum Widerruf bzw. Widerspruch; Kontaktformular nach 7 Tagen geleert"
+msgstr "Until consent is withdrawn or an objection is made; contact form cleared after 7 days"
+
+msgid "Ehrungen und Vereinsgeschichte"
+msgstr "Honours and club history"
+
+msgid "Ehrungen, Würden und Chronik des Vereins"
+msgstr "Honours, titles and the club's chronicle"
+
+msgid "Art. 6 Abs. 1 lit. f DSGVO (Vereinsgeschichte)"
+msgstr "Art. 6(1)(f) GDPR (club history)"
+
+msgid "Mitglieder und ehemalige Mitglieder"
+msgstr "Members and former members"
+
+msgid "Name, Ehrung oder Würde, Jahr, Fotos mit Einwilligung"
+msgstr "Name, honour or title, year, photos with consent"
+
+msgid "Öffentlichkeit, soweit in der Chronik auf der Webseite"
+msgstr "The public, where shown in the chronicle on the website"
+
+msgid "Dauerhaft; Namen auf Widerspruch entfernt"
+msgstr "Permanently; names removed on objection"
+
+msgid "Wettbewerbe und Ergebnisse"
+msgstr "Competitions and results"
+
+msgid "Durchführung von Wettbewerben und Veröffentlichung der Ergebnisse"
+msgstr "Running competitions and publishing results"
+
+msgid "Name, Mannschaft, Ergebnisse"
+msgstr "Name, team, results"
+
+msgid "Verband, Öffentlichkeit bei veröffentlichten Ergebnissen"
+msgstr "Association, the public for published results"
+
+msgid "Dauerhaft als Vereinsgeschichte; Namen auf Widerspruch entfernt"
+msgstr "Permanently as club history; names removed on objection"
+
+msgid "Nachweis von Übungsleiter-, Trainer- und Sachkundescheinen"
+msgstr "Records of instructor, coach and competence certificates"
+
+msgid "Mitglieder mit Qualifikation"
+msgstr "Members with a qualification"
+
+msgid "Art der Qualifikation, Gültigkeit, Nachweis"
+msgstr "Type of qualification, validity, evidence"
+
+msgid "Verband bei Zuschussanträgen"
+msgstr "Association for grant applications"
+
+msgid "Mit den Mitgliedsdaten gelöscht"
+msgstr "Erased with the member data"
+
+msgid "Benutzerkonten und Anmeldung"
+msgstr "User accounts and sign-in"
+
+msgid "Zugang zu HUBIplan, Mitgliederbereich und App"
+msgstr "Access to HUBIplan, the members' area and the app"
+
+msgid "Art. 6 Abs. 1 lit. b DSGVO, Art. 32 DSGVO"
+msgstr "Art. 6(1)(b) GDPR, Art. 32 GDPR"
+
+msgid "Mitglieder und Funktionsträger mit Zugang"
+msgstr "Members and officers with access"
+
+msgid "Anmelde-E-Mail, Passkeys, Zwei-Faktor-Daten, Geräte, Anmeldezeitpunkte"
+msgstr "Sign-in email, passkeys, two-factor data, devices, sign-in times"
+
+msgid "Betreiber der HUBIplan-Instanz (Hosting)"
+msgstr "Operator of the HUBIplan instance (hosting)"
+
+msgid "90 Tage nach Ende des letzten Zugangs gelöscht; Geräte nach 180 Tagen"
+msgstr "Erased 90 days after the last access ends; devices after 180 days"
+
+msgid "Änderungsprotokoll und Sicherungen"
+msgstr "Change log and backups"
+
+msgid "Nachvollziehbarkeit von Änderungen, Wiederherstellung"
+msgstr "Traceability of changes, restoring data"
+
+msgid "Art. 6 Abs. 1 lit. c und f DSGVO, Art. 32 DSGVO"
+msgstr "Art. 6(1)(c) and (f) GDPR, Art. 32 GDPR"
+
+msgid "Geänderte Werte, Bearbeiter, Zeitpunkt; Sicherungskopien aller Daten"
+msgstr "Changed values, editor, time; backup copies of all data"
+
+msgid "Inhalte zu einer Person mit deren Löschung geleert; Sicherungen nach 30 Tagen"
+msgstr "Content about a person cleared when they are erased; backups after 30 days"
+
+msgid "Betreiber der HUBIplan-Instanz"
+msgstr "Operator of the HUBIplan instance"
+
+msgid "Technische und organisatorische Maßnahmen"
+msgstr "Technical and organisational measures"
+
+msgid "Kurzbezeichnung"
+msgstr "Short title"
+
+msgid "Zeitpunkt oder Zeitraum der Panne"
+msgstr "Time or period of the breach"
+
+msgid "Betroffene Personen (Art, ungefähre Zahl)"
+msgstr "Persons concerned (type, approximate number)"
+
+msgid "Gemeldet an die Aufsichtsbehörde"
+msgstr "Reported to the supervisory authority"
+
+msgid "Aktenzeichen der Meldung"
+msgstr "Report reference"
+
+msgid "voraussichtlich kein Risiko"
+msgstr "probably no risk"
+
+msgid "Risiko"
+msgstr "Risk"
+
+msgid "hohes Risiko"
+msgstr "high risk"
+
+msgid "Der Eintrag wurde inzwischen geändert. Bitte neu laden."
+msgstr "The entry has been changed in the meantime. Please reload."
+
+msgid "Verarbeitungsverzeichnis"
+msgstr "Record of processing"
+
+msgid "Verarbeitungstätigkeit"
+msgstr "Processing activity"
+
+msgid "Bitte eine Kurzbezeichnung eingeben."
+msgstr "Please enter a short title."
+
+msgid "Bitte angeben, wann die Panne bekannt wurde."
+msgstr "Please state when the breach was discovered."
+
+msgid "Höchstens 100 eigene Tätigkeiten."
+msgstr "At most 100 own activities."
+
+msgid "Der Zeitpunkt liegt vor dem Bekanntwerden."
+msgstr "The time is before the breach was discovered."
+
+msgid "Vor dem Abschluss bitte die Meldung an die Aufsichtsbehörde eintragen oder begründen, warum nicht gemeldet wurde."
+msgstr "Before closing, please enter the report to the supervisory authority or explain why it was not reported."
+
+msgid "Zu viele Einträge."
+msgstr "Too many entries."
+
+msgid "Datenpanne-{n}"
+msgstr "Data-breach-{n}"
+
+msgid "Auftragsverarbeitungsvertrag"
+msgstr "Data processing agreement"
+
+msgid "Verarbeitungsverzeichnis, Auftragsverarbeiter und Datenpannen sehen"
+msgstr "View the record of processing, processors and data breaches"
+
+msgid "Verzeichnis pflegen und Datenpannen dokumentieren"
+msgstr "Maintain the record and document data breaches"

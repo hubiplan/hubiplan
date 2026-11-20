@@ -223,3 +223,19 @@ def test_einschalten_braucht_dienstkonto(api, orgs, board_a):
     )
     assert resp.status_code == 200, resp.content
     assert resp.json()["talk_enabled"] is True and resp.json()["talk_keep_days"] == 7
+
+
+def test_fremder_videolink_bis_ein_raum_da_ist(api, orgs, board_a, talk, sitzung):
+    talk_client(orgs["a"])
+    with rls_bypass():
+        Event.objects.filter(pk=sitzung.pk).update(video_url="https://meet.example.org/vorstand")
+    url = f"/api/orgs/{orgs['a'].pk}/events/{sitzung.pk}/"
+    c = api(board_a)
+    video = c.get(url).json()["video"]
+    assert video["url"] == "https://meet.example.org/vorstand" and video["talk"] is False
+    sitzung.refresh_from_db()
+    assert "Videoraum: https://meet.example.org/vorstand" in notify.body(
+        sitzung, notify.INVITE, "Erika", None
+    )
+    video = c.post(url + "video/", {}, content_type=JSON).json()["video"]
+    assert video["url"] == f"{CLOUD}/call/raum1" and video["talk"] is True

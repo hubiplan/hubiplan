@@ -180,6 +180,7 @@ def send(event_id: int, kind: str, remaining: list[int] | None = None) -> int:
                     kind="termin",
                     stored_attachments=stored or None,
                     fail_silently=True,
+                    calendar=_calendar(event, kind, membership, address),
                 )
                 sent += int(ok)
         if left and not settings.CELERY_TASK_ALWAYS_EAGER:
@@ -194,6 +195,19 @@ def send(event_id: int, kind: str, remaining: list[int] | None = None) -> int:
                 logger.exception("Push zum Termin %s gescheitert", event_id)
     logger.info("Termin %s: %s Mails (%s)", event_id, sent, kind)
     return sent
+
+
+def _calendar(event: Event, kind: str, membership, address: str):
+    """Kalenderteil für „Annehmen/Ablehnen“ im Mailprogramm (W1b), nicht bei Erinnerungen."""
+    if kind == REMIND:
+        return None
+    from .mail_intake import calendar_for
+
+    try:
+        return calendar_for(event, membership.pk, address, membership.person.first_name)
+    except Exception:  # noqa: BLE001 – Zugabe; die Mail geht auch ohne
+        logger.exception("Kalenderteil zum Termin %s nicht erzeugt", event.pk)
+        return None
 
 
 def push_app(event: Event, kind: str, membership_ids: list[int]) -> int:

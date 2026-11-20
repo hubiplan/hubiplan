@@ -186,6 +186,20 @@ def stored_attachments(circular: Circular) -> list[dict]:
     ]
 
 
+def calendar_part(recipient: CircularRecipient, circular: Circular):
+    """Rundschreiben zu einem Termin mit Rückmeldung: Kalenderteil für „Annehmen/Ablehnen“
+    im Mailprogramm (Termine aus dem Mailprogramm, W1b)."""
+    if not circular.event_id or not recipient.membership_id:
+        return None
+    from events.mail_intake import calendar_for
+
+    try:
+        return calendar_for(circular.event, recipient.membership_id, recipient.email, "")
+    except Exception:  # noqa: BLE001 – Zugabe; die Mail geht auch ohne
+        logger.exception("Kalenderteil zum Rundschreiben %s nicht erzeugt", circular.pk)
+        return None
+
+
 def deliver(recipient: CircularRecipient, circular: Circular, attachments: list[dict]) -> bool:
     content = render_mail(circular, recipient.values, recipient.membership_id)
     return mail.send(
@@ -200,6 +214,7 @@ def deliver(recipient: CircularRecipient, circular: Circular, attachments: list[
         reply_to=reply_to(circular) or None,
         stored_attachments=attachments,
         fail_silently=True,
+        calendar=calendar_part(recipient, circular),
     )
 
 

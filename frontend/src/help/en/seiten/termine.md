@@ -56,6 +56,8 @@ For replies to an event you can switch on **Allow “Maybe” as an answer**. �
 
 Every email about the event (invitation, reminder, circular about the event) contains a personal link “Accept or decline (without login)” for each member. It opens a page with time, place, description and attachments; there the member chooses “I am coming”, “Maybe” or “I am not coming” and saves. Just opening the link saves nothing. The same link lets them change the answer until the deadline, as do the member area and the app. The invitation carries the event's attachments directly as email attachments (up to 5 files, 10 MB each); larger ones are on the page behind the link.
 
+The invitation also carries a calendar entry: Outlook, Thunderbird and phones then show “Accept”, “Tentative” and “Decline”. The answer arrives as a reply (“entered by: email program”). Members with their own calendar subscription get no calendar entry in the mail, so the event does not appear twice in their calendar.
+
 ## Binding registration with participation fee
 
 With the Registrations module (under Settings › Modules, needs events and invoices) an event gets binding registration instead of accepting and declining. An event has one or the other. In the open event you set it up with **Set up binding registration**: registration opens (optional), registration deadline (until then members can also cancel themselves), places, people per registration, whether members may register guests too, payment term, category in the accounts and terms of participation.

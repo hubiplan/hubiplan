@@ -84,7 +84,7 @@ export function VideoRoom({
               <button type="button" className="button button-ghost" onClick={() => void copy()}>
                 {t('Link kopieren')}
               </button>
-              {event.video_available !== undefined && (
+              {event.video_available !== undefined && video.talk && (
                 <button
                   type="button"
                   className="button button-ghost"

@@ -80,6 +80,8 @@ NICHT = {
     "todos.TodoProgress": "Verteilung an andere Einheiten, am Ziel neu verteilen",
     "todos.TodoPortalPublication": "Freigabe im Mitgliederbereich, am Ziel neu vergeben",
     # Umfragen sind kurzlebige Meinungsbilder; Ergebnisse vorher als PDF oder Excel sichern
+    "pinboard.NoticePhoto": "Foto eines Pinnwand-Beitrags, kommt mit dem Beitrag nicht mit",
+    "pinboard.NoticeSeen": "Lesestand der Pinnwand je Mitglied",
     "surveys.Survey": "Umfrage (Meinungsbild, kein Beschluss), Ergebnis als PDF/Excel sichern",
     "surveys.SurveyQuestion": "Frage einer Umfrage, kommt mit der Umfrage nicht mit",
     "surveys.SurveyOption": "Antwortmöglichkeit einer Umfrage, kommt mit der Umfrage nicht mit",
