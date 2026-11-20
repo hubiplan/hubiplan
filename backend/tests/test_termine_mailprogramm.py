@@ -380,11 +380,12 @@ class TestEinladungAnVerteiler:
         msg["To"] = f"alle@{DOMAIN}"
         msg["Subject"] = "Besprechung"
         msg["Message-ID"] = "<tnef@example.org>"
-        msg["Content-Class"] = "urn:content-classes:calendarmessage"
         msg.set_content("x")
         msg.add_attachment(
             b"x\x9f>", maintype="application", subtype="ms-tnef", filename="winmail.dat"
         )
+        # Erst nach dem Inhalt: set_content und add_attachment verschieben Content-*-Kopfzeilen
+        msg["Content-Class"] = "urn:content-classes:calendarmessage"
         entry = inbound.process_message(msg.as_bytes())
         assert entry.status == InboundMail.Status.REJECTED
         assert "winmail.dat" in last_note(board_a, "Nicht übernommen").body
@@ -475,6 +476,8 @@ class TestAnnehmenImMailprogramm:
         address = rsvp.email_of(anna)
         part = mail_intake.calendar_for(event, anna.pk, address, "Anna")
         assert part is not None and part[1] == "REQUEST"
+        # iCalendar faltet lange Zeilen (75 Oktette); geprüft wird die entfaltete Fassung
+        part = (part[0].replace("\r\n ", ""), part[1])
         assert (
             "ORGANIZER;CN=" in part[0] and f"termin+{imip.reply_code(event.pk, anna.pk)}" in part[0]
         )
