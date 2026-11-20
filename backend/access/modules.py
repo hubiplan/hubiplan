@@ -213,6 +213,16 @@ MODULES: tuple[Module, ...] = (
         org_types=("club",),
     ),
     Module(
+        "pinboard",
+        gettext_noop("Pinnwand"),
+        "communication",
+        gettext_noop(
+            "Kurze Neuigkeiten mit Foto im Mitgliederbereich und in der App, auf Wunsch mit Push"
+        ),
+        default=True,
+        org_types=("club",),
+    ),
+    Module(
         "docs",
         gettext_noop("Dokumente"),
         "communication",

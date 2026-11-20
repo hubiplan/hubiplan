@@ -452,6 +452,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
         "surveys_enabled": "surveys" in (club.enabled_modules or []),
+        "pinboard_enabled": "pinboard" in (club.enabled_modules or []),
         "bookings_enabled": "bookings" in (club.enabled_modules or []),
         "expenses_enabled": _club_expenses(club),
         # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
@@ -853,6 +854,14 @@ def _open_surveys(club, membership_id) -> int:
     return has_open(membership_id, club)
 
 
+def _pinboard_new(club, access) -> int:
+    if "pinboard" not in (club.enabled_modules or []) or not access.membership_id:
+        return 0
+    from pinboard.services import new_count
+
+    return new_count(club, access.membership_id)
+
+
 def _club_expenses(club) -> bool:
     from expenses.services import enabled
 
@@ -910,6 +919,9 @@ def portal_summary(access: PortalAccess) -> dict:
             "surveys_enabled": "surveys" in (club.enabled_modules or []),
             # Offene, noch nicht beantwortete Umfragen (Hinweis im Mitgliederbereich und in der App)
             "surveys_open": _open_surveys(club, access.membership_id),
+            # Pinnwand: Menüpunkt und Zahl neuer Beiträge seit dem letzten Lesen
+            "pinboard_enabled": "pinboard" in (club.enabled_modules or []),
+            "pinboard_new": _pinboard_new(club, access),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
             # Auslagen erstatten: Menüpunkt und offene Rückfragen der Kasse
             "expenses_enabled": _expenses_enabled(access),
