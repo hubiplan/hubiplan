@@ -15,17 +15,18 @@ import type {
 } from '../api/nextcloud.ts'
 import { formatDay } from '../i18n/format.ts'
 import { t } from '../i18n/index.ts'
-import { useActiveOrg } from '../org/OrgContext.tsx'
+import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { errorMessage } from './forms.ts'
 import { Modal } from './Modal.tsx'
 import { Alert, Checkbox, SelectField } from './ui.tsx'
 
 const cache = new Map<number, Promise<NextcloudFilesStatus | null>>()
 
-/** Stand je Einheit, einmal je Seitenaufruf geladen. */
-export function useNextcloudFiles(org: number): NextcloudFilesStatus | null {
+/** Stand je Einheit, einmal je Seitenaufruf geladen (ohne Einheit: nichts). */
+export function useNextcloudFiles(org: number | null): NextcloudFilesStatus | null {
   const [status, setStatus] = useState<NextcloudFilesStatus | null>(null)
   useEffect(() => {
+    if (org === null) return
     let alive = true
     let promise = cache.get(org)
     if (!promise) {
@@ -39,7 +40,7 @@ export function useNextcloudFiles(org: number): NextcloudFilesStatus | null {
       alive = false
     }
   }, [org])
-  return status
+  return org === null ? null : status
 }
 
 /** Nur für Tests: zwischengespeicherten Stand vergessen. */
@@ -66,10 +67,11 @@ export function NextcloudSave({
   category: NextcloudCategory
   target?: NextcloudTarget
 }) {
-  const org = useActiveOrg()
-  const status = useNextcloudFiles(org.id)
+  // Ohne gewählte Einheit (Mitgliederbereich, Tests) gibt es nichts abzulegen
+  const org = useOptionalOrg()?.active ?? null
+  const status = useNextcloudFiles(org?.id ?? null)
   const [open, setOpen] = useState(false)
-  if (!status?.store || !status.targets.length) return null
+  if (!org || !status?.store || !status.targets.length) return null
   return (
     <>
       <button type="button" className="button button-ghost" onClick={() => setOpen(true)}>
@@ -241,10 +243,11 @@ export function NextcloudPick({
   accept?: string[]
   multiple?: boolean
 }) {
-  const org = useActiveOrg()
-  const status = useNextcloudFiles(org.id)
+  // Ohne gewählte Einheit (Mitgliederbereich, Tests) gibt es nichts zu übernehmen
+  const org = useOptionalOrg()?.active ?? null
+  const status = useNextcloudFiles(org?.id ?? null)
   const [open, setOpen] = useState(false)
-  if (!status?.pick) return null
+  if (!org || !status?.pick) return null
   return (
     <>
       <button type="button" className="button" onClick={() => setOpen(true)}>

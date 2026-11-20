@@ -299,7 +299,7 @@ function GroupStatus({
   const [report, setReport] = useState<NextcloudGroupReport | null>(null)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
-  if (!client.sync_groups_list.trim() && !client.sync_groups) return null
+  if (!(client.sync_groups_list ?? '').trim() && !client.sync_groups) return null
 
   async function load() {
     setMessage(null)
