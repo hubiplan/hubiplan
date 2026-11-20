@@ -2,6 +2,7 @@
 // den harten Fehlerprüfungen des Servers. Die Punkte blockieren nie.
 // Eine Zeile erscheint nur, wenn sie für diesen Lauf überhaupt eine Rolle spielt.
 import type { DecisionKey } from './content.ts'
+import { euro } from '../api/finance.ts'
 import { locale, t, tn } from '../i18n/index.ts'
 
 export interface CheckItem {
@@ -55,6 +56,10 @@ export interface FeeRunInput {
     proofs_regular?: number
     proofs_provisional?: number
     proofs_unreviewed?: number
+    /** Arbeitsstunden: abgerechnetes Jahr, Zahl der Mitglieder mit Ersatzbeitrag, Summe */
+    work_year?: number | null
+    work_count?: number
+    work_total?: string
   }
 }
 
@@ -169,6 +174,20 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
           '{n} Mitglieder sind vorläufig ermäßigt, weil die Frist für den Nachweis noch läuft. Ein späterer Nachweis oder sein Fehlen ändert die Rechnungen nicht mehr.',
           c.proofs_provisional ?? 0,
         ),
+      })
+    if (c.work_year && (c.work_count ?? 0) > 0)
+      items.push({
+        key: 'work_hours',
+        ok: true,
+        info: true,
+        text: tn(
+          '{n} Mitglied hat {year} zu wenige Arbeitsstunden geleistet; der Ersatzbeitrag ({total}) kommt als eigener Posten auf die Rechnung.',
+          '{n} Mitglieder haben {year} zu wenige Arbeitsstunden geleistet; der Ersatzbeitrag (zusammen {total}) kommt als eigener Posten auf die Rechnungen.',
+          c.work_count ?? 0,
+          { year: c.work_year, total: euro(c.work_total ?? '0') },
+        ),
+        fix: t('Stand prüfen unter Finanzen › Beitragssätze › Arbeitsstunden.'),
+        to: '/finanzen/einrichtung/beitraege',
       })
     if (c.open_change_requests > 0)
       items.push({

@@ -92,4 +92,6 @@ das Recht für Rundschreiben.
 
 Nach Beginn einer Schicht hakst du bei jeder Person **geleistet** an. Unter
 **Geleistete Dienste** in der Übersicht steht je Jahr, wer wie viele Schichten und Stunden
-übernommen hat, etwa für einen Dank oder Pflichtstunden.
+übernommen hat, etwa für einen Dank oder Pflichtstunden. Pflichtstunden mit Ersatzbeitrag
+richtest du unter Finanzen › Einrichten › Beitragssätze › **Arbeitsstunden** ein; dort zählen
+die abgehakten Schichten.

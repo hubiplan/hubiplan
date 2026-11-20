@@ -201,6 +201,9 @@ class TestBeitragslauf:
             "proofs_regular": 0,
             "proofs_provisional": 0,
             "proofs_unreviewed": 0,
+            "work_year": None,
+            "work_count": 0,
+            "work_total": "0.00",
         }
 
     def test_lauf_erzeugt_entwuerfe(self, c, base, members):

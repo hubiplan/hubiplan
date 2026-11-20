@@ -10703,5 +10703,28 @@
   "Alter und Geschlecht": "Age and gender",
   "Wohnorte": "Places of residence",
   "Ort aus der Anschrift; die Altersgruppen je Ort stehen in der Excel-Datei.": "Place from the address; the age groups per place are in the Excel file.",
-  "Wer mehreren Gruppen ({title}) angehört, zählt in jeder.": "Anyone belonging to several groups ({title}) is counted in each."
+  "Wer mehreren Gruppen ({title}) angehört, zählt in jeder.": "Anyone belonging to several groups ({title}) is counted in each.",
+  "{n} Mitglied hat {year} zu wenige Arbeitsstunden geleistet; der Ersatzbeitrag ({total}) kommt als eigener Posten auf die Rechnung.": {
+    "one": "{n} member did too few work hours in {year}; the substitute fee ({total}) is added to the invoice as a separate item.",
+    "other": "{n} members did too few work hours in {year}; the substitute fee (together {total}) is added to the invoices as a separate item."
+  },
+  "Stand prüfen unter Finanzen › Beitragssätze › Arbeitsstunden.": "Check the status under Finance › Fee rates › Work hours.",
+  "Arbeitsstunden": "Work hours",
+  "Pflichtstunden je Mitgliedsart und Geschäftsjahr. Geleistet zählen erledigte Helferschichten. Wer weniger geleistet hat, bekommt im ersten Beitragslauf des folgenden Geschäftsjahres den Ersatzbeitrag als eigenen Posten. Wer nur einen Teil des Jahres Mitglied war, schuldet die Stunden anteilig je angefangenem Monat.": "Required hours per membership type and financial year. Completed volunteer shifts count as done. Anyone who did fewer hours gets the substitute fee as a separate item in the first fee run of the following financial year. Anyone who was a member for only part of the year owes the hours pro rata per started month.",
+  "Geleistete Stunden zählen aus Helferschichten. Schalte dafür das Modul Helferdienste ein; bis dahin berechnet der Beitragslauf keinen Ersatzbeitrag.": "Hours done are counted from volunteer shifts. Switch on the Volunteer duties module for this; until then the fee run charges no substitute fee.",
+  "Module einstellen": "Set up modules",
+  "Noch keine Mitgliedsarten.": "No membership types yet.",
+  "{name}: Pflichtstunden im Jahr": "{name}: required hours per year",
+  "{name}: Ersatz je fehlender Stunde (€)": "{name}: substitute fee per missing hour (€)",
+  "Pflicht ab Alter": "Required from age",
+  "ohne Grenze": "no limit",
+  "Pflicht bis Alter": "Required up to age",
+  "Alter zu Beginn des Geschäftsjahres": "Age at the start of the financial year",
+  "Stand je Mitglied": "Status per member",
+  "In diesem Geschäftsjahr hat niemand Pflichtstunden.": "Nobody has required hours in this financial year.",
+  "Laufendes Jahr: Stand heute. Abgerechnet wird erst im ersten Beitragslauf des folgenden Geschäftsjahres.": "Current year: status as of today. It is only charged in the first fee run of the following financial year.",
+  "Soll": "Required",
+  "fehlen": "missing",
+  "Ersatzbeitrag": "Substitute fee",
+  "Ersatzbeitrag zusammen: {total}": "Substitute fee in total: {total}"
 }

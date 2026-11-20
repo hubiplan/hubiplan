@@ -239,6 +239,42 @@ class FeeItem:
     # für den Familien- bzw. Firmenbeitrag (H3)
     member_type_id: int | None = None
     household_role: str = ""
+    # Ersatzbeitrag für fehlende Arbeitsstunden des Vorjahres (eigener Posten, billing/workhours.py)
+    work: Decimal = ZERO
+    work_text: str = ""
+    work_detail: str = ""
+
+    @property
+    def total(self) -> Decimal:
+        return self.amount + self.work
+
+    def lines(self, org, collective: bool = False) -> list[InvoiceLine]:
+        """Rechnungsposten: Beitrag (falls > 0) und Ersatzbeitrag; in Sammelrechnungen mit Namen."""
+        result = []
+        if self.amount > 0 or not self.work:
+            result.append(
+                InvoiceLine(
+                    organization=org,
+                    text=self.text,
+                    detail=self.detail,
+                    amount=self.amount,
+                    membership=self.membership,
+                    is_fee=True,
+                )
+            )
+        if self.work > 0:
+            text = f"{self.text}: {self.work_text}" if collective else self.work_text
+            result.append(
+                InvoiceLine(
+                    organization=org,
+                    text=text[:200],
+                    detail=self.work_detail[:200],
+                    amount=self.work,
+                    membership=self.membership,
+                    is_fee=True,
+                )
+            )
+        return result
 
 
 @dataclass
@@ -259,6 +295,10 @@ class RunPlan:
     proofs_regular: int = 0
     proofs_provisional: int = 0
     proofs_unreviewed: int = 0
+    # Ersatzbeitrag für fehlende Arbeitsstunden: für welches Jahr, wie viele, welche Summe
+    work_year: int | None = None
+    work_count: int = 0
+    work_total: Decimal = ZERO
 
 
 def fee_exempt_units(org) -> dict[int, str]:
@@ -325,6 +365,12 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
 
     # Ermäßigung nur mit Nachweis (docs/beitragsnachweise.md)
     proofs = BillingContext(org, ids, p.year, timezone.localdate())
+    # Arbeitsstunden des Vorjahres im ersten Zeitraum des Geschäftsjahres abrechnen
+    from . import workhours
+
+    work = workhours.balances(org, p.year - 1, ids) if p.index == 1 else {}
+    if p.index == 1 and workhours.active(org):
+        plan.work_year = p.year - 1
     for m in _in_blocks(ids):
         spans = [
             s
@@ -406,11 +452,23 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
                 amount = amount * months / p.months
                 details.append(pro_rata_note(months, p, step))
         amount = amount.quantize(CENT, ROUND_HALF_UP)
-        if amount <= 0:
+        balance = work.get(m.pk)
+        work_amount = balance.amount if balance is not None else ZERO
+        if amount <= 0 and work_amount <= 0:
             plan.skipped.append(
                 {"membership": m.pk, "name": name, "reason": f"beitragsfrei ({reason})"}
             )
             continue
+        amount = max(amount, ZERO)
+        work_fields = {}
+        if work_amount > 0:
+            work_fields = {
+                "work": work_amount,
+                "work_text": workhours.line_text(org, p.year - 1),
+                "work_detail": workhours.line_detail(balance),
+            }
+            plan.work_count += 1
+            plan.work_total += work_amount
         via = hh.link_on(paying.get(m.pk, []), ref)
         if via is not None and via.household_id in payers:
             item = FeeItem(
@@ -422,6 +480,7 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
                 True,
                 member_type.pk,
                 via.role,
+                **work_fields,
             )
             plan.households[via.household_id] = via.household
             plan.household_items.setdefault(via.household_id, []).append(item)
@@ -454,7 +513,9 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
         reachable = bool(contact and contact.email) or bool(
             contact and contact.street and contact.postal_code and contact.city
         )
-        item = FeeItem(m, amount, name, " · ".join(details), dept, reachable, member_type.pk)
+        item = FeeItem(
+            m, amount, name, " · ".join(details), dept, reachable, member_type.pk, **work_fields
+        )
         if dept is None:
             item.text = f"Mitgliedsbeitrag {p.label}"
             plan.member_items.append(item)
@@ -530,6 +591,9 @@ def preview_checks(org, plan: RunPlan) -> dict:
         "proofs_regular": plan.proofs_regular,
         "proofs_provisional": plan.proofs_provisional,
         "proofs_unreviewed": plan.proofs_unreviewed,
+        "work_year": plan.work_year,
+        "work_count": plan.work_count,
+        "work_total": plan.work_total,
     }
 
 
@@ -734,20 +798,16 @@ def build_run(run: FeeRun, user) -> dict:
             recipient_kind=Invoice.Recipient.MEMBER,
             membership=item.membership,
             subject=f"Mitgliedsbeitrag {p.label}",
-            total=item.amount,
+            total=item.total,
             **common,
             **member_recipient(org, item.membership),
         )
         invoice.save()
-        InvoiceLine.objects.create(
-            organization=org,
-            invoice=invoice,
-            text=item.text,
-            detail=item.detail,
-            amount=item.amount,
-            membership=item.membership,
-            is_fee=True,
-        )
+        lines = item.lines(org)
+        for n, line in enumerate(lines):
+            line.invoice = invoice
+            line.position = n
+        InvoiceLine.objects.bulk_create(lines)
         created += 1
     for dept_id, items in plan.department_items.items():
         dept = plan.departments[dept_id]
@@ -755,27 +815,25 @@ def build_run(run: FeeRun, user) -> dict:
             recipient_kind=Invoice.Recipient.DEPARTMENT,
             department=dept,
             subject=f"Mitgliedsbeiträge {p.label} – {dept.name}",
-            total=sum((i.amount for i in items), ZERO),
+            total=sum((i.total for i in items), ZERO),
             **common,
             **department_recipient(org, dept),
         )
         invoice.save()
-        InvoiceLine.objects.bulk_create(
-            InvoiceLine(
-                organization=org,
-                invoice=invoice,
-                position=n,
-                text=i.text,
-                detail=i.detail,
-                amount=i.amount,
-                membership=i.membership,
-                is_fee=True,
-            )
-            for n, i in enumerate(items)
-        )
+        lines = [line for i in items for line in i.lines(org, collective=True)]
+        for n, line in enumerate(lines):
+            line.invoice = invoice
+            line.position = n
+        InvoiceLine.objects.bulk_create(lines)
         created += 1
     created += _build_households(org, plan, p, common)
     return {"created": created, "skipped": plan.skipped}
+
+
+def fee_items(items: list[FeeItem]) -> list[FeeItem]:
+    """Posten mit Beitrag; nur sie zählen für Familien- und Firmenbeitrag (nicht der
+    Ersatzbeitrag für Arbeitsstunden)."""
+    return [i for i in items if i.amount > 0]
 
 
 def _build_households(org, plan: RunPlan, p: Period, common: dict) -> int:
@@ -790,8 +848,8 @@ def _build_households(org, plan: RunPlan, p: Period, common: dict) -> int:
     created = 0
     for hh_id, items in plan.household_items.items():
         household = plan.households[hh_id]
-        discount, detail = hh.fee_discount(rules.get(household.kind), items, p)
-        total = sum((i.amount for i in items), ZERO) - discount
+        discount, detail = hh.fee_discount(rules.get(household.kind), fee_items(items), p)
+        total = sum((i.total for i in items), ZERO) - discount
         word = "Firmenbeiträge" if household.kind == "company" else "Mitgliedsbeiträge"
         invoice = Invoice(
             recipient_kind=Invoice.Recipient.HOUSEHOLD,
@@ -802,33 +860,34 @@ def _build_households(org, plan: RunPlan, p: Period, common: dict) -> int:
             **hh.household_recipient(org, household, payers.get(hh_id)),
         )
         invoice.save()
-        lines = [
-            InvoiceLine(
-                organization=org,
-                invoice=invoice,
-                position=n,
-                text=i.text,
-                detail=i.detail,
-                amount=i.amount,
-                membership=i.membership,
-                is_fee=True,
-            )
-            for n, i in enumerate(items)
-        ]
+        lines = [line for i in items for line in i.lines(org, collective=True)]
         if discount > 0:
             lines.append(
                 InvoiceLine(
                     organization=org,
-                    invoice=invoice,
-                    position=len(items),
                     text=hh.discount_text(household.kind),
                     detail=detail,
                     amount=-discount,
                 )
             )
+        for n, line in enumerate(lines):
+            line.invoice = invoice
+            line.position = n
         InvoiceLine.objects.bulk_create(lines)
         created += 1
     return created
+
+
+def _fee_members(run: FeeRun) -> int:
+    """Beitragsposten des Laufs, je Mitglied einmal (auch mit Posten für Arbeitsstunden);
+    Posten ohne Mitglied (Dachverband: je Verein) zählen einzeln."""
+    lines = InvoiceLine.objects.filter(invoice__run=run, is_fee=True).exclude(
+        invoice__status=Invoice.Status.CANCELLED
+    )
+    return (
+        lines.filter(membership__isnull=True).count()
+        + lines.filter(membership__isnull=False).values("membership_id").distinct().count()
+    )
 
 
 def run_summary(run: FeeRun) -> dict:
@@ -841,9 +900,7 @@ def run_summary(run: FeeRun) -> dict:
     return {
         "counts": counts,
         "totals": by_status,
-        "members": InvoiceLine.objects.filter(invoice__run=run, is_fee=True)
-        .exclude(invoice__status=Invoice.Status.CANCELLED)
-        .count(),
+        "members": _fee_members(run),
         "departments": invoices.filter(recipient_kind=Invoice.Recipient.DEPARTMENT)
         .exclude(status=Invoice.Status.CANCELLED)
         .count(),
