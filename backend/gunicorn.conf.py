@@ -6,6 +6,9 @@ threadlokal: gthread öffnet sie bewusst erst bei der ersten Anfrage im jeweilig
 Requestthread. Die Hauptthread-Verbindung wird nach dem Vorwärmen geschlossen.
 """
 
+# Zugriffslog ohne Geheimnisse im Pfad (core/accesslog.py)
+logger_class = "core.accesslog.AccessLogger"
+
 WARMUP_PATHS = ("/api/health/", "/api/public/site/v1/resolve/")
 
 
