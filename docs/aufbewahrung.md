@@ -53,6 +53,14 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Entwürfe in der App (nicht gesendet, nach dem Abmelden) | Kasse unterwegs, Art. 6 (1) b, c | Abmelden | nach 90 Tagen Rückfrage mit Export, nach 120 Tagen gelöscht; unlesbare sofort (FQ24) |
 | Backups | Wiederherstellung, Art. 6 (1) f, Art. 32 | Erstellung | nach `BACKUP_KEEP_DAYS` Tagen |
 
+## Verzeichnis der Verarbeitungstätigkeiten
+
+Verwaltung › DSGVO erstellt daraus das Verzeichnis nach Art. 30 DSGVO: je eingeschaltetem Modul
+eine Tätigkeit mit Zweck, Rechtsgrundlage und Löschfrist (`backend/privacy/catalog.py`). Wer hier
+eine Frist ändert, passt den Katalog im selben PR mit an. Dort stehen auch Auftragsverarbeiter
+(Geschäftspartner mit der Rolle „Auftragsverarbeiter“) und das Protokoll von Datenpannen mit der
+72-Stunden-Frist (Art. 33 DSGVO); Beschreibung und Maßnahmen einer Panne sind verschlüsselt.
+
 ## Einheiten löschen (Gesamtaudit 10.11., F02)
 
 Die Plattform-Verwaltung löscht einen Verein, Dachverband oder eine Untereinheit in zwei

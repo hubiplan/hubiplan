@@ -76,6 +76,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | Kommunikation | Rundschreiben | `circulars` | an | – |
 | | Dokumente | `docs` | an | – |
 | | Umfragen | `surveys` | an | – |
+| | Pinnwand | `pinboard` | an | – |
 | | Social Media | `social` | aus | Webseite |
 | | Webseite | `website` | aus | – |
 | Verwaltung | Kasse | `finance` | an | – |

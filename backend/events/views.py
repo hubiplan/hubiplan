@@ -283,6 +283,10 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "exceptions": [exception_data(e) for e in event.exceptions.all()],
         "rsvp": rsvp_data(event, viewer),
         "registration": registration_data(event, viewer),
+        # Videolink aus einer Einladung oder von Hand (Talk-Räume von HUBIplan: T2)
+        "video_url": event.video_url,
+        "video": {"url": event.video_url, "password": ""} if event.video_url else None,
+        "from_mail": bool(event.mail_uid),
         "source": (
             {
                 "name": event.external_source.name,

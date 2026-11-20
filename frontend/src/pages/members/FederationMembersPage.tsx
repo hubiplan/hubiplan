@@ -52,7 +52,14 @@ export function FederationMembersPage({ prefix = '/mitglieder' }: { prefix?: str
   return (
     <Routes>
       <Route index element={<FederationList prefix={prefix} />} />
-      <Route path="entwicklung" element={<MembersDevelopmentPage view="all" />} />
+      <Route
+        path="entwicklung"
+        element={<MembersDevelopmentPage view="all" path={`${prefix}/entwicklung`} />}
+      />
+      <Route
+        path="entwicklung/stichtag"
+        element={<MembersDevelopmentPage view="all" path={`${prefix}/entwicklung`} census />}
+      />
       <Route path=":id" element={<FederationDetail />} />
     </Routes>
   )

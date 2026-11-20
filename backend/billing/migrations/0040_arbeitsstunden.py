@@ -43,7 +43,7 @@ def no_rls(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("billing", "0038_anmeldungen"),
+        ("billing", "0039_auftragsverarbeiter"),
         ("members", "0036_hinweis_volljaehrigkeit"),
         ("organizations", "0074_hilfe_rueckmeldung"),
     ]

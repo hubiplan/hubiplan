@@ -81,6 +81,8 @@ RESERVED = {
     "noreply",
     "postmaster",
     "root",
+    # Antwortadresse der Termineinladungen (``termin+<code>@…``, events.imip)
+    "termin",
     "webmaster",
 }
 
@@ -563,6 +565,16 @@ def _process(raw: bytes) -> InboundMail | None:
     rejected = InboundMail.Status.REJECTED
     if len(raw) > MAX_RAW_BYTES:
         return _log(**base, status=rejected, reason="Mail zu groß.")
+    # Termine aus dem Mailprogramm (events.mail_intake): Antworten auf HUBIplans
+    # Einladungen und Einladungen an einen Verteiler
+    from events import imip, mail_intake
+
+    code = imip.code_in(recipient_addresses(msg))
+    if code is not None:
+        return mail_intake.handle_reply(msg, imip.calendar_part(msg), code, base)
+    calendar = imip.calendar_part(msg)
+    if ml is not None and (calendar is not None or imip.is_tnef_invitation(msg)):
+        return mail_intake.handle(msg, calendar, ml, base)
     automatic = is_automatic(msg)
     if automatic:
         return _log(**base, status=rejected, reason=f"Verworfen: {automatic}.")
@@ -721,7 +733,13 @@ def entry_from_token(token: str) -> InboundMail | None:
     with rls_bypass():
         return (
             InboundMail.objects.select_related(
-                "mailing_list", "organization", "user", "circular", "circular__department"
+                "mailing_list",
+                "mailing_list__pattern",
+                "organization",
+                "user",
+                "circular",
+                "circular__department",
+                "event",
             )
             .filter(pk=pk)
             .first()
@@ -730,6 +748,8 @@ def entry_from_token(token: str) -> InboundMail | None:
 
 def confirm(entry: InboundMail) -> dict[str, int]:
     """Absender hat bestätigt: versenden (einmal; der Link gilt danach nicht mehr)."""
+    if entry.event_data:
+        raise serializers.ValidationError(gettext("Das ist eine Termineinladung."))
     with rls_bypass(), transaction.atomic():
         entry = InboundMail.objects.select_for_update().get(pk=entry.pk)
         if entry.status != InboundMail.Status.WAITING or entry.circular_id is None:
@@ -747,6 +767,11 @@ def confirm(entry: InboundMail) -> dict[str, int]:
 
 
 def discard(entry: InboundMail) -> None:
+    if entry.event_data:
+        from events import mail_intake
+
+        mail_intake.discard(entry)
+        return
     with rls_bypass(), transaction.atomic():
         entry = InboundMail.objects.select_for_update().get(pk=entry.pk)
         if entry.status != InboundMail.Status.WAITING:

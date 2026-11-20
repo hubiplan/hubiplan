@@ -60,6 +60,8 @@ class BusinessPartner(models.Model):
         PRESS = "press", gettext_lazy("Presse")
         INSURANCE = "insurance", gettext_lazy("Versicherung")
         BANK = "bank", gettext_lazy("Bank")
+        # Datenschutz-Werkzeuge (Lückenliste 20.11.2026, B5)
+        PROCESSOR = "processor", gettext_lazy("Auftragsverarbeiter")
 
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     name = EncryptedCharField(max_length=200, strict=True)
@@ -245,6 +247,7 @@ class PartnerAgreement(models.Model):
         SPONSORING = "sponsoring", gettext_lazy("Sponsoring")
         FRAMEWORK = "framework", gettext_lazy("Rahmenvereinbarung")
         CONTRACT = "contract", gettext_lazy("Vertrag")
+        DPA = "dpa", gettext_lazy("Auftragsverarbeitungsvertrag")
         OTHER = "other", gettext_lazy("Sonstige Vereinbarung")
 
     class TaxKind(models.TextChoices):

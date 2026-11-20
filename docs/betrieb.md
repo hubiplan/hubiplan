@@ -49,8 +49,10 @@ deshalb läuft das Backup nachts.
   unerreichbar), `web` (Caddy ↔ Backend), `ausgang` (Mailversand, Backup-Zweitort).
 
 **Zugriffslog des Backends:** Zeit, Methode, Pfad (ohne `?…`), Status, Größe und
-Antwortzeit in Sekunden (letzte Spalte), ohne IP-Adresse. Langsamste Abrufe der letzten
-drei Stunden:
+Antwortzeit in Sekunden (letzte Spalte), ohne IP-Adresse. Geheimnisse im Pfad öffentlicher Links
+(Scan- und Kassen-Links, Zusagen, eigene Anmeldung …) erscheinen als „…“
+(`backend/core/accesslog.py`); Zeilen aus der Zeit davor verlassen das Log mit der
+Größenbegrenzung der Container-Protokolle. Langsamste Abrufe der letzten drei Stunden:
 
 ```sh
 docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \

@@ -30,7 +30,7 @@ from audit.log import record
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.ratelimit import TooMany, client_ip, too_many
 
-from . import nc_accounts, provider
+from . import nc_accounts, nc_calendars, provider
 from .models import USERNAME_RE, Account, Client, clean_groups, parse_usernames
 
 TOKEN_RATE = (60, 60)
@@ -190,13 +190,27 @@ class ClientSerializer(serializers.ModelSerializer):
             "account_group",
             "sync_error",
             "synced_at",
+            "calendar_members",
+            "calendar_members_group",
+            "calendar_board",
+            "calendar_board_group",
+            "calendar_error",
+            "calendar_synced_at",
             "is_active",
             "created_at",
             "last_used_at",
             "redirect_uri",
             "discovery_url",
         ]
-        read_only_fields = ["client_id", "created_at", "last_used_at", "sync_error", "synced_at"]
+        read_only_fields = [
+            "client_id",
+            "created_at",
+            "last_used_at",
+            "sync_error",
+            "synced_at",
+            "calendar_error",
+            "calendar_synced_at",
+        ]
 
     def get_has_service_password(self, obj) -> bool:
         return bool(obj.service_password)
@@ -223,6 +237,12 @@ class ClientSerializer(serializers.ModelSerializer):
         if len(value) > GROUP_MAX:
             raise serializers.ValidationError(gettext("Höchstens 64 Zeichen."))
         return value
+
+    def validate_calendar_members_group(self, value):
+        return self.validate_account_group(value)
+
+    def validate_calendar_board_group(self, value):
+        return self.validate_account_group(value)
 
     def get_redirect_uri(self, obj) -> str:
         return obj.redirect_uris[0]
@@ -332,6 +352,21 @@ class ClientSerializer(serializers.ModelSerializer):
                         )
                     }
                 )
+        calendars = any(
+            attrs.get(name, getattr(inst, name) if inst else False)
+            for name in ("calendar_members", "calendar_board")
+        )
+        if calendars:
+            user = attrs.get("service_user", inst.service_user if inst else "")
+            password = attrs.get("service_password", inst.service_password if inst else "")
+            if not user or not password:
+                raise serializers.ValidationError(
+                    {
+                        "calendar_members": gettext(
+                            "Für die Kalender braucht es Dienstkonto und App-Passwort."
+                        )
+                    }
+                )
         return attrs
 
 
@@ -377,9 +412,27 @@ def _groups(value, known: set[str]) -> dict[str, list[str]]:
     return out
 
 
+CALENDAR_FIELDS = (
+    "calendar_members",
+    "calendar_members_group",
+    "calendar_board",
+    "calendar_board_group",
+    "is_active",
+)
+
+
 def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
-    """Ändert die Anfrage Benutzernamen oder Gruppen der Rollen wirklich?"""
+    """Ändert die Anfrage Benutzernamen oder Gruppen der Rollen wirklich? Dazu zählt, wer die
+    Vorstandstermine in der Nextcloud sieht (Kalender an oder andere Gruppe)."""
     data = serializer.validated_data
+    if "calendar_board" in data and data["calendar_board"] and not client.calendar_board:
+        return True
+    if (
+        "calendar_board_group" in data
+        and client.calendar_board
+        and data["calendar_board_group"] != client.calendar_board_group
+    ):
+        return True
     if "usernames" in data and _pairs(data["usernames"]) != _pairs(client.usernames):
         return True
     if "role_groups" in data:
@@ -418,6 +471,7 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         # gegenüber dem gespeicherten Stand wirklich ändert.
         client = self.get_object()
         before = {"usernames": client.usernames, "role_groups": client.role_groups}
+        calendars_before = {name: getattr(client, name) for name in CALENDAR_FIELDS}
         serializer = self.get_serializer(
             client, data=request.data, partial=kwargs.get("partial", False)
         )
@@ -430,7 +484,29 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         changed = [k for k, v in before.items() if getattr(client, k) != v]
         if changed:
             notify_role_managers(self.org, client, request.user, changed)
+        if any(getattr(client, k) != v for k, v in calendars_before.items()):
+            _sync_calendars_later(
+                client,
+                {
+                    nc_calendars.Kind.MEMBERS: calendars_before["calendar_members_group"],
+                    nc_calendars.Kind.BOARD: calendars_before["calendar_board_group"],
+                },
+            )
         return response
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        if nc_calendars.wanted_kinds(serializer.instance):
+            _sync_calendars_later(serializer.instance)
+
+    def perform_destroy(self, instance):
+        # Kalender in der Nextcloud nicht verwaist zurücklassen (bestmöglich)
+        for kind in instance.calendar_items.values_list("kind", flat=True).distinct():
+            try:
+                nc_calendars.delete_calendar(instance, kind)
+            except nc_calendars.CalendarError:
+                pass
+        super().perform_destroy(instance)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -478,6 +554,24 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         result = nc_accounts.sync(client, confirmed=bool(request.data.get("confirm")))
         client.refresh_from_db()
         return Response({"result": result, "client": self.get_serializer(client).data})
+
+    @action(detail=True, methods=["post"], url_path="calendars")
+    def calendars(self, request, *args, **kwargs):
+        """Kalender jetzt abgleichen (Termine in die Nextcloud schreiben)."""
+        client = self.get_object()
+        if not nc_calendars.wanted_kinds(client) and not client.calendar_items.exists():
+            raise ValidationError({"detail": gettext("Es ist kein Kalender eingeschaltet.")})
+        # Unter rls_bypass: Termine des Dachverbands gehören auch hinein
+        result = nc_calendars.sync_client(client.pk)
+        client.refresh_from_db()
+        return Response({"result": result, "client": self.get_serializer(client).data})
+
+
+def _sync_calendars_later(client: Client, unshare: dict | None = None) -> None:
+    from .tasks import sync_client_calendars
+
+    pk = client.pk
+    transaction.on_commit(lambda: sync_client_calendars.delay(pk, unshare))
 
 
 def notify_role_managers(org, client, actor, changed: list[str]) -> None:

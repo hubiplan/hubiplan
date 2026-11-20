@@ -18,6 +18,7 @@ export const PARTNER_ROLES = [
   'press',
   'insurance',
   'bank',
+  'processor',
 ] as const
 export type PartnerRole = (typeof PARTNER_ROLES)[number]
 
@@ -100,7 +101,7 @@ export type PartnerInput = Partial<
 >
 export type ContactInput = Partial<Omit<PartnerContact, 'id'>>
 
-export const AGREEMENT_KINDS = ['sponsoring', 'framework', 'contract', 'other'] as const
+export const AGREEMENT_KINDS = ['sponsoring', 'framework', 'contract', 'dpa', 'other'] as const
 export type AgreementKind = (typeof AGREEMENT_KINDS)[number]
 export const AGREEMENT_TAX_KINDS = ['mention', 'advertising', 'none'] as const
 export type AgreementTaxKind = (typeof AGREEMENT_TAX_KINDS)[number]

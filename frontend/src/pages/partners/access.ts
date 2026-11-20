@@ -2,7 +2,7 @@
 // und der Rechnungseingang die Liste brauchen (konzepte/geschaeftspartner.md, GP-3).
 import { PERM } from '../../api/orgs.ts'
 import type { PartnerKind, PartnerRole } from '../../api/partners.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export function partnerAccess(permissions: string[]) {
   const has = (p: string) => permissions.includes(p)
@@ -40,5 +40,6 @@ export function roleLabel(role: PartnerRole): string {
     press: t('Presse'),
     insurance: t('Versicherung'),
     bank: t('Bank'),
+    processor: tc('Partnerrolle', 'Auftragsverarbeiter'),
   }[role]
 }

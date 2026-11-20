@@ -26,7 +26,10 @@ PLACEHOLDERS: dict[str, str] = {
     "Organisation": "Name der Organisation bei Organisationsmitgliedern (sonst leer)",
     "Haushalt": "Name des Haushalts, z. B. „Familie Muster“ (sonst leer)",
     "Mitgliedsjahre": "volle Jahre im Verein",
-    "Jubiläumsjahre": "Jubiläum im gewählten Jahr (nur mit Auswahl „Jubilare“)",
+    "Jubiläumsjahre": (
+        "Jubiläum im gewählten Jahr (nur mit Auswahl „Jubilare“ und bei Glückwünschen)"
+    ),
+    "Alter": "Alter am Geburtstag (nur bei Glückwünschen)",
     "Anmeldenummer": "Nummer der Anmeldung (nur an Angemeldete eines Termins)",
     "Personen": "angemeldete Personen mit Tarif (nur an Angemeldete eines Termins)",
     "Offener Betrag": "noch zu zahlen (nur an Angemeldete eines Termins)",

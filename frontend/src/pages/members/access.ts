@@ -112,3 +112,11 @@ export function setupTabs(org: OrgSummary): NavItem[] {
       : []),
   ]
 }
+
+/** Reiter unter „Entwicklung“: Verlauf über die Zeit und Stichtagsstatistik */
+export function developmentTabs(path: string): NavItem[] {
+  return [
+    { to: path, label: t('Verlauf') },
+    { to: `${path}/stichtag`, label: t('Stichtag') },
+  ]
+}

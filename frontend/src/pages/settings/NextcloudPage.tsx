@@ -223,6 +223,64 @@ function AccountList({
   )
 }
 
+function CalendarStatus({
+  org,
+  client,
+  onChanged,
+}: {
+  org: number
+  client: NextcloudClient
+  onChanged: (c: NextcloudClient) => void
+}) {
+  const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+  if (!client.calendar_members && !client.calendar_board) return null
+
+  async function run() {
+    setMessage(null)
+    setBusy(true)
+    try {
+      const r = await nextcloudApi.calendars(org, client.id)
+      onChanged(r.client)
+      const counts = [r.result.members, r.result.board]
+      const sum = (k: 'written' | 'deleted') => counts.reduce((n, c) => n + (c?.[k] ?? 0), 0)
+      setMessage(
+        r.result.error
+          ? { kind: 'error', text: r.result.error }
+          : {
+              kind: 'success',
+              text: t('Geschrieben: {written}, gelöscht: {deleted}', {
+                written: sum('written'),
+                deleted: sum('deleted'),
+              }),
+            },
+      )
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <h3>{t('Kalender in der Nextcloud')}</h3>
+      {client.calendar_error && <Alert kind="error">{client.calendar_error}</Alert>}
+      <p className="muted small">
+        {client.calendar_synced_at
+          ? t('Zuletzt abgeglichen: {when}', { when: formatDayTime(client.calendar_synced_at) })
+          : t('Noch nicht abgeglichen.')}
+      </p>
+      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <div className="button-row">
+        <button type="button" className="button" disabled={busy} onClick={() => void run()}>
+          {t('Kalender jetzt abgleichen')}
+        </button>
+      </div>
+    </>
+  )
+}
+
 function ClientCard({
   org,
   isClub,
@@ -254,6 +312,10 @@ function ClientCard({
     service_user: client.service_user,
     service_password: '',
     account_group: client.account_group,
+    calendar_members: client.calendar_members,
+    calendar_members_group: client.calendar_members_group,
+    calendar_board: client.calendar_board,
+    calendar_board_group: client.calendar_board_group,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -460,6 +522,44 @@ function ClientCard({
           />
           <Why k="nextcloud_auto_disable" />
         </fieldset>
+        <fieldset>
+          <legend>{t('Termine in den Kalender der Nextcloud')}</legend>
+          <p className="muted small">
+            {t(
+              'HUBIplan schreibt die Termine alle 15 Minuten in Kalender des Dienstkontos und gibt sie nur zum Lesen für eine Gruppe frei. Bearbeitet wird weiter in HUBIplan. Dafür reichen Dienstkonto und App-Passwort oben.',
+            )}
+          </p>
+          <Checkbox
+            label={t('Termine für Mitglieder')}
+            checked={Boolean(values.calendar_members)}
+            onChange={(v) => set('calendar_members', v)}
+            hint={t('was jedes Mitglied der Einheit sieht, wie im Kalender-Abo')}
+          />
+          {values.calendar_members && (
+            <Field
+              label={t('Für diese Gruppe freigeben')}
+              value={values.calendar_members_group ?? ''}
+              maxLength={64}
+              onChange={(e) => set('calendar_members_group', e.target.value)}
+              hint={t('leer: nur das Dienstkonto sieht den Kalender')}
+            />
+          )}
+          <Checkbox
+            label={t('Termine „nur Vorstand“')}
+            checked={Boolean(values.calendar_board)}
+            onChange={(v) => set('calendar_board', v)}
+            hint={t('wie im Vorstands-Abo; nur für eine Gruppe, in der allein der Vorstand ist')}
+          />
+          {values.calendar_board && (
+            <Field
+              label={t('Für diese Gruppe freigeben')}
+              value={values.calendar_board_group ?? ''}
+              maxLength={64}
+              onChange={(e) => set('calendar_board_group', e.target.value)}
+              hint={t('leer: nur das Dienstkonto sieht den Kalender')}
+            />
+          )}
+        </fieldset>
         <Checkbox
           label={t('Eingeschaltet')}
           checked={Boolean(values.is_active)}
@@ -475,6 +575,7 @@ function ClientCard({
       </form>
 
       <AccountList org={org} client={client} onChanged={onChanged} />
+      <CalendarStatus org={org} client={client} onChanged={onChanged} />
 
       <h3>{t('In der Nextcloud eintragen')}</h3>
       <p className="muted small">

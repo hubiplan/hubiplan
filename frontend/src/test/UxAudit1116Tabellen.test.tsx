@@ -56,6 +56,8 @@ const WITHOUT_SEARCH = [
   'pages/finanzen/VatPage.tsx',
   'pages/helpers/HelpersPage.tsx',
   'pages/members/ApplicationsPage.tsx',
+  // Stichtagsstatistik: feste Zeilen (Altersgruppen, Summen), Reihenfolge ist Teil der Meldung
+  'pages/members/CensusPage.tsx',
   'pages/members/FeeProofsPage.tsx',
   'pages/members/FeesTab.tsx',
   'pages/members/FieldsTab.tsx',

@@ -55,6 +55,8 @@ NICHT = {
     "competitions.StandAccess": "Standzugang (Link), am Ziel neu vergeben",
     "peering.SpinOff": "Ausgründung, gehört zur Kopplung der alten Instanz",
     "oidc.Client": "Anmeldung für Nextcloud, am Ziel neu einrichten",
+    "oidc.CalendarItem": "Abgleich mit dem Nextcloud-Kalender der alten Instanz, entsteht am "
+    "Ziel neu",
     "mcpserver.McpGrant": "Freigabe der KI-Schnittstelle, am Ziel neu erteilen",
     "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
     "(McpGrant) und verfällt nach 30 Tagen",
@@ -75,6 +77,8 @@ NICHT = {
     "todos.TodoProgress": "Verteilung an andere Einheiten, am Ziel neu verteilen",
     "todos.TodoPortalPublication": "Freigabe im Mitgliederbereich, am Ziel neu vergeben",
     # Umfragen sind kurzlebige Meinungsbilder; Ergebnisse vorher als PDF oder Excel sichern
+    "pinboard.NoticePhoto": "Foto eines Pinnwand-Beitrags, kommt mit dem Beitrag nicht mit",
+    "pinboard.NoticeSeen": "Lesestand der Pinnwand je Mitglied",
     "surveys.Survey": "Umfrage (Meinungsbild, kein Beschluss), Ergebnis als PDF/Excel sichern",
     "surveys.SurveyQuestion": "Frage einer Umfrage, kommt mit der Umfrage nicht mit",
     "surveys.SurveyOption": "Antwortmöglichkeit einer Umfrage, kommt mit der Umfrage nicht mit",

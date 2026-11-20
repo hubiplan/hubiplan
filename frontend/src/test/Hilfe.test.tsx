@@ -488,7 +488,8 @@ describe('Oberfläche', () => {
       'page',
     )
     expect(await screen.findByRole('heading', { level: 2, name: 'Verein' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 3, name: 'Mitglieder' })).toBeInTheDocument()
+    // Die Menüpunkte mit Modul erscheinen erst, wenn die Einheit geladen ist
+    expect(await screen.findByRole('heading', { level: 3, name: 'Mitglieder' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Mein Konto' })).toBeInTheDocument()
   })
 

@@ -27,6 +27,7 @@ export interface DeptSummary {
   meetings_enabled?: boolean
   helpers_enabled?: boolean
   surveys_enabled?: boolean
+  pinboard_enabled?: boolean
   bookings_enabled?: boolean
   expenses_enabled?: boolean
   imprint_key?: string
@@ -53,6 +54,9 @@ export interface PortalEntry {
   /** Umfragen (Modul) und wie viele davon noch auf eine Antwort warten */
   surveys_enabled?: boolean
   surveys_open?: number
+  /** Pinnwand (Modul) und Beiträge seit dem letzten Lesen */
+  pinboard_enabled?: boolean
+  pinboard_new?: number
   /** Auslagen erstatten (Modul) und offene Rückfragen der Kasse */
   expenses_enabled?: boolean
   expenses_questions?: number

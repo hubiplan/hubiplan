@@ -278,6 +278,13 @@ AREAS: tuple[Area, ...] = (
         module="obligations",
     ),
     Area(
+        "privacy",
+        gettext_noop("Datenschutz"),
+        gettext_noop("Verarbeitungsverzeichnis, Auftragsverarbeiter und Datenpannen sehen"),
+        gettext_noop("Verzeichnis pflegen und Datenpannen dokumentieren"),
+        org_types=("federation", "club"),
+    ),
+    Area(
         "partners",
         gettext_noop("Geschäftspartner"),
         gettext_noop("Geschäftspartner und Ansprechpartner sehen"),
@@ -374,6 +381,16 @@ AREAS: tuple[Area, ...] = (
         dept_levels=_BOTH,
         module="surveys",
         dept_label=gettext_noop("Umfragen {gen}"),
+    ),
+    Area(
+        "pinboard",
+        gettext_noop("Pinnwand"),
+        gettext_noop("Beiträge der Pinnwand sehen"),
+        gettext_noop("Beiträge an die Pinnwand schreiben, ändern und löschen, auch aus der App"),
+        org_types=("club",),
+        dept_levels=_BOTH,
+        module="pinboard",
+        dept_label=gettext_noop("Pinnwand {gen}"),
     ),
     Area(
         "docs",

@@ -157,6 +157,39 @@ Einstellungen (`.env`): `INBOUND_DOMAINS`, `INBOUND_IMAP_HOST`, `INBOUND_IMAP_PO
 (`INBOX`), `MAIL_RATE_PER_HOUR`. Einrichtung auf dem Hestia-Server:
 [echtbetrieb.md](echtbetrieb.md#mailverteiler).
 
+### Termine aus dem Mailprogramm
+
+Eine Mail an eine Verteileradresse mit Kalenderteil (iMIP, RFC 6047: `text/calendar` oder
+`.ics`-Anhang mit `METHOD:REQUEST`/`CANCEL`) wird kein Rundschreiben, sondern geht an
+`events/mail_intake.py` (Lesen und Schreiben der Kalenderteile: `events/imip.py`):
+
+1. Absender braucht `events.manage` für die Einheit des Verteilers (Untereinheit:
+   `dept.events.manage`) und muss, falls eingestellt, unter den Absendern stehen.
+   „Jeder darf schreiben“ gilt für Termine nicht. Kommt die Einladung von einem Kalenderserver
+   (Nextcloud: `noreply@…`), zählt der Organisator, wenn er im Antwort-an steht; direkt
+   übernommen wird dann nie.
+2. Der Eingang (`InboundMail.event_data`) wartet auf den Bestätigungslink (gleiche Seite wie beim
+   Rundschreiben); nur Modus „direkt“ mit DMARC-Pass des Absenders selbst übernimmt sofort.
+   PDF-Anhänge liegen bis dahin verschlüsselt unter `events/eingang/`.
+3. Übernehmen: Termin über `Event.mail_uid` anlegen, ändern (höhere `SEQUENCE`) oder absagen.
+   Sichtbarkeit nach dem Empfängerkreis des Musters: `roles`, `boards`, `departments` → „nur
+   Vorstand“ (ohne Zu- und Absagen), sonst „Mitglieder“; nie öffentlich. Serien nur wöchentlich,
+   monatlich oder jährlich mit Abstand und Ende.
+4. Einladung als Rundschreiben nach dem Muster des Verteilers (bei Mitgliederterminen mit
+   `Circular.event`, also mit Rückmeldelink), Videolink aus `CONFERENCE`, `URL`, Ort oder
+   Beschreibung (`Event.video_url`), sonst je Verteiler (`event_video`) ein neuer Talk-Raum
+   (`oidc.nc_talk`, wo eingerichtet).
+5. An den Organisator geht `METHOD:REPLY` „angenommen“ für die Verteileradresse.
+
+Antworten auf HUBIplans eigene Einladungen: Einladungen und Rundschreiben zu Terminen mit Zu- und
+Absage tragen einen Kalenderteil (`METHOD:REQUEST`, UID wie im Kalender-Abo) mit dem Organisator
+`termin+<Termin>-<Mitgliedschaft>-<HMAC>@<Verteiler-Domain>` (der lokale Teil `termin` ist
+reserviert). „Annehmen/Mit Vorbehalt/Ablehnen“ im Mailprogramm schickt `METHOD:REPLY` dorthin;
+der Abruf speichert es als Zu- oder Absage (Quelle „Mailprogramm“), wenn Code und Absender zum
+Mitglied passen. Ohne Sammelpostfach (`INBOUND_IMAP_HOST`), für Mitglieder mit eigenem
+Kalender-Abo und für den Organisator einer Einladung aus dem Mailprogramm gibt es keinen
+Kalenderteil.
+
 ## An einen Verteiler
 
 Hat die Einheit Verteiler, zeigt „An“ im Rundschreiben nur diese (Ralf 2026-10-31).
@@ -176,3 +209,19 @@ Je Rundschreiben (und im Muster eines Verteilers) wählt man die Zustellung:
 - **nur per E-Mail**: niemand per App.
 
 Ohne Mailadresse gibt es wie bisher einen Brief (Kurzmitteilung: nur im Mitgliederbereich).
+
+## Glückwünsche (Geburtstag und Jubiläum)
+
+Unter Rundschreiben › Glückwünsche (nur Verein, Recht `circulars.send`) stellt der Vorstand ein,
+zu welchen Geburtstagen (keine, besondere, alle; ab einem Alter jedes Jahr) und ob zu
+Vereinsjubiläen gratuliert wird (App `greetings`).
+
+- `greetings.tasks.hourly` legt `lead_days` Tage vorher je Tag und Anlass ein Rundschreiben der
+  Art `greeting` als Entwurf an (`GreetingBatch`) und gleicht es an, solange es Entwurf ist. Ab
+  `send_hour` am Tag (auch noch am Folgetag) versendet er es, außer mit Freigabe (`approval`).
+- Empfänger: Filter `members` (genau diese Mitgliedschaften), Werte je Mitglied in `greeting`
+  (Platzhalter `{Alter}`, `{Jubiläumsjahre}`); Haushalte werden nicht zusammengefasst.
+- Widerspruch: `Membership.greetings_opt_out_at` (Mitgliederbereich, Mitgliedsakte); wer
+  widersprochen hat, bekommt weder Mail noch Brief. Ohne Empfänger wird der Tag ausgelassen.
+- Glückwünsche stehen nicht in der Liste der Rundschreiben und lassen sich dort nicht ändern;
+  Jubiläen nur mit Tag oder Monat (jahresgenaue haben kein Datum), nur die des Vereins.

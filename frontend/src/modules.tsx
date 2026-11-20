@@ -329,6 +329,25 @@ export const modules: AppModule[] = [
           org.permissions.includes(PERM.surveysView)
         : !!(ws.dept?.surveys_enabled && ws.dept.permissions.includes(PERM.surveysView)),
   },
+  // Pinnwand: kurze Neuigkeiten an die Mitglieder (Lückenliste 20.11., A3)
+  {
+    id: 'pinnwand',
+    group: 'kommunikation',
+    label: t('Pinnwand'),
+    path: '/pinnwand',
+    icon: icon('M4 4h16v13H4zM8 21l4-4 4 4M8 8.5h8M8 12h5'),
+    visible: (org, ws) =>
+      org
+        ? org.type === 'club' &&
+          org.modules.includes('pinboard') &&
+          (org.permissions.includes(PERM.pinboardView) ||
+            org.permissions.includes(PERM.pinboardEdit))
+        : !!(
+            ws.dept?.pinboard_enabled &&
+            (ws.dept.permissions.includes(PERM.pinboardView) ||
+              ws.dept.permissions.includes(PERM.pinboardEdit))
+          ),
+  },
   {
     id: 'dokumente',
     group: 'kommunikation',
@@ -387,6 +406,18 @@ export const modules: AppModule[] = [
     path: '/geschaeftspartner',
     icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
     visible: (org) => partnersVisible(org),
+  },
+  // Datenschutz-Werkzeuge (Lückenliste 20.11.2026, B5): Pflicht jedes Vereins, kein Modul
+  {
+    id: 'dsgvo',
+    group: 'verwaltung',
+    label: t('DSGVO'),
+    path: '/dsgvo',
+    icon: icon('M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9.5 12l2 2 3.5-4'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation') &&
+      org.permissions.includes(PERM.privacyView),
   },
   {
     // Material, Räume und Anlagen und Belegung: ein Ablauf, ein Menüpunkt (Menüprüfung M-02)

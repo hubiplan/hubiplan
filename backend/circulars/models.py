@@ -6,12 +6,14 @@ Abteilung. Die Empfänger werden beim Versand festgehalten (``CircularRecipient`
 Wer eine E-Mail-Adresse hat, bekommt eine Mail, alle anderen einen Brief
 (Serienbrief-PDF zum Drucken).
 
-Zwei Arten:
+Arten:
 
 - ``info``   Information: Mitglieder können sich davon abmelden.
 - ``notice`` Vereinsmitteilung (z. B. Einladung zur Versammlung): geht immer raus.
 - ``short``  Kurzmitteilung (bis 500 Zeichen, ohne Anhang, nie als Brief), gedacht
   für die App („Antreten heute 18 Uhr am Zelt“).
+- ``greeting`` Glückwunsch zu Geburtstag oder Jubiläum (App ``greetings``): geht an die
+  Mitglieder, die nicht widersprochen haben, und erscheint nicht in der Rundschreibenliste.
 
 Wer die HUBIplan-App mit Push hat, bekommt das Rundschreiben per App
 (``via_app``), sonst per Mail (mit ``also_mail`` zusätzlich per Mail); ohne Mail
@@ -47,6 +49,8 @@ class Circular(models.Model):
         INFO = "info", gettext_lazy("Information")
         NOTICE = "notice", gettext_lazy("Vereinsmitteilung")
         SHORT = "short", gettext_lazy("Kurzmitteilung")
+        # Glückwunsch zu Geburtstag oder Jubiläum, angelegt von ``greetings`` (nie von Hand)
+        GREETING = "greeting", gettext_lazy("Glückwunsch")
 
     class Audience(models.TextChoices):
         MEMBERS = "members", gettext_lazy("Mitglieder")
@@ -314,6 +318,12 @@ class MailingList(models.Model):
     open_direct_max = models.PositiveIntegerField(
         "ohne Freigabe höchstens an", default=50, db_default=50
     )
+    # Termineinladungen an den Verteiler (Termine aus dem Mailprogramm): Videoraum anlegen,
+    # wenn die Einladung keinen Link hat; Zu- und Absagen (nur bei Mitgliederterminen)
+    event_video = models.BooleanField(
+        "Videoraum anlegen, wenn kein Link", default=False, db_default=False
+    )
+    event_rsvp = models.BooleanField("Zu- und Absagen", default=True, db_default=True)
     pattern = models.OneToOneField(Circular, on_delete=models.CASCADE, related_name="list_pattern")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -356,6 +366,12 @@ class InboundMail(models.Model):
     )
     circular = models.ForeignKey(
         Circular, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    # Termineinladung (Termine aus dem Mailprogramm): gelesener Termin und, sobald
+    # übernommen, der Termin in HUBIplan
+    event_data = models.JSONField(null=True, blank=True)
+    event = models.ForeignKey(
+        "events.Event", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     status = models.CharField(max_length=10, choices=Status.choices)
     reason = models.CharField("Grund", max_length=300, blank=True)

@@ -66,9 +66,12 @@ INSTALLED_APPS = [
     "registrations",
     "expenses",
     "obligations",
+    "greetings",
+    "privacy",
     "qualifications",
     "feeproofs",
     "places",
+    "pinboard",
     "admission",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -353,6 +356,10 @@ CELERY_BEAT_SCHEDULE = {
     "anmeldungen-aufraeumen": {"task": "registrations.tasks.daily", "schedule": taeglich(3, 5)},
     # Auslagen: Belege abgelehnter Anträge nach 6 Monaten, alte Entwürfe (AE-11)
     "auslagen-aufraeumen": {"task": "expenses.tasks.daily", "schedule": taeglich(2, 45)},
+    # Pinnwand: abgelaufene Beiträge löschen
+    "pinnwand-aufraeumen": {"task": "pinboard.tasks.daily", "schedule": taeglich(3, 20)},
+    # Glückwünsche: Entwürfe vorbereiten, ab der eingestellten Stunde versenden
+    "glueckwuensche": {"task": "greetings.tasks.hourly", "schedule": crontab(minute=12)},
     "fristenkalender-erinnerungen": {
         "task": "obligations.tasks.send_reminders",
         "schedule": 3600.0,
@@ -474,6 +481,8 @@ CELERY_BEAT_SCHEDULE = {
     },
     # Nextcloud-Konten mit den Rollen abgleichen (ohne „Konten automatisch deaktivieren“: nichts)
     "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": taeglich(4, 50)},
+    # Termine in die Kalender der Nextcloud schreiben (ohne eingeschalteten Kalender: nichts)
+    "nextcloud-kalender": {"task": "oidc.tasks.sync_calendars", "schedule": 15 * 60.0},
     "meldungen-kuerzen": {
         "task": "entries.tasks.shorten_old_entries",
         "schedule": taeglich(5, 0),

@@ -1,13 +1,15 @@
 // Rundschreiben: eigener Bereich für Dachverband, Verein und Abteilung.
 // Reiter „Verfassen“ (eigene Rundschreiben), „Verteiler“ (Rundschreiben aus dem
 // eigenen Mailprogramm) und beim Verein mit Dachverband „Empfangen“
-// (Rundschreiben des Dachverbands an die Vorstände).
+// (Rundschreiben des Dachverbands an die Vorstände). Im Verein dazu „Glückwünsche“
+// zu Geburtstag und Jubiläum.
 import { useState } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { DEPT_PERM } from '../../api/portal.ts'
 import { circularBase, receivedApi } from '../../api/circulars.ts'
 import type { CircularBase, ReceivedCircular } from '../../api/circulars.ts'
 import { CircularsArea } from '../../components/circulars/CircularsArea.tsx'
+import { GreetingsArea } from '../../components/circulars/GreetingsArea.tsx'
 import { MailingListsArea } from '../../components/circulars/MailingListsArea.tsx'
 import { MarkupPreview } from '../../components/circulars/MarkupEditor.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
@@ -45,10 +47,13 @@ export function CircularsPage() {
   if (!base || (!write && !receive))
     return <NoAccessPage reason={active || activeDept ? 'right' : 'workspace'} />
   const orgId = active?.id ?? 0
+  // Glückwünsche gibt es nur im Verein selbst (nicht im Dachverband, nicht in Untereinheiten)
+  const greetings = !!active && active.type === 'club' && base !== null && 'org' in base && write
   const tabs = [
     ...(write ? [{ to: ROOT, label: t('Verfassen') }] : []),
     ...(write ? [{ to: `${ROOT}/verteiler`, label: t('Verteiler') }] : []),
     ...(write ? [{ to: '/rundschreiben/brief', label: t('Brief') }] : []),
+    ...(greetings ? [{ to: `${ROOT}/glueckwuensche`, label: t('Glückwünsche') }] : []),
     ...(receive ? [{ to: `${ROOT}/empfangen`, label: t('Empfangen') }] : []),
   ]
   return (
@@ -70,6 +75,7 @@ export function CircularsPage() {
           />
         )}
         {write && <Route path="brief" element={<LetterheadPage embedded />} />}
+        {greetings && <Route path="glueckwuensche" element={<GreetingsArea orgId={orgId} />} />}
         {write ? (
           <Route path="*" element={<CircularsArea base={base} root={ROOT} />} />
         ) : (

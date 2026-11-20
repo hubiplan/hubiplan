@@ -157,6 +157,12 @@ class CircularWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(gettext("Verteiler nicht gefunden."))
         return value
 
+    def validate_kind(self, value):
+        # Glückwünsche legt nur HUBIplan selbst an (Seite „Glückwünsche“)
+        if value == Circular.Kind.GREETING:
+            raise serializers.ValidationError(gettext("Glückwünsche entstehen automatisch."))
+        return value
+
     def validate(self, attrs):
         kind = attrs.get("kind", getattr(self.instance, "kind", None))
         body = attrs.get("body", getattr(self.instance, "body", ""))
@@ -212,6 +218,11 @@ class TemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CircularTemplate
         fields = ["id", "name", "kind", "subject", "body"]
+
+    def validate_kind(self, value):
+        if value == Circular.Kind.GREETING:
+            raise serializers.ValidationError(gettext("Glückwünsche entstehen automatisch."))
+        return value
 
     def validate_name(self, value):
         value = value.strip()
@@ -301,7 +312,7 @@ def circular_data(c: Circular, base: str) -> dict:
             "also_mail": c.also_mail,
             "filters": c.filters or {},
             "mailing_list": c.mailing_list_id,
-            "can_edit": c.is_draft,
+            "can_edit": c.is_draft and c.kind != Circular.Kind.GREETING,
             "attachments": [attachment_data(a, item_base) for a in c.attachments.all()],
             "counts": None if c.is_draft else sent_counts(c),
         }
@@ -378,6 +389,15 @@ class _CircularMixin:
             )
         return circular
 
+    def get_editable(self, pk: int) -> Circular:
+        """Entwurf, den man hier ändern darf (Glückwünsche nur über ihre Vorlage)."""
+        circular = self.get_draft(pk)
+        if circular.kind == Circular.Kind.GREETING:
+            raise serializers.ValidationError(
+                gettext("Glückwünsche bitte unter Rundschreiben › Glückwünsche ändern.")
+            )
+        return circular
+
     def check_audience(self, circular: Circular) -> None:
         if (
             circular.audience == Circular.Audience.MEMBERS
@@ -433,7 +453,11 @@ class _Options(APIView):
             "department": (
                 {"id": self.dept.pk, "name": self.dept.display_name} if self.dept else None
             ),
-            "kinds": [{"value": v, "label": label} for v, label in Circular.Kind.choices],
+            "kinds": [
+                {"value": v, "label": label}
+                for v, label in Circular.Kind.choices
+                if v != Circular.Kind.GREETING
+            ],
             "placeholders": [{"name": k, "label": v} for k, v in text.PLACEHOLDERS.items()],
             "reply_to": request.user.email,
             "max_attachments": MAX_ATTACHMENTS,
@@ -530,7 +554,8 @@ class _List(APIView):
 
     def get(self, request, **kwargs):
         # Muster der Verteiler erscheinen nur beim Verteiler
-        qs = self.circulars().filter(list_pattern__isnull=True)
+        # Glückwünsche stehen auf ihrer eigenen Seite
+        qs = self.circulars().filter(list_pattern__isnull=True).exclude(kind=Circular.Kind.GREETING)
         state = request.query_params.get("status")
         if state == "draft":
             qs = qs.filter(status=Circular.Status.DRAFT)
@@ -555,11 +580,14 @@ class _List(APIView):
                     {"copy_of": gettext("Rundschreiben nicht gefunden.")}
                 )
             initial = {
-                "kind": src.kind,
+                # Aus einem Glückwunsch wird ein gewöhnliches Rundschreiben
+                "kind": Circular.Kind.INFO if src.kind == Circular.Kind.GREETING else src.kind,
                 "audience": src.audience,
                 "subject": src.subject,
                 "body": src.body,
-                "filters": {k: v for k, v in (src.filters or {}).items() if k != "exclude"},
+                "filters": {
+                    k: v for k, v in (src.filters or {}).items() if k not in ("exclude", "greeting")
+                },
                 "mailing_list": src.mailing_list_id,
             }
         payload = {
@@ -735,7 +763,7 @@ class _Detail(APIView):
 
     @transaction.atomic
     def patch(self, request, pk: int, **kwargs):
-        circular = self.get_draft(pk)
+        circular = self.get_editable(pk)
         ser = CircularWriteSerializer(
             circular, data=request.data, partial=True, context={"org": self.org, "dept": self.dept}
         )
@@ -782,7 +810,7 @@ class _Search(APIView):
     """Mitglieder suchen, um sie einzeln hinzuzufügen (``?suche=``)."""
 
     def get(self, request, pk: int, **kwargs):
-        circular = self.get_draft(pk)
+        circular = self.get_editable(pk)
         self.check_audience(circular)
         query = (request.query_params.get("suche") or "").strip()
         if len(query) < 2 or circular.audience != Circular.Audience.MEMBERS:
@@ -894,7 +922,7 @@ class _AttachmentList(APIView):
 
     @transaction.atomic
     def post(self, request, pk: int, **kwargs):
-        circular = self.get_draft(pk)
+        circular = self.get_editable(pk)
         if circular.kind == Circular.Kind.SHORT:
             raise serializers.ValidationError(
                 {"file": gettext("Kurzmitteilungen haben keine Anhänge.")}
@@ -1015,6 +1043,8 @@ class MailingListSerializer(serializers.ModelSerializer):
             "is_active",
             "open_senders",
             "open_direct_max",
+            "event_video",
+            "event_rsvp",
             "senders",
         ]
         # Eindeutigkeit prüft clean_local_part über alle Vereine (RLS verbirgt fremde)
@@ -1078,6 +1108,9 @@ def inbound_data(e: InboundMail) -> dict:
         "status_label": e.get_status_display(),
         "reason": e.reason,
         "circular_id": e.circular_id,
+        # Termineinladung (Termine aus dem Mailprogramm)
+        "is_event": bool(e.event_data),
+        "event_id": e.event_id,
     }
 
 
@@ -1107,6 +1140,8 @@ def mailing_list_data(ml: MailingList) -> dict:
         "audience": pattern.audience,
         "open_senders": ml.open_senders,
         "open_direct_max": ml.open_direct_max,
+        "event_video": ml.event_video,
+        "event_rsvp": ml.event_rsvp,
         "senders": sorted(ml.senders.values_list("pk", flat=True)),
         "last_inbound": inbound_data(last) if last else None,
     }
@@ -1188,8 +1223,16 @@ class _Lists(_ListsMixin, APIView):
 
 class _ListDetail(_ListsMixin, APIView):
     def get(self, request, list_id: int, **kwargs):
+        from events.mail_intake import talk_available
+
         ml = self.get_list(list_id)
-        return Response({**mailing_list_data(ml), "sender_options": sender_options(ml)})
+        return Response(
+            {
+                **mailing_list_data(ml),
+                "sender_options": sender_options(ml),
+                "talk_available": talk_available(ml.organization),
+            }
+        )
 
     @transaction.atomic
     def patch(self, request, list_id: int, **kwargs):
@@ -1200,6 +1243,8 @@ class _ListDetail(_ListsMixin, APIView):
             "is_active": ml.is_active,
             "open_senders": ml.open_senders,
             "open_direct_max": ml.open_direct_max,
+            "event_video": ml.event_video,
+            "event_rsvp": ml.event_rsvp,
         }
         senders_before = sorted(ml.senders.values_list("email", flat=True))
         ser = MailingListSerializer(ml, data=request.data, partial=True)
@@ -1415,21 +1460,61 @@ class PortalCircularAttachmentView(PortalCircularMixin, APIView):
 
 
 class PortalCircularSettingsView(PortalCircularMixin, APIView):
-    """Informationen per Mail: GET Stand · PUT ``{"info_opt_out": true|false}``."""
+    """Informationen per Mail und Glückwünsche: GET Stand · PUT
+    ``{"info_opt_out": true|false}`` und/oder ``{"greetings_opt_out": true|false}``."""
 
     def membership(self) -> Membership:
         return Membership.objects.get(pk=self.access.membership_id)
 
+    def data(self, m: Membership) -> dict:
+        return {
+            "info_opt_out": m.info_opt_out_at is not None,
+            "since": m.info_opt_out_at,
+            "greetings_opt_out": m.greetings_opt_out_at is not None,
+            "greetings_since": m.greetings_opt_out_at,
+            # Schalter nur zeigen, wenn der Verein gratuliert (oder schon widersprochen ist)
+            "greetings_active": greetings_active(self.club),
+        }
+
     def get(self, request, access_id: int):
-        m = self.membership()
-        return Response({"info_opt_out": m.info_opt_out_at is not None, "since": m.info_opt_out_at})
+        return Response(self.data(self.membership()))
 
     @transaction.atomic
     def put(self, request, access_id: int):
         m = self.membership()
-        wanted = bool(request.data.get("info_opt_out"))
-        set_opt_out(m, wanted, request.user, self.club)
-        return Response({"info_opt_out": m.info_opt_out_at is not None, "since": m.info_opt_out_at})
+        if "info_opt_out" in request.data:
+            set_opt_out(m, bool(request.data.get("info_opt_out")), request.user, self.club)
+        if "greetings_opt_out" in request.data:
+            set_greetings_opt_out(
+                m, bool(request.data.get("greetings_opt_out")), request.user, self.club
+            )
+        return Response(self.data(m))
+
+
+def greetings_active(club) -> bool:
+    from greetings.models import GreetingSettings
+
+    s = GreetingSettings.objects.filter(organization=club).first()
+    return bool(s and s.active)
+
+
+def set_greetings_opt_out(m: Membership, wanted: bool, user, club) -> None:
+    if wanted == (m.greetings_opt_out_at is not None):
+        return
+    m.greetings_opt_out_at = timezone.now() if wanted else None
+    m.save(update_fields=["greetings_opt_out_at", "updated_at"])
+    record(
+        club,
+        user,
+        "update",
+        m,
+        {
+            "Glückwünsche": ["erhalten", "widersprochen"]
+            if wanted
+            else ["widersprochen", "erhalten"]
+        },
+        person=m.person,
+    )
 
 
 def set_opt_out(m: Membership, wanted: bool, user, club) -> None:
@@ -1497,6 +1582,36 @@ class PublicOptOutView(APIView):
 # --- Bestätigungslink aus der Mail an den Absender eines Verteilers ---
 
 
+def confirm_event_data(entry: InboundMail) -> dict:
+    """Termin einer Einladung für die Bestätigungsseite."""
+    from events import mail_intake
+
+    data = entry.event_data or {}
+    out = {
+        "action": data.get("action", "new"),
+        "title": data.get("title", ""),
+        "starts_at": data.get("starts_at"),
+        "ends_at": data.get("ends_at"),
+        "all_day": bool(data.get("all_day")),
+        "location": data.get("location", ""),
+        "description": data.get("description", ""),
+        "video_url": data.get("video_url", ""),
+        "repeat": data.get("repeat", ""),
+        "attachments": [f["name"] for f in data.get("files") or []],
+        "skipped": list(data.get("skipped") or []),
+        "options": None,
+        "event_url": "",
+    }
+    if entry.status == InboundMail.Status.WAITING and entry.mailing_list_id:
+        with rls_bypass():
+            out["options"] = mail_intake.options_for(entry)
+            out["visibility"] = mail_intake.visibility_for(entry.mailing_list)
+    if entry.event_id:
+        with rls_bypass():
+            out["event_url"] = mail_intake.event_link(entry.event)
+    return out
+
+
 class PublicConfirmView(APIView):
     """GET: was verschickt würde · POST ``{"action": "send"|"discard"}``.
 
@@ -1529,7 +1644,10 @@ class PublicConfirmView(APIView):
             "body": "",
             "attachments": [],
             "counts": None,
+            "event": None,
         }
+        if entry.event_data:
+            out["event"] = confirm_event_data(entry)
         circular = entry.circular
         if circular is not None:
             with rls_bypass():
@@ -1551,6 +1669,14 @@ class PublicConfirmView(APIView):
         action = request.data.get("action", "send")
         if action == "discard":
             inbound.discard(entry)
+        elif action == "send" and entry.event_data:
+            from events import mail_intake
+
+            def choice(name):
+                value = request.data.get(name)
+                return value if isinstance(value, bool) else None
+
+            mail_intake.apply(entry, rsvp=choice("rsvp"), video=choice("video"))
         elif action == "send":
             counts = inbound.confirm(entry)
             with rls_bypass():
