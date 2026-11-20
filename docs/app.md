@@ -185,6 +185,9 @@ freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.
   Hinweise an das Mitglied (Foto freigegeben, Änderung übernommen): `{"t":"info","access":…,"title":…,"text":…}`.
   Neue Umfrage und Erinnerung: `{"v":1,"t":"survey","access":…,"id":<Umfrage>,"kind":"start"|"remind","title":…,"text":…,"from":…}`
   (Umfrage unter `GET /api/portal/<Zugang>/surveys/<id>/` öffnen).
+  Neuer Beitrag an der Pinnwand (nur mit „Push an die App senden“):
+  `{"v":1,"t":"pinboard","access":…,"id":<Beitrag>,"title":…,"text":<Anfang des Texts>,"from":…}`
+  (Pinnwand unter `GET /api/portal/<Zugang>/pinboard/` öffnen).
 
 ## Google-Push über das Push-Gateway (Schritt A6)
 
@@ -440,6 +443,14 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `DELETE …/surveys/<id>/answer/` (zurückziehen, nicht bei anonymen Umfragen) und
   `POST …/surveys/<id>/follow/` (Zusage zum Termin aus der Terminfindung übernehmen).
   `surveys_enabled` und `surveys_open` (Zahl unbeantworteter Umfragen) stehen in `portal`.
+- Pinnwand (Modul `pinboard`) im Mitgliederbereich, auch mit dem Geräteschlüssel:
+  `GET /api/portal/<Zugang>/pinboard/` (`notices`, angeheftete zuerst, je Beitrag `new` seit dem
+  letzten Lesen; `targets`: wohin dieses Konto schreiben darf; `?seen=0` lässt den Lesestand
+  stehen), `GET …/pinboard/<id>/photos/<Foto>/` (JPEG). Mit Recht `pinboard.edit` im Verein oder
+  in der Untereinheit: `POST …/pinboard/` mehrteilig mit `Idempotency-Key` (`text`, `department`
+  leer für den Verein, `pinned`, `push`, `visible_until`, Fotos als `photos`), `PATCH …/<id>/`
+  (`text`, `pinned`, `visible_until`, `version`), `DELETE …/<id>/`. `pinboard_enabled` und
+  `pinboard_new` stehen in `portal`.
 - Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
   dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
   vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,

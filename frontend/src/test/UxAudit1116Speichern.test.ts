@@ -59,6 +59,7 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/dsgvo/DsgvoPage.tsx':
     'Datenpanne und Verzeichnis: Nachweis gegenüber der Aufsichtsbehörde',
   'pages/obligations/ObligationsPage.tsx': 'Frist mit Erinnerungen',
+  'pages/pinboard/Pinboard.tsx': 'Beitrag der Pinnwand, Mitglieder sehen ihn sofort',
   'pages/portal/PortalPage.tsx': 'Mitgliederbereich (Änderungsmeldung an den Vorstand)',
   'pages/surveys/SurveysPage.tsx': 'Umfrage (Fragen ändern laufende Antworten)',
   'pages/website/DocumentsPage.tsx': 'öffentliches Dokument',

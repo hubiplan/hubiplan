@@ -851,6 +851,14 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from pinboard.models import NoticeSeen
+
+    # Pinnwand: nur der Zeitpunkt, wann sie zuletzt geöffnet wurde (für den Zähler „neu“);
+    # Beiträge schreibt der Verein, sie stehen nicht bei der Person
+    files["pinnwand.json"] = _dump(
+        [{"zuletzt_gelesen": s.seen_at} for s in NoticeSeen.objects.filter(membership=membership)]
+    )
+
     from registrations.models import Registration
 
     # Anmeldungen zu Terminen (mit Participant): eigene und solche, in denen die Person steht.

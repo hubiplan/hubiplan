@@ -100,6 +100,7 @@ from organizations.platform_public import (
 )
 from outbox import views as outbox_views
 from peering import urls as peering_urls
+from pinboard import portal as pinboard_portal
 from portal import views as portal_views
 from qualifications import views as qualification_views
 from registrations import public_views as registration_public
@@ -303,6 +304,7 @@ org_patterns = [
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
     path("surveys/", include("surveys.urls")),
+    path("pinboard/", include("pinboard.urls")),
     path("obligations/", include("obligations.urls")),
     path("greetings/", include("greetings.urls")),
     path("privacy/", include("privacy.urls")),
@@ -918,6 +920,7 @@ dept_patterns = [
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
     path("surveys/", include("surveys.urls")),
+    path("pinboard/", include("pinboard.urls")),
     path("places/", include("places.urls")),
     *entry_urls.dept_patterns,
     path(
@@ -1133,6 +1136,12 @@ urlpatterns = [
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/follow/", survey_portal.FollowView.as_view()),
+    path("portal/<int:access_id>/pinboard/", pinboard_portal.ListView.as_view()),
+    path("portal/<int:access_id>/pinboard/<int:pk>/", pinboard_portal.DetailView.as_view()),
+    path(
+        "portal/<int:access_id>/pinboard/<int:pk>/photos/<int:photo_id>/",
+        pinboard_portal.PhotoView.as_view(),
+    ),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
     path(

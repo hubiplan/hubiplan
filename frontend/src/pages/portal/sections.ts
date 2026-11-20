@@ -2,7 +2,7 @@
 // Die Seitenleiste nennt die Punkte ohne „Mein/Meine“, Kacheln und Kontomenü mit dem
 // gleichen Wort (Ausweis, Termine, Rechnungen).
 import type { PortalEntry } from '../../api/portal.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 export interface PortalSection {
   to: string
@@ -70,6 +70,21 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
             tile: {
               title: t('Helferdienste'),
               text: t('Für Dienste eintragen und eigene Dienste sehen'),
+            },
+          },
+        ]
+      : []),
+    // Pinnwand: kurze Neuigkeiten statt Messenger-Gruppe (Lückenliste 20.11., A3)
+    ...(entry.pinboard_enabled
+      ? [
+          {
+            to: '/mein-bereich/pinnwand',
+            label: t('Pinnwand'),
+            tile: {
+              title: t('Pinnwand'),
+              text: entry.pinboard_new
+                ? tn('{n} neuer Beitrag', '{n} neue Beiträge', entry.pinboard_new)
+                : t('Kurze Neuigkeiten aus dem Verein'),
             },
           },
         ]

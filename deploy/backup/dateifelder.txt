@@ -58,3 +58,4 @@ meetings_minutesversion file private
 admission_application pdf private
 feeproofs_feeproof file private
 feeproofs_applicationproof file private
+pinboard_noticephoto file private

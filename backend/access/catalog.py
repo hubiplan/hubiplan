@@ -383,6 +383,16 @@ AREAS: tuple[Area, ...] = (
         dept_label=gettext_noop("Umfragen {gen}"),
     ),
     Area(
+        "pinboard",
+        gettext_noop("Pinnwand"),
+        gettext_noop("Beiträge der Pinnwand sehen"),
+        gettext_noop("Beiträge an die Pinnwand schreiben, ändern und löschen, auch aus der App"),
+        org_types=("club",),
+        dept_levels=_BOTH,
+        module="pinboard",
+        dept_label=gettext_noop("Pinnwand {gen}"),
+    ),
+    Area(
         "docs",
         gettext_noop("Dokumente"),
         gettext_noop("Dokumentenablage lesen"),

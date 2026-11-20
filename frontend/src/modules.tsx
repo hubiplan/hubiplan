@@ -329,6 +329,25 @@ export const modules: AppModule[] = [
           org.permissions.includes(PERM.surveysView)
         : !!(ws.dept?.surveys_enabled && ws.dept.permissions.includes(PERM.surveysView)),
   },
+  // Pinnwand: kurze Neuigkeiten an die Mitglieder (Lückenliste 20.11., A3)
+  {
+    id: 'pinnwand',
+    group: 'kommunikation',
+    label: t('Pinnwand'),
+    path: '/pinnwand',
+    icon: icon('M4 4h16v13H4zM8 21l4-4 4 4M8 8.5h8M8 12h5'),
+    visible: (org, ws) =>
+      org
+        ? org.type === 'club' &&
+          org.modules.includes('pinboard') &&
+          (org.permissions.includes(PERM.pinboardView) ||
+            org.permissions.includes(PERM.pinboardEdit))
+        : !!(
+            ws.dept?.pinboard_enabled &&
+            (ws.dept.permissions.includes(PERM.pinboardView) ||
+              ws.dept.permissions.includes(PERM.pinboardEdit))
+          ),
+  },
   {
     id: 'dokumente',
     group: 'kommunikation',
