@@ -12,6 +12,218 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: members/census.py
+msgid "14 bis 17"
+msgstr "14 to 17"
+
+#: members/census.py
+msgid "15 bis 18"
+msgstr "15 to 18"
+
+#: members/census.py
+msgid "18 bis 26"
+msgstr "18 to 26"
+
+#: members/census.py
+msgid "18 bis 29"
+msgstr "18 to 29"
+
+#: members/census.py
+msgid "19 bis 26"
+msgstr "19 to 26"
+
+#: members/census.py
+msgid "27 bis 40"
+msgstr "27 to 40"
+
+#: members/census.py
+msgid "27 und älter"
+msgstr "27 and older"
+
+#: members/census.py
+msgid "30 bis 39"
+msgstr "30 to 39"
+
+#: members/census.py
+msgid "40 bis 49"
+msgstr "40 to 49"
+
+#: members/census.py
+msgid "41 bis 60"
+msgstr "41 to 60"
+
+#: members/census.py
+msgid "50 bis 59"
+msgstr "50 to 59"
+
+#: members/census.py
+msgid "6 bis 13"
+msgstr "6 to 13"
+
+#: members/census.py
+msgid "60 bis 69"
+msgstr "60 to 69"
+
+#: members/census.py
+msgid "7 bis 14"
+msgstr "7 to 14"
+
+#: members/census.py
+msgid "70 bis 79"
+msgstr "70 to 79"
+
+#: members/census.py
+msgid "80 und älter"
+msgstr "80 and older"
+
+#: members/census.py
+msgid "Alter am Stichtag"
+msgstr "Age on the cut-off date"
+
+#: members/census.py
+msgid "Alter nach Jahrgang"
+msgstr "Age by year of birth"
+
+#: members/census.py
+msgid "Alter und Geschlecht"
+msgstr "Age and gender"
+
+#: members/census.py
+msgid "Altersgruppe"
+msgstr "Age group"
+
+#: members/census.py
+msgid "Angabe"
+msgstr "Item"
+
+#: members/census.py
+msgid "Bereich"
+msgstr "Section"
+
+#: members/census.py
+msgid "Bitte ein Datum im Format JJJJ-MM-TT angeben."
+msgstr "Please enter a date in the format YYYY-MM-DD."
+
+#: members/census.py
+msgid "Der Stichtag liegt außerhalb des möglichen Zeitraums."
+msgstr "The cut-off date is outside the possible range."
+
+#: members/census.py
+msgid "Die Altersgruppen je Ort stehen in der Excel-Datei."
+msgstr "The age groups per place are in the Excel file."
+
+#: members/census.py
+msgid "Einheit"
+msgstr "Unit"
+
+#: members/census.py
+msgid "Grundlage"
+msgstr "Basis"
+
+#: members/census.py
+msgid "Gruppe"
+msgstr "Group"
+
+#: members/census.py
+msgid "Gruppen"
+msgstr "Groups"
+
+#: members/census.py
+msgid "Jugendförderung (unter 6, 6–13, 14–17, 18–26, ab 27)"
+msgstr "Youth funding (under 6, 6–13, 14–17, 18–26, 27 and over)"
+
+#: members/census.py
+msgid "Mitglieder am {date}"
+msgstr "Members on {date}"
+
+#: members/census.py
+msgid "Mitglieder gesamt"
+msgstr "Members in total"
+
+#: members/census.py
+msgid "Mitgliedsarten: {names}"
+msgstr "Membership types: {names}"
+
+#: members/census.py
+msgid "Sportbund (bis 6, 7–14, 15–18, 19–26, 27–40, 41–60, über 60)"
+msgstr "Sports federation (up to 6, 7–14, 15–18, 19–26, 27–40, 41–60, over 60)"
+
+#: members/census.py
+msgid "Stichtag"
+msgstr "Cut-off date"
+
+#: members/census.py
+msgid "Unbekannte Altersgruppen."
+msgstr "Unknown age groups."
+
+#: members/census.py
+msgid "Unbekannte Zählweise."
+msgstr "Unknown counting method."
+
+#: members/census.py
+msgid "Wer mehreren Gruppen ({title}) angehört, zählt in jeder."
+msgstr "Anyone belonging to several groups ({title}) is counted in each."
+
+#: members/census.py
+msgid "Wert"
+msgstr "Value"
+
+#: members/census.py
+msgid "Wohnort"
+msgstr "Place of residence"
+
+#: members/census.py
+msgid "Wohnorte"
+msgstr "Places of residence"
+
+#: members/census.py
+msgid "Zehnjahresgruppen (unter 18, 18–29 … 80 und älter)"
+msgstr "Ten-year groups (under 18, 18–29 … 80 and older)"
+
+#: members/census.py
+msgid "bis 6"
+msgstr "up to 6"
+
+#: members/census.py
+msgid "davon Organisationen"
+msgstr "of which organisations"
+
+#: members/census.py
+msgid "davon Personen"
+msgstr "of which persons"
+
+#: members/census.py
+msgid "gesamt"
+msgstr "total"
+
+#: members/census.py
+msgid "ohne Anschrift"
+msgstr "no address"
+
+#: members/census.py
+msgid "unter 18"
+msgstr "under 18"
+
+#: members/census.py
+msgid "unter 6"
+msgstr "under 6"
+
+#: members/census.py
+msgid "{total} Mitglieder, davon {persons} Personen und {orgs} Organisationen"
+msgstr "{total} members, of which {persons} persons and {orgs} organisations"
+
+#: members/census.py
+msgid "Übersicht"
+msgstr "Overview"
+
+#: members/census.py
+msgid "über 60"
+msgstr "over 60"
+#: oidc/nc_calendars.py
+#, python-brace-format
+msgid "{name} – Termine"
+msgstr "{name} – events"
+
 msgid "Mitglieder"
 msgstr "Members"
 
@@ -15040,213 +15252,23 @@ msgstr "Change letterhead: layout, logo, fonts, line and table colours and foote
 msgid "Höchstens {x0} Kopfbilder."
 msgstr "At most {x0} header images."
 
-#: members/census.py
-msgid "14 bis 17"
-msgstr "14 to 17"
+#: oidc/nc_calendars.py
+#, python-brace-format
+msgid "Freigabe für die Gruppe „{group}“ ging nicht (Fehler {status})."
+msgstr "Sharing with the group “{group}” failed (error {status})."
 
-#: members/census.py
-msgid "15 bis 18"
-msgstr "15 to 18"
+#: oidc/nc_calendars.py
+msgid "Unerwarteter Fehler beim Abgleich."
+msgstr "Unexpected error during synchronisation."
 
-#: members/census.py
-msgid "18 bis 26"
-msgstr "18 to 26"
+#: oidc/nc_calendars.py
+msgid "Für die Kalender braucht es Dienstkonto und App-Passwort."
+msgstr "The calendars need a service account and app password."
 
-#: members/census.py
-msgid "18 bis 29"
-msgstr "18 to 29"
+#: oidc/nc_calendars.py
+msgid "Es ist kein Kalender eingeschaltet."
+msgstr "No calendar is switched on."
 
-#: members/census.py
-msgid "19 bis 26"
-msgstr "19 to 26"
-
-#: members/census.py
-msgid "27 bis 40"
-msgstr "27 to 40"
-
-#: members/census.py
-msgid "27 und älter"
-msgstr "27 and older"
-
-#: members/census.py
-msgid "30 bis 39"
-msgstr "30 to 39"
-
-#: members/census.py
-msgid "40 bis 49"
-msgstr "40 to 49"
-
-#: members/census.py
-msgid "41 bis 60"
-msgstr "41 to 60"
-
-#: members/census.py
-msgid "50 bis 59"
-msgstr "50 to 59"
-
-#: members/census.py
-msgid "6 bis 13"
-msgstr "6 to 13"
-
-#: members/census.py
-msgid "60 bis 69"
-msgstr "60 to 69"
-
-#: members/census.py
-msgid "7 bis 14"
-msgstr "7 to 14"
-
-#: members/census.py
-msgid "70 bis 79"
-msgstr "70 to 79"
-
-#: members/census.py
-msgid "80 und älter"
-msgstr "80 and older"
-
-#: members/census.py
-msgid "Alter am Stichtag"
-msgstr "Age on the cut-off date"
-
-#: members/census.py
-msgid "Alter nach Jahrgang"
-msgstr "Age by year of birth"
-
-#: members/census.py
-msgid "Alter und Geschlecht"
-msgstr "Age and gender"
-
-#: members/census.py
-msgid "Altersgruppe"
-msgstr "Age group"
-
-#: members/census.py
-msgid "Angabe"
-msgstr "Item"
-
-#: members/census.py
-msgid "Bereich"
-msgstr "Section"
-
-#: members/census.py
-msgid "Bitte ein Datum im Format JJJJ-MM-TT angeben."
-msgstr "Please enter a date in the format YYYY-MM-DD."
-
-#: members/census.py
-msgid "Der Stichtag liegt außerhalb des möglichen Zeitraums."
-msgstr "The cut-off date is outside the possible range."
-
-#: members/census.py
-msgid "Die Altersgruppen je Ort stehen in der Excel-Datei."
-msgstr "The age groups per place are in the Excel file."
-
-#: members/census.py
-msgid "Einheit"
-msgstr "Unit"
-
-#: members/census.py
-msgid "Grundlage"
-msgstr "Basis"
-
-#: members/census.py
-msgid "Gruppe"
-msgstr "Group"
-
-#: members/census.py
-msgid "Gruppen"
-msgstr "Groups"
-
-#: members/census.py
-msgid "Jugendförderung (unter 6, 6–13, 14–17, 18–26, ab 27)"
-msgstr "Youth funding (under 6, 6–13, 14–17, 18–26, 27 and over)"
-
-#: members/census.py
-msgid "Mitglieder am {date}"
-msgstr "Members on {date}"
-
-#: members/census.py
-msgid "Mitglieder gesamt"
-msgstr "Members in total"
-
-#: members/census.py
-msgid "Mitgliedsarten: {names}"
-msgstr "Membership types: {names}"
-
-#: members/census.py
-msgid "Sportbund (bis 6, 7–14, 15–18, 19–26, 27–40, 41–60, über 60)"
-msgstr "Sports federation (up to 6, 7–14, 15–18, 19–26, 27–40, 41–60, over 60)"
-
-#: members/census.py
-msgid "Stichtag"
-msgstr "Cut-off date"
-
-#: members/census.py
-msgid "Unbekannte Altersgruppen."
-msgstr "Unknown age groups."
-
-#: members/census.py
-msgid "Unbekannte Zählweise."
-msgstr "Unknown counting method."
-
-#: members/census.py
-msgid "Wer mehreren Gruppen ({title}) angehört, zählt in jeder."
-msgstr "Anyone belonging to several groups ({title}) is counted in each."
-
-#: members/census.py
-msgid "Wert"
-msgstr "Value"
-
-#: members/census.py
-msgid "Wohnort"
-msgstr "Place of residence"
-
-#: members/census.py
-msgid "Wohnorte"
-msgstr "Places of residence"
-
-#: members/census.py
-msgid "Zehnjahresgruppen (unter 18, 18–29 … 80 und älter)"
-msgstr "Ten-year groups (under 18, 18–29 … 80 and older)"
-
-#: members/census.py
-msgid "bis 6"
-msgstr "up to 6"
-
-#: members/census.py
-msgid "davon Organisationen"
-msgstr "of which organisations"
-
-#: members/census.py
-msgid "davon Personen"
-msgstr "of which persons"
-
-#: members/census.py
-msgid "gesamt"
-msgstr "total"
-
-#: members/census.py
-msgid "ohne Anschrift"
-msgstr "no address"
-
-#: members/census.py
-msgid "unter 18"
-msgstr "under 18"
-
-#: members/census.py
-msgid "unter 6"
-msgstr "under 6"
-
-#: members/census.py
-msgid "{total} Mitglieder, davon {persons} Personen und {orgs} Organisationen"
-msgstr "{total} members, of which {persons} persons and {orgs} organisations"
-
-#: members/census.py
-msgid "Übersicht"
-msgstr "Overview"
-
-#: members/census.py
-msgid "über 60"
-msgstr "over 60"
 msgid "Glückwunsch"
 msgstr "Greeting"
 
