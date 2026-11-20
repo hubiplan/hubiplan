@@ -2,14 +2,13 @@
 // Altersgrenzen und der Stand je Mitglied. Geleistet zählt aus erledigten Helferschichten;
 // fehlende Stunden kommen in den ersten Beitragslauf des folgenden Geschäftsjahres.
 import { useState } from 'react'
-import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ApiError } from '../../api/client.ts'
 import { billingApi } from '../../api/billing.ts'
 import type { WorkHours } from '../../api/billing.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
-import { Alert, Field, Loading, SelectField } from '../../components/ui.tsx'
+import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { Alert, Field, Loading, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { useRowSearch } from '../../components/RowSearch.tsx'
 import { useRowSort } from '../../components/RowSort.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
@@ -37,15 +36,7 @@ export function WorkHoursCard({ orgId, canEdit }: { orgId: number; canEdit: bool
           <Link to="/einstellungen/module">{t('Module einstellen')}</Link>
         </Alert>
       )}
-      {data && (
-        <WorkHoursForm
-          key={JSON.stringify(data)}
-          orgId={orgId}
-          data={data}
-          canEdit={canEdit}
-          onSaved={setData}
-        />
-      )}
+      {data && <WorkHoursForm orgId={orgId} data={data} canEdit={canEdit} onSaved={setData} />}
       {data?.helpers_on && data.rows.some((r) => r.hours) && (
         <BalanceTable orgId={orgId} years={data.years} />
       )}
@@ -64,54 +55,40 @@ function WorkHoursForm({
   canEdit: boolean
   onSaved: (d: WorkHours) => void
 }) {
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
+  const form = useForm<Record<string, string>>({
+    ...Object.fromEntries(
       data.rows.flatMap((r) => [
         [`hours-${r.member_type}`, comma(r.hours)],
         [`rate-${r.member_type}`, comma(r.rate)],
       ]),
     ),
-  )
-  const [minAge, setMinAge] = useState(data.min_age === null ? '' : String(data.min_age))
-  const [maxAge, setMaxAge] = useState(data.max_age === null ? '' : String(data.max_age))
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
-  const [busy, setBusy] = useState(false)
-  const set = (key: string, value: string) => setValues((v) => ({ ...v, [key]: value }))
-
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setMessage(null)
-    setErrors({})
-    try {
-      const saved = await billingApi.saveWorkHours(orgId, {
-        min_age: minAge.trim() ? Number(minAge) : null,
-        max_age: maxAge.trim() ? Number(maxAge) : null,
+    min_age: data.min_age === null ? '' : String(data.min_age),
+    max_age: data.max_age === null ? '' : String(data.max_age),
+  })
+  const values = form.values
+  const auto = useAutoSave(
+    form,
+    (_changes, v) =>
+      billingApi.saveWorkHours(orgId, {
+        min_age: v.min_age?.trim() ? Number(v.min_age) : null,
+        max_age: v.max_age?.trim() ? Number(v.max_age) : null,
         rows: data.rows.map((r) => {
-          const h = values[`hours-${r.member_type}`]?.trim() ?? ''
-          const rate = values[`rate-${r.member_type}`]?.trim() ?? ''
+          const h = v[`hours-${r.member_type}`]?.trim() ?? ''
+          const rate = v[`rate-${r.member_type}`]?.trim() ?? ''
           return {
             member_type: r.member_type,
             hours: h ? parseAmount(h) : null,
             rate: rate ? parseAmount(rate) : null,
           }
         }),
-      })
-      onSaved(saved)
-      setMessage({ kind: 'success', text: t('Gespeichert.') })
-    } catch (err) {
-      if (err instanceof ApiError) setErrors(err.fieldErrors)
-      setMessage({ kind: 'error', text: errorMessage(err) })
-    } finally {
-      setBusy(false)
-    }
-  }
+      }),
+    { enabled: canEdit, onSaved: (result) => onSaved(result as WorkHours) },
+  )
 
   if (data.rows.length === 0) return <p className="muted">{t('Noch keine Mitgliedsarten.')}</p>
   return (
-    <form className="stack" onSubmit={submit}>
-      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+    <form className="stack" onSubmit={(e) => e.preventDefault()}>
+      {canEdit && <SaveStatus auto={auto} />}
       {data.rows.map((r) => (
         <div key={r.member_type} className="grid-2">
           <Field
@@ -120,8 +97,8 @@ function WorkHoursForm({
             placeholder={t('keine')}
             disabled={!canEdit}
             value={values[`hours-${r.member_type}`] ?? ''}
-            error={errors[`hours-${r.member_type}`]}
-            onChange={(e) => set(`hours-${r.member_type}`, e.target.value)}
+            error={form.errors[`hours-${r.member_type}`]}
+            onChange={(e) => form.set(`hours-${r.member_type}`, e.target.value)}
           />
           <Field
             label={t('{name}: Ersatz je fehlender Stunde (€)', { name: r.name })}
@@ -129,8 +106,8 @@ function WorkHoursForm({
             placeholder="0"
             disabled={!canEdit || !values[`hours-${r.member_type}`]?.trim()}
             value={values[`rate-${r.member_type}`] ?? ''}
-            error={errors[`rate-${r.member_type}`]}
-            onChange={(e) => set(`rate-${r.member_type}`, e.target.value)}
+            error={form.errors[`rate-${r.member_type}`]}
+            onChange={(e) => form.set(`rate-${r.member_type}`, e.target.value)}
           />
         </div>
       ))}
@@ -142,9 +119,9 @@ function WorkHoursForm({
           max={120}
           placeholder={t('ohne Grenze')}
           disabled={!canEdit}
-          value={minAge}
-          error={errors.min_age}
-          onChange={(e) => setMinAge(e.target.value)}
+          value={values.min_age ?? ''}
+          error={form.errors.min_age}
+          onChange={(e) => form.set('min_age', e.target.value)}
         />
         <Field
           label={t('Pflicht bis Alter')}
@@ -154,18 +131,11 @@ function WorkHoursForm({
           placeholder={t('ohne Grenze')}
           hint={t('Alter zu Beginn des Geschäftsjahres')}
           disabled={!canEdit}
-          value={maxAge}
-          error={errors.max_age}
-          onChange={(e) => setMaxAge(e.target.value)}
+          value={values.max_age ?? ''}
+          error={form.errors.max_age}
+          onChange={(e) => form.set('max_age', e.target.value)}
         />
       </div>
-      {canEdit && (
-        <div className="button-row">
-          <button type="submit" className="button" disabled={busy}>
-            {t('Speichern')}
-          </button>
-        </div>
-      )}
     </form>
   )
 }
@@ -179,7 +149,8 @@ function BalanceTable({
 }) {
   const [year, setYear] = useState(years[0]?.year ?? 0)
   const balance = useLoad(() => billingApi.workHourBalance(orgId, year), [orgId, year])
-  const sort = useRowSort(balance.data?.people ?? [], {
+  const search = useRowSearch(balance.data?.people ?? [], (p) => p.name, t('Mitglieder'))
+  const sort = useRowSort(search.shown, {
     name: (p) => p.name,
     member_type: (p) => p.member_type,
     required: (p) => Number(p.required),
@@ -213,6 +184,7 @@ function BalanceTable({
               'Laufendes Jahr: Stand heute. Abgerechnet wird erst im ersten Beitragslauf des folgenden Geschäftsjahres.',
             )}
           </p>
+          {search.field}
           <table className="table">
             <thead>
               <tr>

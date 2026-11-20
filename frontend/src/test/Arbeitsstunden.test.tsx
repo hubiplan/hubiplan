@@ -23,7 +23,7 @@ const data = (over = {}) => ({
 })
 
 describe('Arbeitsstunden', () => {
-  it('speichert Pflichtstunden, Ersatz und Altersgrenzen und zeigt den Stand', async () => {
+  it('speichert Pflichtstunden, Ersatz und Altersgrenzen von selbst und zeigt den Stand', async () => {
     const calls = fakeApi({
       [`GET ${B}/work-hours/`]: () => ({ status: 200, body: data() }),
       [`PUT ${B}/work-hours/`]: () => ({ status: 200, body: data({ max_age: 65 }) }),
@@ -57,9 +57,10 @@ describe('Arbeitsstunden', () => {
     expect(screen.getByLabelText('passiv: Ersatz je fehlender Stunde (€)')).toBeDisabled()
     await user.type(screen.getByLabelText('passiv: Pflichtstunden im Jahr'), '2,5')
     await user.type(screen.getByLabelText('Pflicht bis Alter'), '65')
-    await user.click(screen.getByRole('button', { name: 'Speichern' }))
-    expect(await screen.findByText('Gespeichert.')).toBeInTheDocument()
-    const put = calls.find((c) => c.key === `PUT ${B}/work-hours/`)!
+    // Autospeichern, kein Knopf
+    expect(await screen.findByText('✓ Gespeichert', {}, { timeout: 3000 })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Speichern' })).toBeNull()
+    const put = calls.filter((c) => c.key === `PUT ${B}/work-hours/`).at(-1)!
     expect(JSON.parse(String(put.init?.body))).toEqual({
       min_age: null,
       max_age: 65,
