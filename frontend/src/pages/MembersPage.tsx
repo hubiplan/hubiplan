@@ -141,6 +141,7 @@ function ClubMembers() {
         }
       />
       <Route path="entwicklung" element={<MembersDevelopmentPage />} />
+      <Route path="entwicklung/stichtag" element={<MembersDevelopmentPage census />} />
       <Route
         path="qualifikationen"
         element={

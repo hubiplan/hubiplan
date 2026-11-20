@@ -10592,5 +10592,22 @@
   "Hat am {x} Glückwünschen widersprochen.": "Objected to greetings on {x}.",
   "Du bekommst keine Glückwünsche mehr.": "You will no longer receive greetings.",
   "Glückwünsche sind wieder erwünscht.": "Greetings are welcome again.",
-  "Glückwünsche zu Geburtstag und Vereinsjubiläum erhalten": "Receive greetings on birthdays and club anniversaries"
+  "Glückwünsche zu Geburtstag und Vereinsjubiläum erhalten": "Receive greetings on birthdays and club anniversaries",
+  "Mitglieder an einem Stichtag nach Alter, Geschlecht, Wohnort und Gruppe, etwa für die Bestandserhebung des Sportbunds, den Verband oder einen Zuschussantrag.": "Members on a cut-off date by age, gender, place of residence and group, for example for the sports federation's membership census, your association or a grant application.",
+  "Altersgruppen": "Age groups",
+  "Sportbund": "Sports federation",
+  "Jugendförderung": "Youth funding",
+  "Zehnjahresgruppen": "Ten-year groups",
+  "am Stichtag vollendet": "completed on the cut-off date",
+  "nach Jahrgang (Jahr minus Geburtsjahr)": "by year of birth (year minus year of birth)",
+  "CSV": "CSV",
+  "Altersgruppe": "Age group",
+  "gesamt": "total",
+  "Am {date} gibt es keine Mitglieder.": "There are no members on {date}.",
+  "Organisationen": "Organisations",
+  "ohne Alter und Geschlecht": "without age and gender",
+  "Alter und Geschlecht": "Age and gender",
+  "Wohnorte": "Places of residence",
+  "Ort aus der Anschrift; die Altersgruppen je Ort stehen in der Excel-Datei.": "Place from the address; the age groups per place are in the Excel file.",
+  "Wer mehreren Gruppen ({title}) angehört, zählt in jeder.": "Anyone belonging to several groups ({title}) is counted in each."
 }

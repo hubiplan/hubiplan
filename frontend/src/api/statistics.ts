@@ -108,3 +108,76 @@ export const statsApi = {
   finance: (org: number, q: RangeQuery) =>
     api.get<FinanceStats>(`/api/orgs/${org}/finance/statistics/${rangeQuery(q)}`),
 }
+
+/** Stichtagsstatistik (Meldung an Sportbund, Verband, Zuschussgeber) */
+export interface CensusQuery {
+  stichtag?: string
+  alter?: string
+  zaehlung?: 'stichtag' | 'jahrgang'
+  /** Mitgliedsarten (Nummern); leer = alle */
+  arten?: number[]
+}
+
+export interface CensusAgeRow {
+  label: string
+  /** männlich, weiblich, divers, ohne Angabe */
+  counts: number[]
+  total: number
+}
+
+export interface CensusStats {
+  stichtag: string
+  alter: string
+  zaehlung: 'stichtag' | 'jahrgang'
+  schemes: { key: string; label: string }[]
+  age_groups: string[]
+  gender_labels: string[]
+  types: { id: number; name: string; count: number }[]
+  arten: number[] | null
+  total: number
+  persons: number
+  organizations: number
+  rows: CensusAgeRow[]
+  genders: number[]
+  places: {
+    city: string
+    postal_codes: string[]
+    genders: number[]
+    ages: number[]
+    total: number
+    missing: boolean
+  }[]
+  groups_title: string
+  groups: {
+    id: number
+    name: string
+    organizations: number
+    rows: CensusAgeRow[]
+    genders: number[]
+    total: number
+  }[]
+}
+
+export function censusQuery(q: CensusQuery, als?: 'pdf' | 'xlsx' | 'csv'): string {
+  const p = new URLSearchParams()
+  if (q.stichtag) p.set('stichtag', q.stichtag)
+  if (q.alter) p.set('alter', q.alter)
+  if (q.zaehlung) p.set('zaehlung', q.zaehlung)
+  if (q.arten) p.set('arten', q.arten.join(','))
+  if (als) p.set('als', als)
+  const s = p.toString()
+  return s ? `?${s}` : ''
+}
+
+/** Adresse der Stichtagsstatistik einer Sicht (ohne Abfrage) */
+export const censusBase = {
+  club: (org: number) => `/api/orgs/${org}/members/statistics/stichtag/`,
+  federation: (org: number) => `/api/orgs/${org}/federation/statistics/stichtag/`,
+  dept: (dept: number) => `/api/depts/${dept}/statistics/stichtag/`,
+}
+
+export const censusApi = {
+  load: (base: string, q: CensusQuery) => api.get<CensusStats>(`${base}${censusQuery(q)}`),
+  fileUrl: (base: string, q: CensusQuery, als: 'pdf' | 'xlsx' | 'csv') =>
+    `${base}${censusQuery(q, als)}`,
+}

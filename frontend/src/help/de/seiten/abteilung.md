@@ -5,6 +5,7 @@ routen:
   [
     /abteilung,
     /abteilung/entwicklung,
+    /abteilung/entwicklung/stichtag,
     /abteilung/rechnungen,
     /abteilung/meldungen,
     /abteilung/export,
@@ -18,6 +19,8 @@ Das ist der Arbeitsbereich der Untereinheit, in der du eine Rolle hast. Du siehs
 ## Entwicklung
 
 Zeigt, wie sich die Mitgliederzahl der Untereinheit entwickelt hat: Eintritte, Austritte und Altersaufbau im gewählten Zeitraum.
+
+Unter **Stichtag** zählt sie die Mitglieder an einem Tag nach Alter, Geschlecht und Wohnort, auch als PDF, Excel oder CSV für eine Meldung.
 
 ## Rechnungen
 

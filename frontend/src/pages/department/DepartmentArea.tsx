@@ -28,6 +28,7 @@ import {
   LoadError,
   Freshness,
   Loading,
+  Tabs,
 } from '../../components/ui.tsx'
 import { Term } from '../../learning/Aids.tsx'
 import { useActiveDept } from '../../org/OrgContext.tsx'
@@ -35,7 +36,9 @@ import { DeptInvoices } from '../billing/MyInvoices.tsx'
 import { DeptEntries } from '../entries/UnitEntries.tsx'
 import { MovedCirculars } from '../circulars/CircularsPage.tsx'
 import { MemberDevelopment } from '../members/DevelopmentPage.tsx'
-import { statsApi } from '../../api/statistics.ts'
+import { developmentTabs } from '../members/access.ts'
+import { MemberCensus } from '../members/CensusPage.tsx'
+import { censusBase, statsApi } from '../../api/statistics.ts'
 import { alertDialog, confirmRoleRemoval } from '../../components/dialog.ts'
 import { confirmEndHolder, UnitRoleDialog, UnitRolesTable } from '../../components/UnitRoles.tsx'
 import type { UnitRole } from '../../components/UnitRoles.tsx'
@@ -66,10 +69,24 @@ export function DepartmentArea() {
           <Route
             path="entwicklung"
             element={
-              <MemberDevelopment
-                scope={`dept-${dept.id}`}
-                load={(q) => statsApi.dept(dept.id, q)}
-              />
+              <>
+                <Tabs items={developmentTabs('/abteilung/entwicklung')} />
+                <MemberDevelopment
+                  scope={`dept-${dept.id}`}
+                  load={(q) => statsApi.dept(dept.id, q)}
+                />
+              </>
+            }
+          />
+        )}
+        {can(DEPT_PERM.membersView) && (
+          <Route
+            path="entwicklung/stichtag"
+            element={
+              <>
+                <Tabs items={developmentTabs('/abteilung/entwicklung')} />
+                <MemberCensus scope={`dept-${dept.id}`} base={censusBase.dept(dept.id)} />
+              </>
             }
           />
         )}
