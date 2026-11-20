@@ -24,7 +24,7 @@ def _set(member, gender: str, city: str, plz: str):
 @pytest.fixture
 def verein(orgs):
     club = orgs["a"]
-    club.enabled_modules = ["members"]
+    club.enabled_modules = ["members", "finance"]
     club.save()
     with tenant_context(club.pk):
         aktiv = MemberType.objects.create(organization=club, name="aktiv", active=True)
