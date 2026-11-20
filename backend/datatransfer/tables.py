@@ -233,6 +233,9 @@ MODULE_MODELS = (
     "circulars.CircularRecipient",
     # Verteiler nach ihrem Muster-Rundschreiben; Absender (Konten) kommen nicht mit
     "circulars.MailingList",
+    # Glückwünsche nach ihren Rundschreiben
+    "greetings.GreetingSettings",
+    "greetings.GreetingBatch",
     "website.Website",
     "website.WebsiteImage",
     "website.WebsiteText",

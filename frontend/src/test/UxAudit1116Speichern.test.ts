@@ -51,6 +51,8 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/music/ScoresPage.tsx': 'Neuanlage',
   'pages/music/SettlementPanel.tsx': 'Abrechnung eines Auftritts',
   // Sonstiges
+  'components/circulars/GreetingsArea.tsx':
+    'Glückwünsche: verschickt danach selbständig an Mitglieder',
   'components/calendar/Registration.tsx': 'Anmeldung mit Preisen und Rechnungen einrichten',
   'help/HelpExtras.tsx': 'eigene Notiz zur Hilfe',
   'pages/PublicRsvpPage.tsx': 'öffentliche Rückmeldung zu einem Termin',
