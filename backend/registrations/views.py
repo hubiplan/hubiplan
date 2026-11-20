@@ -128,10 +128,17 @@ def _own_part(reg: Registration, members: set[int]) -> dict:
 
 
 def registration_data(
-    reg: Registration, *, full: bool, own_members: set[int] | None = None
+    reg: Registration,
+    *,
+    full: bool,
+    own_members: set[int] | None = None,
+    waitlist: dict[int, int] | None = None,
 ) -> dict:
     """``own_members``: nur für den Mitgliederbereich. Ist gesetzt, wer die Anmeldung nicht
-    selbst gebucht hat, sieht nur die eigenen Zeilen (siehe ``_own_part``)."""
+    selbst gebucht hat, sieht nur die eigenen Zeilen (siehe ``_own_part``).
+
+    ``waitlist``: Wartelistenplätze je Anmeldung, wenn die aufrufende Liste sie schon kennt
+    (sonst eine Zählabfrage je wartender Anmeldung)."""
     if own_members is not None:
         return _own_part(reg, own_members)
     inv = reg.invoice
@@ -148,7 +155,9 @@ def registration_data(
         "bookings": [ex.booking_data(b) for b in reg.bookings.all() if b.participant_id is None],
         "answers": reg.answers or {},
         "invoice": _invoice_brief(inv),
-        "waitlist_position": services.waitlist_position(reg),
+        "waitlist_position": (
+            services.waitlist_position(reg) if waitlist is None else waitlist.get(reg.pk)
+        ),
         "moved_up_at": reg.moved_up_at,
         "free_cancel_until": reg.free_cancel_until,
         "cancel_fee": str(reg.cancel_fee),
@@ -466,6 +475,11 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
             .prefetch_related("participants__bookings__choice", "bookings__choice")
             .order_by(order, "created_at", "pk")
         )
+        regs = list(regs)
+        # Wartelistenplätze aus der Reihenfolge der Liste (Eingang, dann Nummer) statt einer
+        # Zählabfrage je wartender Anmeldung
+        waiting = [r.pk for r in regs if r.status == Registration.Status.WAITING]
+        waitlist = {pk: place for place, pk in enumerate(waiting, start=1)}
         return {
             "event_id": event.pk,
             "offer": services.offer_data(setup, full=True),
@@ -475,7 +489,7 @@ class _OrgRegistrationMixin(OrgCalendarMixin):
             "qualification_kinds": self.qualification_kinds(event),
             # Sammelanmeldung durch die Vereine (A8) gibt es nur beim Dachverband
             "club_registration_possible": self.org.type == Organization.Type.FEDERATION,
-            "registrations": [registration_data(r, full=True) for r in regs],
+            "registrations": [registration_data(r, full=True, waitlist=waitlist) for r in regs],
         }
 
 

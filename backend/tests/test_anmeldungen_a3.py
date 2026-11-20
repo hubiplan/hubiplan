@@ -55,6 +55,8 @@ def test_warteliste_und_nachruecken(c, fest, club, django_capture_on_commit_call
     assert any("Warteliste" in m.subject for m in mail.outbox)
     board = ok(c.get(fest["url"]))
     assert [r["status"] for r in board["registrations"]] == ["registered", "waiting"]
+    # Die Verwaltungsliste nennt denselben Wartelistenplatz wie der Mitgliederbereich
+    assert [r["waitlist_position"] for r in board["registrations"]] == [None, 1]
     assert board["summary"]["waiting"] == 1
     # Bernd meldet sich ab (keine Staffel): Anna rückt nach und bekommt die Rechnung
     client, url = fest["portals"]["Bernd"]

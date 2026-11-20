@@ -311,7 +311,14 @@ TREE=$(git rev-parse "$COMMIT^{tree}")
 # Kerne vom Testplatz; alle Container laufen nur auf dessen Kernen
 WORKERS="$TEST_KERNE"
 CPUS="--cpuset-cpus=$TESTPLATZ_CPUS"
-PYTEST_ARGS="${*:--q}"
+# Java-Prüfwerkzeuge (E-Rechnung, PDF/A) starten je Test eine eigene JVM. Ohne Vorgabe richtet
+# jede JVM GC- und JIT-Threads für alle Kerne des Platzes ein; mit -n Workern laufen dann
+# Worker × Kerne Threads, und die Tests werden mit mehr Kernen langsamer. TEST_JAVA_OPTS=""
+# schaltet das ab.
+JAVA_ENV=(-e "JAVA_TOOL_OPTIONS=${TEST_JAVA_OPTS--XX:ActiveProcessorCount=1 -XX:+UseSerialGC -XX:TieredStopAtLevel=1}")
+# Als Liste, damit Argumente mit Leerzeichen heil bleiben (-m "not migration")
+PYTEST_ARGS=("$@")
+[ "${#PYTEST_ARGS[@]}" -gt 0 ] || PYTEST_ARGS=(-q)
 
 ID="hubiplan-test-$(date +%s)-$$"
 mkdir -p "$LAUFEND"
@@ -664,7 +671,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
             -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
             -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
             "${BETRIEBSDATEIEN[@]}" \
-            --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
+            "${JAVA_ENV[@]}" --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
             -m "not migration" -q "${VORLAUF[@]}" || rc=$?
         # 5: alle Tests der Dateien sind Migrationstests, sie laufen im Hauptlauf
         if [ "$rc" != 0 ] && [ "$rc" != 5 ]; then
@@ -702,9 +709,9 @@ if [ "$RUN_BACKEND" = 1 ]; then
         -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
         "${BETRIEBSDATEIEN[@]}" \
         -v "$WORK/berichte:/berichte" -e MIG_AUSLASSEN="${MIG_AUS[*]}" \
-        --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
+        "${JAVA_ENV[@]}" --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
         --junitxml=/berichte/pytest.xml --durations="${TEST_DURATIONS:-30}" \
-        "${MIG_MARK[@]}" "${IGNORE[@]}" $PYTEST_ARGS || rc=$?
+        "${MIG_MARK[@]}" "${IGNORE[@]}" "${PYTEST_ARGS[@]}" || rc=$?
     T_PYTEST=$(($(date +%s) - pstart))
     # Wackelige Tests (backend/tests/wackelig.txt, docs/testserver.md): Sind alle roten Tests
     # dort eingetragen, laufen genau sie einmal allein. Grün → der Lauf gilt als grün, das
@@ -732,7 +739,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
                 -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
                 -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
                 "${BETRIEBSDATEIEN[@]}" \
-                --entrypoint pytest "$BACKEND_IMG" -n 1 --reuse-db -q "${ROTE[@]}"; then
+                "${JAVA_ENV[@]}" --entrypoint pytest "$BACKEND_IMG" -n 1 --reuse-db -q "${ROTE[@]}"; then
                 echo "Backend: wackelige Tests allein grün; bitte reparieren (Messprotokoll)."
                 ERGEBNIS=gruen-wackelig
                 ROT_TEIL="wackelig: ${ROTE[*]}"
