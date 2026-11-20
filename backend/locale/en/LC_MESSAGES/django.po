@@ -15040,6 +15040,28 @@ msgstr "Change letterhead: layout, logo, fonts, line and table colours and foote
 msgid "Höchstens {x0} Kopfbilder."
 msgstr "At most {x0} header images."
 
+#: oidc/nc_calendars.py
+#, python-brace-format
+msgid "{name} – Termine"
+msgstr "{name} – events"
+
+#: oidc/nc_calendars.py
+#, python-brace-format
+msgid "Freigabe für die Gruppe „{group}“ ging nicht (Fehler {status})."
+msgstr "Sharing with the group “{group}” failed (error {status})."
+
+#: oidc/nc_calendars.py
+msgid "Unerwarteter Fehler beim Abgleich."
+msgstr "Unexpected error during synchronisation."
+
+#: oidc/nc_calendars.py
+msgid "Für die Kalender braucht es Dienstkonto und App-Passwort."
+msgstr "The calendars need a service account and app password."
+
+#: oidc/nc_calendars.py
+msgid "Es ist kein Kalender eingeschaltet."
+msgstr "No calendar is switched on."
+
 msgid "Glückwunsch"
 msgstr "Greeting"
 
