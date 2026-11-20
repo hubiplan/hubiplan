@@ -4,7 +4,6 @@ titel: Mitglieder › Entwicklung › Stichtag
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/entwicklung/stichtag, /mitglieder/verbund/entwicklung/stichtag]
-siehe: [guide.member_census]
 stichworte:
   [
     Stichtagsstatistik,

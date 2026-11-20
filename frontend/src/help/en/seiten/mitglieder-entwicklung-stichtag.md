@@ -4,7 +4,6 @@ titel: Members › Trends › Cut-off date
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/entwicklung/stichtag, /mitglieder/verbund/entwicklung/stichtag]
-siehe: [guide.member_census]
 stichworte:
   [
     cut-off date statistics,
