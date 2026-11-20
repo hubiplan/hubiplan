@@ -10,6 +10,8 @@ import { confirmDialog } from '../dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../forms.ts'
 import { Alert, Checkbox, Field, LoadError, Loading, SelectField, StatusMessage } from '../ui.tsx'
 import { MarkupEditor } from './MarkupEditor.tsx'
+import { useRowSearch } from '../RowSearch.tsx'
+import { useRowSort } from '../RowSort.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Texts = 'birthday_subject' | 'birthday_body' | 'jubilee_subject' | 'jubilee_body'
@@ -221,31 +223,7 @@ export function GreetingsArea({ orgId }: { orgId: number }) {
       {data.data.upcoming.length > 0 && (
         <div className="card card-wide">
           <h2>{t('Die nächsten 60 Tage')}</h2>
-          <div className="table-scroll">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>{t('Datum')}</th>
-                  <th>{t('Name')}</th>
-                  <th>{t('Anlass')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.data.upcoming.map((o) => (
-                  <tr key={`${o.kind}-${o.member_id}-${o.date}`}>
-                    <td>{formatDate(o.date)}</td>
-                    <td>
-                      {o.name}
-                      {o.opted_out && (
-                        <div className="muted small">{t('möchte keine Glückwünsche')}</div>
-                      )}
-                    </td>
-                    <td>{occasionText(o)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <UpcomingTable rows={data.data.upcoming} />
         </div>
       )}
 
@@ -436,5 +414,45 @@ export function GreetingsArea({ orgId }: { orgId: number }) {
         </fieldset>
       </form>
     </div>
+  )
+}
+
+/** Anlässe der nächsten Tage: ab 20 Zeilen mit Suche, sortierbar nach jeder Spalte. */
+function UpcomingTable({ rows }: { rows: GreetingOccasion[] }) {
+  const search = useRowSearch(rows, (o) => `${o.name} ${occasionText(o)}`, t('Anlässe'))
+  const sorting = useRowSort(search.shown, {
+    date: (o) => o.date,
+    name: (o) => o.name,
+    occasion: (o) => occasionText(o),
+  })
+  return (
+    <>
+      {search.field}
+      <div className="table-scroll">
+        <table className="table">
+          <thead>
+            <tr>
+              {sorting.head('date', t('Datum'))}
+              {sorting.head('name', t('Name'))}
+              {sorting.head('occasion', t('Anlass'))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorting.rows.map((o) => (
+              <tr key={`${o.kind}-${o.member_id}-${o.date}`}>
+                <td>{formatDate(o.date)}</td>
+                <td>
+                  {o.name}
+                  {o.opted_out && (
+                    <div className="muted small">{t('möchte keine Glückwünsche')}</div>
+                  )}
+                </td>
+                <td>{occasionText(o)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }
