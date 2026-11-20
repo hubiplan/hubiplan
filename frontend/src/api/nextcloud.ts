@@ -31,6 +31,13 @@ export interface NextcloudClient {
   account_group: string
   sync_error: string
   synced_at: string | null
+  // Termine per CalDAV in Kalender der Nextcloud schreiben (nur lesend freigegeben)
+  calendar_members: boolean
+  calendar_members_group: string
+  calendar_board: boolean
+  calendar_board_group: string
+  calendar_error: string
+  calendar_synced_at: string | null
   is_active: boolean
   created_at: string
   last_used_at: string | null
@@ -64,6 +71,10 @@ export type NextcloudInput = Partial<
     | 'manage_accounts'
     | 'service_user'
     | 'account_group'
+    | 'calendar_members'
+    | 'calendar_members_group'
+    | 'calendar_board'
+    | 'calendar_board_group'
     | 'is_active'
   >
 > & {
@@ -92,6 +103,18 @@ export interface NextcloudSyncResult {
   client: NextcloudClient
 }
 
+export interface NextcloudCalendarCounts {
+  written?: number
+  deleted?: number
+  unchanged?: number
+  removed?: boolean
+}
+
+export interface NextcloudCalendarResult {
+  result: { members?: NextcloudCalendarCounts; board?: NextcloudCalendarCounts; error: string }
+  client: NextcloudClient
+}
+
 const base = (org: number) => `/api/orgs/${org}/nextcloud/`
 
 export const nextcloudApi = {
@@ -106,6 +129,8 @@ export const nextcloudApi = {
     api.post<{ ok: boolean; detail: string }>(`${base(org)}${id}/check/`),
   sync: (org: number, id: number, confirm = false) =>
     api.post<NextcloudSyncResult>(`${base(org)}${id}/sync/`, { confirm }),
+  calendars: (org: number, id: number) =>
+    api.post<NextcloudCalendarResult>(`${base(org)}${id}/calendars/`),
 }
 
 export interface NextcloudService {

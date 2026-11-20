@@ -47,25 +47,38 @@ def _date(value: datetime.datetime) -> str:
 
 
 def calendar(
-    name: str, items: list[Occurrence], host: str, url_for=None, description: str = ""
+    name: str,
+    items: list[Occurrence],
+    host: str,
+    url_for=None,
+    description: str = "",
+    *,
+    caldav: bool = False,
+    stamp: str = "",
 ) -> bytes:
     """``url_for(occ)`` liefert optional einen Link zum Termin.
 
     ``description``: Beschreibung des Kalenders (z. B. Link zum Impressum).
+    ``caldav``: ein einzelner Termin für einen CalDAV-Kalender (RFC 4791: ohne METHOD und
+    ohne Angaben zum Abo). ``stamp`` ersetzt dann DTSTAMP, damit gleicher Inhalt gleiche
+    Bytes ergibt.
     """
-    stamp = _utc(timezone.now())
+    stamp = stamp or _utc(timezone.now())
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//hubiplan//Terminkalender//DE",
         "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
-        f"X-WR-CALNAME:{_escape(name)}",
-        "X-WR-TIMEZONE:Europe/Berlin",
-        "REFRESH-INTERVAL;VALUE=DURATION:PT6H",
-        "X-PUBLISHED-TTL:PT6H",
     ]
-    if description:
+    if not caldav:
+        lines += [
+            "METHOD:PUBLISH",
+            f"X-WR-CALNAME:{_escape(name)}",
+            "X-WR-TIMEZONE:Europe/Berlin",
+            "REFRESH-INTERVAL;VALUE=DURATION:PT6H",
+            "X-PUBLISHED-TTL:PT6H",
+        ]
+    if description and not caldav:
         lines.append(f"X-WR-CALDESC:{_escape(description)}")
     for occ in items:
         event = occ.event

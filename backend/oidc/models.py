@@ -120,6 +120,30 @@ class Client(models.Model):
     account_group = models.CharField(
         "Gruppe der Konten über HUBIplan", max_length=64, blank=True, default=""
     )
+    # Termine per CalDAV in Kalender des Dienstkontos schreiben und für Gruppen freigeben
+    # (nur lesend; siehe ``nc_calendars`` und docs/nextcloud.md)
+    calendar_members = models.BooleanField(
+        "Termine für Mitglieder in die Nextcloud", default=False, db_default=False
+    )
+    calendar_members_group = models.CharField(
+        "Gruppe für die Termine",
+        max_length=64,
+        blank=True,
+        default="Mitglieder",
+        db_default="Mitglieder",
+    )
+    calendar_board = models.BooleanField(
+        "Termine „nur Vorstand“ in die Nextcloud", default=False, db_default=False
+    )
+    calendar_board_group = models.CharField(
+        "Gruppe für die Vorstandstermine",
+        max_length=64,
+        blank=True,
+        default="Vorstand",
+        db_default="Vorstand",
+    )
+    calendar_error = models.CharField(max_length=500, blank=True, default="", db_default="")
+    calendar_synced_at = models.DateTimeField(null=True, blank=True)
     # Letzter Fehler oder Halt des Abgleichs (für die Oberfläche)
     sync_error = models.CharField(max_length=500, blank=True, default="")
     synced_at = models.DateTimeField(null=True, blank=True)
@@ -149,6 +173,10 @@ class Client(models.Model):
             "manage_accounts",
             "service_user",
             "account_group",
+            "calendar_members",
+            "calendar_members_group",
+            "calendar_board",
+            "calendar_board_group",
             "is_active",
         }
     )
@@ -232,3 +260,37 @@ class Account(models.Model):
 
     def __str__(self) -> str:
         return self.nc_user
+
+
+class CalendarItem(models.Model):
+    """Termin, den HUBIplan in einen Nextcloud-Kalender geschrieben hat.
+
+    ``digest`` ist die Prüfsumme des geschriebenen Inhalts: Nur Geändertes geht erneut hin,
+    und was hier steht, aber nicht mehr dazugehört, wird dort gelöscht.
+    """
+
+    class Kind(models.TextChoices):
+        MEMBERS = "members", gettext_lazy("Mitglieder")
+        BOARD = "board", gettext_lazy("Vorstand")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="calendar_items")
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    # Dateiname im Kalender, z. B. „hp-1a2b….ics“
+    name = models.CharField(max_length=80)
+    digest = models.CharField(max_length=64)
+    written_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Termin in der Nextcloud"
+        verbose_name_plural = "Termine in der Nextcloud"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["client", "kind", "name"], name="oidc_calendaritem_unique"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.name

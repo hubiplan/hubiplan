@@ -4,7 +4,7 @@ titel: Einstellungen › Nextcloud
 rechte: [org.edit]
 routen: [/einstellungen/nextcloud]
 siehe: [guide.account_create]
-stichworte: [Nextcloud, Anmeldung, Dateiablage]
+stichworte: [Nextcloud, Anmeldung, Dateiablage, Kalender, CalDAV]
 ---
 
 Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglieder dort mit ihrem HUBIplan-Konto anmelden können.
@@ -12,6 +12,12 @@ Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglie
 Mit **Konten automatisch deaktivieren** schaltet HUBIplan das Nextcloud-Konto ab, sobald jemand bei euch keinen Zugang mehr hat, zum Beispiel weil die Rolle endet. Sitzungen und Sync-Apps werden dabei abgemeldet, die Dateien bleiben. Bekommt die Person wieder eine Rolle, wird das Konto wieder eingeschaltet. Dafür braucht es in der Nextcloud ein eigenes Dienstkonto mit App-Passwort. Mit **Verbindung prüfen** testet ihr es.
 
 Unter „Konten über HUBIplan“ seht ihr, wer sich schon über HUBIplan angemeldet hat und was der nächste Abgleich täte. Hält der Abgleich an, weil zu viele Konten auf einmal betroffen wären, prüft die Rollen und bestätigt dann mit **Jetzt abgleichen**.
+
+## Termine im Kalender der Nextcloud
+
+Unter **Termine in den Kalender der Nextcloud** schreibt HUBIplan eure Termine in den Kalender der Nextcloud. Es gibt zwei Kalender: **Termine für Mitglieder** mit allem, was jedes Mitglied sieht, und **Termine „nur Vorstand“**. Jeder Kalender wird nur zum Lesen für eine Gruppe freigegeben, voreingestellt „Mitglieder“ und „Vorstand“. Wer in der Gruppe ist, sieht ihn in der Kalender-App der Nextcloud und auf dem Handy.
+
+Bearbeitet werden die Termine weiter in HUBIplan. Alle 15 Minuten schreibt HUBIplan Änderungen nach, mit **Kalender jetzt abgleichen** sofort. Dafür braucht es Dienstkonto und App-Passwort. Schaltet ihr einen Kalender aus, verschwindet er auch in der Nextcloud. Den Vorstandskalender gebt bitte nur für eine Gruppe frei, in der allein der Vorstand ist.
 
 ## Im Einzelnen
 

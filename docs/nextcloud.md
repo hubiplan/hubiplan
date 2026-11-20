@@ -120,6 +120,35 @@ Einrichtung in der Nextcloud:
 4. Konten, die schon vorher da waren, kommen bei ihrer nächsten Anmeldung über HUBIplan in die
    Gruppe. Erst dann kann das Dienstkonto sie deaktivieren.
 
+## Termine in den Kalender der Nextcloud
+
+HUBIplan schreibt Termine per CalDAV in Kalender des Dienstkontos (`oidc/nc_calendars.py`) und
+gibt sie **nur lesend** für eine Gruppe der Nextcloud frei. Die Richtung ist HUBIplan →
+Nextcloud; in der Nextcloud bearbeitet niemand diese Termine. Umgekehrt holt HUBIplan einen
+Nextcloud-Kalender über „Fremde Kalender“ (iCal-Link) ab, siehe [fremde-kalender.md](fremde-kalender.md).
+
+| Schalter | Kalender im Dienstkonto | Inhalt | Freigabe (Voreinstellung) |
+|---|---|---|---|
+| Termine für Mitglieder | `hubiplan-<eintrag>-termine` | was jedes Mitglied der Einheit sieht (wie das Kalender-Abo eines Mitglieds ohne Untereinheit, mit Terminen des Dachverbands nach seiner Freigabe) | Gruppe `Mitglieder` |
+| Termine „nur Vorstand“ | `hubiplan-<eintrag>-vorstand` | Termine „nur Vorstand“ der Einheit (wie das Vorstands-Abo) | Gruppe `Vorstand` |
+
+- Fenster wie die Abos: 30 Tage zurück, 400 Tage voraus. Jeder Termin einer Serie ist ein
+  eigener Eintrag (`hp-<prüfsumme>.ics`), abgesagte heißen „Abgesagt: …“.
+- Abgleich alle 15 Minuten (`oidc.tasks.sync_calendars`), nach dem Speichern der Einstellungen
+  und mit **Kalender jetzt abgleichen**. Geschrieben wird nur, was sich geändert hat
+  (Tabelle `oidc_calendaritem` mit Prüfsumme, unter RLS); was nicht mehr dazugehört, wird
+  gelöscht. Wurde der Kalender in der Nextcloud gelöscht, legt der nächste Lauf ihn neu an.
+- Schalter aus, Eintrag ausgeschaltet oder entfernt: Der Kalender wird in der Nextcloud gelöscht.
+- Andere Gruppe: Die alte Freigabe wird zurückgenommen. Den Vorstandskalender einschalten
+  oder seine Gruppe ändern verlangt wie die Gruppen der Rollen eine frische Bestätigung.
+- Fehler stehen auf der Seite; der letzte Stand in der Nextcloud bleibt stehen.
+
+Einrichtung: Dienstkonto und App-Passwort wie oben (für die Kalender reicht ein gewöhnliches
+Konto). Die App „Kalender“ muss in der Nextcloud an sein. Die Gruppen `Mitglieder` und
+`Vorstand` legt die Anmeldung über HUBIplan an („Gruppe „Vorstand““, „Gruppe „Mitglieder““);
+ist Teilen nur innerhalb eigener Gruppen erlaubt, muss das Dienstkonto in diesen Gruppen sein.
+Den Vorstandskalender nur für eine Gruppe freigeben, in der allein der Vorstand ist.
+
 ## Wie lange eine Anmeldung gilt
 
 HUBIplan stellt nur den Code und einen kurzen Zugriffsschlüssel aus (keine Refresh-Token). Wie
@@ -218,6 +247,7 @@ verhält.
 | `/api/oidc/token` | Code einlösen (Server der Nextcloud) |
 | `/api/oidc/userinfo` | Angaben mit Zugriffsschlüssel |
 | `/api/orgs/<id>/nextcloud/` | Einträge der Einheit; `<eintrag>/secret/` erneuert das Geheimnis |
+| `/api/orgs/<id>/nextcloud/<eintrag>/calendars/` | POST: Kalender jetzt abgleichen |
 
 Kennung als Anbieter (`issuer`): `FRONTEND_URL/api/oidc`, änderbar mit `OIDC_ISSUER`.
 
