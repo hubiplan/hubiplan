@@ -161,8 +161,7 @@ export const nextcloudApi = {
     api.post<{ ok: boolean; detail: string }>(`${base(org)}${id}/check/`),
   sync: (org: number, id: number, confirm = false) =>
     api.post<NextcloudSyncResult>(`${base(org)}${id}/sync/`, { confirm }),
-  groups: (org: number, id: number) =>
-    api.get<NextcloudGroupReport>(`${base(org)}${id}/groups/`),
+  groups: (org: number, id: number) => api.get<NextcloudGroupReport>(`${base(org)}${id}/groups/`),
   syncGroups: (org: number, id: number, confirm = false) =>
     api.post<NextcloudGroupSyncResult>(`${base(org)}${id}/groups/`, { confirm }),
   calendars: (org: number, id: number) =>
