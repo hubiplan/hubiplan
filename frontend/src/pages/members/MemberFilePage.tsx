@@ -776,6 +776,25 @@ function MembershipTab({
             'Vereinsmitteilungen, Kurzmitteilungen, Rechnungen und Post an Vorstände oder Rolleninhaber kommen unabhängig davon.',
           )}
         </p>
+        {member.greetings_opt_out_at !== undefined && (
+          <>
+            <Checkbox
+              label={t('Glückwünsche zu Geburtstag und Jubiläum erwünscht')}
+              checked={!member.greetings_opt_out_at}
+              disabled={!canEdit}
+              onChange={(val) =>
+                void run(() => memberApi.update(org.id, member.id, { greetings_opt_out: !val }))
+              }
+            />
+            {member.greetings_opt_out_at && (
+              <p className="small" role="status">
+                {t('Hat am {x} Glückwünschen widersprochen.', {
+                  x: formatDate(member.greetings_opt_out_at),
+                })}
+              </p>
+            )}
+          </>
+        )}
       </Section>
       {error && <Alert kind="error">{error}</Alert>}
     </div>

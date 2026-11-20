@@ -1321,6 +1321,7 @@ class Loader:
             club_number=m.get("club_number") or "",
             pays_fee_self=bool(m.get("pays_fee_self")),
             info_opt_out_at=parse_datetime(m.get("info_opt_out_at")),
+            greetings_opt_out_at=parse_datetime(m.get("greetings_opt_out_at")),
             photo_consent_at=parse_date(m.get("photo_consent_at")),
             photo_consent_source=m.get("photo_consent_source") or "",
             purged_at=parse_datetime(m.get("purged_at")),

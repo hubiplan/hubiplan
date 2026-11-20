@@ -626,6 +626,17 @@ def update_member(org: Organization, membership: Membership, values: dict, user)
         membership.info_opt_out_at = timezone.now() if values["info_opt_out"] else None
         membership.save()
 
+    if "greetings_opt_out" in values and values["greetings_opt_out"] != (
+        membership.greetings_opt_out_at is not None
+    ):
+        changes["Glückwünsche"] = (
+            ["erhalten", "widersprochen"]
+            if values["greetings_opt_out"]
+            else ["widersprochen", "erhalten"]
+        )
+        membership.greetings_opt_out_at = timezone.now() if values["greetings_opt_out"] else None
+        membership.save()
+
     contact_values = {k: values[k] for k in services.CONTACT_FIELDS if k in values}
     if contact_values:
         old = services.contact_for(person, org)

@@ -439,6 +439,10 @@ class Membership(models.Model):
     info_opt_out_at = models.DateTimeField(
         "Informationen per Mail abbestellt am", null=True, blank=True
     )
+    # Widerspruch gegen Glückwünsche zu Geburtstag und Jubiläum (Mitgliederbereich, Vorstand)
+    greetings_opt_out_at = models.DateTimeField(
+        "Glückwünschen widersprochen am", null=True, blank=True
+    )
     # Nach Ablauf der Löschfrist: nur noch das Minimum ist gespeichert
     purged_at = models.DateTimeField("Daten gelöscht am", null=True, blank=True)
     # Ausgegliederte Untereinheit (Verbund, Schritt 8): Kennung derselben Mitgliedschaft
