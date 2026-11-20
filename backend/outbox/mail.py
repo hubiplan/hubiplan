@@ -125,6 +125,7 @@ def send(
     stored_attachments: list[dict] | None = None,
     from_name: str = "",
     language: str | None = None,
+    calendar: tuple[str, str] | None = None,
 ) -> bool:
     """Sendet eine Mail. Gibt False zurück, wenn der Versand scheiterte (fail_silently).
 
@@ -134,6 +135,8 @@ def send(
     statt sie für jede Mail zu kopieren (Rundschreiben an viele Mitglieder).
     ``from_name``: angezeigter Absendername; die Adresse bleibt DEFAULT_FROM_EMAIL
     (nur für sie darf der Server unterschreiben, sonst scheitert DMARC).
+    ``calendar``: Kalenderteil ``(ics, Methode)`` als weitere Fassung (iMIP, RFC 6047), damit
+    Mailprogramme „Annehmen/Ablehnen“ zeigen (Termine aus dem Mailprogramm).
     ``language``: Sprache der Mail für Fußzeile und ``lang``-Angabe. Hinweis-Mails an ein
     Konto nehmen dessen Nutzersprache (``core.i18n.user_language``), alles, was der Verein
     herausgibt, die Vereinssprache; ohne Angabe Deutsch. Den Text selbst erzeugt der
@@ -170,6 +173,9 @@ def send(
     )
     if html:
         message.attach_alternative(html_document(html, subject, language), "text/html")
+    if calendar:
+        ics, method = calendar
+        message.attach_alternative(ics, f"text/calendar; method={method}")
     for name, content, mimetype in attachments or []:
         message.attach(name, content, mimetype)
     if stored_attachments:

@@ -74,6 +74,7 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "remind_days",
             "share_up",
             "share_down",
+            "video_url",
             "notify",
         ]
         extra_kwargs = {
@@ -95,6 +96,12 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError(gettext("Bitte einen Titel angeben."))
+        return value
+
+    def validate_video_url(self, value):
+        value = (value or "").strip()
+        if value and not value.lower().startswith("https://"):
+            raise serializers.ValidationError(gettext("Der Videolink muss mit https:// beginnen."))
         return value
 
     def validate_category(self, value):

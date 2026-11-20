@@ -22,6 +22,12 @@ Für einen einzelnen Brief erzeugst du unter Rundschreiben › Brief eine Word-V
 
 Über einen Mailverteiler wird eine Mail an eine Vereinsadresse zum Rundschreiben. Bei einem offenen Verteiler darf jeder schreiben. Damit Fremde nicht ungeprüft viele Mitglieder erreichen, gehen ihre Mails nur bis zu einer einstellbaren Empfängerzahl (Standard 50) und nur bis zu einer Zahl am Tag direkt hinaus. Alles darüber bleibt als Entwurf liegen. Wer an den Verteiler schreiben darf, bekommt einen Hinweis und gibt die Mail frei oder löscht sie.
 
+## Termine aus dem Mailprogramm
+
+Lädt jemand mit Terminrecht einen Verteiler im Mailprogramm zu einem Termin ein, etwa `vorstand@…` in Outlook, Thunderbird, im Nextcloud-Kalender oder am Handy, legt HUBIplan daraus einen Termin an. Wie beim Rundschreiben kommt zuerst ein Bestätigungslink; erst **Übernehmen und informieren** legt den Termin an und schickt den Empfängern des Verteilers eine Einladung mit Wann, Wo und Videolink. Im Kalender des Absenders steht der Verteiler danach auf „angenommen“.
+
+Der Termin ist bei Verteilern an Rolleninhaber „nur Vorstand“, sonst für Mitglieder sichtbar, nie öffentlich. Zu- und Absagen gibt es nur bei Mitgliederterminen. Ein Videolink aus der Einladung (Talk, Teams, Zoom, Jitsi) wird übernommen; steht keiner drin und ist **Videoraum anlegen, wenn die Einladung keinen Videolink hat** eingeschaltet, legt HUBIplan einen neuen Raum in Nextcloud Talk an. Änderungen und Absagen aus dem Mailprogramm kommen ebenso an. Mitgliederversammlungen mit Einberufung legt ihr weiter in HUBIplan an.
+
 ## Listen
 
 Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.
