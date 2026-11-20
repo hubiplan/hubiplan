@@ -10415,5 +10415,22 @@
   "Die Buchung gilt nicht mehr, der Rechnungsentwurf besteht noch. Lösche ihn unter Finanzen › Rechnungen, wenn die Miete entfällt.": "The booking no longer applies, but the draft invoice still exists. Delete it under Finance › Invoices if the rent no longer applies.",
   "Die Buchung gilt nicht mehr, die Rechnung besteht noch. Entfällt die Miete, storniere die Rechnung unter Finanzen › Rechnungen.": "The booking no longer applies, but the invoice still exists. If the rent no longer applies, cancel the invoice under Finance › Invoices.",
   "Buchung mit Rechnung stornieren?": "Cancel booking with invoice?",
-  "Zu dieser Buchung gibt es die Rechnung {number}. Sie bleibt bestehen: Einen Entwurf löschst du unter Finanzen › Rechnungen, eine gestellte Rechnung stornierst du dort.": "This booking has invoice {number}. It remains in place: delete a draft under Finance › Invoices, or cancel an issued invoice there."
+  "Zu dieser Buchung gibt es die Rechnung {number}. Sie bleibt bestehen: Einen Entwurf löschst du unter Finanzen › Rechnungen, eine gestellte Rechnung stornierst du dort.": "This booking has invoice {number}. It remains in place: delete a draft under Finance › Invoices, or cancel an issued invoice there.",
+  "Mitglieder an einem Stichtag nach Alter, Geschlecht, Wohnort und Gruppe, etwa für die Bestandserhebung des Sportbunds, den Verband oder einen Zuschussantrag.": "Members on a cut-off date by age, gender, place of residence and group, for example for the sports federation's membership census, your association or a grant application.",
+  "Altersgruppen": "Age groups",
+  "Sportbund": "Sports federation",
+  "Jugendförderung": "Youth funding",
+  "Zehnjahresgruppen": "Ten-year groups",
+  "am Stichtag vollendet": "completed on the cut-off date",
+  "nach Jahrgang (Jahr minus Geburtsjahr)": "by year of birth (year minus year of birth)",
+  "CSV": "CSV",
+  "Altersgruppe": "Age group",
+  "gesamt": "total",
+  "Am {date} gibt es keine Mitglieder.": "There are no members on {date}.",
+  "Organisationen": "Organisations",
+  "ohne Alter und Geschlecht": "without age and gender",
+  "Alter und Geschlecht": "Age and gender",
+  "Wohnorte": "Places of residence",
+  "Ort aus der Anschrift; die Altersgruppen je Ort stehen in der Excel-Datei.": "Place from the address; the age groups per place are in the Excel file.",
+  "Wer mehreren Gruppen ({title}) angehört, zählt in jeder.": "Anyone belonging to several groups ({title}) is counted in each."
 }

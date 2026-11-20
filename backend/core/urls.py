@@ -449,9 +449,19 @@ org_patterns = [
         name="member-statistics",
     ),
     path(
+        "members/statistics/stichtag/",
+        statistics_views.ClubCensusView.as_view(),
+        name="member-census",
+    ),
+    path(
         "federation/statistics/",
         statistics_views.FederationStatisticsView.as_view(),
         name="federation-statistics",
+    ),
+    path(
+        "federation/statistics/stichtag/",
+        statistics_views.FederationCensusView.as_view(),
+        name="federation-census",
     ),
     path(
         "federation/members/",
@@ -941,6 +951,11 @@ dept_patterns = [
         "statistics/",
         statistics_views.DepartmentStatisticsView.as_view(),
         name="dept-statistics",
+    ),
+    path(
+        "statistics/stichtag/",
+        statistics_views.DepartmentCensusView.as_view(),
+        name="dept-census",
     ),
     path(
         "members/<int:pk>/",

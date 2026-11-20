@@ -84,6 +84,7 @@ November 2026:
 
 #### Verein und Mitglieder
 
+- Mitglieder: **Stichtagsstatistik als Meldedatei.** Unter Mitglieder › Entwicklung › Stichtag zählt HUBIplan die Mitglieder an einem Tag nach Altersgruppe und Geschlecht, nach Wohnort und nach Abteilungen, wahlweise mit den Altersgruppen des Sportbunds oder der Jugendförderung und nach Jahrgang. Die Zahlen gibt es als PDF, Excel und CSV für Sportbund, Verband und Zuschussanträge.
 - Belegung: **Miete abrechnen.** Am Objekt lässt sich ein Mietpreis je Buchung, Tag oder Stunde hinterlegen. „Rechnung anlegen“ an einer Buchung für ein Mitglied legt einen Rechnungsentwurf direkt an das Mitglied an, auch wenn sein Beitrag sonst über eine Sammelrechnung läuft.
 - Belegung: **Für ein Mitglied buchen und Monat oder Jahr ansehen.** Beim Buchen unter Material & Räume › Belegung lässt sich ein Mitglied heraussuchen; die Buchung steht dann in der Mitgliedsakte unter „Belegungen“ und im Mitgliederbereich des Mitglieds, Kontaktdaten werden nicht doppelt erfasst. Neben der Woche gibt es eine Monats- und eine Jahresansicht.
 - Mitglieder: **Ermäßigung mit Nachweis.** Für ermäßigte Beiträge etwa von Studierenden richtet die Kasse unter Finanzen › Beitragssätze eine Ermäßigung mit Frist (z. B. 28.02.), Kulanzzeit und Arten von Nachweisen ein. HUBIplan erinnert die Mitglieder im Januar und vor der Frist, nimmt Nachweise im Mitgliederbereich, in der App, über einen persönlichen Link oder als Antwort auf die Erinnerungsmail an und macht eine Vorprüfung (Name, Studium, Gültigkeit).
