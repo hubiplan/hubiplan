@@ -4,7 +4,18 @@ titel: Finanzen › Einrichten › Beitragssätze
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]
-stichworte: [Beitrag, Beitragssatz, Mitgliedsart, Ermäßigung, Größe, Staffel, Arbeitsstunden, Pflichtstunden, Ersatzbeitrag]
+stichworte:
+  [
+    Beitrag,
+    Beitragssatz,
+    Mitgliedsart,
+    Ermäßigung,
+    Größe,
+    Staffel,
+    Arbeitsstunden,
+    Pflichtstunden,
+    Ersatzbeitrag,
+  ]
 ---
 
 Beitragssätze legen fest, wer wie viel zahlt, meist je Mitgliedsart und Zeitraum. Ein Beitragslauf rechnet damit die Rechnungen aus.

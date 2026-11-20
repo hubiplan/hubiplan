@@ -4,7 +4,18 @@ titel: Finance › Set up › Fee rates
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]
-stichworte: [fee, fee rate, membership type, reduction, size, bands, work hours, required hours, substitute fee]
+stichworte:
+  [
+    fee,
+    fee rate,
+    membership type,
+    reduction,
+    size,
+    bands,
+    work hours,
+    required hours,
+    substitute fee,
+  ]
 ---
 
 Fee rates define who pays how much, usually per membership type and period. A fee run uses them to calculate the invoices.
