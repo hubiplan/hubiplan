@@ -97,7 +97,12 @@ def test_versand_am_tag_mit_alter(
 ):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     c = api(board_a)
-    ContactDetails.objects.filter(person=people["clara"].person).update(email="clara@example.org")
+    # E-Mail ist verschlüsselt: nur über save() schreiben
+    rows = list(ContactDetails.objects.filter(person=people["clara"].person))
+    assert rows
+    for details in rows:
+        details.email = "clara@example.org"
+        details.save()
     turn_on(c, cal["a"], send_hour=6)
     services.prepare(cal["a"], TODAY)
     noon = timezone.make_aware(datetime.datetime.combine(TODAY, datetime.time(12)))
