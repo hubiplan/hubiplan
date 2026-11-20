@@ -1,0 +1,37 @@
+/* Datenschutz-Werkzeuge */
+.dsgvo-fields {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+  max-width: 60rem;
+}
+.dsgvo-fields > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr;
+  gap: var(--space-3);
+}
+.dsgvo-fields dt {
+  font-weight: 600;
+}
+.dsgvo-fields dd {
+  margin: 0;
+  white-space: pre-line;
+}
+@media (max-width: 40rem) {
+  .dsgvo-fields > div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+.dsgvo-marked {
+  outline: 2px solid var(--color-primary);
+  outline-offset: var(--space-1);
+  border-radius: var(--radius);
+}
+.dsgvo-list > li + li {
+  border-top: 1px solid var(--color-border);
+}
+.dsgvo-list summary {
+  cursor: pointer;
+  padding: var(--space-2) 0;
+}

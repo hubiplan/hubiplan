@@ -30,6 +30,7 @@ function agreementKindLabel(kind: AgreementKind): string {
     sponsoring: t('Sponsoring'),
     framework: t('Rahmenvereinbarung'),
     contract: t('Vertrag'),
+    dpa: t('Auftragsverarbeitungsvertrag'),
     other: t('Sonstige Vereinbarung'),
   }[kind]
 }
@@ -258,7 +259,11 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
             <SelectField
               label={t('Art')}
               value={draft.kind}
-              onChange={(e) => setDraft({ ...draft, kind: e.target.value as AgreementKind })}
+              onChange={(e) => {
+                const kind = e.target.value as AgreementKind
+                // Ein Vertrag zur Auftragsverarbeitung bringt keine Einnahme
+                setDraft({ ...draft, kind, ...(kind === 'dpa' ? { tax_kind: 'none' } : {}) })
+              }}
             >
               {AGREEMENT_KINDS.map((k) => (
                 <option key={k} value={k}>

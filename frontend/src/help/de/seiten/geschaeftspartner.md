@@ -50,6 +50,7 @@ Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitglied
 
 - **Vereinbarung hinzufügen** hält Sponsoring und andere Absprachen fest: Zeitraum, Betrag oder Sachleistung, Gegenleistung (etwa Logo auf der Webseite, Bande, Festschrift) und die steuerliche Einordnung. „Nur Nennung“ ohne Werbung gehört in den ideellen Bereich oder die Vermögensverwaltung, aktive Werbung in den wirtschaftlichen Geschäftsbetrieb. Mit Enddatum legt HUBIplan eine Aufgabe an, die rechtzeitig an die Verlängerung erinnert (Modul Aufgaben); wie viele Tage vorher, stellt ihr bei der Vereinbarung ein.
 - Für einen **Vertrag** (Art der Vereinbarung) tragt ihr die **Kündigungsfrist in Tagen** ein und ob er sich automatisch verlängert. Dann erinnert die Aufgabe rechtzeitig vor dem letzten Kündigungstag, und in der Liste steht „kündigen bis …“.
+- Dienstleister, die Daten von Mitgliedern im Auftrag des Vereins verarbeiten (etwa Hosting, Mailversand, Druckerei), bekommen die Rolle **Auftragsverarbeiter**. Den Vertrag nach Art. 28 DSGVO legt ihr als Vereinbarung der Art **Auftragsverarbeitungsvertrag** an. Unter [DSGVO](/dsgvo/auftragsverarbeiter) seht ihr, bei wem der Vertrag noch fehlt.
 
 ## Dokumente und Webseite
 
