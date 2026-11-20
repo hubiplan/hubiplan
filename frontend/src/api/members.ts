@@ -362,6 +362,8 @@ export interface MemberDetail {
   club_number: string
   pays_fee_self: boolean
   info_opt_out_at: string | null
+  /** Widerspruch gegen Glückwünsche (fehlt bei älteren Servern) */
+  greetings_opt_out_at?: string | null
   /** fern geführt: Stammdaten pflegt eine ausgegliederte Untereinheit (Verbund) */
   managed_by?: { id: number; name: string } | null
   contact: Contact | null
