@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "expenses",
     "obligations",
     "greetings",
+    "privacy",
     "qualifications",
     "feeproofs",
     "places",

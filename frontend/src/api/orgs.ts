@@ -860,6 +860,8 @@ export const PERM = {
   expensesEdit: 'expenses.edit',
   obligationsView: 'obligations.view',
   obligationsEdit: 'obligations.edit',
+  privacyView: 'privacy.view',
+  privacyEdit: 'privacy.edit',
   financeEdit: 'finance.edit',
   billingView: 'billing.view',
   billingEdit: 'billing.edit',

@@ -278,6 +278,13 @@ AREAS: tuple[Area, ...] = (
         module="obligations",
     ),
     Area(
+        "privacy",
+        gettext_noop("Datenschutz"),
+        gettext_noop("Verarbeitungsverzeichnis, Auftragsverarbeiter und Datenpannen sehen"),
+        gettext_noop("Verzeichnis pflegen und Datenpannen dokumentieren"),
+        org_types=("federation", "club"),
+    ),
+    Area(
         "partners",
         gettext_noop("Geschäftspartner"),
         gettext_noop("Geschäftspartner und Ansprechpartner sehen"),

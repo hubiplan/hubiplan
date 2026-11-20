@@ -50,6 +50,7 @@ This lists all companies, authorities, associations and people outside the membe
 
 - **Add agreement** records sponsorship and other arrangements: period, amount or in-kind contribution, what you give in return (such as a logo on the website, a perimeter board, a commemorative booklet) and the tax classification. “Mention only” without advertising belongs to the non-profit area or asset management, active advertising to the commercial operations. With an end date, HUBIplan creates a task that reminds you of the renewal in good time (Tasks module); you set how many days before on the agreement.
 - For a **Contract** (type of agreement) you enter the **Notice period in days** and whether it renews automatically. The task then reminds you in good time before the last day to give notice, and the list shows “give notice by …”.
+- Service providers who process members' data on behalf of the club (such as hosting, email delivery, a printer) get the role **Processor**. Store the contract under Art. 28 GDPR as an agreement of the type **Data processing agreement**. Under [GDPR](/dsgvo/auftragsverarbeiter) you can see where a contract is still missing.
 
 ## Documents and website
 
