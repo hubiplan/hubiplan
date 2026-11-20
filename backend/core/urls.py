@@ -23,6 +23,7 @@ from billing import household_views as billing_household_views
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
+from billing import workhour_views as billing_workhour_views
 from bookings import portal as booking_portal
 from cards import views as card_views
 from changes import views as change_views
@@ -628,6 +629,16 @@ org_patterns = [
     ),
     path("billing/settings/", billing_views.BillingSettingsView.as_view(), name="billing-settings"),
     path("billing/fees/", billing_views.FeeRatesView.as_view(), name="billing-fees"),
+    path(
+        "billing/work-hours/",
+        billing_workhour_views.WorkHoursView.as_view(),
+        name="billing-work-hours",
+    ),
+    path(
+        "billing/work-hours/balance/",
+        billing_workhour_views.WorkHoursBalanceView.as_view(),
+        name="billing-work-hours-balance",
+    ),
     path(
         "billing/households/<int:pk>/payer/",
         billing_household_views.HouseholdPayerView.as_view(),

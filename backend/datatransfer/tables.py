@@ -53,6 +53,7 @@ MODULE_MODELS = (
     "billing.FeeRate",
     "billing.AgeRate",
     "billing.SizeRate",
+    "billing.WorkHourRule",
     "billing.FeeRun",
     "billing.BusinessPartner",
     "billing.PartnerField",

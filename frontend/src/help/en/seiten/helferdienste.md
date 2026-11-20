@@ -87,4 +87,5 @@ like any circular. You also need the right to send circulars.
 
 Once a shift has started, tick **done** for each person. **Completed duties**
 in the overview shows per year who took on how many shifts and hours, for example for a thank
-you or required hours.
+you or required hours. Required hours with a substitute fee are set up under Finance › Set up ›
+Fee rates › **Work hours**; the ticked shifts count there.

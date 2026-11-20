@@ -15039,3 +15039,27 @@ msgstr "Change letterhead: layout, logo, fonts, line and table colours and foote
 #: website/views.py
 msgid "Höchstens {x0} Kopfbilder."
 msgstr "At most {x0} header images."
+
+#: billing/workhours.py
+msgid "Ersatzbeitrag für fehlende Arbeitsstunden {year}"
+msgstr "Substitute fee for missing work hours {year}"
+
+#: billing/workhours.py
+msgid "Soll {required} Std., geleistet {done} Std.: {missing} Std. × {rate}"
+msgstr "Required {required} h, done {done} h: {missing} h × {rate}"
+
+#: billing/workhour_views.py
+msgid "Das Höchstalter darf nicht unter dem Mindestalter liegen."
+msgstr "The maximum age must not be below the minimum age."
+
+#: billing/workhour_views.py
+msgid "Arbeitsstunden ab Alter"
+msgstr "Work hours from age"
+
+#: billing/workhour_views.py
+msgid "Arbeitsstunden bis Alter"
+msgstr "Work hours up to age"
+
+#: billing/workhour_views.py
+msgid "Arbeitsstunden {name}"
+msgstr "Work hours {name}"

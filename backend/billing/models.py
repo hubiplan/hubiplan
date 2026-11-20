@@ -3,6 +3,7 @@
 - ``BillingSettings``: Rhythmus, Zahlungsziel, Konto und Kategorie für Zahlungen.
 - ``FeeRate`` und ``AgeRate``: Beitrag je Mitgliedsart, Altersstufen mit eigenem
   Betrag oder Abschlag. Beträge gelten für ein ganzes Beitragsjahr (= Geschäftsjahr).
+- ``WorkHourRule``: Pflichtstunden je Mitgliedsart mit Ersatzbeitrag.
 - ``FeeRun``: ein Beitragslauf für einen Abrechnungszeitraum.
 - ``Invoice`` mit ``InvoiceLine``: Rechnung an ein Mitglied oder als
   Sammelrechnung an eine Abteilung.
@@ -623,6 +624,15 @@ class BillingSettings(models.Model):
         help_text="z. B. Vereinsregisternummer; leer: aus dem Impressum",
     )
 
+    # Arbeitsstunden (docs/arbeitsstunden.md): Pflicht nur in diesem Alter (zu Beginn des
+    # Geschäftsjahres); leer = ohne Grenze
+    work_min_age = models.PositiveSmallIntegerField(
+        "Arbeitsstunden ab Alter", null=True, blank=True
+    )
+    work_max_age = models.PositiveSmallIntegerField(
+        "Arbeitsstunden bis Alter", null=True, blank=True
+    )
+
     class Meta:
         verbose_name = "Beitragseinstellungen"
         verbose_name_plural = "Beitragseinstellungen"
@@ -669,6 +679,30 @@ class FeeRate(models.Model):
     def clean(self):
         if self.amount is not None and self.amount < 0:
             raise ValidationError({"amount": gettext("Der Beitrag darf nicht negativ sein.")})
+
+
+class WorkHourRule(models.Model):
+    """Pflichtstunden je Mitgliedsart und Geschäftsjahr mit Ersatzbeitrag je fehlender Stunde.
+
+    Geleistete Stunden zählen aus erledigten Helferschichten; fehlende Stunden kommen als
+    Posten in den ersten Beitragslauf des folgenden Geschäftsjahres (docs/arbeitsstunden.md).
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    member_type = models.OneToOneField(
+        "members.MemberType", on_delete=models.CASCADE, related_name="work_hour_rule"
+    )
+    hours = models.DecimalField("Pflichtstunden im Jahr", max_digits=5, decimal_places=2)
+    rate = models.DecimalField("Ersatzbeitrag je fehlender Stunde", max_digits=8, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Arbeitsstunden-Regel"
+        verbose_name_plural = "Arbeitsstunden-Regeln"
+
+    def __str__(self) -> str:
+        return f"{self.member_type}: {self.hours} h × {self.rate}"
 
 
 class AgeRate(models.Model):

@@ -515,7 +515,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
         rows = []
         for hh_id, items in plan.household_items.items():
             household = plan.households[hh_id]
-            discount, _ = hh.fee_discount(rules.get(household.kind), items, p)
+            discount, _ = hh.fee_discount(rules.get(household.kind), services.fee_items(items), p)
             rows.append(
                 {
                     "id": hh_id,
@@ -523,7 +523,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
                     "kind": household.kind,
                     "members": len(items),
                     "discount": discount,
-                    "total": sum((i.amount for i in items), services.ZERO) - discount,
+                    "total": sum((i.total for i in items), services.ZERO) - discount,
                 }
             )
         return rows
@@ -560,7 +560,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
             )
         plan = services.plan_run(self.org, p)
         dept_total = {
-            d: sum((i.amount for i in items), services.ZERO)
+            d: sum((i.total for i in items), services.ZERO)
             for d, items in plan.department_items.items()
         }
         return Response(
@@ -571,7 +571,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
                     "end": p.end,
                     "exists": exists,
                     "members": len(plan.member_items),
-                    "members_total": sum((i.amount for i in plan.member_items), services.ZERO),
+                    "members_total": sum((i.total for i in plan.member_items), services.ZERO),
                     "departments": [
                         {
                             "id": d,

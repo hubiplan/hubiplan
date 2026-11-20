@@ -66,6 +66,37 @@ export interface FeeRateRow {
   amount: string | null
 }
 
+export interface WorkHourRow {
+  member_type: number
+  name: string
+  active: boolean
+  hours: string | null
+  rate: string | null
+}
+
+export interface WorkHours {
+  helpers_on: boolean
+  min_age: number | null
+  max_age: number | null
+  years: { year: number; label: string }[]
+  rows: WorkHourRow[]
+}
+
+export interface WorkHourBalance {
+  year: number
+  label: string
+  people: {
+    membership: number
+    name: string
+    member_type: string
+    required: string
+    done: string
+    missing: string
+    amount: string
+  }[]
+  total: string
+}
+
 export interface AgeRate {
   id: number
   name: string
@@ -152,6 +183,10 @@ export interface RunPreview {
     proofs_regular?: number
     proofs_provisional?: number
     proofs_unreviewed?: number
+    /** Arbeitsstunden: Jahr, für das abgerechnet wird (nur im ersten Zeitraum), Zahl und Summe */
+    work_year?: number | null
+    work_count?: number
+    work_total?: string
   }
   // Dachverband
   clubs?: { id: number; name: string; members: number; total: string }[]
@@ -328,6 +363,17 @@ export const billingApi = {
   fees: (org: number) => api.get<FeeRateRow[]>(`${base(org)}/fees/`),
   saveFees: (org: number, rows: { member_type: number; amount: string | null }[]) =>
     api.put<FeeRateRow[]>(`${base(org)}/fees/`, rows),
+  workHours: (org: number) => api.get<WorkHours>(`${base(org)}/work-hours/`),
+  saveWorkHours: (
+    org: number,
+    data: {
+      min_age?: number | null
+      max_age?: number | null
+      rows?: { member_type: number; hours: string | null; rate: string | null }[]
+    },
+  ) => api.put<WorkHours>(`${base(org)}/work-hours/`, data),
+  workHourBalance: (org: number, year: number) =>
+    api.get<WorkHourBalance>(`${base(org)}/work-hours/balance/?jahr=${year}`),
   ageRates: (org: number) => api.get<AgeRate[]>(`${base(org)}/age-rates/`),
   createAgeRate: (org: number, data: Partial<AgeRate>) =>
     api.post<AgeRate>(`${base(org)}/age-rates/`, data),

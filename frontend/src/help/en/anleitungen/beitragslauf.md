@@ -12,7 +12,7 @@ Before you start: the fee rates are set.
 
 1. Open [Finance › Fee runs](/finanzen/rechnungen/beitragslaeufe) and click **New fee run**.
 2. Choose the financial year, period and invoice date.
-3. Click **Calculate preview** and check the totals and the checklist.
+3. Click **Calculate preview** and check the totals and the checklist. In the first period of the financial year it also names who did too few work hours in the previous year.
 4. Click **Create draft invoices**. You can still change drafts.
 5. Click **Finalise drafts**; the invoices get their numbers.
 6. Send them with **send by email**; anyone without an address gets them by post.

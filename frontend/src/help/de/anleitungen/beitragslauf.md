@@ -12,7 +12,7 @@ Vorher: Die Beitragssätze sind festgelegt.
 
 1. Öffne [Finanzen › Beitragsläufe](/finanzen/rechnungen/beitragslaeufe) und klicke auf **Neuer Beitragslauf**.
 2. Wähle Geschäftsjahr, Zeitraum und Rechnungsdatum.
-3. Klicke auf **Vorschau berechnen** und sieh dir Summen und die Prüfliste an.
+3. Klicke auf **Vorschau berechnen** und sieh dir Summen und die Prüfliste an. Im ersten Zeitraum des Geschäftsjahres nennt sie auch, wer im Vorjahr zu wenige Arbeitsstunden geleistet hat.
 4. Klicke auf **Rechnungsentwürfe erstellen**. Entwürfe kannst du noch ändern.
 5. Klicke auf **Entwürfe festschreiben**; die Rechnungen bekommen ihre Nummern.
 6. Verschicke sie mit **per E-Mail verschicken**; wer keine Adresse hat, bekommt sie per Post.
