@@ -1,4 +1,6 @@
 // Dokumente: Ablage der aktiven Organisation, Abteilung oder des Mitgliederbereichs.
+import { NextcloudPick } from '../../components/NextcloudFiles.tsx'
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import { DocumentIcon, FolderIcon } from './DocumentIcons.tsx'
 import './documents.css'
@@ -707,6 +709,30 @@ function FolderView({
                 aria-label={t('Datei für {name}', { name: folder.name })}
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
+              <NextcloudPick
+                accept={[
+                  '.pdf',
+                  '.doc',
+                  '.docx',
+                  '.xls',
+                  '.xlsx',
+                  '.ppt',
+                  '.pptx',
+                  '.odt',
+                  '.ods',
+                  '.odp',
+                  '.jpg',
+                  '.jpeg',
+                  '.png',
+                  '.txt',
+                  '.csv',
+                ]}
+                onFile={(f) => {
+                  setFile(f)
+                  if (!title) setTitle(f.name.replace(/\.[^.]+$/, ''))
+                }}
+              />
+              {file && <span className="muted small">{file.name}</span>}
               <RightsHint />
             </label>
             <Field
@@ -901,6 +927,13 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
           >
             {current.inline ? t('Ansehen') : t('Herunterladen')}
           </a>
+        )}
+        {current && !current.scan && (
+          <NextcloudSave
+            source={`${current.url}?download=1`}
+            filename={current.name}
+            category="records"
+          />
         )}
         {manage && (
           <>

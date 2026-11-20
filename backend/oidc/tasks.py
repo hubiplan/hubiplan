@@ -56,3 +56,12 @@ def sync_client_calendars(client_id: int, unshare: dict | None = None) -> dict:
     from . import nc_calendars
 
     return nc_calendars.sync_client(client_id, unshare)
+
+
+@shared_task(soft_time_limit=1500, time_limit=1560)
+@einzeln
+def purge_files() -> int:
+    """Täglich: in der Nextcloud abgelegte Dateien nach ihrer Frist löschen."""
+    from . import nc_files
+
+    return nc_files.purge_due()

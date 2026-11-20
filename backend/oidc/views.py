@@ -200,6 +200,14 @@ class ClientSerializer(serializers.ModelSerializer):
             "sync_groups_list",
             "groups_error",
             "groups_synced_at",
+            "files_enabled",
+            "files_root",
+            "files_board_group",
+            "files_finance_group",
+            "files_members_group",
+            "files_retention",
+            "files_source",
+            "files_error",
             "is_active",
             "created_at",
             "last_used_at",
@@ -216,6 +224,7 @@ class ClientSerializer(serializers.ModelSerializer):
             "calendar_synced_at",
             "groups_error",
             "groups_synced_at",
+            "files_error",
         ]
 
     def get_has_service_password(self, obj) -> bool:
@@ -256,6 +265,48 @@ class ClientSerializer(serializers.ModelSerializer):
         if len(text) > 500:
             raise serializers.ValidationError(gettext("Höchstens 500 Zeichen."))
         return text
+
+    def _folder(self, value, field: str) -> str:
+        from .nc_files import FilesError, clean_segments
+
+        try:
+            return "/".join(clean_segments(value))
+        except FilesError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_files_root(self, value):
+        value = self._folder(value, "files_root")
+        return value or "HUBIplan"
+
+    def validate_files_source(self, value):
+        return self._folder(value, "files_source")
+
+    def validate_files_board_group(self, value):
+        return self.validate_account_group(value)
+
+    def validate_files_finance_group(self, value):
+        return self.validate_account_group(value)
+
+    def validate_files_members_group(self, value):
+        return self.validate_account_group(value)
+
+    def validate_files_retention(self, value):
+        from .models import FileItem
+
+        if not isinstance(value, dict):
+            raise serializers.ValidationError(gettext("Ungültige Fristen."))
+        out = {}
+        for key, years in value.items():
+            if key not in FileItem.Category.values or years in (None, ""):
+                continue
+            try:
+                years = int(years)
+            except (TypeError, ValueError) as exc:
+                raise serializers.ValidationError(gettext("Ungültige Fristen.")) from exc
+            if not 0 <= years <= 100:
+                raise serializers.ValidationError(gettext("Frist zwischen 0 und 100 Jahren."))
+            out[key] = years
+        return out
 
     def validate_calendar_members_group(self, value):
         return self.validate_account_group(value)
@@ -384,6 +435,20 @@ class ClientSerializer(serializers.ModelSerializer):
                         )
                     }
                 )
+        files = attrs.get("files_enabled", inst.files_enabled if inst else False) or attrs.get(
+            "files_source", inst.files_source if inst else ""
+        )
+        if files:
+            user = attrs.get("service_user", inst.service_user if inst else "")
+            password = attrs.get("service_password", inst.service_password if inst else "")
+            if not user or not password:
+                raise serializers.ValidationError(
+                    {
+                        "files_enabled": gettext(
+                            "Für Dateien braucht es Dienstkonto und App-Passwort."
+                        )
+                    }
+                )
         calendars = any(
             attrs.get(name, getattr(inst, name) if inst else False)
             for name in ("calendar_members", "calendar_board")
@@ -473,6 +538,13 @@ def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
     data = serializer.validated_data
     if "calendar_board" in data and data["calendar_board"] and not client.calendar_board:
         return True
+    # Wer die abgelegten Dateien sieht (Ablage einschalten, andere Gruppe) und was HUBIplan aus der
+    # Nextcloud lesen darf (Ordner zum Übernehmen)
+    if "files_enabled" in data and data["files_enabled"] and not client.files_enabled:
+        return True
+    for name in ("files_board_group", "files_finance_group", "files_members_group", "files_source"):
+        if name in data and data[name] != getattr(client, name):
+            return True
     # Gruppenabgleich einschalten oder seine Liste ändern bestimmt, wer welche Gruppe hat
     if "sync_groups" in data and data["sync_groups"] and not client.sync_groups:
         return True

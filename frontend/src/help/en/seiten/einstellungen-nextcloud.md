@@ -21,6 +21,16 @@ Under **Groups HUBIplan keeps in sync**, enter which groups HUBIplan may set and
 
 **Compare groups** shows beforehand who joins which group and who drops out of which; it does not change anything yet. If more than three accounts would lose groups at once, synchronisation stops and everyone who manages roles gets an email. Then check the roles and confirm with **Synchronise groups now**. Files are never lost, only access to the group's folders.
 
+## Files in Nextcloud
+
+With **Save to Nextcloud**, a **Save to Nextcloud** button appears next to the cash report, tax evaluation, cash count, minutes, resolution book and documents. The file goes into a folder of the service account: “Vorstand”, “Kasse” or “Mitglieder” inside the **Folder in the service account** (by default “HUBIplan”). Each folder is shared read-only with one group, by default “Vorstand”, “Kassierer” and “Mitglieder”. Nothing is overwritten; if the name exists, HUBIplan adds a number.
+
+Each file gets a type when it is saved, and the type decides how long it stays in Nextcloud: resolutions and foundations as well as planning and statistics without personal data permanently, accounting and tax records 10 years and reports to associations 6 years after year end, lists with personal data 3 months, everything else 2 years. Under **Adjust periods per type** you can change this. When the period ends, HUBIplan deletes the file into the service account's trash. HUBIplan saves lists with personal data only after explicit confirmation and never in the “Mitglieder” folder.
+
+Keep in mind: HUBIplan's encryption, permissions and log do not apply in Nextcloud. Anyone using a sync app also has the files on their device.
+
+With **Folder to take files from**, a **From Nextcloud** button appears when uploading documents, website images, attachments to events and circulars, and receipts. In Nextcloud, share a folder with the service account, for example “An HUBIplan”, and enter its name here. HUBIplan fetches a copy and checks it like any uploaded file; nothing changes in Nextcloud. Anyone who may upload files in HUBIplan sees everything in this folder.
+
 ## Events in the Nextcloud calendar
 
 Under **Events in the Nextcloud calendar**, HUBIplan writes your events into the Nextcloud calendar. There are two calendars: **Events for members** with everything every member sees, and **“Board only” events**. Each calendar is shared read-only with one group, by default “Mitglieder” and “Vorstand”. Members of the group see it in the Nextcloud calendar app and on their phone.

@@ -2,6 +2,7 @@
 // Fenster „Bild bearbeiten“ (Ausschnitt neu wählen, Angaben, Zuordnung zu einer
 // Untereinheit, ersetzen, kopieren, löschen) und ein Auswahl-Dialog für Texte, der
 // auf Seiten einer Untereinheit zuerst deren Bilder zeigt.
+import { NextcloudPick } from '../../components/NextcloudFiles.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -87,6 +88,9 @@ export function UploadButton({
           if (files.length) onFiles(files)
         }}
       />
+      {!disabled && (
+        <NextcloudPick accept={['image/']} multiple={multiple} onFile={(f) => onFiles([f])} />
+      )}
     </>
   )
 }

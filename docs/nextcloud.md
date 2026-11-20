@@ -153,6 +153,41 @@ Einrichtung: Dienstkonto in der Nextcloud zum Gruppen-Admin jeder abgeglichenen 
 herausfiele: Wer heute von Hand in einer abgeglichenen Gruppe steht, ohne die Rolle zu haben,
 verliert sie. Ordnerrechte ohne Amt besser über eigene, nicht abgeglichene Gruppen vergeben.
 
+## Dateien ablegen und übernehmen
+
+`oidc/nc_files.py` (WebDAV `remote.php/dav/files/<dienstkonto>/`, Freigaben über
+`apps/files_sharing/api/v1/shares`), Schnittstelle `oidc/files_views.py`.
+
+**In Nextcloud ablegen** (`files_enabled`): Knopf neben Kassenbericht (Jahresabschluss und
+Übersicht), Steuerauswertung, Kassenzählung, Protokoll (freigegeben), Beschlussbuch und Dokumenten
+der Ablage (`components/NextcloudFiles.tsx`, `NextcloudSave`). Der Browser holt die Datei wie beim
+Herunterladen und schickt sie an `POST /api/orgs/<id>/nextcloud-dateien/` (Ziel, Art, Dateiname).
+
+- Ziele: Ordner `<files_root>/Vorstand`, `…/Kasse`, `…/Mitglieder` im Dienstkonto, je nur lesend
+  (Recht 1) an eine Gruppe freigegeben (`files_board_group`, `files_finance_group`,
+  `files_members_group`, voreingestellt `Vorstand`, `Kassierer`, `Mitglieder`). Andere Gruppe:
+  HUBIplan nimmt seine alte Freigabe zurück (`files_shares`). Von Hand erweiterte Rechte setzt der
+  nächste Upload auf „lesen“ zurück.
+- Ablegen dürfen: Vorstand `docs.manage`, `finance.view` oder `roles.manage`; Kasse
+  `finance.view`; Mitglieder `docs.manage`.
+- Nie überschreiben (`If-None-Match: *`, sonst „name (2).pdf“), höchstens 50 MB.
+- Frist je Art (`FileItem.category`, Entscheidung 20.11.): Beschlüsse und Grundlagen sowie
+  Statistik ohne Personen dauerhaft, Kassen- und Steuerunterlagen 10 Jahre und Meldungen an
+  Verbände 6 Jahre nach Jahresende, personenbezogene Listen 92 Tage, Sonstiges 2 Jahre;
+  `files_retention` (Jahre, 0 dauerhaft) geht vor. `oidc.tasks.purge_files` löscht täglich in den
+  Papierkorb des Dienstkontos. Personenbezogene Listen nur mit Bestätigung und nie nach
+  „Mitglieder“.
+- Jede Ablage und jedes Löschen im Änderungsprotokoll (`oidc_fileitem`, RLS).
+
+**Aus Nextcloud übernehmen** (`files_source`): Der Verein gibt einen Ordner an das Dienstkonto frei.
+`GET …/nextcloud-dateien/quelle/?pfad=` listet ihn (PROPFIND, Tiefe 1, defusedxml), `…/datei/`
+liefert eine Datei (`application/octet-stream`, `nosniff`, höchstens 50 MB) an den Browser, der sie
+in den vorhandenen Hochladen-Weg gibt (gleiche Prüfungen wie vom eigenen Rechner). Pfade mit `..`,
+versteckte Teile und Steuerzeichen werden abgelehnt. Blättern darf, wer irgendwo hochladen darf
+(`docs.manage`, `finance.edit`, `website.*`, `events.manage`, `circulars.send`, `photos.edit`).
+
+Einstellen von Ablage, Gruppen und Ordner zum Übernehmen verlangt eine frische Bestätigung.
+
 ## Termine in den Kalender der Nextcloud
 
 HUBIplan schreibt Termine per CalDAV in Kalender des Dienstkontos (`oidc/nc_calendars.py`) und
@@ -282,6 +317,8 @@ verhält.
 | `/api/orgs/<id>/nextcloud/` | Einträge der Einheit; `<eintrag>/secret/` erneuert das Geheimnis |
 | `/api/orgs/<id>/nextcloud/<eintrag>/calendars/` | POST: Kalender jetzt abgleichen |
 | `/api/orgs/<id>/nextcloud/<eintrag>/groups/` | GET: Gruppen vergleichen, POST: Gruppen jetzt abgleichen |
+| `/api/orgs/<id>/nextcloud-dateien/` | GET: Stand, POST: Datei ablegen |
+| `/api/orgs/<id>/nextcloud-dateien/quelle/` | GET: Ordner zum Übernehmen listen; `datei/`: Datei holen |
 
 Kennung als Anbieter (`issuer`): `FRONTEND_URL/api/oidc`, änderbar mit `OIDC_ISSUER`.
 

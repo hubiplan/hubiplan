@@ -1,6 +1,7 @@
 // Kasse: Zählprotokoll (Kassensturz) und Kassenbericht für Veranstaltungen (offene Ladenkasse).
 // Einmal gespeichert, lässt sich ein Protokoll nicht mehr ändern; Differenz bzw.
 // Tageseinnahme werden gebucht, das PDF hängt als Beleg an den Buchungen.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { cashCountApi, DENOMINATIONS, euro, financeApi, parseAmount } from '../../api/finance.ts'
@@ -130,7 +131,13 @@ export function CashCountsPage({ canEdit }: { canEdit: boolean }) {
                     rel="noreferrer"
                   >
                     PDF
-                  </a>
+                  </a>{' '}
+                  <NextcloudSave
+                    source={cashCountApi.pdfUrl(org.id, c.id)}
+                    filename={`kassenzaehlung-${c.id}.pdf`}
+                    category="finance"
+                    target="finance"
+                  />
                 </td>
               </tr>
             ))}

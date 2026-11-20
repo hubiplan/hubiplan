@@ -476,6 +476,8 @@ CELERY_BEAT_SCHEDULE = {
     "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": taeglich(4, 50)},
     # Termine in die Kalender der Nextcloud schreiben (ohne eingeschalteten Kalender: nichts)
     "nextcloud-kalender": {"task": "oidc.tasks.sync_calendars", "schedule": 15 * 60.0},
+    # In der Nextcloud abgelegte Dateien nach ihrer Frist je Art löschen
+    "nextcloud-dateien-fristen": {"task": "oidc.tasks.purge_files", "schedule": taeglich(4, 55)},
     "meldungen-kuerzen": {
         "task": "entries.tasks.shorten_old_entries",
         "schedule": taeglich(5, 0),

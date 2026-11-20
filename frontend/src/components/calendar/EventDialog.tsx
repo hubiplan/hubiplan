@@ -1,6 +1,7 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
 // Aufbau (Ralf 15.11.2026): Kopf mit Wann/Ort/Kalender, Aktionsleiste, Rückmeldungen als Karte,
 // „Zu diesem Termin“ als Karte mit einer Zeile je Bereich, Löschen allein unten.
+import { NextcloudPick } from '../NextcloudFiles.tsx'
 import { RouteLinks } from './RouteLinks.tsx'
 import { EventTaskRow } from '../TodoEventLink.tsx'
 import { Link, useNavigate } from 'react-router-dom'
@@ -402,6 +403,9 @@ function AttachmentsRow({
                 if (file) onUpload(file)
               }}
             />
+            {!busy && (
+              <NextcloudPick accept={['.pdf', 'image/jpeg', 'image/png']} onFile={onUpload} />
+            )}
             {documents.button}
           </>
         )

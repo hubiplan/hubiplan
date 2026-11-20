@@ -21,6 +21,16 @@ Tragt unter **Gruppen, die HUBIplan abgleicht** ein, welche Gruppen HUBIplan set
 
 Mit **Gruppen vergleichen** seht ihr vorher, wer in welche Gruppe kommt und wer aus welcher herausfällt; das ändert noch nichts. Würden mehr als drei Konten auf einmal Gruppen verlieren, hält der Abgleich an und alle, die Rollen verwalten, bekommen eine Mail. Prüft dann die Rollen und bestätigt mit **Gruppen jetzt abgleichen**. Dateien gehen dabei nie verloren, nur der Zugriff auf die Ordner der Gruppe.
 
+## Dateien in der Nextcloud
+
+Mit **In Nextcloud ablegen** erscheint neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokoll, Beschlussbuch und Dokumenten ein Knopf **In Nextcloud ablegen**. Die Datei landet in einem Ordner des Dienstkontos: „Vorstand“, „Kasse“ oder „Mitglieder“ unter dem **Ordner im Dienstkonto** (voreingestellt „HUBIplan“). Jeder Ordner ist nur zum Lesen an eine Gruppe freigegeben, voreingestellt „Vorstand“, „Kassierer“ und „Mitglieder“. Nichts wird überschrieben; gibt es den Namen schon, hängt HUBIplan eine Nummer an.
+
+Jede Datei bekommt beim Ablegen eine Art, und danach richtet sich, wie lange sie in der Nextcloud bleibt: Beschlüsse und Grundlagen sowie Planung und Statistik ohne Personen dauerhaft, Kassen- und Steuerunterlagen 10 Jahre und Meldungen an Verbände 6 Jahre nach Jahresende, personenbezogene Listen 3 Monate, Sonstiges 2 Jahre. Unter **Fristen je Art anpassen** stellt ihr das anders ein. Nach Ablauf löscht HUBIplan die Datei in den Papierkorb des Dienstkontos. Listen mit Personendaten legt HUBIplan nur nach ausdrücklicher Bestätigung ab und nie in den Ordner „Mitglieder“.
+
+Bedenkt: In der Nextcloud gelten Verschlüsselung, Rechte und Protokoll von HUBIplan nicht. Wer eine Sync-App nutzt, hat die Dateien auch auf seinem Gerät.
+
+Mit **Ordner zum Übernehmen** erscheint beim Hochladen von Dokumenten, Bildern der Webseite, Anhängen an Terminen und Rundschreiben und Belegen ein Knopf **Aus Nextcloud**. Gebt dafür in der Nextcloud einen Ordner an das Dienstkonto frei, zum Beispiel „An HUBIplan“, und tragt seinen Namen hier ein. HUBIplan holt eine Kopie und prüft sie wie jede hochgeladene Datei; in der Nextcloud bleibt alles, wie es ist. Wer in HUBIplan Dateien hochladen darf, sieht alles in diesem Ordner.
+
 ## Termine im Kalender der Nextcloud
 
 Unter **Termine in den Kalender der Nextcloud** schreibt HUBIplan eure Termine in den Kalender der Nextcloud. Es gibt zwei Kalender: **Termine für Mitglieder** mit allem, was jedes Mitglied sieht, und **Termine „nur Vorstand“**. Jeder Kalender wird nur zum Lesen für eine Gruppe freigegeben, voreingestellt „Mitglieder“ und „Vorstand“. Wer in der Gruppe ist, sieht ihn in der Kalender-App der Nextcloud und auf dem Handy.

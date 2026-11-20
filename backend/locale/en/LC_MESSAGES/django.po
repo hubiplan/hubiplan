@@ -15130,3 +15130,83 @@ msgstr "No group is entered for synchronisation."
 #: oidc/views.py
 msgid "„Gruppen laufend abgleichen“ ist aus."
 msgstr "“Keep groups in sync” is off."
+
+#: oidc/nc_files.py
+msgid "Ungültiger Pfad."
+msgstr "Invalid path."
+
+#: oidc/nc_files.py
+msgid "Bitte einen Dateinamen angeben."
+msgstr "Please give a file name."
+
+#: oidc/nc_files.py
+msgid "Zu viele Dateien mit diesem Namen."
+msgstr "Too many files with this name."
+
+#: oidc/nc_files.py
+msgid "„In Nextcloud ablegen“ ist aus."
+msgstr "“Save to Nextcloud” is off."
+
+#: oidc/nc_files.py
+msgid "Unbekanntes Ziel."
+msgstr "Unknown destination."
+
+#: oidc/nc_files.py
+msgid "Listen mit Personendaten nie in den Ordner „Mitglieder“."
+msgstr "Never put lists with personal data in the “Mitglieder” folder."
+
+#: oidc/nc_files.py
+msgid "Die Datei ist zu groß (höchstens 50 MB)."
+msgstr "The file is too large (at most 50 MB)."
+
+#: oidc/nc_files.py
+msgid "Es ist kein Ordner zum Übernehmen eingetragen."
+msgstr "No folder to take files from has been entered."
+
+#: oidc/nc_files.py
+msgid "Den Ordner gibt es in der Nextcloud nicht (mehr)."
+msgstr "This folder does not exist in Nextcloud (any more)."
+
+#: oidc/nc_files.py
+msgid "Die Antwort der Nextcloud ist nicht lesbar."
+msgstr "Nextcloud's answer cannot be read."
+
+#: oidc/nc_files.py
+msgid "Die Datei gibt es in der Nextcloud nicht (mehr)."
+msgstr "This file does not exist in Nextcloud (any more)."
+
+#: oidc/files_views.py
+msgid "Bitte bestätigen, dass die Datei Personendaten enthält."
+msgstr "Please confirm that the file contains personal data."
+
+#: oidc/views.py
+msgid "Ungültige Fristen."
+msgstr "Invalid periods."
+
+#: oidc/views.py
+msgid "Frist zwischen 0 und 100 Jahren."
+msgstr "Period between 0 and 100 years."
+
+#: oidc/views.py
+msgid "Für Dateien braucht es Dienstkonto und App-Passwort."
+msgstr "Files need the service account and app password."
+
+#: oidc/models.py
+msgid "Beschlüsse und Grundlagen"
+msgstr "Resolutions and foundations"
+
+#: oidc/models.py
+msgid "Kassen- und Steuerunterlagen"
+msgstr "Accounting and tax records"
+
+#: oidc/models.py
+msgid "Planung und Statistik ohne Personen"
+msgstr "Planning and statistics without personal data"
+
+#: oidc/models.py
+msgid "Meldungen an Verbände"
+msgstr "Reports to associations"
+
+#: oidc/models.py
+msgid "Personenbezogene Listen"
+msgstr "Lists with personal data"

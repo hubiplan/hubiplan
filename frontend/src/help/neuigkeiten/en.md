@@ -170,6 +170,7 @@ November 2026:
 
 #### Settings, security and platform
 
+- **Save files to Nextcloud and take files from it.** Next to the cash report, tax evaluation, cash count, minutes, resolution book and documents, **Save to Nextcloud** puts the file into a folder only one group can read, with a period per type (minutes permanently, accounting records 10 years, lists of people 3 months). When uploading, **From Nextcloud** fetches a file from a shared folder.
 - **Keep Nextcloud groups in sync.** Under Settings › Nextcloud, HUBIplan no longer sets groups only at sign-in, but after every change to roles, offices or units, and every night. Anyone who gives up a role also loses the group and its folders, even while their sync app keeps running. **Compare groups** shows beforehand what would change.
 - **Events in the Nextcloud calendar.** Under Settings › Nextcloud, HUBIplan writes the events for members and, if you like, the “board only” events into two Nextcloud calendars, shared read-only with the groups “Mitglieder” and “Vorstand”. Editing still happens in HUBIplan; changes arrive every 15 minutes.
 - **Letterhead: own logo and name in the letterhead.** Under Settings › Letterhead you can set a **logo only for letters**, such as a landscape word-and-image mark, while HUBIplan keeps the coat of arms. With **Name in the letterhead** you decide how a long name breaks over two lines, the second one smaller if you like.

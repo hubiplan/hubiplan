@@ -82,6 +82,7 @@ from music.practice_portal import OwnPractice, OwnScoreFile
 from music.rehearsal_guest import GuestRehearsalView, RehearsalGuestAccessView
 from music.score_folders import OwnFolders, ScoreFolderItemViewSet, ScoreFolderViewSet
 from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
+from oidc import files_views as oidc_files
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
@@ -279,6 +280,9 @@ platform_router.register("addresses", org_views.InstanceAddressViewSet, basename
 
 org_patterns = [
     *admission_urls.org_patterns,
+    path("nextcloud-dateien/", oidc_files.FilesView.as_view()),
+    path("nextcloud-dateien/quelle/", oidc_files.SourceListView.as_view()),
+    path("nextcloud-dateien/quelle/datei/", oidc_files.SourceFileView.as_view()),
     path("music/equipment/", EquipmentView.as_view()),
     path("music/custody-reminders/", CustodyReminderView.as_view()),
     path("music/payout-runs/", PayoutRuns.as_view()),

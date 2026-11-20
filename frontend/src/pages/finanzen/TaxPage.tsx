@@ -1,4 +1,5 @@
 // Finanzen › Steuern: Freigrenze, Bereiche, Kleinunternehmer.
+import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { euro, financeApi } from '../../api/finance.ts'
@@ -173,6 +174,12 @@ export function TaxPage() {
           >
             {t('Excel')}
           </a>
+          <NextcloudSave
+            source={financeApi.taxReportUrl(org.id, data.year, 'pdf')}
+            filename={`steuerauswertung-${data.year}.pdf`}
+            category="finance"
+            target="finance"
+          />
         </span>
       </div>
       <p className="muted small">

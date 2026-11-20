@@ -157,6 +157,42 @@ class Client(models.Model):
     )
     groups_error = models.CharField(max_length=500, blank=True, default="", db_default="")
     groups_synced_at = models.DateTimeField(null=True, blank=True)
+    # Dateien „In Nextcloud ablegen“ (siehe ``nc_files``): Ordner im Dienstkonto, je Ziel nur
+    # lesend an eine Gruppe freigegeben; HUBIplan löscht abgelegte Dateien nach der Frist je Art
+    files_enabled = models.BooleanField("In Nextcloud ablegen", default=False, db_default=False)
+    files_root = models.CharField(
+        "Ordner im Dienstkonto",
+        max_length=100,
+        blank=True,
+        default="HUBIplan",
+        db_default="HUBIplan",
+    )
+    files_board_group = models.CharField(
+        "Gruppe für „Vorstand“",
+        max_length=64,
+        blank=True,
+        default="Vorstand",
+        db_default="Vorstand",
+    )
+    files_finance_group = models.CharField(
+        "Gruppe für „Kasse“", max_length=64, blank=True, default="Kassierer", db_default="Kassierer"
+    )
+    files_members_group = models.CharField(
+        "Gruppe für „Mitglieder“",
+        max_length=64,
+        blank=True,
+        default="Mitglieder",
+        db_default="Mitglieder",
+    )
+    # Fristen je Art in Jahren, abweichend von der Voreinstellung (0: dauerhaft)
+    files_retention = models.JSONField("Fristen je Art", default=dict, blank=True, db_default={})
+    # Freigaben, die HUBIplan angelegt hat: Ziel → {"group": …, "id": …}
+    files_shares = models.JSONField(default=dict, blank=True, db_default={})
+    # „Aus Nextcloud übernehmen“: Ordner, den der Verein dem Dienstkonto freigegeben hat
+    files_source = models.CharField(
+        "Ordner zum Übernehmen", max_length=300, blank=True, default="", db_default=""
+    )
+    files_error = models.CharField(max_length=500, blank=True, default="", db_default="")
     # Letzter Fehler oder Halt des Abgleichs (für die Oberfläche)
     sync_error = models.CharField(max_length=500, blank=True, default="")
     synced_at = models.DateTimeField(null=True, blank=True)
@@ -192,6 +228,13 @@ class Client(models.Model):
             "calendar_board_group",
             "sync_groups",
             "sync_groups_list",
+            "files_enabled",
+            "files_root",
+            "files_board_group",
+            "files_finance_group",
+            "files_members_group",
+            "files_retention",
+            "files_source",
             "is_active",
         }
     )
@@ -317,3 +360,47 @@ class CalendarItem(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class FileItem(models.Model):
+    """Datei, die HUBIplan in einen Ordner der Nextcloud gelegt hat (für Frist und Protokoll)."""
+
+    class Target(models.TextChoices):
+        BOARD = "board", gettext_lazy("Vorstand")
+        FINANCE = "finance", gettext_lazy("Kasse")
+        MEMBERS = "members", gettext_lazy("Mitglieder")
+
+    class Category(models.TextChoices):
+        RECORDS = "records", gettext_lazy("Beschlüsse und Grundlagen")
+        FINANCE = "finance", gettext_lazy("Kassen- und Steuerunterlagen")
+        STATISTICS = "statistics", gettext_lazy("Planung und Statistik ohne Personen")
+        REPORTS = "reports", gettext_lazy("Meldungen an Verbände")
+        PERSONAL = "personal", gettext_lazy("Personenbezogene Listen")
+        OTHER = "other", gettext_lazy("Sonstiges")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="file_items")
+    target = models.CharField(max_length=10, choices=Target.choices)
+    category = models.CharField(max_length=12, choices=Category.choices)
+    # Pfad im Dienstkonto, z. B. „HUBIplan/Kasse/kassenbericht-2026.pdf“
+    path = models.CharField(max_length=400)
+    size = models.PositiveBigIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Leer: dauerhaft
+    delete_after = models.DateField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    audit_fields = frozenset({"path", "target", "category", "delete_after"})
+
+    class Meta:
+        verbose_name = "Datei in der Nextcloud"
+        verbose_name_plural = "Dateien in der Nextcloud"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.path

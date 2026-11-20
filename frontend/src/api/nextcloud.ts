@@ -44,6 +44,17 @@ export interface NextcloudClient {
   sync_groups_list: string
   groups_error: string
   groups_synced_at: string | null
+  // In Nextcloud ablegen (Ordner im Dienstkonto, nur lesend an Gruppen freigegeben)
+  files_enabled: boolean
+  files_root: string
+  files_board_group: string
+  files_finance_group: string
+  files_members_group: string
+  // Art → Jahre (0: dauerhaft), nur abweichende
+  files_retention: Record<string, number>
+  // Aus Nextcloud übernehmen: Ordner, den der Verein dem Dienstkonto freigegeben hat
+  files_source: string
+  files_error: string
   is_active: boolean
   created_at: string
   last_used_at: string | null
@@ -83,6 +94,13 @@ export type NextcloudInput = Partial<
     | 'calendar_board_group'
     | 'sync_groups'
     | 'sync_groups_list'
+    | 'files_enabled'
+    | 'files_root'
+    | 'files_board_group'
+    | 'files_finance_group'
+    | 'files_members_group'
+    | 'files_retention'
+    | 'files_source'
     | 'is_active'
   >
 > & {
@@ -184,4 +202,39 @@ export const oidcApi = {
   describe: (query: string) => api.get<NextcloudService>(`/api/oidc/authorize/?${query}`),
   authorize: (params: Record<string, string>) =>
     api.post<{ redirect: string }>('/api/oidc/authorize/', params),
+}
+
+// Dateien mit der Nextcloud: ablegen und übernehmen
+export type NextcloudTarget = 'board' | 'finance' | 'members'
+export type NextcloudCategory =
+  'records' | 'finance' | 'statistics' | 'reports' | 'personal' | 'other'
+
+export interface NextcloudFilesStatus {
+  store: boolean
+  name: string
+  targets: { key: NextcloudTarget; label: string; folder: string; group: string }[]
+  // years null: dauerhaft
+  categories: { key: NextcloudCategory; label: string; years: number | null }[]
+  pick: boolean
+}
+
+export interface NextcloudEntry {
+  name: string
+  path: string
+  is_dir: boolean
+  size: number
+  modified: string
+  content_type: string
+}
+
+const files = (org: number) => `/api/orgs/${org}/nextcloud-dateien/`
+
+export const nextcloudFilesApi = {
+  status: (org: number) => api.get<NextcloudFilesStatus>(files(org)),
+  store: (org: number, data: FormData) =>
+    api.post<{ path: string; delete_after: string | null }>(files(org), data),
+  list: (org: number, path: string) =>
+    api.get<NextcloudEntry[]>(`${files(org)}quelle/?pfad=${encodeURIComponent(path)}`),
+  fileUrl: (org: number, path: string) =>
+    `${files(org)}quelle/datei/?pfad=${encodeURIComponent(path)}`,
 }

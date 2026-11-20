@@ -224,6 +224,67 @@ function AccountList({
   )
 }
 
+// Frist je Art der abgelegten Dateien; leer heißt Voreinstellung, 0 dauerhaft
+const RETENTION: { key: string; label: () => string; standard: () => string }[] = [
+  {
+    key: 'records',
+    label: () => t('Beschlüsse und Grundlagen'),
+    standard: () => t('dauerhaft'),
+  },
+  {
+    key: 'finance',
+    label: () => t('Kassen- und Steuerunterlagen'),
+    standard: () => t('10 Jahre nach Jahresende'),
+  },
+  {
+    key: 'statistics',
+    label: () => t('Planung und Statistik ohne Personen'),
+    standard: () => t('dauerhaft'),
+  },
+  {
+    key: 'reports',
+    label: () => t('Meldungen an Verbände'),
+    standard: () => t('6 Jahre nach Jahresende'),
+  },
+  { key: 'personal', label: () => t('Personenbezogene Listen'), standard: () => t('3 Monate') },
+  { key: 'other', label: () => t('Sonstiges'), standard: () => t('2 Jahre') },
+]
+
+function RetentionFields({
+  value,
+  onChange,
+}: {
+  value: Record<string, number>
+  onChange: (v: Record<string, number>) => void
+}) {
+  return (
+    <details className="small">
+      <summary>{t('Fristen je Art anpassen')}</summary>
+      {RETENTION.map((r) => (
+        <SelectField
+          key={r.key}
+          label={r.label()}
+          value={value[r.key] === undefined ? '' : String(value[r.key])}
+          onChange={(e) => {
+            const next = { ...value }
+            if (e.target.value === '') delete next[r.key]
+            else next[r.key] = Number(e.target.value)
+            onChange(next)
+          }}
+        >
+          <option value="">{t('Voreinstellung: {x}', { x: r.standard() })}</option>
+          <option value="0">{t('dauerhaft')}</option>
+          {[2, 3, 5, 6, 10].map((y) => (
+            <option key={y} value={String(y)}>
+              {t('{years} Jahre', { years: y })}
+            </option>
+          ))}
+        </SelectField>
+      ))}
+    </details>
+  )
+}
+
 // Soll und Ist der abgeglichenen Gruppen: erst auf Knopfdruck, weil HUBIplan dafür jedes Konto
 // in der Nextcloud abfragt
 function GroupStatus({
@@ -450,6 +511,13 @@ function ClientCard({
     calendar_board_group: client.calendar_board_group,
     sync_groups: client.sync_groups,
     sync_groups_list: client.sync_groups_list,
+    files_enabled: client.files_enabled,
+    files_root: client.files_root,
+    files_board_group: client.files_board_group,
+    files_finance_group: client.files_finance_group,
+    files_members_group: client.files_members_group,
+    files_retention: client.files_retention ?? {},
+    files_source: client.files_source,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -678,6 +746,65 @@ function ClientCard({
             checked={Boolean(values.sync_groups)}
             onChange={(v) => set('sync_groups', v)}
             hint={t('vorher mit „Gruppen vergleichen“ unten prüfen, was sich ändern würde')}
+          />
+        </fieldset>
+        <fieldset>
+          <legend>{t('Dateien in der Nextcloud')}</legend>
+          <p className="muted small">
+            {t(
+              'Mit „In Nextcloud ablegen“ erscheint neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokollen, Beschlussbuch und Dokumenten ein Knopf, der die Datei in einen Ordner des Dienstkontos legt. Jeder Ordner ist nur zum Lesen an eine Gruppe freigegeben. Nach der Frist je Art löscht HUBIplan die Datei dort wieder (in den Papierkorb des Dienstkontos).',
+            )}
+          </p>
+          {client.files_error && <Alert kind="error">{client.files_error}</Alert>}
+          <Checkbox
+            label={t('In Nextcloud ablegen')}
+            checked={Boolean(values.files_enabled)}
+            onChange={(v) => set('files_enabled', v)}
+          />
+          {values.files_enabled && (
+            <>
+              <Field
+                label={t('Ordner im Dienstkonto')}
+                value={values.files_root ?? ''}
+                maxLength={100}
+                placeholder="HUBIplan"
+                onChange={(e) => set('files_root', e.target.value)}
+                hint={t('darin die Ordner „Vorstand“, „Kasse“ und „Mitglieder“')}
+              />
+              <Field
+                label={t('Ordner „Vorstand“: lesen darf die Gruppe')}
+                value={values.files_board_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_board_group', e.target.value)}
+              />
+              <Field
+                label={t('Ordner „Kasse“: lesen darf die Gruppe')}
+                value={values.files_finance_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_finance_group', e.target.value)}
+              />
+              <Field
+                label={t('Ordner „Mitglieder“: lesen darf die Gruppe')}
+                value={values.files_members_group ?? ''}
+                maxLength={64}
+                onChange={(e) => set('files_members_group', e.target.value)}
+                hint={t('leer: nur das Dienstkonto sieht den Ordner')}
+              />
+              <RetentionFields
+                value={values.files_retention ?? {}}
+                onChange={(v) => set('files_retention', v)}
+              />
+            </>
+          )}
+          <Field
+            label={t('Ordner zum Übernehmen')}
+            value={values.files_source ?? ''}
+            maxLength={300}
+            placeholder={t('An HUBIplan')}
+            onChange={(e) => set('files_source', e.target.value)}
+            hint={t(
+              'Für „Aus Nextcloud“ beim Hochladen: einen Ordner in der Nextcloud an das Dienstkonto freigeben und hier seinen Namen eintragen, wie er beim Dienstkonto heißt. Wer in HUBIplan Dateien hochladen darf, sieht alles darin. Leer: aus.',
+            )}
           />
         </fieldset>
         <fieldset>
