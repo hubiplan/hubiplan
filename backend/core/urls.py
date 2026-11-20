@@ -305,6 +305,7 @@ org_patterns = [
     path("surveys/", include("surveys.urls")),
     path("obligations/", include("obligations.urls")),
     path("greetings/", include("greetings.urls")),
+    path("privacy/", include("privacy.urls")),
     path("places/", include("places.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),

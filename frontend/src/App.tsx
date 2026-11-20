@@ -113,6 +113,7 @@ const ObligationsPage = lazyPage(
   () => import('./pages/obligations/ObligationsPage.tsx'),
   'ObligationsPage',
 )
+const DsgvoPage = lazyPage(() => import('./pages/dsgvo/DsgvoPage.tsx'), 'DsgvoPage')
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
 const EventsPage = lazyPage(() => import('./pages/events/EventsPage.tsx'), 'EventsPage')
 const CompetitionsPage = lazyPage(
@@ -449,6 +450,7 @@ export default function App() {
           <Route path="umfragen" element={<SurveysPage />} />
           <Route path="auslagen" element={<DeptExpensesPage />} />
           <Route path="fristenkalender" element={<ObligationsPage />} />
+          <Route path="dsgvo/*" element={<DsgvoPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
             path="musik/*"

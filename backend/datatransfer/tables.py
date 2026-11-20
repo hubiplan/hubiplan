@@ -236,6 +236,10 @@ MODULE_MODELS = (
     # Glückwünsche nach ihren Rundschreiben
     "greetings.GreetingSettings",
     "greetings.GreetingBatch",
+    # Datenschutz-Werkzeuge
+    "privacy.PrivacySettings",
+    "privacy.ProcessingActivity",
+    "privacy.DataBreach",
     "website.Website",
     "website.WebsiteImage",
     "website.WebsiteText",

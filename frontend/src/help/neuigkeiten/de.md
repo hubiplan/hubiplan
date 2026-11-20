@@ -84,6 +84,7 @@ November 2026:
 
 #### Verein und Mitglieder
 
+- **Datenschutz-Werkzeuge.** Unter Verwaltung › DSGVO erstellt HUBIplan das Verzeichnis der Verarbeitungstätigkeiten (Art. 30 DSGVO) aus den eingeschalteten Modulen, mit eigenen Ergänzungen und als PDF. Auftragsverarbeiter kommen aus den Geschäftspartnern (neue Rolle „Auftragsverarbeiter“, Vereinbarung „Auftragsverarbeitungsvertrag“), Datenpannen werden mit der 72-Stunden-Frist für die Meldung dokumentiert.
 - **Glückwünsche zu Geburtstag und Jubiläum.** Unter Rundschreiben › Glückwünsche gratuliert HUBIplan zu besonderen oder allen Geburtstagen und zu Vereinsjubiläen, per App, E-Mail oder Brief. Ein Entwurf entsteht einige Tage vorher, damit Briefe rechtzeitig gedruckt werden; am Tag geht er von selbst oder nach Freigabe hinaus. Mitglieder können im Mitgliederbereich widersprechen.
 - Belegung: **Miete abrechnen.** Am Objekt lässt sich ein Mietpreis je Buchung, Tag oder Stunde hinterlegen. „Rechnung anlegen“ an einer Buchung für ein Mitglied legt einen Rechnungsentwurf direkt an das Mitglied an, auch wenn sein Beitrag sonst über eine Sammelrechnung läuft.
 - Belegung: **Für ein Mitglied buchen und Monat oder Jahr ansehen.** Beim Buchen unter Material & Räume › Belegung lässt sich ein Mitglied heraussuchen; die Buchung steht dann in der Mitgliedsakte unter „Belegungen“ und im Mitgliederbereich des Mitglieds, Kontaktdaten werden nicht doppelt erfasst. Neben der Woche gibt es eine Monats- und eine Jahresansicht.
