@@ -67,6 +67,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Chronik | `chronicle` | aus | – |
 | | Versammlungen | `meetings` | aus | Termine |
 | | Helferdienste | `helpers` | aus | Termine |
+| | Training und Anwesenheit | `training` | aus | Mitglieder |
 | Musik | Musik | `music` | aus | Termine, Notenarchiv |
 | | Notenarchiv | `scores` | aus | – |
 | Wettbewerbe | Wettbewerbe | `competitions` | aus | – |

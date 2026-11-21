@@ -169,6 +169,25 @@ export const modules: AppModule[] = [
           org.permissions.includes(PERM.meetingsView)
         : !!(ws.dept?.meetings_enabled && ws.dept.permissions.includes(PERM.meetingsView)),
   },
+  // Training und Anwesenheit, mit Schießsport auch Schießbuch (Lückenliste 20.11., B1)
+  {
+    id: 'training',
+    group: 'planen',
+    label: t('Training'),
+    path: '/training',
+    icon: icon('M4 20h16M6 20V9l6-5 6 5v11M10 20v-5h4v5M9.5 11.5l1.5 1.5 3-3'),
+    visible: (org, ws) =>
+      org
+        ? org.type === 'club' &&
+          org.modules.includes('training') &&
+          (org.permissions.includes(PERM.trainingView) ||
+            org.permissions.includes(PERM.trainingEdit))
+        : !!(
+            ws.dept?.training_enabled &&
+            (ws.dept.permissions.includes(PERM.trainingView) ||
+              ws.dept.permissions.includes(PERM.trainingEdit))
+          ),
+  },
   {
     id: 'helferdienste',
     group: 'planen',

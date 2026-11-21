@@ -136,6 +136,17 @@ MODULES: tuple[Module, ...] = (
         requires=("events",),
     ),
     Module(
+        "training",
+        gettext_noop("Training und Anwesenheit"),
+        "life",
+        gettext_noop(
+            "Übungsabende und Trainings mit Anwesenheit, Einchecken per QR-Code und Auswertung; "
+            "mit Schießsport auch Schießbuch und Schießnachweis nach § 14 WaffG"
+        ),
+        requires=("members",),
+        org_types=("club",),
+    ),
+    Module(
         "chronicle",
         gettext_noop("Chronik"),
         "life",
