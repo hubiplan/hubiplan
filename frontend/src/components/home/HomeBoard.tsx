@@ -20,7 +20,7 @@ import {
   placeBlocks,
   widthLabel,
 } from './homeLayout.ts'
-import type { PlacedBlock, HomeBlock } from './homeLayout.ts'
+import type { BlockChoice, PlacedBlock, HomeBlock } from './homeLayout.ts'
 import { t, tc } from '../../i18n/index.ts'
 
 /** Einstellungen der Startseite am Konto, einmal für alle Blöcke geladen */
@@ -71,6 +71,7 @@ export function HomeBoard({
   name,
   blocks,
   children,
+  onSaved,
 }: {
   /** Arbeitsbereich, z. B. „o12“ */
   scope: string
@@ -79,6 +80,8 @@ export function HomeBoard({
   blocks: (prefs: HomePrefs) => HomeBlock[]
   /** Steht immer am Ende (z. B. Hinweis ohne Module) */
   children?: ReactNode
+  /** Nach dem Speichern (z. B. Kacheln neu laden, die vorher auf „nie“ standen) */
+  onSaved?: () => void
 }) {
   const { data, error: loadError, setData } = useLoad(() => homeActionsApi.get(), [])
   const [editing, setEditing] = useState(false)
@@ -143,6 +146,7 @@ export function HomeBoard({
     setError(null)
     try {
       setData(await homeActionsApi.update(body))
+      onSaved?.()
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -433,18 +437,37 @@ export function HomeBoard({
                       <GripIcon />
                     </button>
                     <strong className="home-block-name">{b.label}</strong>
-                    <label className="checkbox">
-                      <input
-                        type="checkbox"
-                        checked={visible(b)}
-                        aria-label={t('{x} zeigen', { x: b.label })}
-                        aria-busy={busy || undefined}
-                        onChange={(e) => {
-                          if (!busy) change(b.key, { shown: e.target.checked })
-                        }}
-                      />
-                      <span>{t('Zeigen')}</span>
-                    </label>
+                    {b.optional ? (
+                      // Kachel bei Anlass: von selbst nur, wenn etwas ansteht (backend/hometiles)
+                      <label className="home-block-width">
+                        <span>{t('Zeigen')}</span>
+                        <select
+                          value={b.choice}
+                          aria-label={t('{x} zeigen', { x: b.label })}
+                          aria-busy={busy || undefined}
+                          onChange={(e) => {
+                            if (!busy) change(b.key, { choice: e.target.value as BlockChoice })
+                          }}
+                        >
+                          <option value="auto">{t('bei Anlass')}</option>
+                          <option value="on">{t('immer')}</option>
+                          <option value="off">{t('nie')}</option>
+                        </select>
+                      </label>
+                    ) : (
+                      <label className="checkbox">
+                        <input
+                          type="checkbox"
+                          checked={visible(b)}
+                          aria-label={t('{x} zeigen', { x: b.label })}
+                          aria-busy={busy || undefined}
+                          onChange={(e) => {
+                            if (!busy) change(b.key, { shown: e.target.checked })
+                          }}
+                        />
+                        <span>{t('Zeigen')}</span>
+                      </label>
+                    )}
                     <label className="home-block-width">
                       <span>{tc('size', 'Breite')}</span>
                       <select

@@ -7,6 +7,7 @@ import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
+import type { PortalEntry } from '../api/portal.ts'
 import {
   BirthdaysCard,
   JubileesCard,
@@ -24,7 +25,10 @@ import {
   roleActionCandidates,
 } from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
-import { MemberHomeTop } from '../components/home/MemberHome.tsx'
+import { NextEventCard, OpenInvoiceNotice } from '../components/home/MemberHome.tsx'
+import { tileBlocks } from '../components/home/TileCard.tsx'
+import { homeTilesApi } from '../api/homeTiles.ts'
+import { useLoad } from '../components/forms.ts'
 import { locale, t } from '../i18n/index.ts'
 
 /** Rechte, mit denen es etwas zu erledigen geben kann (Entscheidungen, überfällige Rechnungen) */
@@ -106,44 +110,7 @@ export function HomePage() {
   }
 
   if (!active && activePortal) {
-    return (
-      <section>
-        {/* Design „Frisch“ D5: Datum über der Begrüßung */}
-        <p className="home-date muted small">
-          {new Intl.DateTimeFormat(locale(), {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          }).format(new Date())}
-        </p>
-        <h1>
-          {t('Hallo')} {activePortal.first_name}
-        </h1>
-        <MemberHomeTop entry={activePortal} />
-        <h2 className="section-heading">{t('Mein Bereich')}</h2>
-        {/* W-07: nur die wichtigsten Kacheln, der Rest steht in „Mein Bereich“ */}
-        {/* S-04: höchstens vier Kacheln, der Ausweis zuerst; Termine stehen schon oben */}
-        <PortalTasks
-          entry={activePortal}
-          skip={['/termine']}
-          prefer={[
-            '/mein-bereich/ausweis',
-            '/mein-bereich/helferdienste',
-            '/mein-bereich/rechnungen',
-          ]}
-          limit={4}
-        />
-        <p>
-          <Link to="/mein-bereich">{t('Alles in Mein Bereich')}</Link>
-        </p>
-        {activeDept?.permissions.includes('todos.view') && (
-          <div className="tiles">
-            <DepartmentTodosTile department={activeDept.id} />
-          </div>
-        )}
-      </section>
-    )
+    return <MemberHomePage />
   }
 
   if (!active) {
@@ -167,11 +134,20 @@ export function HomePage() {
     )
   }
 
-  // Name und Dachverband stehen schon im Kopf; die Überschrift ist nur für Screenreader.
-  // Standardreihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen › Nächste
-  // Termine › Jubiläen › Geburtstage › Hinweise. Was die Person nicht darf, fehlt einfach;
-  // den Rest stellt sie sich unter „Startseite anpassen“ selbst zusammen.
-  const org = active
+  return <OrgHome org={active} />
+}
+
+/**
+ * Startseite der Verwaltung einer Einheit. Name und Dachverband stehen schon im Kopf; die
+ * Überschrift ist nur für Screenreader. Standardreihenfolge für alle Rollen (S-04): Zu erledigen
+ * › Kacheln mit Anlass › Schnellaktionen › Nächste Termine › Jubiläen › Geburtstage › Hinweise.
+ * Was die Person nicht darf, fehlt einfach; den Rest stellt sie sich unter „Startseite anpassen“
+ * selbst zusammen. Kacheln bei Anlass (backend/hometiles) erscheinen ohne eigene Wahl nur, wenn
+ * gerade etwas ansteht.
+ */
+function OrgHome({ org }: { org: OrgSummary }) {
+  const { user } = useAuth()
+  const { activeDept } = useOrg()
   const clubLike = org.type === 'club' || org.type === 'federation'
   const upcoming =
     clubLike &&
@@ -184,12 +160,15 @@ export function HomePage() {
     org.permissions.includes(PERM.membersView)
   const catalog = actionCatalog(org)
   const dept = activeDept
+  // Kacheln bei Anlass (backend/hometiles); ohne Antwort einfach ohne sie
+  const tiles = useLoad(() => homeTilesApi.org(org.id), [org.id])
   return (
     <section>
       <h1 className="sr-only">{org.name}</h1>
       <HomeBoard
         scope={actionScope.org(org)}
         name={org.name}
+        onSaved={tiles.reload}
         blocks={(prefs) => {
           const list: HomeBlock[] = []
           if (dept?.permissions.includes('todos.view'))
@@ -205,6 +184,8 @@ export function HomePage() {
               wide: true,
               render: () => <OpenTasksTile org={org} />,
             })
+          // Was gerade ansteht, steht oben
+          list.push(...tileBlocks(tiles.data))
           if (catalog.length > 0)
             list.push({
               key: BLOCK.actions,
@@ -274,6 +255,82 @@ export function HomePage() {
             </div>
           ))}
       </HomeBoard>
+    </section>
+  )
+}
+
+/**
+ * Startseite im Mitgliederbereich: wie in der Verwaltung selbst zusammenstellbar (Bereich
+ * „p<Zugang>“), mit nächstem Termin, „Mein Bereich“ und den Kacheln bei Anlass.
+ */
+function MemberHomePage() {
+  const { activePortal, activeDept } = useOrg()
+  const entry = activePortal as PortalEntry
+  const tiles = useLoad(() => homeTilesApi.portal(entry.id), [entry.id])
+  return (
+    <section>
+      {/* Design „Frisch“ D5: Datum über der Begrüßung */}
+      <p className="home-date muted small">
+        {new Intl.DateTimeFormat(locale(), {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(new Date())}
+      </p>
+      <h1>
+        {t('Hallo')} {entry.first_name}
+      </h1>
+      <OpenInvoiceNotice access={entry.id} />
+      <HomeBoard
+        scope={`p${entry.id}`}
+        name={entry.club_display_name || entry.club_name}
+        onSaved={tiles.reload}
+        blocks={() => {
+          const list: HomeBlock[] = []
+          // S-04: der nächste Termin mit Zu-/Absage ganz oben, auch am Handy (W-19)
+          if (entry.events_enabled)
+            list.push({
+              key: BLOCK.nextEvent,
+              label: t('Nächster Termin'),
+              render: () => <NextEventCard access={entry.id} />,
+            })
+          list.push(...tileBlocks(tiles.data))
+          list.push({
+            key: BLOCK.memberArea,
+            label: t('Mein Bereich'),
+            wide: true,
+            render: () => (
+              <div className="home-member-area">
+                <h2 className="section-heading">{t('Mein Bereich')}</h2>
+                {/* W-07/S-04: höchstens vier Kacheln, der Ausweis zuerst; Termine stehen oben */}
+                <PortalTasks
+                  entry={entry}
+                  skip={['/termine']}
+                  prefer={[
+                    '/mein-bereich/ausweis',
+                    '/mein-bereich/helferdienste',
+                    '/mein-bereich/rechnungen',
+                  ]}
+                  limit={4}
+                />
+                <p>
+                  <Link to="/mein-bereich">{t('Alles in Mein Bereich')}</Link>
+                </p>
+              </div>
+            ),
+          })
+          if (activeDept?.permissions.includes('todos.view')) {
+            const dept = activeDept
+            list.push({
+              key: BLOCK.deptTodos,
+              label: t('Offene Aufgaben'),
+              render: () => <DepartmentTodosTile department={dept.id} />,
+            })
+          }
+          return list
+        }}
+      />
     </section>
   )
 }
