@@ -21,6 +21,8 @@ Tragt unter **Gruppen, die HUBIplan abgleicht** ein, welche Gruppen HUBIplan set
 
 Mit **Gruppen vergleichen** seht ihr vorher, wer in welche Gruppe kommt und wer aus welcher herausfällt; das ändert noch nichts. Würden mehr als drei Konten auf einmal Gruppen verlieren, hält der Abgleich an und alle, die Rollen verwalten, bekommen eine Mail. Prüft dann die Rollen und bestätigt mit **Gruppen jetzt abgleichen**. Dateien gehen dabei nie verloren, nur der Zugriff auf die Ordner der Gruppe.
 
+Findet die Nextcloud ein Konto nicht, meldet HUBIplan das einmal per Mail mit Benutzername und E-Mail-Adresse und lässt das Konto danach in Ruhe. Administratorkonten der Nextcloud darf das Dienstkonto nicht verwalten; HUBIplan erkennt sie und lässt sie aus. Ihre Gruppen pflegt ihr in der Nextcloud von Hand. Wurde ein Konto in der Nextcloud gelöscht, ist nichts zu tun. Sonst stimmt meist der Benutzername nicht: Prüft dann die Zeile unter **Bisherige Benutzernamen in der Nextcloud**. Bei **Gruppen vergleichen** steht der Hinweis an der betroffenen Person.
+
 ## Dateien in der Nextcloud
 
 Mit **In Nextcloud ablegen** erscheint neben Kassenbericht, Steuerauswertung, Kassenzählung, Protokoll, Beschlussbuch und Dokumenten ein Knopf **In Nextcloud ablegen**. Die Datei landet in einem Ordner des Dienstkontos: „Vorstand“, „Kasse“ oder „Mitglieder“ unter dem **Ordner im Dienstkonto** (voreingestellt „HUBIplan“). Jeder Ordner ist nur zum Lesen an eine Gruppe freigegeben, voreingestellt „Vorstand“, „Kassierer“ und „Mitglieder“. Nichts wird überschrieben; gibt es den Namen schon, hängt HUBIplan eine Nummer an.

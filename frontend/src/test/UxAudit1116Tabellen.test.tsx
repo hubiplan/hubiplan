@@ -38,6 +38,7 @@ const WITHOUT_SEARCH = [
   'pages/entries/EntryResults.tsx',
   'pages/events/EventsPage.tsx',
   'pages/expenses/ExpensesPage.tsx',
+  'pages/finance/BankAccess.tsx',
   'pages/finance/CashCountsPage.tsx',
   'pages/finance/CashReceiptsPage.tsx',
   'pages/finance/ClosingsPage.tsx',

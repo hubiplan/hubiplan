@@ -11,7 +11,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   `settings.*`, `apply_enabled`) innerhalb der Freigabe ein und aus; `dry_run` zeigt vorher,
   was mit ein- oder ausgeschaltet wird.
 - **Zusatzfunktionen** (`EXTRAS`: Schalter eines Moduls ohne eigene Seiten, etwa Zählprotokoll,
-  DATEV, Rücklagen, SEPA, Wallet) stehen in derselben Antwort unter `extras` und werden mit
+  DATEV, Rücklagen, SEPA, Wallet, Bankanbindung) stehen in derselben Antwort unter `extras` und werden mit
   `PATCH {extras: {id: bool}}` geschaltet, nur bei eingeschaltetem Modul. Es sind dieselben
   Felder wie in den Einrichtungsseiten der Module.
 - **Eingeschaltet** steht in `Organization.enabled_modules`. Abfragen im Code nutzen die

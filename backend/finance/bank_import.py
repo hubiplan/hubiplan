@@ -73,13 +73,24 @@ def _account_for(org, iban: str, chosen: Account | None) -> Account:
     )
 
 
-def import_file(org, data: bytes, file_name: str, user, account: Account | None = None) -> dict:
+def import_file(
+    org,
+    data: bytes,
+    file_name: str,
+    user,
+    account: Account | None = None,
+    *,
+    parsed: list | None = None,
+    channel: str = "",
+) -> dict:
+    """``parsed``: schon gelesene Auszüge als (Auszug, Konto), z. B. aus dem Abruf bei der
+    Bank; ``data`` ist dann das Archiv der Rohdaten. ``channel``: Bankweg des Abrufs."""
     # Dateien können nicht mit der Datenbank zurückrollen. Eine äußerste Transaktion
     # verhindert, dass ein späterer Rollback unreferenzierte Originale hinterlässt.
     created = []
     try:
         with transaction.atomic(durable=True):
-            return _import_file(org, data, file_name, user, account, created)
+            return _import_file(org, data, file_name, user, account, created, parsed, channel)
     except BaseException:
         for storage, name in created:
             try:
@@ -91,12 +102,17 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
         raise
 
 
-def _import_file(org, data, file_name, user, account, created):
+def _import_file(org, data, file_name, user, account, created, parsed=None, channel=""):
     services.lock_bank_sources(org)
-    try:
-        statements = camt.parse(data)
-    except camt.CamtError as exc:
-        raise ValidationError(str(exc)) from exc
+    chosen = {}
+    if parsed is not None:
+        statements = [st for st, _acc in parsed]
+        chosen = {id(st): acc for st, acc in parsed}
+    else:
+        try:
+            statements = camt.parse(data)
+        except camt.CamtError as exc:
+            raise ValidationError(str(exc)) from exc
     result = {"statements": [], "lines": 0, "duplicates": 0}
     digest = hashlib.sha256(data).hexdigest()
     # Dieselbe Datei nur einmal ablegen, auch beim erneuten Einlesen (Audit 02.11. BP-S01)
@@ -114,7 +130,7 @@ def _import_file(org, data, file_name, user, account, created):
             raise ValidationError(
                 gettext("Nur Konten in Euro (Auszug in {currency}).").format(currency=st.currency)
             )
-        acc = _account_for(org, st.iban, account)
+        acc = _account_for(org, st.iban, chosen.get(id(st), account))
         # Periodendaten fehlen bei manchen Banken: Buchungstage verwenden, bei
         # einem völlig undatierten leeren Auszug konservativ das Importdatum.
         days = [line.date for line in st.lines]
@@ -159,6 +175,7 @@ def _import_file(org, data, file_name, user, account, created):
             closing_balance=st.closing,
             imported_by=user,
             source_sha256=digest,
+            channel=channel,
         )
         # Originaldatei unverändert aufbewahren (GoBD), einmal je Upload; weitere Auszüge
         # derselben Datei verweisen auf dieselbe Ablage
@@ -171,6 +188,7 @@ def _import_file(org, data, file_name, user, account, created):
         record.save(update_fields=["source"])
         new = dup = 0
         partners = partners_by_iban(org)
+        other_format = _OtherFormat(org, acc, st.lines) if channel else None
         for line in st.lines:
             fingerprint = line.fingerprint(st.iban or str(acc.pk))
             # Nur ein schon gespeicherter gleicher Umsatz ist eine Dublette (FIN31-01);
@@ -178,6 +196,9 @@ def _import_file(org, data, file_name, user, account, created):
             if BankLine.objects.filter(
                 organization=org, account=acc, fingerprint=fingerprint
             ).exists():
+                dup += 1
+                continue
+            if other_format is not None and other_format.known(line):
                 dup += 1
                 continue
             obj = BankLine(
@@ -211,6 +232,42 @@ def _import_file(org, data, file_name, user, account, created):
         result["duplicates"] += dup
     suggest_all(org)
     return result
+
+
+class _OtherFormat:
+    """Umsätze, die schon aus einer anderen Quelle eingelesen sind (z. B. als CAMT.053-Datei,
+    jetzt als MT940 aus dem Abruf). Die Kennung unterscheidet sich dann, weil die Formate
+    andere Referenzen liefern. Gleich ist ein Umsatz bei gleichem Tag, Betrag und gleicher
+    Richtung, wenn die End-to-End-Referenz übereinstimmt oder, ohne Referenz, der
+    Verwendungszweck. Jeder vorhandene Umsatz deckt höchstens einen neuen ab."""
+
+    def __init__(self, org, account, lines):
+        days = [line.date for line in lines]
+        self.rows = (
+            list(
+                BankLine.objects.filter(
+                    organization=org, account=account, date__gte=min(days), date__lte=max(days)
+                ).values_list("pk", "date", "amount", "credit", "end_to_end", "purpose")
+            )
+            if days
+            else []
+        )
+        self.used: set[int] = set()
+
+    def known(self, line) -> bool:
+        for pk, date, amount, credit, e2e, purpose in self.rows:
+            if pk in self.used or date != line.date or amount != line.amount:
+                continue
+            if credit != line.credit:
+                continue
+            if e2e and line.end_to_end:
+                same = e2e == line.end_to_end
+            else:
+                same = bool(_norm(purpose)) and _norm(purpose) == _norm(line.purpose)
+            if same:
+                self.used.add(pk)
+                return True
+        return False
 
 
 # --- Vorschläge ---

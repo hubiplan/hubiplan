@@ -21,6 +21,8 @@ Under **Groups HUBIplan keeps in sync**, enter which groups HUBIplan may set and
 
 **Compare groups** shows beforehand who joins which group and who drops out of which; it does not change anything yet. If more than three accounts would lose groups at once, synchronisation stops and everyone who manages roles gets an email. Then check the roles and confirm with **Synchronise groups now**. Files are never lost, only access to the group's folders.
 
+If Nextcloud cannot find an account, HUBIplan reports it once by email with the user name and email address and leaves the account alone after that. The service account may not manage Nextcloud administrator accounts; HUBIplan recognises them and leaves them out. Manage their groups by hand in Nextcloud. If an account was deleted in Nextcloud, nothing needs to be done. Otherwise the user name is usually wrong: check the line under **Existing user names in the Nextcloud**. **Compare groups** shows the note next to the person concerned.
+
 ## Files in Nextcloud
 
 With **Save to Nextcloud**, a **Save to Nextcloud** button appears next to the cash report, tax evaluation, cash count, minutes, resolution book and documents. The file goes into a folder of the service account: “Vorstand”, “Kasse” or “Mitglieder” inside the **Folder in the service account** (by default “HUBIplan”). Each folder is shared read-only with one group, by default “Vorstand”, “Kassierer” and “Mitglieder”. Nothing is overwritten; if the name exists, HUBIplan adds a number.

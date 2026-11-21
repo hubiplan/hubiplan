@@ -23,14 +23,14 @@ from dataclasses import dataclass, field
 from urllib.parse import quote
 
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
 
 from audit.log import record
 from core.tenancy import rls_bypass
 
 from . import claims
 from .models import Account, Client
-from .nc_accounts import MAX_AT_ONCE, NextcloudError, _notify, _ocs
+from .nc_accounts import MAX_AT_ONCE, NextcloudError, _notify, _ocs, not_found_text, quiet_texts
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +41,10 @@ class GroupPlan:
     current: list[str] = field(default_factory=list)
     wanted: list[str] = field(default_factory=list)
     error: str = ""
+    # Die Nextcloud findet das Konto nicht (gelöscht oder Administrator): kein Fehler des
+    # Abgleichs, nichts zu tun; ``note`` sagt, was es ist
+    missing: bool = False
+    note: str = ""
 
     @property
     def add(self) -> list[str]:
@@ -93,8 +97,12 @@ def plan(client: Client, users: list[int] | None = None) -> list[GroupPlan]:
         try:
             p.current = current_groups(client, account.nc_user)
         except NextcloudError as exc:
-            p.error = str(exc)[:300]
             p.wanted = []
+            if exc.code == 404:
+                p.missing = True
+                p.note = not_found_text(client, account.nc_user)
+            else:
+                p.error = str(exc)[:300]
         plans.append(p)
     return plans
 
@@ -145,7 +153,7 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
     """Gruppen für einen Dienst abgleichen (alle Konten oder nur die genannten Benutzer).
 
     ``confirmed``: von Hand bestätigt (Oberfläche), dann ohne Obergrenze."""
-    result = {"added": 0, "removed": 0, "errors": 0, "held": False}
+    result = {"added": 0, "removed": 0, "errors": 0, "missing": 0, "held": False}
     if not client.sync_groups or not client.is_active or not client.managed_groups():
         return result
     plans = plan(client, users)
@@ -161,8 +169,24 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
         _notify(client, message, [], what="groups")
         return result
     done: list[str] = []
+    quiet = quiet_texts()
     for p in plans:
+        who = f"{p.account.nc_user} ({p.account.user.email})"
+        if p.missing:
+            result["missing"] += 1
+            # Nur beim ersten Mal melden, nicht jede Nacht wieder
+            if p.account.error != p.note:
+                p.account.error = p.note
+                with rls_bypass():
+                    p.account.save(update_fields=["error"])
+                done.append(f"{who}: {p.note}")
+            continue
+        if p.account.error in quiet:
+            p.account.error = ""
+            with rls_bypass():
+                p.account.save(update_fields=["error"])
         if p.error:
+            p.error = f"{who}: {p.error}"[:300]
             result["errors"] += 1
             continue
         changes = [(g, True) for g in p.add] + [(g, False) for g in p.remove]
@@ -170,7 +194,7 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
             try:
                 _change(client, p.account.nc_user, group, add)
             except NextcloudError as exc:
-                p.error = str(exc)[:300]
+                p.error = f"{who}: {exc}"[:300]
                 result["errors"] += 1
                 continue
             result["added" if add else "removed"] += 1
@@ -191,12 +215,16 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
                 label = gettext("in „{group}“ aufgenommen").format(group=group)
             else:
                 label = gettext("aus „{group}“ entfernt").format(group=group)
-            done.append(f"{p.account.nc_user} ({p.account.user.email}): {label}")
+            done.append(f"{who}: {label}")
     error = ""
     if result["errors"]:
         errors = sorted({p.error for p in plans if p.error})
         error = (
-            gettext("{count} Gruppenänderungen gingen nicht.").format(count=result["errors"])
+            ngettext(
+                "{count} Gruppenänderung ging nicht.",
+                "{count} Gruppenänderungen gingen nicht.",
+                result["errors"],
+            ).format(count=result["errors"])
             + " "
             + "; ".join(errors)
         )

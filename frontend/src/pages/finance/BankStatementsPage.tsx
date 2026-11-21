@@ -18,6 +18,7 @@ import type { InvoiceRow } from '../../api/billing.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { BankAccessCard } from './BankAccess.tsx'
 
 type Message = { kind: 'success' | 'error'; text: string } | null
 
@@ -37,6 +38,15 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
+      {canEdit && org.bank_access_enabled && (
+        <BankAccessCard
+          onFetched={async (text, first) => {
+            setMessage({ kind: 'success', text })
+            await statements.reload()
+            if (first) setSelected(first)
+          }}
+        />
+      )}
       {canEdit && accounts.data && (
         <UploadForm
           accounts={accounts.data.filter((a) => a.is_active && a.kind !== 'cash')}
@@ -80,6 +90,7 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
                     >
                       {st.reference || st.file_name}
                     </button>
+                    {st.channel && <span className="muted small"> {t('· Abruf')}</span>}
                     {st.duplicate_count > 0 && (
                       <span className="muted small">
                         {' '}

@@ -156,6 +156,8 @@ export interface NextcloudGroupAccount {
   add: string[]
   remove: string[]
   error: string
+  // Das Konto gibt es in der Nextcloud nicht (mehr); ``error`` sagt, was zu tun ist
+  missing?: boolean
 }
 
 export interface NextcloudGroupReport {
@@ -166,7 +168,7 @@ export interface NextcloudGroupReport {
 }
 
 export interface NextcloudGroupSyncResult {
-  result: { added: number; removed: number; errors: number; held: boolean }
+  result: { added: number; removed: number; errors: number; missing?: number; held: boolean }
   client: NextcloudClient
 }
 

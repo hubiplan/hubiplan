@@ -521,6 +521,8 @@ SECRET_FIELDS = {
     },
     # Konten kommen nicht mit; die Namen stehen bei aufgehobenen Abschlüssen in eigenen Feldern
     "finance.reopenedclosing": {"reopened_by"},
+    # Bankzugänge werden am Ziel neu eingerichtet; der nächste Abruf dort beginnt von vorn
+    "finance.account": {"bank_access", "bank_fetched_until"},
     "website.designversion": {"published_by"},
     "portal.changerequest": {"user", "decided_by"},
     "portal.cancellationrequest": {"user", "decided_by"},

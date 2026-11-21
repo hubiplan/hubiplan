@@ -28,6 +28,10 @@ billiard==4.3.2 \
     --hash=sha256:37735a7b4117aafa73532b3b493db4c02fb85c0e69d5f3447f113fd30ff27872 \
     --hash=sha256:9eb83c99b1cf7acb1fed86c1dfd477157000a1a2c0108005c1e5837b55d2acba
     # via celery
+bleach==6.4.0 \
+    --hash=sha256:4202482733d85cedd04e59fcb2f89f4e4c7c385a78d3c3c23c30446843a37452 \
+    --hash=sha256:4b6b6a54fff2e69a3dde9d21cc6301220bee3c3cb792187d11403fd795031081
+    # via fints
 celery==5.6.3 \
     --hash=sha256:0808f42f80909c4d5833202360ffafb2a4f83f4d8e23e1285d926610e9a7afa6 \
     --hash=sha256:177006bd2054b882e9f01be59abd8529e88879ef50d7918a7050c5a9f4e12912
@@ -435,6 +439,14 @@ drf-spectacular==0.30.0 \
     --hash=sha256:006cf5921ebe20a9bd24f7c846261ebbf78780be5961b0d6e87afaa82afd62ff \
     --hash=sha256:53e79e7ba00e240441b63c32273754a5368e4c2ab44a19f2595277cc1cd559c9
     # via -r requirements.in
+elementpath==5.1.4 \
+    --hash=sha256:3c912a9c41311ac5244c038867670d7c0b0fec0e444813608e5b846dbb3428ac \
+    --hash=sha256:5ec8d7bb44b16c98414a6a95e20cb150f3cbfc3cac65edc14773288c7a937376
+    # via xmlschema
+enum-tools==0.12.0 \
+    --hash=sha256:13ceb9376a4c5f574a1e7c5f9c8eb7f3d3fbfbb361cc18a738df1a58dfefd460 \
+    --hash=sha256:d69b019f193c7b850b17d9ce18440db7ed62381571409af80ccc08c5218b340a
+    # via fints
 et-xmlfile==2.0.0 \
     --hash=sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa \
     --hash=sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54
@@ -447,6 +459,10 @@ fido2==2.2.1 \
     --hash=sha256:85787428a94c3f8eaf72f0ff30afba983b559a1b1b795c93318c81b4ad4062c4 \
     --hash=sha256:ed397da981b9ab133da6ead7309e41f924b566b749956129efe286fae097749f
     # via django-allauth
+fints==5.0.1 \
+    --hash=sha256:2799e447c7940152ace67bd8984e17deec31cf4461e46f90ad6b12271a64b6ff \
+    --hash=sha256:e48921b56c8fd674d51011e8859c756a030d4a636d6bc05f95e8a97d07188bd6
+    # via -r requirements.in
 gunicorn==27.0.1 \
     --hash=sha256:378b26b9a38adcf4592f28828233c1716acc55e833ea06bf48719782efaa0d10 \
     --hash=sha256:b1514965361c8b7e8107a80aa2a92636878df1ccfac6dd204a676426e04d9e3e
@@ -681,7 +697,12 @@ lxml==6.1.3 \
     --hash=sha256:ff88a92cafde90888511242d1c54afcc1a8adbb6dc0a88fa7f87e29e92400d4a
     # via
     #   factur-x
+    #   fints
     #   svglib
+mt-940==5.1.3 \
+    --hash=sha256:36d8e3fa6683600b90ce3c63016489f16c31cc7c7e003baf80d060aac876c25e \
+    --hash=sha256:bb165c60c828cfa741515caf947535d8682451a088cc06b5d81df26b5a84b851
+    # via fints
 numpy==2.5.5 \
     --hash=sha256:08f1b9abf1707fa89c125aaa17e78389c063fb20ce37a141b47821e996f4a1db \
     --hash=sha256:095113ee2ceab6a9501b184eff5ea806973d3a63d74a8cbc15e4911e754da9c1 \
@@ -940,6 +961,10 @@ pycparser==3.12 \
     --hash=sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e \
     --hash=sha256:f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6
     # via cffi
+pygments==2.21.0 \
+    --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
+    --hash=sha256:610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c
+    # via enum-tools
 pypdf==7.0.1 \
     --hash=sha256:0a78bb99efb41e9088260e9a8e5da134a5cbb9a322014744177bf29b5267ea6d \
     --hash=sha256:6131b764b046282357037309e7ef2a1b7679d4a5c53eed3db2bfbf7c673ddc2b
@@ -1080,6 +1105,7 @@ requests==2.34.2 \
     # via
     #   -r requirements.in
     #   factur-x
+    #   fints
 rpds-py==2026.9.1 \
     --hash=sha256:00ba2d8c7dd4ee537978ddf4b3fbd712bef2d8751603f7f3146b3f4287768e25 \
     --hash=sha256:01445c8d194aa032a08e944f16567672da1c62dbdbefd8b6d0693032e290cf68 \
@@ -1212,6 +1238,10 @@ rpds-py==2026.9.1 \
     # via
     #   jsonschema
     #   referencing
+sepaxml==2.7.0 \
+    --hash=sha256:6644f695c66c2bf8f49065d4d7b0814da42140d03292131ec08e09798ad07b5d \
+    --hash=sha256:77c6ea8c4ea59e53dcabed1d5d8bb79559a0aac47cf25c8e78b06ff5fef6c2bd
+    # via fints
 sqlparse==0.6.1 \
     --hash=sha256:3be5a72d04c873d690d7c6dedd33d6fae2ef82759881ceec02fc2efd0cba564f \
     --hash=sha256:ca722573f848ff2d30e40ea30f53a104b7dea7635ea9285891263eb2c58fb6e7
@@ -1220,6 +1250,10 @@ svglib==2.4.0 \
     --hash=sha256:0c69c9a7ce14d375f70fed2572f8db7ff4bd7e714be9e6476e392c8703bde97a \
     --hash=sha256:90f58628ca7e6d48b40f638ad0dab472f2994f823eb33a623c8fa28e434ce574
     # via -r requirements.in
+text-unidecode==1.3 \
+    --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
+    --hash=sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93
+    # via sepaxml
 tinycss2==1.5.1 \
     --hash=sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661 \
     --hash=sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957
@@ -1232,8 +1266,7 @@ typing-extensions==4.16.0 \
     # via
     #   anyio
     #   click-repl
-    #   psycopg
-    #   referencing
+    #   enum-tools
 tzdata==2026.6 \
     --hash=sha256:0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec \
     --hash=sha256:85d2cd9c09f81f0bb29db27759fc83af4f1e620efb814f8c5bf8b4cc4feece6d
@@ -1301,9 +1334,14 @@ webencodings==0.6.1 \
     --hash=sha256:565f9ad031c702dae404e27a099e3e09186a3ab1b9520f06d215502b651fd910 \
     --hash=sha256:7fab6269c8bf237c657876b52058ccb182e861518d1c695c1a9aaa8c1c105d5b
     # via
+    #   bleach
     #   cssselect2
     #   tinycss2
 whitenoise==6.12.0 \
     --hash=sha256:f723ebb76a112e98816ff80fcea0a6c9b8ecde835f8ddda25df7a30a3c2db6ad \
     --hash=sha256:fc5e8c572e33ebf24795b47b6a7da8da3c00cff2349f5b04c02f28d0cc5a3cc2
     # via -r requirements.in
+xmlschema==4.3.2 \
+    --hash=sha256:cf5c970a30f6ebcb3da35260e694704cc0b6794d8ace46125bb2a95e38ed9307 \
+    --hash=sha256:f3b33a21a2b2cdc404ddc3fb599d8bc1dee90b155d547370672e6e684746b8d6
+    # via sepaxml

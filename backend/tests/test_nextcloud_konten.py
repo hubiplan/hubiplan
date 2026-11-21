@@ -164,6 +164,37 @@ def test_fehler_der_nextcloud_wird_vermerkt(api, orgs, board_a, cloud):
     assert not account.disabled_by_hubiplan and "Gruppen-Admin" in account.error
 
 
+def test_geloeschtes_konto_ist_kein_fehler_und_meldet_sich_einmal(api, orgs, board_a, cloud):
+    client, secret = managed(orgs["a"], usernames="vorstand-a@example.org = vbisher")
+    login(api, client, secret, board_a)
+    give_role(make_user("chef@example.org"), orgs["a"], name="Vorsitz")
+    end_roles(board_a)
+    # Das Konto wurde in der Nextcloud gelöscht
+    cloud.status, cloud.statuscode = 404, 404
+    mail.outbox.clear()
+    assert nc_accounts.sync(client)["errors"] == 0
+    client.refresh_from_db()
+    assert client.sync_error == ""
+    # Die Mail nennt das Konto und was zu tun ist
+    assert len(mail.outbox) == 1
+    assert "vbisher (vorstand-a@example.org)" in mail.outbox[0].body
+    assert "Bisherige Benutzernamen" in mail.outbox[0].body
+    # Nächste Nacht: keine neue Mail
+    nc_accounts.sync(client)
+    assert len(mail.outbox) == 1
+
+
+def test_fehler_nennt_das_konto(api, orgs, board_a, cloud):
+    client, secret = managed(orgs["a"], usernames="vorstand-a@example.org = vbisher")
+    login(api, client, secret, board_a)
+    end_roles(board_a)
+    cloud.status, cloud.statuscode = 403, 403
+    nc_accounts.sync(client)
+    client.refresh_from_db()
+    assert client.sync_error.startswith("1 Konto konnte nicht geändert werden.")
+    assert "vbisher (vorstand-a@example.org)" in client.sync_error
+
+
 def test_neue_anmeldung_hebt_vermerk_auf(api, orgs, board_a, cloud):
     client, secret = managed(orgs["a"])
     login(api, client, secret, board_a)

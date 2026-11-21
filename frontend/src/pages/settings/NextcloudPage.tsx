@@ -393,7 +393,9 @@ function GroupStatus({
                   <td>{a.add.join(', ') || '–'}</td>
                   <td>
                     {a.remove.join(', ') || '–'}
-                    {a.error && <div className="error small">{a.error}</div>}
+                    {a.error && (
+                      <div className={a.missing ? 'muted small' : 'error small'}>{a.error}</div>
+                    )}
                   </td>
                 </tr>
               ))}

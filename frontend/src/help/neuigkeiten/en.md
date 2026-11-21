@@ -58,6 +58,7 @@ November 2026:
 
 #### Finance
 
+- Finance › Bank statements: **Fetch transactions directly from the bank.** Where the operator has set up the bank connection and the club switches it on under Settings › Modules, HUBIplan fetches the transactions from the bank itself via FinTS: set up the bank access once, then fetch with your PIN and the bank’s approval. The PIN is not stored. Transactions already imported are not added twice. Importing a file remains possible.
 - Finance › Set up › Fee rates: **Work hours with a substitute fee.** Set required hours per year and a substitute fee per missing hour for each membership type, optionally with age limits. Volunteer shifts ticked as done count. Missing hours are added to the invoice as a separate item in the first fee run of the following financial year; the status per member can be viewed beforehand.
 - Finance: **Expense claims.** Members claim what they paid for the club themselves in the member area and the app, with a photo of the receipt, including mileage and advances.
 - Finance › Set up › Fee rates: the **Fee when joining during the period** can be chosen: full fee or pro rata per started **month**, **quarter** or **half-year**. Per half-year means, for example: joining in the first half of the financial year pays the full annual fee, joining in the second half pays half. Existing settings are kept (on = per month).

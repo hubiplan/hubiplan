@@ -20,6 +20,7 @@ REGISTRATION_DAYS = 14
 MEETING_DAYS = 42
 WORKHOURS_LAST_DAYS = 61
 ROWS = 5
+ORDER_DAYS = 7
 
 
 @dataclass
@@ -467,6 +468,97 @@ def _meeting(ctx: OrgContext) -> Content:
     return c
 
 
+# --- 9 Sammelbestellungen --------------------------------------------------------------------
+
+
+def _orders_available(ctx: OrgContext) -> bool:
+    return (
+        ctx.org.type == "club"
+        and module_on(ctx.org, "orders")
+        and ctx.has("orders.view", "orders.edit")
+    )
+
+
+def _orders(ctx: OrgContext) -> Content:
+    from django.db.models import Count
+
+    from orders.models import OrderCampaign
+
+    day = today()
+    running = list(
+        OrderCampaign.objects.filter(
+            organization=ctx.org,
+            published_at__isnull=False,
+            closed_at__isnull=True,
+            deadline__gte=day,
+        )
+        .annotate(orders_n=Count("orders"))
+        .order_by("deadline", "pk")[:ROWS]
+    )
+    c = Content(link="/bestellungen", link_label=gettext("Zu den Bestellungen"))
+    for o in running:
+        soon = (o.deadline - day).days <= ORDER_DAYS
+        detail = (
+            gettext("bis {date}").format(date=day_text(o.deadline))
+            + " · "
+            + ngettext("{n} Bestellung", "{n} Bestellungen", o.orders_n).format(n=count(o.orders_n))
+        )
+        c.rows.append(Row(o.title, detail, "/bestellungen", "warn" if soon else None))
+        if soon and not c.reason:
+            c.reason = gettext("Bestellschluss für „{title}“ ist am {date}.").format(
+                title=o.title, date=day_text(o.deadline)
+            )
+    if not running:
+        c.text = gettext("Zurzeit läuft keine Sammelbestellung.")
+    return c
+
+
+# --- 10 Training diese Woche -----------------------------------------------------------------
+
+
+def _training_available(ctx: OrgContext) -> bool:
+    return (
+        ctx.org.type == "club"
+        and module_on(ctx.org, "training")
+        and ctx.has("training.view", "training.edit")
+    )
+
+
+def _training(ctx: OrgContext) -> Content:
+    from django.db.models import Count
+
+    from training.models import TrainingSession
+
+    day = today()
+    week = list(
+        TrainingSession.objects.filter(
+            organization=ctx.org,
+            date__gte=day,
+            date__lte=day + datetime.timedelta(days=6),
+        )
+        .select_related("department")
+        .annotate(present_n=Count("attendances"))
+        .order_by("date", "starts_at", "pk")[:ROWS]
+    )
+    c = Content(link="/training", link_label=gettext("Zum Training"))
+    for s in week:
+        parts = [day_text(s.date)]
+        if s.starts_at:
+            parts.append(s.starts_at.strftime("%H:%M"))
+        if s.department_id:
+            parts.append(s.department.name)
+        if s.date <= day:
+            parts.append(
+                ngettext("{n} anwesend", "{n} anwesend", s.present_n).format(n=count(s.present_n))
+            )
+        c.rows.append(Row(s.title, " · ".join(parts), "/training"))
+        if s.date == day and not c.reason:
+            c.reason = gettext("Heute ist Übungsabend: „{title}“.").format(title=s.title)
+    if not week:
+        c.text = gettext("In den nächsten sieben Tagen ist kein Training eingetragen.")
+    return c
+
+
 TILES: list[Tile] = [
     Tile(
         "kasse",
@@ -523,5 +615,19 @@ TILES: list[Tile] = [
         lambda: gettext("Datum, Einladungsfrist und Anträge"),
         _meeting_available,
         _meeting,
+    ),
+    Tile(
+        "sammelbestellungen",
+        lambda: gettext("Sammelbestellungen"),
+        lambda: gettext("Laufende Sammelbestellungen mit Bestellschluss und Zahl der Bestellungen"),
+        _orders_available,
+        _orders,
+    ),
+    Tile(
+        "training",
+        lambda: gettext("Training diese Woche"),
+        lambda: gettext("Übungsabende und Trainings der nächsten sieben Tage mit Anwesenheit"),
+        _training_available,
+        _training,
     ),
 ]

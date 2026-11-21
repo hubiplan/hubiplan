@@ -46,6 +46,10 @@ x-backend-env: &backend-env
   HUBIPLAN_ADRESSEN_AUS_LISTE: ${HUBIPLAN_ADRESSEN_AUS_LISTE:-0}
   # Passkeys (WebAuthn) zum Anmelden und als zweiter Faktor; 0 schaltet ab (docs/betrieb.md)
   HUBIPLAN_PASSKEYS: ${HUBIPLAN_PASSKEYS:-1}
+  # Bankanbindung über FinTS (docs/bankanbindung.md): nur mit eigener Produktregistrierung des
+  # Betreibers bei der Deutschen Kreditwirtschaft; die Nummer steht nur in der .env des Servers
+  HUBIPLAN_FINTS: ${HUBIPLAN_FINTS:-0}
+  HUBIPLAN_FINTS_PRODUKT_ID: ${HUBIPLAN_FINTS_PRODUKT_ID:-}
   FRONTEND_URL: https://${SITE_HOST}
   GOOGLE_WALLET_ISSUER_ID: ${GOOGLE_WALLET_ISSUER_ID:-}
   GOOGLE_WALLET_CREDENTIALS_FILE: ${GOOGLE_WALLET_CREDENTIALS_FILE:-}
