@@ -8164,10 +8164,6 @@ msgid "Bestätigung der Schießtermine"
 msgstr "Confirmation of shooting dates"
 
 #: training
-msgid "Mitgliedsnummer"
-msgstr "Membership number"
-
-#: training
 msgid "Mitglied seit"
 msgstr "Member since"
 
@@ -13467,7 +13463,7 @@ msgstr "Quantity"
 msgid "Preis"
 msgstr "Price"
 
-#: orders/export.py
+#: orders/export.py training
 msgid "Mitgliedsnummer"
 msgstr "Membership number"
 
