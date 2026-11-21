@@ -453,6 +453,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
         "surveys_enabled": "surveys" in (club.enabled_modules or []),
         "pinboard_enabled": "pinboard" in (club.enabled_modules or []),
+        "training_enabled": "training" in (club.enabled_modules or []),
         "bookings_enabled": "bookings" in (club.enabled_modules or []),
         "expenses_enabled": _club_expenses(club),
         # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
@@ -846,6 +847,18 @@ def _is_musician(club, membership_id) -> bool:
     ).exists()
 
 
+def _training(access) -> dict:
+    club = access.organization
+    on = "training" in (club.enabled_modules or []) and access.membership_id is not None
+    out = {"training_enabled": on, "shooting_log_enabled": False, "training_checkin": 0}
+    if on and access.contact_person_id is None:
+        from training.portal import open_checkins
+
+        out["shooting_log_enabled"] = "shooting" in (club.enabled_modules or [])
+        out["training_checkin"] = len(open_checkins(club))
+    return out
+
+
 def _open_surveys(club, membership_id) -> int:
     if "surveys" not in (club.enabled_modules or []):
         return 0
@@ -930,6 +943,8 @@ def portal_summary(access: PortalAccess) -> dict:
             # Pinnwand: Menüpunkt und Zahl neuer Beiträge seit dem letzten Lesen
             "pinboard_enabled": "pinboard" in (club.enabled_modules or []),
             "pinboard_new": _pinboard_new(club, access),
+            # Training: Menüpunkt, Schießbuch (mit Schießsport) und offenes Einchecken
+            **_training(access),
             # Sammelbestellungen: Menüpunkt und offene ohne eigene Bestellung
             "orders_enabled": "orders" in (club.enabled_modules or []),
             "orders_open": _orders_open(club, access),

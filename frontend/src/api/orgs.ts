@@ -858,6 +858,8 @@ export const PERM = {
   surveysEdit: 'surveys.edit',
   pinboardView: 'pinboard.view',
   pinboardEdit: 'pinboard.edit',
+  trainingView: 'training.view',
+  trainingEdit: 'training.edit',
   ordersView: 'orders.view',
   ordersEdit: 'orders.edit',
   expensesView: 'expenses.view',
