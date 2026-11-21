@@ -8,8 +8,10 @@ abwärtskompatibel (neue Felder ja, umbenennen oder entfernen nein).
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
+from admission import views as admission_views
 from billing import partners as partner_views
 from billing import views as billing_views
+from bookings import views as booking_views
 from cards import views as card_views
 from changes import views as change_views
 from competitions import stand_views as competition_stand_views
@@ -18,6 +20,8 @@ from customfields import views as field_views
 from events import views as event_views
 from finance import quittung_views
 from finance import views as finance_views
+from meetings import live_views as meeting_live_views
+from meetings import views as meeting_views
 from members import honorary as honorary_views
 from members import jubilee_views, photo_views, workflow_views
 from members import views as member_views
@@ -119,6 +123,70 @@ member_router.register(
 
 def _p(route: str, view, name: str):
     return path(route, for_app(view).as_view(), name=f"app-admin-{name}")
+
+
+def booking_patterns(prefix: str) -> list:
+    """Belegungsanfragen sehen und freigeben (Verein und Untereinheit). Neue Buchungen und
+    Änderungen bleiben im Browser."""
+    return [
+        path(
+            "bookings/",
+            for_app(booking_views.ListView, True).as_view(),
+            name=f"{prefix}-bookings",
+        ),
+        path(
+            "bookings/<int:pk>/",
+            for_app(booking_views.DetailView, True).as_view(),
+            name=f"{prefix}-booking",
+        ),
+        path(
+            "bookings/<int:pk>/decision/",
+            for_app(booking_views.DecisionView).as_view(),
+            name=f"{prefix}-booking-decision",
+        ),
+    ]
+
+
+def meeting_patterns(prefix: str) -> list:
+    """Versammlung leiten: Anwesenheit, Anmeldung per App öffnen (Code zeigen), Abstimmungen
+    anlegen, starten, beenden und übernehmen. Vorbereiten und Protokoll bleiben im Browser."""
+    return [
+        path(
+            "meetings/",
+            for_app(meeting_views.ListView, True).as_view(),
+            name=f"{prefix}-meetings",
+        ),
+        path(
+            "meetings/<int:pk>/",
+            for_app(meeting_views.DetailView, True).as_view(),
+            name=f"{prefix}-meeting",
+        ),
+        path(
+            "meetings/<int:pk>/attendance/",
+            for_app(meeting_views.AttendanceView).as_view(),
+            name=f"{prefix}-meeting-attendance",
+        ),
+        path(
+            "meetings/<int:pk>/attendance/<int:entry>/",
+            for_app(meeting_views.AttendanceDetailView).as_view(),
+            name=f"{prefix}-meeting-attendance-entry",
+        ),
+        path(
+            "meetings/<int:pk>/live/",
+            for_app(meeting_live_views.LiveView).as_view(),
+            name=f"{prefix}-meeting-live",
+        ),
+        path(
+            "meetings/<int:pk>/polls/",
+            for_app(meeting_live_views.PollsView).as_view(),
+            name=f"{prefix}-meeting-polls",
+        ),
+        path(
+            "meetings/<int:pk>/polls/<int:poll>/",
+            for_app(meeting_live_views.PollDetailView).as_view(),
+            name=f"{prefix}-meeting-poll",
+        ),
+    ]
 
 
 urlpatterns = [
@@ -264,5 +332,20 @@ urlpatterns = [
         for_app(obligation_views.ListView, True).as_view(),
         name="app-admin-obligations",
     ),
+    # Beitrittsanträge prüfen, zustimmen, annehmen oder ablehnen (wie im Browser; Korrekturen,
+    # Formular und Sammelannahme bleiben im Browser)
+    path(
+        "admission/",
+        for_app(admission_views.ApplicationListView, True).as_view(),
+        name="app-admin-admission",
+    ),
+    path(
+        "admission/<int:pk>/",
+        for_app(admission_views.ApplicationDetailView, True).as_view(),
+        name="app-admin-admission-detail",
+    ),
+    _p("admission/<int:pk>/<str:action>/", admission_views.ActionView, "admission-action"),
+    *booking_patterns("app-admin"),
+    *meeting_patterns("app-admin"),
     path("", include(org_router.urls)),
 ]
