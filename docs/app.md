@@ -468,6 +468,38 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
   mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.
 
+### Vorstandsaufgaben: Beitrittsanträge, Belegung, Versammlung leiten
+
+Seit 21.11.2026; dieselben Ansichten und Rechte wie im Browser, nur mit dem Vorstandsschlüssel.
+`bookings.edit` und `meetings.edit` zählen jetzt auch als Verwaltungsrechte (Reiter
+„Verwaltung“); Untereinheiten in `GET /api/app/v1/admin/` haben dazu `modules`. Offene Aufgaben
+(`tasks/`) enthalten Beitrittsanträge (`kind` `application`, `ref` Antrag) und
+Belegungsanfragen (`booking`, `ref` Buchung).
+
+- **Beitrittsanträge** (Modul `members`, Rechte `members.view`, Entscheiden `members.edit`,
+  Zustimmen nach der Regel des Formulars) unter `admission/`: `GET ""` (`?status=offen` oder
+  ein Stand, `results`, `counts`, `may_approve`), `GET <id>/` (Angaben, `summary`, `matches`,
+  `approvals`, `may_decide`, `own_decision`, `entry_date`) und `POST <id>/<Aktion>/` mit
+  `approve` (`decision` `approve|reject`, `note`), `accept` (`entry_date`, `member_type`,
+  `club_number`, `person`, `note`, `welcome`, `invite`), `reject` (`note`, `send_mail`, `text`),
+  `ask` (`text`), `resume`, `signed`. Korrigieren, Formular und Sammelannahme bleiben im Browser.
+- **Belegung** (Modul `bookings`, Freigeben mit `bookings.edit` oder Bearbeitungsrecht auf das
+  Objekt), unter `/u/<Einheit>/` und `/d/<Untereinheit>/`: `GET bookings/` (`start`, `end`,
+  `item`; `occurrences` und `requests` = offene Anfragen zum Freigeben), `GET bookings/<id>/`,
+  `POST bookings/<id>/decision/` mit `action` (`confirm|reject|cancel`) und `version`
+  (409 bei veraltetem Stand). Neue Buchungen und Änderungen bleiben im Browser.
+- **Versammlung leiten** (Modul `meetings`, Rechte `meetings.edit`, Anwesenheit zusätzlich
+  `members.view`), unter `/u/<Einheit>/` und `/d/<Untereinheit>/`: `GET meetings/`,
+  `GET meetings/<id>/` (mit Tagesordnung), `GET/POST meetings/<id>/attendance/` (`membership`
+  oder `name`, `status` `present|excused|represented|delegate|left`, `represented_by`,
+  `delegate`, `delegate_name`), `DELETE meetings/<id>/attendance/<Eintrag>/`,
+  `GET/POST meetings/<id>/live/` (`open`, `remote`; offen mit `code` und `refresh_in` für den
+  QR-Code), `POST meetings/<id>/polls/` (`agenda_item`, `question`, `secret`, `office`,
+  `candidates`), `POST meetings/<id>/polls/<Abstimmung>/` mit `action` `open|close|apply`,
+  `DELETE` (nur Entwurf). Einlass am Eingang: Ausweis mit `cards/check/` scannen, dann die
+  zurückgegebene `membership` als anwesend eintragen. Vorbereiten, Einladung und Protokoll
+  bleiben im Browser.
+
 ### Quittung mit Unterschrift
 
 Konzept `konzepte/digitale-quittung.md`, Ablauf und Prüfung in
