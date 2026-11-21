@@ -103,6 +103,21 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    // Sammelbestellungen: Vereinskleidung, Festschrift, Größenabfragen (Lückenliste 20.11., B4)
+    ...(entry.orders_enabled
+      ? [
+          {
+            to: '/mein-bereich/bestellungen',
+            label: t('Bestellungen'),
+            tile: {
+              title: t('Bestellungen'),
+              text: entry.orders_open
+                ? tn('{n} offen, jetzt bestellen', '{n} offen, jetzt bestellen', entry.orders_open)
+                : t('Vereinskleidung und mehr gemeinsam bestellen'),
+            },
+          },
+        ]
+      : []),
     ...(entry.expenses_enabled
       ? [
           {

@@ -584,6 +584,10 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     from registrations.services import forget_membership as forget_registrations
 
     forget_registrations(membership)
+    # Sammelbestellungen: eigene Bestellungen löschen (Rechnungen bleiben in den Finanzen)
+    from orders.services import forget_membership as forget_orders
+
+    forget_orders(membership)
     membership.club_number = ""
     membership.purged_at = timezone.now()
     membership.save()

@@ -1,0 +1,47 @@
+/* Sammelbestellungen: Artikel mit Mengenfeldern je Größe */
+.order-article {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.order-article legend {
+  font-weight: 600;
+  padding: 0 var(--space-1);
+}
+
+.order-article p {
+  margin: 0 0 var(--space-2);
+}
+
+.order-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.order-quantity {
+  width: 5.5rem;
+}
+
+.order-quantity input {
+  width: 100%;
+}
+
+.order-article-edit {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.order-lines {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.order-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -13203,6 +13203,178 @@ msgstr "Please enter a text."
 msgid "Pinnwand"
 msgstr "Notice board"
 
+#: access/modules.py access/catalog.py
+msgid "Bestellungen"
+msgstr "Orders"
+
+#: access/catalog.py
+msgid "Sammelbestellungen und Bestellungen der Mitglieder sehen"
+msgstr "See group orders and members' orders"
+
+#: access/catalog.py
+msgid "Sammelbestellungen anlegen, Bestellungen eintragen, Ausgabe abhaken; Rechnungen nur zusammen mit dem Recht für Rechnungen"
+msgstr "Create group orders, enter orders, tick off hand-out; invoices only together with the invoicing right"
+
+#: access/modules.py
+msgid "Sammelbestellungen wie Vereinskleidung oder Festschrift, auch reine Größenabfragen"
+msgstr "Group orders such as club clothing or a commemorative booklet, also plain size surveys"
+
+#: billing/workhour_views.py
+msgid "Das Höchstalter muss mindestens so hoch sein wie das Mindestalter."
+msgstr "The maximum age must be at least the minimum age."
+
+#: orders/export.py
+msgid "Summen"
+msgstr "Totals"
+
+#: orders/export.py
+msgid "Artikel"
+msgstr "Item"
+
+#: orders/export.py
+msgid "Menge"
+msgstr "Quantity"
+
+#: orders/export.py
+msgid "Preis"
+msgstr "Price"
+
+#: orders/export.py
+msgid "Mitgliedsnummer"
+msgstr "Membership number"
+
+#: orders/models.py
+msgid "Bestellen bis"
+msgstr "Order by"
+
+#: orders/notify.py
+msgid "Bestellung: {title}"
+msgstr "Order: {title}"
+
+#: orders/notify.py
+msgid "Bestellen bis {date}"
+msgstr "Order by {date}"
+
+#: orders/services.py
+msgid "Bitte ausfüllen."
+msgstr "Please fill in."
+
+#: orders/services.py
+msgid "Bitte einen Betrag eingeben."
+msgstr "Please enter an amount."
+
+#: orders/services.py
+msgid "Höchstens {n} Auswahlwerte."
+msgstr "At most {n} options."
+
+#: orders/services.py
+msgid "Diese Kategorie gibt es nicht."
+msgstr "This category does not exist."
+
+#: orders/services.py
+msgid "Ungültiger Artikel."
+msgstr "Invalid item."
+
+#: orders/services.py
+msgid "Artikel {n}: Bitte einen Namen eingeben."
+msgstr "Item {n}: please enter a name."
+
+#: orders/services.py
+msgid "Ungültige Artikelliste."
+msgstr "Invalid list of items."
+
+#: orders/services.py
+msgid "Höchstens {n} Artikel."
+msgstr "At most {n} items."
+
+#: orders/services.py
+msgid "{name}: {values} ist schon bestellt und bleibt in der Auswahl."
+msgstr "{name}: {values} has already been ordered and stays in the selection."
+
+#: orders/services.py
+msgid "{name} ist schon ohne Auswahl bestellt; bitte einen neuen Artikel anlegen."
+msgstr "{name} has already been ordered without a selection; please create a new item."
+
+#: orders/services.py
+msgid "{name} ist schon bestellt und lässt sich nicht löschen."
+msgstr "{name} has already been ordered and cannot be deleted."
+
+#: orders/services.py orders/views.py
+msgid "Für diese Bestellung gibt es schon eine Rechnung. Bitte zuerst die Rechnung stornieren."
+msgstr "This order already has an invoice. Please cancel the invoice first."
+
+#: orders/services.py
+msgid "Ungültige Bestellung."
+msgstr "Invalid order."
+
+#: orders/services.py
+msgid "Diesen Artikel gibt es nicht."
+msgstr "This item does not exist."
+
+#: orders/services.py
+msgid "Bitte eine Menge von 1 bis {n} angeben."
+msgstr "Please enter a quantity from 1 to {n}."
+
+#: orders/services.py
+msgid "{name}: Bitte {label} wählen."
+msgstr "{name}: please choose {label}."
+
+#: orders/services.py
+msgid "eine Auswahl"
+msgstr "an option"
+
+#: orders/services.py
+msgid "{name}: höchstens {n} Stück je Mitglied."
+msgstr "{name}: at most {n} per member."
+
+#: orders/services.py
+msgid "{name}: nur noch {n} Stück verfügbar."
+msgstr "{name}: only {n} left."
+
+#: orders/services.py orders/views.py
+msgid "Diese Sammelbestellung ist noch nicht freigegeben."
+msgstr "This group order has not been released yet."
+
+#: orders/services.py
+msgid "Die Bestellfrist ist abgelaufen."
+msgstr "The order deadline has passed."
+
+#: orders/services.py
+msgid "Diese Bestellung wurde schon ausgegeben."
+msgstr "This order has already been handed out."
+
+#: orders/services.py
+msgid "Bestellung {title}"
+msgstr "Order {title}"
+
+#: orders/services.py
+msgid "Bitte bei der Überweisung die Rechnungsnummer angeben."
+msgstr "Please quote the invoice number with your transfer."
+
+#: orders/services.py
+msgid "Bei dieser Sammelbestellung zahlt der Verein; keine Rechnungen."
+msgstr "The club pays for this group order; no invoices."
+
+#: orders/views.py
+msgid "Die Sammelbestellung wurde inzwischen geändert. Bitte neu laden."
+msgstr "The group order has been changed in the meantime. Please reload."
+
+#: orders/views.py
+msgid "Es gibt schon Bestellungen; die Zielgruppe bleibt."
+msgstr "There are already orders; the audience stays the same."
+
+#: orders/views.py
+msgid "Bitte zuerst mindestens einen Artikel anlegen."
+msgstr "Please create at least one item first."
+
+#: orders/views.py
+msgid "Bitte zuerst die Frist in die Zukunft legen."
+msgstr "Please move the deadline into the future first."
+
+#: orders/views.py
+msgid "Dieses Mitglied gehört nicht dazu."
+msgstr "This member is not part of the audience."
+
 #: access/catalog.py
 msgid "Beiträge der Pinnwand sehen"
 msgstr "View notice board posts"
