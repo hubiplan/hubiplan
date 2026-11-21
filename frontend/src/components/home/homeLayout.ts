@@ -14,6 +14,9 @@ export const BLOCK = {
   jubilees: 'jubilaeen',
   birthdays: 'geburtstage',
   notices: 'hinweise',
+  // Mitgliederbereich
+  nextEvent: 'naechster-termin',
+  memberArea: 'mein-bereich',
 } as const
 
 /** Raster der Startseite: 12 Spalten, Zeilen zu je ROW_REM */
@@ -24,16 +27,25 @@ export const ROW_REM = 0.5
 export const MIN_ROWS = 6
 export const MAX_ROWS = 300
 
+/** Auswahl bei Kacheln, die von selbst nur bei Anlass erscheinen */
+export type BlockChoice = 'auto' | 'on' | 'off'
+
 export interface HomeBlock {
   key: string
   label: string
   /** Standard: über die ganze Breite */
   wide?: boolean
+  /** Kachel bei Anlass (backend/hometiles): ohne eigene Wahl nur sichtbar, wenn `urgent` */
+  optional?: boolean
+  /** Es gibt gerade einen Anlass */
+  urgent?: boolean
   render: () => ReactNode
 }
 
 export interface PlacedBlock extends HomeBlock {
   shown: boolean
+  /** Nur bei `optional`: bei Anlass, immer, nie */
+  choice: BlockChoice
   /** Breite in Spalten (von 12) */
   cols: number
   /** Höhe in Rasterzeilen; null = so hoch wie der Inhalt */
@@ -61,6 +73,7 @@ export function placeBlocks(blocks: HomeBlock[], layout?: HomeLayout | null): Pl
     order.splice(before === undefined ? 0 : order.indexOf(before) + 1, 0, b.key)
   })
   const hidden = new Set(layout?.hidden ?? [])
+  const always = new Set(layout?.shown ?? [])
   const wide = new Set(layout?.wide ?? [])
   const sizes = layout?.sizes ?? {}
   return order.map((key) => {
@@ -68,20 +81,26 @@ export function placeBlocks(blocks: HomeBlock[], layout?: HomeLayout | null): Pl
     const size = sizes[key]
     // Breite aus „wide“ nur, wenn der Block beim Speichern schon dabei war (ältere Fassung)
     const isWide = layout && known.has(key) ? wide.has(key) : !!b.wide
+    const choice: BlockChoice = always.has(key) ? 'on' : hidden.has(key) ? 'off' : 'auto'
     return {
       ...b,
-      shown: !hidden.has(key),
+      choice,
+      shown: b.optional ? choice === 'on' || (choice === 'auto' && !!b.urgent) : !hidden.has(key),
       cols: size ? clampCols(size.w) : isWide ? GRID_COLUMNS : GRID_COLUMNS / 2,
       rows: size?.h ? clampRows(size.h) : null,
     }
   })
 }
 
-/** Stand zum Speichern: alle Blöcke in Reihenfolge, ausgeblendete, breite und Größen. */
+/**
+ * Stand zum Speichern: alle Blöcke in Reihenfolge, ausgeblendete, breite und Größen. Kacheln bei
+ * Anlass stehen nur mit eigener Wahl in `shown` (immer) bzw. `hidden` (nie).
+ */
 export function layoutOf(placed: PlacedBlock[]): HomeLayout {
   return {
     order: placed.map((b) => b.key),
-    hidden: placed.filter((b) => !b.shown).map((b) => b.key),
+    hidden: placed.filter((b) => (b.optional ? b.choice === 'off' : !b.shown)).map((b) => b.key),
+    shown: placed.filter((b) => b.optional && b.choice === 'on').map((b) => b.key),
     wide: placed.filter((b) => b.cols === GRID_COLUMNS).map((b) => b.key),
     sizes: Object.fromEntries(placed.map((b) => [b.key, { w: b.cols, h: b.rows }])),
   }

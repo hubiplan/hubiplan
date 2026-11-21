@@ -455,6 +455,19 @@ export const modules: AppModule[] = [
       return items.length > 1 ? items : []
     },
   },
+  // Sammelbestellungen: Vereinskleidung, Festschrift, Größenabfragen (Lückenliste 20.11., B4)
+  {
+    id: 'bestellungen',
+    group: 'verwaltung',
+    label: t('Bestellungen'),
+    path: '/bestellungen',
+    icon: icon('M6 7h12l-1 13H7zM9 7a3 3 0 0 1 6 0'),
+    visible: (org) =>
+      !!org &&
+      org.type === 'club' &&
+      org.modules.includes('orders') &&
+      (org.permissions.includes(PERM.ordersView) || org.permissions.includes(PERM.ordersEdit)),
+  },
   {
     id: 'einstellungen',
     group: 'verwaltung',

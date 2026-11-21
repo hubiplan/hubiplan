@@ -14,6 +14,8 @@ export interface HomeLayout {
   hidden: string[]
   /** Blöcke über die ganze Breite (für ältere Fassungen, die „sizes“ nicht kennen) */
   wide: string[]
+  /** Kacheln bei Anlass, die immer erscheinen sollen (fehlt bei älteren Ständen) */
+  shown?: string[]
   sizes?: Record<string, BlockSize>
 }
 

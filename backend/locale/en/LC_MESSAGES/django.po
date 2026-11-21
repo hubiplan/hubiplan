@@ -13203,6 +13203,178 @@ msgstr "Please enter a text."
 msgid "Pinnwand"
 msgstr "Notice board"
 
+#: access/modules.py access/catalog.py
+msgid "Bestellungen"
+msgstr "Orders"
+
+#: access/catalog.py
+msgid "Sammelbestellungen und Bestellungen der Mitglieder sehen"
+msgstr "See group orders and members' orders"
+
+#: access/catalog.py
+msgid "Sammelbestellungen anlegen, Bestellungen eintragen, Ausgabe abhaken; Rechnungen nur zusammen mit dem Recht für Rechnungen"
+msgstr "Create group orders, enter orders, tick off hand-out; invoices only together with the invoicing right"
+
+#: access/modules.py
+msgid "Sammelbestellungen wie Vereinskleidung oder Festschrift, auch reine Größenabfragen"
+msgstr "Group orders such as club clothing or a commemorative booklet, also plain size surveys"
+
+#: billing/workhour_views.py
+msgid "Das Höchstalter muss mindestens so hoch sein wie das Mindestalter."
+msgstr "The maximum age must be at least the minimum age."
+
+#: orders/export.py
+msgid "Summen"
+msgstr "Totals"
+
+#: orders/export.py
+msgid "Artikel"
+msgstr "Item"
+
+#: orders/export.py
+msgid "Menge"
+msgstr "Quantity"
+
+#: orders/export.py
+msgid "Preis"
+msgstr "Price"
+
+#: orders/export.py
+msgid "Mitgliedsnummer"
+msgstr "Membership number"
+
+#: orders/models.py
+msgid "Bestellen bis"
+msgstr "Order by"
+
+#: orders/notify.py
+msgid "Bestellung: {title}"
+msgstr "Order: {title}"
+
+#: orders/notify.py
+msgid "Bestellen bis {date}"
+msgstr "Order by {date}"
+
+#: orders/services.py
+msgid "Bitte ausfüllen."
+msgstr "Please fill in."
+
+#: orders/services.py
+msgid "Bitte einen Betrag eingeben."
+msgstr "Please enter an amount."
+
+#: orders/services.py
+msgid "Höchstens {n} Auswahlwerte."
+msgstr "At most {n} options."
+
+#: orders/services.py
+msgid "Diese Kategorie gibt es nicht."
+msgstr "This category does not exist."
+
+#: orders/services.py
+msgid "Ungültiger Artikel."
+msgstr "Invalid item."
+
+#: orders/services.py
+msgid "Artikel {n}: Bitte einen Namen eingeben."
+msgstr "Item {n}: please enter a name."
+
+#: orders/services.py
+msgid "Ungültige Artikelliste."
+msgstr "Invalid list of items."
+
+#: orders/services.py
+msgid "Höchstens {n} Artikel."
+msgstr "At most {n} items."
+
+#: orders/services.py
+msgid "{name}: {values} ist schon bestellt und bleibt in der Auswahl."
+msgstr "{name}: {values} has already been ordered and stays in the selection."
+
+#: orders/services.py
+msgid "{name} ist schon ohne Auswahl bestellt; bitte einen neuen Artikel anlegen."
+msgstr "{name} has already been ordered without a selection; please create a new item."
+
+#: orders/services.py
+msgid "{name} ist schon bestellt und lässt sich nicht löschen."
+msgstr "{name} has already been ordered and cannot be deleted."
+
+#: orders/services.py orders/views.py
+msgid "Für diese Bestellung gibt es schon eine Rechnung. Bitte zuerst die Rechnung stornieren."
+msgstr "This order already has an invoice. Please cancel the invoice first."
+
+#: orders/services.py
+msgid "Ungültige Bestellung."
+msgstr "Invalid order."
+
+#: orders/services.py
+msgid "Diesen Artikel gibt es nicht."
+msgstr "This item does not exist."
+
+#: orders/services.py
+msgid "Bitte eine Menge von 1 bis {n} angeben."
+msgstr "Please enter a quantity from 1 to {n}."
+
+#: orders/services.py
+msgid "{name}: Bitte {label} wählen."
+msgstr "{name}: please choose {label}."
+
+#: orders/services.py
+msgid "eine Auswahl"
+msgstr "an option"
+
+#: orders/services.py
+msgid "{name}: höchstens {n} Stück je Mitglied."
+msgstr "{name}: at most {n} per member."
+
+#: orders/services.py
+msgid "{name}: nur noch {n} Stück verfügbar."
+msgstr "{name}: only {n} left."
+
+#: orders/services.py orders/views.py
+msgid "Diese Sammelbestellung ist noch nicht freigegeben."
+msgstr "This group order has not been released yet."
+
+#: orders/services.py
+msgid "Die Bestellfrist ist abgelaufen."
+msgstr "The order deadline has passed."
+
+#: orders/services.py
+msgid "Diese Bestellung wurde schon ausgegeben."
+msgstr "This order has already been handed out."
+
+#: orders/services.py
+msgid "Bestellung {title}"
+msgstr "Order {title}"
+
+#: orders/services.py
+msgid "Bitte bei der Überweisung die Rechnungsnummer angeben."
+msgstr "Please quote the invoice number with your transfer."
+
+#: orders/services.py
+msgid "Bei dieser Sammelbestellung zahlt der Verein; keine Rechnungen."
+msgstr "The club pays for this group order; no invoices."
+
+#: orders/views.py
+msgid "Die Sammelbestellung wurde inzwischen geändert. Bitte neu laden."
+msgstr "The group order has been changed in the meantime. Please reload."
+
+#: orders/views.py
+msgid "Es gibt schon Bestellungen; die Zielgruppe bleibt."
+msgstr "There are already orders; the audience stays the same."
+
+#: orders/views.py
+msgid "Bitte zuerst mindestens einen Artikel anlegen."
+msgstr "Please create at least one item first."
+
+#: orders/views.py
+msgid "Bitte zuerst die Frist in die Zukunft legen."
+msgstr "Please move the deadline into the future first."
+
+#: orders/views.py
+msgid "Dieses Mitglied gehört nicht dazu."
+msgstr "This member is not part of the audience."
+
 #: access/catalog.py
 msgid "Beiträge der Pinnwand sehen"
 msgstr "View notice board posts"
@@ -16264,3 +16436,345 @@ msgstr "Invalid date “{raw}” in the transaction."
 #: finance/mt940.py
 msgid "Ein Umsatz der Bank ist nicht lesbar. Eingelesen wurde nichts."
 msgstr "A transaction from the bank cannot be read. Nothing was imported."
+
+#: hometiles
+msgid "{h} Std."
+msgstr "{h} h"
+
+#: hometiles
+msgid "Noch keine Konten angelegt."
+msgstr "No accounts set up yet."
+
+#: hometiles
+msgid "Ein Konto steht im Minus."
+msgstr "An account is overdrawn."
+
+#: hometiles
+msgid "Zurzeit keine Veranstaltung mit Anmeldung."
+msgstr "No event with registration at the moment."
+
+#: hometiles
+msgid "Die Stichtagsmeldung steht an."
+msgstr "The annual census report is due."
+
+#: hometiles
+msgid "In den nächsten sieben Tagen ist nichts belegt."
+msgstr "Nothing is booked in the next seven days."
+
+#: hometiles
+msgid "Heute ist etwas belegt."
+msgstr "Something is booked today."
+
+#: hometiles
+msgid "Eine Position liegt über dem Plan."
+msgstr "A budget line is over plan."
+
+#: hometiles
+msgid "Zurzeit läuft keine Umfrage."
+msgstr "No survey is running at the moment."
+
+#: hometiles
+msgid "Keine Versammlung geplant."
+msgstr "No meeting planned."
+
+#: hometiles
+msgid "Zu den Finanzen"
+msgstr "To finances"
+
+#: hometiles
+msgid "Eine Lastschrift ist fällig."
+msgstr "A direct debit is due."
+
+#: hometiles
+msgid "Zum Kalender"
+msgstr "To the calendar"
+
+#: hometiles
+msgid "Zur Stichtagsstatistik"
+msgstr "To the census statistics"
+
+#: hometiles
+msgid "Zur Belegung"
+msgstr "To bookings"
+
+#: hometiles
+msgid "Morgen ist etwas belegt."
+msgstr "Something is booked tomorrow."
+
+#: hometiles
+msgid "Zu den Beitragsregeln"
+msgstr "To the fee rules"
+
+#: hometiles
+msgid "Zum Haushaltsplan"
+msgstr "To the budget"
+
+#: hometiles
+msgid "Eine Umfrage läuft."
+msgstr "A survey is running."
+
+#: hometiles
+msgid "Zu den Umfragen"
+msgstr "To the surveys"
+
+#: hometiles
+msgid "Zu den Versammlungen"
+msgstr "To the meetings"
+
+#: hometiles
+msgid "Noch Tage"
+msgstr "Days to go"
+
+#: hometiles
+msgid "Kasse auf einen Blick"
+msgstr "Finances at a glance"
+
+#: hometiles
+msgid "Kontostände, offene Forderungen, fällige Lastschrift"
+msgstr "Account balances, open receivables, direct debit due"
+
+#: hometiles
+msgid "Laufende Anmeldungen"
+msgstr "Current registrations"
+
+#: hometiles
+msgid "Angemeldet, freie Plätze und unbezahlt je Veranstaltung"
+msgstr "Registered, places left and unpaid per event"
+
+#: hometiles
+msgid "Verein in Zahlen"
+msgstr "Club in figures"
+
+#: hometiles
+msgid "Mitglieder, Eintritte und Austritte im Geschäftsjahr"
+msgstr "Members, joiners and leavers in the financial year"
+
+#: hometiles
+msgid "Belegung diese Woche"
+msgstr "Bookings this week"
+
+#: hometiles
+msgid "Wer Vereinsheim, Räume oder Material in den nächsten sieben Tagen nutzt"
+msgstr "Who uses the clubhouse, rooms or equipment in the next seven days"
+
+#: hometiles
+msgid "Arbeitsstunden-Stand"
+msgstr "Work hours status"
+
+#: hometiles
+msgid "Wer das Soll erfüllt hat und wie viel Ersatzbeitrag sich ergibt"
+msgstr "Who has done their hours and how much substitute fee results"
+
+#: hometiles
+msgid "Haushaltsplan: Plan und Ist"
+msgstr "Budget: plan and actual"
+
+#: hometiles
+msgid "Einnahmen und Ausgaben gegen den Plan, Positionen über Plan"
+msgstr "Income and expenses against plan, lines over plan"
+
+#: hometiles
+msgid "Umfragen und Pinnwand"
+msgstr "Surveys and noticeboard"
+
+#: hometiles
+msgid "Laufende Umfragen mit Rücklauf, neue Beiträge"
+msgstr "Running surveys with responses, new posts"
+
+#: hometiles
+msgid "Nächste Versammlung"
+msgstr "Next meeting"
+
+#: hometiles
+msgid "Datum, Einladungsfrist und Anträge"
+msgstr "Date, invitation deadline and motions"
+
+#: hometiles
+msgid "und {n} weitere"
+msgstr "and {n} more"
+
+#: hometiles
+msgid "Das Geschäftsjahr endet am {date}."
+msgstr "The financial year ends on {date}."
+
+#: hometiles
+msgid "{n} % des Geschäftsjahres sind vorbei."
+msgstr "{n} % of the financial year has passed."
+
+#: hometiles
+msgid "Neu auf der Pinnwand (14 Tage)"
+msgstr "New on the noticeboard (14 days)"
+
+#: hometiles
+msgid "Zur Pinnwand"
+msgstr "To the noticeboard"
+
+#: hometiles
+msgid "Einladen bis"
+msgstr "Invite by"
+
+#: hometiles
+msgid "Die nächste Versammlung ist am {date}."
+msgstr "The next meeting is on {date}."
+
+#: hometiles
+msgid "„{title}“ ist bald."
+msgstr "“{title}” is coming up."
+
+#: hometiles
+msgid "Soll erfüllt"
+msgstr "Hours done"
+
+#: hometiles
+msgid "Ersatzbeitrag bisher"
+msgstr "Substitute fee so far"
+
+#: hometiles
+msgid "Stand im Geschäftsjahr {year}, das am {date} endet."
+msgstr "Status for financial year {year}, which ends on {date}."
+
+#: hometiles
+msgid "{n} auf der Warteliste"
+msgstr "{n} on the waiting list"
+
+#: hometiles
+msgid "{actual} von {plan}"
+msgstr "{actual} of {plan}"
+
+#: hometiles
+msgid "Eintritte {year}"
+msgstr "Joined {year}"
+
+#: hometiles
+msgid "Austritte {year}"
+msgstr "Left {year}"
+
+#: hometiles
+msgid "endet {when}"
+msgstr "ends {when}"
+
+#: hometiles
+msgid "Keine offene Umfrage für dich."
+msgstr "No open survey for you."
+
+#: hometiles
+msgid "Auf der Pinnwand steht gerade nichts."
+msgstr "There is nothing on the noticeboard right now."
+
+#: hometiles
+msgid "Du bist zurzeit für nichts angemeldet."
+msgstr "You are not registered for anything at the moment."
+
+#: hometiles
+msgid "Zu den Helferdiensten"
+msgstr "To volunteer shifts"
+
+#: hometiles
+msgid "ohne Enddatum"
+msgstr "no end date"
+
+#: hometiles
+msgid "Meine Arbeitsstunden"
+msgstr "My work hours"
+
+#: hometiles
+msgid "Geleistet, Soll und was noch offen ist"
+msgstr "Done, required and what is still open"
+
+#: hometiles
+msgid "Offene Umfragen"
+msgstr "Open surveys"
+
+#: hometiles
+msgid "Umfragen, die noch auf deine Antwort warten"
+msgstr "Surveys still waiting for your answer"
+
+#: hometiles
+msgid "Neue Beiträge auf der Pinnwand"
+msgstr "New posts on the noticeboard"
+
+#: hometiles
+msgid "Meine Anmeldungen"
+msgstr "My registrations"
+
+#: hometiles
+msgid "Veranstaltungen, für die du angemeldet bist"
+msgstr "Events you are registered for"
+
+#: hometiles
+msgid "Fehlen am {date} noch Stunden, kostet jede {amount}, zurzeit zusammen {total}."
+msgstr "Each hour still missing on {date} costs {amount}, currently {total} in total."
+
+#: hometiles
+msgid "Dein Soll für {year} ist erfüllt."
+msgstr "You have done your hours for {year}."
+
+#: hometiles
+msgid "Geleistet"
+msgstr "Done"
+
+#: hometiles
+msgid "Soll"
+msgstr "Required"
+
+#: hometiles
+msgid "Bis {date} fehlen dir noch {hours}."
+msgstr "You still need {hours} by {date}."
+
+#: hometiles
+msgid "bis {when}"
+msgstr "until {when}"
+
+#: hometiles
+msgid "Neue Beiträge"
+msgstr "New posts"
+
+#: hometiles
+msgid "noch nicht bezahlt"
+msgstr "not yet paid"
+
+#: hometiles
+msgid "„{title}“ ist bald, die Eintrittskarte findest du am Termin."
+msgstr "“{title}” is coming up; your ticket is with the event."
+
+#: hometiles
+msgid "Offene Forderung"
+msgid_plural "Offene Forderungen"
+msgstr[0] "Open receivable"
+msgstr[1] "Open receivables"
+
+#: hometiles
+msgid "{n} angemeldet"
+msgid_plural "{n} angemeldet"
+msgstr[0] "{n} registered"
+msgstr[1] "{n} registered"
+
+#: hometiles
+msgid "{n} Antwort"
+msgid_plural "{n} Antworten"
+msgstr[0] "{n} answer"
+msgstr[1] "{n} answers"
+
+#: hometiles
+msgid "{n} Platz frei"
+msgid_plural "{n} Plätze frei"
+msgstr[0] "{n} place left"
+msgstr[1] "{n} places left"
+
+#: hometiles
+msgid "{n} unbezahlt"
+msgid_plural "{n} unbezahlt"
+msgstr[0] "{n} unpaid"
+msgstr[1] "{n} unpaid"
+
+#: hometiles
+msgid "Eine Umfrage wartet auf deine Antwort."
+msgid_plural "{n} Umfragen warten auf deine Antwort."
+msgstr[0] "A survey is waiting for your answer."
+msgstr[1] "{n} surveys are waiting for your answer."
+
+#: hometiles
+msgid "Ein neuer Beitrag auf der Pinnwand."
+msgid_plural "{n} neue Beiträge auf der Pinnwand."
+msgstr[0] "One new post on the noticeboard."
+msgstr[1] "{n} new posts on the noticeboard."
