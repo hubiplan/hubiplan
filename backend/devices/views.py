@@ -374,7 +374,11 @@ class _AppSessionAuthentication(BaseAuthentication):
         token = request.headers.get("X-Session-Token")
         if not token:
             return None
-        return authenticate_by_x_session_token(token)
+        # allauth ab 65.22 liefert ein Ergebnisobjekt (user, session) statt eines Tupels
+        result = authenticate_by_x_session_token(token)
+        if result is None or result.user is None:
+            return None
+        return result.user, result.session
 
 
 class DeviceListView(APIView):
