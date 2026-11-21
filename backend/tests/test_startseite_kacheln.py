@@ -185,3 +185,42 @@ def test_sammelbestellung_bei_vorstand_und_mitglied(api, club, board_a, monkeypa
     assert (
         tile["content"]["reason"] == "Bestellschluss für „Vereinskleidung 2027“ ist am 30.06.2026."
     )
+
+
+def test_training_und_schiessnachweis(api, club, board_a, monkeypatch):
+    from portal.models import PortalAccess
+    from training.models import ShootingEntry, TrainingSession
+
+    club.enabled_modules = sorted({*club.enabled_modules, "events", "training", "shooting"})
+    club.save()
+    june = datetime.date(2026, 6, 10)
+    monkeypatch.setattr("hometiles.org_tiles.today", lambda: june)
+    monkeypatch.setattr("hometiles.portal_tiles.today", lambda: june)
+    m = make_member(club, "Anna", "Beispiel", entry_date=datetime.date(2020, 1, 1))
+    user = make_user("anna-schiesst@example.org")
+    with rls_bypass(), tenant_context(club.pk):
+        access = PortalAccess.objects.create(organization=club, membership=m, user=user)
+        TrainingSession.objects.create(organization=club, date=june, title="Übungsabend Luftgewehr")
+        ShootingEntry.objects.create(
+            organization=club,
+            membership=m,
+            date=datetime.date(2026, 5, 2),
+            discipline="Sportpistole",
+            weapon_class="short",
+        )
+    # Vorstand: heute Übungsabend
+    tile = tiles(api(board_a), f"/api/orgs/{club.pk}/home-tiles/")["training"]
+    assert tile["shown"] is True
+    assert tile["content"]["reason"] == "Heute ist Übungsabend: „Übungsabend Luftgewehr“."
+    # Mitglied: letzter Termin vor mehr als drei Wochen
+    mine = tiles(api(user), f"/api/portal/{access.pk}/home-tiles/")["schiessnachweis"]
+    assert mine["shown"] is True
+    assert mine["content"]["reason"] == (
+        "Dein letzter Schießtermin war am 02.05.2026; für den Nachweis zählt jeder Monat."
+    )
+    assert mine["content"]["figures"][0]["value"] == "1 / 18"
+    assert mine["content"]["rows"][0]["detail"] == "zuletzt 02.05.2026"
+    # Ohne Modul Schießsport keine Kachel
+    club.enabled_modules = [x for x in club.enabled_modules if x != "shooting"]
+    club.save()
+    assert "schiessnachweis" not in tiles(api(user), f"/api/portal/{access.pk}/home-tiles/")

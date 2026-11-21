@@ -47,6 +47,7 @@ lassen sich dort wie die übrigen Blöcke verschieben und verbreitern.
 | `umfragen-pinnwand` | Laufende Umfragen mit Rücklauf, neue Beiträge | eine Umfrage läuft | Modul Umfragen oder Pinnwand mit Leserecht |
 | `versammlung` | Datum, Einladungsfrist, Anträge | Versammlung in höchstens sechs Wochen | Modul Versammlungen, Leserecht |
 | `sammelbestellungen` | Laufende Sammelbestellungen mit Frist und Zahl der Bestellungen | Bestellschluss in höchstens sieben Tagen | Verein, Modul Sammelbestellungen, `orders.view` |
+| `training` | Übungsabende und Trainings der nächsten sieben Tage, Anwesende | heute ist ein Übungsabend | Verein, Modul Training, `training.view` |
 
 ## Kacheln im Mitgliederbereich
 
@@ -57,8 +58,7 @@ lassen sich dort wie die übrigen Blöcke verschieben und verbreitern.
 | `pinnwand` | neue Beiträge | neue Beiträge seit dem letzten Lesen |
 | `meine-anmeldungen` | eigene Anmeldungen | eigene Veranstaltung in höchstens sieben Tagen |
 | `sammelbestellung` | laufende Sammelbestellungen, bestellt oder nicht | eine läuft, und das Mitglied hat noch nicht bestellt |
-
-Kacheln für Training und Schießnachweis folgen, sobald das Modul dazu da ist.
+| `schiessnachweis` | Schießtermine der letzten 12 Monate, letzter Termin je Waffenart | letzter bestätigter Schießtermin vor mindestens 21 Tagen oder je Waffenart vor mindestens 60 Tagen (nur mit Modul Schießsport) |
 
 Code: `backend/hometiles/` (`org_tiles.py`, `portal_tiles.py`), Wahl in
 `backend/accounts/home_actions.py`; Browser `frontend/src/components/home/TileCard.tsx`;

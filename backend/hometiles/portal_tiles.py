@@ -18,6 +18,8 @@ ZERO = Decimal("0.00")
 # Anlässe (docs/startseite-kacheln.md)
 WORKHOURS_LAST_DAYS = 92
 REGISTRATION_DAYS = 7
+SHOOTING_DAYS = 21
+SHOOTING_CLASS_DAYS = 60
 ROWS = 4
 
 
@@ -248,6 +250,67 @@ def _orders(ctx: PortalContext) -> Content:
     return c
 
 
+# --- 6 Mein Schießnachweis -------------------------------------------------------------------
+
+
+def _shooting_available(ctx: PortalContext) -> bool:
+    from training.access import shooting_on
+
+    return ctx.current and module_on(ctx.org, "training") and shooting_on(ctx.org)
+
+
+def _shooting(ctx: PortalContext) -> Content:
+    from django.db.models import Max
+
+    from training import services
+    from training.models import ShootingEntry
+
+    day = today()
+    state = services.evaluate(ctx.access.membership, day)
+    acq = state["acquisition"]
+    confirmed = ShootingEntry.objects.filter(
+        membership_id=ctx.member,
+        status=ShootingEntry.Status.CONFIRMED,
+        permit_required=True,
+        date__lte=day,
+    )
+    last = dict(
+        confirmed.values("weapon_class")
+        .annotate(last=Max("date"))
+        .values_list("weapon_class", "last")
+    )
+    c = Content(link="/mein-bereich/training", link_label=gettext("Zum Schießbuch"))
+    c.figures.append(
+        Figure(
+            gettext("Schießtermine (12 Monate)"),
+            f"{count(acq['count'])} / {acq['needed']}",
+            "good" if acq["ok"] else None,
+        )
+    )
+    if state["pending"]:
+        c.figures.append(Figure(gettext("Noch nicht bestätigt"), count(state["pending"]), "warn"))
+    for p in state["possession"]:
+        when = last.get(p["weapon_class"])
+        if when is None:
+            continue
+        idle = (day - when).days
+        tone = "good" if p["ok"] else ("warn" if idle >= SHOOTING_CLASS_DAYS else None)
+        detail = gettext("zuletzt {date}").format(date=day_text(when))
+        c.rows.append(Row(str(p["label"]), detail, "/mein-bereich/training", tone))
+        if idle >= SHOOTING_CLASS_DAYS and not c.reason:
+            c.reason = gettext(
+                "Für „{label}“ war dein letzter Termin am {date}; je Quartal braucht es einen."
+            ).format(label=p["label"], date=day_text(when))
+    latest = max(last.values(), default=None)
+    if latest is not None and (day - latest).days >= SHOOTING_DAYS and acq["count"]:
+        c.reason = gettext(
+            "Dein letzter Schießtermin war am {date}; für den Nachweis zählt jeder Monat."
+        ).format(date=day_text(latest))
+    if latest is None:
+        c.text = gettext("Im Schießbuch steht noch kein bestätigter Termin.")
+    return c
+
+
 TILES: list[Tile] = [
     Tile(
         "meine-arbeitsstunden",
@@ -283,5 +346,12 @@ TILES: list[Tile] = [
         lambda: gettext("Laufende Sammelbestellungen, bei denen du noch bestellen kannst"),
         _orders_available,
         _orders,
+    ),
+    Tile(
+        "schiessnachweis",
+        lambda: gettext("Mein Schießnachweis"),
+        lambda: gettext("Stand für Erwerb und Besitz nach § 14 WaffG und letzte Schießtermine"),
+        _shooting_available,
+        _shooting,
     ),
 ]

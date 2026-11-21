@@ -16910,3 +16910,65 @@ msgid "Eine Sammelbestellung läuft, du hast noch nicht bestellt."
 msgid_plural "{n} Sammelbestellungen laufen, du hast noch nicht bestellt."
 msgstr[0] "A group order is running and you have not ordered yet."
 msgstr[1] "{n} group orders are running and you have not ordered yet."
+
+#: hometiles
+msgid "Zum Training"
+msgstr "Go to training"
+
+#: hometiles
+msgid "Heute ist Übungsabend: „{title}“."
+msgstr "Practice night today: “{title}”."
+
+#: hometiles
+msgid "In den nächsten sieben Tagen ist kein Training eingetragen."
+msgstr "No training is scheduled for the next seven days."
+
+#: hometiles
+msgid "Training diese Woche"
+msgstr "Training this week"
+
+#: hometiles
+msgid "Übungsabende und Trainings der nächsten sieben Tage mit Anwesenheit"
+msgstr "Practice nights and training sessions of the next seven days with attendance"
+
+#: hometiles
+msgid "Zum Schießbuch"
+msgstr "Go to shooting log"
+
+#: hometiles
+msgid "Schießtermine (12 Monate)"
+msgstr "Shooting sessions (12 months)"
+
+#: hometiles
+msgid "Noch nicht bestätigt"
+msgstr "Not yet confirmed"
+
+#: hometiles
+msgid "zuletzt {date}"
+msgstr "last on {date}"
+
+#: hometiles
+msgid "Für „{label}“ war dein letzter Termin am {date}; je Quartal braucht es einen."
+msgstr "Your last session for “{label}” was on {date}; one is needed each quarter."
+
+#: hometiles
+msgid "Dein letzter Schießtermin war am {date}; für den Nachweis zählt jeder Monat."
+msgstr "Your last shooting session was on {date}; every month counts for the proof."
+
+#: hometiles
+msgid "Im Schießbuch steht noch kein bestätigter Termin."
+msgstr "There is no confirmed session in the shooting log yet."
+
+#: hometiles
+msgid "Mein Schießnachweis"
+msgstr "My shooting record"
+
+#: hometiles
+msgid "Stand für Erwerb und Besitz nach § 14 WaffG und letzte Schießtermine"
+msgstr "Status for acquisition and possession under section 14 of the German Weapons Act and latest sessions"
+
+#: hometiles
+msgid "{n} anwesend"
+msgid_plural "{n} anwesend"
+msgstr[0] "{n} present"
+msgstr[1] "{n} present"
