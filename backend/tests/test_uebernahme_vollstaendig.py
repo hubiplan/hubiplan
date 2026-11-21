@@ -82,6 +82,10 @@ NICHT = {
     # Umfragen sind kurzlebige Meinungsbilder; Ergebnisse vorher als PDF oder Excel sichern
     "pinboard.NoticePhoto": "Foto eines Pinnwand-Beitrags, kommt mit dem Beitrag nicht mit",
     "pinboard.NoticeSeen": "Lesestand der Pinnwand je Mitglied",
+    "orders.OrderCampaign": "Sammelbestellung, kurzlebig; Summen vorher als Excel sichern",
+    "orders.OrderArticle": "Artikel einer Sammelbestellung, kommt mit ihr nicht mit",
+    "orders.MemberOrder": "Bestellung eines Mitglieds, Rechnungen kommen über die Rechnungen mit",
+    "orders.MemberOrderLine": "Position einer Bestellung, kommt mit ihr nicht mit",
     "surveys.Survey": "Umfrage (Meinungsbild, kein Beschluss), Ergebnis als PDF/Excel sichern",
     "surveys.SurveyQuestion": "Frage einer Umfrage, kommt mit der Umfrage nicht mit",
     "surveys.SurveyOption": "Antwortmöglichkeit einer Umfrage, kommt mit der Umfrage nicht mit",
