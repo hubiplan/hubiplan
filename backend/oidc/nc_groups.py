@@ -30,7 +30,7 @@ from core.tenancy import rls_bypass
 
 from . import claims
 from .models import Account, Client
-from .nc_accounts import MAX_AT_ONCE, NextcloudError, _notify, _ocs, missing_text
+from .nc_accounts import MAX_AT_ONCE, NextcloudError, _notify, _ocs, not_found_text, quiet_texts
 
 log = logging.getLogger(__name__)
 
@@ -41,8 +41,10 @@ class GroupPlan:
     current: list[str] = field(default_factory=list)
     wanted: list[str] = field(default_factory=list)
     error: str = ""
-    # Das Konto gibt es in der Nextcloud nicht (mehr): kein Fehler des Abgleichs, nichts zu tun
+    # Die Nextcloud findet das Konto nicht (gelöscht oder Administrator): kein Fehler des
+    # Abgleichs, nichts zu tun; ``note`` sagt, was es ist
     missing: bool = False
+    note: str = ""
 
     @property
     def add(self) -> list[str]:
@@ -98,6 +100,7 @@ def plan(client: Client, users: list[int] | None = None) -> list[GroupPlan]:
             p.wanted = []
             if exc.code == 404:
                 p.missing = True
+                p.note = not_found_text(client, account.nc_user)
             else:
                 p.error = str(exc)[:300]
         plans.append(p)
@@ -166,19 +169,19 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
         _notify(client, message, [], what="groups")
         return result
     done: list[str] = []
-    gone = missing_text()
+    quiet = quiet_texts()
     for p in plans:
         who = f"{p.account.nc_user} ({p.account.user.email})"
         if p.missing:
             result["missing"] += 1
             # Nur beim ersten Mal melden, nicht jede Nacht wieder
-            if p.account.error != gone:
-                p.account.error = gone
+            if p.account.error != p.note:
+                p.account.error = p.note
                 with rls_bypass():
                     p.account.save(update_fields=["error"])
-                done.append(f"{who}: {gone}")
+                done.append(f"{who}: {p.note}")
             continue
-        if p.account.error == gone:
+        if p.account.error in quiet:
             p.account.error = ""
             with rls_bypass():
                 p.account.save(update_fields=["error"])

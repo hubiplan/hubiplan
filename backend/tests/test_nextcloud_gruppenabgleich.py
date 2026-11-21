@@ -36,6 +36,8 @@ class FakeGroups:
         self.changes: list[tuple[str, str, str]] = []
         # Konten, die es in der Nextcloud nicht (mehr) gibt
         self.gone: set[str] = set()
+        # Administratorkonten: Gruppen-Admins bekommen für sie „nicht gefunden“ (998)
+        self.admins: set[str] = set()
 
     def _answer(self, statuscode: int, data: dict, status: int = 200):
         payload = {"ocs": {"meta": {"statuscode": statuscode}, "data": data}}
@@ -49,9 +51,14 @@ class FakeGroups:
         if path == "cloud/user":
             return self._answer(200, {"id": "hubiplan-dienst", "subadmin": sorted(self.admin_of)})
         segments = path.split("/")
+        if segments == ["cloud", "users"]:
+            # Benutzerliste der Gruppen, die das Dienstkonto verwaltet (auch Administratoren)
+            search = query.get("search", [""])[0].casefold()
+            known = (set(self.members) | self.admins) - self.gone
+            return self._answer(200, {"users": sorted(u for u in known if search in u.casefold())})
         assert segments[:2] == ["cloud", "users"] and segments[3] == "groups", path
         user = unquote(segments[2])
-        if user in self.gone:
+        if user in self.gone or user in self.admins:
             return self._answer(998, {}, 404)
         groups = self.members.setdefault(user, set())
         if method == "GET":
@@ -194,7 +201,7 @@ def test_geloeschtes_konto_ist_kein_fehler_und_meldet_sich_einmal(api, orgs, boa
     assert len(mail.outbox) == 1
     body = mail.outbox[0].body
     assert "vbisher (vorstand-a@example.org)" in body
-    assert "Bisherige Benutzernamen" in body
+    assert "Bisherige Benutzernamen" in body and "gelöscht" in body
     # Nächste Nacht: keine neue Mail
     nc_groups.sync(client)
     assert len(mail.outbox) == 1
@@ -208,6 +215,26 @@ def test_geloeschtes_konto_ist_kein_fehler_und_meldet_sich_einmal(api, orgs, boa
     nc_groups.sync(client)
     with rls_bypass():
         assert Account.objects.get(client=client).error == ""
+
+
+def test_administratorkonto_wird_erkannt_und_ausgelassen(api, orgs, board_a, cloud):
+    client, secret = synced(orgs["a"], usernames="vorstand-a@example.org = vbisher")
+    login(api, client, secret, board_a)
+    give_role(make_user("chef@example.org"), orgs["a"], name="Vorsitz")
+    # Das Konto gibt es, es ist aber Administrator: die Nextcloud sagt „nicht gefunden“
+    cloud.admins.add("vbisher")
+    mail.outbox.clear()
+    result = nc_groups.sync(client)
+    assert result["errors"] == 0 and result["missing"] == 1 and cloud.changes == []
+    client.refresh_from_db()
+    assert client.groups_error == ""
+    assert len(mail.outbox) == 1
+    assert "vbisher (vorstand-a@example.org): Das Konto ist Administrator" in mail.outbox[0].body
+    nc_groups.sync(client)
+    assert len(mail.outbox) == 1
+    report = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/nextcloud/{client.pk}/groups/").json()
+    row = next(a for a in report["accounts"] if a["nc_user"] == "vbisher")
+    assert row["missing"] and "Administrator" in row["error"]
 
 
 def test_fehler_nennt_das_konto(api, orgs, board_a, cloud):

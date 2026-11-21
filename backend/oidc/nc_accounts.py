@@ -46,13 +46,43 @@ class NextcloudError(Exception):
 
 
 def missing_text() -> str:
-    """Hinweis zu einem Konto, das es in der Nextcloud nicht (mehr) gibt. Steht auch in
-    ``Account.error``, damit die Mail nur beim ersten Mal kommt und nicht jede Nacht."""
+    """Hinweis zu einem Konto, das die Nextcloud nicht findet. Steht auch in ``Account.error``,
+    damit die Mail nur beim ersten Mal kommt und nicht jede Nacht."""
     return gettext(
-        "Das Konto gibt es in der Nextcloud nicht (mehr). Wurde es dort gelöscht, ist nichts zu "
-        "tun. Sonst unter Einstellungen › Nextcloud bei „Bisherige Benutzernamen“ prüfen, ob der "
-        "Benutzername stimmt."
+        "Die Nextcloud findet das Konto nicht. Entweder wurde es dort gelöscht oder es ist "
+        "Administrator der Nextcloud (solche Konten darf das Dienstkonto nicht verwalten); dann "
+        "ist nichts zu tun. Sonst unter Einstellungen › Nextcloud bei „Bisherige Benutzernamen“ "
+        "prüfen, ob der Benutzername stimmt."
     )
+
+
+def admin_text() -> str:
+    """Hinweis zu einem Konto, das Administrator der Nextcloud ist (wie ``missing_text``)."""
+    return gettext(
+        "Das Konto ist Administrator der Nextcloud. Solche Konten darf das Dienstkonto nicht "
+        "verwalten, HUBIplan lässt es deshalb aus. Gruppen und Sperre dieses Kontos bitte in der "
+        "Nextcloud von Hand pflegen."
+    )
+
+
+def quiet_texts() -> set[str]:
+    """Vermerke, die kein Fehler sind und nur einmal gemeldet werden."""
+    return {missing_text(), admin_text()}
+
+
+def not_found_text(client: Client, nc_user: str) -> str:
+    """Die Nextcloud meldet 404/998 für ein Konto: gelöscht oder Administrator?
+
+    Einem Gruppen-Admin antwortet die Nextcloud bei Administratorkonten genauso wie bei
+    gelöschten („nicht gefunden“). In der Benutzerliste seiner Gruppen sieht er sie aber."""
+    try:
+        data = _ocs(client, "GET", "cloud/users", {"search": nc_user})
+    except NextcloudError:
+        return missing_text()
+    users = data.get("users") or []
+    if nc_user.casefold() in {str(u).casefold() for u in users}:
+        return admin_text()
+    return missing_text()
 
 
 # --- Schnittstelle der Nextcloud ---
@@ -223,7 +253,6 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
         return result
     done: list[str] = []
     failed: list[str] = []
-    gone = missing_text()
     for step in steps:
         account = step.account
         enable = step.action == "enable"
@@ -232,12 +261,13 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
             _set_enabled(client, account.nc_user, enable)
         except NextcloudError as exc:
             if exc.code == 404:
-                # Konto gibt es nicht (mehr): kein Fehler, nur beim ersten Mal melden
-                if account.error != gone:
-                    account.error = gone
+                # Gelöscht oder Administrator: kein Fehler, nur beim ersten Mal melden
+                note = not_found_text(client, account.nc_user)
+                if account.error != note:
+                    account.error = note
                     with rls_bypass():
                         account.save(update_fields=["error"])
-                    done.append(f"{who}: {gone}")
+                    done.append(f"{who}: {note}")
                 continue
             account.error = str(exc)[:300]
             with rls_bypass():

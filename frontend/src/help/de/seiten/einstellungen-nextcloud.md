@@ -21,7 +21,7 @@ Tragt unter **Gruppen, die HUBIplan abgleicht** ein, welche Gruppen HUBIplan set
 
 Mit **Gruppen vergleichen** seht ihr vorher, wer in welche Gruppe kommt und wer aus welcher herausfällt; das ändert noch nichts. Würden mehr als drei Konten auf einmal Gruppen verlieren, hält der Abgleich an und alle, die Rollen verwalten, bekommen eine Mail. Prüft dann die Rollen und bestätigt mit **Gruppen jetzt abgleichen**. Dateien gehen dabei nie verloren, nur der Zugriff auf die Ordner der Gruppe.
 
-Gibt es ein Konto in der Nextcloud nicht mehr, meldet HUBIplan das einmal per Mail mit Benutzername und E-Mail-Adresse und lässt das Konto danach in Ruhe. Wurde es in der Nextcloud gelöscht, ist nichts zu tun. Sonst stimmt meist der Benutzername nicht: Prüft dann die Zeile unter **Bisherige Benutzernamen in der Nextcloud**. Bei **Gruppen vergleichen** steht der Hinweis an der betroffenen Person.
+Findet die Nextcloud ein Konto nicht, meldet HUBIplan das einmal per Mail mit Benutzername und E-Mail-Adresse und lässt das Konto danach in Ruhe. Administratorkonten der Nextcloud darf das Dienstkonto nicht verwalten; HUBIplan erkennt sie und lässt sie aus. Ihre Gruppen pflegt ihr in der Nextcloud von Hand. Wurde ein Konto in der Nextcloud gelöscht, ist nichts zu tun. Sonst stimmt meist der Benutzername nicht: Prüft dann die Zeile unter **Bisherige Benutzernamen in der Nextcloud**. Bei **Gruppen vergleichen** steht der Hinweis an der betroffenen Person.
 
 ## Dateien in der Nextcloud
 

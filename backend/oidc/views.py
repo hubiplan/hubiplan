@@ -730,7 +730,7 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                         "current": p.current,
                         "add": p.add,
                         "remove": p.remove,
-                        "error": nc_groups.missing_text() if p.missing else p.error,
+                        "error": p.note if p.missing else p.error,
                         "missing": p.missing,
                     }
                     for p in plans
