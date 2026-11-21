@@ -61,6 +61,7 @@ class BankStatementSerializer(serializers.ModelSerializer):
             "duplicate_count",
             "open_count",
             "balance",
+            "channel",
             "created_at",
         ]
         read_only_fields = fields

@@ -210,7 +210,7 @@ def _purpose(details) -> str:
     return " ".join(p for p in parts if p)
 
 
-def _parse_xml(data: bytes) -> list[Statement]:
+def _parse_xml(data: bytes, reports: bool = False) -> list[Statement]:
     # defusedxml lehnt DTD und Entitäten in jeder Kodierung ab, auch UTF-16 (Audit 03.11. GA-S09)
     try:
         root = safe_fromstring(data, forbid_dtd=True)
@@ -221,6 +221,11 @@ def _parse_xml(data: bytes) -> list[Statement]:
     except (ET.ParseError, ValueError):  # ValueError: z. B. encoding="UTF-16LE"
         raise CamtError(gettext("Die Datei ist kein gültiges XML.")) from None
     container = _find(root, "BkToCstmrStmt")
+    unit = "Stmt"
+    if container is None and reports and _find(root, "BkToCstmrAcctRpt") is not None:
+        # Umsatzbericht (CAMT.052), wie ihn der Abruf bei der Bank liefert: gleicher Aufbau
+        container = _find(root, "BkToCstmrAcctRpt")
+        unit = "Rpt"
     if container is None:
         if _find(root, "BkToCstmrAcctRpt") is not None:
             raise CamtError(
@@ -230,7 +235,7 @@ def _parse_xml(data: bytes) -> list[Statement]:
             )
         raise CamtError(gettext("Keine CAMT.053-Datei (Kontoauszug) gefunden."))
     statements = []
-    for stmt in _children(container, "Stmt"):
+    for stmt in _children(container, unit):
         iban = _text(stmt, "Acct", "Id", "IBAN").replace(" ", "").upper()
         currency = _text(stmt, "Acct", "Ccy") or "EUR"
         opening, open_date = _balance(stmt, "OPBD")
@@ -329,6 +334,13 @@ def _parse_xml(data: bytes) -> list[Statement]:
     if not statements:
         raise CamtError(gettext("Die Datei enthält keinen Kontoauszug."))
     return statements
+
+
+def parse_fetched(data: bytes) -> list[Statement]:
+    """Ein XML-Dokument aus dem Abruf bei der Bank: Kontoauszug oder Umsatzbericht."""
+    if len(data) > MAX_XML:
+        raise CamtError(gettext("Die Antwort der Bank ist zu groß."))
+    return _check_counts(_parse_xml(data, reports=True))
 
 
 def parse(data: bytes) -> list[Statement]:

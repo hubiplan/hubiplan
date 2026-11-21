@@ -80,6 +80,7 @@ Installationspakete an Dritte gehen (siehe unten).
 | verovio | LGPL-3.0-only | Notensatz für MusicXML/MEI/ABC (PDF, MIDI); dynamisch geladene native Bibliothek, austauschbar per `pip`; bringt Notenschriften (Leipzig, Bravura u. a.) unter der SIL Open Font License mit, die nur als Pfade in SVG/PDF landen |
 | svglib | LGPL-3.0-or-later | wandelt das SVG von Verovio in reportlab-Zeichnungen; nutzt lxml (BSD-3-Clause), cssselect2 und tinycss2 (BSD-3-Clause) |
 | pypdfium2 | Apache-2.0 oder BSD-3-Clause | Bringt PDFium (BSD-3-Clause, Teile Apache-2.0) als native Bibliothek mit; dient nur dem Vorschaubild der Satzung auf der Webseite |
+| fints (python-fints) 5.0.1, enum-tools | LGPL-3.0-or-later | Bankanbindung über FinTS ([bankanbindung.md](bankanbindung.md)); unverändert als Python-Paket installiert und per `pip` austauschbar. Bringt mt-940 (BSD-3-Clause), sepaxml (MIT), bleach (Apache-2.0) und lxml mit. Der nachgebaute Bankserver der Tests (`backend/tests/fints_server.py`) ist aus den Tests von python-fints abgeleitet und trägt den Hinweis im Dateikopf; er ist nicht Teil des Server-Images |
 | psycopg, psycopg-binary | LGPL-3.0 | Enthält libpq (PostgreSQL-Lizenz) und OpenSSL (Apache-2.0) |
 | PostgreSQL 18 | PostgreSQL License | |
 | Redis 8 (Server) | RSALv2 oder SSPLv1 oder AGPLv3, nach Wahl | HUBIplan nutzt Redis unverändert und nur intern als Warteschlange und Zwischenspeicher, unter der **AGPLv3**. Redis wird nicht als eigener Dienst angeboten. |

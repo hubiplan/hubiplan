@@ -13,6 +13,6 @@ stichworte: [bank statement, CAMT, bank, transactions, matching]
 3. HUBIplan suggests what each transaction belongs to. Check the suggestions and click **Apply**, or **Apply all suggestions**.
 4. For transactions without a suggestion, choose **Assign invoice** or **New entry**.
 
-HUBIplan needs no bank credentials and does not connect to the bank itself.
+This way HUBIplan needs no bank credentials. If the bank connection is switched on, you can also [fetch the transactions directly from the bank](/hilfe/umsaetze-abrufen).
 
 ![Starting point: Import and match a bank statement](bild:kontoauszug-einlesen)

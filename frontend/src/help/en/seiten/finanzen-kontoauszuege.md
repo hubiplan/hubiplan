@@ -4,7 +4,7 @@ titel: Finance › Bank statements
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/kontoauszuege]
-stichworte: [bank statement, CAMT, bank, matching]
+stichworte: [bank statement, CAMT, bank, matching, FinTS, fetch]
 ---
 
 Here you upload the bank statement from online banking in CAMT.053 format. For each transaction HUBIplan suggests what it belongs to, such as an invoice or a booking, and you confirm. HUBIplan detects if the same file is read twice. Imported statements are retained as originals. Ignore unwanted transactions or reopen incorrect assignments.
@@ -12,3 +12,7 @@ Here you upload the bank statement from online banking in CAMT.053 format. For e
 If the IBAN of a transaction belongs to a business partner (Administration › Business partners, section Treasury), HUBIplan assigns the transaction to that partner. A booking created from it takes over the partner.
 
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
+
+## Fetch transactions from the bank
+
+If the bank connection is switched on (Settings › Modules), the card “Fetch transactions from the bank” appears at the top. There you set up a bank access and fetch the transactions directly with your PIN and the bank’s approval. The PIN is not stored. Fetched statements are marked “fetched”; the bank’s answer is kept as the original, like an uploaded file.

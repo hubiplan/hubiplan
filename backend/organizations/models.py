@@ -526,6 +526,9 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     cash_counts_enabled = models.BooleanField(
         "Zählprotokoll und Kassenbericht für Feste", default=False
     )
+    # Kasse: Umsätze direkt bei der Bank abrufen (FinTS); zusätzlich muss der Betreiber die
+    # Bankanbindung auf dem Server eingeschaltet haben (docs/bankanbindung.md)
+    bank_access_enabled = models.BooleanField("Bankanbindung", default=False, db_default=False)
     # Früher: Geschäftspartner oben im Hauptmenü. Nicht mehr verwendet; die Spalte bleibt eine
     # Fassung lang für den Rückweg und wird im nächsten Release entfernt (docs/releases.md).
     partners_in_menu = models.BooleanField(

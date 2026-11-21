@@ -114,6 +114,8 @@ export interface OrgSummary {
   sepa_enabled?: boolean
   /** Zählprotokoll und Kassenbericht für Feste eingeschaltet (Finanzen › Konten) */
   cash_counts_enabled?: boolean
+  /** Bankanbindung eingeschaltet und auf dem Server eingerichtet (Einstellungen › Module) */
+  bank_access_enabled?: boolean
   /** Dachverband darf seinen Vereinen Module freigeben */
   modules_pass_down?: boolean
   /** Rücklagen nach § 62 AO eingeschaltet (Finanzen › Konten) */

@@ -16120,3 +16120,147 @@ msgstr "Work hours up to age"
 #: billing/workhour_views.py
 msgid "Arbeitsstunden {name}"
 msgstr "Work hours {name}"
+
+#: access/modules.py
+msgid "Bankanbindung: Umsätze direkt bei der Bank abrufen"
+msgstr "Bank connection: fetch transactions directly from the bank"
+
+#: finance/bank_access_views.py
+msgid "Die Bankleitzahl hat acht Ziffern."
+msgstr "The bank code has eight digits."
+
+#: finance/bank_access_views.py
+msgid "Die Bankanbindung ist für diesen Verein nicht eingeschaltet."
+msgstr "The bank connection is not switched on for this club."
+
+#: finance/bank_access_views.py
+msgid "Diesen Vorgang hat eine andere Person begonnen."
+msgstr "Another person started this operation."
+
+#: finance/bank_fetch.py
+msgid "Die Freigabe kam nicht rechtzeitig."
+msgstr "The approval did not arrive in time."
+
+#: finance/bank_fetch.py
+msgid "Für diesen Bankzugang läuft gerade ein anderer Vorgang."
+msgstr "Another operation is currently running for this bank access."
+
+#: finance/bank_fetch.py
+msgid "Nach zwei abgelehnten Anmeldungen ruht dieser Bankzugang bis {time}, damit die Bank ihn nicht sperrt. Bitte PIN im Online-Banking der Bank prüfen."
+msgstr "After two rejected sign-ins this bank access is paused until {time} so that the bank does not block it. Please check the PIN in the bank’s online banking."
+
+#: finance/bank_fetch.py
+msgid "Die letzte Anmeldung hat die Bank abgelehnt. Viele Banken sperren den Zugang nach drei falschen PINs. Bitte die PIN genau prüfen und den Versuch bestätigen."
+msgstr "The bank rejected the last sign-in. Many banks block the access after three wrong PINs. Please check the PIN carefully and confirm the attempt."
+
+#: finance/bank_fetch.py
+msgid "Zu diesem Bankzugang gehört noch kein Konto. Bitte beim Konto die IBAN eintragen und den Zugang neu einrichten."
+msgstr "No account belongs to this bank access yet. Please enter the IBAN for the account and set up the access again."
+
+#: finance/bank_fetch.py
+msgid "Die Bankanbindung ist nicht eingeschaltet."
+msgstr "The bank connection is not switched on."
+
+#: finance/bank_fetch.py
+msgid "Bitte den Bankzugang zuerst fertig einrichten."
+msgstr "Please finish setting up the bank access first."
+
+#: finance/bank_fetch.py
+msgid "Der Vorgang ist abgelaufen oder beendet. Bitte neu beginnen."
+msgstr "The operation has expired or ended. Please start again."
+
+#: finance/bank_fetch.py
+msgid "Abgebrochen."
+msgstr "Cancelled."
+
+#: finance/bank_fetch.py
+msgid "Die Bank hat Umsätze eines anderen Kontos geliefert ({iban})."
+msgstr "The bank delivered transactions of a different account ({iban})."
+
+#: finance/bank_fetch.py
+msgid "Abruf vom {date}"
+msgstr "Fetch of {date}"
+
+#: finance/bankweg.py
+msgid "Unbekannter Bankweg."
+msgstr "Unknown bank channel."
+
+#: finance/camt.py
+msgid "Die Antwort der Bank ist zu groß."
+msgstr "The bank’s answer is too large."
+
+#: finance/fints_weg.py
+msgid "Die FinTS-Adresse muss mit https:// beginnen."
+msgstr "The FinTS address must start with https://."
+
+#: finance/fints_weg.py
+msgid "Die FinTS-Adresse ist ungültig."
+msgstr "The FinTS address is invalid."
+
+#: finance/fints_weg.py
+msgid "FinTS ist auf diesem Server nicht eingerichtet."
+msgstr "FinTS is not set up on this server."
+
+#: finance/fints_weg.py
+msgid "Bitte die PIN eingeben."
+msgstr "Please enter the PIN."
+
+#: finance/fints_weg.py
+msgid "Die Bank verlangt eine Bestätigung, die HUBIplan nicht kennt."
+msgstr "The bank asks for a confirmation that HUBIplan does not know."
+
+#: finance/fints_weg.py
+msgid "Die Bank meldet: {text} ({code})"
+msgstr "The bank reports: {text} ({code})"
+
+#: finance/fints_weg.py
+msgid "Das Konto {iban} gehört nicht zu diesem Bankzugang."
+msgstr "The account {iban} does not belong to this bank access."
+
+#: finance/fints_weg.py
+msgid "Die Bank hat die Anmeldung abgelehnt. Bitte Anmeldename und PIN prüfen."
+msgstr "The bank rejected the sign-in. Please check login name and PIN."
+
+#: finance/fints_weg.py
+msgid "Der Zugang ist bei der Bank vorläufig gesperrt. Bitte im Online-Banking der Bank entsperren."
+msgstr "The access is temporarily blocked at the bank. Please unblock it in the bank’s online banking."
+
+#: finance/fints_weg.py
+msgid "Die Bank ist nicht erreichbar: {reason}"
+msgstr "The bank cannot be reached: {reason}"
+
+#: finance/fints_weg.py
+msgid "Die Bank bietet das für diesen Zugang nicht an."
+msgstr "The bank does not offer this for this access."
+
+#: finance/fints_weg.py
+msgid "Die Bank verlangt eine neue Freigabe. Bitte erneut abrufen."
+msgstr "The bank asks for a new approval. Please fetch again."
+
+#: finance/fints_weg.py
+msgid "Der Vorgang bei der Bank ist fehlgeschlagen."
+msgstr "The operation at the bank failed."
+
+#: finance/models.py
+msgid "FinTS"
+msgstr "FinTS"
+
+#: finance/models.py
+msgid "Einrichten"
+msgstr "Set up"
+
+#: finance/models.py
+msgid "Umsätze abrufen"
+msgstr "Fetch transactions"
+
+#: finance/models.py
+msgid "abgelaufen"
+msgstr "expired"
+
+#: finance/mt940.py
+msgid "Ungültiges Datum „{raw}“ im Umsatz."
+msgstr "Invalid date “{raw}” in the transaction."
+
+#: finance/mt940.py
+msgid "Ein Umsatz der Bank ist nicht lesbar. Eingelesen wurde nichts."
+msgstr "A transaction from the bank cannot be read. Nothing was imported."
