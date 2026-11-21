@@ -39,6 +39,13 @@ ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 # organizations.addresses.HostMiddleware jede Anfrage gegen die feste Liste und die
 # eingetragenen Adressen; Django selbst lässt jeden Host durch.
 ADDRESSES_FROM_LIST = env_bool("HUBIPLAN_ADRESSEN_AUS_LISTE", False)
+
+# Bankanbindung über FinTS (docs/bankanbindung.md): aus, bis der Betreiber sie einschaltet und
+# die Registrierungsnummer seines Produkts einträgt. Die Nummer steht nie im Quellcode.
+FINTS_ENABLED = env_bool("HUBIPLAN_FINTS", False)
+FINTS_PRODUCT_ID = os.environ.get("HUBIPLAN_FINTS_PRODUKT_ID", "").strip()
+# Nur für Tests gegen einen nachgebauten Bankserver auf dem eigenen Rechner
+FINTS_ALLOW_INTERNAL = False
 FIXED_ALLOWED_HOSTS = list(ALLOWED_HOSTS)
 if ADDRESSES_FROM_LIST:
     ALLOWED_HOSTS = ["*"]

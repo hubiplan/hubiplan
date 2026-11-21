@@ -507,6 +507,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/app.md](docs/app.md) | Schnittstelle für die Apps (Android, iOS), Push |
 | [docs/mcp.md](docs/mcp.md) | KI-Schnittstelle (Model Context Protocol) |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
+| [docs/bankanbindung.md](docs/bankanbindung.md) | Bankanbindung (FinTS): Umsätze direkt bei der Bank abrufen, Einrichtung für Betreiber |
 | [docs/geschaeftspartner.md](docs/geschaeftspartner.md) | Geschäftspartner, Sponsoring, Verträge |
 | [docs/e-rechnungen.md](docs/e-rechnungen.md) | Leistungsrechnungen, E-Rechnungen, Rechnungspostfach |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |

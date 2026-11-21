@@ -13,6 +13,6 @@ stichworte: [Kontoauszug, CAMT, Bank, Umsätze, Zuordnung]
 3. HUBIplan schlägt für jeden Umsatz vor, wozu er gehört. Prüfe die Vorschläge und klicke auf **Übernehmen**, oder auf **Alle Vorschläge übernehmen**.
 4. Für Umsätze ohne Vorschlag wählst du **Rechnung zuordnen** oder **Neue Buchung**.
 
-HUBIplan braucht keine Bankzugangsdaten und verbindet sich nicht selbst mit der Bank.
+Für diesen Weg braucht HUBIplan keine Bankzugangsdaten. Ist die Bankanbindung eingeschaltet, kannst du die Umsätze auch [direkt bei der Bank abrufen](/hilfe/umsaetze-abrufen).
 
 ![Ausgangspunkt: Kontoauszug einlesen und zuordnen](bild:kontoauszug-einlesen)

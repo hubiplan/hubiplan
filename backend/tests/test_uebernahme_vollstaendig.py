@@ -37,6 +37,8 @@ NICHT = {
     "portal.PortalAccess": "Zugänge hängen an Konten; Mitglieder werden am Ziel neu eingeladen",
     "portal.LoginLink": "Anmeldelink, kurzlebig",
     "billing.IncomingMailbox": "Zugangsdaten des Postfachs, am Ziel neu einrichten",
+    "finance.BankAccess": "Zugangsdaten zum Online-Banking, am Ziel neu einrichten",
+    "finance.BankTask": "Vorgang bei der Bank auf der alten Instanz, höchstens Minuten gültig",
     "billing.IncomingMail": "Eingang des Postfachs der alten Instanz",
     "oidc.FileItem": "In der Nextcloud abgelegte Datei der alten Instanz (Frist dort); die "
     "Datei bleibt in der Nextcloud",

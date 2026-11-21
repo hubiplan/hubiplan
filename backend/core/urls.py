@@ -41,6 +41,7 @@ from feeproofs import urls as feeproof_urls
 from feeproofs import views as feeproof_views
 from finance import (
     asset_views,
+    bank_access_views,
     bank_views,
     budget_views,
     cash_audit_views,
@@ -148,6 +149,12 @@ org_router.register(
     "finance/bank-statements", bank_views.BankStatementViewSet, basename="finance-bank-statement"
 )
 org_router.register("finance/bank-lines", bank_views.BankLineViewSet, basename="finance-bank-line")
+org_router.register(
+    "finance/bank-access", bank_access_views.BankAccessViewSet, basename="finance-bank-access"
+)
+org_router.register(
+    "finance/bank-tasks", bank_access_views.BankTaskViewSet, basename="finance-bank-task"
+)
 org_router.register(
     "finance/cash-counts", cash_count_views.CashCountViewSet, basename="finance-cash-count"
 )

@@ -39,6 +39,7 @@ const WITHOUT_SORT = [
   'pages/competitions/Shootoffs.tsx',
   'pages/entries/EntryResults.tsx',
   'pages/events/EventsPage.tsx',
+  'pages/finance/BankAccess.tsx',
   'pages/finance/CashCountsPage.tsx',
   'pages/finance/ClosingsPage.tsx',
   'pages/finance/MasterDataPages.tsx',

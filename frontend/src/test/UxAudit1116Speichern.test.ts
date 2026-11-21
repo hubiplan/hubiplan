@@ -29,6 +29,7 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/billing/FeeProofDiscounts.tsx': 'Ermäßigungen, wirken auf Beiträge',
   'pages/billing/HouseholdFeeRules.tsx': 'Beitragsregeln für Haushalte',
   'pages/expenses/ExpensesPage.tsx': 'Einstellungen der Auslagen (Freigabe, Konten)',
+  'pages/finance/BankAccess.tsx': 'Zugangsdaten zur Bank: eine Änderung richtet den Zugang neu ein',
   'pages/finance/CashReceiptsPage.tsx': 'Barbeleg',
   'pages/finance/DonationsPage.tsx': 'Spenden und Bescheinigungen',
   'pages/finance/ProjectsPage.tsx': 'kleiner Dialog (Name)',

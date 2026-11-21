@@ -401,6 +401,13 @@ EXTRAS: tuple[Extra, ...] = (
     ),
     Extra("datev", gettext_noop("DATEV-Export"), "finance", "datev_enabled"),
     Extra(
+        "bank_access",
+        gettext_noop("Bankanbindung: Umsätze direkt bei der Bank abrufen"),
+        "finance",
+        "bank_access_enabled",
+        needs_service="fints",
+    ),
+    Extra(
         "tax_areas",
         gettext_noop("Steuerliche Bereiche in der Kasse"),
         "tax",
@@ -418,6 +425,10 @@ def extra_available(extra: Extra) -> bool:
         from cards import apple, wallet
 
         return wallet.enabled() or apple.enabled()
+    if extra.needs_service == "fints":
+        from finance.bankweg import fints_available
+
+        return fints_available()
     return True
 
 

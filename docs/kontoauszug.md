@@ -2,8 +2,10 @@
 
 Unter **Finanzen › Kontoauszüge** lädt die Kasse den Kontoauszug aus dem Online-Banking hoch.
 Das Format heißt CAMT.053 (ISO 20022, bei vielen Banken „CAMT-Export“, als XML oder ZIP mit
-mehreren Auszügen). Tagesumsätze im Format CAMT.052 und das alte MT940 werden nicht gelesen.
-HUBIplan verbindet sich nicht selbst mit der Bank und braucht keine Bankzugangsdaten.
+mehreren Auszügen). Tagesumsätze im Format CAMT.052 und das alte MT940 werden als Datei nicht
+gelesen. Für diesen Weg braucht HUBIplan keine Bankzugangsdaten. Wo der Betreiber die
+Bankanbindung eingerichtet hat, lassen sich die Umsätze auch direkt bei der Bank abrufen
+([bankanbindung.md](bankanbindung.md)).
 Lesen mit `finance.view`, Einlesen und Zuordnen mit `finance.edit`.
 
 ## Ablauf

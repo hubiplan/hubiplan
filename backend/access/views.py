@@ -563,6 +563,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "sepa_enabled": _sepa_enabled(org),
         # Kasse: Zählprotokoll und Kassenbericht für Feste (Schalter unter Konten)
         "cash_counts_enabled": bool(org.cash_counts_enabled) and org.type != "platform",
+        # Kasse: Umsätze direkt bei der Bank abrufen (nur wenn der Betreiber FinTS eingerichtet hat)
+        "bank_access_enabled": _bank_access_enabled(org),
         # Dachverband darf seinen Vereinen Module freigeben (M6)
         "modules_pass_down": bool(org.modules_pass_down) and org.type == "federation",
         # Kasse: Rücklagen nach § 62 AO (Schalter unter Konten)
@@ -595,6 +597,12 @@ def _donations_enabled(org: Organization) -> bool:
 
     with tenant_context(org.pk):
         return is_enabled(org)
+
+
+def _bank_access_enabled(org) -> bool:
+    from finance.bankweg import fints_available
+
+    return bool(org.bank_access_enabled) and org.type != "platform" and fints_available()
 
 
 def _sepa_enabled(org: Organization) -> bool:
