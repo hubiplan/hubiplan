@@ -16634,3 +16634,55 @@ msgid "Ein neuer Beitrag auf der Pinnwand."
 msgid_plural "{n} neue Beiträge auf der Pinnwand."
 msgstr[0] "One new post on the noticeboard."
 msgstr[1] "{n} new posts on the noticeboard."
+
+#: hometiles
+msgid "Sammelbestellungen"
+msgstr "Group orders"
+
+#: hometiles
+msgid "Sammelbestellung"
+msgstr "Group order"
+
+#: hometiles
+msgid "Zu den Bestellungen"
+msgstr "Go to orders"
+
+#: hometiles
+msgid "bis {date}"
+msgstr "until {date}"
+
+#: hometiles
+msgid "bestellt"
+msgstr "ordered"
+
+#: hometiles
+msgid "noch nicht bestellt"
+msgstr "not ordered yet"
+
+#: hometiles
+msgid "Zurzeit läuft keine Sammelbestellung."
+msgstr "No group order is running at the moment."
+
+#: hometiles
+msgid "Bestellschluss für „{title}“ ist am {date}."
+msgstr "Orders for “{title}” close on {date}."
+
+#: hometiles
+msgid "Laufende Sammelbestellungen mit Bestellschluss und Zahl der Bestellungen"
+msgstr "Running group orders with closing date and number of orders"
+
+#: hometiles
+msgid "Laufende Sammelbestellungen, bei denen du noch bestellen kannst"
+msgstr "Running group orders you can still order from"
+
+#: hometiles
+msgid "{n} Bestellung"
+msgid_plural "{n} Bestellungen"
+msgstr[0] "{n} order"
+msgstr[1] "{n} orders"
+
+#: hometiles
+msgid "Eine Sammelbestellung läuft, du hast noch nicht bestellt."
+msgid_plural "{n} Sammelbestellungen laufen, du hast noch nicht bestellt."
+msgstr[0] "A group order is running and you have not ordered yet."
+msgstr[1] "{n} group orders are running and you have not ordered yet."

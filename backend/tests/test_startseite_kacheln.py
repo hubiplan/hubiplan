@@ -140,3 +140,48 @@ def test_app_pfad_vorhanden(club):
     assert reverse("app-admin-home-tiles", kwargs={"org_id": club.pk}).endswith(
         f"/admin/u/{club.pk}/home-tiles/"
     )
+
+
+def test_sammelbestellung_bei_vorstand_und_mitglied(api, club, board_a, monkeypatch):
+    from django.utils import timezone
+
+    from orders.models import MemberOrder, OrderCampaign
+    from portal.models import PortalAccess
+
+    club.enabled_modules = sorted({*club.enabled_modules, "orders"})
+    club.save()
+    monkeypatch.setattr("hometiles.org_tiles.today", lambda: datetime.date(2026, 6, 10))
+    monkeypatch.setattr("hometiles.portal_tiles.today", lambda: datetime.date(2026, 6, 10))
+    monkeypatch.setattr("orders.services.today", lambda: datetime.date(2026, 6, 10))
+    m = make_member(club, "Anna", "Beispiel")
+    user = make_user("anna-bestellt@example.org")
+    with rls_bypass(), tenant_context(club.pk):
+        access = PortalAccess.objects.create(organization=club, membership=m, user=user)
+        camp = OrderCampaign.objects.create(
+            organization=club,
+            title="Vereinskleidung 2027",
+            deadline=datetime.date(2026, 6, 30),
+            published_at=timezone.now(),
+        )
+    board_url = f"/api/orgs/{club.pk}/home-tiles/"
+    member_url = f"/api/portal/{access.pk}/home-tiles/"
+    # Frist in drei Wochen: Kachel da, aber noch kein Anlass beim Vorstand
+    tile = tiles(api(board_a), board_url)["sammelbestellungen"]
+    assert tile["shown"] is False
+    assert tile["content"]["rows"][0]["detail"] == "bis 30.06.2026 · 0 Bestellungen"
+    # Mitglied hat noch nicht bestellt: Kachel erscheint von selbst
+    mine = tiles(api(user), member_url)["sammelbestellung"]
+    assert mine["shown"] is True
+    assert mine["content"]["reason"] == "Eine Sammelbestellung läuft, du hast noch nicht bestellt."
+    # Nach der Bestellung kein Anlass mehr; Bestellschluss in einer Woche weckt den Vorstand
+    with rls_bypass(), tenant_context(club.pk):
+        MemberOrder.objects.create(organization=club, campaign=camp, membership=m)
+    mine = tiles(api(user), member_url)["sammelbestellung"]
+    assert mine["shown"] is False
+    assert mine["content"]["rows"][0]["detail"] == "bis 30.06.2026 · bestellt"
+    monkeypatch.setattr("hometiles.org_tiles.today", lambda: datetime.date(2026, 6, 25))
+    tile = tiles(api(board_a), board_url)["sammelbestellungen"]
+    assert tile["shown"] is True
+    assert (
+        tile["content"]["reason"] == "Bestellschluss für „Vereinskleidung 2027“ ist am 30.06.2026."
+    )
