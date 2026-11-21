@@ -99,9 +99,7 @@ export function placeBlocks(blocks: HomeBlock[], layout?: HomeLayout | null): Pl
 export function layoutOf(placed: PlacedBlock[]): HomeLayout {
   return {
     order: placed.map((b) => b.key),
-    hidden: placed
-      .filter((b) => (b.optional ? b.choice === 'off' : !b.shown))
-      .map((b) => b.key),
+    hidden: placed.filter((b) => (b.optional ? b.choice === 'off' : !b.shown)).map((b) => b.key),
     shown: placed.filter((b) => b.optional && b.choice === 'on').map((b) => b.key),
     wide: placed.filter((b) => b.cols === GRID_COLUMNS).map((b) => b.key),
     sizes: Object.fromEntries(placed.map((b) => [b.key, { w: b.cols, h: b.rows }])),

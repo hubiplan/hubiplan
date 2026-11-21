@@ -4,7 +4,8 @@ titel: Startseite anpassen
 rechte: []
 routen: [/]
 reihe: 60
-stichworte: [Startseite, Kacheln, bei Anlass, Mitgliederbereich, Schnellaktionen, Reihenfolge, Dashboard]
+stichworte:
+  [Startseite, Kacheln, bei Anlass, Mitgliederbereich, Schnellaktionen, Reihenfolge, Dashboard]
 ---
 
 1. Öffne die Startseite.
