@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from urllib.parse import quote, urlencode
 
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
 
 from accounts.mfa import decrypt
 from audit.log import record
@@ -43,6 +43,16 @@ class NextcloudError(Exception):
     def __init__(self, message: str, code: int | None = None):
         super().__init__(message)
         self.code = code
+
+
+def missing_text() -> str:
+    """Hinweis zu einem Konto, das es in der Nextcloud nicht (mehr) gibt. Steht auch in
+    ``Account.error``, damit die Mail nur beim ersten Mal kommt und nicht jede Nacht."""
+    return gettext(
+        "Das Konto gibt es in der Nextcloud nicht (mehr). Wurde es dort gelöscht, ist nichts zu "
+        "tun. Sonst unter Einstellungen › Nextcloud bei „Bisherige Benutzernamen“ prüfen, ob der "
+        "Benutzername stimmt."
+    )
 
 
 # --- Schnittstelle der Nextcloud ---
@@ -212,16 +222,28 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
         _notify(client, message, [])
         return result
     done: list[str] = []
+    failed: list[str] = []
+    gone = missing_text()
     for step in steps:
         account = step.account
         enable = step.action == "enable"
+        who = f"{account.nc_user} ({account.user.email})"
         try:
             _set_enabled(client, account.nc_user, enable)
         except NextcloudError as exc:
+            if exc.code == 404:
+                # Konto gibt es nicht (mehr): kein Fehler, nur beim ersten Mal melden
+                if account.error != gone:
+                    account.error = gone
+                    with rls_bypass():
+                        account.save(update_fields=["error"])
+                    done.append(f"{who}: {gone}")
+                continue
             account.error = str(exc)[:300]
             with rls_bypass():
                 account.save(update_fields=["error"])
             result["errors"] += 1
+            failed.append(f"{who}: {exc}")
             continue
         account.disabled_by_hubiplan = not enable
         account.changed_at = now
@@ -242,11 +264,17 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
             )
         result["enabled" if enable else "disabled"] += 1
         label = gettext("aktiviert") if enable else gettext("deaktiviert")
-        done.append(f"{account.nc_user} ({account.user.email}): {label}")
+        done.append(f"{who}: {label}")
     error = ""
     if result["errors"]:
-        error = gettext("{count} Konten konnten nicht geändert werden.").format(
-            count=result["errors"]
+        error = (
+            ngettext(
+                "{count} Konto konnte nicht geändert werden.",
+                "{count} Konten konnten nicht geändert werden.",
+                result["errors"],
+            ).format(count=result["errors"])
+            + " "
+            + "; ".join(failed)
         )
     _finish(client, error, now)
     if done or error:

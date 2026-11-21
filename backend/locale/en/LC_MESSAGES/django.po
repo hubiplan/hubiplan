@@ -3827,6 +3827,15 @@ msgstr "Nextcloud rejects the service account or app password."
 msgid "Das Konto gibt es in der Nextcloud nicht (mehr)."
 msgstr "This account does not exist in Nextcloud (any more)."
 
+msgid ""
+"Das Konto gibt es in der Nextcloud nicht (mehr). Wurde es dort gelöscht, ist "
+"nichts zu tun. Sonst unter Einstellungen › Nextcloud bei „Bisherige "
+"Benutzernamen“ prüfen, ob der Benutzername stimmt."
+msgstr ""
+"This account does not exist in Nextcloud (any more). If it was deleted "
+"there, nothing needs to be done. Otherwise check under Settings › Nextcloud, "
+"“Existing user names in the Nextcloud”, that the user name is correct."
+
 msgid "Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."
 msgstr "The service account may not manage this account (group admin?)."
 
@@ -3849,8 +3858,10 @@ msgid "deaktiviert"
 msgstr "disabled"
 
 #, python-brace-format
-msgid "{count} Konten konnten nicht geändert werden."
-msgstr "{count} accounts could not be changed."
+msgid "{count} Konto konnte nicht geändert werden."
+msgid_plural "{count} Konten konnten nicht geändert werden."
+msgstr[0] "{count} account could not be changed."
+msgstr[1] "{count} accounts could not be changed."
 
 #, python-brace-format
 msgid "Nextcloud „{name}“: Konten abgeglichen"
@@ -15538,8 +15549,10 @@ msgstr "removed from “{group}”"
 
 #: oidc/nc_groups.py
 #, python-brace-format
-msgid "{count} Gruppenänderungen gingen nicht."
-msgstr "{count} group changes failed."
+msgid "{count} Gruppenänderung ging nicht."
+msgid_plural "{count} Gruppenänderungen gingen nicht."
+msgstr[0] "{count} group change failed."
+msgstr[1] "{count} group changes failed."
 
 #: oidc/nc_accounts.py
 #, python-brace-format
