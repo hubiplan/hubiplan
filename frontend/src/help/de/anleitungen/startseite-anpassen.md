@@ -17,7 +17,7 @@ stichworte:
 
 Kacheln stehen zunächst auf **bei Anlass**: Sie erscheinen von selbst, wenn gerade etwas ansteht, zum Beispiel wenn ein Konto im Minus steht, eine Umfrage läuft, ein Termin mit Anmeldung näher rückt oder im Januar die Stichtagsmeldung ansteht. Ist nichts los, bleiben sie weg. **Immer** zeigt eine Kachel auch ohne Anlass, **nie** blendet sie auch bei Anlass aus. Du siehst nur Kacheln, für die du die Rechte hast.
 
-Im Mitgliederbereich lässt sich die Startseite genauso anpassen. Dort gibt es Kacheln für offene Arbeitsstunden, unbeantwortete Umfragen, neue Beiträge auf der Pinnwand und eigene Anmeldungen. Die Apps zeigen dieselben Kacheln als Übersicht; eine Auswahl in der App gilt auch im Browser und umgekehrt.
+Im Mitgliederbereich lässt sich die Startseite genauso anpassen. Dort gibt es Kacheln für offene Arbeitsstunden, unbeantwortete Umfragen, neue Beiträge auf der Pinnwand, eigene Anmeldungen, laufende Sammelbestellungen und, mit Schießsport, den eigenen Schießnachweis. Die Apps zeigen dieselben Kacheln als Übersicht; eine Auswahl in der App gilt auch im Browser und umgekehrt.
 
 Die Anordnung gilt nur für dich und je Einheit getrennt. **Standard wiederherstellen** kehrt zur üblichen Reihenfolge zurück.
 
