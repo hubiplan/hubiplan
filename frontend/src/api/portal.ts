@@ -28,6 +28,7 @@ export interface DeptSummary {
   helpers_enabled?: boolean
   surveys_enabled?: boolean
   pinboard_enabled?: boolean
+  training_enabled?: boolean
   bookings_enabled?: boolean
   expenses_enabled?: boolean
   imprint_key?: string
@@ -57,6 +58,10 @@ export interface PortalEntry {
   /** Pinnwand (Modul) und Beiträge seit dem letzten Lesen */
   pinboard_enabled?: boolean
   pinboard_new?: number
+  /** Training (Modul), Schießbuch (mit Schießsport) und offenes Einchecken */
+  training_enabled?: boolean
+  shooting_log_enabled?: boolean
+  training_checkin?: number
   /** Sammelbestellungen (Modul) und offene ohne eigene Bestellung */
   orders_enabled?: boolean
   orders_open?: number

@@ -121,6 +121,7 @@ from todos import remote_views as todo_remote
 from todos import series_views as todo_series_views
 from todos import views as todo_views
 from todos.event_links import EventChoicesView
+from training import urls as training_urls
 from website import urls as website_urls
 
 from . import views
@@ -320,6 +321,7 @@ org_patterns = [
     path("surveys/", include("surveys.urls")),
     path("orders/", include("orders.urls")),
     path("pinboard/", include("pinboard.urls")),
+    path("training/", include("training.urls")),
     path("obligations/", include("obligations.urls")),
     path("greetings/", include("greetings.urls")),
     path("privacy/", include("privacy.urls")),
@@ -930,6 +932,7 @@ org_patterns = [
     *circular_urls.org_patterns,
     *expense_urls.org_patterns,
     *feeproof_urls.org_patterns,
+    *training_urls.org_patterns,
     *gate_names("social", website_urls.org_patterns, "website-social"),
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
@@ -958,6 +961,7 @@ dept_patterns = [
     path("helpers/", include("helpers.urls")),
     path("surveys/", include("surveys.urls")),
     path("pinboard/", include("pinboard.urls")),
+    path("training/", include("training.urls")),
     path("places/", include("places.urls")),
     *entry_urls.dept_patterns,
     path(
@@ -1179,6 +1183,7 @@ urlpatterns = [
     ),
     path("portal/<int:access_id>/", include(expense_urls.portal_patterns)),
     path("portal/<int:access_id>/", include(feeproof_urls.portal_patterns)),
+    path("portal/<int:access_id>/", include(training_urls.portal_patterns)),
     path("portal/<int:access_id>/surveys/", survey_portal.ListView.as_view()),
     path(
         "portal/<int:access_id>/home-tiles/",

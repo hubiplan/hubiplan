@@ -63,6 +63,8 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/pinboard/Pinboard.tsx': 'Beitrag der Pinnwand, Mitglieder sehen ihn sofort',
   'pages/portal/PortalPage.tsx': 'Mitgliederbereich (Änderungsmeldung an den Vorstand)',
   'pages/surveys/SurveysPage.tsx': 'Umfrage (Fragen ändern laufende Antworten)',
+  'pages/training/SessionDialog.tsx':
+    'Training: Datum und Schießtermin ändern die Einträge im Schießbuch aller Anwesenden',
   'pages/website/DocumentsPage.tsx': 'öffentliches Dokument',
   'pages/website/GalleryPage.tsx': 'öffentliche Galerie',
 }

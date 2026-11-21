@@ -203,6 +203,11 @@ MODULE_MODELS = (
     "meetings.Attendance",
     "meetings.MinutesVersion",
     "meetings.Motion",
+    # Training nach den Terminen (ein Training kann an einem Termin hängen), Anwesenheit und
+    # Schießbuch nach ihrem Training
+    "training.TrainingSession",
+    "training.Attendance",
+    "training.ShootingEntry",
     # Kassenprüfung nach den Versammlungen (Verknüpfung zum Bericht der Kassenprüfer)
     "finance.CashAudit",
     "finance.CashAuditSample",
@@ -307,6 +312,8 @@ MEMBER_MODELS = {
     "qualifications.qualification",
     "feeproofs.discountassignment",
     "feeproofs.feeproof",
+    "training.attendance",
+    "training.shootingentry",
     "events.eventresponse",
     "circulars.circularrecipient",
     "website.publicationconsent",
@@ -394,6 +401,8 @@ DROP_IF_MISSING = {
     "qualifications.qualification": "person",
     "feeproofs.discountassignment": "membership",
     "feeproofs.feeproof": "membership",
+    "training.attendance": "membership",
+    "training.shootingentry": "membership",
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
     "circulars.circularrecipient": "club",
@@ -517,6 +526,9 @@ SECRET_FIELDS = {
     "website.designversion": {"published_by"},
     "portal.changerequest": {"user", "decided_by"},
     "portal.cancellationrequest": {"user", "decided_by"},
+    # Einchecken per QR-Code gilt nur auf der alten Instanz; Bestätigt-von bleibt als Name
+    "training.trainingsession": {"checkin_open", "checkin_key"},
+    "training.shootingentry": {"confirmed_by"},
 }
 
 # Zeitpunkte, die der Import sonst neu setzen würde (``auto_now_add``/``auto_now``), die aber
