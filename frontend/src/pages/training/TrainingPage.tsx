@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import { PERM } from '../../api/orgs.ts'
 import { trainingApi, trainingBase } from '../../api/training.ts'
-import type { TrainingSession } from '../../api/training.ts'
+import type { TrainingReport, TrainingSession } from '../../api/training.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { Field, LoadError, Loading } from '../../components/ui.tsx'
@@ -155,40 +157,7 @@ function Sessions({ base }: { base: string }) {
           {t('Lege Übungsabende und Trainings an und erfasse, wer da war.')}
         </EmptyList>
       ) : (
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>{t('Datum')}</th>
-                <th>{t('Bezeichnung')}</th>
-                <th>{t('Art')}</th>
-                <th>{t('Leitung')}</th>
-                <th className="num">{t('Anwesend')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.sessions.map((s) => (
-                <tr key={s.id}>
-                  <td>
-                    {formatDate(s.date)} <span className="muted small">{timeLabel(s)}</span>
-                  </td>
-                  <td>
-                    <button type="button" className="link-button" onClick={() => setOpen(s.id)}>
-                      {s.title}
-                    </button>
-                    {s.shooting && <span className="muted small"> · {s.discipline}</span>}
-                    {s.checkin_open && (
-                      <span className="badge badge-info">{t('Einchecken offen')}</span>
-                    )}
-                  </td>
-                  <td>{s.kind_label}</td>
-                  <td>{s.leader}</td>
-                  <td className="num">{s.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SessionTable sessions={data.sessions} onOpen={setOpen} />
       )}
       {(open !== null || creating) && (
         <SessionDialog
@@ -252,30 +221,103 @@ function Report({ base }: { base: string }) {
               attendances: data.total_attendances,
             })}
           </p>
-          {data.members.length > 0 && (
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>{t('Name')}</th>
-                    <th className="num">{t('Teilnahmen')}</th>
-                    <th className="num">{t('Anteil')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.members.map((m) => (
-                    <tr key={m.membership}>
-                      <td>{m.name}</td>
-                      <td className="num">{m.count}</td>
-                      <td className="num">{m.share} %</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {data.members.length > 0 && <ReportTable members={data.members} />}
         </>
       )}
     </div>
+  )
+}
+
+function SessionTable({
+  sessions,
+  onOpen,
+}: {
+  sessions: TrainingSession[]
+  onOpen: (id: number) => void
+}) {
+  const search = useRowSearch(
+    sessions,
+    (s) => [s.title, s.kind_label, s.leader, s.discipline, s.department_name].join(' '),
+    t('Trainings'),
+  )
+  const sort = useRowSort(search.shown, {
+    date: (s) => s.date,
+    title: (s) => s.title,
+    kind: (s) => s.kind_label,
+    leader: (s) => s.leader,
+    count: (s) => s.count,
+  })
+  return (
+    <>
+      {search.field}
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              {sort.head('date', t('Datum'))}
+              {sort.head('title', t('Bezeichnung'))}
+              {sort.head('kind', t('Art'))}
+              {sort.head('leader', t('Leitung'))}
+              {sort.head('count', t('Anwesend'), { className: 'num' })}
+            </tr>
+          </thead>
+          <tbody>
+            {sort.rows.map((s) => (
+              <tr key={s.id}>
+                <td>
+                  {formatDate(s.date)} <span className="muted small">{timeLabel(s)}</span>
+                </td>
+                <td>
+                  <button type="button" className="link-button" onClick={() => onOpen(s.id)}>
+                    {s.title}
+                  </button>
+                  {s.shooting && <span className="muted small"> · {s.discipline}</span>}
+                  {s.checkin_open && (
+                    <span className="badge badge-info">{t('Einchecken offen')}</span>
+                  )}
+                </td>
+                <td>{s.kind_label}</td>
+                <td>{s.leader}</td>
+                <td className="num">{s.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+function ReportTable({ members }: { members: TrainingReport['members'] }) {
+  const search = useRowSearch(members, (m) => m.name, t('Teilnahmen'))
+  const sort = useRowSort(search.shown, {
+    name: (m) => m.name,
+    count: (m) => m.count,
+    share: (m) => m.share,
+  })
+  return (
+    <>
+      {search.field}
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              {sort.head('name', t('Name'))}
+              {sort.head('count', t('Teilnahmen'), { className: 'num' })}
+              {sort.head('share', t('Anteil'), { className: 'num' })}
+            </tr>
+          </thead>
+          <tbody>
+            {sort.rows.map((m) => (
+              <tr key={m.membership}>
+                <td>{m.name}</td>
+                <td className="num">{m.count}</td>
+                <td className="num">{m.share} %</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }
