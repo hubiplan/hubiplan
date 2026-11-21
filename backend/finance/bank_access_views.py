@@ -220,29 +220,30 @@ class BankAccessViewSet(FinanceMixin, viewsets.ModelViewSet):
         return self._step(request, BankTask.Kind.FETCH)
 
 
+class BankTaskSerializer(serializers.ModelSerializer):
+    access_name = serializers.CharField(source="access.name", read_only=True)
+
+    class Meta:
+        model = BankTask
+        fields = [
+            "id",
+            "access",
+            "access_name",
+            "kind",
+            "status",
+            "message",
+            "created_at",
+            "finished_at",
+        ]
+        read_only_fields = fields
+
+
 class BankTaskViewSet(FinanceMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     """Vorgänge bei der Bank: Liste zum Nachvollziehen, Fortsetzen nach der Freigabe."""
 
     pagination_class = None
 
-    class Serializer(serializers.ModelSerializer):
-        access_name = serializers.CharField(source="access.name", read_only=True)
-
-        class Meta:
-            model = BankTask
-            fields = [
-                "id",
-                "access",
-                "access_name",
-                "kind",
-                "status",
-                "message",
-                "created_at",
-                "finished_at",
-            ]
-            read_only_fields = fields
-
-    serializer_class = Serializer
+    serializer_class = BankTaskSerializer
 
     def get_queryset(self):
         return (
