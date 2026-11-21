@@ -7,6 +7,7 @@ import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalSurveys } from './PortalSurveys.tsx'
 import { PortalPinboard } from './PortalPinboard.tsx'
 import { PortalTraining } from './PortalTraining.tsx'
+import { PortalOrders } from './PortalOrders.tsx'
 import { PortalExpenses } from './PortalExpenses.tsx'
 import { PortalFeeProofs } from './PortalFeeProofs.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
@@ -224,6 +225,16 @@ function PortalRoutes() {
           element={
             <PortalSection title={t('Training')}>
               <PortalTraining key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
+      {activePortal.orders_enabled && (
+        <Route
+          path="bestellungen"
+          element={
+            <PortalSection title={t('Bestellungen')}>
+              <PortalOrders key={activePortal.id} accessId={activePortal.id} />
             </PortalSection>
           }
         />

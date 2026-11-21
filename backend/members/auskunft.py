@@ -897,6 +897,29 @@ def build(membership: Membership, org) -> bytes:
         [{"zuletzt_gelesen": s.seen_at} for s in NoticeSeen.objects.filter(membership=membership)]
     )
 
+    from orders.models import MemberOrder
+
+    # Sammelbestellungen: eigene Bestellungen mit Positionen
+    files["bestellungen.json"] = _dump(
+        [
+            {
+                "sammelbestellung": o.campaign.title,
+                "frist": o.campaign.deadline,
+                "bemerkung": o.note,
+                "positionen": [
+                    {"artikel": line.article.name, "auswahl": line.variant, "menge": line.quantity}
+                    for line in o.lines.select_related("article")
+                ],
+                "rechnung": o.invoice.display_number if o.invoice_id else "",
+                "ausgegeben": o.handed_out_at,
+                "angelegt": o.created_at,
+            }
+            for o in MemberOrder.objects.filter(membership=membership).select_related(
+                "campaign", "invoice"
+            )
+        ]
+    )
+
     from registrations.models import Registration
 
     # Anmeldungen zu Terminen (mit Participant): eigene und solche, in denen die Person steht.

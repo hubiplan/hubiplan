@@ -249,6 +249,17 @@ AREAS: tuple[Area, ...] = (
         module="material",
     ),
     Area(
+        "orders",
+        gettext_noop("Bestellungen"),
+        gettext_noop("Sammelbestellungen und Bestellungen der Mitglieder sehen"),
+        gettext_noop(
+            "Sammelbestellungen anlegen, Bestellungen eintragen, Ausgabe abhaken; Rechnungen "
+            "nur zusammen mit dem Recht für Rechnungen"
+        ),
+        org_types=("club",),
+        module="orders",
+    ),
+    Area(
         "infrastructure",
         gettext_noop("Infrastruktur"),
         gettext_noop("Infrastruktur wie Schießstand oder Vereinsheim sehen"),

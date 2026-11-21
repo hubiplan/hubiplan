@@ -62,6 +62,9 @@ export interface PortalEntry {
   training_enabled?: boolean
   shooting_log_enabled?: boolean
   training_checkin?: number
+  /** Sammelbestellungen (Modul) und offene ohne eigene Bestellung */
+  orders_enabled?: boolean
+  orders_open?: number
   /** Auslagen erstatten (Modul) und offene Rückfragen der Kasse */
   expenses_enabled?: boolean
   expenses_questions?: number

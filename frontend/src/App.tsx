@@ -98,6 +98,7 @@ const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'H
 const SurveysPage = lazyPage(() => import('./pages/surveys/SurveysPage.tsx'), 'SurveysPage')
 const PinboardPage = lazyPage(() => import('./pages/pinboard/PinboardPage.tsx'), 'PinboardPage')
 const TrainingPage = lazyPage(() => import('./pages/training/TrainingPage.tsx'), 'TrainingPage')
+const OrdersPage = lazyPage(() => import('./pages/orders/OrdersPage.tsx'), 'OrdersPage')
 const PublicSurveyPage = lazyPage(() => import('./pages/PublicSurveyPage.tsx'), 'PublicSurveyPage')
 const PublicExpensePage = lazyPage(
   () => import('./pages/PublicExpensePage.tsx'),
@@ -452,6 +453,7 @@ export default function App() {
           <Route path="umfragen" element={<SurveysPage />} />
           <Route path="pinnwand" element={<PinboardPage />} />
           <Route path="training" element={<TrainingPage />} />
+          <Route path="bestellungen" element={<OrdersPage />} />
           <Route path="auslagen" element={<DeptExpensesPage />} />
           <Route path="fristenkalender" element={<ObligationsPage />} />
           <Route path="dsgvo/*" element={<DsgvoPage />} />

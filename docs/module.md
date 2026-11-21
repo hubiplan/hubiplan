@@ -83,6 +83,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | Verwaltung | Kasse | `finance` | an | – |
 | | Beiträge und Rechnungen | `billing` | an | – |
 | | Material | `material` | aus | – |
+| | Bestellungen | `orders` | an | – |
 | | Räume und Anlagen | `infrastructure` | aus | – |
 | | Belegung | `bookings` | aus | Material oder Räume |
 | | Steuern & Gemeinnützigkeit | `tax` | aus | Kasse |

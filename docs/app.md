@@ -188,6 +188,9 @@ freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.
   Neuer Beitrag an der Pinnwand (nur mit „Push an die App senden“):
   `{"v":1,"t":"pinboard","access":…,"id":<Beitrag>,"title":…,"text":<Anfang des Texts>,"from":…}`
   (Pinnwand unter `GET /api/portal/<Zugang>/pinboard/` öffnen).
+  Neue Sammelbestellung (nur mit „Push an die App senden“):
+  `{"v":1,"t":"order","access":…,"id":<Sammelbestellung>,"title":…,"text":<Frist>,"from":…}`
+  (Bestellungen unter `GET /api/portal/<Zugang>/orders/` öffnen).
 
 ## Google-Push über das Push-Gateway (Schritt A6)
 
@@ -467,6 +470,14 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `GET/POST …/manage/<id>/checkin/` (aktueller Code mit `refresh_in` und `count`; `open`).
   `training_enabled`, `shooting_log_enabled` und `training_checkin` (Zahl offener Einchecken)
   stehen in `portal`.
+- Sammelbestellungen (Modul `orders`) im Mitgliederbereich, auch mit dem Geräteschlüssel:
+  `GET /api/portal/<Zugang>/orders/` (`campaigns`, offene zuerst, je Eintrag `order` mit
+  `lines`, `total`, `invoice`, `handed_out`), `GET …/orders/<id>/` (dazu `text` und `articles`
+  mit `price`, `variants`, `variant_label`, `max_per_member`, `left`), `PUT …/orders/<id>/order/`
+  mit `lines` (`article`, `variant`, `quantity`) und `note`, `DELETE …/orders/<id>/order/`
+  (zurückziehen). Bestellen und ändern nur bis zur Frist und solange keine Rechnung besteht;
+  `can_order` sagt es. Zahlt der Verein, fehlen alle Preise. `orders_enabled` und `orders_open`
+  (offene Sammelbestellungen ohne eigene Bestellung) stehen in `portal`.
 - Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
   dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
   vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,

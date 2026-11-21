@@ -301,6 +301,16 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "orders",
+        gettext_noop("Bestellungen"),
+        "admin",
+        gettext_noop(
+            "Sammelbestellungen wie Vereinskleidung oder Festschrift, auch reine Größenabfragen"
+        ),
+        default=True,
+        org_types=("club",),
+    ),
+    Module(
         "infrastructure",
         gettext_noop("Räume und Anlagen"),
         "admin",
