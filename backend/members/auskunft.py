@@ -851,6 +851,44 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from training.models import Attendance as TrainingAttendance
+    from training.models import ShootingEntry
+
+    # Training: Anwesenheit bei Übungsabenden und Trainings, Schießbuch (§ 14 WaffG)
+    files["training.json"] = _dump(
+        {
+            "anwesenheit": [
+                {
+                    "datum": a.session.date,
+                    "training": a.session.title,
+                    "art": a.session.get_kind_display(),
+                    "eingetragen": a.get_source_display(),
+                }
+                for a in TrainingAttendance.objects.filter(membership=membership).select_related(
+                    "session"
+                )
+            ],
+            "schiessbuch": [
+                {
+                    "datum": e.date,
+                    "disziplin": e.discipline,
+                    "waffe": e.get_weapon_class_display(),
+                    "kaliber": e.caliber,
+                    "erlaubnispflichtig": e.permit_required,
+                    "eigene_waffe": e.own_weapon,
+                    "wettkampf": e.competition,
+                    "schiessstand": e.place,
+                    "anderer_verein": e.external,
+                    "bemerkung": e.note,
+                    "stand": e.get_status_display(),
+                    "bestaetigt_von": e.confirmed_by_name,
+                    "bestaetigt_am": e.confirmed_at,
+                }
+                for e in ShootingEntry.objects.filter(membership=membership)
+            ],
+        }
+    )
+
     from pinboard.models import NoticeSeen
 
     # Pinnwand: nur der Zeitpunkt, wann sie zuletzt geöffnet wurde (für den Zähler „neu“);

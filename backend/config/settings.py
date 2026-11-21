@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "feeproofs",
     "places",
     "pinboard",
+    "training",
     "admission",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -358,6 +359,8 @@ CELERY_BEAT_SCHEDULE = {
     "auslagen-aufraeumen": {"task": "expenses.tasks.daily", "schedule": taeglich(2, 45)},
     # Pinnwand: abgelaufene Beiträge löschen
     "pinnwand-aufraeumen": {"task": "pinboard.tasks.daily", "schedule": taeglich(3, 20)},
+    # Training: Anwesenheit und Schießbuch nach zehn Jahren löschen
+    "training-aufraeumen": {"task": "training.tasks.daily", "schedule": taeglich(3, 25)},
     # Glückwünsche: Entwürfe vorbereiten, ab der eingestellten Stunde versenden
     "glueckwuensche": {"task": "greetings.tasks.hourly", "schedule": crontab(minute=12)},
     "fristenkalender-erinnerungen": {

@@ -170,6 +170,21 @@ ACTIVITIES: tuple[Activity, ...] = (
         gettext_noop("Protokolle dauerhaft als Vereinsunterlage"),
     ),
     Activity(
+        "training",
+        "training",
+        gettext_noop("Training und Anwesenheit"),
+        gettext_noop(
+            "Anwesenheit bei Übungsabenden und Trainings für Übungsleiterabrechnung und "
+            "Zuschüsse; bei Sportschützen das Schießbuch als Nachweis für das waffenrechtliche "
+            "Bedürfnis (§ 14 WaffG)"
+        ),
+        gettext_noop("Art. 6 Abs. 1 lit. b und c DSGVO"),
+        gettext_noop("Mitglieder"),
+        gettext_noop("Name, Anwesenheit; Schießtermine mit Disziplin, Waffenart und Kaliber"),
+        gettext_noop("Schießsportverband und Waffenbehörde (Bestätigung auf Antrag)"),
+        gettext_noop("nach zehn Jahren gelöscht, mit den Mitgliedsdaten früher"),
+    ),
+    Activity(
         "helpers",
         "helpers",
         gettext_noop("Helferdienste"),

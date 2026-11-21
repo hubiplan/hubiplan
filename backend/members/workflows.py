@@ -580,6 +580,10 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     from surveys.services import forget_membership
 
     forget_membership(membership)
+    # Training: Anwesenheit und Schießbuch entfallen
+    from training.services import forget_membership as forget_training
+
+    forget_training(membership)
     # Anmeldungen zu Terminen: bleiben gezählt, ohne Verweis auf die Person
     from registrations.services import forget_membership as forget_registrations
 
