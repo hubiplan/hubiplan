@@ -11,7 +11,7 @@ stichworte:
 1. Öffne die Startseite.
 2. Klicke oben rechts auf **Startseite anpassen**.
 3. Ziehe einen Block an seinen neuen Platz.
-4. Blende einen Block mit **Zeigen** aus oder ein und wähle unter **Breite**, wie viel Platz er bekommt. Bei Kacheln wie **Kasse auf einen Blick**, **Laufende Anmeldungen** oder **Umfragen und Pinnwand** wählst du unter **Zeigen** zwischen **bei Anlass**, **immer** und **nie**.
+4. Blende einen Block mit **Zeigen** aus oder ein und wähle unter **Breite**, wie viel Platz er bekommt. Bei Kacheln wie „Kasse auf einen Blick“, „Laufende Anmeldungen“ oder „Umfragen und Pinnwand“ wählst du unter **Zeigen** zwischen **bei Anlass**, **immer** und **nie**.
 5. Klicke auf **Fertig**.
 6. Wähle bei den Schnellaktionen unter **Anpassen** bis zu sechs Aktionen, die du oft brauchst.
 

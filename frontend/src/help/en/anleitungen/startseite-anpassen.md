@@ -10,7 +10,7 @@ stichworte: [home page, tiles, when relevant, member area, quick actions, order,
 1. Open the home page.
 2. Click **Customise home page** at the top right.
 3. Drag a block to its new place.
-4. Hide or show a block with **Show** and choose under **Width** how much room it gets. For tiles such as **Finances at a glance**, **Current registrations** or **Surveys and noticeboard**, choose between **when relevant**, **always** and **never** under **Show**.
+4. Hide or show a block with **Show** and choose under **Width** how much room it gets. For tiles such as “Finances at a glance”, “Current registrations” or “Surveys and noticeboard”, choose between **when relevant**, **always** and **never** under **Show**.
 5. Click **Done**.
 6. For the quick actions, choose up to six actions you need often under **Customise**.
 
