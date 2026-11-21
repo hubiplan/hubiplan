@@ -11,7 +11,11 @@ At the bottom (on a tablet, on the left) there are at most five destinations: �
 
 Only items your club has switched on appear. The app opens invoices and minutes only online and does not store them. Long-press the app icon and “Show ID card” opens your card directly. Open “My account” with the icon at the top right. The Back button first takes you to “Events” from any area; only there does it close the app.
 
-“Administration” starts with the list “What would you like to do?”: “Check card” at the top, then “To do” with a count (data changes, photos and events waiting for you) and the areas you have rights for (assign tasks, members, events, cash book, invoices, anniversaries and birthdays). The arrow at the top left or the Back button takes you back to this list. With the matching rights you also find “Membership applications” (review, approve, accept or reject), “Approve bookings” (confirm or reject open requests for the clubhouse, range or equipment) and “Run meeting”: record attendance, scan membership cards at the entrance, open check-in via the app and show the changing QR code on the phone or tablet, create, start and close votes and apply the result. Preparing, inviting and the minutes stay in the browser. If the phone has no screen lock yet, the button “Set up screen lock” opens the system setting directly.
+“Administration” starts with the list “What would you like to do?”: “Check card” at the top, then “To do” with a count (data changes, photos and events waiting for you) and the areas you have rights for (assign tasks, members, events, cash book, invoices, anniversaries and birthdays). The arrow at the top left or the Back button takes you back to this list.
+
+With the matching rights you also find “Membership applications” (review, approve, accept or reject), “Approve bookings” (confirm or reject open requests for the clubhouse, range or equipment) and “Run meeting”: record attendance, scan membership cards at the entrance, open check-in via the app and show the changing QR code on the phone or tablet, create, start and close votes and apply the result. Preparing, inviting and the minutes stay in the browser.
+
+If the phone has no screen lock yet, the button “Set up screen lock” opens the system setting directly.
 
 Pull lists such as events, messages, tasks and the administration areas down to reload them; a line above shows when they were loaded. Without a connection the app shows a grey notice “Offline – you are seeing the data from …” and keeps the last loaded list.
 
