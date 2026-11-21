@@ -20,6 +20,7 @@ from todos import views as todo_views
 from todos.event_links import EventChoicesView
 
 from .admin_api import for_app
+from .admin_urls import booking_patterns, meeting_patterns
 
 
 def _p(route: str, view, name: str, read_only: bool = False):
@@ -63,4 +64,6 @@ urlpatterns = [
         event_views.DeptResponseDetailView,
         "event-response",
     ),
+    *booking_patterns("app-admin-dept"),
+    *meeting_patterns("app-admin-dept"),
 ]

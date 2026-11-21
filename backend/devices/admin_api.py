@@ -51,7 +51,7 @@ from audit.log import current_via
 from changes import tracking
 from core.api_base import OrgScopedMixin
 from core.ratelimit import TooMany, too_many
-from members.open_tasks import event_tasks, member_tasks
+from members.open_tasks import booking_tasks, event_tasks, member_tasks
 
 from . import browser_unlock
 from .auth import AdminTokenAuthentication, DeviceTokenAuthentication
@@ -84,6 +84,10 @@ ADMIN_PERMISSIONS = (
     COMPETITIONS_RESULTS,
     COMPETITIONS_EDIT,
     RESULTS_EDIT,
+    # Vorstandsaufgaben unterwegs: Belegungsanfragen freigeben, Versammlung leiten
+    # (Beitrittsanträge laufen über members.view/members.edit)
+    "bookings.edit",
+    "meetings.edit",
 )
 # Untereinheiten (Rollen nur dort, z. B. Zugführung): Pfad /api/app/v1/admin/d/<Untereinheit>/
 DEPT_ADMIN_PERMISSIONS = (
@@ -96,6 +100,8 @@ DEPT_ADMIN_PERMISSIONS = (
     MEMBERS_EDIT,
     EVENTS_VIEW,
     EVENTS_EDIT,
+    "bookings.edit",
+    "meetings.edit",
 )
 ONLY_READING = {EVENTS_VIEW}
 # Freischalten: höchstens 5 Versuche je Gerät in 15 Minuten
@@ -137,6 +143,8 @@ def admin_departments(user) -> list[dict]:
                     "club_id": ctx.club.pk,
                     "club_name": ctx.club.name,
                     "events": "events" in (ctx.club.enabled_modules or []),
+                    # Neu: Module des Vereins (Belegung, Versammlungen in der Untereinheit)
+                    "modules": sorted(ctx.club.enabled_modules or []),
                     "permissions": own,
                     "stufen": True,
                 }
@@ -378,6 +386,12 @@ class AdminTasksView(AdminScopedMixin, APIView):
         if org.keeps_members and "members" in (org.enabled_modules or []):
             items += member_tasks(org, perms)
         items += event_tasks(org, perms)
+        # Beitrittsanträge und Belegungsanfragen (neu; ältere Apps zeigen sie als Text)
+        if "members" in (org.enabled_modules or []):
+            from admission.open_tasks import application_tasks
+
+            items += application_tasks(request.user, org, perms)
+        items += booking_tasks(org, perms)
         from todos.open_tasks import todo_tasks
 
         items += todo_tasks(request.user, org, perms)
