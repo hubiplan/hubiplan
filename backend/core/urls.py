@@ -51,6 +51,7 @@ from finance import (
 )
 from finance import views as finance_views
 from helpers import portal as helper_portal
+from hometiles import views as hometiles_views
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
 from mcpserver import urls as mcp_urls
@@ -574,6 +575,7 @@ org_patterns = [
     path("accounts/resend/", accounts_view.AccountsResendView.as_view(), name="accounts-resend"),
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
+    path("home-tiles/", hometiles_views.OrgHomeTilesView.as_view(), name="home-tiles"),
     path("setup-status/", setup_status.SetupStatusView.as_view(), name="setup-status"),
     path(
         "change-requests/<int:pk>/decide/",
@@ -1169,6 +1171,11 @@ urlpatterns = [
     path("portal/<int:access_id>/", include(expense_urls.portal_patterns)),
     path("portal/<int:access_id>/", include(feeproof_urls.portal_patterns)),
     path("portal/<int:access_id>/surveys/", survey_portal.ListView.as_view()),
+    path(
+        "portal/<int:access_id>/home-tiles/",
+        hometiles_views.PortalHomeTilesView.as_view(),
+        name="portal-home-tiles",
+    ),
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/follow/", survey_portal.FollowView.as_view()),

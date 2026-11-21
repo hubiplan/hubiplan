@@ -100,6 +100,10 @@ export function fakeApi(routes: Record<string, Handler>) {
       (/^GET \/api\/orgs\/\d+\/finance\/incoming\/mailbox\/$/.test(key)
         ? () => ({ status: 200, body: { enabled: false, address: '' } })
         : undefined) ??
+      // Kacheln bei Anlass auf der Startseite: ohne eigene Angabe keine
+      (/^GET \/api\/(orgs|portal)\/\d+\/home-tiles\/$/.test(key)
+        ? () => ({ status: 200, body: { scope: '', tiles: [] } })
+        : undefined) ??
       // Gespeicherte Orte: ohne eigene Angabe keine
       (/^GET \/api\/(orgs|depts)\/\d+\/places\/$/.test(key)
         ? () => ({ status: 200, body: { places: [], can_edit: false, can_manage: false } })

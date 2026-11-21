@@ -16120,3 +16120,345 @@ msgstr "Work hours up to age"
 #: billing/workhour_views.py
 msgid "Arbeitsstunden {name}"
 msgstr "Work hours {name}"
+
+#: hometiles
+msgid "{h} Std."
+msgstr "{h} h"
+
+#: hometiles
+msgid "Noch keine Konten angelegt."
+msgstr "No accounts set up yet."
+
+#: hometiles
+msgid "Ein Konto steht im Minus."
+msgstr "An account is overdrawn."
+
+#: hometiles
+msgid "Zurzeit keine Veranstaltung mit Anmeldung."
+msgstr "No event with registration at the moment."
+
+#: hometiles
+msgid "Die Stichtagsmeldung steht an."
+msgstr "The annual census report is due."
+
+#: hometiles
+msgid "In den nächsten sieben Tagen ist nichts belegt."
+msgstr "Nothing is booked in the next seven days."
+
+#: hometiles
+msgid "Heute ist etwas belegt."
+msgstr "Something is booked today."
+
+#: hometiles
+msgid "Eine Position liegt über dem Plan."
+msgstr "A budget line is over plan."
+
+#: hometiles
+msgid "Zurzeit läuft keine Umfrage."
+msgstr "No survey is running at the moment."
+
+#: hometiles
+msgid "Keine Versammlung geplant."
+msgstr "No meeting planned."
+
+#: hometiles
+msgid "Zu den Finanzen"
+msgstr "To finances"
+
+#: hometiles
+msgid "Eine Lastschrift ist fällig."
+msgstr "A direct debit is due."
+
+#: hometiles
+msgid "Zum Kalender"
+msgstr "To the calendar"
+
+#: hometiles
+msgid "Zur Stichtagsstatistik"
+msgstr "To the census statistics"
+
+#: hometiles
+msgid "Zur Belegung"
+msgstr "To bookings"
+
+#: hometiles
+msgid "Morgen ist etwas belegt."
+msgstr "Something is booked tomorrow."
+
+#: hometiles
+msgid "Zu den Beitragsregeln"
+msgstr "To the fee rules"
+
+#: hometiles
+msgid "Zum Haushaltsplan"
+msgstr "To the budget"
+
+#: hometiles
+msgid "Eine Umfrage läuft."
+msgstr "A survey is running."
+
+#: hometiles
+msgid "Zu den Umfragen"
+msgstr "To the surveys"
+
+#: hometiles
+msgid "Zu den Versammlungen"
+msgstr "To the meetings"
+
+#: hometiles
+msgid "Noch Tage"
+msgstr "Days to go"
+
+#: hometiles
+msgid "Kasse auf einen Blick"
+msgstr "Finances at a glance"
+
+#: hometiles
+msgid "Kontostände, offene Forderungen, fällige Lastschrift"
+msgstr "Account balances, open receivables, direct debit due"
+
+#: hometiles
+msgid "Laufende Anmeldungen"
+msgstr "Current registrations"
+
+#: hometiles
+msgid "Angemeldet, freie Plätze und unbezahlt je Veranstaltung"
+msgstr "Registered, places left and unpaid per event"
+
+#: hometiles
+msgid "Verein in Zahlen"
+msgstr "Club in figures"
+
+#: hometiles
+msgid "Mitglieder, Eintritte und Austritte im Geschäftsjahr"
+msgstr "Members, joiners and leavers in the financial year"
+
+#: hometiles
+msgid "Belegung diese Woche"
+msgstr "Bookings this week"
+
+#: hometiles
+msgid "Wer Vereinsheim, Räume oder Material in den nächsten sieben Tagen nutzt"
+msgstr "Who uses the clubhouse, rooms or equipment in the next seven days"
+
+#: hometiles
+msgid "Arbeitsstunden-Stand"
+msgstr "Work hours status"
+
+#: hometiles
+msgid "Wer das Soll erfüllt hat und wie viel Ersatzbeitrag sich ergibt"
+msgstr "Who has done their hours and how much substitute fee results"
+
+#: hometiles
+msgid "Haushaltsplan: Plan und Ist"
+msgstr "Budget: plan and actual"
+
+#: hometiles
+msgid "Einnahmen und Ausgaben gegen den Plan, Positionen über Plan"
+msgstr "Income and expenses against plan, lines over plan"
+
+#: hometiles
+msgid "Umfragen und Pinnwand"
+msgstr "Surveys and noticeboard"
+
+#: hometiles
+msgid "Laufende Umfragen mit Rücklauf, neue Beiträge"
+msgstr "Running surveys with responses, new posts"
+
+#: hometiles
+msgid "Nächste Versammlung"
+msgstr "Next meeting"
+
+#: hometiles
+msgid "Datum, Einladungsfrist und Anträge"
+msgstr "Date, invitation deadline and motions"
+
+#: hometiles
+msgid "und {n} weitere"
+msgstr "and {n} more"
+
+#: hometiles
+msgid "Das Geschäftsjahr endet am {date}."
+msgstr "The financial year ends on {date}."
+
+#: hometiles
+msgid "{n} % des Geschäftsjahres sind vorbei."
+msgstr "{n} % of the financial year has passed."
+
+#: hometiles
+msgid "Neu auf der Pinnwand (14 Tage)"
+msgstr "New on the noticeboard (14 days)"
+
+#: hometiles
+msgid "Zur Pinnwand"
+msgstr "To the noticeboard"
+
+#: hometiles
+msgid "Einladen bis"
+msgstr "Invite by"
+
+#: hometiles
+msgid "Die nächste Versammlung ist am {date}."
+msgstr "The next meeting is on {date}."
+
+#: hometiles
+msgid "„{title}“ ist bald."
+msgstr "“{title}” is coming up."
+
+#: hometiles
+msgid "Soll erfüllt"
+msgstr "Hours done"
+
+#: hometiles
+msgid "Ersatzbeitrag bisher"
+msgstr "Substitute fee so far"
+
+#: hometiles
+msgid "Stand im Geschäftsjahr {year}, das am {date} endet."
+msgstr "Status for financial year {year}, which ends on {date}."
+
+#: hometiles
+msgid "{n} auf der Warteliste"
+msgstr "{n} on the waiting list"
+
+#: hometiles
+msgid "{actual} von {plan}"
+msgstr "{actual} of {plan}"
+
+#: hometiles
+msgid "Eintritte {year}"
+msgstr "Joined {year}"
+
+#: hometiles
+msgid "Austritte {year}"
+msgstr "Left {year}"
+
+#: hometiles
+msgid "endet {when}"
+msgstr "ends {when}"
+
+#: hometiles
+msgid "Keine offene Umfrage für dich."
+msgstr "No open survey for you."
+
+#: hometiles
+msgid "Auf der Pinnwand steht gerade nichts."
+msgstr "There is nothing on the noticeboard right now."
+
+#: hometiles
+msgid "Du bist zurzeit für nichts angemeldet."
+msgstr "You are not registered for anything at the moment."
+
+#: hometiles
+msgid "Zu den Helferdiensten"
+msgstr "To volunteer shifts"
+
+#: hometiles
+msgid "ohne Enddatum"
+msgstr "no end date"
+
+#: hometiles
+msgid "Meine Arbeitsstunden"
+msgstr "My work hours"
+
+#: hometiles
+msgid "Geleistet, Soll und was noch offen ist"
+msgstr "Done, required and what is still open"
+
+#: hometiles
+msgid "Offene Umfragen"
+msgstr "Open surveys"
+
+#: hometiles
+msgid "Umfragen, die noch auf deine Antwort warten"
+msgstr "Surveys still waiting for your answer"
+
+#: hometiles
+msgid "Neue Beiträge auf der Pinnwand"
+msgstr "New posts on the noticeboard"
+
+#: hometiles
+msgid "Meine Anmeldungen"
+msgstr "My registrations"
+
+#: hometiles
+msgid "Veranstaltungen, für die du angemeldet bist"
+msgstr "Events you are registered for"
+
+#: hometiles
+msgid "Fehlen am {date} noch Stunden, kostet jede {amount}, zurzeit zusammen {total}."
+msgstr "Each hour still missing on {date} costs {amount}, currently {total} in total."
+
+#: hometiles
+msgid "Dein Soll für {year} ist erfüllt."
+msgstr "You have done your hours for {year}."
+
+#: hometiles
+msgid "Geleistet"
+msgstr "Done"
+
+#: hometiles
+msgid "Soll"
+msgstr "Required"
+
+#: hometiles
+msgid "Bis {date} fehlen dir noch {hours}."
+msgstr "You still need {hours} by {date}."
+
+#: hometiles
+msgid "bis {when}"
+msgstr "until {when}"
+
+#: hometiles
+msgid "Neue Beiträge"
+msgstr "New posts"
+
+#: hometiles
+msgid "noch nicht bezahlt"
+msgstr "not yet paid"
+
+#: hometiles
+msgid "„{title}“ ist bald, die Eintrittskarte findest du am Termin."
+msgstr "“{title}” is coming up; your ticket is with the event."
+
+#: hometiles
+msgid "Offene Forderung"
+msgid_plural "Offene Forderungen"
+msgstr[0] "Open receivable"
+msgstr[1] "Open receivables"
+
+#: hometiles
+msgid "{n} angemeldet"
+msgid_plural "{n} angemeldet"
+msgstr[0] "{n} registered"
+msgstr[1] "{n} registered"
+
+#: hometiles
+msgid "{n} Antwort"
+msgid_plural "{n} Antworten"
+msgstr[0] "{n} answer"
+msgstr[1] "{n} answers"
+
+#: hometiles
+msgid "{n} Platz frei"
+msgid_plural "{n} Plätze frei"
+msgstr[0] "{n} place left"
+msgstr[1] "{n} places left"
+
+#: hometiles
+msgid "{n} unbezahlt"
+msgid_plural "{n} unbezahlt"
+msgstr[0] "{n} unpaid"
+msgstr[1] "{n} unpaid"
+
+#: hometiles
+msgid "Eine Umfrage wartet auf deine Antwort."
+msgid_plural "{n} Umfragen warten auf deine Antwort."
+msgstr[0] "A survey is waiting for your answer."
+msgstr[1] "{n} surveys are waiting for your answer."
+
+#: hometiles
+msgid "Ein neuer Beitrag auf der Pinnwand."
+msgid_plural "{n} neue Beiträge auf der Pinnwand."
+msgstr[0] "One new post on the noticeboard."
+msgstr[1] "{n} new posts on the noticeboard."

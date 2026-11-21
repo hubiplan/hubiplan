@@ -415,6 +415,7 @@ describe('Startseite selbst zusammenstellen', () => {
       order: ['c', 'a', 'b', 'd'],
       hidden: ['d'],
       wide: ['c'],
+      shown: [],
       sizes: {
         c: { w: 12, h: null },
         a: { w: 6, h: null },
@@ -435,6 +436,37 @@ describe('Startseite selbst zusammenstellen', () => {
       ['c', 6, null],
       ['d', 6, null],
     ])
+  })
+
+  it('zeigt Kacheln bei Anlass nur mit Anlass oder eigener Wahl', () => {
+    const tiles = [
+      { key: 'a', label: 'A', render: () => null },
+      { key: 'k1', label: 'K1', optional: true, urgent: true, render: () => null },
+      { key: 'k2', label: 'K2', optional: true, urgent: false, render: () => null },
+      { key: 'k3', label: 'K3', optional: true, urgent: true, render: () => null },
+      { key: 'k4', label: 'K4', optional: true, urgent: false, render: () => null },
+    ]
+    // Ohne eigene Wahl: nur mit Anlass
+    expect(placeBlocks(tiles).map((b) => [b.key, b.shown, b.choice])).toEqual([
+      ['a', true, 'auto'],
+      ['k1', true, 'auto'],
+      ['k2', false, 'auto'],
+      ['k3', true, 'auto'],
+      ['k4', false, 'auto'],
+    ])
+    // „nie“ schlägt den Anlass, „immer“ zeigt auch ohne Anlass
+    const placed = placeBlocks(tiles, { order: [], hidden: ['k3'], wide: [], shown: ['k4'] })
+    expect(placed.map((b) => [b.key, b.shown, b.choice])).toEqual([
+      ['a', true, 'auto'],
+      ['k1', true, 'auto'],
+      ['k2', false, 'auto'],
+      ['k3', false, 'off'],
+      ['k4', true, 'on'],
+    ])
+    // Gespeichert wird nur die eigene Wahl, nicht „bei Anlass“
+    const saved = layoutOf(placed)
+    expect(saved.hidden).toEqual(['k3'])
+    expect(saved.shown).toEqual(['k4'])
   })
 
   it('blendet Blöcke aus, stellt die Breite um, verschiebt und stellt den Standard her', async () => {
@@ -626,5 +658,74 @@ describe('Jubiläen und Geburtstage getrennt', () => {
       within(bday.closest('.card') as HTMLElement).getByText('Max Beispiel'),
     ).toBeInTheDocument()
     vi.useRealTimers()
+  })
+})
+
+describe('Kacheln bei Anlass', () => {
+  const tile = (key: string, title: string, urgent: boolean, state = 'auto') => ({
+    key,
+    title,
+    description: `${title} (Beschreibung)`,
+    state,
+    urgent,
+    shown: state === 'on' || (state === 'auto' && urgent),
+    content: {
+      figures: [{ label: 'Mitglieder', value: '128', tone: null }],
+      rows: [{ title: 'Sommerfest', detail: '12 angemeldet', link: '/termine', tone: 'warn' }],
+      text: '',
+      link: '/termine',
+      link_label: 'Zum Kalender',
+      reason: urgent ? 'Eine Umfrage läuft.' : '',
+    },
+  })
+
+  it('zeigt nur Kacheln mit Anlass und speichert „immer“', async () => {
+    let state: { hidden: string[]; layout: Record<string, Record<string, unknown>> } = {
+      hidden: [],
+      layout: {},
+    }
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ modules: ['members'], permissions: ['members.view'] })],
+      }),
+      'GET /api/orgs/7/home-tiles/': () => ({
+        status: 200,
+        body: {
+          scope: 'o7',
+          tiles: [
+            tile('umfragen-pinnwand', 'Umfragen und Pinnwand', true),
+            tile('verein-zahlen', 'Verein in Zahlen', false),
+          ],
+        },
+      }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: state }),
+      'PUT /api/me/home-actions/': (init) => {
+        const body = JSON.parse(String(init?.body))
+        state = { ...state, layout: { ...state.layout, ...body.layout } }
+        return { status: 200, body: state }
+      },
+    })
+    renderAt('/')
+    const urgent = await screen.findByRole('heading', { name: 'Umfragen und Pinnwand', level: 2 })
+    const card = urgent.closest('.card') as HTMLElement
+    expect(within(card).getByText('Eine Umfrage läuft.')).toBeInTheDocument()
+    expect(within(card).getByText('128')).toBeInTheDocument()
+    expect(within(card).getByRole('link', { name: 'Sommerfest' })).toHaveAttribute(
+      'href',
+      '/termine',
+    )
+    expect(screen.queryByRole('heading', { name: 'Verein in Zahlen', level: 2 })).toBeNull()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Startseite anpassen' }))
+    await userEvent.selectOptions(screen.getByLabelText('Verein in Zahlen zeigen'), 'on')
+    await waitFor(() => expect(state.layout.o7?.shown).toEqual(['verein-zahlen']))
+    // „bei Anlass“ wird nicht als ausgeblendet gespeichert
+    expect(state.layout.o7?.hidden).not.toContain('umfragen-pinnwand')
+    await userEvent.click(screen.getByRole('button', { name: 'Fertig' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Verein in Zahlen', level: 2 }),
+    ).toBeInTheDocument()
   })
 })

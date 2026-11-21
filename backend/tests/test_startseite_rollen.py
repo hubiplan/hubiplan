@@ -241,11 +241,12 @@ def test_startseite_anordnen(api, board_a):
         "hidden": [],
         "chosen": {},
         "layout": {
-            "d3": {"order": [], "hidden": ["hinweise"], "wide": [], "sizes": {}},
+            "d3": {"order": [], "hidden": ["hinweise"], "wide": [], "shown": [], "sizes": {}},
             "o12": {
                 "order": ["termine", "schnellaktionen"],
                 "hidden": [],
                 "wide": ["termine"],
+                "shown": [],
                 "sizes": {},
             },
         },
@@ -255,7 +256,7 @@ def test_startseite_anordnen(api, board_a):
     assert list(put({"layout": {"d3": None}}).json()["layout"]) == ["o12"]
     assert put({"layout": {"x1": {}}}).status_code == 400
     assert put({"layout": {"o1": {"order": ["<b>"]}}}).status_code == 400
-    assert put({"layout": {"o1": {"order": ["a"] * 21}}}).status_code == 400
+    assert put({"layout": {"o1": {"order": ["a"] * 41}}}).status_code == 400
     assert put({"layout": {"o12": None}}).json()["layout"] == {}
     board_a.refresh_from_db()
     assert board_a.home_layout is None

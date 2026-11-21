@@ -451,6 +451,13 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   leer für den Verein, `pinned`, `push`, `visible_until`, Fotos als `photos`), `PATCH …/<id>/`
   (`text`, `pinned`, `visible_until`, `version`), `DELETE …/<id>/`. `pinboard_enabled` und
   `pinboard_new` stehen in `portal`.
+- Kacheln der Übersicht (siehe [startseite-kacheln.md](startseite-kacheln.md)), auch mit dem
+  Geräteschlüssel: `GET /api/portal/<Zugang>/home-tiles/` für Mitglieder und
+  `GET /api/app/v1/admin/u/<Einheit>/home-tiles/` für die Verwaltung (nicht in Untereinheiten).
+  Antwort `scope` und `tiles`, je Kachel `key`, `title`, `description`, `state`
+  (`auto`/`on`/`off`), `urgent` (gerade ein Anlass), `shown` und `content` (`figures`, `rows`,
+  `text`, `link`, `link_label`, `reason`; `null` bei `off`). `PUT` mit `key` und `state`
+  speichert die Wahl, die auch für die Startseite im Browser gilt, und antwortet wie GET.
 - Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
   dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
   vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,
