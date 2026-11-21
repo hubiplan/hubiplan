@@ -862,6 +862,14 @@ def _pinboard_new(club, access) -> int:
     return new_count(club, access.membership_id)
 
 
+def _orders_open(club, access) -> int:
+    if "orders" not in (club.enabled_modules or []) or not access.membership_id:
+        return 0
+    from orders.services import open_count
+
+    return open_count(club, access.membership_id)
+
+
 def _club_expenses(club) -> bool:
     from expenses.services import enabled
 
@@ -922,6 +930,9 @@ def portal_summary(access: PortalAccess) -> dict:
             # Pinnwand: Menüpunkt und Zahl neuer Beiträge seit dem letzten Lesen
             "pinboard_enabled": "pinboard" in (club.enabled_modules or []),
             "pinboard_new": _pinboard_new(club, access),
+            # Sammelbestellungen: Menüpunkt und offene ohne eigene Bestellung
+            "orders_enabled": "orders" in (club.enabled_modules or []),
+            "orders_open": _orders_open(club, access),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
             # Auslagen erstatten: Menüpunkt und offene Rückfragen der Kasse
             "expenses_enabled": _expenses_enabled(access),

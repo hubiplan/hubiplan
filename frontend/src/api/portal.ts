@@ -57,6 +57,9 @@ export interface PortalEntry {
   /** Pinnwand (Modul) und Beiträge seit dem letzten Lesen */
   pinboard_enabled?: boolean
   pinboard_new?: number
+  /** Sammelbestellungen (Modul) und offene ohne eigene Bestellung */
+  orders_enabled?: boolean
+  orders_open?: number
   /** Auslagen erstatten (Modul) und offene Rückfragen der Kasse */
   expenses_enabled?: boolean
   expenses_questions?: number

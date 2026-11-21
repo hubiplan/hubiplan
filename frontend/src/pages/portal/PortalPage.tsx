@@ -6,6 +6,7 @@ import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalSurveys } from './PortalSurveys.tsx'
 import { PortalPinboard } from './PortalPinboard.tsx'
+import { PortalOrders } from './PortalOrders.tsx'
 import { PortalExpenses } from './PortalExpenses.tsx'
 import { PortalFeeProofs } from './PortalFeeProofs.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
@@ -189,6 +190,16 @@ function PortalRoutes() {
           </PortalSection>
         }
       />
+      {activePortal.orders_enabled && (
+        <Route
+          path="bestellungen"
+          element={
+            <PortalSection title={t('Bestellungen')}>
+              <PortalOrders key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
       {activePortal.pinboard_enabled && (
         <Route
           path="pinnwand"

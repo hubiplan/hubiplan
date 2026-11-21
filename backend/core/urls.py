@@ -86,6 +86,7 @@ from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, Settlem
 from oidc import files_views as oidc_files
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
+from orders import portal as orders_portal
 from organizations import (
     help_feedback,
     help_views,
@@ -309,6 +310,7 @@ org_patterns = [
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
     path("surveys/", include("surveys.urls")),
+    path("orders/", include("orders.urls")),
     path("pinboard/", include("pinboard.urls")),
     path("obligations/", include("obligations.urls")),
     path("greetings/", include("greetings.urls")),
@@ -1172,6 +1174,9 @@ urlpatterns = [
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/follow/", survey_portal.FollowView.as_view()),
+    path("portal/<int:access_id>/orders/", orders_portal.ListView.as_view()),
+    path("portal/<int:access_id>/orders/<int:pk>/", orders_portal.DetailView.as_view()),
+    path("portal/<int:access_id>/orders/<int:pk>/order/", orders_portal.OrderView.as_view()),
     path("portal/<int:access_id>/pinboard/", pinboard_portal.ListView.as_view()),
     path("portal/<int:access_id>/pinboard/<int:pk>/", pinboard_portal.DetailView.as_view()),
     path(
