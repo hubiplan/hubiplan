@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 from finance import quittung_views
+from hometiles.views import OrgHomeTilesView
 
 from . import admin_api, browser_unlock, passkey, send, views
 
@@ -35,6 +36,12 @@ urlpatterns = [
         name="app-admin-signature",
     ),
     path("admin/u/<int:org_id>/tasks/", admin_api.AdminTasksView.as_view(), name="app-admin-tasks"),
+    # Kacheln der Startseite als Übersicht in der App (gleiche Antwort wie im Browser)
+    path(
+        "admin/u/<int:org_id>/home-tiles/",
+        admin_api.for_app(OrgHomeTilesView).as_view(),
+        name="app-admin-home-tiles",
+    ),
     path("admin/u/<int:org_id>/", include("devices.admin_urls")),
     path("admin/d/<int:dept_id>/", include("devices.admin_dept_urls")),
 ]

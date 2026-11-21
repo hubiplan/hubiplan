@@ -2,8 +2,11 @@
 
 Am Konto stehen nur Schlüssel: ``hidden`` blendet Aktionen des Vorschlags aus (``*`` den ganzen
 Block), ``chosen`` hält je Arbeitsbereich (``o<id>`` Einheit, ``d<id>`` Untereinheit) die eigene
-Auswahl in ihrer Reihenfolge. ``layout`` hält je Arbeitsbereich die Anordnung der Blöcke
-(``order``, ausgeblendete ``hidden``, über die ganze Breite ``wide``, Größe ``sizes``).
+Auswahl in ihrer Reihenfolge (``p<id>`` ist der Mitgliederbereich eines Zugangs). ``layout`` hält
+je Arbeitsbereich die Anordnung der Blöcke (``order``, ausgeblendete ``hidden``, über die ganze
+Breite ``wide``, Größe ``sizes``). Kacheln, die von selbst nur bei Anlass erscheinen
+(hometiles), stehen in ``shown``, wenn die Person sie immer sehen will, und in ``hidden``, wenn
+nie; sonst gilt „bei Anlass“.
 Welche Aktionen und Blöcke es gibt und welche Rechte sie brauchen, steht im Frontend
 (components/home/roleActions.ts, components/home/homeLayout.ts); fremde Schlüssel zeigt es
 einfach nicht.
@@ -20,15 +23,15 @@ from rest_framework.views import APIView
 
 ACTION_KEY = re.compile(r"^(\*|[a-z0-9_-]{1,40})$")
 CHOICE_KEY = re.compile(r"^[a-z0-9_-]{1,40}$")
-SCOPE_KEY = re.compile(r"^[od][0-9]{1,10}$")
+SCOPE_KEY = re.compile(r"^[odp][0-9]{1,10}$")
 MAX_HIDDEN = 50
 # Mehr Arbeitsbereiche hat kaum jemand; die Grenze hält das Feld klein.
 MAX_SCOPES = 30
 # Gezeigt werden höchstens sechs (Frontend MAX_ACTIONS), gespeichert etwas Luft
 MAX_CHOSEN = 12
-# Die Startseite hat weniger als zehn Blöcke; etwas Luft für spätere
-MAX_BLOCKS = 20
-LAYOUT_PARTS = ("order", "hidden", "wide")
+# Die Startseite hat rund 20 Blöcke (mit den Kacheln bei Anlass); etwas Luft für spätere
+MAX_BLOCKS = 40
+LAYOUT_PARTS = ("order", "hidden", "wide", "shown")
 # Raster der Startseite: 12 Spalten, Höhe in Rasterzeilen (je 0,5 rem); None = nach Inhalt
 GRID_COLUMNS = 12
 MIN_COLUMNS = 3
@@ -72,7 +75,10 @@ def _clean_sizes(value) -> dict[str, dict]:
     return sizes
 
 
-def _clean_layout(value: dict) -> dict:
+def _clean_layout(value: dict, before: dict | None = None) -> dict:
+    """``before``: bisheriger Stand; ältere Fassungen ohne ``shown`` behalten ihn."""
+    if "shown" not in value and before is not None:
+        value = {**value, "shown": before.get("shown", [])}
     layout = {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
     layout["sizes"] = _clean_sizes(value.get("sizes"))
     return layout
@@ -114,6 +120,10 @@ class HomeLayoutSerializer(serializers.Serializer):
     hidden = _block_list()
     # Ältere Fassungen kennen nur „wide“ (ganze Breite); neuere schreiben beides
     wide = _block_list()
+    # Kacheln bei Anlass, die die Person immer sehen will (fehlt bei älteren Fassungen)
+    shown = serializers.ListField(
+        child=serializers.RegexField(CHOICE_KEY), max_length=MAX_BLOCKS, required=False
+    )
     sizes = serializers.DictField(
         child=BlockSizeSerializer(),
         default=dict,
@@ -211,7 +221,7 @@ class HomeActionsView(APIView):
                 if value is None:
                     layout.pop(scope, None)
                 else:
-                    layout[scope] = _clean_layout(value)
+                    layout[scope] = _clean_layout(value, layout.get(scope))
             if len(layout) > MAX_SCOPES:
                 raise serializers.ValidationError({"layout": gettext("Zu viele Arbeitsbereiche.")})
             user.home_layout = layout or None

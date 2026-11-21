@@ -1,0 +1,49 @@
+/* Kacheln bei Anlass (TileCard.tsx) */
+.home-auto-tile .tile-reason {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 4px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border-radius: var(--radius);
+}
+.tile-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+.tile-figure {
+  margin: 0;
+}
+.tile-figure dt {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+.tile-figure dd {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tile-tone-good dd {
+  color: var(--color-success);
+}
+.tile-tone-warn dd,
+.tile-rows .tile-tone-warn .tile-row-title {
+  color: var(--color-warning);
+}
+.tile-tone-bad dd,
+.tile-rows .tile-tone-bad .tile-row-title {
+  color: var(--color-error);
+}
+.tile-rows li {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+}
+.tile-rows li + li {
+  border-top: 1px solid var(--color-border);
+}
+.tile-row-title {
+  font-weight: 600;
+}

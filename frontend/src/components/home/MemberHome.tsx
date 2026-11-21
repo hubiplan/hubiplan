@@ -31,7 +31,7 @@ export function MemberHomeTop({ entry }: { entry: PortalEntry }) {
   )
 }
 
-function NextEventCard({ access }: { access: number }) {
+export function NextEventCard({ access }: { access: number }) {
   const base = calendarBase.portal(access)
   const from = today()
   const { data, error, reload } = useLoad(
@@ -144,7 +144,7 @@ function NextEventCard({ access }: { access: number }) {
   )
 }
 
-function OpenInvoiceNotice({ access }: { access: number }) {
+export function OpenInvoiceNotice({ access }: { access: number }) {
   const { data } = useLoad(() => portalBillingApi.invoices(access), [access])
   const open = (data?.invoices ?? []).filter(
     (i) => Number(i.outstanding) > 0 && i.status === 'open',
