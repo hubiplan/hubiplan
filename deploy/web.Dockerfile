@@ -1,6 +1,6 @@
 # Baut das Frontend und liefert es zusammen mit Caddy aus.
 # Build-Kontext ist das Wurzelverzeichnis des Repos.
-FROM node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS build
+FROM node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5 AS build
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
 RUN npm ci
