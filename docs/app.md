@@ -470,6 +470,13 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `GET/POST …/manage/<id>/checkin/` (aktueller Code mit `refresh_in` und `count`; `open`).
   `training_enabled`, `shooting_log_enabled` und `training_checkin` (Zahl offener Einchecken)
   stehen in `portal`.
+- Kacheln der Übersicht (siehe [startseite-kacheln.md](startseite-kacheln.md)), auch mit dem
+  Geräteschlüssel: `GET /api/portal/<Zugang>/home-tiles/` für Mitglieder und
+  `GET /api/app/v1/admin/u/<Einheit>/home-tiles/` für die Verwaltung (nicht in Untereinheiten).
+  Antwort `scope` und `tiles`, je Kachel `key`, `title`, `description`, `state`
+  (`auto`/`on`/`off`), `urgent` (gerade ein Anlass), `shown` und `content` (`figures`, `rows`,
+  `text`, `link`, `link_label`, `reason`; `null` bei `off`). `PUT` mit `key` und `state`
+  speichert die Wahl, die auch für die Startseite im Browser gilt, und antwortet wie GET.
 - Sammelbestellungen (Modul `orders`) im Mitgliederbereich, auch mit dem Geräteschlüssel:
   `GET /api/portal/<Zugang>/orders/` (`campaigns`, offene zuerst, je Eintrag `order` mit
   `lines`, `total`, `invoice`, `handed_out`), `GET …/orders/<id>/` (dazu `text` und `articles`

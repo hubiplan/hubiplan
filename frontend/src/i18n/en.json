@@ -10901,5 +10901,7 @@
   "Soll": "Required",
   "fehlen": "missing",
   "Ersatzbeitrag": "Substitute fee",
-  "Ersatzbeitrag zusammen: {total}": "Substitute fee in total: {total}"
+  "Ersatzbeitrag zusammen: {total}": "Substitute fee in total: {total}",
+  "bei Anlass": "when relevant",
+  "Nächster Termin": "Next event"
 }
