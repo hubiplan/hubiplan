@@ -451,6 +451,22 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   leer für den Verein, `pinned`, `push`, `visible_until`, Fotos als `photos`), `PATCH …/<id>/`
   (`text`, `pinned`, `visible_until`, `version`), `DELETE …/<id>/`. `pinboard_enabled` und
   `pinboard_new` stehen in `portal`.
+- Training (Modul `training`, siehe [training.md](training.md)) im Mitgliederbereich, auch mit
+  dem Geräteschlüssel: `GET /api/portal/<Zugang>/training/` (`attendance`, `count_year`,
+  `count_12`, `checkin`: Trainings mit offenem Einchecken samt `present`, `shooting_enabled`,
+  mit Schießsport `shooting` mit `entries`, `evaluation` nach § 14 WaffG und `disciplines`),
+  `POST …/training/<id>/checkin/` mit `code` aus dem QR-Code der Leitung
+  (`…/mein-bereich/training/da/<id>?v=<Verein>&c=<Code>`), `POST …/training/shooting/` mit
+  `Idempotency-Key` (Schießtermin melden: `date`, `discipline`, `weapon_class` `short`/`long`,
+  `caliber`, `permit_required`, `own_weapon`, `competition`, `place`, `external`, `note`) und
+  `DELETE …/training/shooting/<id>/` (gemeldeten Termin zurückziehen); Antwort jeweils wie GET.
+  Mit Recht `training.edit` im Verein oder in der Untereinheit: `GET/POST …/training/manage/`
+  (Trainings von 60 Tagen zurück bis 30 Tage voraus, `targets`, `kinds`, `disciplines`; Anlegen
+  mit `Idempotency-Key`, `department` leer für den Verein), `GET/PATCH …/manage/<id>/`
+  (`version`), `POST …/manage/<id>/attendance/` (`membership`, `present`) und
+  `GET/POST …/manage/<id>/checkin/` (aktueller Code mit `refresh_in` und `count`; `open`).
+  `training_enabled`, `shooting_log_enabled` und `training_checkin` (Zahl offener Einchecken)
+  stehen in `portal`.
 - Auslagen (Modul `expenses`, siehe [auslagen.md](auslagen.md)) im Mitgliederbereich, auch mit
   dem Geräteschlüssel: `GET /api/portal/<Zugang>/expenses/` (`claims`, `options` mit
   vorbelegter Bankverbindung), `POST …/expenses/` mehrteilig mit `Idempotency-Key` (Felder,

@@ -86,7 +86,10 @@ def person_name(membership) -> str:
 def user_name(user, org) -> str:
     from pinboard.services import author_name
 
-    return author_name(user, org) if user is not None else ""
+    if user is None:
+        return ""
+    # Konten ohne Namen: wenigstens die Anmeldung, damit klar bleibt, wer bestätigt hat
+    return author_name(user, org) or user.get_username()[:200]
 
 
 def add_months(day: datetime.date, months: int) -> datetime.date:

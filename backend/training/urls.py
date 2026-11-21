@@ -4,7 +4,7 @@ from django.urls import path
 
 from . import portal, views
 
-# /api/orgs/<id>/training/… und /api/departments/<id>/training/…
+# /api/orgs/<id>/training/… und /api/depts/<id>/training/…
 urlpatterns = [
     path("", views.ListView.as_view()),
     path("options/", views.OptionsView.as_view()),

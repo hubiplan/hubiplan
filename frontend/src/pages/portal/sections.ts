@@ -89,6 +89,23 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    // Training: Anwesenheit, Einchecken, Schießbuch (Lückenliste 20.11., B1)
+    ...(entry.training_enabled
+      ? [
+          {
+            to: '/mein-bereich/training',
+            label: t('Training'),
+            tile: {
+              title: entry.shooting_log_enabled ? t('Training und Schießbuch') : t('Training'),
+              text: entry.training_checkin
+                ? t('Einchecken ist offen')
+                : entry.shooting_log_enabled
+                  ? t('Anwesenheit und Schießnachweis')
+                  : t('Deine Anwesenheit bei Übungsabenden'),
+            },
+          },
+        ]
+      : []),
     ...(entry.surveys_enabled
       ? [
           {

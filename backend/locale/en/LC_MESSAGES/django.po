@@ -8055,6 +8055,234 @@ msgid ""
 msgstr ""
 "Was this not you? Then ignore this email; your address stays as it is."
 
+#: training
+msgid "Training und Anwesenheit"
+msgstr "Training and attendance"
+
+#: training
+msgid "Trainings, Anwesenheit und Schießbuch sehen"
+msgstr "View training sessions, attendance and shooting log"
+
+#: training
+msgid "Trainings anlegen, Anwesenheit erfassen, Schießtermine eintragen und bestätigen"
+msgstr "Create training sessions, record attendance, add and confirm shooting dates"
+
+#: training
+msgid "Training {gen}"
+msgstr "Training {gen}"
+
+#: training
+msgid "Übungsabende und Trainings mit Anwesenheit, Einchecken per QR-Code und Auswertung; mit Schießsport auch Schießbuch und Schießnachweis nach § 14 WaffG"
+msgstr "Practice evenings and training sessions with attendance, check-in by QR code and report; with sport shooting also a shooting log and shooting record under § 14 WaffG"
+
+#: training
+msgid "Anwesenheit bei Übungsabenden und Trainings für Übungsleiterabrechnung und Zuschüsse; bei Sportschützen das Schießbuch als Nachweis für das waffenrechtliche Bedürfnis (§ 14 WaffG)"
+msgstr "Attendance at practice evenings and training sessions for instructor billing and grants; for sport shooters the shooting log as proof of the need under weapons law (§ 14 WaffG)"
+
+#: training
+msgid "Name, Anwesenheit; Schießtermine mit Disziplin, Waffenart und Kaliber"
+msgstr "Name, attendance; shooting dates with discipline, weapon type and calibre"
+
+#: training
+msgid "Schießsportverband und Waffenbehörde (Bestätigung auf Antrag)"
+msgstr "Sport shooting federation and weapons authority (confirmation on application)"
+
+#: training
+msgid "nach zehn Jahren gelöscht, mit den Mitgliedsdaten früher"
+msgstr "deleted after ten years, earlier together with the member data"
+
+#: training
+msgid "Kurzwaffe"
+msgstr "Handgun"
+
+#: training
+msgid "Langwaffe"
+msgstr "Long gun"
+
+#: training
+msgid "Übungsabend"
+msgstr "Practice evening"
+
+#: training
+msgid "Training"
+msgstr "Training"
+
+#: training
+msgid "Wettkampf"
+msgstr "Competition"
+
+#: training
+msgid "Schießtermin"
+msgstr "Shooting date"
+
+#: training
+msgid "Disziplin"
+msgstr "Discipline"
+
+#: training
+msgid "Kaliber"
+msgstr "Calibre"
+
+#: training
+msgid "erlaubnispflichtige Waffe"
+msgstr "weapon requiring a licence"
+
+#: training
+msgid "per QR-Code"
+msgstr "by QR code"
+
+#: training
+msgid "aus dem Training"
+msgstr "from training"
+
+#: training
+msgid "vom Mitglied gemeldet"
+msgstr "reported by the member"
+
+#: training
+msgid "eigene Waffe"
+msgstr "own weapon"
+
+#: training
+msgid "in einem anderen Verein"
+msgstr "at another club"
+
+#: training
+msgid "Dieses Training gehört zu einer Untereinheit, in der du nicht Mitglied bist."
+msgstr "This training session belongs to a sub-unit you are not a member of."
+
+#: training
+msgid "erfüllt"
+msgstr "met"
+
+#: training
+msgid "nicht erfüllt"
+msgstr "not met"
+
+#: training
+msgid "Bestätigung der Schießtermine"
+msgstr "Confirmation of shooting dates"
+
+#: training
+msgid "Mitgliedsnummer"
+msgstr "Membership number"
+
+#: training
+msgid "Mitglied seit"
+msgstr "Member since"
+
+#: training
+msgid "{start} bis {end}"
+msgstr "{start} to {end}"
+
+#: training
+msgid "Zeitraum"
+msgstr "Period"
+
+#: training
+msgid "Nachweis des regelmäßigen Schießens nach § 14 WaffG"
+msgstr "Proof of regular shooting under § 14 WaffG"
+
+#: training
+msgid "Waffe"
+msgstr "Weapon"
+
+#: training
+msgid "erlaubnisfrei"
+msgstr "licence-free"
+
+#: training
+msgid "Keine bestätigten Schießtermine im Zeitraum."
+msgstr "No confirmed shooting dates in this period."
+
+#: training
+msgid "§ 14 Abs. 3 WaffG (letzte 12 Monate bis {end}): {state}. {count} Schießtermine mit erlaubnispflichtigen Waffen, in jedem Monat: {months}."
+msgstr "§ 14 para. 3 WaffG (last 12 months up to {end}): {state}. {count} shooting dates with weapons requiring a licence, in every month: {months}."
+
+#: training
+msgid "§ 14 Abs. 4 WaffG, {label} (letzte 24 Monate): {state}. Jedes Quartal: {q}, sechsmal je 12 Monate: {six}."
+msgstr "§ 14 para. 4 WaffG, {label} (last 24 months): {state}. Every quarter: {q}, six times per 12 months: {six}."
+
+#: training
+msgid "Der Verein bestätigt, dass {name} Mitglied ist und an den oben aufgeführten Tagen den Schießsport ausgeübt hat."
+msgstr "The club confirms that {name} is a member and practised sport shooting on the days listed above."
+
+#: training
+msgid "Unterschrift vertretungsberechtigter Vorstand (§ 26 BGB)"
+msgstr "Signature of the authorised board member (§ 26 BGB)"
+
+#: training
+msgid "Vereinsstempel"
+msgstr "Club stamp"
+
+#: training
+msgid "Erstellt mit HUBIplan am {date}. Anlage zum Antrag beim Verband; es zählen nur vom Verein bestätigte Termine."
+msgstr "Created with HUBIplan on {date}. Attachment to the application to the federation; only dates confirmed by the club count."
+
+#: training
+msgid "Teilnahmen je Mitglied"
+msgstr "Attendances per member"
+
+#: training
+msgid "Teilnahmen"
+msgstr "Attendances"
+
+#: training
+msgid "Anteil in Prozent"
+msgstr "Share in percent"
+
+#: training
+msgid "Stunden"
+msgstr "Hours"
+
+#: training
+msgid "Anwesend"
+msgstr "Present"
+
+#: training
+msgid "Bitte eine Uhrzeit wie 19:30 angeben."
+msgstr "Please enter a time such as 19:30."
+
+#: training
+msgid "Bitte Kurz- oder Langwaffe wählen."
+msgstr "Please choose handgun or long gun."
+
+#: training
+msgid "Für einen Schießtermin bitte Disziplin und Waffenart angeben."
+msgstr "For a shooting date please enter the discipline and weapon type."
+
+#: training
+msgid "Der Termin wurde inzwischen geändert. Bitte neu laden."
+msgstr "The session has been changed in the meantime. Please reload."
+
+#: training
+msgid "Einchecken geht nur am Tag des Trainings und am Tag davor oder danach."
+msgstr "Check-in is only possible on the day of the training session and the day before or after."
+
+#: training
+msgid "Einchecken ist für dieses Training nicht geöffnet."
+msgstr "Check-in is not open for this training session."
+
+#: training
+msgid "Organisationsmitglieder können nicht einchecken."
+msgstr "Organisation members cannot check in."
+
+#: training
+msgid "Bitte eine Disziplin angeben."
+msgstr "Please enter a discipline."
+
+#: training
+msgid "Dieser Eintrag kommt aus dem Training. Bitte dort ändern."
+msgstr "This entry comes from a training session. Please change it there."
+
+#: training
+msgid "Dieses Mitglied gehört nicht zu dieser Einheit."
+msgstr "This member does not belong to this unit."
+
+#: training
+msgid "Dieser Eintrag kommt aus dem Training. Bitte dort austragen."
+msgstr "This entry comes from a training session. Please remove it there."
+
 #: peering/services.py
 #, python-brace-format
 msgid "Verbund: Paket an {remote} nicht angenommen"

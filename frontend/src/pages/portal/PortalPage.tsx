@@ -6,6 +6,7 @@ import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalSurveys } from './PortalSurveys.tsx'
 import { PortalPinboard } from './PortalPinboard.tsx'
+import { PortalTraining } from './PortalTraining.tsx'
 import { PortalExpenses } from './PortalExpenses.tsx'
 import { PortalFeeProofs } from './PortalFeeProofs.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
@@ -133,6 +134,32 @@ function MeetingScanRoute({ meeting }: { meeting: string }) {
   )
 }
 
+/** QR-Code der Übungsleitung: passenden Zugang für den Verein wählen, dann einchecken. */
+function TrainingScanRoute({ session }: { session: string }) {
+  const { activePortal, portal, select } = useOrg()
+  const [params] = useSearchParams()
+  const club = Number(params.get('v'))
+  const code = params.get('c') ?? ''
+  const fitting = portal.find((a) => a.club_id === club && a.member_kind !== 'organization')
+  useEffect(() => {
+    if (fitting && activePortal?.id !== fitting.id) select(`p:${fitting.id}`)
+  }, [fitting, activePortal?.id, select])
+  if (!fitting)
+    return (
+      <Alert kind="error">
+        {t('Für diesen Verein hast du keinen Mitgliederzugang.')}{' '}
+        <Link to="/mein-bereich">{t('Zu meinem Bereich')}</Link>
+      </Alert>
+    )
+  if (activePortal?.id !== fitting.id)
+    return <p role="status">{t('Mitgliederzugang wird geöffnet …')}</p>
+  return (
+    <PortalSection title={t('Training')}>
+      <PortalTraining accessId={fitting.id} checkin={{ session: Number(session), code }} />
+    </PortalSection>
+  )
+}
+
 function MeetingLiveRoute({ accessId }: { accessId: number }) {
   const { meeting } = useParams()
   return <PortalMeetingLive accessId={accessId} meetingId={Number(meeting)} />
@@ -142,6 +169,8 @@ export function PortalPage() {
   const { pathname } = useLocation()
   const scan = /\/versammlungen\/da\/(\d+)\/?$/.exec(pathname)
   if (scan) return <MeetingScanRoute meeting={scan[1]} />
+  const trainingScan = /\/training\/da\/(\d+)\/?$/.exec(pathname)
+  if (trainingScan) return <TrainingScanRoute session={trainingScan[1]} />
   return <PortalRoutes />
 }
 
@@ -189,6 +218,16 @@ function PortalRoutes() {
           </PortalSection>
         }
       />
+      {activePortal.training_enabled && (
+        <Route
+          path="training"
+          element={
+            <PortalSection title={t('Training')}>
+              <PortalTraining key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
       {activePortal.pinboard_enabled && (
         <Route
           path="pinnwand"

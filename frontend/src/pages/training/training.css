@@ -1,0 +1,68 @@
+/* Training und Anwesenheit, Schießbuch */
+.training-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+.training-filter .field {
+  min-width: 10rem;
+}
+.training-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.training-attendance {
+  columns: 2 16rem;
+  column-gap: 1.5rem;
+}
+.training-attendance li {
+  break-inside: avoid;
+}
+.training-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+.training-entries li,
+.training-members li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.training-entries .badge {
+  margin-left: 0.5rem;
+}
+.training-entries .button-row {
+  margin-top: 0.35rem;
+}
+.training-spans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.training-span {
+  min-width: 2rem;
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  border-radius: var(--radius, 6px);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.training-span-ok {
+  background: var(--color-brand-soft);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.training-hint {
+  color: var(--color-warning);
+}
+.training-shooting {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  padding: 0.75rem;
+}
