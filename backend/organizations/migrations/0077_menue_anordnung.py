@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("organizations", "0075_bankanbindung"),
+        ("organizations", "0076_csp_meldungen"),
     ]
 
     operations = [
