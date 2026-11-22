@@ -122,6 +122,7 @@ INSTALLED_APPS = [
     "devices",
     "oidc",
     "mcpserver",
+    "partnerapi",
     "todos",
 ]
 
@@ -448,6 +449,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "mcpserver.tasks.purge_retired_refresh",
         "schedule": taeglich(4, 40),
     },
+    # API-Zugänge: 30 Tage vor dem Ablauf erinnern (docs/api.md)
+    "api-zugaenge-erinnern": {
+        "task": "partnerapi.tasks.remind_expiring",
+        "schedule": taeglich(6, 20),
+    },
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {
         "task": "events.tasks.sync_external_calendars",
@@ -742,6 +748,10 @@ MCP_ENABLED = env_bool("HUBIPLAN_MCP", True)
 # Rückleitungen bekannter KI-Assistenten (Host oder Endung ohne Punkt davor). Für andere
 # Adressen warnt die Zustimmungsseite (Gesamtaudit 11.11., S-06).
 MCP_KNOWN_REDIRECT_HOSTS = env_list("HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN", "claude.ai,claude.com")
+# API für andere Programme (docs/api.md): /api/partner/v1/ mit Schlüssel hpk_…; je Einheit
+# zusätzlich Modul „API für andere Programme“ und Zusatzrecht nötig. false schaltet sie für
+# die ganze Instanz ab (404).
+PARTNER_API_ENABLED = env_bool("HUBIPLAN_API", True)
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")

@@ -89,5 +89,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Steuern & Gemeinnützigkeit | `tax` | aus | Kasse |
 | | Zuwendungsbestätigungen | `donations` | aus | Kasse |
 | | Fristenkalender | `obligations` | an | – |
+| | KI-Assistenten | `mcp` | aus | Webseite |
+| | API für andere Programme ([api.md](api.md)) | `api` | aus | – |
 
 Konzept und weitere Schritte: Projektunterlage „Module neu ordnen“.

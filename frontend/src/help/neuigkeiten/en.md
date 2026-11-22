@@ -180,6 +180,7 @@ November 2026:
 
 #### Settings, security and platform
 
+- **API for other programs.** With the new module you give other programs, such as your federation’s software or a website of your own, a key under Settings › API accesses to read selected data: unit, events, member numbers without persons, board and what your website publishes. The module is off at first; the additional right “Manage API accesses” is required. Every access expires by itself.
 - **Video room for events.** With **Video room for events** switched on under Settings › Nextcloud, **Create video room** in an event creates a Talk conversation with link and password. Everyone who can see the event sees both, also in the apps, the invitation and the Nextcloud calendar; HUBIplan deletes the room after the event.
 - **Save files to Nextcloud and take files from it.** Next to the cash report, tax evaluation, cash count, minutes, resolution book and documents, **Save to Nextcloud** puts the file into a folder only one group can read, with a period per type (minutes permanently, accounting records 10 years, lists of people 3 months). When uploading, **From Nextcloud** fetches a file from a shared folder.
 - **Keep Nextcloud groups in sync.** Under Settings › Nextcloud, HUBIplan no longer sets groups only at sign-in, but after every change to roles, offices or units, and every night. Anyone who gives up a role also loses the group and its folders, even while their sync app keeps running. **Compare groups** shows beforehand what would change.

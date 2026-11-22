@@ -16685,6 +16685,206 @@ msgstr "Invalid date “{raw}” in the transaction."
 msgid "Ein Umsatz der Bank ist nicht lesbar. Eingelesen wurde nichts."
 msgstr "A transaction from the bank cannot be read. Nothing was imported."
 
+#: partnerapi
+msgid "API-Zugänge verwalten: anderen Programmen einen Schlüssel für ausgewählte Daten geben (nur mit Zwei-Faktor-Anmeldung)"
+msgstr "Manage API accesses: give other programs a key for selected data (only with two-factor authentication)"
+
+#: partnerapi
+msgid "API für andere Programme"
+msgstr "API for other programs"
+
+#: partnerapi
+msgid "Anderen Programmen, etwa einer Verbandssoftware oder einer eigenen Webseite, mit einem Schlüssel ausgewählte Daten zum Lesen geben (nur mit dem Zusatzrecht und Zwei-Faktor-Anmeldung)"
+msgstr "Give other programs, such as federation software or a website of your own, read access to selected data with a key (only with the additional right and two-factor authentication)"
+
+#: partnerapi
+msgid "API-Schlüssel fehlt oder ist ungültig"
+msgstr "API key is missing or invalid"
+
+#: partnerapi
+msgid "Kopfzeile „Authorization: Bearer hpk_…“ mit einem gültigen Schlüssel senden."
+msgstr "Send the header “Authorization: Bearer hpk_…” with a valid key."
+
+#: partnerapi
+msgid "Der API-Zugang ist abgelaufen"
+msgstr "The API access has expired"
+
+#: partnerapi
+msgid "Die Einheit kann ihn in HUBIplan unter Einstellungen › API-Zugänge verlängern."
+msgstr "The unit can extend it in HUBIplan under Settings › API accesses."
+
+#: partnerapi
+msgid "Der API-Zugang ruht, weil er lange nicht benutzt wurde"
+msgstr "The API access is paused because it has not been used for a long time"
+
+#: partnerapi
+msgid "Die Einheit kann ihn in HUBIplan unter Einstellungen › API-Zugänge wieder einschalten."
+msgstr "The unit can switch it on again in HUBIplan under Settings › API accesses."
+
+#: partnerapi
+msgid "Von dieser Adresse aus ist der API-Zugang nicht erlaubt"
+msgstr "The API access is not allowed from this address"
+
+#: partnerapi
+msgid "Bitte mindestens einen Bereich wählen."
+msgstr "Please choose at least one area."
+
+#: partnerapi
+msgid "Für eine Untereinheit bleibt keiner der Bereiche übrig."
+msgstr "None of the areas remains for a sub-unit."
+
+#: partnerapi
+msgid "Das Datum muss in der Zukunft liegen."
+msgstr "The date must be in the future."
+
+#: partnerapi
+msgid "Höchstens ein Jahr; danach lässt sich verlängern."
+msgstr "At most one year; it can be extended afterwards."
+
+#: partnerapi
+msgid "Bitte Adressen oder Netze eintragen, zum Beispiel 203.0.113.7 oder 203.0.113.0/24, höchstens 20."
+msgstr "Please enter addresses or networks, for example 203.0.113.7 or 203.0.113.0/24, at most 20."
+
+#: partnerapi
+msgid "Aus fremden Webseiten aufrufbar geht nur ohne Mitgliedertermine und ohne Mitgliederzahlen: Der Schlüssel steht dann im Quelltext der Webseite."
+msgstr "Callable from other websites is only possible without member events and without member numbers: the key is then visible in the source code of the website."
+
+#: partnerapi
+msgid "Mehr API-Zugänge sind je Einheit nicht möglich."
+msgstr "No more API accesses are possible per unit."
+
+#: partnerapi
+msgid "Neuer API-Zugang für „{unit}“"
+msgstr "New API access for “{unit}”"
+
+#: partnerapi
+msgid "Hallo,\n\n{actor} hat in HUBIplan den API-Zugang „{name}“ für „{unit}“ angelegt. Ein fremdes Programm kann damit diese Bereiche lesen: {scopes}.\n\nGültig bis: {until}\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge löschen: {link}\n"
+msgstr "Hello,\n\n{actor} has created the API access “{name}” for “{unit}” in HUBIplan. Another program can use it to read these areas: {scopes}.\n\nValid until: {until}\n\nIf this is intended, nothing needs to be done. Otherwise delete the access under Settings › API accesses: {link}\n"
+
+#: partnerapi
+msgid "Neuer Schlüssel für den API-Zugang „{name}“"
+msgstr "New key for the API access “{name}”"
+
+#: partnerapi
+msgid "Hallo,\n\n{actor} hat für den API-Zugang „{name}“ von „{unit}“ einen neuen Schlüssel erzeugt. Der bisherige Schlüssel gilt noch sieben Tage.\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge löschen: {link}\n"
+msgstr "Hello,\n\n{actor} has created a new key for the API access “{name}” of “{unit}”. The previous key remains valid for seven more days.\n\nIf this is intended, nothing needs to be done. Otherwise delete the access under Settings › API accesses: {link}\n"
+
+#: partnerapi
+msgid "API-Zugang „{name}“ läuft bald ab"
+msgstr "API access “{name}” expires soon"
+
+#: partnerapi
+msgid "Hallo,\n\nder API-Zugang „{name}“ von „{unit}“ gilt nur noch bis {until}. Danach bekommt das angebundene Programm keine Daten mehr.\n\nWird der Zugang weiter gebraucht, unter Einstellungen › API-Zugänge verlängern: {link}\nWird er nicht mehr gebraucht, ist nichts zu tun.\n"
+msgstr "Hello,\n\nthe API access “{name}” of “{unit}” is only valid until {until}. After that the connected program no longer receives data.\n\nIf the access is still needed, extend it under Settings › API accesses: {link}\nIf it is no longer needed, nothing needs to be done.\n"
+
+#: partnerapi
+msgid "Einheit lesen"
+msgstr "Read unit"
+
+#: partnerapi
+msgid "Name, Anschrift, Kontakt, Logo und die Untereinheiten als Baum"
+msgstr "Name, address, contact, logo and the sub-units as a tree"
+
+#: partnerapi
+msgid "Öffentliche Termine lesen"
+msgstr "Read public events"
+
+#: partnerapi
+msgid "Termine mit der Sichtbarkeit „nach außen öffentlich“, nie Zu- und Absagen oder Teilnehmende"
+msgstr "Events with the visibility “public”, never replies or participants"
+
+#: partnerapi
+msgid "Auch Termine für Mitglieder lesen"
+msgstr "Also read events for members"
+
+#: partnerapi
+msgid "Zusätzlich Termine mit der Sichtbarkeit „Mitglieder“; Termine „nur Vorstand“ nie"
+msgstr "Additionally events with the visibility “Members”; never board-only events"
+
+#: partnerapi
+msgid "Mitgliederzahlen lesen"
+msgstr "Read member numbers"
+
+#: partnerapi
+msgid "Stichtagsstatistik: Anzahlen nach Alter, Geschlecht und Untereinheit, keine Personen"
+msgstr "Reference date statistics: counts by age, gender and sub-unit, no persons"
+
+#: partnerapi
+msgid "Vorstand und Ämter lesen"
+msgstr "Read board and offices"
+
+#: partnerapi
+msgid "Rollen mit „auf der Webseite zeigen“ und ihre Funktionsadresse; Namen nur, wenn sie auf der öffentlichen Webseite stehen"
+msgstr "Roles with “show on the website” and their functional address; names only if they appear on the public website"
+
+#: partnerapi
+msgid "Wettbewerbsergebnisse lesen"
+msgstr "Read competition results"
+
+#: partnerapi
+msgid "Auf der Webseite veröffentlichte Wettbewerbe mit ihren Ranglisten"
+msgstr "Competitions published on the website with their rankings"
+
+#: partnerapi
+msgid "Beiträge lesen"
+msgstr "Read posts"
+
+#: partnerapi
+msgid "Auf der Webseite gezeigte Beiträge aus den eigenen Kanälen"
+msgstr "Posts from your own channels shown on the website"
+
+#: partnerapi
+msgid "Öffentliche Dokumente lesen"
+msgstr "Read public documents"
+
+#: partnerapi
+msgid "Auf der Webseite veröffentlichte Dokumente und Presseberichte"
+msgstr "Documents and press reports published on the website"
+
+#: partnerapi
+msgid "Diesem API-Zugang fehlt der Bereich"
+msgstr "This API access lacks the area"
+
+#: partnerapi
+msgid "Nötig ist der Bereich „{scope}“."
+msgstr "The area “{scope}” is required."
+
+#: partnerapi
+msgid "Zu viele Anfragen"
+msgstr "Too many requests"
+
+#: partnerapi
+msgid "Bitte später erneut versuchen."
+msgstr "Please try again later."
+
+#: partnerapi
+msgid "Nicht gefunden"
+msgstr "Not found"
+
+#: partnerapi
+msgid "Ungültige Anfrage"
+msgstr "Invalid request"
+
+#: partnerapi
+msgid "Zahl erwartet."
+msgstr "Number expected."
+
+#: partnerapi
+msgid "Unbekannter Cursor."
+msgstr "Unknown cursor."
+
+#: partnerapi
+msgid "Datum oder Zeit nach ISO 8601 erwartet."
+msgstr "Date or time in ISO 8601 format expected."
+
+#: partnerapi
+msgid "Muss nach „from“ liegen."
+msgstr "Must be after “from”."
+
+#: partnerapi
+msgid "Höchstens zwei Jahre je Abruf."
+msgstr "At most two years per request."
+
 #: hometiles
 msgid "{h} Std."
 msgstr "{h} h"

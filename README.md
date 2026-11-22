@@ -219,6 +219,10 @@ Schützenverein, Musikverein oder Sportverein.
   Texte, Startseite, Menü, Gestaltung und Chronik als Entwurf, ändern auf Nachfrage
   Erscheinungsbild und Briefbogen und legen Beiträge für soziale Medien als Entwurf ab;
   veröffentlichen kann nur ein Mensch ([docs/mcp.md](docs/mcp.md))
+- API für andere Programme: Der Vorstand gibt etwa der Software des Dachverbands oder einer
+  eigenen Webseite einen Schlüssel, mit dem sie ausgewählte Daten liest (Einheit, Termine,
+  Mitgliederzahlen ohne Personen, Vorstand, Veröffentlichtes); mit Ablaufdatum, Grenzen und
+  OpenAPI-Beschreibung ([docs/api.md](docs/api.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,
@@ -461,6 +465,7 @@ backend/
   website/         Webseite: Inhalte, öffentliche Schnittstelle, Kontaktformular, Social Media
   peering/         Verbund mit anderen Instanzen
   mcpserver/       KI-Schnittstelle (Model Context Protocol)
+  partnerapi/      API für andere Programme (/api/partner/v1/)
   devices/         App-Geräte, Push, Schnittstelle /api/app/v1/
   pushgateway/     eigenständiges Push-Gateway (Google für die Play-Fassung, Apple für iOS)
   todos/           Aufgaben
@@ -506,6 +511,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die Apps (Android, iOS), Push |
 | [docs/mcp.md](docs/mcp.md) | KI-Schnittstelle (Model Context Protocol) |
+| [docs/api.md](docs/api.md) | API für andere Programme (Schlüssel, Bereiche, OpenAPI), offene Daten der Webseite |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
 | [docs/bankanbindung.md](docs/bankanbindung.md) | Bankanbindung (FinTS): Umsätze direkt bei der Bank abrufen, Einrichtung für Betreiber |
 | [docs/geschaeftspartner.md](docs/geschaeftspartner.md) | Geschäftspartner, Sponsoring, Verträge |

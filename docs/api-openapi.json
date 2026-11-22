@@ -1,0 +1,1821 @@
+{
+  "components": {
+    "schemas": {
+      "AccessInfo": {
+        "properties": {
+          "embeddable": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
+          },
+          "name": {
+            "type": "string"
+          },
+          "scopes": {
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "embeddable",
+          "expires_at",
+          "limits",
+          "name",
+          "scopes"
+        ],
+        "type": "object"
+      },
+      "AgesEnum": {
+        "description": "* `sport` - sport\n* `jugend` - jugend\n* `zehn` - zehn",
+        "enum": [
+          "sport",
+          "jugend",
+          "zehn"
+        ],
+        "type": "string"
+      },
+      "Board": {
+        "properties": {
+          "names_published": {
+            "description": "Namen stehen nur dabei, wenn die Webseite der Einheit öffentlich ist",
+            "type": "boolean"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/BoardRole"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "names_published",
+          "roles"
+        ],
+        "type": "object"
+      },
+      "BoardRole": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "holders": {
+            "items": {
+              "$ref": "#/components/schemas/Holder"
+            },
+            "type": "array"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "holders",
+          "role"
+        ],
+        "type": "object"
+      },
+      "Category": {
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "color",
+          "name"
+        ],
+        "type": "object"
+      },
+      "Census": {
+        "properties": {
+          "ages": {
+            "$ref": "#/components/schemas/AgesEnum"
+          },
+          "counting": {
+            "$ref": "#/components/schemas/CountingEnum"
+          },
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "gender_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "genders": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/CensusGroup"
+            },
+            "type": "array"
+          },
+          "groups_title": {
+            "type": "string"
+          },
+          "organizations": {
+            "description": "Mitglieder, die keine Personen sind",
+            "type": "integer"
+          },
+          "persons": {
+            "type": "integer"
+          },
+          "rows": {
+            "description": "je Altersgruppe: Anzahl je Geschlecht",
+            "items": {
+              "$ref": "#/components/schemas/CensusRow"
+            },
+            "type": "array"
+          },
+          "total": {
+            "description": "Mitgliedschaften am Stichtag",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ages",
+          "counting",
+          "date",
+          "gender_labels",
+          "genders",
+          "groups",
+          "groups_title",
+          "organizations",
+          "persons",
+          "rows",
+          "total"
+        ],
+        "type": "object"
+      },
+      "CensusGroup": {
+        "properties": {
+          "genders": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "organizations": {
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/CensusRow"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "genders",
+          "id",
+          "name",
+          "organizations",
+          "rows",
+          "total"
+        ],
+        "type": "object"
+      },
+      "CensusRow": {
+        "properties": {
+          "counts": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "label": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "counts",
+          "label",
+          "total"
+        ],
+        "type": "object"
+      },
+      "Competition": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "discipline": {
+            "type": "string"
+          },
+          "final": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "occasion": {
+            "type": "string"
+          },
+          "organizer": {
+            "type": "string"
+          },
+          "own": {
+            "description": "von der Einheit selbst ausgerichtet",
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "discipline",
+          "final",
+          "id",
+          "location",
+          "occasion",
+          "organizer",
+          "own",
+          "status",
+          "title"
+        ],
+        "type": "object"
+      },
+      "CompetitionDetail": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "discipline": {
+            "type": "string"
+          },
+          "final": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "occasion": {
+            "type": "string"
+          },
+          "organizer": {
+            "type": "string"
+          },
+          "own": {
+            "description": "von der Einheit selbst ausgerichtet",
+            "type": "boolean"
+          },
+          "scorings": {
+            "items": {
+              "$ref": "#/components/schemas/Scoring"
+            },
+            "type": "array"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "titles": {
+            "items": {
+              "$ref": "#/components/schemas/Title"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "date",
+          "description",
+          "discipline",
+          "final",
+          "id",
+          "location",
+          "occasion",
+          "organizer",
+          "own",
+          "scorings",
+          "status",
+          "title",
+          "titles"
+        ],
+        "type": "object"
+      },
+      "CompetitionList": {
+        "properties": {
+          "competitions": {
+            "items": {
+              "$ref": "#/components/schemas/Competition"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "published": {
+            "description": "false: Die Einheit veröffentlicht keine Ergebnisse auf ihrer Webseite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "competitions",
+          "next_cursor",
+          "published"
+        ],
+        "type": "object"
+      },
+      "CountingEnum": {
+        "description": "* `stichtag` - stichtag\n* `jahrgang` - jahrgang",
+        "enum": [
+          "stichtag",
+          "jahrgang"
+        ],
+        "type": "string"
+      },
+      "Document": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindEnum"
+          },
+          "preview_url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "section": {
+            "$ref": "#/components/schemas/SectionEnum"
+          },
+          "size": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "source": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "id",
+          "kind",
+          "preview_url",
+          "section",
+          "size",
+          "source",
+          "title",
+          "url"
+        ],
+        "type": "object"
+      },
+      "DocumentList": {
+        "properties": {
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            },
+            "type": "array"
+          },
+          "published": {
+            "description": "false: Die Einheit veröffentlicht keine Dokumente auf ihrer Webseite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "documents",
+          "published"
+        ],
+        "type": "object"
+      },
+      "Event": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "all_day": {
+            "type": "boolean"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ],
+            "nullable": true
+          },
+          "description": {
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_id": {
+            "description": "Kennung des Termins bzw. der Serie",
+            "type": "string"
+          },
+          "hide_end_time": {
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Kennung des Einzeltermins (bei Serien je Wiederholung)",
+            "type": "string"
+          },
+          "is_cancelled": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "recurring": {
+            "type": "boolean"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "unit": {
+            "description": "Untereinheit, sonst null",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/VisibilityEnum"
+          }
+        },
+        "required": [
+          "address",
+          "all_day",
+          "category",
+          "description",
+          "ends_at",
+          "event_id",
+          "hide_end_time",
+          "id",
+          "is_cancelled",
+          "location",
+          "note",
+          "recurring",
+          "starts_at",
+          "title",
+          "unit",
+          "updated_at",
+          "visibility"
+        ],
+        "type": "object"
+      },
+      "EventList": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "events",
+          "next_cursor"
+        ],
+        "type": "object"
+      },
+      "Holder": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "Info": {
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/AccessInfo"
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "product": {
+            "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/UnitRef"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "api_version",
+          "product",
+          "unit",
+          "version"
+        ],
+        "type": "object"
+      },
+      "KindEnum": {
+        "description": "* `pdf` - pdf\n* `image` - image",
+        "enum": [
+          "pdf",
+          "image"
+        ],
+        "type": "string"
+      },
+      "Limits": {
+        "properties": {
+          "max_page_size": {
+            "type": "integer"
+          },
+          "requests_per_hour": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "max_page_size",
+          "requests_per_hour"
+        ],
+        "type": "object"
+      },
+      "Post": {
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/PostImage"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "description": "instagram oder facebook",
+            "type": "string"
+          },
+          "permalink": {
+            "nullable": true,
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "account",
+          "id",
+          "images",
+          "kind",
+          "permalink",
+          "published_at",
+          "text"
+        ],
+        "type": "object"
+      },
+      "PostImage": {
+        "properties": {
+          "height": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "small_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "width": {
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "height",
+          "small_url",
+          "url",
+          "width"
+        ],
+        "type": "object"
+      },
+      "PostList": {
+        "properties": {
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/Post"
+            },
+            "type": "array"
+          },
+          "published": {
+            "description": "false: Die Einheit zeigt keine Beiträge auf ihrer Webseite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "posts",
+          "published"
+        ],
+        "type": "object"
+      },
+      "Problem": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "status",
+          "title",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ResultRow": {
+        "properties": {
+          "club": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "out_of_competition": {
+            "type": "boolean"
+          },
+          "place": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "prize": {
+            "type": "boolean"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "place",
+          "prize",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Scope": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "label",
+          "scope"
+        ],
+        "type": "object"
+      },
+      "Scoring": {
+        "properties": {
+          "complete": {
+            "description": "false: nur die Preisplätze",
+            "type": "boolean"
+          },
+          "field": {
+            "description": "Größe des Teilnehmerfelds",
+            "nullable": true,
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ResultRow"
+            },
+            "type": "array"
+          },
+          "unit_label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "complete",
+          "field",
+          "kind",
+          "name",
+          "rows",
+          "unit_label"
+        ],
+        "type": "object"
+      },
+      "SectionEnum": {
+        "description": "* `documents` - documents\n* `press` - press",
+        "enum": [
+          "documents",
+          "press"
+        ],
+        "type": "string"
+      },
+      "SubUnit": {
+        "properties": {
+          "founding_year": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "short_name": {
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "founding_year",
+          "id",
+          "name",
+          "parent",
+          "short_name",
+          "website"
+        ],
+        "type": "object"
+      },
+      "SubUnitList": {
+        "properties": {
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/SubUnit"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "units"
+        ],
+        "type": "object"
+      },
+      "Title": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "title"
+        ],
+        "type": "object"
+      },
+      "Unit": {
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "contact_email": {
+            "type": "string"
+          },
+          "contact_phone": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "founding_year": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "logo_url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "short_name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "type": {
+            "description": "federation, club oder unit",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "website": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "contact_email",
+          "contact_phone",
+          "country",
+          "founding_year",
+          "id",
+          "logo_url",
+          "name",
+          "postal_code",
+          "short_name",
+          "street",
+          "type",
+          "updated_at",
+          "website"
+        ],
+        "type": "object"
+      },
+      "UnitRef": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "description": "federation, club oder unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type"
+        ],
+        "type": "object"
+      },
+      "VisibilityEnum": {
+        "description": "* `public` - public\n* `members` - members",
+        "enum": [
+          "public",
+          "members"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "bearerFormat": "hpk_…",
+        "description": "API-Schlüssel aus Einstellungen › API-Zugänge",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "API der Vereinsverwaltung HUBIplan. Anmeldung und 2FA sind unter /_allauth/openapi.html dokumentiert.",
+    "license": {
+      "name": "AGPL-3.0-or-later"
+    },
+    "title": "HUBIplan API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/partner/v1/": {
+      "get": {
+        "description": "Einheit, Bereiche, Ablaufdatum und Grenzen des benutzten API-Zugangs.",
+        "operationId": "info",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Selbstauskunft des Zugangs"
+      }
+    },
+    "/api/partner/v1/board/": {
+      "get": {
+        "description": "Rollen mit „auf der Webseite zeigen“ und ihre Funktionsadresse. Namen der Amtsinhaber nur, soweit sie auf der öffentlichen Webseite der Einheit stehen (Einwilligung der Person).",
+        "operationId": "board",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Board"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Vorstand und Ämter",
+        "tags": [
+          "board"
+        ]
+      }
+    },
+    "/api/partner/v1/documents/": {
+      "get": {
+        "description": "Dokumente und Presseberichte, die auf der öffentlichen Webseite der Einheit stehen. ``url`` ist die öffentliche Adresse der Datei.",
+        "operationId": "documents",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Öffentliche Dokumente",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/partner/v1/events/": {
+      "get": {
+        "description": "Eigene Termine der Einheit und ihrer Untereinheiten als Einzeltermine, Serien aufgelöst, nach Beginn sortiert. Ohne den Bereich „termine.mitglieder“ nur öffentliche Termine. Nie enthalten: Termine „nur Vorstand“, Zu- und Absagen, Teilnehmende, Anhänge, übernommene fremde Termine.",
+        "operationId": "events",
+        "parameters": [
+          {
+            "description": "nur Termine, die seitdem geändert wurden",
+            "in": "query",
+            "name": "changed_since",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "``next_cursor`` der Seite davor",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Vorgabe: vor 30 Tagen",
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 bis 200, Vorgabe 100",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Vorgabe: in 365 Tagen",
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "nur diese Untereinheit und die darunter",
+            "in": "query",
+            "name": "unit",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Termine",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/partner/v1/news/": {
+      "get": {
+        "description": "Neueste Beiträge aus den eigenen Kanälen der Einheit, soweit sie auf ihrer öffentlichen Webseite stehen. Bilder liefert die HUBIplan-Instanz aus.",
+        "operationId": "news",
+        "parameters": [
+          {
+            "description": "1 bis 50, Vorgabe 12",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Beiträge",
+        "tags": [
+          "news"
+        ]
+      }
+    },
+    "/api/partner/v1/results/": {
+      "get": {
+        "description": "Wettbewerbe, die auf der öffentlichen Webseite der Einheit stehen, neueste zuerst.",
+        "operationId": "results",
+        "parameters": [
+          {
+            "description": "``next_cursor`` der Seite davor",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 bis 200, Vorgabe 100",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompetitionList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Veröffentlichte Wettbewerbe",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/partner/v1/results/{competition_id}/": {
+      "get": {
+        "description": "Wertungen im selben Umfang wie auf der Webseite der Einheit: Namen nur mit Einwilligung, je nach Einstellung nur Einheiten und Mannschaften oder nur die Preisplätze.",
+        "operationId": "result",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "competition_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompetitionDetail"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Rangliste eines Wettbewerbs",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/partner/v1/statistics/census/": {
+      "get": {
+        "description": "Anzahlen nach Altersgruppe und Geschlecht, dazu je Untereinheit bzw. Verein. Nur Zahlen, keine Personen und keine Wohnorte. ``counts`` und ``genders`` folgen der Reihenfolge von ``gender_labels``.",
+        "operationId": "statistics_census",
+        "parameters": [
+          {
+            "description": "Altersgruppen",
+            "in": "query",
+            "name": "ages",
+            "schema": {
+              "enum": [
+                "jugend",
+                "sport",
+                "zehn"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Alter am Stichtag oder nach Jahrgang",
+            "in": "query",
+            "name": "counting",
+            "schema": {
+              "enum": [
+                "jahrgang",
+                "stichtag"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stichtag, Vorgabe heute",
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Census"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Mitgliederzahlen zum Stichtag",
+        "tags": [
+          "statistics"
+        ]
+      }
+    },
+    "/api/partner/v1/unit/": {
+      "get": {
+        "description": "Name, Anschrift, Kontakt und Logo der Einheit des Zugangs (bei einem Zugang für eine\nUntereinheit: dieser Untereinheit).",
+        "operationId": "unit",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Unit"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Stammdaten der Einheit",
+        "tags": [
+          "unit"
+        ]
+      }
+    },
+    "/api/partner/v1/unit/logo": {
+      "get": {
+        "description": "Logo der Einheit als Bilddatei; 404, wenn keines hinterlegt ist.",
+        "operationId": "unit_logo",
+        "responses": {
+          "200": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Logo der Einheit",
+        "tags": [
+          "unit"
+        ]
+      }
+    },
+    "/api/partner/v1/units/": {
+      "get": {
+        "description": "Alle aktiven Untereinheiten unter der Einheit des Zugangs. ``parent`` ist die Kennung der Einheit direkt darüber, ``null`` direkt unter der Einheit des Zugangs.",
+        "operationId": "units",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubUnitList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Untereinheiten als Baum",
+        "tags": [
+          "units"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "diese HUBIplan-Instanz",
+      "url": "/"
+    }
+  ]
+}

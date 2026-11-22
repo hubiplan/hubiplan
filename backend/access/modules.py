@@ -346,6 +346,17 @@ MODULES: tuple[Module, ...] = (
         ),
         requires=("website",),
     ),
+    Module(
+        "api",
+        gettext_noop("API für andere Programme"),
+        "admin",
+        gettext_noop(
+            "Anderen Programmen, etwa einer Verbandssoftware oder einer eigenen Webseite, "
+            "mit einem Schlüssel ausgewählte Daten zum Lesen geben (nur mit dem Zusatzrecht "
+            "und Zwei-Faktor-Anmeldung)"
+        ),
+        org_types=("federation", "club"),
+    ),
 )
 
 # Module, die eine Untereinheit selbst führt (eigener Arbeitsbereich); alle übrigen gelten

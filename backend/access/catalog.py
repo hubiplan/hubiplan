@@ -35,6 +35,8 @@ ROLES_MANAGE = "roles.manage"
 ROLES_PREVIEW = "roles.preview"
 # KI-Assistenten über die KI-Schnittstelle verbinden (docs/mcp.md, Stufe 1a); nur mit 2FA
 MCP_CONNECT = "mcp.connect"
+# API-Zugänge für andere Programme verwalten (docs/api.md); nur mit 2FA, nie automatisch
+API_MANAGE = "api.manage"
 THEME_EDIT = "theme.edit"
 EXPORT_RUN = "export.run"
 PLATFORM_MANAGE = "platform.manage"
@@ -533,6 +535,15 @@ EXTRAS: tuple[Extra, ...] = (
         "webcontent",
         org_types=("federation", "club", "unit"),
     ),
+    Extra(
+        API_MANAGE,
+        gettext_noop(
+            "API-Zugänge verwalten: anderen Programmen einen Schlüssel für ausgewählte Daten "
+            "geben (nur mit Zwei-Faktor-Anmeldung)"
+        ),
+        "settings",
+        org_types=("federation", "club"),
+    ),
 )
 
 AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
@@ -559,8 +570,8 @@ def codes_for(org_type: str) -> list[str]:
 
 
 # Rechte, die eine neue Vorstandsrolle nicht von selbst bekommt; die Rollenverwaltung
-# vergibt sie bewusst (KI-Assistenten, docs/mcp.md)
-NOT_AUTOMATIC: frozenset[str] = frozenset({MCP_CONNECT})
+# vergibt sie bewusst (KI-Assistenten, docs/mcp.md; API-Zugänge, docs/api.md)
+NOT_AUTOMATIC: frozenset[str] = frozenset({MCP_CONNECT, API_MANAGE})
 
 
 def board_codes(org_type: str) -> list[str]:

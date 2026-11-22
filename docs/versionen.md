@@ -9,6 +9,7 @@ Versionsnummern (siehe [releases.md](releases.md)). Sie sprechen über Schnittst
 | `/api/public/site/v1/` | `API_VERSION = 1` (`website/public_views.py`) | `/api/public/site/v1/instance/` | Webseite |
 | `/api/app/v1/` | `api_version` 1, `min_app_version` 1 (`devices/views.py`) | `/api/app/v1/instance/` | App |
 | Verbund (`peering`) | `API_VERSIONS = [1]` | `/api/peering/…` | andere Instanzen |
+| `/api/partner/v1/` ([api.md](api.md)) | `v1` in der Adresse | `/api/partner/v1/` (mit Schlüssel), `/api/partner/v1/openapi.json` | Programme Dritter |
 
 Die Selbstauskunft nennt `version` (laufende HUBIplan-Version, nur zur Anzeige),
 `api_version` und `features`.
