@@ -10,7 +10,9 @@ whether HUBIplan shows you learning aids. The settings apply in every unit you w
 
 ## In detail
 
-Under **Appearance** you choose **Light**, **Dark** or **Same as device**. Without a choice of your own, HUBIplan is light. This applies to all pages, including administration (such as members or finances). With **Same as device**, HUBIplan follows the setting of your phone or computer. The choice applies on all devices where you are signed in. In the dark, HUBIplan adjusts the club colours so that links and buttons stay easy to read. Below that, **The “?” key opens help for this page** switches the keyboard shortcut off, for example if you work with voice input; this applies to this browser.
+Under **Appearance** you choose **Light**, **Dark** or **Same as device**. Without a choice of your own, HUBIplan is light. This applies to all pages, including administration (such as members or finances). With **Same as device**, HUBIplan follows the setting of your phone or computer. The choice applies on all devices where you are signed in. In the dark, HUBIplan adjusts the club colours so that links and buttons stay easy to read. With **Density** you choose **Comfortable** or **Compact**: Compact shows more rows and smaller fields and applies only in this browser.
+
+Below that, **The “?” key opens help for this page** switches the keyboard shortcut off, for example if you work with voice input; this applies to this browser.
 
 Under **Home**, **Show quick actions on the home page** decides whether the home page shows its buttons. You choose which actions appear, and in which order, on the home page under **Customise**. If you made a selection of your own there, **Show the suggestion everywhere** restores your roles' suggestion in all units.
 

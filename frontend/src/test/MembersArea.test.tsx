@@ -72,9 +72,11 @@ describe('Mitglieder: Unterpunkte', () => {
         '/mitglieder/einrichtung/mitgliedsarten',
       ),
     )
-    // Unterpunkte stehen in der Seitenleiste, nicht als Reiter (UX-Audit 31.10. W09)
-    expect(await nav.findByRole('link', { name: 'Zusatzfelder' })).toBeInTheDocument()
-    const tabs = nav
+    // Die Unterpunkte der Einrichtung stehen als Reiter im Inhalt (Web-Oberfläche W6), nicht
+    // als dritte Ebene im Menü
+    const tabs = within(screen.getByRole('main'))
+    expect(await tabs.findByRole('link', { name: 'Zusatzfelder' })).toBeInTheDocument()
+    expect(nav.queryByRole('link', { name: 'Zusatzfelder' })).not.toBeInTheDocument()
     expect(tabs.getByRole('link', { name: 'Jubiläen & Dauer' })).toBeInTheDocument()
     expect(tabs.getByRole('link', { name: 'Mitgliederbereich & Fotos' })).toBeInTheDocument()
   })
@@ -113,8 +115,9 @@ describe('Mitglieder: Unterpunkte', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Änderungen und Wechsel' }),
     ).toBeInTheDocument()
-    const nav = within(screen.getByRole('navigation', { name: 'Hauptmenü' }))
-    expect(await nav.findByRole('link', { name: 'Datenänderungen' })).toBeInTheDocument()
+    // Reiter im Inhalt (Web-Oberfläche W6)
+    const tabs = within(screen.getByRole('main'))
+    expect(await tabs.findByRole('link', { name: 'Datenänderungen' })).toBeInTheDocument()
   })
 
   it('führt Mitgliedsarten und Zusatzfelder nicht mehr in den Einstellungen', async () => {

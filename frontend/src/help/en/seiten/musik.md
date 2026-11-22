@@ -7,7 +7,7 @@ routen: [/musik]
 stichworte: [Music, performance, staffing, guest, fee, settlement, programme]
 ---
 
-Plan performances here: staffing, programme, guests and settlement. The other music items are in the sidebar: Overview, Availability, Musicians, Rehearsals and sheet music checkout, Sheet music library and Instrumentation templates. Changes to existing entries save automatically; create new entries with **Save**.
+Plan performances here: staffing, programme, guests and settlement. The other music items are in the menu: Overview, Availability, Musicians, Rehearsals and sheet music checkout, Sheet music library and Instrumentation templates. Changes to existing entries save automatically; create new entries with **Save**.
 
 ## Create a performance
 
