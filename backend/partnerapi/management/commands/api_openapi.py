@@ -1,6 +1,6 @@
 """``manage.py api_openapi [Datei]``: OpenAPI-Beschreibung der API für andere Programme.
 
-Ohne Datei auf die Standardausgabe. Die Kopie ``docs/api-openapi.json`` wird damit erzeugt;
+Ohne Datei auf die Standardausgabe. Die Kopie ``partnerapi/openapi.json`` wird damit erzeugt;
 ``tests/test_partnerapi.py`` meldet, wenn sie nicht mehr zum Code passt.
 """
 

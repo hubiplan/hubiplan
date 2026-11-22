@@ -467,10 +467,10 @@ def test_openapi_ohne_anmeldung_und_kopie_aktuell(club):
         for operation in operations.values():
             assert operation["security"] == [{"apiKey": []}]
     assert "Event" in served["components"]["schemas"]
-    copy = Path(__file__).resolve().parents[2] / "docs" / "api-openapi.json"
+    copy = Path(openapi.__file__).with_name("openapi.json")
     assert copy.read_text(encoding="utf-8") == text(), (
-        "docs/api-openapi.json ist veraltet: im Ordner backend "
-        "„python manage.py api_openapi ../docs/api-openapi.json“ ausführen"
+        "partnerapi/openapi.json ist veraltet: im Ordner backend "
+        "„python manage.py api_openapi partnerapi/openapi.json“ ausführen"
     )
 
 

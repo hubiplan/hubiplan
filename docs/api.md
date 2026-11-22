@@ -11,7 +11,7 @@ Benachrichtigungen und die Anmeldung im Namen einer Person sind spätere Stufen.
 | | |
 | --- | --- |
 | Adresse | `https://<Instanz>/api/partner/v1/` |
-| Beschreibung | `https://<Instanz>/api/partner/v1/openapi.json` (OpenAPI 3, ohne Anmeldung), Kopie im Repo: [api-openapi.json](api-openapi.json) |
+| Beschreibung | `https://<Instanz>/api/partner/v1/openapi.json` (OpenAPI 3, ohne Anmeldung), Kopie im Repo: [backend/partnerapi/openapi.json](../backend/partnerapi/openapi.json) |
 | Anmeldung | Kopfzeile `Authorization: Bearer hpk_…` |
 | Wer vergibt | Vorstand der Einheit unter Einstellungen › API-Zugänge (`/einstellungen/api`) |
 | Voraussetzung | Modul `api` („API für andere Programme“, anfangs aus) und Zusatzrecht `api.manage` |
@@ -98,10 +98,10 @@ seine Bedeutung. Was wegfallen soll, wird zwölf Monate vorher in den Änderungs
 angekündigt. Programme ignorieren unbekannte Felder. Feldnamen sind englisch, Kennungen von
 Einheiten sind UUIDs, Zeiten stehen in ISO 8601 mit Zeitzone. Die Formate in
 `partnerapi/views.py` sind der Vertrag; `tests/test_partnerapi.py` prüft, dass die Kopie
-[api-openapi.json](api-openapi.json) zum Code passt. Nach Änderungen:
+[backend/partnerapi/openapi.json](../backend/partnerapi/openapi.json) zum Code passt. Nach Änderungen:
 
 ```bash
-cd backend && python manage.py api_openapi ../docs/api-openapi.json
+cd backend && python manage.py api_openapi partnerapi/openapi.json
 ```
 
 ## Beispiel
