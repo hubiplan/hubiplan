@@ -123,10 +123,13 @@ def test_verlauf_haelt_fuenf(orgs, board_a):
     assert len(club.menu_layout_history) == menu_layout.HISTORY
 
 
-def test_ohne_einstellungsrecht_nur_lesen(api, orgs):
+def test_ohne_einstellungsrecht_kein_zugriff(api, orgs):
     club = orgs["a"]
+    outsider = make_user("mitglied-a@example.org")
+    give_role(outsider, club, permissions=["members.view"], name="Mitgliederliste")
+    assert api(outsider).get(_url(club)).status_code == 403
     reader = make_user("leser-a@example.org")
-    give_role(reader, club, permissions=["members.view"], name="Leser")
+    give_role(reader, club, permissions=["settings.view"], name="Leser")
     assert api(reader).get(_url(club)).status_code == 200
     resp = api(reader).put(_url(club), {"layout": None}, content_type=JSON)
     assert resp.status_code == 403

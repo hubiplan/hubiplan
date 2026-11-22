@@ -2,8 +2,9 @@
 
 GET liefert ``{"layout": … | null, "standard": {...}, "can_undo": bool, "owned": bool}``.
 PUT ``{"layout": … | null}`` speichert (null = Standard wiederherstellen), POST ``undo/``
-stellt die vorige Anordnung wieder her. Schreiben braucht ``settings.edit``; Untereinheiten
-übernehmen die Anordnung ihres Vereins und ändern sie nicht selbst.
+stellt die vorige Anordnung wieder her. Lesen braucht ``settings.view``, Schreiben
+``settings.edit``; Untereinheiten übernehmen die Anordnung ihres Vereins und ändern sie nicht
+selbst.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from core.api_base import OrgScopedMixin
 
 from . import menu_layout
 
+SETTINGS_VIEW = "settings.view"
 SETTINGS_EDIT = "settings.edit"
 
 
@@ -34,7 +36,8 @@ def _payload(org) -> dict:
 
 
 class MenuLayoutView(OrgScopedMixin, APIView):
-    read_permission = None
+    # Die Navigation liest die Anordnung aus der Einheitsübersicht; hier nur der Editor
+    read_permission = SETTINGS_VIEW
     write_permission = SETTINGS_EDIT
 
     def _check_owner(self):
