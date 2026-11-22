@@ -166,3 +166,10 @@ def test_gruppen_fuer_die_apps(orgs):
     assert menu_layout.groups(club, lang="en")[2]["label"] == "Shooting"
     every = [i for g in groups for i in g["items"]]
     assert sorted(every) == sorted(menu_layout.item_ids())
+
+
+def test_ki_hilfe_ersetzt_bereichsplatzhalter():
+    from mcpserver.help_index import _clean
+
+    assert _clean("unter {bereich:belegung}", {}) == "unter Planung"
+    assert _clean("under {bereich:belegung}", {"__sprache__": "en"}) == "under Planning"

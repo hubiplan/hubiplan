@@ -8,7 +8,7 @@ reihe: 10
 stichworte: [Buchung, Belegung, Raum, Ausleihe, Reservierung]
 ---
 
-1. Öffne die [Belegung](/belegung) unter Planung.
+1. Öffne die [Belegung](/belegung) unter {bereich:belegung}.
 2. Wähle **Buchen**.
 3. Wähle Objekt, Zweck und Zeit oder statt der Zeit einen Termin, dem die Buchung dann folgt.
 4. Lege bei Bedarf eine wöchentliche, monatliche oder jährliche Wiederholung fest.

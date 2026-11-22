@@ -5,13 +5,21 @@ import { useMemo } from 'react'
 import type { MouseEvent, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fillTerms, useTerms } from '../org/terms.ts'
+import { useOptionalOrg } from '../org/OrgContext.tsx'
+import { fillAreas } from './menu.ts'
 import { t } from '../i18n/index.ts'
 import { renderHelp, sectionAnchor, splitSections } from './markdown.ts'
 
 export function HelpMarkdown({ body, onNavigate }: { body: string; onNavigate?: () => void }) {
   const terms = useTerms()
   const navigate = useNavigate()
-  const html = useMemo(() => renderHelp(fillTerms(body, terms)), [body, terms])
+  const orgCtx = useOptionalOrg()
+  // Bereich eines Menüpunkts nach der Anordnung der Einheit ({bereich:belegung})
+  const layout = orgCtx?.active?.menu_layout ?? orgCtx?.activeDept?.menu_layout ?? null
+  const html = useMemo(
+    () => renderHelp(fillTerms(fillAreas(body, layout), terms)),
+    [body, terms, layout],
+  )
   const click = (e: MouseEvent<HTMLDivElement>) => {
     const a = (e.target as HTMLElement).closest('a')
     const href = a?.getAttribute('href')

@@ -156,3 +156,14 @@ export function byMenu(entries: HelpEntry[], layout: MenuLayout | null = null): 
     })
     .filter((s) => s.items.length > 0)
 }
+
+/**
+ * Platzhalter `{bereich:<Menüpunkt>}` im Hilfetext: Name des Bereichs, in dem der Menüpunkt bei
+ * der Einheit steht (Menü frei anordnen). Ohne Anordnung der vorgegebene Bereich.
+ */
+export function fillAreas(text: string, layout: MenuLayout | null = null): string {
+  return text.replace(/\{bereich:([a-z-]+)\}/g, (all, id: string) => {
+    const m = modules.find((x) => x.id === id)
+    return m ? groupLabel(areaOf(layout, m), layout) : all
+  })
+}

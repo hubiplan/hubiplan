@@ -10,7 +10,7 @@ import { OrgProvider } from '../org/OrgContext.tsx'
 import { AREAS, modules } from '../modules.tsx'
 import { areaOf, fromArrangement, toArrangement } from '../menuLayout.ts'
 import type { MenuLayout } from '../menuLayout.ts'
-import { byMenu, placeOf } from '../help/menu.ts'
+import { byMenu, fillAreas, placeOf } from '../help/menu.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
 const SESSION = 'GET /_allauth/browser/v1/auth/session'
@@ -85,10 +85,18 @@ describe('Anordnung des Menüs', () => {
     expect(placeOf(entry)?.group).toBe('finanzen')
     expect(placeOf(entry, WEBSITE_OWN)?.group).toBe('verein')
     const sections = byMenu(
-      [{ ...entry, slug: 'x', title: 'x', kind: 'page', body: '', keywords: [], rights: [] }] as never,
+      [
+        { ...entry, slug: 'x', title: 'x', kind: 'page', body: '', keywords: [], rights: [] },
+      ] as never,
       WEBSITE_OWN,
     )
     expect(sections.map((s) => s.group)).toEqual(['verein'])
+  })
+
+  it('Platzhalter {bereich:…} nennt den Bereich nach der Anordnung', () => {
+    expect(fillAreas('unter {bereich:belegung}')).toBe('unter Planung')
+    expect(fillAreas('unter {bereich:termine}', WEBSITE_OWN)).toBe('unter Schießsport')
+    expect(fillAreas('{bereich:gibtsnicht}')).toBe('{bereich:gibtsnicht}')
   })
 
   it('die Bereichsleiste zeigt die Anordnung der Einheit', async () => {
@@ -114,7 +122,10 @@ describe('Anordnung des Menüs', () => {
   })
 
   it('der Editor verschiebt einen Menüpunkt und speichert die Abweichung', async () => {
-    const org = testOrg({ modules: ['events', 'members'], permissions: ['org.edit', 'events.view'] })
+    const org = testOrg({
+      modules: ['events', 'members'],
+      permissions: ['org.edit', 'events.view'],
+    })
     const calls = fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),

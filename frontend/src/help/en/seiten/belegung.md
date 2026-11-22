@@ -6,7 +6,7 @@ routen: [/belegung]
 stichworte: [Booking, Booking calendar, Reservation, Request, Approval, Set-up time, Hall]
 ---
 
-Planning › **Bookings** shows when facilities and material with a booking calendar are in use. The week
+{bereich:belegung} › **Bookings** shows when facilities and material with a booking calendar are in use. The week
 view has one row per item. At the top you switch between **Week**, **Month** and **Year** and move
 on with the buttons next to it. The month view shows every day of the month side by side (the full
 text appears as a tooltip), the year view shows the number of booked days per month; click it to
