@@ -104,7 +104,8 @@ Abbildern nach bekannten Lücken der Systempakete, im gebauten Backend-Abbild un
 Abbildern aus den Dockerfiles und `docker-compose.server.yml` (hoch und kritisch, nur mit
 verfügbarer Korrektur). `--nur geheimnisse` oder `--nur abbilder` prüft einen Teil. Bewusste
 Musterwerte stehen in `.gitleaks.toml`, hingenommene Lücken mit Begründung und Datum in
-`.trivyignore`.
+`.trivyignore`. Das Hilfsprogramm `gosu` im PostgreSQL-Abbild prüft trivy nicht mit (es läuft nur
+beim Start des Containers und liest nichts von außen; Begründung im Skript).
 
 Die Prüfung läuft lokal mit Docker, belegt keinen Testplatz (höchstens zwei Kerne) und braucht
 Netz. Sie gehört bewusst nicht zum Merge-Zug: Eine neu bekannt gewordene Lücke in einem
