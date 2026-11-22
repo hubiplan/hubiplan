@@ -43,6 +43,14 @@ EMAIL_CHANGED = (
     gettext_noop("Anmelde-E-Mail geändert"),
     gettext_noop("Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."),
 )
+NEW_DEVICE = (
+    gettext_noop("Neue Anmeldung bei HUBIplan"),
+    gettext_noop(
+        "Mit deinem HUBIplan-Zugang wurde sich auf einem Gerät angemeldet, das dein Konto bisher "
+        "nicht kannte: {client}. Das passiert auch, wenn du selbst einen anderen Browser, ein "
+        "neues Gerät oder ein privates Fenster benutzt."
+    ),
+)
 
 
 def notify(user, message: tuple[str, str], recipients: list[str] | None = None, **values) -> None:

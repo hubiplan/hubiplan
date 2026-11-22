@@ -1,0 +1,3 @@
+# Bewusst hingenommene Lücken in Abbildern (scripts/sicherheitspruefung.sh).
+# Je Zeile eine Kennung, davor als Kommentar: betroffenes Abbild, warum HUBIplan nicht
+# betroffen ist, Datum. Einträge wieder entfernen, sobald das Basis-Abbild korrigiert ist.
