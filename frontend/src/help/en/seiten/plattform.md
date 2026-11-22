@@ -51,3 +51,17 @@ The unit uploads its own icon under Settings › Appearance; without one, HUBIpl
 Below every guide and page help you find “Did this help?”. The **Help** tab shows the answers per help text, most “No” first, with the sentence about what was missing. Only the help text, language, version, answer, sentence and day are stored, no person and no club. If a sentence does name someone, take it out with **Remove**; the answer still counts.
 
 Below that, **Searches without results** lists what people searched for in the help without finding anything, with a counter. Entries with digits or email addresses are not stored.
+
+## Security: browser reports
+
+HUBIplan gives every browser rules for what the interface may load and run (Content Security Policy). If a page breaks them, for example because someone tried to inject a foreign script, the browser blocks the content and reports it to your own instance. The **Security** tab shows these reports: what was blocked, which rule applied, on which page, how often, and when first and last.
+
+Only the rule, the blocked origin (without path), the page (without numbers and search words) and the day are stored, no person, no club and no address of the visitor. Nothing is sent to third-party services.
+
+The reports are not authenticated. Browser extensions trigger them, and because the browser sends them without signing in, anyone can send one. HUBIplan discards reports from extensions as far as they can be recognised. How to read the list:
+
+- A blocked script from a foreign address (marked “script”) deserves a look: which page was it on, and could someone have entered text containing code there? For the first such entry the operator receives a security email, at most one per day.
+- The same report on many pages shortly after an update points to a bug in HUBIplan itself. Please report it to the project.
+- Single entries with foreign addresses for images or fonts mostly come from extensions or translation services in the browser.
+
+**Remove** takes out an entry you have clarified, **Remove all** empties the list. If a browser reports the same violation again, it appears again. The list holds at most 500 different entries; when it is full, new ones are only recorded again after you remove some.

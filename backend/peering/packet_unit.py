@@ -7,6 +7,7 @@ import io
 
 from django.core.files.base import ContentFile
 
+from core.filecheck import BILD_FEHLER
 from core.files import delete_on_commit
 
 from .packets import BOTH, Packet, file_b64, register
@@ -76,7 +77,7 @@ def apply(coupling, data):
 
 
 def _logo(org, encoded):
-    from PIL import Image, UnidentifiedImageError
+    from PIL import Image
 
     if not encoded:
         if org.logo:
@@ -100,7 +101,7 @@ def _logo(org, encoded):
             # Wie beim Upload: immer als PNG neu schreiben (keine fremden Dateiinhalte)
             out = io.BytesIO()
             img.convert("RGBA").save(out, "PNG")
-    except (ValueError, OSError, UnidentifiedImageError, Image.DecompressionBombError):
+    except BILD_FEHLER:
         return
     delete_on_commit(org.logo)  # erst nach dem Commit (INF-F02)
     org.logo.save(f"verbund-{org.uuid}.png", ContentFile(out.getvalue()), save=True)

@@ -21,9 +21,10 @@ from html.parser import HTMLParser
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 from core import safehttp
+from core.filecheck import BILD_FEHLER
 
 log = logging.getLogger(__name__)
 
@@ -120,7 +121,7 @@ def clean_preview(content: bytes) -> bytes:
         img.load()
     except ValidationError:
         raise
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         raise ValidationError(gettext("Die Datei ist kein gültiges Bild.")) from exc
     if img.mode in ("RGBA", "LA", "P", "PA"):
         rgba = img.convert("RGBA")

@@ -51,3 +51,17 @@ Ein eigenes Symbol lädt die Einheit unter Einstellungen › Erscheinungsbild ho
 Unter jeder Anleitung und Seitenhilfe steht „Hat das geholfen?“. Der Reiter **Hilfe** zeigt die Antworten je Hilfetext, die meisten „Nein“ zuerst, mit dem Satz dazu, was gefehlt hat. Gespeichert sind nur Hilfetext, Sprache, Fassung, Antwort, Satz und Tag, keine Person und kein Verein. Nennt ein Satz doch einen Namen, nimmst du ihn mit **Entfernen** heraus; die Antwort bleibt gezählt.
 
 Darunter steht unter **Suchen ohne Treffer**, wonach in der Hilfe gesucht und nichts gefunden wurde, mit Zähler. Eingaben mit Ziffern oder E-Mail-Adressen werden nicht gespeichert.
+
+## Sicherheit: Meldungen des Browsers
+
+HUBIplan gibt jedem Browser Regeln mit, was die Oberfläche laden und ausführen darf (Content-Security-Policy). Verstößt eine Seite dagegen, etwa weil jemand ein fremdes Skript einschleusen wollte, blockiert der Browser den Inhalt und meldet es an die eigene Instanz. Der Reiter **Sicherheit** zeigt diese Meldungen: was blockiert wurde, welche Regel gegriffen hat, auf welcher Seite, wie oft, wann zuerst und zuletzt.
+
+Gespeichert sind nur Regel, blockierte Herkunft (ohne Pfad), Seite (ohne Nummern und Suchwörter) und Tag, keine Person, kein Verein und keine Adresse des Aufrufers. Nichts geht an fremde Dienste.
+
+Die Meldungen sind nicht beglaubigt. Erweiterungen im Browser lösen sie aus, und weil der Browser sie ohne Anmeldung schickt, kann jeder eine schicken. Meldungen aus Erweiterungen verwirft HUBIplan, soweit sie erkennbar sind. So liest du die Liste:
+
+- Ein blockiertes Skript von einer fremden Adresse (Zusatz „Skript“) verdient einen Blick: Auf welcher Seite war es, und kann dort jemand Text mit Code eingegeben haben? Für den ersten solchen Eintrag bekommt der Betreiber eine Sicherheitsmail, höchstens eine am Tag.
+- Dieselbe Meldung auf vielen Seiten, kurz nach einem Update, spricht für einen Fehler in HUBIplan selbst. Bitte dem Projekt melden.
+- Einzelne Einträge mit fremden Adressen für Bilder oder Schriften stammen meist aus Erweiterungen oder Übersetzungsdiensten im Browser.
+
+Mit **Entfernen** nimmst du einen geklärten Eintrag heraus, mit **Alle entfernen** leerst du die Liste. Meldet ein Browser denselben Verstoß erneut, steht er wieder da. Die Liste fasst höchstens 500 verschiedene Einträge; ist sie voll, werden neue erst nach dem Entfernen wieder aufgenommen.

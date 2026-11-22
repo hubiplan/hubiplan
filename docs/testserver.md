@@ -95,6 +95,18 @@ nie eine Freigabe. `scripts/test.sh` startet sie, während der Lauf auf seinen P
 Cloud-Sitzung vor dem Lauf auf dem Testrechner, läuft sie mit dem installierten node/npm
 (`VORPRUEFUNG_OHNE_DOCKER=1`) und holt sich ruff in der festgeschriebenen Fassung.
 
+### Zufallstests für Dateileser
+
+`backend/tests/test_zufall_dateileser.py` füttert alles, was fremde Dateien liest (Kontoauszug,
+E-Rechnung, Kalender und Einladungen, Tabellenimport, Notendateien, Designpakete, Bilder,
+Nachweis-PDF, Vollübernahme), mit verdrehten Vorlagen und reinem Zufall (hypothesis). Jeder
+Leser muss lesen oder mit seiner eigenen Meldung ablehnen; jede andere Ausnahme wäre im Betrieb
+ein Fehler 500. Im Testlauf sind die Beispiele fest und der Lauf damit wiederholbar. Zum Suchen:
+`HUBIPLAN_ZUFALL=2000` vor dem Aufruf setzt echte Zufallsbeispiele in dieser Zahl je Leser. Ein
+neuer Leser bekommt dort einen Eintrag in `LESER`. Fremde ZIP-Archive fangen `ZIP_FEHLER`
+(`core/zipsicher.py`), fremde Bilder `BILD_FEHLER` (`core/filecheck.py`); XML aus fremder Hand
+wird nur mit defusedxml gelesen, derselbe Test hält das fest.
+
 ### Sicherheitsprüfung
 
 `scripts/sicherheitspruefung.sh [ref]` ergänzt den Testlauf (ruff mit den Sicherheitsregeln,

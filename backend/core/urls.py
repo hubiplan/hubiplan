@@ -90,6 +90,7 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from orders import portal as orders_portal
 from organizations import (
+    csp_reports,
     help_feedback,
     help_views,
     imprint_views,
@@ -1427,6 +1428,7 @@ urlpatterns = [
         help_feedback.HelpSearchMissView.as_view(),
         name="help-search-miss",
     ),
+    path("csp-report/", csp_reports.CspReportView.as_view(), name="csp-report"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
     path("me/learning/<slug:key>/hide/", learning.LearningHideView.as_view(), name="learning-hide"),
@@ -1593,6 +1595,16 @@ urlpatterns = [
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
     path("platform/icon/", org_views.PlatformIconView.as_view(), name="platform-icon"),
     path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
+    path(
+        "platform/csp-reports/",
+        csp_reports.PlatformCspReportsView.as_view(),
+        name="platform-csp-reports",
+    ),
+    path(
+        "platform/csp-reports/<int:pk>/",
+        csp_reports.PlatformCspReportView.as_view(),
+        name="platform-csp-report",
+    ),
     path(
         "platform/help-feedback/",
         help_feedback.PlatformHelpFeedbackView.as_view(),

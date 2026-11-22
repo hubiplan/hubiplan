@@ -8,6 +8,8 @@ unter ``/media`` nur echte Bilder liegen.
 from __future__ import annotations
 
 import io
+import struct
+import zlib
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext
@@ -19,6 +21,22 @@ LOGO_MAX_SIDE = 1024
 # meldet sie nicht als JPEG, öffnet aber das Hauptbild wie ein JPEG (Ralf 02.11.).
 JPEG_FORMATS = {"JPEG", "MPO"}
 LOGO_FORMATS = {"PNG", "WEBP"} | JPEG_FORMATS
+
+# Womit Pillow ein beschädigtes oder bösartiges Bild ablehnt. Nicht nur UnidentifiedImageError
+# und OSError: Eine PNG-Datei mit kaputtem Abschnitt meldet verify() als SyntaxError, andere
+# Leser als EOFError, struct.error oder zlib.error. Wer ein fremdes Bild öffnet, fängt
+# BILD_FEHLER und lehnt mit eigener Meldung ab (tests/test_zufall_dateileser.py).
+BILD_FEHLER = (
+    UnidentifiedImageError,
+    Image.DecompressionBombError,
+    OSError,
+    ValueError,
+    SyntaxError,
+    EOFError,
+    OverflowError,
+    struct.error,
+    zlib.error,
+)
 
 # HEIC/HEIF (iPhone-Standard) kann Pillow nicht lesen; Kennung im ftyp-Kasten
 HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"mif1", b"msf1"}
@@ -89,7 +107,7 @@ def clean_logo(content: bytes, *, remove_background: bool = False) -> bytes:
         img.load()
     except ValidationError:
         raise
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         raise ValidationError(gettext("Die Datei ist kein gültiges Bild.")) from exc
     img = img.convert("RGBA") if img.mode in ("RGBA", "LA", "P", "PA") else img.convert("RGB")
     img.thumbnail((LOGO_MAX_SIDE, LOGO_MAX_SIDE), Image.Resampling.LANCZOS)

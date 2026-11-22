@@ -24,6 +24,8 @@ from dataclasses import dataclass, field
 
 from django.utils.translation import gettext as _
 
+from core.zipsicher import ZIP_FEHLER
+
 from . import designs
 
 FORMAT = "hubiplan-designpaket"
@@ -186,7 +188,7 @@ def read(
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
         infos = archive.infolist()
-    except (zipfile.BadZipFile, ValueError, OSError):
+    except ZIP_FEHLER:
         raise PackageError([_("Die Datei ist kein ZIP-Paket.")]) from None
     problems: list[str] = []
     warnings: list[str] = []
@@ -210,7 +212,7 @@ def read(
         try:
             with archive.open(info) as fh:
                 raw = fh.read(MAX_UNPACKED_BYTES + 1)
-        except (zipfile.BadZipFile, NotImplementedError, RuntimeError, OSError):
+        except ZIP_FEHLER:
             problems.append(_("Datei „{n}“ lässt sich nicht entpacken.").format(n=name))
             continue
         if len(raw) > info.file_size:

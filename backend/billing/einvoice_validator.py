@@ -84,7 +84,7 @@ def validate(xml, timeout=None):
             from defusedxml import ElementTree
 
             report = ElementTree.fromstring(raw, forbid_dtd=True)
-        except (OSError, subprocess.TimeoutExpired, ValueError):
+        except (OSError, subprocess.TimeoutExpired, ValueError, SyntaxError, LookupError):
             return failed(
                 gettext("Die E-Rechnungsprüfung konnte nicht abgeschlossen werden."), "unavailable"
             )

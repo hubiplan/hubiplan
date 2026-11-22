@@ -60,11 +60,14 @@ def pdf_text(data: bytes) -> str:
     try:
         parts = []
         for i in range(min(len(doc), MAX_PAGES)):
-            page = doc[i]
-            textpage = page.get_textpage()
-            parts.append(textpage.get_text_range())
-            textpage.close()
-            page.close()
+            try:
+                page = doc[i]
+                textpage = page.get_textpage()
+                parts.append(textpage.get_text_range())
+                textpage.close()
+                page.close()
+            except Exception:  # noqa: BLE001, S112 - beschädigte Seite: Text der übrigen Seiten
+                continue
         return "\n".join(parts)
     finally:
         doc.close()
