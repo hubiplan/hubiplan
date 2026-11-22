@@ -7,6 +7,10 @@ deshalb ein signiertes Cookie; Anmeldungen mit diesem Cookie zählen in einem ei
 je Gerät (Muster „Device Cookies“ von OWASP). Die Sperre gegen verteiltes Durchprobieren
 bleibt für alle anderen bestehen, und auch ein gestohlenes Cookie erlaubt nicht mehr Versuche
 als bisher.
+
+Dasselbe Cookie zeigt, ob sich ein Konto auf diesem Gerät zum ersten Mal anmeldet. Dann geht
+ein Hinweis an die Anmelde-E-Mail (``notify_new_device``, Härtung 22.11.): Wer ein fremdes
+Passwort benutzt, fällt so dem Inhaber auf.
 """
 
 from __future__ import annotations
@@ -23,6 +27,9 @@ COOKIE = "hp_geraet"
 MAX_AGE = 180 * 24 * 60 * 60
 MAX_ACCOUNTS = 8
 MAIL_PAUSE = 6 * 60 * 60
+NEW_DEVICE_PAUSE = 24 * 60 * 60
+# Setzt, wer vor der Anmeldung schon weiß, dass kein Hinweis nötig ist (siehe ``skip_notice``)
+_SKIP = "_known_device_skip_notice"
 _SALT = "accounts.known-device"
 _ATTR = "_known_device_email"
 
@@ -54,11 +61,93 @@ def device_for(request, email: str) -> str | None:
     return None
 
 
+def skip_notice(request) -> None:
+    """Für diese Anmeldung keinen Hinweis „neues Gerät“ senden.
+
+    Gedacht für die allererste Anmeldung eines Kontos (nach der Einladung) und für die
+    Anmeldung über einen Link aus einer Mail an dieselbe Adresse: Beides kennt der Inhaber."""
+    setattr(request, _SKIP, True)
+
+
 def remember(sender=None, request=None, user=None, **kwargs) -> None:
     """Nach erfolgreicher Anmeldung (auch mit zweitem Faktor): Gerät für das Konto merken."""
     email = getattr(user, "email", "")
     if request is not None and email:
+        if not getattr(request, _SKIP, False) and device_for(request, email) is None:
+            notify_new_device(request, user)
         setattr(request, _ATTR, email)
+
+
+def describe_client(user_agent: str) -> str:
+    """Programm und System aus der Kennung des Aufrufers, grob und ohne Fassungen.
+
+    Nur zur Orientierung für den Inhaber („Firefox unter Windows“). Die Kennung kommt vom
+    Aufrufer und ist frei wählbar; in die Mail gehen deshalb nur feste Wörter, nie ihr Text."""
+    from django.utils.translation import gettext as _
+
+    ua = user_agent or ""
+    if "HUBIplan" in ua:
+        program = _("HUBIplan-App")
+    else:
+        program = next(
+            (
+                name
+                for mark, name in (
+                    ("Edg", "Edge"),
+                    ("OPR", "Opera"),
+                    ("Firefox", "Firefox"),
+                    ("FxiOS", "Firefox"),
+                    ("CriOS", "Chrome"),
+                    ("Chrome", "Chrome"),
+                    ("Safari", "Safari"),
+                )
+                if mark in ua
+            ),
+            "",
+        )
+    system = next(
+        (
+            name
+            for mark, name in (
+                ("Android", "Android"),
+                ("iPhone", "iPhone"),
+                ("iPad", "iPad"),
+                ("Windows", "Windows"),
+                ("Mac OS X", "macOS"),
+                ("Macintosh", "macOS"),
+                ("CrOS", "ChromeOS"),
+                ("Linux", "Linux"),
+            )
+            if mark in ua
+        ),
+        "",
+    )
+    if program and system:
+        return _("{program} unter {system}").format(program=program, system=system)
+    return program or system or _("unbekanntes Programm")
+
+
+def notify_new_device(request, user) -> None:
+    """Hinweis an den Inhaber: Anmeldung auf einem Gerät, das das Konto noch nicht kennt.
+
+    Höchstens einmal am Tag je Konto und Programm: Wer Cookies beim Schließen löschen lässt,
+    bekommt so nicht bei jeder Anmeldung Post, ein anderes Programm fällt trotzdem auf."""
+    if not getattr(settings, "LOGIN_NOTICE", True):
+        return
+    try:
+        user_agent = str(request.META.get("HTTP_USER_AGENT", ""))[:400]
+        mark = salted_hmac(_SALT, user_agent).hexdigest()[:16]
+        if not cache.add(f"login-neu-mail:{_account(user.email)}:{mark}", 1, NEW_DEVICE_PAUSE):
+            return
+        from core.i18n import language_of
+
+        from .hinweismail import NEW_DEVICE, notify
+
+        with language_of(user):
+            client = describe_client(user_agent)
+        notify(user, NEW_DEVICE, client=client)
+    except Exception:  # noqa: BLE001 – ein Hinweis darf die Anmeldung nie verhindern
+        log.exception("Hinweis auf Anmeldung mit neuem Gerät nicht gesendet")
 
 
 class KnownDeviceMiddleware:

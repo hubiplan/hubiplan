@@ -26,6 +26,13 @@ If someone enters a wrong password for your account several times in a row, sign
 password is blocked for a few minutes, but only on unknown devices. On devices you have signed in
 with before, and with a passkey, you can still get in. You will receive an email about it.
 
+If someone signs in with your account on a device your account does not know yet, you also receive
+an email ("New sign-in to HUBIplan"). It states the time, the program and the system, for example
+"Firefox on Windows". If it was you, for instance with a new phone, a different browser or a
+private window, there is nothing to do. Otherwise change your password right away, check
+two-factor authentication and let the board know. You get at most one such email per program per
+day; none is sent for your very first sign-in or when you sign in with a link from an email.
+
 ## Delete account
 
 Under **Delete account** you delete your account yourself, with passkeys, connected devices, authorisations for Nextcloud and AI assistants and your personal tasks. To confirm, enter your login email; as with other sensitive actions, HUBIplan also asks for your passkey, code or password. If you only sign in with links, delete the account within 10 minutes of signing in.

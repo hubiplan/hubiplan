@@ -40,6 +40,14 @@ class AccountAdapter(DefaultAccountAdapter):
         device = known_device.device_for(request, credentials.get("email", ""))
         return f"{key}:geraet:{device}" if device else key
 
+    def login(self, request, user) -> None:
+        """Die allererste Anmeldung eines Kontos braucht keinen Hinweis „neues Gerät“."""
+        if getattr(user, "last_login", None) is None:
+            from . import known_device
+
+            known_device.skip_notice(request)
+        super().login(request, user)
+
     def pre_authenticate(self, request, **credentials) -> None:
         from django.core.exceptions import ValidationError
 

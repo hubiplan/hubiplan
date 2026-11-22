@@ -618,6 +618,9 @@ API_DOCS_ENABLED = env_bool("DJANGO_API_DOCS_ENABLED", DEBUG)
 SECURITY_ALERTS = env_bool("SECURITY_ALERTS", True)
 SECURITY_ALERT_EMAIL = os.environ.get("SECURITY_ALERT_EMAIL", "")
 ALERT_EXPORT_ROWS = int(os.environ.get("ALERT_EXPORT_ROWS", "200"))
+# Hinweis an das Konto bei einer Anmeldung auf einem bisher unbekannten Gerät
+# (accounts/known_device.py); abschalten nur mit HUBIPLAN_LOGIN_NOTICE=0
+LOGIN_NOTICE = env_bool("HUBIPLAN_LOGIN_NOTICE", True)
 # /.well-known/security.txt (core/views.py): Kontakt des Betreibers für Sicherheitsmeldungen,
 # als Adresse (mailto:… oder https://…) oder reine E-Mail-Adresse; mehrere mit Komma. Die
 # Meldestelle des Projekts steht immer dabei.
