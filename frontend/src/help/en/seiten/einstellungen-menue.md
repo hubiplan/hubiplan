@@ -3,7 +3,7 @@ key: page.settings_menu
 titel: Settings › Menu
 rechte: [settings.view]
 routen: [/einstellungen/menue]
-siehe: [page.settings_modules]
+siehe: [guide.module_toggle]
 stichworte:
   [Menü, Hauptmenü, Hauptmenüpunkt, Bereich, anordnen, verschieben, Reihenfolge, Leiste, umbenennen]
 ---
