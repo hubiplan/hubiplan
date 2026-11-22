@@ -3,6 +3,9 @@ import { NextcloudPick } from '../../components/NextcloudFiles.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { FilterChips } from '../../components/liste/FilterChips.tsx'
+import type { ActiveFilter } from '../../components/liste/FilterChips.tsx'
+import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { earmarkApi } from '../../api/donations.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
@@ -131,6 +134,81 @@ export function BookingsPage() {
     if (replace) detail.replace(v)
     else detail.open(v)
   }
+
+  // Gesetzte Filter als Chips und gemerkte Ansichten (Web-Oberfläche, Listen-Bausteine);
+  // das Geschäftsjahr bleibt außen vor, damit eine Ansicht in jedem Jahr passt
+  const FILTER_KEYS = [
+    'suche',
+    'partner',
+    'konto',
+    'kategorie',
+    'art',
+    'bereich',
+    'veranstaltung',
+    'ohne_beleg',
+  ] as const
+  const filterParams: Record<string, string> = Object.fromEntries(
+    FILTER_KEYS.map((k) => [k, params.get(k) ?? '']),
+  )
+  function applyFilters(v: Record<string, string>) {
+    const next = new URLSearchParams(params)
+    for (const k of FILTER_KEYS) {
+      if (v[k]) next.set(k, v[k])
+      else next.delete(k)
+    }
+    next.delete('seite')
+    setParams(next, { replace: true })
+    setSearch(v.suche ?? '')
+    setPartner(v.partner ?? '')
+  }
+  const remove = (key: string) => () => applyFilters({ ...filterParams, [key]: '' })
+  const chips: ActiveFilter[] = []
+  if (filter.suche)
+    chips.push({ key: 'suche', label: `${t('Suche')}: ${filter.suche}`, onRemove: remove('suche') })
+  if (filter.partner)
+    chips.push({
+      key: 'partner',
+      label: `${t('Empfänger/Zahler')}: ${filter.partner}`,
+      onRemove: remove('partner'),
+    })
+  if (filter.konto)
+    chips.push({
+      key: 'konto',
+      label: `${t('Konto')}: ${accounts.data?.find((a) => String(a.id) === filter.konto)?.name ?? '…'}`,
+      onRemove: remove('konto'),
+    })
+  if (filter.kategorie)
+    chips.push({
+      key: 'kategorie',
+      label: `${t('Kategorie')}: ${categories.data?.find((c) => String(c.id) === filter.kategorie)?.name ?? '…'}`,
+      onRemove: remove('kategorie'),
+    })
+  if (filter.art)
+    chips.push({
+      key: 'art',
+      label: `${t('Art')}: ${KIND_LABEL[filter.art as BookingKind] ?? filter.art}`,
+      onRemove: remove('art'),
+    })
+  if (filter.bereich)
+    chips.push({
+      key: 'bereich',
+      label:
+        filter.bereich === '-'
+          ? `${t('steuerlicher Bereich')}: ${t('ohne Zuordnung')}`
+          : `${t('steuerlicher Bereich')}: ${settings.data?.tax_areas.find((a) => a.value === filter.bereich)?.label ?? filter.bereich}`,
+      onRemove: remove('bereich'),
+    })
+  if (filter.veranstaltung)
+    chips.push({
+      key: 'veranstaltung',
+      label:
+        filter.veranstaltung === '-'
+          ? t('ohne Veranstaltung')
+          : `${t('Veranstaltung')}: ${projects.data?.find((p) => String(p.id) === filter.veranstaltung)?.name ?? '…'}`,
+      onRemove: remove('veranstaltung'),
+    })
+  if (filter.ohne_beleg)
+    chips.push({ key: 'ohne_beleg', label: t('ohne Beleg'), onRemove: remove('ohne_beleg') })
 
   function setFilter(key: string, value: string) {
     const next = new URLSearchParams(params)
@@ -387,6 +465,16 @@ export function BookingsPage() {
           />
           <span>{t('ohne Beleg')}</span>
         </label>
+      </div>
+
+      <div className="list-tools">
+        <FilterChips filters={chips} onClearAll={() => applyFilters({})} />
+        <ViewPicker
+          list={`kassenbuch.${org.id}`}
+          current={filterParams}
+          standard={{}}
+          onApply={applyFilters}
+        />
       </div>
 
       <div className="card card-wide">

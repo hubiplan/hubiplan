@@ -178,7 +178,7 @@ describe('Layout', () => {
     expect(await screen.findByRole('heading', { name: 'TV Beispielhausen' })).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).toHaveTextContent('Mitglieder')
-    expect(nav).toHaveTextContent('Einstellungen')
+    expect(nav).toHaveTextContent('Verein')
     expect(nav).not.toHaveTextContent('Plattform')
   })
 

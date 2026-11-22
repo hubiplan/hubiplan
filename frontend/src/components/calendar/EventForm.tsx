@@ -641,24 +641,26 @@ export function EventForm({
         <fieldset className="subcard stack-sm">
           <legend>{t('E-Mail')}</legend>
           {v.repeat === 'none' && (
-            <div className="grid-3">
+            <>
               <Checkbox
                 label={t('Erinnerung per E-Mail')}
                 checked={v.remind}
                 onChange={(x) => set('remind', x)}
               />
               {v.remind && (
-                <Field
-                  label={t('Tage vorher')}
-                  type="number"
-                  min={1}
-                  max={60}
-                  value={v.remind_days}
-                  error={errors.remind_days}
-                  onChange={(e) => set('remind_days', e.target.value)}
-                />
+                <div className="grid-3">
+                  <Field
+                    label={t('Tage vorher')}
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={v.remind_days}
+                    error={errors.remind_days}
+                    onChange={(e) => set('remind_days', e.target.value)}
+                  />
+                </div>
               )}
-            </div>
+            </>
           )}
           {v.remind && v.rsvp_enabled && v.repeat === 'none' && (
             <p className="muted small">{t('Die Erinnerung geht an alle, die zugesagt haben.')}</p>

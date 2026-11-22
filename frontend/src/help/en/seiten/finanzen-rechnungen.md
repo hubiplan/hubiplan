@@ -9,6 +9,8 @@ stichworte: [invoice, fee, open, paid, cancellation]
 
 This lists all of the unit's invoices, such as membership fees or club clothing costs, with their status: open, paid, reminded or cancelled. You create a single invoice here; a fee run creates many at once.
 
+Active filters appear as chips above the list; clicking one removes that filter. **Remember as view** stores a selection under a name, such as “Overdue fee run 2026”, and **View** brings it back later; this applies to this browser.
+
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
 
 Enter a search term and choose **Search** or press Enter. Status and other filters apply immediately.

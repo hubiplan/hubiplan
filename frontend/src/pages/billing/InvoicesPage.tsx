@@ -3,6 +3,9 @@ import { todayIso } from '../../api/members.ts'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { FilterChips } from '../../components/liste/FilterChips.tsx'
+import type { ActiveFilter } from '../../components/liste/FilterChips.tsx'
+import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { billingApi } from '../../api/billing.ts'
 import { ApiError, newRequestKey } from '../../api/client.ts'
@@ -87,9 +90,64 @@ export function InvoicesPage() {
     setParams(next)
   }
 
+  // Gesetzte Filter als Chips und gemerkte Ansichten (Web-Oberfläche, Listen-Bausteine)
+  const filterParams = {
+    suche: term,
+    status,
+    ueberfaellig: overdue ? '1' : '',
+    lauf: run,
+    verein: club,
+    veranstaltung: project,
+  }
+  function applyFilters(v: Partial<typeof filterParams>) {
+    const next = new URLSearchParams()
+    for (const [k, value] of Object.entries(v)) if (value) next.set(k, value)
+    if (detail.value) next.set('rechnung', detail.value)
+    setParams(next)
+    setSearch(v.suche ?? '')
+  }
+
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />
   const s = settings.data
+  const statusLabels: Record<string, string> = {
+    draft: t('Entwürfe'),
+    open: t('offen'),
+    paid: t('bezahlt'),
+    settled: t('Abgerechnet'),
+    cancelled: t('storniert'),
+  }
+  const chips: ActiveFilter[] = []
+  if (term)
+    chips.push({
+      key: 'suche',
+      label: `${t('Suche')}: ${term}`,
+      onRemove: () => applyFilters({ ...filterParams, suche: '' }),
+    })
+  if (overdue || status)
+    chips.push({
+      key: 'status',
+      label: `${t('Status')}: ${overdue ? t('überfällig') : (statusLabels[status] ?? status)}`,
+      onRemove: () => applyFilters({ ...filterParams, status: '', ueberfaellig: '' }),
+    })
+  if (club)
+    chips.push({
+      key: 'verein',
+      label: `${tm.Sg}: ${s.clubs.find((c) => String(c.id) === club)?.name ?? '…'}`,
+      onRemove: () => applyFilters({ ...filterParams, verein: '' }),
+    })
+  if (run)
+    chips.push({
+      key: 'lauf',
+      label: `${t('Beitragslauf')} ${runs.data?.find((r) => String(r.id) === run)?.label ?? '…'}`,
+      onRemove: () => applyFilters({ ...filterParams, lauf: '' }),
+    })
+  if (project)
+    chips.push({
+      key: 'veranstaltung',
+      label: t('Veranstaltung'),
+      onRemove: () => applyFilters({ ...filterParams, veranstaltung: '' }),
+    })
   const refresh = () => setVersion((v) => v + 1)
 
   return (
@@ -178,6 +236,16 @@ export function InvoicesPage() {
             {t('Neue Rechnung')}
           </button>
         )}
+      </div>
+
+      <div className="list-tools">
+        <FilterChips filters={chips} onClearAll={() => applyFilters({})} />
+        <ViewPicker
+          list={`rechnungen.${org.id}`}
+          current={filterParams}
+          standard={{}}
+          onApply={applyFilters}
+        />
       </div>
 
       {creating && (

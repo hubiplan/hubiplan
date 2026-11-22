@@ -28,3 +28,7 @@ Schlägt das Laden der Konten oder Kategorien fehl, bietet **Erneut laden** eine
 **Umsatzsteuer im Betrag**: Ist der Verein umsatzsteuerpflichtig, wählt ihr bei Einnahmen und Ausgaben den Steuersatz (19 %, 7 %, steuerfrei oder keine). Der Betrag bleibt brutto; Netto und Steuer rechnet HUBIplan aus. Neue Buchungen übernehmen die Vorgabe der Kategorie (Einrichten › Kategorien, Spalte **Umsatzsteuer**). Bei gemischt genutzten Ausgaben tragt ihr unter **Vorsteuer abziehbar (%)** den unternehmerischen Anteil ein. Die Summen stehen unter Finanzen › Steuern › Umsatzsteuer.
 
 **Als Anlage erfassen**: Bei einer Ausgabe ab 250 € übernimmt dieser Knopf Betrag, Datum und Text in das Anlagenverzeichnis (Finanzen › Anlagegüter) und verknüpft die Anlage mit der Buchung.
+
+## Filter und Ansichten
+
+Gesetzte Filter stehen als Chips über der Liste; ein Klick entfernt den Filter. Mit **Als Ansicht merken** legst du eine Auswahl ohne Geschäftsjahr unter einem Namen ab, etwa „Bar ohne Beleg“, und wählst sie in jedem Jahr unter **Ansicht** wieder; das gilt für diesen Browser.

@@ -99,9 +99,9 @@ describe('Tabellenbaustein in der Mitgliederliste', () => {
     await user.selectOptions(screen.getByLabelText('Ansicht'), 'Ehemalige')
     expect(screen.getByLabelText('Status')).toHaveValue('ehemalig')
     await user.click(screen.getByRole('button', { name: 'Ansicht löschen' }))
-    expect(
-      within(screen.getByLabelText('Ansicht')).queryByRole('option', { name: 'Ehemalige' }),
-    ).toBeNull()
+    // ohne gemerkte Ansicht keine Auswahl mehr, nur noch „Als Ansicht merken“
+    expect(screen.queryByLabelText('Ansicht')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Als Ansicht merken' })).toBeVisible()
   })
 
   it('öffnet auf breiten Bildschirmen ein Seitenblatt mit Link zur Akte', async () => {

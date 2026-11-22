@@ -7864,7 +7864,7 @@ html {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-2) var(--space-4);
   margin: 0 0 var(--space-3);
 }
@@ -7906,7 +7906,10 @@ html {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin-left: auto;
+}
+
+.list-tools:empty {
+  display: none;
 }
 
 .view-picker-select {

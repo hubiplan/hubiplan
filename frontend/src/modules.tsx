@@ -300,7 +300,8 @@ export const modules: AppModule[] = [
   {
     // Untereinheiten (z. B. Züge), benannt nach der Bezeichnung der Einheit
     id: 'untereinheiten',
-    area: 'mitglieder',
+    // Aufbau des Vereins, nicht Mitgliederverwaltung (Ralf 22.11.)
+    area: 'verein',
     label: t('Untereinheiten'),
     text: t('Gliederung des Vereins mit Leitung und Mitgliedern'),
     labelFor: (org) =>

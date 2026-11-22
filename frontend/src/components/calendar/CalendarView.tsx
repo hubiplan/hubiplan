@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { FilterChips } from '../liste/FilterChips.tsx'
 import { eventApi } from '../../api/events.ts'
 import type { CalendarBase, EventCategory, Occurrence } from '../../api/events.ts'
 import { useLoad } from '../forms.ts'
@@ -178,7 +179,23 @@ export function CalendarView({
     () => eventApi.list(base, from, to).then((d) => ({ ...d, rangeKey })),
     [base, from, to],
   )
-  const data = loaded.data?.rangeKey === rangeKey ? loaded.data : null
+  const loadedData = loaded.data?.rangeKey === rangeKey ? loaded.data : null
+  // Filter nach Kategorie (Web-Oberfläche, Listen-Bausteine): in der Adresse, damit er teilbar ist
+  const categoryFilter = params.get('kategorie') ?? ''
+  const filterCategory = loadedData?.categories.find((c) => String(c.id) === categoryFilter)
+  const data =
+    loadedData && filterCategory
+      ? {
+          ...loadedData,
+          items: loadedData.items.filter((o) => o.category?.id === filterCategory.id),
+        }
+      : loadedData
+  function setCategoryFilter(value: string) {
+    const next = new URLSearchParams(params)
+    if (value) next.set('kategorie', value)
+    else next.delete('kategorie')
+    setParams(next, { replace: true })
+  }
   const { error, reload } = loaded
   const selected =
     picked ?? (linked ? (data?.items.find((o) => o.event_id === linked) ?? null) : null)
@@ -278,6 +295,35 @@ export function CalendarView({
           />
         </div>
       </div>
+
+      {loadedData && loadedData.categories.length > 1 && (
+        <div className="list-tools">
+          <FilterChips
+            filters={
+              filterCategory
+                ? [
+                    {
+                      key: 'kategorie',
+                      label: `${t('Kategorie')}: ${filterCategory.name}`,
+                      onRemove: () => setCategoryFilter(''),
+                    },
+                  ]
+                : []
+            }
+          />
+          <label className="view-picker-select small">
+            {t('Kategorie')}
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+              <option value="">{t('alle Kategorien')}</option>
+              {loadedData.categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
 
       {error && (
         <LoadError
@@ -393,7 +439,7 @@ export function CalendarView({
         </div>
       )}
 
-      {data && data.items.length === 0 && view === 'month' && emptyHint && (
+      {loadedData && loadedData.items.length === 0 && view === 'month' && emptyHint && (
         <p className="muted small">{emptyHint}</p>
       )}
 

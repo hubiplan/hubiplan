@@ -8,6 +8,8 @@ stichworte: [Kalender, Termin, Zusage, Absage, Abo]
 
 Der Kalender zeigt die Termine der Einheit. Mit dem Recht dazu legst du Termine an, auch wiederkehrende, und lädst Mitglieder ein, die zu- oder absagen. Über das Kalender-Abo erscheinen die Termine im eigenen Kalender auf Handy oder PC. Unter Termine › Einrichtung legt ihr Kategorien, fremde Kalender, die Weitergabe an andere Einheiten und den Link für die Webseite fest. Unter „Fremde Kalender“ übernimmt der Kalender stündlich Termine anderer, z. B. des Dachverbands aus Vereinsplaner.
 
+Haben die Termine mehrere Kategorien, wählst du über **Kategorie** nur eine davon aus; der gesetzte Filter steht als Chip darüber und verschwindet mit einem Klick.
+
 ## Kalender lesen
 
 An jedem Eintrag steht die zugehörige Einheit und gegebenenfalls der fremde Kalender. So unterscheidest du gleichnamige Termine vor dem Öffnen. Im Monat beginnt ein mehrtägiger Termin mit seiner Startzeit; an weiteren Tagen steht „Fortsetzung“, am letzten Tag beispielsweise „Fortsetzung bis 01:05“. Ein Ende genau um Mitternacht erscheint am Vortag als 24:00, ohne zusätzlichen Eintrag am neuen Tag. Ganztägige Termine bleiben als solche bezeichnet. Die Liste und die zugänglichen Namen enthalten den vollständigen Zeitraum; auf kleinen Bildschirmen ist die Liste die voreingestellte Ansicht.
