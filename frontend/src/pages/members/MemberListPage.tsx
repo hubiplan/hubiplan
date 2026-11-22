@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { cardApi } from '../../api/cards.ts'
 import { GENDERS, memberApi, memberName } from '../../api/members.ts'
@@ -12,7 +13,11 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { lang, t } from '../../i18n/index.ts'
-import { atMost, BP_NARROW } from '../../theme/breakpoints.ts'
+import { atMost, BP_NARROW, BP_WIDE } from '../../theme/breakpoints.ts'
+import { FilterChips } from '../../components/liste/FilterChips.tsx'
+import type { ActiveFilter } from '../../components/liste/FilterChips.tsx'
+import { SideSheet } from '../../components/liste/SideSheet.tsx'
+import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
 import { PageNav } from '../../components/ListControls.tsx'
 
 interface Column {
@@ -102,6 +107,7 @@ function saveColumns(cols: string[]) {
 // Suche, Filter, Sortierung und Seite überstehen den Weg in die Akte und zurück
 // (nur für diese Sitzung im Browser, nicht in der teilbaren Adresse).
 const LIST_KEY = (org: number) => `hubiplan.mitgliederliste.${org}`
+const STANDARD: ListParams = { status: 'aktiv', sortierung: 'name' }
 
 function loadListState(org: number): ListParams | null {
   try {
@@ -161,6 +167,68 @@ export function MemberListPage() {
     params.ehrentitel,
     params.haushalt,
   ].filter(Boolean).length
+
+  // Seitenblatt: auf breiten Bildschirmen zeigt ein Klick auf die Zeile das Mitglied daneben (W11)
+  const [sheet, setSheet] = useState<MemberRow | null>(null)
+  const closeSheet = useCallback(() => setSheet(null), [])
+  const setFilter = (key: keyof ListParams, value: string) =>
+    setParams((p) => ({ ...p, [key]: value, page: 1 }))
+  // Gesetzte Filter als Chips (W11)
+  const chips: ActiveFilter[] = []
+  if (params.status !== 'aktiv')
+    chips.push({
+      key: 'status',
+      label: params.status === 'ehemalig' ? t('ehemalige Mitglieder') : t('alle Mitglieder'),
+      onRemove: () => setFilter('status', 'aktiv'),
+    })
+  if (params.art)
+    chips.push({
+      key: 'art',
+      label: `${t('Mitgliedsart')}: ${types.data?.find((x) => String(x.id) === String(params.art))?.name ?? '…'}`,
+      onRemove: () => setFilter('art', ''),
+    })
+  if (params.typ)
+    chips.push({
+      key: 'typ',
+      label: params.typ === 'person' ? t('nur Personen') : t('nur Organisationen'),
+      onRemove: () => setFilter('typ', ''),
+    })
+  if (params.geschlecht)
+    chips.push({
+      key: 'geschlecht',
+      label: `${t('Geschlecht')}: ${
+        params.geschlecht === 'ohne'
+          ? t('ohne Angabe')
+          : (GENDERS.find((g) => g.value === params.geschlecht)?.label ?? params.geschlecht)
+      }`,
+      onRemove: () => setFilter('geschlecht', ''),
+    })
+  if (params.abteilung) {
+    const d = departments.data?.find((x) => String(x.id) === String(params.abteilung))
+    chips.push({
+      key: 'abteilung',
+      label: `${unitTerms.Sg}: ${d ? unitName(d) : '…'}`,
+      onRemove: () => setFilter('abteilung', ''),
+    })
+  }
+  if (params.ehrentitel)
+    chips.push({
+      key: 'ehrentitel',
+      label:
+        params.ehrentitel === 'mit'
+          ? t('mit Ehrung')
+          : `${t('Ehrungen')}: ${titles.data?.find((x) => String(x.id) === String(params.ehrentitel))?.name ?? '…'}`,
+      onRemove: () => setFilter('ehrentitel', ''),
+    })
+  if (params.haushalt)
+    chips.push({
+      key: 'haushalt',
+      label:
+        params.haushalt === 'mit'
+          ? t('in einem Haushalt oder einer Firma')
+          : t('ohne Haushalt und Firma'),
+      onRemove: () => setFilter('haushalt', ''),
+    })
 
   // Suche erst nach kurzer Tipp-Pause auslösen
   useEffect(() => {
@@ -396,6 +464,34 @@ export function MemberListPage() {
         </div>
       </div>
 
+      <div className="list-tools">
+        <FilterChips
+          filters={chips}
+          onClearAll={() =>
+            setParams((p) => ({
+              ...p,
+              ...STANDARD,
+              art: '',
+              typ: '',
+              geschlecht: '',
+              abteilung: '',
+              ehrentitel: '',
+              haushalt: '',
+              page: 1,
+            }))
+          }
+        />
+        <ViewPicker
+          list={`mitglieder.${org.id}`}
+          current={{ ...params, page: undefined, page_size: undefined }}
+          standard={STANDARD}
+          onApply={(v) => {
+            setParams({ ...STANDARD, ...v, page: 1, page_size: params.page_size })
+            setSearch(v.suche ?? '')
+          }}
+        />
+      </div>
+
       {showExport && (
         <ExportPanel
           orgId={org.id}
@@ -473,8 +569,10 @@ export function MemberListPage() {
                 {data.results.map((r) => (
                   <tr
                     key={r.id}
-                    className={`clickable${r.status === 'former' ? ' inactive' : ''}`}
-                    onClick={() => navigate(`/mitglieder/${r.id}`)}
+                    className={`clickable${r.status === 'former' ? ' inactive' : ''}${sheet?.id === r.id ? ' is-selected' : ''}`}
+                    onClick={() =>
+                      atMost(BP_WIDE) ? navigate(`/mitglieder/${r.id}`) : setSheet(r)
+                    }
                   >
                     <td className="name-cell">
                       {r.photo_url ? (
@@ -506,7 +604,72 @@ export function MemberListPage() {
           {pagination}
         </div>
       )}
+      {sheet && (
+        <SideSheet
+          title={memberName(sheet)}
+          subtitle={[sheet.member_type, sheet.status === 'former' ? t('ehemalig') : null]
+            .filter(Boolean)
+            .join(' · ')}
+          onClose={closeSheet}
+          actions={
+            <Link className="button button-primary" to={`/mitglieder/${sheet.id}`}>
+              {t('Akte öffnen')}
+            </Link>
+          }
+        >
+          <MemberSheet row={sheet} precision={org.date_precision} unitLabel={unitTerms.Sg} />
+        </SideSheet>
+      )}
     </section>
+  )
+}
+
+/** Inhalt des Seitenblatts: was die Liste über das Mitglied schon weiß, ohne neue Abfrage. */
+function MemberSheet({
+  row,
+  precision,
+  unitLabel,
+}: {
+  row: MemberRow
+  precision?: DatePrecision
+  unitLabel: string
+}) {
+  const address = [row.street, [row.postal_code, row.city].filter(Boolean).join(' ')]
+    .filter(Boolean)
+    .join(', ')
+  const facts: [string, ReactNode][] = []
+  const col = (key: string) => COLUMNS.find((c) => c.key === key)!
+  if (row.member_number != null) facts.push([t('Mitgliedsnummer'), row.member_number])
+  for (const key of ['birth_date', 'entry_date', 'exit_date'] as const)
+    if (row[key]) facts.push([col(key).label, col(key).value(row, precision)])
+  if (row.departments.length) facts.push([unitLabel, row.departments.join(', ')])
+  if (row.households?.length)
+    facts.push([t('Haushalt'), row.households.map((h) => h.name).join(', ')])
+  if (row.honorary_titles.length) facts.push([t('Ehrungen'), row.honorary_titles.join(', ')])
+  if (row.email)
+    facts.push([
+      t('E-Mail'),
+      <a key="mail" href={`mailto:${row.email}`}>
+        {row.email}
+      </a>,
+    ])
+  if (row.phone)
+    facts.push([
+      t('Telefon'),
+      <a key="tel" href={`tel:${row.phone}`}>
+        {row.phone}
+      </a>,
+    ])
+  if (address) facts.push([t('Anschrift'), address])
+  return (
+    <dl className="side-sheet-facts">
+      {facts.map(([k, v]) => (
+        <div key={k}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
