@@ -41,11 +41,17 @@ cat > "$TMP/Caddyfile" << 'EOF'
 }
 EOF
 chmod 644 "$TMP/Caddyfile"
+# Eine kleine Oberfläche unter /srv: Ohne index.html antwortet Caddy mit 404 und ohne die
+# Kopfzeilen der Oberfläche (CSP, Cross-Origin-Opener-Policy), die hier geprüft werden.
+mkdir -p "$TMP/srv"
+echo '<!doctype html><title>Oberfläche</title>' > "$TMP/srv/index.html"
+chmod 755 "$TMP/srv"
+chmod 644 "$TMP/srv/index.html"
 docker network create "$ID" > /dev/null
 docker run -d --name "$ID-echo" --network "$ID" --network-alias backend --network-alias website "$@" \
     -v "$TMP/Caddyfile:/etc/caddy/Caddyfile:ro" "$IMG" > /dev/null
 docker run -d --name "$ID-proxy" --network "$ID" "$@" \
-    -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -v "$SRC/deploy:/etc/caddy:ro" \
+    -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -v "$SRC/deploy:/etc/caddy:ro" -v "$TMP/srv:/srv:ro" \
     "$IMG" caddy run --config /etc/caddy/Caddyfile.proxy --adapter caddyfile > /dev/null
 docker run -d --name "$ID-direkt" --network "$ID" "$@" \
     -e SITE_HOST=http://hubiplan.example.org -v "$SRC/deploy:/etc/caddy:ro" \
@@ -116,6 +122,7 @@ erwarte "Proxy: security.txt erreicht das Backend" "$a" 'pfad=/\.well-known/secu
 
 # Oberfläche: fremde Fenster vom eigenen getrennt, CSP bleibt
 a=$(anfrage "$ID-proxy" /mitglieder "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+erwarte "Proxy: Oberfläche wird ausgeliefert" "$a" 'HTTP/1\.1 200'
 erwarte "Proxy: Oberfläche mit Cross-Origin-Opener-Policy" "$a" 'Cross-Origin-Opener-Policy: same-origin-allow-popups'
 erwarte "Proxy: Oberfläche mit CSP" "$a" "Content-Security-Policy: default-src 'self'"
 
