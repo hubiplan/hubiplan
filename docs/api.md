@@ -1,12 +1,14 @@
 # API für andere Programme
 
-Über diese Schnittstelle lesen Programme Dritter Daten einer Einheit: die Software eines
-Dachverbands, eine eigene Webseite, eine Anzeigetafel, ein Skript. Umgesetzt sind **Stufe 0**
+Über diese Schnittstelle lesen Programme Dritter Daten einer Einheit und schreiben, wenn es
+eigens erlaubt ist: die Software eines Dachverbands, eine eigene Webseite, eine Anzeigetafel,
+eine Auswertesoftware, ein Skript. Umgesetzt sind **Stufe 0**
 (die Schnittstelle der Vereinswebseite als offene Daten beschrieben, siehe unten), **Stufe 1**
 (API-Zugänge mit Schlüssel, Lesen ohne Personendaten) und **Stufe 2** (Verbandsmeldung,
 Mitglieder, Ehrungen und Qualifikationen lesen, nur mit Empfänger und Rechtsgrundlage;
-Benachrichtigungen bei Änderungen). Schreiben und die Anmeldung im Namen einer Person sind
-spätere Stufen.
+Benachrichtigungen bei Änderungen) und **Stufe 3** (Schreiben: Termine, Ergebnisse, Anwesenheit,
+Vorschläge zu Mitgliedern, Rundschreiben als Entwurf; Ausweisprüfung). Die Anmeldung im Namen
+einer Person ist eine spätere Stufe.
 
 ## Kurz
 
@@ -21,7 +23,8 @@ spätere Stufen.
 
 Code: App `backend/partnerapi/` (`models.py` Zugang, `auth.py` Schlüsselprüfung, `scopes.py`
 Bereiche, `views.py` Aufrufe für Dritte, `personal.py` Aufrufe mit Personendaten, `refs.py`
-feste Kennungen, `webhooks.py` und `signals.py` Benachrichtigungen, `manage_views.py`
+feste Kennungen, `webhooks.py` und `signals.py` Benachrichtigungen, `writes.py` Schreiben,
+`manage_views.py`
 Verwaltung, `openapi.py` Beschreibung).
 Oberfläche: `frontend/src/pages/settings/ApiAccessPage.tsx`.
 
@@ -58,7 +61,8 @@ steht nie in der Adresse, sie ergibt sich aus dem Schlüssel.
 - Der Schlüssel gilt nur unter `/api/partner/`, nirgends sonst in HUBIplan.
 
 Alle Tabellen sind je Einheit zeilengesichert (`partnerapi/migrations/0002_rls.py`,
-`0004_stufe2_rls.py`). Zugänge, Kennungen, Abrufprotokoll und Benachrichtigungen gehen bewusst
+`0004_stufe2_rls.py`, `0006_stufe3_rls.py`). Zugänge, Kennungen, Abrufprotokoll,
+Benachrichtigungen und die Einträge des Schreibens gehen bewusst
 nicht in die Datenübernahme: Nach einem Umzug vergibt die Einheit neue Schlüssel.
 
 ## Bereiche
@@ -133,6 +137,52 @@ Einstellungen › API-Zugänge zeigt je Zugang die Summe und die letzten Abrufe.
 Mitgliedsart und Untereinheit. Sammeländerungen (Import) können fehlen; ein vollständiger
 Abgleich in größeren Abständen bleibt sinnvoll.
 
+## Schreiben (Stufe 3)
+
+Grundsätze:
+
+- Jeder schreibende Bereich wird einzeln angekreuzt (im Katalog `write`) und ist nie vorgewählt.
+  Wird einer neu vergeben, verlangt die Verwaltung einen frischen zweiten Faktor, und alle mit
+  `api.manage` bekommen eine Mail.
+- Welcher Bereich für einen Aufruf nötig ist, steht in der OpenAPI-Beschreibung am Aufruf
+  (`x-scope` und im Text).
+- Geschrieben wird nur Unkritisches (Termin, Ergebnis, Anwesenheit) oder ein Vorschlag bzw.
+  Entwurf, den ein Mensch in HUBIplan übernimmt (Mitgliederdaten, Rundschreiben). Nichts wird
+  gelöscht, nichts versendet.
+- Ändern kann ein Zugang nur, was er selbst angelegt hat (`WrittenRecord`), sonst 404.
+- Ein Zugang, der „aus fremden Webseiten aufrufbar“ ist, schreibt nie (`write_not_allowed`).
+- Grenze: 60 schreibende Anfragen je Stunde und Zugang, zusätzlich zu den 600 Anfragen.
+- Im Änderungsprotokoll steht „API-Zugang ‹Name›“ statt einer Person. Die Verwaltung zeigt je
+  Zugang, wie oft und wann zuletzt geschrieben wurde.
+- Kopfzeile `Idempotency-Key` (bis 100 Zeichen): Dieselbe Anfrage mit demselben Schlüssel legt
+  innerhalb von 24 Stunden nichts doppelt an und bekommt dieselbe Antwort, dann mit
+  `Idempotency-Replayed: true`. Derselbe Schlüssel mit anderem Inhalt: 409
+  `idempotency_conflict`. Abgelehnte Anfragen belegen den Schlüssel nicht.
+- `external_id`: eigene Kennung des Dritten, je Zugang und Art eindeutig. Eine zweite Anlage
+  mit derselben Kennung gibt 409 `external_id_exists` mit der `id` des vorhandenen Datensatzes;
+  `GET lookup/?kind=…&external_id=…` findet ihn (`kind`: `event`, `training`, `proposal`,
+  `circular`).
+
+| Bereich | Aufruf | Inhalt | Modul |
+| --- | --- | --- | --- |
+| `termine.schreiben` | `POST events/`, `GET`/`PATCH events/<id>/` | einzelnen Termin anlegen, ändern, absagen (`is_cancelled`); Sichtbarkeit nur `public` oder `members`; keine Serien, keine Einladungen | `events` |
+| `ergebnisse.schreiben` | `GET result-entry/`, `POST result-entry/<id>/` | offene eigene Wettbewerbe mit Einzelwertungen; Werte einliefern (bis 500 je Anfrage), Starter als Mitglied (`member`) oder Gast (`name`, `club`); jede Zeile einzeln geprüft (`accepted`, `rejected`) | `competitions` |
+| `anwesenheit.schreiben` (P) | `POST trainings/`, `GET trainings/<id>/`, `POST trainings/<id>/attendance/` | Trainingstermin anlegen (nie Schießtermin), Mitglieder ein- und austragen (`present`, `absent`) | `training` |
+| `mitglieder.schreiben` (P) | `POST members/<id>/proposals/`, `GET proposals/<id>/` | geänderte Namen und Kontaktdaten als Änderungsmeldung (`portal.ChangeRequest`), höchstens 3 offene je Mitglied und 200 je Zugang; Stand abfragen | `members` |
+| `ausweis.pruefen` (P) | `POST card-check/` | Code eines Mitgliedsausweises: `valid`, `status`, `member_type`; nie Name, Foto oder Nummer; zählt nicht als Schreiben | `cards` |
+| `rundschreiben.schreiben` | `POST circular-drafts/` | Betreff und Text als Entwurf, höchstens 20 Entwürfe je Zugang; Versand nur in HUBIplan | `circulars` |
+
+„(P)“: Bereich mit Personendaten, also nur für Vereine und nur mit Empfänger und bestätigter
+Rechtsgrundlage. `anwesenheit.schreiben` und `mitglieder.schreiben` setzen `mitglieder.lesen`
+voraus (Kennungen der Mitglieder). Ergebnisse für Mitglieder brauchen ebenfalls
+`mitglieder.lesen`; Gäste gehen ohne. Für eine Untereinheit gibt es Termine, Anwesenheit und
+Vorschläge.
+
+Bewusst nicht umgesetzt: neue Mitglieder anlegen (ein Mitgliedsantrag braucht die Erklärungen
+der Person selbst; dafür gibt es das Antragsformular), Rechnungen einliefern (der Rechnungseingang
+läuft über das Rechnungspostfach mit Prüfung), Ausschreibungen und Wettkampfmeldungen, Ehrungen
+und Lehrgänge vorschlagen. Zu- und Absagen im Namen einer Person gehören zu Stufe 4.
+
 ## Benachrichtigungen (Webhooks)
 
 Am Zugang lässt sich eine https-Adresse eintragen. Ändert sich etwas, sendet HUBIplan dorthin
@@ -162,7 +212,9 @@ ein `POST` mit einer schlanken Nachricht, nie mit Inhalten:
 - **Zustellung:** mindestens einmal, in Reihenfolge je Zugang. Antwort 2xx gilt als angekommen.
   Sonst neue Versuche nach 1, 5 und 30 Minuten, danach stündlich, bis zu drei Tage. Scheitert
   jede Zustellung sieben Tage lang, ruhen die Benachrichtigungen des Zugangs, und alle mit
-  `api.manage` bekommen eine Mail. Empfänger sollten doppelte Nachrichten an `id` erkennen.
+  `api.manage` bekommen eine Mail.
+- Welcher Bereich für einen Aufruf nötig ist, steht in der OpenAPI-Beschreibung am Aufruf
+  (`x-scope` und im Text). Empfänger sollten doppelte Nachrichten an `id` erkennen.
 - **Schutz:** nur https, keine internen Adressen, keine Weiterleitungen (`core/safehttp.py`).
   Gleichartige Nachrichten zu einem Datensatz werden zusammengefasst, solange sie warten.
 - Mitglieder-Ereignisse gibt es nur für Zugänge der ganzen Einheit mit gültiger
@@ -185,6 +237,11 @@ Antworten mit `application/problem+json` (RFC 9457): `type`, `title`, `status`, 
 | `missing_scope` | 403 | Bereich nicht vergeben (`scope` nennt ihn) |
 | `legal_basis_missing` | 403 | Personendaten: Empfänger oder bestätigte Rechtsgrundlage fehlen |
 | `too_many_requests` | 429 | Grenze erreicht, `Retry-After` beachten |
+| `write_not_allowed` | 403 | Zugang ist aus fremden Webseiten aufrufbar und schreibt deshalb nicht |
+| `external_id_exists` | 409 | eigene Kennung schon vergeben (`id` nennt den Datensatz) |
+| `idempotency_conflict` | 409 | `Idempotency-Key` gehört zu einer anderen Anfrage |
+| `record_locked` | 409 | Termin wurde in HUBIplan zur Serie oder „nur Vorstand“ |
+| `too_many_open` | 409 | zu viele offene Vorschläge oder Entwürfe |
 | `not_found` | 404 | gibt es nicht oder ist nicht veröffentlicht |
 | `invalid_request` | 400 | Angabe ungültig (`errors` nennt das Feld) |
 
@@ -194,7 +251,7 @@ Innerhalb von `v1` kommen nur Felder, Aufrufe und Bereiche hinzu; nichts fällt 
 seine Bedeutung. Was wegfallen soll, wird zwölf Monate vorher in den Änderungshinweisen
 angekündigt. Programme ignorieren unbekannte Felder. Feldnamen sind englisch, Kennungen von
 Einheiten sind UUIDs, Zeiten stehen in ISO 8601 mit Zeitzone. Die Formate in
-`partnerapi/views.py` und `partnerapi/personal.py` sind der Vertrag; `tests/test_partnerapi.py` prüft, dass die Kopie
+`partnerapi/views.py`, `partnerapi/personal.py` und `partnerapi/writes.py` sind der Vertrag; `tests/test_partnerapi.py` prüft, dass die Kopie
 [backend/partnerapi/openapi.json](../backend/partnerapi/openapi.json) zum Code passt. Nach Änderungen:
 
 ```bash
@@ -245,8 +302,10 @@ sie zu einer Domain. Auch Dritte dürfen diese Schnittstelle lesen. Es gilt:
 
 | Stufe | Inhalt |
 | --- | --- |
-| 3 | Schreiben: Termine, Ergebnisse, Anwesenheit, Meldungen; Mitgliederdaten nur als Vorschlag |
 | 4 | Anmeldung im Namen einer Person (OAuth), „Verbinden“ bekannter Anwendungen; betrifft dann auch die Apps |
+
+Offen aus Stufe 3: Ausschreibungen und Wettkampfmeldungen, Rechnungen einliefern, Ehrungen und
+Lehrgänge vorschlagen.
 
 Nie über die API: Kasse und Bank schreiben, Rollen und Rechte, vollständiger Export, endgültiges
 Löschen, Versand an Mitglieder.

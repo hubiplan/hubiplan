@@ -5,7 +5,15 @@ from __future__ import annotations
 from celery import shared_task
 from django.utils import timezone
 
-from .models import LOG_KEEP, REMIND_BEFORE, ApiAccess, ReadLog, WebhookDelivery
+from .models import (
+    IDEMPOTENCY_KEEP,
+    LOG_KEEP,
+    REMIND_BEFORE,
+    ApiAccess,
+    IdempotencyKey,
+    ReadLog,
+    WebhookDelivery,
+)
 
 
 @shared_task
@@ -49,7 +57,8 @@ def deliver_webhooks() -> int:
 
 @shared_task
 def purge_logs() -> int:
-    """Abrufprotokoll und erledigte Benachrichtigungen nach 90 Tagen löschen."""
+    """Abrufprotokoll und erledigte Benachrichtigungen nach 90 Tagen löschen, den
+    Wiederholungsschutz des Schreibens nach 24 Stunden."""
     from django.db.models import Q
 
     from changes import tracking
@@ -63,4 +72,7 @@ def purge_logs() -> int:
             .filter(Q(delivered_at__isnull=False) | Q(dropped_at__isnull=False))
             .delete()
         )
-    return logs + hooks
+        keys, _ = IdempotencyKey.objects.filter(
+            created_at__lt=timezone.now() - IDEMPOTENCY_KEEP
+        ).delete()
+    return logs + hooks + keys

@@ -25,6 +25,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from audit.log import current_via
 from core.ratelimit import bucket, retry_after, too_many
 from core.tenancy import org_context, rls_bypass
 
@@ -34,6 +35,8 @@ from .auth import Problem, bearer, caller_ip, find_access, note_use
 API_VERSION = "1"
 # Anfragen je Stunde und Zugang; dazu je Minute und Adresse (auch ohne gültigen Schlüssel)
 ACCESS_LIMIT = 600
+# Schreibende Anfragen je Stunde und Zugang (zusätzlich zur Grenze oben)
+WRITE_LIMIT = 60
 IP_LIMIT = 300
 MAX_LIMIT = 200
 DEFAULT_LIMIT = 100
@@ -44,6 +47,7 @@ EVENTS_WINDOW = datetime.timedelta(days=366 * 2)
 MAX_POSTS = 50
 CORS_HEADERS = "Authorization, Content-Type"
 PROBLEM_TYPE = "application/problem+json"
+UNSAFE = ("POST", "PATCH", "PUT", "DELETE")
 
 
 class PartnerProblemSerializer(serializers.Serializer):
@@ -78,6 +82,10 @@ class PartnerView(APIView):
     renderer_classes = [JSONRenderer]
     # Bereich, den die Ansicht verlangt (None: jeder gültige Zugang)
     scope: str | None = None
+    # Bereich für POST, PATCH und PUT (None: wie ``scope``)
+    write_scope: str | None = None
+    # Zählen POST, PATCH und PUT als Schreiben? (Die Ausweisprüfung fragt nur ab.)
+    writes = True
 
     def options(self, request, *args, **kwargs):
         """Vorabfrage des Browsers (CORS) kommt ohne Schlüssel; die eigentliche Anfrage
@@ -103,14 +111,29 @@ class PartnerView(APIView):
         access_key = f"partnerapi:access:{access.pk}"
         if too_many(access_key, ACCESS_LIMIT, 3600):
             raise _TooMany(retry_after(access_key))
-        if self.scope and self.scope not in self.granted(access):
+        unsafe = request.method in UNSAFE
+        needed = (self.write_scope if unsafe else None) or self.scope
+        if needed and needed not in self.granted(access):
             raise Problem(
                 403,
                 "missing_scope",
                 _("Diesem API-Zugang fehlt der Bereich"),
-                _("Nötig ist der Bereich „{scope}“.").format(scope=self.scope),
-                scope=self.scope,
+                _("Nötig ist der Bereich „{scope}“.").format(scope=needed),
+                scope=needed,
             )
+        if unsafe and self.writes:
+            if access.embeddable:
+                # Der Schlüssel steht im Quelltext einer fremden Webseite: nie schreiben
+                raise Problem(
+                    403,
+                    "write_not_allowed",
+                    _("Ein Zugang, der aus fremden Webseiten aufrufbar ist, schreibt nicht"),
+                )
+            write_key = f"partnerapi:write:{access.pk}"
+            if too_many(write_key, WRITE_LIMIT, 3600):
+                raise _TooMany(retry_after(write_key))
+            # Im Änderungsprotokoll steht der Zugang statt einer Person
+            self._via = current_via.set(f"API-Zugang {access.name}"[:100])
         note_use(access, ip)
         self.access = access
         self.org = access.organization
@@ -151,6 +174,9 @@ class PartnerView(APIView):
         return super().handle_exception(exc)
 
     def finalize_response(self, request, response, *args, **kwargs):
+        via = self.__dict__.pop("_via", None)
+        if via is not None:
+            current_via.reset(via)
         response = super().finalize_response(request, response, *args, **kwargs)
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
@@ -245,6 +271,7 @@ class PartnerUnitRefSerializer(serializers.Serializer):
 
 class PartnerLimitsSerializer(serializers.Serializer):
     requests_per_hour = serializers.IntegerField()
+    writes_per_hour = serializers.IntegerField(help_text="schreibende Anfragen je Stunde")
     max_page_size = serializers.IntegerField()
 
 
@@ -295,7 +322,11 @@ class InfoView(PartnerView):
                 "personal_data": self.access.personal_ok,
                 "member_fields": list(self.access.member_fields or []),
                 "report_level": self.access.report_level,
-                "limits": {"requests_per_hour": ACCESS_LIMIT, "max_page_size": MAX_LIMIT},
+                "limits": {
+                    "requests_per_hour": ACCESS_LIMIT,
+                    "writes_per_hour": WRITE_LIMIT,
+                    "max_page_size": MAX_LIMIT,
+                },
             },
         }
         return Response(PartnerInfoSerializer(data).data)

@@ -40,7 +40,7 @@ from .models import (
     parse_networks,
 )
 from .personal import MEMBER_FIELDS
-from .views import ACCESS_LIMIT
+from .views import ACCESS_LIMIT, WRITE_LIMIT
 
 PATH = "/api/partner/v1/"
 
@@ -93,6 +93,7 @@ class ScopeChoiceSerializer(serializers.Serializer):
     unit_ok = serializers.BooleanField()
     needs = serializers.CharField(allow_blank=True)
     personal = serializers.BooleanField()
+    write = serializers.BooleanField()
 
 
 class UnitChoiceSerializer(serializers.Serializer):
@@ -138,6 +139,9 @@ class ApiAccessSerializer(serializers.Serializer):
     last_used_at = serializers.DateTimeField(allow_null=True)
     last_used_ip = serializers.CharField(allow_blank=True)
     request_count = serializers.IntegerField()
+    write_count = serializers.IntegerField(help_text="schreibende Anfragen")
+    last_write_at = serializers.DateTimeField(allow_null=True)
+    writes = serializers.BooleanField(help_text="darf schreiben")
     partner = UnitChoiceSerializer(allow_null=True)
     legal_basis = serializers.CharField(
         allow_blank=True, help_text="processing, transfer oder leer"
@@ -163,6 +167,7 @@ class ApiAccessListSerializer(serializers.Serializer):
     address = serializers.CharField()
     docs = serializers.CharField()
     requests_per_hour = serializers.IntegerField()
+    writes_per_hour = serializers.IntegerField()
     max_days = serializers.IntegerField()
     idle_days = serializers.IntegerField()
     overlap_days = serializers.IntegerField()
@@ -278,6 +283,9 @@ def _dump(access: ApiAccess, reads: dict | None = None) -> dict:
         "last_used_at": access.last_used_at,
         "last_used_ip": access.last_used_ip,
         "request_count": access.request_count,
+        "write_count": access.write_count,
+        "last_write_at": access.last_write_at,
+        "writes": sc.writes(access.scopes),
         "partner": {"id": access.partner_id, "name": access.partner.name}
         if access.partner_id
         else None,
@@ -360,6 +368,15 @@ class _Writer(_Base):
                 "Mitgliederzahlen und Personendaten: Der Schlüssel steht dann im Quelltext der "
                 "Webseite."
             )
+        if now("embeddable", False) and sc.writes(scopes_now) and "embeddable" not in errors:
+            errors["embeddable"] = _(
+                "Aus fremden Webseiten aufrufbar geht nur ohne Schreiben: Der Schlüssel steht "
+                "dann im Quelltext der Webseite."
+            )
+        before_scopes = set(instance.scopes or []) if instance is not None else set()
+        data["_writes_new"] = bool(
+            {s for s in scopes_now if sc.SCOPE_BY_CODE[s].write} - before_scopes
+        )
         partner = instance.partner if instance is not None else None
         if "partner" in data:
             partner_id = data.pop("partner")
@@ -460,8 +477,10 @@ class _Writer(_Base):
 
     def sensitive(self, access: ApiAccess, data: dict) -> bool:
         """Änderungen, die mehr Daten nach außen geben oder an eine andere Stelle senden."""
-        return data["_personal_new"] or (
-            "webhook_url" in data and data["webhook_url"] != access.webhook_url
+        return (
+            data["_personal_new"]
+            or data["_writes_new"]
+            or ("webhook_url" in data and data["webhook_url"] != access.webhook_url)
         )
 
 
@@ -478,6 +497,7 @@ class ApiAccessListView(_Writer):
             "address": base,
             "docs": f"{base}openapi.json",
             "requests_per_hour": ACCESS_LIMIT,
+            "writes_per_hour": WRITE_LIMIT,
             "max_days": DEFAULT_LIFETIME.days,
             "idle_days": IDLE_LIFETIME.days,
             "overlap_days": ROTATE_OVERLAP.days,
@@ -489,6 +509,7 @@ class ApiAccessListView(_Writer):
                     "unit_ok": s.unit_ok,
                     "needs": s.needs,
                     "personal": s.personal,
+                    "write": s.write,
                 }
                 for s in sc.available(self.org)
             ],
@@ -545,6 +566,8 @@ class ApiAccessListView(_Writer):
         notify.created(access, request.user)
         if data["_personal_new"]:
             notify.personal(access, request.user)
+        if data["_writes_new"]:
+            notify.writes(access, request.user)
         out = {**_dump(access), "key": key}
         if secret:
             out["webhook_secret"] = secret
@@ -581,6 +604,8 @@ class ApiAccessDetailView(_Writer):
             record(self.org, request.user, "update", access, changes)
         if data["_personal_new"]:
             notify.personal(access, request.user)
+        if data["_writes_new"]:
+            notify.writes(access, request.user)
         out = _dump(access, _reads(self.org).get(access.pk))
         if secret:
             out["webhook_secret"] = secret

@@ -11031,7 +11031,6 @@
   "Beschreibung für Entwickler": "Description for developers",
   "OpenAPI-Beschreibung öffnen": "Open OpenAPI description",
   "Grenze": "Limit",
-  "{n} Abrufe je Stunde und Zugang": "{n} requests per hour and access",
   "Noch keine API-Zugänge angelegt.": "No API accesses created yet.",
   "Neuer API-Zugang": "New API access",
   "Zugang anlegen": "Create access",
@@ -11079,5 +11078,10 @@
   "Noch keine Personendaten abgerufen": "No personal data retrieved yet",
   "Benachrichtigungen wieder einschalten": "Switch notifications on again",
   "Probenachricht senden": "Send test message",
-  "Namen, Anschriften und andere Personendaten gibt ein Zugang nur heraus, wenn du den Empfänger benennst und die Rechtsgrundlage bestätigst. Ändern kann ein Zugang nichts.": "An access only releases names, addresses and other personal data if you name the recipient and confirm the legal basis. An access cannot change anything."
+  "Namen, Anschriften und andere Personendaten gibt ein Zugang nur heraus, wenn du den Empfänger benennst und die Rechtsgrundlage bestätigst. Ändern kann ein Zugang nichts.": "An access only releases names, addresses and other personal data if you name the recipient and confirm the legal basis. An access cannot change anything.",
+  "Was der Zugang schreiben darf": "What the access may write",
+  "Geschrieben wird nur Unkritisches oder ein Vorschlag bzw. Entwurf, den jemand in HUBIplan übernimmt. Nichts wird gelöscht oder versendet. Was der Zugang schreibt, steht im Änderungsprotokoll.": "Only uncritical data is written, or a proposal or draft that someone accepts in HUBIplan. Nothing is deleted or sent. Everything the access writes appears in the change log.",
+  "Darf schreiben: {n} schreibende Anfragen, zuletzt {date}": "May write: {n} write requests, last on {date}",
+  "Darf schreiben, hat aber noch nichts geschrieben": "May write, but has not written anything yet",
+  "{n} Abrufe je Stunde und Zugang, davon höchstens {w} schreibende": "{n} requests per hour and access, of which at most {w} may write"
 }

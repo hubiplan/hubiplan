@@ -1,5 +1,6 @@
 // Einstellungen › API-Zugänge: Schlüssel, mit denen andere Programme (etwa die Software
-// eines Dachverbands oder eine eigene Webseite) Daten dieser Einheit lesen (docs/api.md).
+// eines Dachverbands oder eine eigene Webseite) Daten dieser Einheit lesen und, wenn eigens
+// angekreuzt, schreiben (docs/api.md).
 // Der Schlüssel steht genau einmal auf der Seite: nach dem Anlegen und nach dem Wechsel.
 import { useState } from 'react'
 import { apiAccessApi } from '../../api/apiAccess.ts'
@@ -8,6 +9,7 @@ import type {
   ApiAccessInput,
   ApiAccessList,
   ApiAccessWithKey,
+  ApiScope,
   LegalBasis,
   MemberFieldGroup,
 } from '../../api/apiAccess.ts'
@@ -184,6 +186,25 @@ function AccessForm({
   const hookEvents = list.webhook_events.filter((e) => d.scopes.includes(e.scope))
   const toggleIn = <T,>(items: T[], item: T, on: boolean) =>
     on ? [...items, item] : items.filter((x) => x !== item)
+  const scopeRow = (s: ApiScope) => {
+    const blocked = !!d.unit && !s.unit_ok
+    return (
+      <div key={s.scope}>
+        <Checkbox
+          label={s.label}
+          checked={d.scopes.includes(s.scope)}
+          disabled={blocked}
+          hint={blocked ? t('nur für die ganze Einheit') : undefined}
+          onChange={(on) => toggle(s.scope, on)}
+        />
+        <div className="muted small">
+          {s.personal && <span className="badge badge-warn">{t('Personendaten')}</span>}{' '}
+          {s.description}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <form
       className="stack"
@@ -249,26 +270,20 @@ function AccessForm({
       )}
       <fieldset className="stack-sm">
         <legend>{t('Was der Zugang lesen darf')}</legend>
-        {list.scopes.map((s) => {
-          const blocked = !!d.unit && !s.unit_ok
-          return (
-            <div key={s.scope}>
-              <Checkbox
-                label={s.label}
-                checked={d.scopes.includes(s.scope)}
-                disabled={blocked}
-                hint={blocked ? t('nur für die ganze Einheit') : undefined}
-                onChange={(on) => toggle(s.scope, on)}
-              />
-              <div className="muted small">
-                {s.personal && <span className="badge badge-warn">{t('Personendaten')}</span>}{' '}
-                {s.description}
-              </div>
-            </div>
-          )
-        })}
+        {list.scopes.filter((s) => !s.write).map(scopeRow)}
         {errors.scopes && <small className="field-error">{errors.scopes}</small>}
       </fieldset>
+      {list.scopes.some((s) => s.write) && (
+        <fieldset className="stack-sm">
+          <legend>{t('Was der Zugang schreiben darf')}</legend>
+          <p className="muted small">
+            {t(
+              'Geschrieben wird nur Unkritisches oder ein Vorschlag bzw. Entwurf, den jemand in HUBIplan übernimmt. Nichts wird gelöscht oder versendet. Was der Zugang schreibt, steht im Änderungsprotokoll.',
+            )}
+          </p>
+          {list.scopes.filter((s) => s.write).map(scopeRow)}
+        </fieldset>
+      )}
       {withReport && (
         <SelectField
           label={t('Verbandsmeldung')}
@@ -682,6 +697,16 @@ export function ApiAccessPage() {
                 ` · ${t('zuletzt {date}', { date: formatDateTime(a.reads[0].at) })}`}
             </div>
           )}
+          {a.writes && (
+            <div className="muted small">
+              {a.last_write_at
+                ? t('Darf schreiben: {n} schreibende Anfragen, zuletzt {date}', {
+                    n: a.write_count,
+                    date: formatDateTime(a.last_write_at),
+                  })
+                : t('Darf schreiben, hat aber noch nichts geschrieben')}
+            </div>
+          )}
           {a.webhook_state !== 'off' && (
             <div className={a.webhook_state === 'ok' ? 'muted small' : 'small'}>{hookLine(a)}</div>
           )}
@@ -769,7 +794,12 @@ export function ApiAccessPage() {
             </a>
           </dd>
           <dt>{t('Grenze')}</dt>
-          <dd>{t('{n} Abrufe je Stunde und Zugang', { n: data.requests_per_hour })}</dd>
+          <dd>
+            {t('{n} Abrufe je Stunde und Zugang, davon höchstens {w} schreibende', {
+              n: data.requests_per_hour,
+              w: data.writes_per_hour,
+            })}
+          </dd>
         </dl>
         {data.accesses.length === 0 ? (
           <p>{t('Noch keine API-Zugänge angelegt.')}</p>
