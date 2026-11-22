@@ -460,3 +460,82 @@ def test_ohne_pkce_abgelehnt(api, orgs, board_a):
         client.save()
     code = code_of(start(c, client, code_challenge=None, code_challenge_method=None))
     assert redeem(client, secret, code, code_verifier="").status_code == 200
+
+
+# --- Abmelden von der Nextcloud (RP-Initiated Logout) ---
+
+
+def end_session(c, **params):
+    return c.post("/api/oidc/end-session/", params, content_type=JSON)
+
+
+def test_discovery_nennt_abmeldung(db):
+    data = HttpClient().get("/api/oidc/.well-known/openid-configuration").json()
+    assert data["end_session_endpoint"] == "https://verein.example.org/oidc/abmelden"
+
+
+def test_nach_abmeldung_nicht_still_wieder_angemeldet(api, orgs, board_a):
+    client, secret = make_client(orgs["a"])
+    c = api(board_a)
+    code_of(start(c, client))  # vorher: still angemeldet
+
+    resp = end_session(
+        c, client_id=client.client_id, post_logout_redirect_uri=f"{CLOUD}/", state="s-1"
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {"name": "Nextcloud", "back": f"{CLOUD}/?state=s-1", "logged_in": True}
+
+    # Die Nextcloud leitet gleich wieder zur Anmeldung: jetzt erst nach einem Klick
+    again = start(c, client)
+    assert again.status_code == 409
+    assert again.json() == {"confirm": True, "name": "Nextcloud"}
+    assert start(c, client, prompt="none").json()["redirect"].endswith("interaction_required")
+    # Bei HUBIplan bleibt man angemeldet
+    assert c.get("/api/me/").status_code == 200
+
+    resp = redeem(client, secret, code_of(start(c, client, confirm="1")))
+    assert resp.status_code == 200
+    # Nach der bestätigten Anmeldung geht es wieder still
+    code_of(start(c, client))
+
+
+def test_abmeldung_gilt_je_nextcloud(api, orgs, board_a):
+    one, _ = make_client(orgs["a"])
+    two, _ = make_client(orgs["a"])
+    c = api(board_a)
+    end_session(c, client_id=one.client_id)
+    assert start(c, one).status_code == 409
+    code_of(start(c, two))
+
+
+def test_abmeldung_findet_dienst_ueber_id_token(api, orgs, board_a):
+    client, secret = make_client(orgs["a"])
+    c = api(board_a)
+    id_token = redeem(client, secret, code_of(start(c, client))).json()["id_token"]
+    resp = end_session(c, id_token_hint=id_token)
+    assert resp.json()["back"] == CLOUD
+    assert start(c, client).status_code == 409
+
+
+def test_abmeldung_leitet_nur_zur_eigenen_nextcloud(api, orgs, board_a):
+    client, _ = make_client(orgs["a"])
+    c = api(board_a)
+    for fremd in ("https://boese.example.org/", "//boese.example.org/", "javascript:alert(1)"):
+        resp = end_session(c, client_id=client.client_id, post_logout_redirect_uri=fremd)
+        assert resp.json()["back"] == CLOUD
+    unknown = end_session(c, client_id="gibt-es-nicht", post_logout_redirect_uri=f"{CLOUD}/")
+    assert unknown.json() == {"name": "", "back": "", "logged_in": True}
+
+
+def test_abmeldung_ohne_hubiplan_sitzung(orgs):
+    client, _ = make_client(orgs["a"])
+    resp = end_session(HttpClient(), client_id=client.client_id)
+    assert resp.status_code == 200
+    assert resp.json() == {"name": "Nextcloud", "back": CLOUD, "logged_in": False}
+
+
+def test_prompt_login_verlangt_klick(api, orgs, board_a):
+    client, _ = make_client(orgs["a"])
+    c = api(board_a)
+    assert start(c, client, prompt="login").status_code == 409
+    code_of(start(c, client, prompt="login", confirm="1"))

@@ -203,12 +203,24 @@ export interface NextcloudDenied {
   detail: string
   redirect?: string
   back?: string
+  // Nach dem Abmelden von der Nextcloud erst nach einem Klick wieder anmelden
+  confirm?: boolean
+  name?: string
 }
 
 export const oidcApi = {
   describe: (query: string) => api.get<NextcloudService>(`/api/oidc/authorize/?${query}`),
   authorize: (params: Record<string, string>) =>
     api.post<{ redirect: string }>('/api/oidc/authorize/', params),
+  endSession: (params: Record<string, string>) =>
+    api.post<NextcloudLoggedOut>('/api/oidc/end-session/', params),
+}
+
+// Antwort auf die Abmeldung von der Nextcloud
+export interface NextcloudLoggedOut {
+  name: string
+  back: string
+  logged_in: boolean
 }
 
 // Dateien mit der Nextcloud: ablegen und übernehmen

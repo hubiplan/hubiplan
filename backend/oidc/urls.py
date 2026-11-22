@@ -12,4 +12,5 @@ urlpatterns = [
     path("oidc/token", views.TokenView.as_view(), name="oidc-token"),
     path("oidc/userinfo", views.UserinfoView.as_view(), name="oidc-userinfo"),
     path("oidc/authorize/", views.AuthorizeView.as_view(), name="oidc-authorize"),
+    path("oidc/end-session/", views.EndSessionView.as_view(), name="oidc-end-session"),
 ]

@@ -8,7 +8,9 @@ Bewusst klein gehalten, damit es sich prüfen lässt:
   mit Geheimnis,
 - Code 60 Sekunden gültig und nur einmal einlösbar, Zugriffsschlüssel 5 Minuten,
   keine Refresh-Token; beides nur im Cache, nie in der Datenbank,
-- ID-Token mit RS256 (``keys``), Angaben siehe ``claims``.
+- ID-Token mit RS256 (``keys``), Angaben siehe ``claims``,
+- Abmelden von der Nextcloud (RP-initiated Logout, ``end_session``): Danach meldet HUBIplan
+  diese Sitzung nicht mehr still bei derselben Nextcloud an, sondern fragt einmal nach.
 
 Die Bestätigung, wie sich die Sitzung angemeldet hat (``amr``, ``auth_time``), kommt aus
 der Sitzung wie beim Verbund (``peering.sso.session_auth``). Ist beim Dienst die
@@ -19,6 +21,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import secrets
 import time
 from urllib.parse import unquote, urlencode, urlsplit, urlunsplit
@@ -39,6 +42,10 @@ SCOPES = ("openid", "profile", "email", "groups")
 CODE_PREFIX = "oidc:code:"
 TOKEN_PREFIX = "oidc:token:"  # noqa: S105 (Cache-Schlüssel, kein Passwort)
 MAX_PARAM = 500
+# Sitzungsschlüssel: client_id -> Zeitpunkt der Abmeldung von dieser Nextcloud
+LOGGED_OUT_KEY = "oidc_logged_out"
+# Diese Angaben von ``prompt`` verlangen eine sichtbare Bestätigung statt stiller Anmeldung
+PROMPT_ASK = ("login", "consent", "select_account")
 
 
 class AuthorizeError(Exception):
@@ -54,6 +61,14 @@ class AuthorizeError(Exception):
         self.redirect = redirect
         # Adresse der Nextcloud für den Knopf „Zurück“
         self.back = back
+
+
+class ConfirmNeeded(Exception):
+    """Nicht still anmelden: Die Person soll die Anmeldung bei der Nextcloud bestätigen."""
+
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.name = name
 
 
 class TokenError(Exception):
@@ -75,6 +90,7 @@ def discovery() -> dict:
     return {
         "issuer": iss,
         "authorization_endpoint": f"{front}/oidc/anmelden",
+        "end_session_endpoint": f"{front}/oidc/abmelden",
         "token_endpoint": f"{iss}/token",
         "userinfo_endpoint": f"{iss}/userinfo",
         "jwks_uri": f"{iss}/jwks",
@@ -178,15 +194,20 @@ def authorize(request, params) -> str:
     if not challenge and client.require_pkce:
         # Fachfrage FQ26: ohne PKCE ließe sich ein abgefangener Code einlösen
         raise back("invalid_request", "PKCE (S256) ist nötig")
-    if _param(params, "prompt") == "none" and not request.user.is_authenticated:
+    prompts = _param(params, "prompt").split()
+    if "none" in prompts and not request.user.is_authenticated:
         raise back("login_required")
 
     user = request.user
+    auth = session_auth(request)
+    if _must_confirm(request, client, prompts, auth) and not _param(params, "confirm"):
+        if "none" in prompts:
+            raise back("interaction_required")
+        raise ConfirmNeeded(client.name)
     try:
         claims.profile(client, user)
     except claims.NotAllowed as exc:
         raise AuthorizeError(str(exc), back=client.base_url) from exc
-    auth = session_auth(request)
     if client.require_mfa and "mfa" not in auth["amr"]:
         from accounts.mfa_policy import has_mfa
 
@@ -202,6 +223,7 @@ def authorize(request, params) -> str:
             )
         raise AuthorizeError(message.format(name=client.name), back=client.base_url)
 
+    _forget_logout(request, client)
     code = secrets.token_urlsafe(32)
     cache.set(
         CODE_PREFIX + _hash(code),
@@ -219,6 +241,79 @@ def authorize(request, params) -> str:
         CODE_SECONDS,
     )
     return _with_query(redirect_uri, {"code": code, "state": state, "iss": issuer()})
+
+
+def _logged_out(request) -> dict:
+    value = request.session.get(LOGGED_OUT_KEY)
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _must_confirm(request, client: Client, prompts: list[str], auth: dict) -> bool:
+    """Bestätigen lassen, wenn die Nextcloud es verlangt oder man sich dort abgemeldet hat.
+
+    Eine Abmeldung zählt nur, bis man sich bei HUBIplan neu anmeldet (``auth_time`` danach).
+    """
+    if any(p in PROMPT_ASK for p in prompts):
+        return True
+    at = _logged_out(request).get(client.client_id)
+    return at is not None and float(at) >= float(auth.get("auth_time") or 0)
+
+
+def _forget_logout(request, client: Client) -> None:
+    marks = _logged_out(request)
+    if marks.pop(client.client_id, None) is not None:
+        request.session[LOGGED_OUT_KEY] = marks
+
+
+def _client_from_hint(hint: str) -> Client | None:
+    """``aud`` aus einem ID-Token (``id_token_hint``) lesen.
+
+    Die Signatur wird nicht geprüft: Das Ergebnis dient nur dazu, den Dienst zu finden. Die
+    Rückleitung prüft ``end_session`` ohnehin gegen die eingetragene Adresse.
+    """
+    try:
+        body = hint.split(".")[1]
+        data = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
+    except (IndexError, ValueError, UnicodeDecodeError):
+        return None
+    aud = data.get("aud") if isinstance(data, dict) else None
+    if isinstance(aud, list):
+        aud = aud[0] if len(aud) == 1 else ""
+    return find_client(str(aud or ""))
+
+
+def _same_site(url: str, base: str) -> bool:
+    one, two = urlsplit(url), urlsplit(base)
+    return bool(one.scheme and one.netloc) and (one.scheme, one.netloc.lower()) == (
+        two.scheme,
+        two.netloc.lower(),
+    )
+
+
+def end_session(request, params) -> dict:
+    """Abmelden von der Nextcloud (OpenID Connect RP-Initiated Logout 1.0).
+
+    Merkt sich in der Sitzung, dass man sich von dieser Nextcloud abgemeldet hat; die nächste
+    Anmeldung dort geht dann nicht mehr still, sondern erst nach einem Klick. Zurück geht es
+    nur an die eingetragene Nextcloud (gleiche Herkunft), sonst an ihre Startseite.
+    """
+    client = find_client(_param(params, "client_id"))
+    hint = _param(params, "id_token_hint")
+    if client is None and hint:
+        client = _client_from_hint(hint)
+    if client is None:
+        return {"name": "", "back": "", "logged_in": request.user.is_authenticated}
+    if request.user.is_authenticated:
+        marks = _logged_out(request)
+        marks[client.client_id] = time.time()
+        request.session[LOGGED_OUT_KEY] = marks
+    target = _param(params, "post_logout_redirect_uri")
+    if not target or not _same_site(target, client.base_url):
+        target = client.base_url
+    state = _param(params, "state")
+    if state:
+        target = _with_query(target, {"state": state})
+    return {"name": client.name, "back": target, "logged_in": request.user.is_authenticated}
 
 
 def _client_credentials(request) -> tuple[str, str]:

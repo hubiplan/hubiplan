@@ -8,6 +8,7 @@ import { leaveTo } from '../api/peering.ts'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { NextcloudLoginPage } from '../pages/NextcloudLoginPage.tsx'
+import { NextcloudLogoutPage } from '../pages/NextcloudLogoutPage.tsx'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
 const session = () => ({
@@ -75,6 +76,101 @@ describe('Bei der Nextcloud anmelden', () => {
       'https://cloud.example.org',
     )
     expect(go).not.toHaveBeenCalled()
+  })
+})
+
+describe('Nach dem Abmelden von der Nextcloud', () => {
+  it('meldet erst nach einem Klick wieder an', async () => {
+    const go = vi.spyOn(leaveTo, 'go').mockImplementation(() => {})
+    let n = 0
+    const calls = renderAt({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'POST /api/oidc/authorize/': () =>
+        ++n === 1
+          ? { status: 409, body: { confirm: true, name: 'Vereinscloud' } }
+          : {
+              status: 200,
+              body: { redirect: 'https://cloud.example.org/apps/user_oidc/code?code=y&state=s1' },
+            },
+    })
+    expect(await screen.findByText(/von „Vereinscloud“ abgemeldet/)).toBeInTheDocument()
+    expect(go).not.toHaveBeenCalled()
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Bei der Nextcloud anmelden' }))
+    await waitFor(() =>
+      expect(go).toHaveBeenCalledWith(
+        'https://cloud.example.org/apps/user_oidc/code?code=y&state=s1',
+      ),
+    )
+    const posts = calls.filter((c) => c.key === 'POST /api/oidc/authorize/')
+    expect(JSON.parse(String(posts[0]?.init?.body))).not.toHaveProperty('confirm')
+    expect(JSON.parse(String(posts[1]?.init?.body))).toMatchObject({ confirm: '1', state: 's1' })
+  })
+
+  function renderLogout(routes: Parameters<typeof fakeApi>[0]) {
+    const calls = fakeApi(routes)
+    render(
+      <MemoryRouter
+        initialEntries={[
+          '/oidc/abmelden?client_id=hp-abc&post_logout_redirect_uri=https://cloud.example.org/',
+        ]}
+      >
+        <AuthProvider>
+          <Routes>
+            <Route path="*" element={<NextcloudLogoutPage />} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    return calls
+  }
+
+  it('fragt, ob man auch bei HUBIplan abmelden möchte', async () => {
+    const calls = renderLogout({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'POST /api/oidc/end-session/': () => ({
+        status: 200,
+        body: { name: 'Vereinscloud', back: 'https://cloud.example.org/', logged_in: true },
+      }),
+      'DELETE /_allauth/browser/v1/auth/session': () => ({
+        status: 401,
+        body: { status: 401, data: {}, meta: { is_authenticated: false } },
+      }),
+    })
+    expect(await screen.findByText(/von „Vereinscloud“ abgemeldet/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Zurück zur Nextcloud' })).toHaveAttribute(
+      'href',
+      'https://cloud.example.org/',
+    )
+    const post = calls.find((c) => c.key === 'POST /api/oidc/end-session/')
+    expect(JSON.parse(String(post?.init?.body))).toEqual({
+      client_id: 'hp-abc',
+      post_logout_redirect_uri: 'https://cloud.example.org/',
+    })
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Auch bei HUBIplan abmelden' }))
+    expect(
+      await screen.findByText('Du bist jetzt auch bei HUBIplan abgemeldet.'),
+    ).toBeInTheDocument()
+    expect(calls.some((c) => c.key === 'DELETE /_allauth/browser/v1/auth/session')).toBe(true)
+  })
+
+  it('zeigt ohne HUBIplan-Sitzung nur den Weg zurück', async () => {
+    renderLogout({
+      'GET /_allauth/browser/v1/auth/session': () => ({
+        status: 401,
+        body: { status: 401, data: {}, meta: { is_authenticated: false } },
+      }),
+      'POST /api/oidc/end-session/': () => ({
+        status: 200,
+        body: { name: 'Vereinscloud', back: 'https://cloud.example.org/', logged_in: false },
+      }),
+    })
+    expect(await screen.findByText(/von „Vereinscloud“ abgemeldet/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Auch bei HUBIplan abmelden' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Zurück zur Nextcloud' })).toBeInTheDocument()
   })
 })
 
