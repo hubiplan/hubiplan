@@ -12,7 +12,7 @@
 # - /api/intern/… antwortet von außen mit 404 und erreicht das Backend nicht
 # - die Sicherheits-Kopfzeilen (HSTS usw.) stehen weiter in den Antworten
 # - /.well-known/security.txt geht ans Backend; die Oberfläche trägt CSP und
-#   Cross-Origin-Opener-Policy (Härtung 22.11.)
+#   Cross-Origin-Opener-Policy (Härtung 22.11.), die CSP meldet Verstöße an /api/csp-report/
 #
 #   scripts/pruefe-caddy.sh <Ordner mit deploy/> [docker-run-Optionen, z. B. --cpuset-cpus=…]
 set -euo pipefail
@@ -125,6 +125,8 @@ a=$(anfrage "$ID-proxy" /mitglieder "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.
 erwarte "Proxy: Oberfläche wird ausgeliefert" "$a" 'HTTP/1\.1 200'
 erwarte "Proxy: Oberfläche mit Cross-Origin-Opener-Policy" "$a" 'Cross-Origin-Opener-Policy: same-origin-allow-popups'
 erwarte "Proxy: Oberfläche mit CSP" "$a" "Content-Security-Policy: default-src 'self'"
+erwarte "Proxy: CSP meldet Verstöße an die Instanz" "$a" "report-uri /api/csp-report/; report-to csp"
+erwarte "Proxy: Meldeadresse für neue Browser" "$a" 'Reporting-Endpoints: csp="/api/csp-report/"'
 
 # --- Eigenes HTTPS (Caddyfile), hier über HTTP angesprochen
 a=$(anfrage "$ID-direkt" /api/health/ "X-Forwarded-For: 198.51.100.9" "X-Hubiplan-Proxy: $GEHEIM")

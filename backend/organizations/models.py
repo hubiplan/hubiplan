@@ -1273,3 +1273,32 @@ class HelpSearchMiss(models.Model):
 
     def __str__(self) -> str:
         return f"{self.term} ({self.count})"
+
+
+class CspReport(models.Model):
+    """Vom Browser gemeldeter Verstoß gegen die Inhaltsregeln (CSP) der Oberfläche.
+
+    Gezählt je Regel, blockierter Herkunft und Seite; ohne Person, Einheit und Adresse des
+    Aufrufers (docs/betrieb.md, „Meldungen des Browsers“).
+    """
+
+    directive = models.CharField("Regel", max_length=40)
+    blocked = models.CharField("blockiert", max_length=120)
+    page = models.CharField("Seite", max_length=120)
+    count = models.PositiveIntegerField("Anzahl", default=1)
+    first_day = models.DateField("zuerst am")
+    last_day = models.DateField("zuletzt am")
+    version = models.CharField("Fassung", max_length=40, blank=True)
+
+    class Meta:
+        ordering = ["-last_day", "-count", "directive"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["directive", "blocked", "page"], name="cspreport_einmalig"
+            )
+        ]
+        verbose_name = "Meldung des Browsers (CSP)"
+        verbose_name_plural = "Meldungen des Browsers (CSP)"
+
+    def __str__(self) -> str:
+        return f"{self.directive} {self.blocked} ({self.count})"

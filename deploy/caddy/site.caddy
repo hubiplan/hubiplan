@@ -78,7 +78,10 @@ route {
 		# Fremde Seiten, die HUBIplan in einem neuen Fenster öffnen, bekommen keinen Zugriff auf
 		# dieses Fenster (und umgekehrt); eigene neue Fenster (Druckansicht) bleiben verbunden
 		header Cross-Origin-Opener-Policy "same-origin-allow-popups"
-		header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /api/csp-report/; report-to csp"
+		# Verstöße meldet der Browser an die eigene Instanz (Plattform › Sicherheit): report-uri
+		# für ältere Browser, report-to mit Reporting-Endpoints für neue
+		header Reporting-Endpoints `csp="/api/csp-report/"`
 		root * /srv
 		try_files {path} /index.html
 		# Fertig komprimierte Fassungen aus dem Bau (frontend/scripts/vorkomprimieren.mjs):
