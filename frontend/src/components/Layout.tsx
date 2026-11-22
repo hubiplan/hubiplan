@@ -12,6 +12,8 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useAuth } from '../auth/AuthContext.tsx'
 import { AREAS, bottomNavIds, modules } from '../modules.tsx'
 import { NewMenu } from './NewMenu.tsx'
+import { TodoMenu } from './TodoMenu.tsx'
+import { currentMemberArea, memberAreas } from './memberAreas.tsx'
 import { actionCatalog, deptCatalog } from './home/roleActions.ts'
 import { QuickSearch } from './QuickSearch.tsx'
 import type { QuickPage } from './QuickSearch.tsx'
@@ -42,6 +44,8 @@ import { PERM, rolePreviewApi } from '../api/orgs.ts'
 import { locale, t } from '../i18n/index.ts'
 import { atMost, BP_MEDIUM } from '../theme/breakpoints.ts'
 
+/** Merkt die zuletzt gewählte Einheit der Verwaltung für den Wechsel der Sicht */
+const ADMIN_KEY = 'hubiplan.verwaltung'
 /** Merkt je Gerät, ob das Bereichsmenü eingeklappt ist */
 const MENU_KEY = 'hubiplan.bereichsmenue'
 
@@ -285,6 +289,37 @@ export function Layout() {
     navigate(to)
   }
 
+  // Zwei Sichten (Konzept Web-Oberfläche W3): „Mein Verein“ zeigt, was die Person als Mitglied
+  // sieht, „Verwaltung“ die Einheiten, in denen sie mitarbeitet. Der Schalter erscheint nur,
+  // wenn es beides gibt.
+  const adminKeys = [...orgs.map((o) => String(o.id)), ...departments.map((d) => `d:${d.id}`)]
+  const twoViews = portal.length > 0 && adminKeys.length > 0
+  useEffect(() => {
+    if (!activeKey || activeKey.startsWith('p:')) return
+    try {
+      window.localStorage.setItem(ADMIN_KEY, activeKey)
+    } catch {
+      // Ohne Speicher führt „Verwaltung“ zur ersten Einheit
+    }
+  }, [activeKey])
+  function showMemberView() {
+    const club = active?.id ?? activeDept?.club_id
+    const entry = portal.find((p) => p.club_id === club) ?? portal[0]
+    void switchOrg(`p:${entry.id}`)
+  }
+  function showAdminView() {
+    let last: string | null = null
+    try {
+      last = window.localStorage.getItem(ADMIN_KEY)
+    } catch {
+      last = null
+    }
+    const own = String(activePortal?.club_id ?? '')
+    void switchOrg(
+      last && adminKeys.includes(last) ? last : adminKeys.includes(own) ? own : adminKeys[0],
+    )
+  }
+
   // Persönliches im Kontomenü (UX-Audit 10.7); die Auswahl oben zeigt nur Verwaltungsbereiche
   const personal: PersonalArea[] = portal.map((p) => ({
     key: `p:${p.id}`,
@@ -387,6 +422,40 @@ export function Layout() {
   // Ein Bereich mit nur einer Seite (Start) braucht kein Bereichsmenü
   const areaHasMenu =
     !!currentArea && (currentArea.items.length > 1 || moduleTree(currentArea.items[0]).length > 0)
+  // Sicht „Mein Verein“: vier Bereiche wie in den Apps statt der Gliederung der Verwaltung
+  const memberNav = activePortal
+    ? memberAreas(
+        activePortal,
+        visible.some((m) => m.id === 'dokumente'),
+      )
+    : null
+  const memberCurrent = memberNav ? currentMemberArea(memberNav, pathname) : null
+  const railItems = memberNav
+    ? memberNav.map((a) => ({ id: a.id, label: a.label, icon: a.icon, to: a.links[0].to }))
+    : areas.map((a) => ({ id: a.id, label: a.label, icon: a.icon, to: moduleLink(a.items[0]) }))
+  const railCurrent = memberNav ? memberCurrent?.id : currentArea?.id
+  const hasMenu = memberNav ? (memberCurrent?.links.length ?? 0) > 1 : areaHasMenu
+  const menuTitle = memberNav ? memberCurrent?.label : currentArea?.label
+  const viewSwitch = twoViews && (
+    <div className="segmented view-switch" role="group" aria-label={t('Sicht')}>
+      <button
+        type="button"
+        className="button button-ghost"
+        aria-pressed={!!activePortal}
+        onClick={() => !activePortal && showMemberView()}
+      >
+        {t('Mein Verein')}
+      </button>
+      <button
+        type="button"
+        className="button button-ghost"
+        aria-pressed={!activePortal}
+        onClick={() => activePortal && showAdminView()}
+      >
+        {t('Verwaltung')}
+      </button>
+    </div>
+  )
   const newActions = active ? actionCatalog(active) : activeDept ? deptCatalog(activeDept) : []
   const trail = currentModule
     ? navTrail(
@@ -436,7 +505,8 @@ export function Layout() {
           }
         />
       )}
-      {contextCount > 1 && (
+      {/* In der Sicht „Mein Verein“ wechselt der Schalter der Sichten zurück zur Verwaltung */}
+      {contextCount > 1 && !(twoViews && activePortal) && (
         <label className="org-switch">
           <span className="sr-only">{t('Einheit wechseln')}</span>
           <select
@@ -491,7 +561,7 @@ export function Layout() {
             <HelpProvider>
               <div
                 className={`app-shell${navOpen ? ' nav-open' : ''}${
-                  areaHasMenu && !menuClosed ? '' : ' area-menu-off'
+                  hasMenu && !menuClosed ? '' : ' area-menu-off'
                 }`}
               >
                 <a href="#inhalt" className="skip-link">
@@ -524,11 +594,17 @@ export function Layout() {
                       />
                     </div>
                   )}
-                  <div className="topbar-user">
+                  <div className={`topbar-user${twoViews && !narrow ? ' topbar-tight' : ''}`}>
+                    {!narrow && viewSwitch}
                     {!previewOrg && <NewMenu actions={newActions} />}
+                    {active &&
+                      !previewOrg &&
+                      (active.type === 'club' || active.type === 'federation') && (
+                        <TodoMenu org={active} />
+                      )}
                     {!narrow && headerTools}
                     {/* VW-02: auch am Handy erreichbar, dort nur als Zeichen mit Namen */}
-                    <HelpButton compact={narrow} />
+                    <HelpButton compact={narrow || twoViews} />
                     <AccountMenu
                       email={user?.email}
                       onLogout={handleLogout}
@@ -561,6 +637,7 @@ export function Layout() {
                         eventBase={quickEventBase}
                         onNavigate={choseInNav}
                       />
+                      {viewSwitch}
                       {headerTools}
                     </div>
                   )}
@@ -569,7 +646,28 @@ export function Layout() {
                       {/* Handy und Tablet: das ganze Menü, je Bereich eine Überschrift mit eigener
                           Liste, damit Hilfstechnik die Bereiche ansagt (UX-Audit 16.11. VW-28) */}
                       <ul className="sidebar-groups">
-                        {areas.map((a, index) => (
+                        {memberNav?.map((a, index) => (
+                          <li key={a.id} className={index > 0 ? 'sidebar-group-start' : undefined}>
+                            <h2 className="sidebar-group-label" id={`menue-gruppe-${a.id}`}>
+                              {a.label}
+                            </h2>
+                            <ul aria-labelledby={`menue-gruppe-${a.id}`}>
+                              {a.links.map((l) => (
+                                <li key={l.to}>
+                                  <NavLink
+                                    to={l.to}
+                                    end={l.to === '/' || l.to === '/mein-bereich'}
+                                    className="sidebar-link"
+                                    onClick={choseInNav}
+                                  >
+                                    <span>{l.label}</span>
+                                  </NavLink>
+                                </li>
+                              ))}
+                            </ul>
+                          </li>
+                        ))}
+                        {(memberNav ? [] : areas).map((a, index) => (
                           <li key={a.id} className={index > 0 ? 'sidebar-group-start' : undefined}>
                             <h2 className="sidebar-group-label" id={`menue-gruppe-${a.id}`}>
                               {a.label}
@@ -625,14 +723,12 @@ export function Layout() {
                       {/* Bereichsleiste in Vereinsfarbe: sieben feste Bereiche, immer sichtbar */}
                       <div className="area-rail">
                         <ul aria-label={t('Bereiche')}>
-                          {areas.map((a) => (
+                          {railItems.map((a) => (
                             <li key={a.id}>
                               <Link
-                                to={moduleLink(a.items[0])}
-                                className={`area-rail-link${
-                                  a.id === currentArea?.id ? ' active' : ''
-                                }`}
-                                aria-current={a.id === currentArea?.id ? 'true' : undefined}
+                                to={a.to}
+                                className={`area-rail-link${a.id === railCurrent ? ' active' : ''}`}
+                                aria-current={a.id === railCurrent ? 'true' : undefined}
                               >
                                 {a.icon}
                                 <span>{a.label}</span>
@@ -641,7 +737,7 @@ export function Layout() {
                           ))}
                         </ul>
                         <div className="area-rail-end">
-                          {areaHasMenu && (
+                          {hasMenu && (
                             <button
                               type="button"
                               className="area-rail-link area-rail-toggle"
@@ -692,13 +788,25 @@ export function Layout() {
                         </div>
                       </div>
                       {/* Bereichsmenü: nur die Seiten des gewählten Bereichs, hell und ruhig */}
-                      {currentArea && areaHasMenu && (
+                      {hasMenu && (
                         <div className="area-menu" id="bereichsmenue" hidden={menuClosed}>
                           <h2 className="area-menu-title" id="bereichsmenue-titel">
-                            {currentArea.label}
+                            {menuTitle}
                           </h2>
                           <ul aria-labelledby="bereichsmenue-titel">
-                            {currentArea.items.map((m) =>
+                            {memberCurrent?.links.map((l) => (
+                              <li key={l.to}>
+                                <NavLink
+                                  to={l.to}
+                                  end={l.to === '/mein-bereich'}
+                                  className="sidebar-link"
+                                  onClick={choseInNav}
+                                >
+                                  <span>{l.label}</span>
+                                </NavLink>
+                              </li>
+                            ))}
+                            {(memberNav ? [] : (currentArea?.items ?? [])).map((m) =>
                               flat(m) ? (
                                 <li key={m.id} className="area-menu-flat">
                                   <SubNavList
@@ -742,7 +850,18 @@ export function Layout() {
                     aria-label={t('Schnellwahl')}
                     inert={navOpen || undefined}
                   >
-                    {bottomNav.map((m) => (
+                    {memberNav?.map((a) => (
+                      <Link
+                        key={a.id}
+                        to={a.links[0].to}
+                        className={`bottom-nav-link${a.id === memberCurrent?.id ? ' active' : ''}`}
+                        aria-current={a.id === memberCurrent?.id ? 'true' : undefined}
+                      >
+                        {a.icon}
+                        <span>{a.label}</span>
+                      </Link>
+                    ))}
+                    {(memberNav ? [] : bottomNav).map((m) => (
                       <NavLink
                         key={m.id}
                         to={m.linkFor?.(active, ws) ?? m.path}

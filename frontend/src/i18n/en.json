@@ -6669,6 +6669,15 @@
   "Bitte Passwort eingeben.": "Please enter your password.",
   "QR-Code für die Authenticator-App": "QR code for the authenticator app",
   "Neu": "New",
+  "Neues": "News",
+  "Zu erledigen: {n} Eintrag": {
+    "one": "To do: {n} item",
+    "other": "To do: {n} items"
+  },
+  "Alle {n} auf der Startseite": "All {n} on the home page",
+  "Ich": "Me",
+  "Mein Verein": "My club",
+  "Sicht": "View mode",
   "Kommunikation": "Communication",
   "Vereinsleben": "Club life",
   "Menüpunkt „{pl}“ im Hauptmenü zeigen": "Show “{pl}” in the main menu",
