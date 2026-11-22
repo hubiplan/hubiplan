@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import manage_views, openapi, personal, views, writes
+from . import docs_page, manage_views, openapi, personal, views, writes
 
 V1 = "partner/v1/"
 
@@ -80,6 +80,7 @@ v1_patterns = [
 
 api_patterns = [
     path(f"{V1}openapi.json", openapi.OpenApiView.as_view(), name="partner-openapi"),
+    path(f"{V1}docs/", docs_page.DocsView.as_view(), name="partner-docs"),
     *v1_patterns,
 ]
 

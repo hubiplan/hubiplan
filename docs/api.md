@@ -16,6 +16,7 @@ einer Person ist eine spätere Stufe.
 | --- | --- |
 | Adresse | `https://<Instanz>/api/partner/v1/` |
 | Beschreibung | `https://<Instanz>/api/partner/v1/openapi.json` (OpenAPI 3, ohne Anmeldung), Kopie im Repo: [backend/partnerapi/openapi.json](../backend/partnerapi/openapi.json) |
+| Lesbar | `https://<Instanz>/api/partner/v1/docs/` (ohne Anmeldung, aus der OpenAPI-Beschreibung, ohne Skripte und fremde Server; `?lang=en` auf Englisch) |
 | Anmeldung | Kopfzeile `Authorization: Bearer hpk_…` |
 | Wer vergibt | Vorstand der Einheit unter Einstellungen › API-Zugänge (`/einstellungen/api`) |
 | Voraussetzung | Modul `api` („API für andere Programme“, anfangs aus) und Zusatzrecht `api.manage` |
@@ -25,7 +26,7 @@ Code: App `backend/partnerapi/` (`models.py` Zugang, `auth.py` Schlüsselprüfun
 Bereiche, `views.py` Aufrufe für Dritte, `personal.py` Aufrufe mit Personendaten, `refs.py`
 feste Kennungen, `webhooks.py` und `signals.py` Benachrichtigungen, `writes.py` Schreiben,
 `manage_views.py`
-Verwaltung, `openapi.py` Beschreibung).
+Verwaltung, `openapi.py` Beschreibung, `docs_page.py` lesbare Seite).
 Oberfläche: `frontend/src/pages/settings/ApiAccessPage.tsx`.
 
 ## Zugang und Schlüssel

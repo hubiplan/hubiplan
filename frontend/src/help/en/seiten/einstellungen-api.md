@@ -102,4 +102,4 @@ Creating, changing, key changes and deleting are recorded in the change log. Eac
 
 ## For developers
 
-The address of the interface and its description (OpenAPI) are shown at the top of the page. The key is sent as `Authorization: Bearer hpk_…`. Errors are returned as `application/problem+json` with a fixed `code`. When writing, the `Idempotency-Key` header prevents a repeated request from creating something twice; with `external_id` the other program gives a record its own identifier.
+The address of the interface is shown at the top of the page, next to three links: “Read description” opens a readable overview of all calls, “Open OpenAPI description” the file for your own tools and “Guide for developers” the detailed guide on GitHub. The description and the file need no sign-in, so you can pass the links on to the developer of the other program. The key is sent as `Authorization: Bearer hpk_…`. Errors are returned as `application/problem+json` with a fixed `code`. When writing, the `Idempotency-Key` header prevents a repeated request from creating something twice; with `external_id` the other program gives a record its own identifier.

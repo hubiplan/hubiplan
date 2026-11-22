@@ -13,7 +13,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Diese Seiten liefern das Schema selbst aus
-NOT_IN_SCHEMA = {"/api/schema/", "/api/docs/", "/api/partner/v1/openapi.json"}
+NOT_IN_SCHEMA = {
+    "/api/schema/",
+    "/api/docs/",
+    "/api/partner/v1/openapi.json",
+    "/api/partner/v1/docs/",
+}
 
 
 def generate(patterns=None):

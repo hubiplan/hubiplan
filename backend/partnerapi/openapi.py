@@ -69,7 +69,14 @@ def build() -> dict:
         description=DESCRIPTION,
         patterns=patterns,
     ).get_schema(request=None, public=True)
-    schema["info"]["license"] = {"name": "AGPL-3.0-or-later"}
+    # drf-spectacular übernimmt Titel, Fassung und Text aus SPECTACULAR_SETTINGS (die der
+    # Verwaltungs-API), nicht aus den Angaben oben; deshalb hier ausdrücklich
+    schema["info"] = {
+        "title": "HUBIplan API für andere Programme",
+        "version": "1",
+        "description": DESCRIPTION,
+        "license": {"name": "AGPL-3.0-or-later"},
+    }
     schema["servers"] = [{"url": "/", "description": "diese HUBIplan-Instanz"}]
     schema = _short_names(schema)
     components = schema.setdefault("components", {})

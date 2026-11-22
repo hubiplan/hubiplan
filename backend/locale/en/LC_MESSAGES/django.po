@@ -17145,6 +17145,84 @@ msgstr "Too many open proposals; the club has to process some first"
 msgid "Zu viele Entwürfe; der Verein muss erst welche versenden oder löschen"
 msgstr "Too many drafts; the club has to send or delete some first"
 
+#: partnerapi/docs_page.py
+msgid "Ausführliche Anleitung (docs/api.md)"
+msgstr "Detailed guide (docs/api.md)"
+
+#: partnerapi/docs_page.py
+msgid "Die Beschreibungen der einzelnen Aufrufe sind auf Deutsch."
+msgstr "The descriptions of the individual calls are in German."
+
+#: partnerapi/docs_page.py
+#, python-format
+msgid "Liste von %(item)s"
+msgstr "list of %(item)s"
+
+#: partnerapi/docs_page.py
+msgid "Mit * markierte Felder sind immer vorhanden bzw. Pflicht."
+msgstr "Fields marked with * are always present or required."
+
+#: partnerapi/docs_page.py
+msgid "OpenAPI-Beschreibung (JSON)"
+msgstr "OpenAPI description (JSON)"
+
+#: partnerapi/docs_page.py
+msgid "Version"
+msgstr "Version"
+
+#: partnerapi/docs_page.py
+msgid "auch null"
+msgstr "may be null"
+
+#: partnerapi/docs_page.py
+#, python-format
+msgid "bis %(n)s Zeichen"
+msgstr "up to %(n)s characters"
+
+#: partnerapi/docs_page.py
+msgid "Antworten"
+msgstr "Responses"
+
+#: partnerapi/docs_page.py
+msgid "Aufrufe"
+msgstr "Calls"
+
+#: partnerapi/docs_page.py
+msgid "Bedeutung"
+msgstr "Meaning"
+
+#: partnerapi/docs_page.py
+msgid "Datenformen"
+msgstr "Data shapes"
+
+#: partnerapi/docs_page.py
+msgid "Diese Seite beschreibt die Schnittstelle dieser HUBIplan-Instanz. Den Schlüssel vergibt der Vorstand einer Einheit unter Einstellungen › API-Zugänge."
+msgstr "This page describes the interface of this HUBIplan instance. The board of a unit issues the key under Settings › API accesses."
+
+#: partnerapi/docs_page.py
+msgid "Feld"
+msgstr "Field"
+
+#: partnerapi/docs_page.py
+msgid "HUBIplan API für andere Programme"
+msgstr "HUBIplan API for other programs"
+
+#: partnerapi/docs_page.py
+msgid "Inhalt (JSON)"
+msgstr "Body (JSON)"
+
+#: partnerapi/docs_page.py
+msgid "Parameter"
+msgstr "Parameter"
+
+#: partnerapi/docs_page.py
+msgid "Typ"
+msgstr "Type"
+
+#: partnerapi/docs_page.py
+msgid "Überblick"
+msgstr "Overview"
+
 #: hometiles
 msgid "{h} Std."
 msgstr "{h} h"
