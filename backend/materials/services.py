@@ -5,8 +5,10 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps
 from rest_framework.exceptions import PermissionDenied, ValidationError
+
+from core.filecheck import BILD_FEHLER
 
 from . import access
 from .models import MaterialDocumentLink, MaterialEventLink, MaterialRevision, MaterialTodoLink
@@ -174,13 +176,7 @@ def image_content(upload, request=None):
                 image.thumbnail((1600, 1600))
                 output = io.BytesIO()
                 image.save(output, format="JPEG", quality=85)
-    except (
-        UnidentifiedImageError,
-        OSError,
-        ValueError,
-        Image.DecompressionBombError,
-        Image.DecompressionBombWarning,
-    ) as exc:
+    except (*BILD_FEHLER, Image.DecompressionBombWarning) as exc:
         raise ValidationError(_("Bitte ein gültiges JPEG-, PNG- oder WebP-Bild wählen.")) from exc
     return ContentFile(output.getvalue(), name="material.jpg")
 

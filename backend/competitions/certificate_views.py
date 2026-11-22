@@ -11,7 +11,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 from rest_framework import serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 
 from audit.log import record
 from core.api_base import AuditMixin
+from core.filecheck import BILD_FEHLER
 
 from . import certificates
 from .models import CertificateTemplate, Competition
@@ -113,7 +114,7 @@ def clean_background(upload) -> bytes:
         img.load()
     except ValidationError:
         raise
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         raise ValidationError({"file": gettext("Die Datei ist kein gültiges Bild.")}) from exc
     if img.mode in ("RGBA", "LA", "P", "PA"):
         rgba = img.convert("RGBA")

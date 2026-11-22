@@ -42,6 +42,7 @@ from access.modules import upgrade_modules
 from accounts.models import User
 from core.filecheck import clean_logo
 from core.tenancy import rls_bypass
+from core.zipsicher import ZIP_FEHLER
 from customfields.models import FieldDefinition, FieldValue, clean_value
 from members.models import (
     TITLE_MAX_LENGTH,
@@ -241,8 +242,11 @@ class Files:
         """
         if not self.has(path):
             return None
-        with self.archive.open(path) as handle:
-            content = handle.read(MAX_FILE_BYTES + 1)
+        try:
+            with self.archive.open(path) as handle:
+                content = handle.read(MAX_FILE_BYTES + 1)
+        except ZIP_FEHLER as exc:
+            raise FileProblem(f"Die Datei „{path}“ im Archiv lässt sich nicht entpacken.") from exc
         if len(content) > MAX_FILE_BYTES:
             raise FileProblem(f"Die Datei „{path}“ im Archiv ist zu groß.")
         self.total += len(content)
@@ -268,15 +272,18 @@ def open_file(fieldfile) -> tuple[dict, Files]:
             # Direkt aus dem Speicher lesen (blockweise entschlüsselt, mit Springen),
             # nicht die ganze ZIP-Datei in den Arbeitsspeicher
             archive = zipfile.ZipFile(fieldfile.storage.open(fieldfile.name, "rb"))
-        except zipfile.BadZipFile as exc:
+        except ZIP_FEHLER as exc:
             raise FileProblem("Die ZIP-Datei ist beschädigt.") from exc
         if dump.JSON_NAME not in archive.namelist():
             raise FileProblem(f"In der ZIP-Datei fehlt {dump.JSON_NAME}.")
         info = archive.getinfo(dump.JSON_NAME)
         if info.file_size > MAX_JSON_BYTES:
             raise FileProblem("Die Exportdatei ist zu groß.")
-        with archive.open(dump.JSON_NAME) as handle:
-            raw = handle.read(MAX_JSON_BYTES + 1)
+        try:
+            with archive.open(dump.JSON_NAME) as handle:
+                raw = handle.read(MAX_JSON_BYTES + 1)
+        except ZIP_FEHLER as exc:
+            raise FileProblem("Die ZIP-Datei ist beschädigt.") from exc
         if len(raw) > MAX_JSON_BYTES:
             raise FileProblem("Die Exportdatei ist zu groß.")
     else:

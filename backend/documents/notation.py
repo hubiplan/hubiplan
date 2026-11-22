@@ -49,10 +49,15 @@ def _local(tag: str) -> str:
 
 def _unzip_mxl(data: bytes) -> bytes:
     try:
-        archive = zipfile.ZipFile(io.BytesIO(data))
-    except zipfile.BadZipFile as exc:
+        return _mxl_root(data)
+    except ValidationError:
+        raise
+    except Exception as exc:  # beschädigtes Archiv (ZIP_FEHLER) oder kaputtes container.xml
         raise _invalid() from exc
-    with archive:
+
+
+def _mxl_root(data: bytes) -> bytes:
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
         infos = archive.infolist()
         if len(infos) > MAX_ENTRIES or sum(i.file_size for i in infos) > MAX_UNZIPPED:
             raise _invalid(gettext("Die Notendatei ist entpackt zu groß."))

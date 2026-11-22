@@ -23,6 +23,8 @@ from defusedxml import DefusedXmlException
 from defusedxml.ElementTree import fromstring as safe_fromstring
 from django.utils.translation import gettext
 
+from core.zipsicher import ZIP_FEHLER
+
 MAX_FILE = 10 * 1024 * 1024  # 10 MB je Upload
 MAX_XML = 20 * 1024 * 1024  # 20 MB entpackt je Datei
 MAX_FILES = 100  # Auszüge je ZIP
@@ -218,7 +220,7 @@ def _parse_xml(data: bytes, reports: bool = False) -> list[Statement]:
         raise CamtError(
             gettext("Die Datei enthält eine DTD und wird aus Sicherheitsgründen abgelehnt.")
         ) from None
-    except (ET.ParseError, ValueError):  # ValueError: z. B. encoding="UTF-16LE"
+    except (ET.ParseError, ValueError, LookupError):  # z. B. encoding="UTF-16LE", unbekannt
         raise CamtError(gettext("Die Datei ist kein gültiges XML.")) from None
     container = _find(root, "BkToCstmrStmt")
     unit = "Stmt"
@@ -350,9 +352,9 @@ def parse(data: bytes) -> list[Statement]:
     if data[:2] == b"PK":
         try:
             archive = zipfile.ZipFile(io.BytesIO(data))
-        except zipfile.BadZipFile:
+            names = [i for i in archive.infolist() if i.filename.lower().endswith(".xml")]
+        except ZIP_FEHLER:
             raise CamtError(gettext("Das ZIP-Archiv ist beschädigt.")) from None
-        names = [i for i in archive.infolist() if i.filename.lower().endswith(".xml")]
         if not names:
             raise CamtError(gettext("Im ZIP-Archiv ist keine XML-Datei."))
         if len(names) > MAX_FILES:
@@ -366,8 +368,11 @@ def parse(data: bytes) -> list[Statement]:
                 raise CamtError(
                     gettext("{filename} ist entpackt zu groß.").format(filename=info.filename)
                 )
-            with archive.open(info) as fh:
-                content = fh.read(MAX_XML + 1)
+            try:
+                with archive.open(info) as fh:
+                    content = fh.read(MAX_XML + 1)
+            except ZIP_FEHLER:
+                raise CamtError(gettext("Das ZIP-Archiv ist beschädigt.")) from None
             if len(content) > MAX_XML:
                 raise CamtError(
                     gettext("{filename} ist entpackt zu groß.").format(filename=info.filename)

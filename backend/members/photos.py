@@ -8,10 +8,10 @@ from dataclasses import dataclass
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.translation import gettext
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps
 from rest_framework.exceptions import ValidationError
 
-from core.filecheck import JPEG_FORMATS, heic_message, is_heic
+from core.filecheck import BILD_FEHLER, JPEG_FORMATS, heic_message, is_heic
 
 from .photo_models import MemberPhoto
 
@@ -81,7 +81,7 @@ def process(upload) -> Processed:
         img.load()
     except ValidationError:
         raise
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         upload.seek(0)
         if is_heic(upload.read(16)):
             raise ValidationError({"file": heic_message()}) from exc
@@ -116,7 +116,7 @@ def clean_photo(content: bytes, size: int = FULL_SIZE) -> bytes:
         img.load()
     except DjangoValidationError:
         raise
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         raise DjangoValidationError(
             gettext("Ein Mitgliederfoto in der Datei ist kein gültiges Bild.")
         ) from exc
