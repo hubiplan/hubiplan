@@ -75,9 +75,10 @@ fehler=0
 
 if [ -z "$NUR" ] || [ "$NUR" = geheimnisse ]; then
     echo "== Geheimnisse im Stand $SHA (gitleaks)"
-    # --redact: Funde nennen Datei, Zeile und Regel, nie den Wert
+    # --verbose mit --redact: Funde nennen Datei, Zeile und Regel, nie den Wert
     if docker run --rm "$CPUS" -v "$WORK:/src:ro" "$GITLEAKS" dir /src \
-        --config /src/.gitleaks.toml --redact --no-banner --no-color --max-target-megabytes 5; then
+        --config /src/.gitleaks.toml --redact --verbose --no-banner --no-color \
+        --max-target-megabytes 5; then
         echo "Geheimnisse: kein Fund"
     else
         echo "Geheimnisse: FUND (oben). Echtes Geheimnis: sofort wechseln, dann entfernen;" >&2
@@ -88,6 +89,8 @@ fi
 
 if [ -z "$NUR" ] || [ "$NUR" = abbilder ]; then
     echo "== Abbilder im Stand $SHA (trivy)"
+    # Der Bau selbst lässt sich nicht auf Kerne begrenzen (lädt vor allem fertige Pakete);
+    # wer die Grenze für Tests gerade ausschöpft, startet diesen Teil danach.
     docker build -q -t "$IMG" "$WORK/backend" > /dev/null
     # Fremde Abbilder: letzte Stufe der Dockerfiles (was wirklich läuft) und die Compose-Dienste
     mapfile -t FREMD < <({

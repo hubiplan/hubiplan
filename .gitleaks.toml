@@ -5,20 +5,25 @@ title = "HUBIplan"
 
 [extend]
 useDefault = true
+# generic-api-key rät anhand von Namen wie „key“ oder „id“ und meldete beim ersten Lauf
+# (22.11.2026) 47 Stellen, alle harmlos: Migrationsnamen, Feldnamen, Testpasswörter. Fest
+# eingetragene Passwörter in Python findet ruff (S105, S106) im Testlauf; die Regeln für
+# private Schlüssel und für Tokens bestimmter Dienste bleiben an.
+disabledRules = ["generic-api-key"]
 
 [[allowlists]]
 description = "Erfundene Schlüssel und Tokens in Tests und Testdaten"
 paths = [
-    '''^backend/tests/''',
-    '''^backend/[a-z_]+/tests/''',
-    '''^frontend/src/test/''',
-    '''^deploy/backup/test[-_].*''',
-    '''^scripts/pruefe-.*\.sh$''',
+    '''(^|/)backend/tests/''',
+    '''(^|/)backend/[a-z_]+/tests/''',
+    '''(^|/)frontend/src/test/''',
+    '''(^|/)deploy/backup/test[-_][^/]*$''',
+    '''(^|/)scripts/pruefe-[^/]*\.sh$''',
 ]
 
 [[allowlists]]
 description = "Festgeschriebene Paketlisten: Prüfsummen, keine Geheimnisse"
 paths = [
-    '''^backend/requirements(-dev)?\.txt$''',
-    '''^frontend/package-lock\.json$''',
+    '''(^|/)backend/requirements(-dev)?\.txt$''',
+    '''(^|/)frontend/package-lock\.json$''',
 ]
