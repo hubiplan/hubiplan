@@ -500,7 +500,8 @@ class TestAnnehmenImMailprogramm:
         settings.INBOUND_IMAP_HOST = "imap.example.org"
         anna, bernd = members["anna"], members["bernd"]
         address = rsvp.email_of(anna)
-        bad = imip.reply_code(event.pk, anna.pk)[:-1] + "0"
+        good = imip.reply_code(event.pk, anna.pk)
+        bad = good[:-1] + ("0" if good[-1] != "0" else "1")
         entry = inbound.process_message(self.reply_mail(address, bad))
         assert entry.status == InboundMail.Status.REJECTED
         # Code von Anna, Antwort von Bernd
