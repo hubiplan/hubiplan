@@ -104,6 +104,7 @@ from organizations.platform_public import (
     PublicPlatformView,
 )
 from outbox import views as outbox_views
+from partnerapi import urls as partner_urls
 from peering import urls as peering_urls
 from pinboard import portal as pinboard_portal
 from portal import start as portal_start
@@ -934,6 +935,7 @@ org_patterns = [
     *expense_urls.org_patterns,
     *feeproof_urls.org_patterns,
     *training_urls.org_patterns,
+    *partner_urls.org_patterns,
     *gate_names("social", website_urls.org_patterns, "website-social"),
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
@@ -1264,6 +1266,8 @@ urlpatterns = [
     path("", include(oidc_urls)),
     # KI-Schnittstelle (MCP): Hilfe ohne Anmeldung, Verein mit Anmeldung (docs/mcp.md)
     *mcp_urls.api_patterns,
+    # API für andere Programme: Schlüssel hpk_…, nur lesen (docs/api.md)
+    *partner_urls.api_patterns,
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     *admission_urls.public_patterns,
     *expense_urls.public_patterns,

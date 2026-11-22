@@ -886,6 +886,7 @@ export const PERM = {
   websiteManage: 'website.manage',
   websiteContent: 'website.content',
   peeringManage: 'peering.manage',
+  apiManage: 'api.manage',
   competitionsManage: 'competitions.manage',
   competitionsResults: 'competitions.results',
   entriesSubmit: 'entries.submit',

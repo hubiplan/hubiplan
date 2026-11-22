@@ -156,6 +156,10 @@ export function baseSettingsItems(active: OrgSummary): SettingsItem[] {
     ...(clubLike && can(PERM.rolesManage)
       ? [{ to: '/einstellungen/nextcloud', label: t('Nextcloud'), section: access }]
       : []),
+    // Zugänge für andere Programme (docs/api.md): nur mit Modul und eigenem Zusatzrecht
+    ...(clubLike && active.modules.includes('api') && can(PERM.apiManage)
+      ? [{ to: '/einstellungen/api', label: t('API-Zugänge'), section: access }]
+      : []),
     ...(!platform && (can(PERM.dataExport) || (active.type === 'club' && can(PERM.orgEdit)))
       ? [{ to: '/einstellungen/datenuebernahme', label: t('Datenübernahme'), section: records }]
       : []),

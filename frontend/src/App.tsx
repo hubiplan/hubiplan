@@ -181,6 +181,7 @@ const LetterheadSettingsPage = lazyPage(
   () => import('./pages/settings/LetterheadSettingsPage.tsx'),
   'LetterheadSettingsPage',
 )
+const ApiAccessPage = lazyPage(() => import('./pages/settings/ApiAccessPage.tsx'), 'ApiAccessPage')
 const PlacesPage = lazyPage(() => import('./pages/settings/PlacesPage.tsx'), 'PlacesPage')
 const AppearancePage = lazyPage(
   () => import('./pages/settings/AppearancePage.tsx'),
@@ -685,6 +686,14 @@ export default function App() {
               element={
                 <RequireOrg permission={PERM.rolesManage}>
                   <NextcloudPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="api"
+              element={
+                <RequireOrg module="api" permission={PERM.apiManage}>
+                  <ApiAccessPage />
                 </RequireOrg>
               }
             />

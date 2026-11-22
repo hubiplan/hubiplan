@@ -63,6 +63,7 @@ NICHT = {
     "oidc.CalendarItem": "Abgleich mit dem Nextcloud-Kalender der alten Instanz, entsteht am "
     "Ziel neu",
     "mcpserver.McpGrant": "Freigabe der KI-Schnittstelle, am Ziel neu erteilen",
+    "partnerapi.ApiAccess": "API-Zugang (Schlüssel der alten Instanz), am Ziel neu anlegen",
     "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
     "(McpGrant) und verfällt nach 30 Tagen",
     "todos.TodoShare": "Freigaben an Konten, am Ziel neu vergeben (wie SECRET_FIELDS todos)",
