@@ -41,6 +41,7 @@ def standard() -> dict:
     data = json.loads((Path(__file__).with_name("menu_standard.json")).read_text("utf-8"))
     data.pop("_hinweis", None)
     data.pop("labels", None)
+    data.pop("icons", None)
     return data
 
 
@@ -59,9 +60,16 @@ def item_ids() -> list[str]:
     return list(standard()["items"])
 
 
+@cache
+def extra_icons() -> list[str]:
+    """Zusätzliche Zeichen für eigene Bereiche (frontend/src/menuIcons.tsx)."""
+    data = json.loads((Path(__file__).with_name("menu_standard.json")).read_text("utf-8"))
+    return data.get("icons", [])
+
+
 def icon_keys() -> set[str]:
-    """Zeichen eigener Bereiche: die eines Standardbereichs oder eines Menüpunkts."""
-    return set(standard_area_ids()) | set(item_ids())
+    """Zeichen eigener Bereiche: Standardbereich, Menüpunkt oder Zusatzzeichen."""
+    return set(standard_area_ids()) | set(item_ids()) | set(extra_icons())
 
 
 def _label(value, field: str, required: bool) -> str:

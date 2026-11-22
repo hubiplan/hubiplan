@@ -200,5 +200,29 @@
       "Plattform",
       "Platform"
     ]
-  }
+  },
+  "icons": [
+    "z-stern",
+    "z-fahne",
+    "z-zielscheibe",
+    "z-note",
+    "z-herz",
+    "z-kamera",
+    "z-buch",
+    "z-glocke",
+    "z-blitz",
+    "z-blatt",
+    "z-schild",
+    "z-krone",
+    "z-ball",
+    "z-kompass",
+    "z-werkzeug",
+    "z-geschenk",
+    "z-sonne",
+    "z-zelt",
+    "z-tasse",
+    "z-gluehbirne",
+    "z-paket",
+    "z-landkarte"
+  ]
 }

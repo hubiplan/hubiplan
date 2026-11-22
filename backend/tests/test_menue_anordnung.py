@@ -92,6 +92,14 @@ def test_unbekannte_menuepunkte_werden_uebergangen():
     assert cleaned["items"] == {"dsgvo": "start"}
 
 
+def test_zusatzzeichen_fuer_eigene_bereiche():
+    icon = menu_layout.extra_icons()[0]
+    cleaned = menu_layout.clean(_layout("start", {"id": "b1", "label": "Neu", "icon": icon}))
+    assert cleaned["areas"][1]["icon"] == icon
+    with pytest.raises(ValidationError):
+        menu_layout.clean(_layout("start", {"id": "b1", "label": "Neu", "icon": "z-gibtsnicht"}))
+
+
 def test_standard_wird_als_null_gespeichert():
     assert menu_layout.clean(_layout(*STANDARD_IDS)) is None
 

@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 import { AREAS, modules } from './modules.tsx'
 import type { AppModule } from './modules.tsx'
 import { lang, t } from './i18n/index.ts'
+import { EXTRA_ICONS, svgIcon } from './menuIcons.tsx'
 
 export interface MenuLayoutArea {
   id: string
@@ -55,7 +56,19 @@ export function kindOf(id: string): AreaKind {
 /** Zeichen zu einer Kennung (Bereich oder Menüpunkt) */
 export function iconOf(key: string | undefined): ReactNode {
   if (!key) return null
+  const extra = EXTRA_ICONS.find((x) => x.id === key)
+  if (extra) return svgIcon(extra.path)
   return AREAS.find((a) => a.id === key)?.icon ?? modules.find((m) => m.id === key)?.icon ?? null
+}
+
+/** Name eines Zeichens für die Auswahl im Editor */
+export function iconLabel(key: string): string {
+  return (
+    EXTRA_ICONS.find((x) => x.id === key)?.label ??
+    AREAS.find((a) => a.id === key)?.label ??
+    modules.find((m) => m.id === key)?.label ??
+    key
+  )
 }
 
 /** Name eines Bereichs in der aktuellen Sprache */
@@ -136,6 +149,20 @@ export function nextCustomId(areas: MenuLayoutArea[]): string {
 
 /** Zeichen, die ein eigener Bereich tragen kann */
 export const ICON_KEYS: string[] = [
-  ...STANDARD_IDS,
-  ...MODULE_IDS.filter((id) => id !== 'plattform'),
+  ...new Set([
+    ...STANDARD_IDS,
+    ...MODULE_IDS.filter((id) => id !== 'plattform'),
+    ...EXTRA_ICONS.map((x) => x.id),
+  ]),
 ]
+
+/** Zeichen, das ein Bereich gerade zeigt (gewählt oder nach seiner Kennung) */
+export function shownIcon(area: MenuLayoutArea): string {
+  return area.icon || (kindOf(area.id) === 'custom' ? 'verein' : area.id)
+}
+
+/** Erstes Zusatzzeichen, das noch kein Bereich trägt; sonst das erste */
+export function freeIcon(areas: MenuLayoutArea[]): string {
+  const used = new Set(areas.map(shownIcon))
+  return (EXTRA_ICONS.find((x) => !used.has(x.id)) ?? EXTRA_ICONS[0]).id
+}

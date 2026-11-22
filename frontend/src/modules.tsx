@@ -156,9 +156,16 @@ export const AREAS: AppArea[] = [
   {
     id: 'planung',
     label: t('Planung'),
-    icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
+    // Eigene Zeichen der Bereiche, verschieden von denen ihrer Menüpunkte (Ralf 22.11.)
+    icon: icon(
+      'M8 4.5H6v16h12v-16h-2M9 3h6v3H9zM8.5 11l1.5 1.5L12.5 10M14 11.5h2M8.5 16l1.5 1.5 2.5-2.5M14 16.5h2',
+    ),
   },
-  { id: 'kommunikation', label: t('Kommunikation'), icon: icon('M3 6h18v12H3zM3 6l9 7 9-7') },
+  {
+    id: 'kommunikation',
+    label: t('Kommunikation'),
+    icon: icon('M3.5 5h11v8h-6l-3.5 3v-3H3.5zM14.5 9h6v7.5h-1.5V19l-3-2.5h-5.5V13'),
+  },
   // Die Webseite ist ein eigener Bereich, nicht unter Kommunikation versteckt (Ralf 22.11.)
   {
     id: 'webseite',
@@ -169,16 +176,14 @@ export const AREAS: AppArea[] = [
     id: 'vereinsleben',
     label: t('Vereinsleben'),
     icon: icon(
-      'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4v3h-4z',
+      'M4 20.5l4-11.5 7.5 7.5zM6 14.5l3.5 3.5M14 3.5v2.5M19 5l-2 2M20.5 10H18M11.5 8l1.5-1.5M16 12.5l1.5-1.5',
     ),
   },
   { id: 'finanzen', label: t('Finanzen'), icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4') },
   {
     id: 'verein',
     label: t('Verein'),
-    icon: icon(
-      'M4 7h8M16 7h4M4 17h4M12 17h8M14 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4M10 15a2 2 0 1 1 0 4 2 2 0 0 1 0-4',
-    ),
+    icon: icon('M3 9 12 4l9 5M4 9h16M6 9v9M10 9v9M14 9v9M18 9v9M3 20.5h18'),
   },
 ]
 

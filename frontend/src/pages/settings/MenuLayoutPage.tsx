@@ -18,6 +18,9 @@ import {
   MAX_LABEL,
   MIN_AREAS,
   nextCustomId,
+  freeIcon,
+  iconLabel,
+  shownIcon,
   toArrangement,
 } from '../../menuLayout.ts'
 import type { Arrangement, MenuLayout, MenuLayoutArea } from '../../menuLayout.ts'
@@ -112,7 +115,7 @@ export function MenuLayoutPage() {
       if (d.areas.length >= MAX_AREAS) return d
       const id = nextCustomId(d.areas)
       return {
-        areas: [...d.areas, { id, label: '', icon: 'verein' }],
+        areas: [...d.areas, { id, label: '', icon: freeIcon(d.areas) }],
         items: { ...d.items, [id]: [] },
       }
     })
@@ -279,11 +282,18 @@ export function MenuLayoutPage() {
                       onChange={(e) => setArea(area.id, { icon: e.target.value })}
                     >
                       {kind === 'standard' && <option value="">{t('wie vorgegeben')}</option>}
-                      {ICON_KEYS.map((key) => (
-                        <option key={key} value={key}>
-                          {areaName({ id: key })}
-                        </option>
-                      ))}
+                      {ICON_KEYS.map((key) => {
+                        const taken = current.areas.some(
+                          (other) => other.id !== area.id && shownIcon(other) === key,
+                        )
+                        return (
+                          <option key={key} value={key}>
+                            {taken
+                              ? t('{x} (schon vergeben)', { x: iconLabel(key) })
+                              : iconLabel(key)}
+                          </option>
+                        )
+                      })}
                     </SelectField>
                   </div>
                 )}

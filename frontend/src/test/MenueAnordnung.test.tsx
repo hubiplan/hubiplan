@@ -2,13 +2,22 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { AREAS, modules } from '../modules.tsx'
-import { areaOf, fromArrangement, toArrangement } from '../menuLayout.ts'
+import {
+  areaOf,
+  freeIcon,
+  fromArrangement,
+  iconOf,
+  ICON_KEYS,
+  toArrangement,
+} from '../menuLayout.ts'
+import { EXTRA_ICONS } from '../menuIcons.tsx'
 import type { MenuLayout } from '../menuLayout.ts'
 import { byMenu, fillAreas, placeOf } from '../help/menu.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
@@ -23,6 +32,7 @@ const STANDARD = existsSync(STANDARD_PATH)
   ? (JSON.parse(readFileSync(STANDARD_PATH, 'utf-8')) as {
       areas: { id: string }[]
       items: Record<string, string>
+      icons: string[]
     })
   : undefined
 
@@ -55,6 +65,29 @@ describe('Anordnung des Menüs', () => {
   it.skipIf(!STANDARD)('Standard im Backend passt zu modules.tsx', () => {
     expect(STANDARD!.areas.map((a) => a.id)).toEqual(AREAS.map((a) => a.id))
     expect(STANDARD!.items).toEqual(Object.fromEntries(modules.map((m) => [m.id, m.area])))
+    expect(STANDARD!.icons).toEqual(EXTRA_ICONS.map((x) => x.id))
+  })
+
+  it('kein Zeichen kommt doppelt vor', () => {
+    const svg = (key: string) => renderToStaticMarkup(<>{iconOf(key)}</>)
+    // Bereich und Menüpunkt mit derselben Kennung stehen nie zugleich in der Leiste
+    const keys = ICON_KEYS
+    expect(new Set(keys).size).toBe(keys.length)
+    const seen = new Map<string, string>()
+    const twice: string[] = []
+    for (const key of keys) {
+      const markup = svg(key)
+      expect(markup, key).toContain('<path')
+      const other = seen.get(markup)
+      if (other) twice.push(`${other} = ${key}`)
+      else seen.set(markup, key)
+    }
+    expect(twice).toEqual([])
+  })
+
+  it('ein neuer Hauptmenüpunkt bekommt ein freies Zeichen', () => {
+    const areas = [{ id: 'start' }, { id: 'b1', label: 'A', icon: EXTRA_ICONS[0].id }]
+    expect(freeIcon(areas)).toBe(EXTRA_ICONS[1].id)
   })
 
   it('ordnet jeden Menüpunkt genau einem vorhandenen Bereich zu', () => {
