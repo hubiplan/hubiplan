@@ -161,6 +161,7 @@ November 2026:
 
 #### Aussehen und Bedienung
 
+- **Menü frei anordnen:** Unter Einstellungen › **Menü** legt ihr fest, welche Hauptmenüpunkte links in der Leiste stehen, in welcher Reihenfolge und wo jeder Menüpunkt steht. Ein Menüpunkt kann selbst Hauptmenüpunkt werden, eigene Hauptmenüpunkte bekommen einen eigenen Namen. Die Anordnung gilt für alle in der Einheit, Rechte bleiben unberührt; Rückgängig und Standard wiederherstellen sind jederzeit möglich.
 - **Neuer Rahmen der Verwaltung**: Links steht eine schmale Leiste mit sieben Bereichen (Start, Mitglieder, Planung, Kommunikation, Vereinsleben, Finanzen, Verein), daneben ein helles, einklappbares Menü mit den Seiten des Bereichs. Ein Klick auf den Namen des Bereichs zeigt alle seine Seiten mit Kurzbeschreibung. Oben stehen Schnellsuche, **Neu** und ein Zähler für das, was zu erledigen ist. Wer auch Mitglied ist, wechselt oben zwischen **Mein Verein** und **Verwaltung**. Die Belegung steht jetzt unter Planung.
 - **Felder heben sich ab:** Mit der Farbrolle „Flächen“ in HUBIplan bleiben Eingabe- und Auswahlfelder und Knöpfe weiß, statt die getönte Farbe der Karte zu übernehmen. Ebenso die Such- und Formularfelder der Webseite.
 - **Hauptmenü neu gegliedert**: Die neue Gruppe **Vereinsleben** fasst Wettbewerbe, Meldungen und Musik zusammen; unter **Verein** bleiben Mitglieder, Untereinheiten und Chronik. **Umfragen** stehen jetzt unter Kommunikation, **Geschäftspartner** unter Verwaltung direkt nach Finanzen. In den Apps stehen die Verwaltungsbereiche in derselben Reihenfolge.

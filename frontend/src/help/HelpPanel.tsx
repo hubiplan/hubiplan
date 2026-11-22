@@ -72,7 +72,9 @@ const ALL = () => true
 function OpenHelpPanel({ help }: { help: HelpState }) {
   const { pathname } = useLocation()
   const hasFeature = useLearning()?.hasFeature ?? ALL
-  const org = useOptionalOrg()?.active ?? null
+  const orgCtx = useOptionalOrg()
+  const org = orgCtx?.active ?? null
+  const menuLayout = org?.menu_layout ?? orgCtx?.activeDept?.menu_layout ?? null
   // Gewählte Anleitung gilt nur auf der Seite, auf der sie gewählt wurde
   const chosen = help.panelGuide
   const setChosen = help.openGuide
@@ -112,7 +114,7 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
       e.routes.some((r) => routeMatches(r, pathname)),
   )
   const terms = page ? termsIn(page, hasFeature) : []
-  const place = page ? placeOf(page) : null
+  const place = page ? placeOf(page, menuLayout) : null
   const guideKey = chosen?.path === pathname ? chosen.key : null
   const guide = guideKey ? all.find((e) => e.key === guideKey) : undefined
 

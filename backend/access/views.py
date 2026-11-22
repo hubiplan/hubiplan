@@ -20,7 +20,7 @@ from core.api_base import AuditMixin, OrgScopedMixin
 from core.listing import ListPagination, search
 from core.reorder import reorder_response
 from core.tenancy import tenant_context
-from organizations import theme
+from organizations import menu_layout, theme
 from organizations.models import Organization
 from organizations.platform_public import instance_name
 from organizations.terms import department_terms, rename_word
@@ -555,6 +555,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "department_terms": department_terms(org),
         # Menüpunkt Untereinheiten (nur Vereine schalten ihn aus)
         "units_in_menu": org.type != Organization.Type.CLUB or org.units_in_menu,
+        # Anordnung des Menüs (null = Standard); Untereinheiten übernehmen die des Vereins
+        "menu_layout": menu_layout.effective(org),
         "date_precision": org.date_precision,
         "federation_member_access": (
             org.federation_member_access if org.type == Organization.Type.FEDERATION else None

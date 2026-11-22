@@ -161,6 +161,7 @@ November 2026:
 
 #### Look and feel
 
+- **Arrange the menu freely:** Under Settings › **Menu** you decide which main menu items appear in the bar on the left, in which order, and where each menu item sits. A menu item can become a main menu item itself, and your own main menu items get their own name. The arrangement applies to everyone in the unit and does not change any rights; you can undo or restore the default at any time.
 - **New frame for the administration**: On the left a narrow bar holds seven areas (Home, Members, Planning, Communication, Club life, Finances, Club), next to it a light, collapsible menu with the pages of the area. Clicking the name of the area shows all its pages with a short description. At the top are the quick search, **New** and a counter for what is waiting. Members who also help run the club switch between **My club** and **Administration** at the top. Bookings are now under Planning.
 - **Fields stand out:** With the colour role “Surfaces” in HUBIplan, input and selection fields and buttons stay white instead of taking on the tinted colour of the card. The same goes for the search and form fields on the website.
 - **Main menu reorganised**: the new group **Club life** brings together competitions, entries and music; **Club** keeps members, sub-units and the chronicle. **Surveys** are now under Communication, **Business partners** under Administration right after Finances. The apps list their admin areas in the same order.

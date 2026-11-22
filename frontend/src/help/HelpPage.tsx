@@ -89,7 +89,9 @@ const entryLink = (e: HelpEntry) => <Link to={`/hilfe/${e.slug}`}>{e.title}</Lin
 export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
   const { pathname } = useLocation()
   const { entries, failed, retry } = useEntries()
-  const org = useOptionalOrg()?.active ?? null
+  const orgCtx = useOptionalOrg()
+  const org = orgCtx?.active ?? null
+  const menuLayout = org?.menu_layout ?? orgCtx?.activeDept?.menu_layout ?? null
   const learning = useLearning()
   const hasFeature = learning?.hasFeature
   const has = useCallback(
@@ -135,7 +137,7 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
       ? null
       : (TABS.find((x) => x.tab === tab)?.label() ?? null)
   const where = (e: HelpEntry) => {
-    const place = placeOf(e)
+    const place = placeOf(e, menuLayout)
     const item = place ? itemLabel(place.item, org) : ''
     return e.kind === 'page' ? t('Seite') : item
   }
@@ -327,8 +329,10 @@ function MenuList({
   anchors?: boolean
   collapsible?: boolean
 }) {
-  const org = useOptionalOrg()?.active ?? null
-  const sections = byMenu(entries)
+  const orgCtx = useOptionalOrg()
+  const org = orgCtx?.active ?? null
+  const menuLayout = org?.menu_layout ?? orgCtx?.activeDept?.menu_layout ?? null
+  const sections = byMenu(entries, menuLayout)
   const wanted = useLocation().hash.slice(1)
   return (
     <>
@@ -337,14 +341,14 @@ function MenuList({
           <span className="muted small">{t('Springe zu')}</span>
           {sections.map((s) => (
             <a key={s.group} href={`#${groupAnchor(s.group)}`}>
-              {groupLabel(s.group)}
+              {groupLabel(s.group, menuLayout)}
             </a>
           ))}
         </nav>
       )}
       {sections.map((s) => (
         <section key={s.group} className="help-area" id={groupAnchor(s.group)}>
-          <h2>{groupLabel(s.group)}</h2>
+          <h2>{groupLabel(s.group, menuLayout)}</h2>
           {s.items.map((i) =>
             collapsible ? (
               <details
@@ -462,10 +466,12 @@ export function HelpEntryPage() {
   const hidden = !entry ? help?.entries?.find((e) => e.slug === slug) : undefined
   const missing = hidden ? (help?.missing(hidden) ?? []) : []
   const target = entry?.routes.find((r) => !r.includes(':') && r !== '/hilfe')
-  const org = useOptionalOrg()?.active ?? null
-  const place = entry ? placeOf(entry) : null
+  const orgCtx = useOptionalOrg()
+  const org = orgCtx?.active ?? null
+  const menuLayout = org?.menu_layout ?? orgCtx?.activeDept?.menu_layout ?? null
+  const place = entry ? placeOf(entry, menuLayout) : null
   const sameItem = (e: HelpEntry) => {
-    const p = placeOf(e)
+    const p = placeOf(e, menuLayout)
     return !!place && p?.group === place.group && p.item === place.item
   }
   // Seitenhilfe: Anleitungen ihrer Seiten. Anleitung: die übrigen Anleitungen des Menüpunkts.
@@ -501,9 +507,9 @@ export function HelpEntryPage() {
                   : `/hilfe/anleitungen#hilfe-gruppe-${place.group}`
               }
             >
-              {groupLabel(place.group) === itemLabel(place.item, org)
+              {groupLabel(place.group, menuLayout) === itemLabel(place.item, org)
                 ? itemLabel(place.item, org)
-                : `${groupLabel(place.group)} › ${itemLabel(place.item, org)}`}
+                : `${groupLabel(place.group, menuLayout)} › ${itemLabel(place.item, org)}`}
             </Link>
           </>
         )}

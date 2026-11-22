@@ -459,6 +459,8 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
         "modules": [m for m in MODULE_IDS if module_on(ctx.department, m)],
         "imprint_key": ensure_imprint(ctx.department).public_key,
+        # Anordnung des Menüs: die des Vereins (konzepte/menue-frei-anordnen.md, MF-5)
+        "menu_layout": club.menu_layout,
     }
 
 

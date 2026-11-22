@@ -5775,6 +5775,124 @@ label:has(> .file-input:focus-visible) {
   padding-left: 2.15rem;
 }
 
+/* Einstellungen › Menü: Hauptmenüpunkte als Karten, daneben eine Vorschau der Leiste */
+.menu-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 13rem;
+  gap: 1rem;
+  align-items: start;
+}
+
+.menu-layout-areas,
+.menu-layout-items,
+.menu-layout-preview ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-layout-areas {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.menu-layout-area {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 0.75rem 1rem;
+}
+
+.menu-layout-drop {
+  border-style: dashed;
+  border-color: var(--color-focus);
+}
+
+.menu-layout-head,
+.menu-layout-item,
+.menu-layout-preview li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-layout-head {
+  flex-wrap: wrap;
+}
+
+.menu-layout-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.menu-layout-names {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.menu-layout-items {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.menu-layout-item {
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius);
+  cursor: grab;
+}
+
+.menu-layout-item:hover {
+  background: var(--color-bg);
+}
+
+.menu-layout-move {
+  margin-left: auto;
+  max-width: 13rem;
+}
+
+.menu-layout-icon {
+  display: inline-flex;
+  color: var(--color-text-muted);
+}
+
+.menu-layout-preview {
+  position: sticky;
+  top: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+
+.menu-layout-preview ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+
+.area-menu-arrange {
+  display: block;
+  margin: 0.75rem 0.75rem 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 48rem) {
+  .menu-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-layout-preview {
+    position: static;
+  }
+
+  .menu-layout-move {
+    max-width: 9rem;
+  }
+}
+
 /* Gruppenseite der Finanzen (Konzept S-01, F2): Einträge als Karten */
 .group-cards {
   list-style: none;

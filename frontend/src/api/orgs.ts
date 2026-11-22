@@ -1,4 +1,5 @@
 import { t } from '../i18n/index.ts'
+import type { MenuLayout } from '../menuLayout.ts'
 // Organisationen, Abteilungen, Rollen, Erscheinungsbild, Protokoll, Plattform.
 import { api, listParams } from './client.ts'
 import type { ListQuery, Paged } from './client.ts'
@@ -107,6 +108,8 @@ export interface OrgSummary {
   department_terms?: DeptTerms
   /** Menüpunkt Untereinheiten zeigen (Verein kann ihn ausschalten) */
   units_in_menu?: boolean
+  /** Anordnung des Menüs (null = Standard), siehe menuLayout.ts */
+  menu_layout?: MenuLayout | null
   date_precision: DatePrecision
   federation_member_access: 'none' | 'read' | 'write' | null
   theme: EffectiveTheme
@@ -715,6 +718,11 @@ export const orgApi = {
   deleteAssignment: (id: number, a: number) => api.del(`${org(id)}/assignments/${a}/`),
 
   openTasks: (id: number) => api.get<{ items: OpenTask[] }>(`${org(id)}/open-tasks/`),
+  // Anordnung des Menüs (konzepte/menue-frei-anordnen.md)
+  menuLayout: (id: number) => api.get<MenuLayoutState>(`${org(id)}/menu-layout/`),
+  saveMenuLayout: (id: number, layout: MenuLayout | null) =>
+    api.put<MenuLayoutState>(`${org(id)}/menu-layout/`, { layout }),
+  undoMenuLayout: (id: number) => api.post<MenuLayoutState>(`${org(id)}/menu-layout/undo/`, {}),
   setupStatus: (id: number) =>
     api.get<{ items: Record<string, SetupStatus> }>(`${org(id)}/setup-status/`),
   audit: (id: number, query: ListQuery = {}) =>
@@ -809,6 +817,14 @@ export interface SetupStatus {
   count?: number
   /** fehlende Angaben */
   missing?: string[]
+}
+
+export interface MenuLayoutState {
+  layout: MenuLayout | null
+  can_undo: boolean
+  /** false: Untereinheit, die das Menü ihres Vereins übernimmt */
+  owned: boolean
+  max_areas: number
 }
 
 export interface OpenTask {
