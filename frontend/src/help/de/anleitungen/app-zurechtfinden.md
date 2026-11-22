@@ -4,12 +4,32 @@ titel: Sich in der App zurechtfinden
 routen: [/mein-konto/app]
 reihe: 41
 stichworte:
-  [App, Handy, Android, iPhone, Verwaltung, Ich, Neues, ohne Netz, Dunkelmodus, Bedienungshilfen]
+  [
+    App,
+    Handy,
+    Android,
+    iPhone,
+    Verwaltung,
+    Start,
+    Ich,
+    Neues,
+    ohne Netz,
+    Dunkelmodus,
+    Bedienungshilfen,
+  ]
 ---
 
-Unten (auf dem Tablet links) stehen höchstens fünf Ziele: „Termine“, „Aufgaben“, „Neues“, „Ich“ und – mit Verwaltungsrechten – „Verwalten“. Unter „Ich“ steht oben dein Mitgliedsausweis (auch ohne Netz, Tippen zeigt ihn groß), darunter wie in [Mein Bereich](/mein-bereich) „Meine Daten“ (Anschrift, Telefon, Foto), „Rechnungen“ mit Lastschriftmandat, „Versammlungen“ mit Tagesordnung, Anträgen und Protokollen, „Meine Ergebnisse“, „Helferdienste“ (führt zu „Aufgaben“) und „Dokumente“. Es erscheinen nur Punkte, die dein Verein eingeschaltet hat. Rechnungen und Protokolle öffnet die App nur online und speichert sie nicht. Drückst du lange auf das App-Symbol, öffnet „Ausweis zeigen“ den Ausweis direkt. „Mein Konto“ öffnest du über das Symbol oben rechts. Die Zurück-Taste führt aus jedem Bereich zuerst zu „Termine“; erst dort schließt sie die App.
+Unten (auf dem Tablet links) stehen fünf Ziele: „Start“, „Termine“, „Neues“, „Ich“ und ein fünftes je nach Rolle: „Verwaltung“ mit Verwaltungsrechten, sonst „Noten“ oder „Aufgaben“. Welches das ist, wählst du unter „Mein Konto“ › „Einstellungen“ › „Fünfter Reiter“; alles andere erreichst du auf „Start“ unter „Schnell erreichbar“. Nach dem Umbau zeigt „Start“ einmal die Karte „So findest du dich zurecht“; „Verstanden“ schließt sie.
 
-Die „Verwaltung“ beginnt mit der Liste „Was möchtest du tun?“: oben „Ausweis prüfen“, darunter „Zu erledigen“ mit Anzahl (Datenänderungen, Fotos und Termine, die auf dich warten) und die Bereiche, für die du Rechte hast (Aufgaben verteilen, Mitglieder, Termine, Kassenbuch, Rechnungen, Jubiläen und Geburtstage). Mit dem Pfeil oben links oder der Zurück-Taste kommst du wieder zu dieser Liste.
+„Start“ zeigt deinen nächsten Termin mit „Zusagen“ und „Absagen“, darunter was auf dich wartet (etwa Termine ohne Rückmeldung, neue Mitteilungen, offene Rechnungen) und die Kacheln, die dein Verein auf der Startseite zeigt. „Termine“ ordnet die Termine nach Monaten; der Schalter „ohne Rückmeldung“ zeigt nur, was noch eine Antwort braucht. „Neues“ fasst Mitteilungen, Pinnwand und Umfragen zusammen; oben wechselst du zwischen ihnen.
+
+Unter „Ich“ steht oben dein Mitgliedsausweis (auch ohne Netz, Tippen zeigt ihn groß), darunter wie in [Mein Bereich](/mein-bereich) vier Gruppen: „Geld“ (Rechnungen, Lastschriftmandat, Beitragsnachweise, Bestellungen, Auslagen), „Mitmachen“ (etwa Helferdienste, Training, Meine Ergebnisse, Abwesenheit, Belegung), „Verein“ (Versammlungen mit Tagesordnung, Anträgen und Protokollen, Dokumente) und „Meine Daten“ (Anschrift, Telefon, Foto, Kündigung).
+
+Es erscheinen nur Punkte, die dein Verein eingeschaltet hat. Rechnungen und Protokolle öffnet die App nur online und speichert sie nicht. Drückst du lange auf das App-Symbol, öffnet „Ausweis zeigen“ den Ausweis direkt. „Mein Konto“ öffnest du über das Symbol oben rechts; dort stellst du unter „Darstellung“ ein, ob die App hell, dunkel oder wie das Gerät erscheint. Die Zurück-Taste führt aus jedem Bereich zuerst zu „Start“; erst dort schließt sie die App.
+
+Die „Verwaltung“ beginnt als Arbeitsplatz: oben „Ausweis prüfen“ und „Neu“ (je nach Rechten Quittung, Buchung, Termin oder Aufgabe), darunter „Zu erledigen“ mit Anzahl (Datenänderungen, Fotos und Termine, die auf dich warten) und die Bereiche, für die du Rechte hast, in den Gruppen des Hauptmenüs im Browser: „Planen“, „Verein“, „Vereinsleben“ und „Verwaltung“. Bei vielen Bereichen schränkt „Bereich suchen“ die Liste ein. Mit dem Pfeil oben links oder der Zurück-Taste kommst du wieder zu dieser Übersicht.
+
+Angefangene Formulare sind geschützt: Zurück oder ein Wechsel des Reiters fragt nach, bevor eine Eingabe verloren geht. Datum und Uhrzeit wählst du über die Auswahl des Geräts.
 
 Mit den passenden Rechten gibt es dort auch „Beitrittsanträge“ (prüfen, zustimmen, annehmen oder ablehnen), „Belegung freigeben“ (offene Anfragen für Schützenhaus, Stand oder Material bestätigen oder ablehnen) und „Versammlung leiten“: Anwesenheit eintragen, am Eingang Ausweise scannen, die Anmeldung per App öffnen und den wechselnden QR-Code auf dem Telefon oder Tablet zeigen, Abstimmungen anlegen, starten, beenden und das Ergebnis übernehmen. Vorbereiten, Einladen und das Protokoll bleiben im Browser.
 
