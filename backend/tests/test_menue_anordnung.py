@@ -109,7 +109,11 @@ def test_rueckgaengig_und_standard(api, orgs, board_a):
     assert resp.json()["layout"] is None
     club.refresh_from_db()
     assert club.menu_layout is None
-    assert len(club.menu_layout_history) == 3
+    # erste Fassung (Standard), nach Rückgängig wieder gespeichert: die zurückgeholte Anordnung
+    assert [h["layout"] and h["layout"]["items"] for h in club.menu_layout_history] == [
+        None,
+        {"dsgvo": "start"},
+    ]
 
 
 def test_verlauf_haelt_fuenf(orgs, board_a):
@@ -135,15 +139,15 @@ def test_fremder_verein_kein_zugriff(api, orgs, board_b):
 
 def test_untereinheit_uebernimmt_anordnung_des_vereins(orgs):
     from core.tenancy import rls_bypass
-    from members.models import Department
     from organizations.models import Organization
 
     club = orgs["a"]
     club.menu_layout = menu_layout.clean(_layout(*STANDARD_IDS, dsgvo="start"))
     club.save(update_fields=["menu_layout"])
     with rls_bypass():
-        zug = Department.objects.create(organization=club, name="Herolde", founding_year=1925)
-        unit = Organization.objects.get(pk=zug.pk)
+        unit = Organization.objects.create(
+            name="Herolde", type="unit", parent=club, organization=club, founding_year=1925
+        )
     assert menu_layout.effective(unit) == club.menu_layout
     assert menu_layout.owner(unit) == club
 
