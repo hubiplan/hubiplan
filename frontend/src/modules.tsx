@@ -30,6 +30,8 @@ export interface AppModule {
   /** Bereich der Bereichsleiste (Konzept Web-Oberfläche: sieben Bereiche) */
   area: AreaId
   label: string
+  /** Ein kurzer Satzteil, was man dort tut (Bereichsübersicht) */
+  text?: string
   /** Bezeichnung je Einheit, z. B. „Züge“ statt „Untereinheiten“ */
   labelFor?: (org: OrgSummary | null, ws?: Workspace) => string
   path: string
@@ -166,6 +168,7 @@ export const modules: AppModule[] = [
     id: 'start',
     area: 'start',
     label: t('Startseite'),
+    text: t('Was ansteht: Aufgaben, Termine und Hinweise auf einen Blick'),
     path: '/',
     icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
     visible: () => true,
@@ -175,6 +178,7 @@ export const modules: AppModule[] = [
     id: 'mein-bereich',
     area: 'start',
     label: t('Mein Bereich'),
+    text: t('Ausweis, Rechnungen und deine eigenen Daten'),
     path: '/mein-bereich',
     icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
     visible: (_org, ws) => !!ws.portal,
@@ -185,6 +189,7 @@ export const modules: AppModule[] = [
     id: 'termine',
     area: 'planung',
     label: t('Termine'),
+    text: t('Kalender mit Rückmeldungen, Anmeldungen und Kalender-Abo'),
     path: '/termine',
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
     visible: (org, ws) =>
@@ -201,6 +206,7 @@ export const modules: AppModule[] = [
     id: 'versammlungen',
     area: 'planung',
     label: t('Versammlungen'),
+    text: t('Einladen, Tagesordnung, Beschlüsse und Protokoll'),
     path: '/versammlungen',
     icon: icon('M4 20h16M6 20v-6h12v6M9 14V9.5M15 14V9.5M12 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5'),
     visible: (org, ws) =>
@@ -215,6 +221,7 @@ export const modules: AppModule[] = [
     id: 'training',
     area: 'planung',
     label: t('Training'),
+    text: t('Übungsabende, Anwesenheit und Auswertung'),
     path: '/training',
     icon: icon('M4 20h16M6 20V9l6-5 6 5v11M10 20v-5h4v5M9.5 11.5l1.5 1.5 3-3'),
     visible: (org, ws) =>
@@ -233,6 +240,7 @@ export const modules: AppModule[] = [
     id: 'helferdienste',
     area: 'planung',
     label: t('Helferdienste'),
+    text: t('Dienstpläne aufstellen und Helfer einteilen'),
     path: '/helferdienste',
     icon: icon(
       'M8 7a3 3 0 1 0 0-.01M16 7a3 3 0 1 0 0-.01M3 20v-2a5 5 0 0 1 10 0v2M11 20v-2a5 5 0 0 1 10 0v2',
@@ -248,6 +256,7 @@ export const modules: AppModule[] = [
     id: 'aufgaben',
     area: 'planung',
     label: t('Aufgaben'),
+    text: t('Aufgaben verteilen, verfolgen und erinnern'),
     path: '/aufgaben',
     icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
     visible: (org, ws) =>
@@ -257,6 +266,7 @@ export const modules: AppModule[] = [
     id: 'fristenkalender',
     area: 'planung',
     label: t('Fristenkalender'),
+    text: t('Pflichten und Fristen des Vereins im Blick behalten'),
     path: '/fristenkalender',
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M12 13v3.5M12 18.4v.1'),
     visible: (org) =>
@@ -269,6 +279,7 @@ export const modules: AppModule[] = [
     id: 'mitglieder',
     area: 'mitglieder',
     label: t('Mitglieder'),
+    text: t('Mitgliederliste, Anträge, Ämter, Ehrungen und Auswertungen'),
     path: '/mitglieder',
     icon: icon(
       'M9 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M15.5 5.2a3 3 0 1 1 1.2 5.6M17.5 14.2c2.4.5 4 2.6 4 5.8',
@@ -281,6 +292,7 @@ export const modules: AppModule[] = [
     id: 'untereinheiten',
     area: 'mitglieder',
     label: t('Untereinheiten'),
+    text: t('Gliederung des Vereins mit Leitung und Mitgliedern'),
     labelFor: (org) =>
       org?.department_terms?.pl || org?.department_label_plural || t('Untereinheiten'),
     path: '/untereinheiten',
@@ -293,6 +305,7 @@ export const modules: AppModule[] = [
     id: 'abteilung',
     area: 'mitglieder',
     label: t('Abteilung'),
+    text: t('Mitglieder und Angaben deiner Untereinheit'),
     path: '/abteilung',
     icon: icon(
       'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
@@ -309,6 +322,7 @@ export const modules: AppModule[] = [
     id: 'wettbewerbe',
     area: 'vereinsleben',
     label: t('Wettbewerbe'),
+    text: t('Wettbewerbe, Ergebnisse, Pokale, Titel und Urkunden'),
     path: '/wettbewerbe',
     icon: icon(
       'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4v3h-4z',
@@ -332,6 +346,7 @@ export const modules: AppModule[] = [
     id: 'meldungen',
     area: 'vereinsleben',
     label: t('Meldungen'),
+    text: t('Teilnehmer zu Ausschreibungen melden'),
     path: '/meldungen',
     icon: icon('M5 4h10l4 4v12H5zM15 4v4h4M8.5 12.5l2 2 4-4.5M8.5 17.5h7'),
     // Eigener Menüpunkt nur ohne Wettbewerbe; sonst Unterpunkt dort (VW-33)
@@ -341,6 +356,7 @@ export const modules: AppModule[] = [
     id: 'musik',
     area: 'vereinsleben',
     label: t('Musik'),
+    text: t('Auftritte, Besetzung, Proben und Verfügbarkeiten'),
     path: '/musik',
     icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
     visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
@@ -350,6 +366,7 @@ export const modules: AppModule[] = [
     id: 'noten',
     area: 'vereinsleben',
     label: t('Noten'),
+    text: t('Notenarchiv mit Stücken, Stimmen und Unterlagen'),
     path: '/noten',
     // Notenblatt, damit sich Noten von Musik unterscheiden (Menüprüfung 2, N-13)
     icon: icon('M6 3h9l3 3v15H6zM15 3v3h3M11 17v-7l4-1M11 17a2 2 0 1 1-2-2'),
@@ -359,6 +376,7 @@ export const modules: AppModule[] = [
     id: 'chronik',
     area: 'vereinsleben',
     label: t('Chronik'),
+    text: t('Geschichte des Vereins festhalten und zeigen'),
     path: '/chronik',
     icon: icon('M4 5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3zM18 8h2v12M8 9h6M8 13h6'),
     visible: (org) =>
@@ -371,6 +389,7 @@ export const modules: AppModule[] = [
     id: 'rundschreiben',
     area: 'kommunikation',
     label: t('Rundschreiben'),
+    text: t('E-Mails und Briefe an Mitglieder und Gruppen'),
     path: '/rundschreiben',
     icon: icon('M3 6h18v12H3zM3 6l9 7 9-7'),
     visible: (org, ws) => circularsVisible(org, ws.dept),
@@ -380,6 +399,7 @@ export const modules: AppModule[] = [
     id: 'umfragen',
     area: 'kommunikation',
     label: t('Umfragen'),
+    text: t('Termine finden, Meinungen einholen, abstimmen lassen'),
     path: '/umfragen',
     icon: icon('M5 4h14v16H5zM8.5 8.5h7M8.5 12h7M8.5 15.5h4'),
     visible: (org, ws) =>
@@ -394,6 +414,7 @@ export const modules: AppModule[] = [
     id: 'pinnwand',
     area: 'kommunikation',
     label: t('Pinnwand'),
+    text: t('Kurze Neuigkeiten für die Mitglieder'),
     path: '/pinnwand',
     icon: icon('M4 4h16v13H4zM8 21l4-4 4 4M8 8.5h8M8 12h5'),
     visible: (org, ws) =>
@@ -412,6 +433,7 @@ export const modules: AppModule[] = [
     id: 'dokumente',
     area: 'kommunikation',
     label: t('Dokumente'),
+    text: t('Ablage mit Ordnern und Freigaben'),
     path: '/dokumente',
     icon: icon('M6 3h8.5L19 7.5V21H6zM14.5 3v4.5H19M9 12h7M9 15.5h7M9 19h4'),
     visible: (org, ws) =>
@@ -427,6 +449,7 @@ export const modules: AppModule[] = [
     id: 'webseite',
     area: 'kommunikation',
     label: t('Webseite'),
+    text: t('Inhalte, Gestaltung und Betrieb der Vereinswebseite'),
     path: '/webseite',
     icon: icon('M3 5h18v14H3zM3 9h18M6 7h.01M8.5 7h.01M7 13h6M7 16h10'),
     visible: (org) =>
@@ -443,6 +466,7 @@ export const modules: AppModule[] = [
     id: 'auslagen',
     area: 'finanzen',
     label: t('Auslagen'),
+    text: t('Auslagen der Untereinheit sachlich bestätigen'),
     path: '/auslagen',
     icon: icon('M4 4h12l4 4v12H4zM8 12h8M8 16h5M12 6v4'),
     visible: (org, ws) =>
@@ -452,6 +476,7 @@ export const modules: AppModule[] = [
     id: 'finanzen',
     area: 'finanzen',
     label: t('Finanzen'),
+    text: t('Beiträge, Rechnungen, Zahlungen, Kasse und Abschluss'),
     path: '/finanzen',
     icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4'),
     visible: (org) => financeSections(financeAccess(org)).length > 0,
@@ -463,6 +488,7 @@ export const modules: AppModule[] = [
     id: 'geschaeftspartner',
     area: 'finanzen',
     label: t('Geschäftspartner'),
+    text: t('Lieferanten, Kunden, Sponsoren und Behörden'),
     path: '/geschaeftspartner',
     icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
     visible: (org) => partnersVisible(org),
@@ -472,6 +498,7 @@ export const modules: AppModule[] = [
     id: 'dsgvo',
     area: 'verein',
     label: t('DSGVO'),
+    text: t('Verzeichnis, Auftragsverarbeiter und Datenpannen'),
     path: '/dsgvo',
     icon: icon('M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9.5 12l2 2 3.5-4'),
     visible: (org) =>
@@ -484,6 +511,7 @@ export const modules: AppModule[] = [
     id: 'material',
     area: 'verein',
     label: t('Material & Räume'),
+    text: t('Bestand, Ausgabe, Räume und Belegung'),
     labelFor: (org, ws) => {
       const s = stockAccess(org, ws ?? NO_WS)
       if (s.material && s.facility) return t('Material & Räume')
@@ -520,6 +548,7 @@ export const modules: AppModule[] = [
     id: 'bestellungen',
     area: 'vereinsleben',
     label: t('Bestellungen'),
+    text: t('Sammelbestellungen für Kleidung und mehr'),
     path: '/bestellungen',
     icon: icon('M6 7h12l-1 13H7zM9 7a3 3 0 0 1 6 0'),
     visible: (org) =>
@@ -532,6 +561,7 @@ export const modules: AppModule[] = [
     id: 'einstellungen',
     area: 'verein',
     label: t('Einstellungen'),
+    text: t('Stammdaten, Erscheinungsbild, Rollen und Module'),
     path: '/einstellungen',
     icon: icon(
       'M4 7h8M16 7h4M4 17h4M12 17h8M14 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4M10 15a2 2 0 1 1 0 4 2 2 0 0 1 0-4',
@@ -546,6 +576,7 @@ export const modules: AppModule[] = [
     id: 'plattform',
     area: 'verein',
     label: t('Plattform'),
+    text: t('Organisationen, Betrieb und Version der Instanz'),
     path: '/plattform',
     icon: icon('M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5M9 11h.01M15 11h.01'),
     visible: (org) => !!org && org.permissions.includes(PERM.platformManage),

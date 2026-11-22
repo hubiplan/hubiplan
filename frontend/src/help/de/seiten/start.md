@@ -7,6 +7,8 @@ stichworte:
     Schnellsuche,
     Bereichsleiste,
     Bereichsmenü,
+    Mein Verein,
+    Sicht,
     Neu,
     Suchen,
     Aufgaben,
@@ -25,7 +27,11 @@ Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anor
 
 ## Bereiche und Menü
 
-Links steht die Bereichsleiste in der Farbe deines Vereins mit bis zu sieben Bereichen: **Start**, **Mitglieder**, **Planung**, **Kommunikation**, **Vereinsleben**, **Finanzen** und **Verein**. Du siehst nur die Bereiche, in denen du etwas darfst. Ein Klick öffnet den Bereich; daneben zeigt das helle Bereichsmenü nur die Seiten dieses Bereichs, etwa unter Planung Termine, Versammlungen, Helferdienste und Aufgaben. Mit **Menü** unten in der Bereichsleiste klappst du das Bereichsmenü ein, wenn eine Liste mehr Platz braucht, und wieder aus; **Hilfe** steht darunter. Am Handy öffnet „Mehr“ das ganze Menü, nach Bereichen gegliedert.
+Links steht die Bereichsleiste in der Farbe deines Vereins mit bis zu sieben Bereichen: **Start**, **Mitglieder**, **Planung**, **Kommunikation**, **Vereinsleben**, **Finanzen** und **Verein**. Du siehst nur die Bereiche, in denen du etwas darfst. Ein Klick öffnet den Bereich; daneben zeigt das helle Bereichsmenü nur die Seiten dieses Bereichs, etwa unter Planung Termine, Versammlungen, Helferdienste und Aufgaben. Mit **Menü** unten in der Bereichsleiste klappst du das Bereichsmenü ein, wenn eine Liste mehr Platz braucht, und wieder aus; **Hilfe** steht darunter.
+
+Der Name des Bereichs über dem Bereichsmenü öffnet die Bereichsübersicht: alle Seiten des Bereichs mit einem kurzen Hinweis, was man dort tut, und dem, was dort zu erledigen ist.
+
+Am Handy öffnet „Mehr“ das ganze Menü, nach Bereichen gegliedert.
 
 **Neu** oben in der Kopfzeile legt von jeder Seite aus etwas an, je nach deinen Rechten etwa einen Termin, ein Mitglied, eine Buchung oder ein Rundschreiben. Es sind dieselben Aktionen wie bei den Schnellaktionen der Startseite.
 
@@ -43,7 +49,7 @@ Schaltflächen haben eine eigene, deckende Hintergrundfläche. Das gilt auch fü
 
 Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen, überfällige Rechnungen, offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular, eigene Rundschreiben-Entwürfe, die seit einer Woche liegen, Einladungen zu Versammlungen ab zwei Wochen vor der Einladungsfrist, eingegangene Anträge und offene Protokolle, offene Plätze in Helferdiensten der nächsten zwei Wochen, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen zur Prüfung, Rechnungsentwürfe, fällige Mahnungen und Lastschriften, abgelaufene Einladungen von Konten, Buchungen ohne Beleg im laufenden Geschäftsjahr, Bankkonten, deren Kontoauszug für den Vormonat ab dem 5. noch fehlt, und fehlende Pflichtpunkte der [Einrichtung](/einstellungen/einrichtung); jeder Eintrag erscheint nur mit dem passenden Recht.
 
-Finanzen › Übersicht zeigt dieselben Einträge, soweit sie die Finanzen betreffen. Die Anzahl steht direkt bei der Überschrift. **Neue Aufgabe** am unteren Kachelrand öffnet den Aufgabendialog. Daneben führt **Alle Aufgaben** zur Übersicht. Jede Zeile trennt Art, Titel und weitere Angaben; fällige Aufgaben zeigen zusätzlich einen Fristhinweis. Über das Häkchen erledigst du eine Aufgabe, sofern du dazu berechtigt bist. Der Titel führt zu den Einzelheiten.
+Das Zeichen mit dem Häkchen oben in der Kopfzeile zeigt dieselbe Zahl auf jeder Seite; ein Klick klappt die ersten Einträge auf. Finanzen › Übersicht zeigt dieselben Einträge, soweit sie die Finanzen betreffen. Die Anzahl steht direkt bei der Überschrift. **Neue Aufgabe** am unteren Kachelrand öffnet den Aufgabendialog. Daneben führt **Alle Aufgaben** zur Übersicht. Jede Zeile trennt Art, Titel und weitere Angaben; fällige Aufgaben zeigen zusätzlich einen Fristhinweis. Über das Häkchen erledigst du eine Aufgabe, sofern du dazu berechtigt bist. Der Titel führt zu den Einzelheiten.
 
 ## Schnellaktionen
 
@@ -72,6 +78,8 @@ Ein Block ohne Inhalt, etwa Geburtstage, wenn in den nächsten 30 Tagen keiner i
 ![Startseite des Vorstands mit Zu erledigen, Schnellaktionen, Jubiläen und Hinweisen](bild:startseite-vorstand)
 
 ## Als Mitglied
+
+Als Mitglied siehst du links vier Bereiche wie in der App: **Start**, **Termine**, **Neues** mit Pinnwand und Mitteilungen und **Ich** mit Ausweis, Rechnungen, deinen Daten und allem Weiteren aus Mein Bereich. Arbeitest du auch im Verein mit, wechselst du oben zwischen **Mein Verein** und **Verwaltung**; am Handy steht der Schalter oben im Menü.
 
 Als Mitglied steht der nächste Termin ganz oben, auch am Handy. Ist eine Rückmeldung möglich, sagst du dort direkt mit **Zusage** oder **Absage** zu oder ab; darunter folgen die nächsten Termine. Unter **Mein Bereich** stehen höchstens vier Kacheln, **Ausweis zeigen** zuerst; **Alles in Mein Bereich** führt zu den übrigen.
 

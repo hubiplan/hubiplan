@@ -92,6 +92,7 @@ const MaterialsPage = lazyPage<{ kind?: 'material' | 'facility' }>(
 const BookingsPage = lazyPage(() => import('./pages/bookings/BookingsPage.tsx'), 'BookingsPage')
 const MeetingsPage = lazyPage(() => import('./pages/meetings/MeetingsPage.tsx'), 'MeetingsPage')
 const ChronikPage = lazyPage(() => import('./pages/chronik/ChronikPage.tsx'), 'ChronikPage')
+const AreaOverviewPage = lazyPage(() => import('./pages/AreaOverviewPage.tsx'), 'AreaOverviewPage')
 const PartnersPage = lazyPage(() => import('./pages/partners/PartnersPage.tsx'), 'PartnersPage')
 const ScoresOnlyPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'ScoresOnlyPage')
 const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'HelpersPage')
@@ -441,6 +442,7 @@ export default function App() {
           <Route path="belegung" element={<BookingsPage />} />
           <Route path="versammlungen" element={<MeetingsPage />} />
           <Route path="chronik" element={<ChronikPage />} />
+          <Route path="bereich/:area" element={<AreaOverviewPage />} />
           <Route
             path="geschaeftspartner"
             element={
