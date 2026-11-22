@@ -67,6 +67,10 @@ Schützenverein, Musikverein oder Sportverein.
   mit eigenem Zugang, Rechnungsanschrift, Beitrag nach Größe, Firmenlastschrift (SEPA B2B)
 - Zusatzfelder (auch Jahreszeiträume), Mitgliederfotos mit Einwilligung
 - Ehrungen, Mitgliedsdauer, Jubiläen und Geburtstage, Mitgliederentwicklung
+- Glückwünsche zu Geburtstag und Vereinsjubiläum per App, E-Mail oder Brief, mit Entwurf
+  einige Tage vorher und Widerspruch im Mitgliederbereich
+- Stichtagsstatistik nach Altersgruppe, Geschlecht, Wohnort und Abteilung (auch mit den
+  Altersgruppen des Sportbunds) als PDF, Excel und CSV für Verband und Zuschussanträge
 - Würden (z. B. Königinnen und Könige) mit Chronik und Excel-Import, Ämter mit Chronik,
   Vereinschronik als Zeitleiste
 - Änderungsmeldungen der Mitglieder, die der Vorstand freigibt
@@ -87,20 +91,26 @@ Schützenverein, Musikverein oder Sportverein.
   je Einheit; eine Person kann mehrere Rollen haben ([docs/berechtigungen.md](docs/berechtigungen.md))
 - „Ansicht als Rolle“: HUBIplan nur lesend so ansehen, wie eine Rolle es sieht, nie mit mehr
   als den eigenen Rechten ([docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md))
-- Anmeldung an der Nextcloud des Vereins mit dem HUBIplan-Konto (OpenID Connect,
-  [docs/nextcloud.md](docs/nextcloud.md))
+- Nextcloud des Vereins: Anmeldung mit dem HUBIplan-Konto (OpenID Connect), Gruppen laufend
+  mit Rollen, Ämtern und Untereinheiten abgeglichen, Termine in Kalendern der Nextcloud
+  (CalDAV), Dateien mit Frist je Art ablegen und übernehmen, Videoraum (Talk) am Termin
+  ([docs/nextcloud.md](docs/nextcloud.md))
 - „Mein Bereich“ für Mitglieder, Arbeitsbereich für Untereinheiten, Zugänge für Kassierer
   und Kassenprüfer; „Zu erledigen“ sammelt offene Punkte aus allen Bereichen; Konten lassen
   sich selbst löschen
 - Startseite je Konto selbst zusammenstellen (Blöcke ziehen, Größe wählen, ausblenden), frei
-  gewählte Schnellaktionen; „Einrichtung (Übersicht)“ zeigt den Stand aller Einrichtungsseiten;
+  gewählte Schnellaktionen; Kacheln erscheinen bei Anlass (etwa Konto im Minus, laufende
+  Umfrage) oder wahlweise immer oder nie, auch im Mitgliederbereich und in den Apps
+  ([docs/startseite-kacheln.md](docs/startseite-kacheln.md)); „Einrichtung (Übersicht)“ zeigt den Stand aller Einrichtungsseiten;
   Schnellsuche im Kopf (Strg+K) findet Mitglieder, Seiten und Termine
 
 **Vereinsleben**
 - Kalender für Dachverband, Verein und Untereinheiten mit Serienterminen, Anhängen und
   Sichtbarkeit je Termin (auch „nur Vorstand“, mit eigenem Kalender-Abo für den Vorstand);
   gespeicherte Orte mit Anfahrt und Routenlink; fremde Kalender (Vereinsplaner, iCal)
-  übernehmen ([docs/fremde-kalender.md](docs/fremde-kalender.md))
+  übernehmen ([docs/fremde-kalender.md](docs/fremde-kalender.md)); Termine aus dem
+  Mailprogramm: Lädt jemand einen Verteiler wie `vorstand@…` ein, legt HUBIplan nach
+  Bestätigung den Termin an; Zu- und Absagen gehen auch aus dem Mailprogramm
 - Zu- und Absagen (auf Wunsch auch „Vielleicht“) mit Anmeldeschluss, Höchstzahl und
   Begleitpersonen, Teilnehmerlisten; Einladung, Änderung, Erinnerung und Rundschreiben zum
   Termin per E-Mail mit Rückmeldelink ohne Anmeldung, Jahresprogramm als PDF, Kalender-Abo (iCal)
@@ -111,6 +121,12 @@ Schützenverein, Musikverein oder Sportverein.
   des Dachverbands; vor Ort Eintrittskarten mit QR-Code, Einlass und Abendkasse (auch über
   Scan-Links für Helfer und in den Apps), Namensschilder und Teilnahmebescheinigungen.
   Kostenlose Veranstaltungen gehen genauso
+- Training und Anwesenheit: abhaken oder per QR-Code selbst einchecken, Auswertung je
+  Mitglied; mit Schießsport Schießbuch, Stand nach § 14 WaffG und Bestätigung der
+  Schießtermine als PDF ([docs/training.md](docs/training.md))
+- Pinnwand für kurze Neuigkeiten mit Fotos im Mitgliederbereich und in den Apps (kein Chat)
+- Sammelbestellungen (Vereinskleidung, Festschrift …) mit Größen, Frist und Höchstmengen,
+  Summen je Artikel als Excel, Preis und Rechnung freiwillig
 - Aufgaben mit Fristen, Serien, Anhängen und Freigaben über Ebenen
   ([docs/aufgaben.md](docs/aufgaben.md))
 - Versammlungen und Sitzungen: Einladung mit Tagesordnung, Anträge, Anwesenheit, Protokoll,
@@ -121,7 +137,8 @@ Schützenverein, Musikverein oder Sportverein.
   mit Übernahme der Zusage in den Termin; anonyme Antworten werden gemischt, Ergebnisse auf
   Wunsch erst nach dem Schließen ([docs/umfragen.md](docs/umfragen.md))
 - Helferdienste: Schichtpläne mit Selbsteintragung, Kontingenten für Untereinheiten und
-  Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md))
+  Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md)); Arbeitsstunden
+  mit Ersatzbeitrag je fehlender Stunde im Beitragslauf ([docs/arbeitsstunden.md](docs/arbeitsstunden.md))
 - Fristenkalender für Vereinspflichten (Freistellungsbescheid, Kassenprüfung,
   Transparenzregister …) mit Erinnerung an das zuständige Amt, Verlauf und der Aufgabe für das
   Registergericht nach einer Vorstandswahl ([docs/fristenkalender.md](docs/fristenkalender.md))
@@ -171,7 +188,9 @@ Schützenverein, Musikverein oder Sportverein.
 **Kasse, Steuern und Gemeinnützigkeit**
 - Kasse mit Konten, Kategorien (mit Vorlagen), Splitbuchungen, Belegen, Projekten und eigenem
   Geschäftsjahr; Kontoauszüge (CAMT.053) werden eingelesen und offenen Posten zugeordnet
-  ([docs/kontoauszug.md](docs/kontoauszug.md))
+  ([docs/kontoauszug.md](docs/kontoauszug.md)); auf Wunsch holt HUBIplan die Umsätze über
+  FinTS direkt bei der Bank, die PIN wird nicht gespeichert
+  ([docs/bankanbindung.md](docs/bankanbindung.md))
 - Auslagen erstatten: Mitglieder melden Ausgaben mit Belegfoto (auch in der App), die Kasse
   prüft, gibt frei (Vier-Augen-Regel) und zahlt bar, per GiroCode oder als Sammelüberweisung
   aus; Verzicht als Aufwandsspende ([docs/auslagen.md](docs/auslagen.md))
@@ -213,7 +232,9 @@ Schützenverein, Musikverein oder Sportverein.
 - Schnittstelle für die Apps ([Android](https://github.com/hubiplan/hubiplan-android),
   [iOS](https://github.com/hubiplan/hubiplan-ios)): Verbinden per QR-Code, Geräteschlüssel
   je Gerät, Push über Web-Push/UnifiedPush und als verschlüsseltes Wecksignal über Apple
-  (APNs); Mindestversion der App je Plattform ([docs/app.md](docs/app.md))
+  (APNs); Mindestversion der App je Plattform ([docs/app.md](docs/app.md)); gemeinsame
+  Gestaltung „Frisch mobil“ beider Apps mit Tablet- und iPad-Ansichten
+  ([docs/app-gestaltung.md](docs/app-gestaltung.md))
 - KI-Schnittstelle (Model Context Protocol): KI-Assistenten durchsuchen die Hilfe ohne
   Anmeldung; mit Anmeldung und Zusatzrecht lesen sie die Webseite der Einheit und bearbeiten
   Texte, Startseite, Menü, Gestaltung und Chronik als Entwurf, ändern auf Nachfrage
@@ -226,7 +247,8 @@ Schützenverein, Musikverein oder Sportverein.
   benanntem Empfänger und bestätigter Rechtsgrundlage, mit Abrufprotokoll; Benachrichtigungen
   bei Änderungen (Webhooks). Schreiben nur mit eigens angekreuzten Bereichen: Termine,
   Wettbewerbsergebnisse, Anwesenheit, Rundschreiben als Entwurf, Änderungen an Mitgliedern nur
-  als Vorschlag; dazu die Prüfung von Mitgliedsausweisen ([docs/api.md](docs/api.md))
+  als Vorschlag; dazu die Prüfung von Mitgliedsausweisen. Jede Instanz beschreibt die
+  Aufrufe lesbar unter `/api/partner/v1/docs/` ([docs/api.md](docs/api.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,
@@ -239,15 +261,20 @@ Schützenverein, Musikverein oder Sportverein.
 - Auskunft nach Art. 15 DSGVO mit allen Daten einer Person und ihres Kontos, Widerspruch gegen
   die Nennung des Namens in allen öffentlichen Ausgaben, Foto-Einwilligung für Minderjährige;
   verwaiste Konten werden nach 90 Tagen bereinigt
+- Datenschutz-Werkzeuge: Verzeichnis der Verarbeitungstätigkeiten (Art. 30 DSGVO) aus den
+  eingeschalteten Modulen, Auftragsverarbeiter aus den Geschäftspartnern, Datenpannen mit
+  72-Stunden-Frist
 
 **Sprache, Hilfe und Lernhilfen**
 - Oberfläche, Hinweis-Mails und Push auf Deutsch oder Englisch, je Benutzer wählbar, sobald
   der Betreiber Englisch freischaltet (`HUBIPLAN_LANGUAGES=de,en`,
   [docs/uebersetzung.md](docs/uebersetzung.md))
-- Oberfläche im Design „Frisch“: sachliche Formen, Seitenleiste in der Vereinsfarbe, Schrift
-  Inter (liegt in der Anwendung, keine fremden Server); alle Seiten auch im Dunkelmodus;
-  Seitenleiste in benannten Gruppen (Alltag, Planen, Verein, Vereinsleben, Kommunikation,
-  Verwaltung)
+- Oberfläche im Design „Frisch“ mit Schrift Inter (liegt in der Anwendung, keine fremden
+  Server), alle Seiten auch im Dunkelmodus: links eine Leiste mit sieben Bereichen (Start,
+  Mitglieder, Planung, Kommunikation, Vereinsleben, Finanzen, Verein), daneben das einklappbare
+  Bereichsmenü; oben Schnellsuche, „Neu“ und „Zu erledigen“; wer auch Mitglied ist, wechselt
+  zwischen den Sichten „Mein Verein“ und „Verwaltung“. Dichte „Kompakt“, stehende
+  Tabellenköpfe, Filterchips und gemerkte Ansichten für lange Listen
 - Hilfe-Seite mit Suche (auch nach Synonymen), Anleitungen nach Anlass mit Bildschirmfotos,
   „Hilfe zu dieser Seite“ (Taste `?`) und Rückmeldung „Hat das geholfen?“
   ([docs/hilfe.md](docs/hilfe.md))
@@ -285,6 +312,7 @@ Browser ──HTTPS──> Caddy ──> Oberfläche (React, statisch)
                         └──> Backend (Django REST) ──> PostgreSQL
                                      └── Celery-Worker und Zeitplan ──> Redis
 Vereinswebseite ──> /api/public/site/v1/      Apps (Android, iOS) ──> /api/app/v1/
+Andere Programme ──> /api/partner/v1/          KI-Assistenten ──> MCP
 ```
 
 Die Oberfläche spricht ausschließlich über die REST-API mit dem Backend.
@@ -456,7 +484,13 @@ backend/
   feeproofs/       Ermäßigung mit Nachweis (Beitragsnachweise)
   finance/         Kasse, Quittungen, Kassenprüfung, Steuern, Rücklagen, Anlagen, Zuwendungen, GoBD-Export
   expenses/        Auslagen erstatten
-  events/          Termine, Zu- und Absagen, Kalender-Abos
+  events/          Termine, Zu- und Absagen, Kalender-Abos, Termine aus dem Mailprogramm
+  training/        Training und Anwesenheit, Schießbuch
+  pinboard/        Pinnwand
+  orders/          Sammelbestellungen
+  greetings/       Glückwünsche zu Geburtstag und Jubiläum
+  hometiles/       Kacheln der Startseite
+  privacy/         Datenschutz-Werkzeuge (Verarbeitungsverzeichnis, Auftragsverarbeiter, Datenpannen)
   registrations/   Anmeldungen mit Teilnahmegebühr, Eintrittskarten, Einlass
   places/          gespeicherte Orte mit Anfahrt
   competitions/    Wettbewerbe, Standmodus, Scheiben und Fotoerkennung, Urkunden
@@ -514,6 +548,8 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/verbund.md](docs/verbund.md) | Verbund mit anderen Instanzen |
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die Apps (Android, iOS), Push |
+| [docs/app-gestaltung.md](docs/app-gestaltung.md) | Gestaltung der Apps („Frisch mobil“) |
+| [docs/startseite-kacheln.md](docs/startseite-kacheln.md) | Kacheln der Startseite bei Anlass |
 | [docs/mcp.md](docs/mcp.md) | KI-Schnittstelle (Model Context Protocol) |
 | [docs/api.md](docs/api.md) | API für andere Programme (Schlüssel, Bereiche, OpenAPI), offene Daten der Webseite |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
@@ -523,6 +559,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
 | [docs/haushaltsplan.md](docs/haushaltsplan.md) | Haushaltsplan: Plan und Ist |
 | [docs/auslagen.md](docs/auslagen.md) | Auslagen erstatten |
+| [docs/arbeitsstunden.md](docs/arbeitsstunden.md) | Arbeitsstunden mit Ersatzbeitrag |
 | [docs/beitragsnachweise.md](docs/beitragsnachweise.md) | Ermäßigung mit Nachweis (Beitragsnachweise) |
 | [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |
@@ -533,6 +570,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/versammlungen.md](docs/versammlungen.md) | Versammlungen, Protokolle, Beschlussbuch |
 | [docs/umfragen.md](docs/umfragen.md) | Umfragen und Meinungsbilder |
 | [docs/helferdienste.md](docs/helferdienste.md) | Helferdienste und Schichtpläne |
+| [docs/training.md](docs/training.md) | Training und Anwesenheit, Schießnachweis |
 | [docs/fristenkalender.md](docs/fristenkalender.md) | Fristenkalender für Vereinspflichten |
 | [docs/qualifikationen.md](docs/qualifikationen.md) | Qualifikationen mit Ablaufdatum |
 | [docs/material.md](docs/material.md), [docs/konzept-materialverwaltung.md](docs/konzept-materialverwaltung.md) | Material, Räume, Anlagen und Belegung |
