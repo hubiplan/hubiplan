@@ -7841,11 +7841,24 @@ html {
 }
 
 /* W5: Die Kopfzeile langer Tabellen bleibt unter der Kopfzeile der Seite stehen, damit die
-   Spalten beim Rollen benannt bleiben. In Tabellen, die für sich seitlich rollen, greift das
-   nicht; dort bleibt alles wie zuvor. Dialoge und Kacheln der Startseite rollen für sich und
-   sind ausgenommen. */
+   Spalten beim Rollen benannt bleiben. Dialoge und Kacheln der Startseite rollen für sich und
+   sind ausgenommen, ebenso Tabellen in einem Behälter, der selbst rollt (.table-scroll,
+   .table-wrap, Seitenblatt): Dort bezöge sich der Abstand nach oben auf den Behälter, und der
+   Tabellenkopf läge über der ersten Zeile (Kassenbuch, 22.11.). */
 @media not all and (max-width: 50rem) {
-  .content .table:not(.modal *, .home-grid *, .tile *) > thead > tr > th {
+  .content
+    .table:not(
+      .modal *,
+      .home-grid *,
+      .tile *,
+      .table-scroll *,
+      .table-wrap *,
+      .side-sheet-body *,
+      .stand-live *
+    )
+    > thead
+    > tr
+    > th {
     position: sticky;
     top: var(--topbar-height, 3.5rem);
     z-index: 2;
