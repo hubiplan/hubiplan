@@ -103,7 +103,7 @@
   --sidebar-active-bg: rgba(255, 255, 255, 0.12);
   --sidebar-width: 15rem;
   /* Rahmen der Web-Oberfläche: Bereichsleiste in Vereinsfarbe, daneben das helle Bereichsmenü */
-  --rail-width: 6rem;
+  --rail-width: 6.75rem;
   --area-menu-width: 13.75rem;
 
   /* Rundung: sachlich und klar (Ralf 14.11.: kein Apple-Look), Knöpfe und Felder 6 px,
