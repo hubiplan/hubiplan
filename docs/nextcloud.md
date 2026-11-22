@@ -1,7 +1,8 @@
 # Anmeldung an der Nextcloud mit dem HUBIplan-Konto
 
 App `backend/oidc`, Seite Einstellungen › Nextcloud (`frontend/src/pages/settings/NextcloudPage.tsx`),
-Anmeldeseite `/oidc/anmelden` (`frontend/src/pages/NextcloudLoginPage.tsx`).
+Anmeldeseite `/oidc/anmelden` (`frontend/src/pages/NextcloudLoginPage.tsx`), Abmeldeseite
+`/oidc/abmelden` (`frontend/src/pages/NextcloudLogoutPage.tsx`).
 Konzept: `konzepte/nextcloud-anbindung.md` im Projektordner (Schritt N6).
 
 HUBIplan ist Anmeldedienst nach OpenID Connect. Die Nextcloud eines Vereins (oder
@@ -307,14 +308,26 @@ verhält.
   Passworteingabe in die Nextcloud; die Anmeldeseite leitet gleich weiter.
 - **`prompt=none`:** Ohne HUBIplan-Sitzung antwortet HUBIplan mit `login_required`, ohne
   Seite.
-- **`prompt=login` und `max_age`:** wertet HUBIplan nicht aus. Eine Nextcloud, die eine
-  frische Anmeldung verlangt, bekommt die bestehende HUBIplan-Sitzung; `auth_time` im
-  ID-Token nennt, wann sie entstanden ist, und die Nextcloud kann danach selbst ablehnen.
-  Wer eine frische Anmeldung erzwingen will, meldet sich bei HUBIplan ab (oder lässt die
-  Sitzung ablaufen). „Nur mit Zwei-Faktor-Anmeldung“ verlangt eine Sitzung mit zweitem
-  Faktor (`amr` mit `mfa`), keine frische.
+- **`prompt=login`, `consent`, `select_account`:** HUBIplan meldet nicht still an, sondern
+  zeigt die Seite mit dem Knopf „Bei der Nextcloud anmelden“ (Antwort 409 `confirm`, nach
+  dem Klick POST mit `confirm=1`). Eine frische Passworteingabe erzwingt das nicht;
+  `auth_time` im ID-Token nennt, wann die HUBIplan-Sitzung entstanden ist, und die
+  Nextcloud kann danach selbst ablehnen. `max_age` wertet HUBIplan nicht aus. „Nur mit
+  Zwei-Faktor-Anmeldung“ verlangt eine Sitzung mit zweitem Faktor (`amr` mit `mfa`), keine
+  frische.
+- **Abmelden in der Nextcloud** (RP-Initiated Logout 1.0): Die Discovery nennt
+  `end_session_endpoint` (`/oidc/abmelden`); `user_oidc` schickt den Browser beim Abmelden
+  dorthin (Systemeinstellung `user_oidc.single_logout`, Standard an) mit `client_id`,
+  `post_logout_redirect_uri` und auf Wunsch `id_token_hint`. HUBIplan merkt sich in der
+  Sitzung, dass man sich von dieser Nextcloud abgemeldet hat. Die nächste Anmeldung dort
+  geht dann erst nach einem Klick, sonst würde die Nextcloud-Anmeldeseite sofort still
+  wieder anmelden. Die Seite fragt, ob man sich auch bei HUBIplan abmelden möchte
+  (Entscheidung Ralf 22.11.2026). Eine neue Anmeldung bei HUBIplan hebt den Vermerk auf.
+  Zurück geht es nur an die Herkunft der eingetragenen Nextcloud, sonst an ihre Adresse.
+  Die Nextcloud liest die Discovery zwischengespeichert; neu eingetragene Abmeldung wirkt
+  dort erst, wenn sie die Discovery neu holt.
 - **Abmelden in HUBIplan:** beendet nur die HUBIplan-Sitzung. Die Nextcloud-Sitzung läuft
-  weiter, bis sie dort endet (kein Single Logout).
+  weiter, bis sie dort endet (kein Back-Channel-Logout).
 - **Sperren** (Konto gesperrt, Rolle oder Amt beendet, Austritt): Die nächste Anmeldung
   scheitert; was mit laufenden Sitzungen geschieht, steht unter „Wie lange eine Anmeldung
   gilt“.
@@ -332,6 +345,8 @@ verhält.
 | `/api/oidc/jwks` | öffentlicher Schlüssel |
 | `/oidc/anmelden` | Anmeldeseite (Authorization Endpoint, Oberfläche) |
 | `/api/oidc/authorize/` | GET: Dienst beschreiben, POST: Code ausstellen (angemeldet, CSRF) |
+| `/oidc/abmelden` | Abmeldeseite (End Session Endpoint, Oberfläche) |
+| `/api/oidc/end-session/` | POST: Abmeldung von der Nextcloud vermerken, Rückleitung prüfen |
 | `/api/oidc/token` | Code einlösen (Server der Nextcloud) |
 | `/api/oidc/userinfo` | Angaben mit Zugriffsschlüssel |
 | `/api/orgs/<id>/nextcloud/` | Einträge der Einheit; `<eintrag>/secret/` erneuert das Geheimnis |

@@ -11110,5 +11110,13 @@
   "Geschrieben wird nur Unkritisches oder ein Vorschlag bzw. Entwurf, den jemand in HUBIplan übernimmt. Nichts wird gelöscht oder versendet. Was der Zugang schreibt, steht im Änderungsprotokoll.": "Only uncritical data is written, or a proposal or draft that someone accepts in HUBIplan. Nothing is deleted or sent. Everything the access writes appears in the change log.",
   "Darf schreiben: {n} schreibende Anfragen, zuletzt {date}": "May write: {n} write requests, last on {date}",
   "Darf schreiben, hat aber noch nichts geschrieben": "May write, but has not written anything yet",
-  "{n} Abrufe je Stunde und Zugang, davon höchstens {w} schreibende": "{n} requests per hour and access, of which at most {w} may write"
+  "{n} Abrufe je Stunde und Zugang, davon höchstens {w} schreibende": "{n} requests per hour and access, of which at most {w} may write",
+  "Du hast dich von „{name}“ abgemeldet. Möchtest du dich wieder anmelden?": "You signed out of “{name}”. Do you want to sign in again?",
+  "Von der Nextcloud abgemeldet": "Signed out of Nextcloud",
+  "Du hast dich von „{name}“ abgemeldet.": "You signed out of “{name}”.",
+  "Bei HUBIplan bist du weiter angemeldet als": "You are still signed in to HUBIplan as",
+  "Die Nextcloud meldet dich erst wieder an, wenn du es dort ausdrücklich bestätigst.": "Nextcloud will only sign you in again once you confirm it there.",
+  "Auch bei HUBIplan abmelden": "Also sign out of HUBIplan",
+  "Bei HUBIplan angemeldet bleiben": "Stay signed in to HUBIplan",
+  "Du bist jetzt auch bei HUBIplan abgemeldet.": "You are now signed out of HUBIplan as well."
 }
