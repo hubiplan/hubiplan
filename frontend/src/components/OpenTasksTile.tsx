@@ -16,6 +16,13 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const { data, error, reload } = useLoad(() => orgApi.openTasks(org.id), [org.id])
   const items = data?.items ?? []
   const [actionError, setActionError] = useState<string | null>(null)
+  // Kurzübersicht nach Art (Web-Oberfläche W10): „3 Mitgliedsanträge“ führt zum ersten Eintrag
+  const groups: { label: string; count: number; link: string }[] = []
+  for (const item of items) {
+    const g = groups.find((x) => x.label === item.kind_label)
+    if (g) g.count += 1
+    else groups.push({ label: item.kind_label, count: 1, link: item.link })
+  }
   return (
     <div className="card tile task-overview tile-wide">
       <div className="task-overview-head">
@@ -25,6 +32,17 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
           {items.length > 0 && <span className="badge">{items.length}</span>}
         </h2>
       </div>
+      {groups.length > 1 && (
+        <ul className="task-summary" aria-label={t('Kurzübersicht')}>
+          {groups.map((g) => (
+            <li key={g.label}>
+              <Link to={g.link}>
+                <strong>{g.count}</strong> {g.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
       {actionError && <p role="alert">{actionError}</p>}
       {error && (
         <LoadError message={t('Was zu erledigen ist, ließ sich nicht laden.')} onRetry={reload} />

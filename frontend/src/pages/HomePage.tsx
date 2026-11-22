@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { useOrg } from '../org/OrgContext.tsx'
@@ -137,6 +138,30 @@ export function HomePage() {
   return <OrgHome org={active} />
 }
 
+/** Datum und Begrüßung über der Startseite (Web-Oberfläche W10, wie „Mein Verein“). */
+function HomeGreeting({ name }: { name?: string }) {
+  const [now] = useState(() => new Date())
+  const hour = now.getHours()
+  const first = name && !name.includes('@') ? name.trim().split(/\s+/)[0] : ''
+  let greeting: string
+  if (hour < 11) greeting = first ? t('Guten Morgen, {name}', { name: first }) : t('Guten Morgen')
+  else if (hour < 18) greeting = first ? t('Guten Tag, {name}', { name: first }) : t('Guten Tag')
+  else greeting = first ? t('Guten Abend, {name}', { name: first }) : t('Guten Abend')
+  return (
+    <div className="home-greeting">
+      <p className="home-date muted small">
+        {new Intl.DateTimeFormat(locale(), {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(now)}
+      </p>
+      <p className="home-greeting-text">{greeting}</p>
+    </div>
+  )
+}
+
 /**
  * Startseite der Verwaltung einer Einheit. Name und Dachverband stehen schon im Kopf; die
  * Überschrift ist nur für Screenreader. Standardreihenfolge für alle Rollen (S-04): Zu erledigen
@@ -167,6 +192,7 @@ function OrgHome({ org }: { org: OrgSummary }) {
       <h1 className="sr-only">{org.name}</h1>
       <HomeBoard
         scope={actionScope.org(org)}
+        intro={<HomeGreeting name={user?.display} />}
         name={org.name}
         onSaved={tiles.reload}
         blocks={(prefs) => {

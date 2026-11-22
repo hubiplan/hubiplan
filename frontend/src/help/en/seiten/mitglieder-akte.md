@@ -13,6 +13,8 @@ Issued equipment is listed under **Membership**. On a phone, choose the section 
 
 ![Member record with header, “At a glance” and tabs](bild:mitgliedsakte)
 
+If you came from the member list, **Previous member** and **Next member** at the top right move through the members of the list page you last saw, without going back to the list.
+
 ## At a glance
 
 At the top, **At a glance** shows up to four tiles: **Member since** (with duration and next jubilee), **Fees** (open invoices and total, marked red when overdue), **Account** (member area, app, two-factor, last sign-in) and **Equipment** (items issued). A tile only appears if you may see the matching tab and there is something to show; clicking it opens the tab.

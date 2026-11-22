@@ -11,6 +11,8 @@ Die Reiter stehen in Arbeitsreihenfolge: **Stammdaten**, **Mitgliedschaft**, **B
 
 ![Mitgliedsakte mit Kopf, „Auf einen Blick“ und Reitern](bild:mitgliedsakte)
 
+Kommst du aus der Mitgliederliste, blätterst du oben rechts mit **Vorheriges Mitglied** und **Nächstes Mitglied** durch die Mitglieder der zuletzt gezeigten Listenseite, ohne zur Liste zurückzugehen.
+
 ## Auf einen Blick
 
 Oben steht **Auf einen Blick** mit bis zu vier Kacheln: **Mitglied seit** (mit Dauer und nächstem Jubiläum), **Beiträge** (offene Rechnungen und Summe, rot abgesetzt bei Überfälligkeit), **Konto** (Mitgliederbereich, App, Zwei-Faktor, letzte Anmeldung) und **Material** (ausgegebene Teile). Eine Kachel erscheint nur, wenn du den zugehörigen Reiter sehen darfst und es etwas zu zeigen gibt; ein Klick öffnet den Reiter.

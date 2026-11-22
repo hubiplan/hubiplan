@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { RecordPager } from '../../components/liste/RecordPager.tsx'
 import { GENDERS, LEGAL_FORMS, isMinor, memberApi, todayIso } from '../../api/members.ts'
 import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
@@ -104,6 +105,12 @@ export function MemberFilePage() {
 
   return (
     <section>
+      <RecordPager
+        list={`mitglieder.${org.id}`}
+        current={data.id}
+        path={(id) => `/mitglieder/${id}`}
+        label={{ prev: t('Vorheriges Mitglied'), next: t('Nächstes Mitglied') }}
+      />
       <MemberHeader org={org} member={data} canEdit={canEdit} tabs={tabs.map((tmx) => tmx.id)} />
       <AtAGlance org={org} member={data} tabs={tabs.map((tmx) => tmx.id)} />
       <nav className="tabs member-tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
