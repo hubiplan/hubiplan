@@ -2,6 +2,7 @@
 
 Die Android-App (Repository `hubiplan-android`) spricht nur mit der HUBIplan-Instanz
 des Mitglieds. Die öffentliche Schnittstellenbeschreibung steht in diesem Dokument.
+Aufbau, Werte und Symbole beider Apps beschreibt [app-gestaltung.md](app-gestaltung.md).
 
 ## Anmelden (Schritt A1)
 
