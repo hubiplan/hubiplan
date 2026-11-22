@@ -1,6 +1,6 @@
 # Backup-Dienst: tägliches verschlüsseltes Backup mit Rücksicherungstest.
 # Gleiche PostgreSQL-Version wie die Datenbank, damit pg_dump passt.
-FROM postgres:18-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+FROM postgres:18-alpine@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
 RUN apk add --no-cache openssl rsync openssh-client age python3 util-linux
 COPY archive-check.py run.sh backup.sh zweitort.sh backup-receipt.sh restore-test.sh verify.sh hmac.sh /usr/local/bin/
 COPY dateifelder.txt /usr/local/share/hubiplan/
