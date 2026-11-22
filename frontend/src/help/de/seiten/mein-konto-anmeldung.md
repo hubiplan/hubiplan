@@ -28,6 +28,14 @@ Gibt jemand mehrmals hintereinander ein falsches Passwort für dein Konto ein, i
 Passwort einige Minuten gesperrt, aber nur auf fremden Geräten. Auf Geräten, mit denen du dich schon
 einmal angemeldet hast, und mit einem Passkey kommst du weiter hinein. Du bekommst dazu eine Mail.
 
+Meldet sich jemand mit deinem Zugang auf einem Gerät an, das dein Konto noch nicht kennt, bekommst
+du ebenfalls eine Mail („Neue Anmeldung bei HUBIplan“). Sie nennt Zeit, Programm und System, zum
+Beispiel „Firefox unter Windows“. Warst du es selbst, etwa mit einem neuen Handy, einem anderen
+Browser oder einem privaten Fenster, ist nichts zu tun. Sonst ändere sofort dein Passwort, prüfe
+die Zwei-Faktor-Anmeldung und sag dem Vorstand Bescheid. Je Programm kommt höchstens eine solche
+Mail am Tag; bei deiner allerersten Anmeldung und bei der Anmeldung über einen Link aus einer Mail
+kommt keine.
+
 ## Konto löschen
 
 Unter **Konto löschen** löschst du dein Konto selbst, mit Passkeys, verbundenen Geräten, Freigaben

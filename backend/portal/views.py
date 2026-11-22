@@ -1224,6 +1224,10 @@ class LoginLinkUseView(APIView):
             )
         link.used_at = timezone.now()
         link.save(update_fields=["used_at"])
+        # Der Link kam per Mail an dieselbe Adresse: kein Hinweis „neues Gerät“ dorthin
+        from accounts import known_device
+
+        known_device.skip_notice(request)
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         from accounts.email_verified import mark_email_verified
         from peering.sso import record

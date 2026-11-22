@@ -17,7 +17,10 @@ RUN pip install --require-hashes --no-deps -r "$REQUIREMENTS"
 
 # XRechnung: lokale XSD-/Schematron-Prüfung. Keine Rechnungsdaten an externe Dienste.
 COPY install_einvoice_validator.py install_pdf_validator.py ./
-RUN apt-get update -q && apt-get install -y -q --no-install-recommends default-jre-headless ghostscript > /dev/null \
+# apt-get upgrade: Korrekturen für Systempakete, die das festgeschriebene Basis-Abbild noch
+# nicht enthält (scripts/sicherheitspruefung.sh fand so am 22.11.2026 eine Lücke in zlib).
+RUN apt-get update -q && apt-get upgrade -y -q > /dev/null \
+    && apt-get install -y -q --no-install-recommends default-jre-headless ghostscript > /dev/null \
     && rm -rf /var/lib/apt/lists/* \
     && python install_einvoice_validator.py /opt/hubiplan-einvoice \
     && python install_pdf_validator.py
@@ -36,6 +39,11 @@ RUN apt-get update -q && apt-get install -y -q --no-install-recommends gettext >
     && if [ "$REQUIREMENTS" = requirements.txt ]; then \
            apt-get purge -y -q gettext > /dev/null && apt-get autoremove -y -q > /dev/null; fi \
     && rm -rf /var/lib/apt/lists/*
+# Im Betrieb installiert niemand Pakete nach: pip (mit seinen eingebauten Kopien von urllib3
+# und msgpack) und setuptools entfernen. Das nimmt deren bekannte Lücken aus dem Abbild und
+# einem Eindringling ein Werkzeug. Das Testabbild behält pip.
+RUN if [ "$REQUIREMENTS" = requirements.txt ]; then \
+        python -m pip uninstall -y -q setuptools pip; fi
 RUN useradd --create-home --uid 1000 app && mkdir -p /app/media /app/private /app/loeschliste /app/upload-tmp /app/beat && chown -R app /app
 USER app
 

@@ -122,6 +122,9 @@ def _mfa_lockerer(settings):
     nur in den Tests, die das prüfen (tests/test_gesamtaudit_1111_zwei_faktor.py)."""
     settings.MFA_PLATFORM_GRACE = True
     settings.MFA_STEP_UP = False
+    # Hinweis „neues Gerät“ nur in tests/test_anmeldehinweis.py: Sonst läge nach jeder
+    # Anmeldung eines Tests eine zusätzliche Mail im Postausgang.
+    settings.LOGIN_NOTICE = False
     settings.MFA_IMMEDIATE = False
     # Frist unabhängig von verstellten Uhren (z. B. Aufgabenserien im Jahr 2032); die Frist
     # selbst prüfen tests/test_gesamtaudit_1111_zwei_faktor.py und test_fachfragen_3110b.py

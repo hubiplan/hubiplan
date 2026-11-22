@@ -8,6 +8,16 @@
 3. Fremdes Objekt: Derselbe Vorstand ruft Detailrouten unter Verein A mit Kennungen von
    Objekten aus Verein B (Demoverein) auf. Auch hier nur 401/403/404/405.
 4. Keine Route antwortet mit 5xx.
+5. Ohne Anmeldung schreibend (Härtung 22.11.): POST, PATCH, PUT und DELETE auf jede nicht offene
+   Route enden mit 401/403/404/405.
+6. Ohne passendes Recht im eigenen Verein: Ein Konto, dessen Rolle nur „Schwarzes Brett lesen“
+   hat, ruft jede Route seines Vereins auf, Detailrouten mit echten Kennungen. Erlaubt sind nur
+   401/403/404/405 und die Routen aus ``tests/data/routen_jede_rolle.txt``. Eine neue Ansicht
+   ohne ``read_permission`` fällt so auf.
+7. Plattform: Der Vorstand eines Vereins kommt an keine Route unter ``api/platform/``.
+8. Offene Routen stehen namentlich in ``tests/data/offene_routen.txt``. Eine neue Route ohne
+   Anmeldung fällt so auf und braucht eine bewusste Zeile dort.
+9. Jede Route unter ``api/`` lässt sich auflösen; sonst liefe sie ungeprüft durch.
 
 Alles läuft in der eingeschränkten Rolle der Anwendung (RLS aktiv). Begründete Ausnahmen
 stehen in ``AUSNAHMEN`` (Muster der Route → Grund). Dauer: einige Minuten.
@@ -16,6 +26,7 @@ stehen in ``AUSNAHMEN`` (Muster der Route → Grund). Dauer: einige Minuten.
 import io
 import re
 import uuid
+from pathlib import Path
 
 import pytest
 from django.core.management import call_command
@@ -26,6 +37,16 @@ from .factories import give_role, make_org, make_user
 from .verbund_netz import app_role
 
 ABGELEHNT = {401, 403, 404, 405}
+OFFENE_ROUTEN = Path(__file__).parent / "data" / "offene_routen.txt"
+JEDE_ROLLE = Path(__file__).parent / "data" / "routen_jede_rolle.txt"
+# Die Prüfrolle hat genau ein Recht (pinboard.view); Lesen unter der Pinnwand ist ihr erlaubt.
+EIGENES_RECHT = "api/orgs/<int:org_id>/pinboard/"
+
+
+def _zeilen(path: Path) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    return [z.strip() for z in text.splitlines() if z.strip() and not z.startswith("#")]
+
 
 # Muster der Route (wie von Django ausgegeben) → Grund. Nur mit Begründung ergänzen.
 AUSNAHMEN: dict[str, str] = {}
@@ -43,14 +64,13 @@ def _walk(resolver, prefix=""):
 
 
 def _params(pattern: str) -> list[str]:
-    return [m.group(2) for m in _ROUTE_PARAM.finditer(pattern)] + [
-        m.group(1) for m in _REGEX_PARAM.finditer(pattern)
-    ]
+    regex = [m.group(1) for m in _REGEX_PARAM.finditer(pattern)]
+    return [m.group(2) for m in _ROUTE_PARAM.finditer(_REGEX_PARAM.sub("", pattern))] + regex
 
 
 def _build(pattern: str, values: dict) -> str | None:
     """Platzhalter ersetzen; None, wenn das Muster nicht sauber auflösbar ist."""
-    if "format" in pattern:
+    if "(?P<format>" in pattern:  # dieselbe Route noch einmal mit Endung (.json)
         return None
 
     def route(m):
@@ -59,8 +79,11 @@ def _build(pattern: str, values: dict) -> str | None:
             return str(values[name])
         return {"int": "1", "uuid": str(uuid.UUID(int=1)), "slug": "x", "path": "x"}.get(conv, "x")
 
-    url = _ROUTE_PARAM.sub(route, pattern)
-    url = _REGEX_PARAM.sub(lambda m: str(values.get(m.group(1), "1")), url)
+    # Erst die Regex-Gruppen der Router (``(?P<pk>[^/.]+)``): Sonst greift das Muster für
+    # ``<pk>`` mitten in die Gruppe, und die Route gilt als nicht auflösbar. So blieben bis
+    # 22.11. alle Detailrouten und Aktionen der ViewSets ungeprüft.
+    url = _REGEX_PARAM.sub(lambda m: str(values.get(m.group(1), "1")), pattern)
+    url = _ROUTE_PARAM.sub(route, url)
     url = url.replace("^", "").replace("$", "").replace("\\.", ".").replace("\\", "")
     if any(ch in url for ch in "()[]*+?|{}"):
         return None
@@ -117,7 +140,9 @@ def welt(db, settings, tmp_path):
     a = make_org("Verein A Durchlauf", enabled_modules=list(MODULE_IDS))
     user = make_user("durchlauf-a@example.org")
     give_role(user, a)
-    return {"a": a, "b": b, "user": user}
+    ohne = make_user("durchlauf-ohne-rechte@example.org")
+    give_role(ohne, b, permissions=["pinboard.view"], name="Ohne Rechte")
+    return {"a": a, "b": b, "user": user, "ohne": ohne}
 
 
 @pytest.mark.django_db(transaction=True)
@@ -128,12 +153,20 @@ def test_routen_durchlauf(welt):
     funde: list[str] = []
     anon, vorstand = Client(raise_request_exception=False), Client(raise_request_exception=False)
     vorstand.force_login(user)
+    ohne_rechte = Client(raise_request_exception=False)
+    ohne_rechte.force_login(welt["ohne"])
 
     def melden(pat, text):
         if pat not in AUSNAHMEN:
             funde.append(f"{pat}: {text}")
 
     with app_role():
+        # Gegenprobe: Die Konten sind wirklich angemeldet, sonst wären alle Ablehnungen wertlos
+        assert vorstand.get(f"/api/orgs/{a.pk}/members/").status_code == 200
+        assert ohne_rechte.get("/api/me/").status_code == 200
+        assert ohne_rechte.get(f"/api/orgs/{b.pk}/members/").status_code == 403
+        assert ohne_rechte.get(f"/api/orgs/{b.pk}/pinboard/").status_code == 200
+
         for pat, info in routes:
             if not pat.startswith(("api/", "_allauth/")):
                 continue
@@ -171,4 +204,102 @@ def test_routen_durchlauf(welt):
                     if r.status_code not in ABGELEHNT:
                         melden(pat, f"fremdes Objekt {method.upper()} {url} -> {r.status_code}")
 
+        # 5. Ohne Anmeldung schreibend
+        for pat, info in routes:
+            if not pat.startswith(("api/", "_allauth/")) or _offen(info):
+                continue
+            url = _build(pat, {"org_id": b.pk})
+            if url is None:
+                continue
+            for method in ("post", "patch", "put", "delete"):
+                r = _call(anon, method, url)
+                if r.status_code not in ABGELEHNT:
+                    melden(pat, f"ohne Anmeldung {method.upper()} {url} -> {r.status_code}")
+
+        # 6. Rolle mit einem einzigen, fachfremden Recht im eigenen Verein (echte Kennungen,
+        # wo bekannt). Was jede Rolle darf, steht namentlich in routen_jede_rolle.txt.
+        erlaubt = set(_zeilen(JEDE_ROLLE))
+        genutzt = set()
+        for pat, info in routes:
+            names = _params(pat)
+            if "org_id" not in names or _offen(info):
+                continue
+            werte = [{"org_id": b.pk}]
+            if len(names) == 2 and info["model"]:
+                other = next(n for n in names if n != "org_id")
+                werte += [{"org_id": b.pk, other: pk} for pk in _pks(info["model"], b)[:1]]
+            for values in werte:
+                url = _build(pat, values)
+                if url is None:
+                    continue
+                for method in ("get", "post", "patch", "delete"):
+                    if method == "get" and pat.startswith(EIGENES_RECHT):
+                        continue  # das eine Recht der Prüfrolle: Pinnwand lesen
+                    r = _call(ohne_rechte, method, url)
+                    if r.status_code in ABGELEHNT:
+                        continue
+                    zeile = f"{method.upper()} {pat}"
+                    if zeile in erlaubt:
+                        genutzt.add(zeile)
+                    else:
+                        melden(
+                            pat,
+                            f"Rolle ohne passendes Recht {method.upper()} {url} -> "
+                            f"{r.status_code} ({info['view']})",
+                        )
+        for zeile in sorted(erlaubt - genutzt):
+            funde.append(f"routen_jede_rolle.txt: Zeile ohne Wirkung, bitte entfernen: {zeile}")
+
+        # 7. Plattform nur für die Plattform
+        for pat, info in routes:
+            if not pat.startswith("api/platform/") or _offen(info):
+                continue
+            url = _build(pat, {})
+            if url is None:
+                continue
+            for method in ("get", "post", "patch", "delete"):
+                r = _call(vorstand, method, url)
+                if r.status_code not in ABGELEHNT:
+                    melden(pat, f"Vorstand an Plattform {method.upper()} {url} -> {r.status_code}")
+
     assert not funde, "\n".join(funde)
+
+
+def _routen():
+    return [(pat, _info(p)) for pat, p in _walk(get_resolver())]
+
+
+def test_jede_route_ist_aufloesbar():
+    """Eine Route, die ``_build`` nicht auflöst, überspringt der Durchlauf stillschweigend."""
+    offen = [
+        pat
+        for pat, _ in _routen()
+        if pat.startswith(("api/", "_allauth/"))
+        and "(?P<format>" not in pat
+        and _build(pat, {"org_id": 1}) is None
+        and pat not in AUSNAHMEN
+    ]
+    assert not offen, "Nicht auflösbar, also ungeprüft:\n" + "\n".join(offen)
+
+
+def test_offene_routen_sind_bekannt():
+    """Jede Route ohne Anmeldung steht mit ihrer Ansicht in tests/data/offene_routen.txt.
+
+    Schlägt der Test fehl, weil eine Route bewusst offen ist: Zeile dort ergänzen und im Pull
+    Request begründen, was die Route ohne Anmeldung zeigt oder ändert und was sie schützt
+    (Geheimnis im Link, Ratenbegrenzung). Alte Zeilen entfernen, damit die Liste stimmt."""
+    ist = sorted(
+        {
+            f"{pat}  [{info['view']}]"
+            for pat, info in _routen()
+            if _offen(info) and "(?P<format>" not in pat
+        }
+    )
+    soll = _zeilen(OFFENE_ROUTEN)
+    neu = sorted(set(ist) - set(soll))
+    weg = sorted(set(soll) - set(ist))
+    assert not neu and not weg, (
+        "Offene Routen weichen von tests/data/offene_routen.txt ab.\n"
+        + "".join(f"  neu offen: {z}\n" for z in neu)
+        + "".join(f"  nicht mehr offen oder umbenannt: {z}\n" for z in weg)
+    )
