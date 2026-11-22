@@ -38,8 +38,9 @@ z. B. per [Selbstupdate](docs/betrieb.md#selbstupdate).
 ## Umfang
 
 Gemeint ist der Code in diesem Repository: Backend, Oberfläche, Schnittstellen für Webseite,
-Apps (Android, iOS) und KI-Assistenten (MCP), Online-Mitgliedsantrag, Rechnungspostfach,
-Push-Gateway, Verbund, Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate
+Apps (Android, iOS), KI-Assistenten (MCP) und andere Programme (API `/api/partner/v1/`),
+Online-Mitgliedsantrag, Rechnungspostfach, Termine aus dem Mailprogramm, Bankanbindung (FinTS),
+Abgleich mit der Nextcloud, Push-Gateway, Verbund, Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate
 sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
 
 - Zugriff auf Daten fremder Vereine oder Einheiten (Mandantentrennung, Row-Level Security),
@@ -62,6 +63,16 @@ sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant 
 - Haushalte oder Firmen, über die jemand Daten anderer Mitglieder sieht oder ändert,
 - KI-Assistenten, die über die MCP-Schnittstelle Vereinsdaten ohne Anmeldung sehen, mehr als
   die verbundene Einheit erreichen oder ohne Freigabe veröffentlichen,
+- API-Schlüssel (`hpk_…`), die mehr Bereiche, Einheiten oder Personendaten erreichen als
+  angekreuzt, nach Ablauf oder Widerruf weiter gelten, schreibend löschen oder versenden, oder
+  Benachrichtigungen (Webhooks) an fremde Ziele,
+- PINs oder Freigaben der Bankanbindung, die gespeichert, geloggt oder von anderen genutzt
+  werden können,
+- Einladungen aus dem Mailprogramm, über die Fremde Termine anlegen oder ändern, oder
+  Check-in-Codes für Training und Versammlung, die sich vorhersagen lassen oder außerhalb
+  ihres Zeitfensters gelten,
+- Gruppen oder Ordner der Nextcloud, die nach dem Abgleich mehr freigeben als die Rollen in
+  HUBIplan,
 - Mails an das Rechnungspostfach, die eine fremde Einheit erreichen oder Schadcode in die
   Ablage bringen,
 - nachträgliche Änderungen an festgeschriebenen Kassenbuchungen, Jahresabschlüssen,

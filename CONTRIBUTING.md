@@ -51,8 +51,13 @@ Hinweise zum Stil:
 - Änderungen an der Schnittstelle für die Apps (`/api/app/v1/`, [docs/app.md](docs/app.md))
   ziehen beide Apps nach: [hubiplan-android](https://github.com/hubiplan/hubiplan-android) und
   [hubiplan-ios](https://github.com/hubiplan/hubiplan-ios).
+- Änderungen an der API für andere Programme (`/api/partner/v1/`, [docs/api.md](docs/api.md))
+  bleiben innerhalb von `v1` abwärtsverträglich; die OpenAPI-Kopie
+  `backend/partnerapi/openapi.json` wird mit
+  `python manage.py api_openapi partnerapi/openapi.json` neu erzeugt (die Produktwebseite
+  zeigt eine Kopie davon unter `technik/api/`).
 - GitHub Actions laufen nur von Hand; vor dem Merge testet der Betreuer jeden Pull Request
-  lokal mit `scripts/test.sh`.
+  lokal über den Merge-Zug (`scripts/zug.sh <PR>`), der ihn auf dem neuesten `main` prüft.
 
 ## Beitragsbedingungen
 
