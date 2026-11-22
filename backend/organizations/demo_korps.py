@@ -4,7 +4,8 @@ Aufbau: Verein → Korps → Züge (das Tambourkorps ohne Züge). Alle schaltbar
 Zusatzfunktionen sind an. Angelegt werden Mitglieder, Ämter in Verein, Korps und Zügen,
 Zugänge, Kasse, Beiträge, Satzung, Dokumente, Termine, Würden, Wettbewerbe, Meldungen,
 Rundschreiben-Entwurf, Webseite mit Chronik, Impressum, Briefbogen, Musik (Tambourkorps mit
-Auftritt und Notenbestand), Aufgaben und Material.
+Auftritt und Notenbestand), Aufgaben, Material, Pinnwand, Sammelbestellungen, Training mit
+Schießnachweis, Versammlungen und Haushaltsplan.
 
 Wiederholbar: Vorhandenes bleibt, wie es ist. Andere Organisationen (z. B. die
 Pilotorganisationen aus ``seed_testdata``) fasst der Befehl nicht an.
@@ -217,6 +218,11 @@ def seed(password: str, reset: bool = False) -> dict:
     todos = _todos(club)
     _material(club, todos)
     _infrastructure(club)
+    _pinboard(club)
+    _orders(club)
+    _training(club)
+    _meetings(club)
+    _budget(club)
     return {"club": club, "created": created["count"]}
 
 
@@ -1455,3 +1461,255 @@ def _material(club, todos: dict) -> None:
         todo = todos.get(todo_title)
         if todo:
             MaterialTodoLink.objects.create(organization=club, item=items[title], todo=todo)
+
+
+# --- Pinnwand, Bestellungen, Training, Versammlungen, Haushalt (Produktwebseite) ---
+
+
+def _board_user():
+    return User.objects.get(email=USERS[0][0])
+
+
+def _pinboard(club) -> None:
+    from pinboard.models import Notice
+    from pinboard.services import author_name
+
+    if Notice.objects.filter(organization=club).exists():
+        return
+    board = _board_user()
+    author = author_name(board, club)
+    now = timezone.now()
+    plan = [
+        # Text, vor Tagen, angeheftet, Untereinheit
+        ("Arbeitseinsatz am Schützenhaus am Samstag ab 9 Uhr: Dachrinnen, Hecke und "
+         "Festplatz. Für Brötchen und Kaffee ist gesorgt. Bitte kurz zurückmelden, wer kommt.",
+         1, True, None),
+        ("Die Sammelbestellung für Vereinsjacken und Poloshirts läuft. Größen und Mengen "
+         "bitte im Mitgliederbereich unter „Bestellungen“ eintragen.", 3, False, None),
+        ("Herzlichen Glückwunsch an unsere Jugendmannschaft zum zweiten Platz beim "
+         "Kreisjugendpokal!", 6, False, None),
+        ("Der Saal im Schützenhaus ist frisch gestrichen. Danke an alle Helferinnen und "
+         "Helfer vom letzten Wochenende.", 12, False, None),
+        ("Probe am Donnerstag fällt aus, dafür treffen wir uns Freitag um 19 Uhr.", 2, False,
+         Department.objects.filter(organization=club, name="Tambourkorps Musterstadt").first()),
+    ]  # fmt: skip
+    for text, days, pinned, unit in plan:
+        notice = Notice.objects.create(
+            organization=club,
+            department=unit,
+            text=text,
+            pinned=pinned,
+            author=author,
+            created_by=board,
+        )
+        Notice.objects.filter(pk=notice.pk).update(
+            created_at=now - datetime.timedelta(days=days, hours=days % 5)
+        )
+
+
+def _orders(club) -> None:
+    from orders.models import MemberOrder, MemberOrderLine, OrderArticle, OrderCampaign
+
+    if OrderCampaign.objects.filter(organization=club).exists():
+        return
+    board = _board_user()
+    today = timezone.localdate()
+    now = timezone.now()
+    sizes = ["S", "M", "L", "XL", "XXL"]
+    jacket = OrderCampaign.objects.create(
+        organization=club,
+        title="Vereinsjacke und Poloshirt",
+        text="Softshelljacke und Poloshirt in Vereinsblau mit gesticktem Wappen. "
+        "Die Rechnung kommt mit der Ausgabe.",
+        deadline=today + datetime.timedelta(days=18),
+        published_at=now - datetime.timedelta(days=5),
+        created_by=board,
+    )
+    articles = [
+        OrderArticle.objects.create(
+            organization=club, campaign=jacket, name=name, text=text, price=Decimal(price),
+            variants=variants, variant_label="Größe" if variants else "", position=i,
+        )
+        for i, (name, text, price, variants) in enumerate([
+            ("Softshelljacke", "Wappen links auf der Brust", "59.00", sizes),
+            ("Poloshirt", "Baumwolle, Wappen gestickt", "24.50", sizes),
+            ("Anstecknadel", "Vereinswappen, emailliert", "4.00", []),
+        ])
+    ]  # fmt: skip
+    rnd = random.Random(23)  # noqa: S311 – nur Testdaten
+    for membership in _current(club)[:16]:
+        order = MemberOrder.objects.create(
+            organization=club, campaign=jacket, membership=membership
+        )
+        for article in rnd.sample(articles, rnd.randint(1, 3)):
+            MemberOrderLine.objects.create(
+                organization=club,
+                order=order,
+                article=article,
+                variant=rnd.choice(article.variants) if article.variants else "",
+                quantity=1 if article.variants else rnd.randint(1, 2),
+            )
+    shirts = OrderCampaign.objects.create(
+        organization=club,
+        title="Größenabfrage Schützenhemden",
+        text="Der Verein übernimmt die Kosten der neuen Hemden für den Festzug.",
+        deadline=today - datetime.timedelta(days=20),
+        club_pays=True,
+        published_at=now - datetime.timedelta(days=45),
+        closed_at=now - datetime.timedelta(days=19),
+        created_by=board,
+    )
+    OrderArticle.objects.create(
+        organization=club, campaign=shirts, name="Schützenhemd", variants=sizes,
+        variant_label="Größe",
+    )  # fmt: skip
+
+
+def _training(club) -> None:
+    from training import services as ts
+    from training.models import Attendance, TrainingSession
+
+    if TrainingSession.objects.filter(organization=club).exists():
+        return
+    board = _board_user()
+    today = timezone.localdate()
+    # Letzter Donnerstag vor heute, dann acht Wochen zurück
+    last = today - datetime.timedelta(days=(today.weekday() - 3) % 7 or 7)
+    pool = _current(club)[20:34]
+    rnd = random.Random(14)  # noqa: S311 – nur Testdaten
+    kinds = [
+        ("Luftgewehr-Training", "Luftgewehrstand", "Luftgewehr 10 m", "4,5 mm", False),
+        ("Kleinkaliber 50 m", "Schießstand am Schützenhaus", "KK-Gewehr 50 m", ".22 lr", True),
+    ]
+    for week in range(8, -2, -1):
+        day = last - datetime.timedelta(weeks=week)
+        title, place, discipline, caliber, permit = kinds[week % 2]
+        session = TrainingSession.objects.create(
+            organization=club,
+            date=day,
+            starts_at=datetime.time(19),
+            ends_at=datetime.time(21),
+            title=title,
+            kind=TrainingSession.Kind.TRAINING,
+            location=place,
+            leader="Vera Vorstand",
+            shooting=True,
+            discipline=discipline,
+            weapon_class="long",
+            caliber=caliber,
+            permit_required=permit,
+            created_by=board,
+        )
+        if day > today:
+            continue
+        for membership in rnd.sample(pool, rnd.randint(6, 11)):
+            attendance = Attendance.objects.create(
+                organization=club, session=session, membership=membership, created_by=board
+            )
+            ts._shooting_from(session, attendance, board)
+
+
+def _meetings(club) -> None:
+    from events.models import Event
+    from meetings import services as ms
+    from meetings.access import Scope
+    from meetings.models import AgendaItem, Meeting, MeetingKind, Resolution, agenda_numbers
+
+    if Meeting.objects.filter(organization=club).exists():
+        return
+    board = _board_user()
+    kinds = ms.kinds(Scope(club, None, set()))
+    general = kinds.filter(base=MeetingKind.Base.GENERAL).first()
+    board_kind = kinds.filter(base=MeetingKind.Base.BOARD).first()
+
+    def agenda(meeting, items):
+        numbers = agenda_numbers([0] * len(items))
+        return [
+            AgendaItem.objects.create(
+                organization=club, meeting=meeting, position=i, level=level, number=number,
+                title=str(title), type=type_,
+            )
+            for i, ((title, type_), (level, number)) in enumerate(
+                zip(items, numbers, strict=True), start=1
+            )
+        ]  # fmt: skip
+
+    if general is None or board_kind is None:
+        return
+    event = Event.objects.filter(organization=club, title="Generalversammlung").first()
+    if event:
+        meeting = Meeting.objects.create(
+            organization=club, kind=general, event=event, created_by=board,
+            chair="Vera Vorstand", minute_taker="Sonja Schreiber",
+        )  # fmt: skip
+        agenda(meeting, ms.default_agenda(general))
+    # Vergangene Vorstandssitzung mit freigegebenem Protokoll und Beschlüssen
+    day = timezone.localdate() - datetime.timedelta(days=24)
+    start = timezone.make_aware(datetime.datetime.combine(day, datetime.time(19, 30)))
+    past = Event.objects.create(
+        organization=club,
+        title="Vorstandssitzung",
+        starts_at=start,
+        ends_at=start + datetime.timedelta(hours=2),
+        location="Schützenhaus",
+        visibility=Event.Visibility.BOARD,
+        created_by=board,
+    )
+    meeting = Meeting.objects.create(
+        organization=club, kind=board_kind, event=past, status=Meeting.Status.DONE,
+        created_by=board, chair="Vera Vorstand", minute_taker="Sonja Schreiber",
+    )  # fmt: skip
+    items = agenda(meeting, [
+        ("Begrüßung", AgendaItem.Type.OTHER),
+        ("Genehmigung des letzten Protokolls", AgendaItem.Type.RESOLUTION),
+        ("Planung Schützenfest", AgendaItem.Type.RESOLUTION),
+        ("Verschiedenes", AgendaItem.Type.OTHER),
+    ])  # fmt: skip
+    for position, (item, text, yes, status) in enumerate([
+        (items[1], "Das Protokoll der letzten Sitzung wird genehmigt.", 7, "done"),
+        (items[2], "Das Festzelt wird wie im Vorjahr beim bisherigen Verleih bestellt.", 6, "open"),
+    ]):  # fmt: skip
+        Resolution.objects.create(
+            organization=club, meeting=meeting, agenda_item=item, position=position,
+            text=text, votes_yes=yes, votes_no=0, votes_abstain=7 - yes,
+            number=f"{day.year}/{position + 1:02d}", status=status,
+        )  # fmt: skip
+
+
+def _budget(club) -> None:
+    from finance import budget as fb
+    from finance.models import Budget, BudgetLine
+
+    year = timezone.localdate().year
+    if Budget.objects.filter(organization=club, year=year).exists():
+        return
+    start, last = club.fiscal_range(year)
+    sums = fb.actuals(club, start, last + datetime.timedelta(days=1))
+    if not sums:
+        return
+    adopted = min(datetime.date(year, 3, 6), timezone.localdate())
+    budget = Budget.objects.create(
+        organization=club,
+        year=year,
+        status=Budget.Status.ADOPTED,
+        adopted_on=adopted,
+        adopted_by="Generalversammlung",
+        created_by=_board_user(),
+    )
+    rnd = random.Random(year)  # noqa: S311 – nur Testdaten
+    lines = sorted(sums.items(), key=lambda kv: (kv[0][1] != "income", -kv[1]))
+    for position, ((category, kind, department), value) in enumerate(lines):
+        if value <= 0:
+            continue
+        planned = (value * Decimal(rnd.choice(["0.9", "1.0", "1.05", "1.15"])) / 50).quantize(
+            Decimal("1")
+        ) * 50
+        BudgetLine.objects.create(
+            organization=club,
+            budget=budget,
+            kind=kind,
+            category_id=category,
+            department_id=department,
+            amount=max(planned, Decimal(50)),
+            position=position,
+        )
