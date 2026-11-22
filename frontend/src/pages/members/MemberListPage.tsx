@@ -18,6 +18,7 @@ import { FilterChips } from '../../components/liste/FilterChips.tsx'
 import type { ActiveFilter } from '../../components/liste/FilterChips.tsx'
 import { SideSheet } from '../../components/liste/SideSheet.tsx'
 import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
+import { rememberOrder } from '../../components/liste/recordOrder.ts'
 import { PageNav } from '../../components/ListControls.tsx'
 
 interface Column {
@@ -248,6 +249,11 @@ export function MemberListPage() {
         if (alive) {
           setData(d)
           setError(null)
+          // Reihenfolge der Seite für „Vorheriges / Nächstes“ in der Akte (W12)
+          rememberOrder(
+            `mitglieder.${org.id}`,
+            d.results.map((r) => r.id),
+          )
           setLoadedFor(JSON.stringify(params))
         }
       })

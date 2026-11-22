@@ -7986,3 +7986,35 @@ html {
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+/* --- Web-Oberfläche W12: Akte und Formular --- */
+.record-pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+  justify-content: flex-end;
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-small);
+}
+
+.record-pager a {
+  text-decoration: none;
+}
+
+/* Lange Formulare: die Knopfzeile bleibt am unteren Rand stehen */
+.form-actions-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  padding: var(--space-3) 0;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 50rem) {
+  /* über der unteren Leiste am Handy */
+  .form-actions-sticky {
+    bottom: var(--bottom-nav-height, 4rem);
+  }
+}

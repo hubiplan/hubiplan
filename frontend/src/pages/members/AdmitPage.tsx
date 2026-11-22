@@ -550,7 +550,8 @@ export function AdmitPage() {
               {t('Zu den Wechselanfragen')}
             </Link>
           )}
-          <div className="button-row">
+          {/* Langes Formular: Knöpfe bleiben unten im Blick (Seitenmuster Formular, W12) */}
+          <div className="button-row form-actions-sticky">
             <button type="submit" className="button button-primary" disabled={form.busy}>
               {t('Aufnehmen')}
             </button>

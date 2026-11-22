@@ -8,6 +8,8 @@ import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
+import { RecordPager } from '../components/liste/RecordPager.tsx'
+import { rememberOrder } from '../components/liste/recordOrder.ts'
 
 // Web-Oberfläche W11: Filterchips, gemerkte Ansichten und Seitenblatt in der Mitgliederliste
 const SESSION = 'GET /_allauth/browser/v1/auth/session'
@@ -117,5 +119,45 @@ describe('Tabellenbaustein in der Mitgliederliste', () => {
     )
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+describe('Blättern in der Akte', () => {
+  it('führt zum vorherigen und nächsten Eintrag der zuletzt gezeigten Liste', () => {
+    rememberOrder('mitglieder.7', [4, 11, 9])
+    render(
+      <MemoryRouter>
+        <RecordPager
+          list="mitglieder.7"
+          current={11}
+          path={(id) => `/mitglieder/${id}`}
+          label={{ prev: 'Vorheriges Mitglied', next: 'Nächstes Mitglied' }}
+        />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('link', { name: /Vorheriges Mitglied/ })).toHaveAttribute(
+      'href',
+      '/mitglieder/4',
+    )
+    expect(screen.getByRole('link', { name: /Nächstes Mitglied/ })).toHaveAttribute(
+      'href',
+      '/mitglieder/9',
+    )
+    expect(screen.getByText('2 von 3')).toBeInTheDocument()
+  })
+
+  it('fehlt, wenn der Eintrag nicht in der Liste steht', () => {
+    rememberOrder('mitglieder.7', [4, 9])
+    const { container } = render(
+      <MemoryRouter>
+        <RecordPager
+          list="mitglieder.7"
+          current={11}
+          path={(id) => `/m/${id}`}
+          label={{ prev: 'a', next: 'b' }}
+        />
+      </MemoryRouter>,
+    )
+    expect(container).toBeEmptyDOMElement()
   })
 })
