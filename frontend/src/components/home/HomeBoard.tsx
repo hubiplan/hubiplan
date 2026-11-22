@@ -71,6 +71,7 @@ export function HomeBoard({
   name,
   blocks,
   children,
+  intro,
   onSaved,
 }: {
   /** Arbeitsbereich, z. B. „o12“ */
@@ -80,6 +81,8 @@ export function HomeBoard({
   blocks: (prefs: HomePrefs) => HomeBlock[]
   /** Steht immer am Ende (z. B. Hinweis ohne Module) */
   children?: ReactNode
+  /** Steht links in der Kopfzeile neben „Startseite anpassen“ (z. B. Datum und Begrüßung) */
+  intro?: ReactNode
   /** Nach dem Speichern (z. B. Kacheln neu laden, die vorher auf „nie“ standen) */
   onSaved?: () => void
 }) {
@@ -339,8 +342,10 @@ export function HomeBoard({
   const shown = editing ? placed : placed.filter(visible)
   return (
     <>
+      {available.length === 0 && intro}
       {available.length > 0 && (
         <div className="home-board-head">
+          {intro}
           {editing && (
             <p className="muted small">
               {t(

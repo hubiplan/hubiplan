@@ -47,6 +47,8 @@ Schaltflächen haben eine eigene, deckende Hintergrundfläche. Das gilt auch fü
 
 ## Zu erledigen
 
+Über allen Kacheln stehen das Datum und eine Begrüßung. Kommen in **Zu erledigen** mehrere Arten zusammen, zählt eine Kurzübersicht oben in der Kachel sie zusammen, etwa „2 Mitgliedsantrag“; ein Klick führt zum ersten Eintrag dieser Art.
+
 Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen, überfällige Rechnungen, offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular, eigene Rundschreiben-Entwürfe, die seit einer Woche liegen, Einladungen zu Versammlungen ab zwei Wochen vor der Einladungsfrist, eingegangene Anträge und offene Protokolle, offene Plätze in Helferdiensten der nächsten zwei Wochen, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen zur Prüfung, Rechnungsentwürfe, fällige Mahnungen und Lastschriften, abgelaufene Einladungen von Konten, Buchungen ohne Beleg im laufenden Geschäftsjahr, Bankkonten, deren Kontoauszug für den Vormonat ab dem 5. noch fehlt, und fehlende Pflichtpunkte der [Einrichtung](/einstellungen/einrichtung); jeder Eintrag erscheint nur mit dem passenden Recht.
 
 Das Zeichen mit dem Häkchen oben in der Kopfzeile zeigt dieselbe Zahl auf jeder Seite; ein Klick klappt die ersten Einträge auf. Finanzen › Übersicht zeigt dieselben Einträge, soweit sie die Finanzen betreffen. Die Anzahl steht direkt bei der Überschrift. **Neue Aufgabe** am unteren Kachelrand öffnet den Aufgabendialog. Daneben führt **Alle Aufgaben** zur Übersicht. Jede Zeile trennt Art, Titel und weitere Angaben; fällige Aufgaben zeigen zusätzlich einen Fristhinweis. Über das Häkchen erledigst du eine Aufgabe, sofern du dazu berechtigt bist. Der Titel führt zu den Einzelheiten.

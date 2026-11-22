@@ -47,6 +47,8 @@ Buttons have their own opaque background, including subtle actions, disabled but
 
 ## To do
 
+Above all tiles you see the date and a greeting. When **To do** holds several kinds of entry, a summary at the top of the tile counts them, for example “2 Membership application”; a click opens the first entry of that kind.
+
 The **To do** tile comes first and collects tasks, approvals, requests, overdue invoices, open booking requests, held contact form messages, your own circular drafts untouched for a week, meeting invitations from two weeks before the invitation deadline, received motions and open minutes, open helper places in the next two weeks, queries and close entry deadlines, received invoices to review, invoice drafts, due reminders and direct debits, expired account invitations, bookings without a receipt in the current financial year, bank accounts whose statement for the previous month is still missing from the 5th, and missing required items of the [setup](/einstellungen/einrichtung); each entry only appears with the matching permission.
 
 The tick sign in the header shows the same number on every page; a click opens the first entries. Finance › Overview shows the same entries where they concern finance. The count is shown beside its heading. **New task** at the bottom of the tile opens the task dialog. **All tasks** beside it opens the overview. Each row separates its type, title and details; tasks that are due also show a due-date notice. Use the checkbox to complete a task if you have permission. Its title opens the details.
