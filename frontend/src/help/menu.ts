@@ -19,6 +19,7 @@ export type HelpGroup = AreaId | 'konto' | 'plattform' | (string & {})
 export const HELP_GROUPS: readonly HelpGroup[] = [
   'start',
   'mitglieder',
+  'untereinheiten',
   'planung',
   'kommunikation',
   'webseite',

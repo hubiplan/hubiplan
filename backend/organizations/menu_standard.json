@@ -12,6 +12,11 @@
       "label_en": "Members"
     },
     {
+      "id": "untereinheiten",
+      "label": "Untereinheiten",
+      "label_en": "Sub-units"
+    },
+    {
       "id": "planung",
       "label": "Planung",
       "label_en": "Planning"
@@ -53,7 +58,7 @@
     "fristenkalender": "planung",
     "belegung": "planung",
     "mitglieder": "mitglieder",
-    "untereinheiten": "verein",
+    "untereinheiten": "untereinheiten",
     "abteilung": "mitglieder",
     "wettbewerbe": "vereinsleben",
     "meldungen": "vereinsleben",

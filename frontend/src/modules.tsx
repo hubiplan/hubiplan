@@ -25,6 +25,7 @@ export interface Workspace {
 export type AreaId =
   | 'start'
   | 'mitglieder'
+  | 'untereinheiten'
   | 'planung'
   | 'kommunikation'
   | 'webseite'
@@ -34,7 +35,7 @@ export type AreaId =
 
 export interface AppModule {
   id: string
-  /** Bereich der Bereichsleiste (Konzept Web-Oberfläche: acht Bereiche) */
+  /** Bereich der Bereichsleiste (Konzept Web-Oberfläche: neun Bereiche) */
   area: AreaId
   label: string
   /** Ein kurzer Satzteil, was man dort tut (Bereichsübersicht) */
@@ -130,7 +131,7 @@ export interface AppArea {
 }
 
 /**
- * Die acht Bereiche der Bereichsleiste, in fester Reihenfolge. Jeder Menüpunkt gehört zu
+ * Die neun Bereiche der Bereichsleiste, in fester Reihenfolge. Jeder Menüpunkt gehört zu
  * genau einem Bereich; das Bereichsmenü daneben zeigt nur die Punkte des gewählten Bereichs.
  */
 export const AREAS: AppArea[] = [
@@ -140,6 +141,15 @@ export const AREAS: AppArea[] = [
     label: t('Mitglieder'),
     icon: icon(
       'M9 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M15.5 5.2a3 3 0 1 1 1.2 5.6M17.5 14.2c2.4.5 4 2.6 4 5.8',
+    ),
+  },
+  // Untereinheiten (je Verein z. B. „Züge“) als eigener Bereich direkt nach Mitglieder
+  // (Ralf 22.11.); mit nur diesem Menüpunkt trägt der Bereich dessen Namen
+  {
+    id: 'untereinheiten',
+    label: t('Untereinheiten'),
+    icon: icon(
+      'M12 3.5v5M12 8.5H6v4M12 8.5h6v4M3.5 12.5h5v4h-5zM9.5 12.5h5v4h-5zM15.5 12.5h5v4h-5zM9.5 17.5v3h5v-3',
     ),
   },
   {
@@ -313,8 +323,8 @@ export const modules: AppModule[] = [
   {
     // Untereinheiten (z. B. Züge), benannt nach der Bezeichnung der Einheit
     id: 'untereinheiten',
-    // Aufbau des Vereins, nicht Mitgliederverwaltung (Ralf 22.11.)
-    area: 'verein',
+    // Eigener Bereich direkt nach Mitglieder (Ralf 22.11.)
+    area: 'untereinheiten',
     label: t('Untereinheiten'),
     text: t('Gliederung des Vereins mit Leitung und Mitgliedern'),
     labelFor: (org) =>
