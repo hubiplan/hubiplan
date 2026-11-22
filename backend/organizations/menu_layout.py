@@ -39,7 +39,15 @@ CUSTOM_ID = re.compile(r"^b([1-9][0-9]?)$")
 def standard() -> dict:
     data = json.loads((Path(__file__).with_name("menu_standard.json")).read_text("utf-8"))
     data.pop("_hinweis", None)
+    data.pop("labels", None)
     return data
+
+
+@cache
+def item_labels() -> dict[str, list[str]]:
+    """Namen der Menüpunkte (deutsch, englisch) für Bereiche aus einem Menüpunkt."""
+    data = json.loads((Path(__file__).with_name("menu_standard.json")).read_text("utf-8"))
+    return data.get("labels", {})
 
 
 def standard_area_ids() -> list[str]:
@@ -192,7 +200,7 @@ def undo(org) -> dict | None:
     return previous
 
 
-def groups(org, labels: dict[str, str] | None = None, lang: str = "de") -> list[dict]:
+def groups(org, lang: str = "de") -> list[dict]:
     """Bereiche der Einheit mit ihren Menüpunkten, für die Apps (``menu_groups``)."""
     layout = effective(org)
     std = {a["id"]: a for a in standard()["areas"]}
@@ -204,8 +212,8 @@ def groups(org, labels: dict[str, str] | None = None, lang: str = "de") -> list[
             label = area.get("label_en") or area.get("label") or base.get("label_en")
         else:
             label = area.get("label") or base.get("label")
-        if not label and labels:
-            label = labels.get(area["id"])
+        if not label and area["id"] in item_labels():
+            label = item_labels()[area["id"]][1 if lang == "en" else 0]
         members = [i for i in item_ids() if area_of(layout, i) == area["id"]]
         result.append({"id": area["id"], "label": label or area["id"], "items": members})
     return result

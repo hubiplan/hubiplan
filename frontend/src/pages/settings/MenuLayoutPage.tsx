@@ -351,7 +351,9 @@ export function MenuLayoutPage() {
             ))}
           </ul>
           <p className="muted small">
-            {t('Wie eine Rolle das Menü sieht, zeigt „Ansicht als Rolle“ im Kontomenü oben rechts.')}
+            {t(
+              'Wie eine Rolle das Menü sieht, zeigt „Ansicht als Rolle“ im Kontomenü oben rechts.',
+            )}
           </p>
         </aside>
       </div>

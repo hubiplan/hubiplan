@@ -1,13 +1,41 @@
 {
   "_hinweis": "Standardanordnung des Menüs der Web-Oberfläche. Muss zu frontend/src/modules.tsx passen (Test MenueAnordnung).",
   "areas": [
-    {"id": "start", "label": "Start", "label_en": "Home"},
-    {"id": "mitglieder", "label": "Mitglieder", "label_en": "Members"},
-    {"id": "planung", "label": "Planung", "label_en": "Planning"},
-    {"id": "kommunikation", "label": "Kommunikation", "label_en": "Communication"},
-    {"id": "vereinsleben", "label": "Vereinsleben", "label_en": "Club life"},
-    {"id": "finanzen", "label": "Finanzen", "label_en": "Finances"},
-    {"id": "verein", "label": "Verein", "label_en": "Club"}
+    {
+      "id": "start",
+      "label": "Start",
+      "label_en": "Home"
+    },
+    {
+      "id": "mitglieder",
+      "label": "Mitglieder",
+      "label_en": "Members"
+    },
+    {
+      "id": "planung",
+      "label": "Planung",
+      "label_en": "Planning"
+    },
+    {
+      "id": "kommunikation",
+      "label": "Kommunikation",
+      "label_en": "Communication"
+    },
+    {
+      "id": "vereinsleben",
+      "label": "Vereinsleben",
+      "label_en": "Club life"
+    },
+    {
+      "id": "finanzen",
+      "label": "Finanzen",
+      "label_en": "Finances"
+    },
+    {
+      "id": "verein",
+      "label": "Verein",
+      "label_en": "Club"
+    }
   ],
   "items": {
     "start": "start",
@@ -40,5 +68,127 @@
     "bestellungen": "vereinsleben",
     "einstellungen": "verein",
     "plattform": "verein"
+  },
+  "labels": {
+    "start": [
+      "Startseite",
+      "Home"
+    ],
+    "mein-bereich": [
+      "Mein Bereich",
+      "My area"
+    ],
+    "termine": [
+      "Termine",
+      "Events"
+    ],
+    "versammlungen": [
+      "Versammlungen",
+      "Meetings"
+    ],
+    "training": [
+      "Training",
+      "Training"
+    ],
+    "helferdienste": [
+      "Helferdienste",
+      "Volunteer duties"
+    ],
+    "aufgaben": [
+      "Aufgaben",
+      "Tasks"
+    ],
+    "fristenkalender": [
+      "Fristenkalender",
+      "Deadline calendar"
+    ],
+    "belegung": [
+      "Belegung",
+      "Bookings"
+    ],
+    "mitglieder": [
+      "Mitglieder",
+      "Members"
+    ],
+    "untereinheiten": [
+      "Untereinheiten",
+      "Sub-units"
+    ],
+    "abteilung": [
+      "Abteilung",
+      "Department"
+    ],
+    "wettbewerbe": [
+      "Wettbewerbe",
+      "Competitions"
+    ],
+    "meldungen": [
+      "Meldungen",
+      "Entries"
+    ],
+    "musik": [
+      "Musik",
+      "Music"
+    ],
+    "noten": [
+      "Noten",
+      "Sheet music"
+    ],
+    "chronik": [
+      "Chronik",
+      "Chronicle"
+    ],
+    "rundschreiben": [
+      "Rundschreiben",
+      "Circulars"
+    ],
+    "umfragen": [
+      "Umfragen",
+      "Surveys"
+    ],
+    "pinnwand": [
+      "Pinnwand",
+      "Notice board"
+    ],
+    "dokumente": [
+      "Dokumente",
+      "Documents"
+    ],
+    "webseite": [
+      "Webseite",
+      "Website"
+    ],
+    "auslagen": [
+      "Auslagen",
+      "Reimbursable expenses"
+    ],
+    "finanzen": [
+      "Finanzen",
+      "Finances"
+    ],
+    "geschaeftspartner": [
+      "Geschäftspartner",
+      "Business partners"
+    ],
+    "dsgvo": [
+      "DSGVO",
+      "GDPR"
+    ],
+    "material": [
+      "Material & Räume",
+      "Equipment & rooms"
+    ],
+    "bestellungen": [
+      "Bestellungen",
+      "Orders"
+    ],
+    "einstellungen": [
+      "Einstellungen",
+      "Settings"
+    ],
+    "plattform": [
+      "Plattform",
+      "Platform"
+    ]
   }
 }

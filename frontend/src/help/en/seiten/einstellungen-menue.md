@@ -4,7 +4,8 @@ titel: Settings › Menu
 rechte: [settings.view]
 routen: [/einstellungen/menue]
 siehe: [page.settings_modules]
-stichworte: [Menü, Hauptmenü, Hauptmenüpunkt, Bereich, anordnen, verschieben, Reihenfolge, Leiste, umbenennen]
+stichworte:
+  [Menü, Hauptmenü, Hauptmenüpunkt, Bereich, anordnen, verschieben, Reihenfolge, Leiste, umbenennen]
 ---
 
 Here you decide what the menu on the left looks like for everyone in your unit: which main menu items are in the bar, in which order, and under which main menu item each menu item sits. A menu item can also be a main menu item itself, such as **Website** or **Competitions**; its sub-items then appear directly in the menu next to it.

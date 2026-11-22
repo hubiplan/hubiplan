@@ -4,7 +4,8 @@ titel: Einstellungen › Menü
 rechte: [settings.view]
 routen: [/einstellungen/menue]
 siehe: [page.settings_modules]
-stichworte: [Menü, Hauptmenü, Hauptmenüpunkt, Bereich, anordnen, verschieben, Reihenfolge, Leiste, umbenennen]
+stichworte:
+  [Menü, Hauptmenü, Hauptmenüpunkt, Bereich, anordnen, verschieben, Reihenfolge, Leiste, umbenennen]
 ---
 
 Hier legt ihr fest, wie das Menü links für alle in eurer Einheit aussieht: welche Hauptmenüpunkte in der Leiste stehen, in welcher Reihenfolge, und unter welchem Hauptmenüpunkt jeder Menüpunkt steht. Ein Menüpunkt kann auch selbst Hauptmenüpunkt sein, etwa **Webseite** oder **Wettbewerbe**; seine Unterpunkte stehen dann direkt im Menü daneben.

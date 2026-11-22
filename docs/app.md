@@ -408,6 +408,12 @@ heißt, `permissions` enthält die neuen Codes `<bereich>.view`/`.edit` (z. B. `
 (`events.manage`, `photos.manage`, `dept.*`) mit; die App prüft zuerst die neuen. Wer nur
 „Termine lesen“ hat, bekommt keine Einheit zum Verwalten.
 
+`units[].menu_groups` (neu, Menü frei anordnen): die Hauptmenüpunkte der Einheit in
+Leistenreihenfolge, je `id`, `label` (in der Sprache des Kontos) und `items` (Kennungen der
+Menüpunkte der Web-Oberfläche, z. B. `termine`, `finanzen`, `geschaeftspartner`). Die Apps
+gruppieren ihre Verwaltungsbereiche danach; ohne das Feld (älterer Server) bleiben ihre festen
+Gruppen. Leere Gruppen zeigen die Apps nicht.
+
 ### Barzahlung und Quittung (Schritt B5)
 
 Unter `/api/app/v1/admin/u/<Einheit>/billing/…`, Rechte wie im Browser (`billing.view` lesen,
