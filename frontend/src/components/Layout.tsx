@@ -115,7 +115,7 @@ export function Layout() {
       return { ...old, [id]: items }
     })
   }, [])
-  const subNavApi = useMemo(() => ({ set: setSub }), [setSub])
+
   const toggleRef = useRef<HTMLButtonElement>(null)
   const navRef = useRef<HTMLElement>(null)
   const topbarRef = useRef<HTMLElement>(null)
@@ -416,7 +416,12 @@ export function Layout() {
     m.id === 'abteilung' && activeDept ? activeDept.label : (m.labelFor?.(active, ws) ?? m.label)
   const moduleLink = (m: (typeof modules)[number]) => m.linkFor?.(active, ws) ?? m.path
   const moduleTree = (m: (typeof modules)[number]) =>
-    buildNavTree(m.path, m.children?.(active, ws) ?? [], inModule(m) ? Object.values(subNav) : [])
+    buildNavTree(
+      m.path,
+      m.children?.(active, ws) ?? [],
+      // Als Reiter gezeigte Unterpunkte stehen im Inhalt, nicht im Menü (W6)
+      inModule(m) ? Object.values(subNav).filter((g) => !g.some((i) => i.tab)) : [],
+    )
   // Heißt der Menüpunkt wie sein Bereich (Mitglieder, Finanzen), stehen seine Unterpunkte
   // direkt im Bereichsmenü: eine Ebene weniger
   const flat = (m: (typeof modules)[number]) =>
@@ -459,6 +464,12 @@ export function Layout() {
     </div>
   )
   const newActions = active ? actionCatalog(active) : activeDept ? deptCatalog(activeDept) : []
+  // Unterpunkte, die das Menü fest zeigt: Seiten melden sie nicht noch einmal als Reiter an
+  const fixedKey = JSON.stringify((currentModule?.children?.(active, ws) ?? []).map((c) => c.to))
+  const subNavApi = useMemo(
+    () => ({ set: setSub, fixed: JSON.parse(fixedKey) as string[] }),
+    [setSub, fixedKey],
+  )
   const trail = currentModule
     ? navTrail(
         pathname,

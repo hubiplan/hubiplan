@@ -7804,3 +7804,12 @@ html {
     position: static;
   }
 }
+
+/* W6: Reiter im Inhalt für die wenigen Unterseiten einer Seite (dritte Ebene) */
+.tab:hover {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+.tab.active:hover {
+  border-bottom-color: var(--color-focus);
+}

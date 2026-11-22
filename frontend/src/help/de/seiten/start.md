@@ -29,7 +29,7 @@ Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anor
 
 Links steht die Bereichsleiste in der Farbe deines Vereins mit bis zu sieben Bereichen: **Start**, **Mitglieder**, **Planung**, **Kommunikation**, **Vereinsleben**, **Finanzen** und **Verein**. Du siehst nur die Bereiche, in denen du etwas darfst. Ein Klick öffnet den Bereich; daneben zeigt das helle Bereichsmenü nur die Seiten dieses Bereichs, etwa unter Planung Termine, Versammlungen, Helferdienste und Aufgaben. Mit **Menü** unten in der Bereichsleiste klappst du das Bereichsmenü ein, wenn eine Liste mehr Platz braucht, und wieder aus; **Hilfe** steht darunter.
 
-Der Name des Bereichs über dem Bereichsmenü öffnet die Bereichsübersicht: alle Seiten des Bereichs mit einem kurzen Hinweis, was man dort tut, und dem, was dort zu erledigen ist.
+Hat eine Seite wenige Unterseiten, stehen sie als Reiter oben im Inhalt, etwa in der Einrichtung der Mitglieder. Der Name des Bereichs über dem Bereichsmenü öffnet die Bereichsübersicht: alle Seiten des Bereichs mit einem kurzen Hinweis, was man dort tut, und dem, was dort zu erledigen ist.
 
 Am Handy öffnet „Mehr“ das ganze Menü, nach Bereichen gegliedert.
 
