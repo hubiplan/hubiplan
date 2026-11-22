@@ -276,6 +276,16 @@ export const modules: AppModule[] = [
       org.permissions.includes(PERM.obligationsView),
   },
   {
+    // Belegung ist Planung: wer wann welchen Raum oder welches Material hat (Web-Oberfläche W9)
+    id: 'belegung',
+    area: 'planung',
+    label: t('Belegung'),
+    text: t('Räume und Material buchen und Belegung planen'),
+    path: '/belegung',
+    icon: icon('M4 5h16v15H4zM4 9h16M9 9v11M14 9v11M4 14.5h16'),
+    visible: (org, ws) => stockAccess(org, ws).bookings,
+  },
+  {
     id: 'mitglieder',
     area: 'mitglieder',
     label: t('Mitglieder'),
@@ -507,27 +517,26 @@ export const modules: AppModule[] = [
       org.permissions.includes(PERM.privacyView),
   },
   {
-    // Material, Räume und Anlagen und Belegung: ein Ablauf, ein Menüpunkt (Menüprüfung M-02)
+    // Material sowie Räume und Anlagen: ein Menüpunkt (Menüprüfung M-02); Belegung steht in Planung
     id: 'material',
     area: 'verein',
     label: t('Material & Räume'),
-    text: t('Bestand, Ausgabe, Räume und Belegung'),
+    text: t('Bestand, Ausgabe, Räume und Anlagen'),
     labelFor: (org, ws) => {
       const s = stockAccess(org, ws ?? NO_WS)
       if (s.material && s.facility) return t('Material & Räume')
-      if (s.material) return t('Material')
-      return s.facility ? t('Räume und Anlagen') : t('Belegung')
+      return s.material ? t('Material') : t('Räume und Anlagen')
     },
     path: '/material',
-    also: ['/infrastruktur', '/belegung'],
+    also: ['/infrastruktur'],
     linkFor: (org, ws) => {
       const s = stockAccess(org, ws)
-      return s.material ? '/material' : s.facility ? '/infrastruktur' : '/belegung'
+      return s.material ? '/material' : '/infrastruktur'
     },
     icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
     visible: (org, ws) => {
       const s = stockAccess(org, ws)
-      return s.material || s.facility || s.bookings
+      return s.material || s.facility
     },
     children: (org, ws) => {
       const s = stockAccess(org, ws ?? NO_WS)
@@ -538,7 +547,6 @@ export const modules: AppModule[] = [
           ? [{ to: '/material/musik', label: t('Instrumente und Uniformen') }]
           : []),
         ...(s.facility ? [{ to: '/infrastruktur', label: t('Räume und Anlagen') }] : []),
-        ...(s.bookings ? [{ to: '/belegung', label: t('Belegung') }] : []),
       ]
       return items.length > 1 ? items : []
     },
