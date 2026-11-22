@@ -5,6 +5,9 @@ routen: [/]
 stichworte:
   [
     quick search,
+    area bar,
+    area menu,
+    new,
     search,
     tasks,
     quick actions,
@@ -20,13 +23,17 @@ stichworte:
 
 The home page is your workplace in the selected unit. Without a layout of your own it has the same order for every role: **To do**, **Quick actions**, **Upcoming events**, **Anniversaries**, **Birthdays** and **Notices**. What you see depends on your rights; anything you may not do is simply left out. At the top right you switch units if you work in more than one.
 
-## Navigation, help and quick search
+## Areas and menu
 
-The navigation on the left starts with **Home**, **Tasks** and **Events**. Club activities follow, then organisation and finally administration. Spacing separates the visible groups; **Help** stays separate at the bottom.
+On the left, the area bar in your club's colour shows up to seven areas: **Home**, **Members**, **Planning**, **Communication**, **Club life**, **Finances** and **Club**. You only see the areas in which you have rights. A click opens the area; next to it, the light area menu shows only the pages of that area, for example Events, Meetings, Volunteer duties and Tasks under Planning. **Menu** at the bottom of the area bar collapses the area menu when a list needs more room, and opens it again; **Help** is below it. On a phone, “More” opens the whole menu, grouped by area.
 
-At the top, **Help on this page** opens help for the current page; on narrow screens only the “?” sign is shown. **Help** in the sidebar opens the overview of all guides. **My account** contains your email address, personal settings and **Sign out**.
+**New** in the header creates something from any page, depending on your rights for example an event, a member, a booking or a circular. These are the same actions as the quick actions on the home page.
 
-**Quick search** at the top (or Ctrl+K, on a Mac ⌘K) jumps straight to a page: type a few letters, such as “remind” for Finance › Reminders, choose with the arrow keys and open with Enter. If you may see the club's members, you also find members there by name or membership number and land in the member record. Only what you can reach in the menu is found. On a phone, quick search is at the top of the menu (“More”).
+## Help and quick search
+
+At the top, **Help on this page** opens help for the current page; on narrow screens only the “?” sign is shown. **Help** at the bottom of the area bar opens the overview of all guides. **My account** contains your email address, personal settings and **Sign out**.
+
+**Quick search** at the top centre (or Ctrl+K, on a Mac ⌘K) jumps straight to a page: type a few letters, such as “remind” for Finance › Reminders, choose with the arrow keys and open with Enter. If you may see the club's members, you also find members there by name or membership number and land in the member record. Only what you can reach in the menu is found. On a phone, quick search is at the top of the menu (“More”).
 
 The bar at the bottom of a phone shows Start and two areas that suit your role, such as Finance for the treasurer or Meetings for the secretary; everything else is under “More”. Events from the calendar are found there by their title too, such as “meeting” for the general meeting; upcoming ones come first. With ↶ and ↷ at the top you undo or redo your latest changes; the arrow ▾ next to them shows your steps in this browser window. Older changes are listed under Settings › Log.
 

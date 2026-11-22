@@ -62,13 +62,13 @@ function LoadState({ failed, retry }: { failed: boolean; retry: () => void }) {
   )
 }
 
-/** Nur Mitglied: kein Eintrag, für den es ein Recht braucht, außerhalb von Alltag (Startseite,
+/** Nur Mitglied: kein Eintrag, für den es ein Recht braucht, außerhalb von Start (Startseite,
  *  Mein Bereich) und Mein Konto. Einträge ohne Rechte sieht jede Person und zählen nicht. */
 // oxlint-disable-next-line react/only-export-components
 export function memberOnly(entries: HelpEntry[]): boolean {
   return !entries.some((e) => {
     const g = placeOf(e)?.group
-    return e.rights.length > 0 && g !== 'alltag' && g !== 'konto'
+    return e.rights.length > 0 && g !== 'start' && g !== 'konto'
   })
 }
 

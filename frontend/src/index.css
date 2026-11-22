@@ -7391,3 +7391,246 @@ html {
   font-weight: 700;
   margin: 0.5rem 0 0;
 }
+
+/* --- Web-Oberfläche W2: Rahmen mit Bereichsleiste und Bereichsmenü ---
+   Links die Bereichsleiste in Vereinsfarbe (sieben feste Bereiche), daneben das helle
+   Bereichsmenü mit den Seiten des gewählten Bereichs, oben die neutrale Kopfzeile mit der Suche
+   in der Mitte. Am Handy bleibt das ganze Menü als ausklappbare Leiste. */
+.topbar-search {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.topbar-search > .quick-search-button {
+  width: min(100%, 28rem);
+  min-height: 2.25rem;
+  padding: 0.35rem 0.6rem;
+  gap: var(--space-2);
+  justify-content: flex-start;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+}
+.topbar-search > .quick-search-button kbd {
+  margin-left: auto;
+  background: var(--color-surface);
+}
+/* „Neu“ bleibt der eine gefüllte Knopf der Kopfzeile; die übrigen dort sind leicht */
+.topbar-user > .new-menu > .new-menu-button {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.75rem;
+  gap: 0.35rem;
+  font-weight: 600;
+  background: var(--color-button-primary);
+  border-color: var(--color-button-primary);
+  color: var(--color-on-button-primary);
+}
+.topbar-user > .new-menu > .new-menu-button:hover {
+  background: var(--color-button-primary-hover);
+  border-color: var(--color-button-primary-hover);
+}
+@media (pointer: coarse) {
+  .topbar-user > .new-menu > .new-menu-button {
+    min-height: 2.75rem;
+  }
+}
+/* Lange Liste rollt für sich, statt unter dem Bildrand zu verschwinden */
+.new-menu-list {
+  max-height: calc(100vh - var(--topbar-height, 3.5rem) - var(--space-4));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.new-menu-list a {
+  white-space: nowrap;
+}
+@media (max-width: 50rem) {
+  /* Am Handy über die ganze Breite, über der unteren Leiste endend */
+  .new-menu-list {
+    position: fixed;
+    top: calc(var(--topbar-height, 3.5rem) + var(--space-1));
+    left: var(--space-2);
+    right: var(--space-2);
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - var(--topbar-height, 3.5rem) - 5.5rem);
+  }
+  /* Am Handy nur das Pluszeichen; der Name bleibt für Screenreader */
+  .new-menu-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media not all and (max-width: 50rem) {
+  .app-shell {
+    grid-template-columns: calc(var(--rail-width) + var(--area-menu-width)) 1fr;
+  }
+  .app-shell.area-menu-off {
+    grid-template-columns: var(--rail-width) 1fr;
+  }
+  .topbar-brand {
+    flex: 0 1 auto;
+    max-width: 32%;
+  }
+  .topbar-user {
+    margin-left: 0;
+    flex: 0 1 auto;
+  }
+  .sidebar {
+    display: flex;
+    padding: 0;
+    overflow: hidden;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-right: 1px solid var(--color-border);
+  }
+}
+
+.area-rail {
+  flex: none;
+  width: var(--rail-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0.25rem;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.area-rail ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.area-rail-end {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-top: var(--space-2);
+  border-top: 1px solid color-mix(in srgb, var(--sidebar-text) 25%, transparent);
+}
+.area-rail-link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.45rem 0.1rem 0.4rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--sidebar-text);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.area-rail-link span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+.area-rail-link svg {
+  width: 1.375rem;
+  height: 1.375rem;
+  stroke-width: 1.75;
+}
+.area-rail-link:hover,
+.area-rail-link.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-focus);
+}
+/* Gewählter Bereich: kräftigere Fläche, fette Schrift und ein Balken am Rand, damit er nicht
+   nur an der Farbe hängt */
+.area-rail-link.active {
+  background: color-mix(in srgb, var(--sidebar-focus) 20%, transparent);
+  font-weight: 600;
+}
+.area-rail-link.active::before {
+  content: '';
+  position: absolute;
+  left: -0.25rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: currentColor;
+}
+
+/* Bereichsmenü: helle Fläche, Schrift in Textfarbe; die Regeln der Seitenleiste gelten weiter,
+   nur ihre Farben wechseln */
+.area-menu {
+  --sidebar-text: var(--color-text);
+  --sidebar-sub: var(--color-text);
+  --sidebar-muted: var(--color-text-muted);
+  --sidebar-active-bg: var(--color-brand-soft);
+  --sidebar-focus: var(--color-focus);
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--space-3) var(--space-2) var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.area-menu[hidden] {
+  display: none;
+}
+.area-menu-title {
+  margin: 0 0 var(--space-2);
+  padding: 0.2rem 0.75rem;
+  font-family: inherit;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+.area-menu .sidebar-link {
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-text);
+}
+.area-menu .sidebar-link:hover,
+.area-menu .sidebar-sublink:hover,
+.area-menu .sidebar-group-link:hover,
+.area-menu .sidebar-group-toggle:hover {
+  color: var(--color-text);
+}
+.area-menu .sidebar-link.active,
+.area-menu .sidebar-sublink.active,
+.area-menu .sidebar-group-link.active {
+  color: var(--color-link);
+  font-weight: 600;
+}
+.area-menu .sidebar-sub {
+  padding-left: 0.75rem !important;
+}
+/* Unterpunkte eines Menüpunkts, der wie sein Bereich heißt, stehen auf der ersten Ebene */
+.area-menu-flat > .sidebar-sub {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+.area-menu-flat > .sidebar-sub > li > .sidebar-sublink,
+.area-menu-flat > .sidebar-sub > li > .sidebar-group-toggle,
+.area-menu-flat > .sidebar-sub > li > .sidebar-group-row > .sidebar-group-link {
+  padding-left: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: var(--font-size-text);
+  font-weight: 500;
+}
+.area-menu-flat > .sidebar-sub > li > .sidebar-sublink.active,
+.area-menu-flat > .sidebar-sub > li > .sidebar-group-row > .sidebar-group-link.active {
+  font-weight: 600;
+}

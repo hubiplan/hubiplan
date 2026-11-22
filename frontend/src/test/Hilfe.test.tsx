@@ -389,18 +389,18 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
   const groupOf = (name: string) => placeOf(entry(name))?.group
 
   it('Einträge stehen in der Gruppe ihres Menüpunkts', () => {
-    expect(groupOf('seiten/versammlungen.md')).toBe('planen')
-    expect(groupOf('seiten/helferdienste.md')).toBe('planen')
-    expect(groupOf('seiten/aufgaben.md')).toBe('planen')
+    expect(groupOf('seiten/versammlungen.md')).toBe('planung')
+    expect(groupOf('seiten/helferdienste.md')).toBe('planung')
+    expect(groupOf('seiten/aufgaben.md')).toBe('planung')
     expect(groupOf('seiten/musik.md')).toBe('vereinsleben')
-    expect(groupOf('seiten/chronik.md')).toBe('verein')
+    expect(groupOf('seiten/chronik.md')).toBe('vereinsleben')
     expect(groupOf('seiten/dokumente.md')).toBe('kommunikation')
     expect(groupOf('seiten/umfragen.md')).toBe('kommunikation')
-    expect(groupOf('seiten/geschaeftspartner.md')).toBe('verwaltung')
+    expect(groupOf('seiten/geschaeftspartner.md')).toBe('finanzen')
     expect(groupOf('seiten/wettbewerbe.md')).toBe('vereinsleben')
-    expect(groupOf('seiten/belegung.md')).toBe('verwaltung')
-    expect(groupOf('seiten/finanzen-beitragslaeufe.md')).toBe('verwaltung')
-    expect(groupOf('seiten/mein-bereich.md')).toBe('alltag')
+    expect(groupOf('seiten/belegung.md')).toBe('verein')
+    expect(groupOf('seiten/finanzen-beitragslaeufe.md')).toBe('finanzen')
+    expect(groupOf('seiten/mein-bereich.md')).toBe('start')
     expect(groupOf('seiten/mein-konto-briefvorlage.md')).toBe('konto')
     expect(groupOf('seiten/plattform.md')).toBe('plattform')
   })
@@ -408,12 +408,13 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
   it('Anleitungen im Ablauf, Hauptseite zuerst, Gruppen in der Reihenfolge der Seitenleiste', () => {
     const sections = byMenu([...DE.values()])
     expect(sections.map((s) => s.group)).toEqual([
-      'alltag',
-      'planen',
-      'verein',
-      'vereinsleben',
+      'start',
+      'mitglieder',
+      'planung',
       'kommunikation',
-      'verwaltung',
+      'vereinsleben',
+      'finanzen',
+      'verein',
       'konto',
       'plattform',
     ])

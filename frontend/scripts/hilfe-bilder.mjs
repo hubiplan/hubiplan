@@ -243,7 +243,7 @@ for (const language of dark ? ['de'] : ['de', 'en']) {
         }
         // „Ansicht als Rolle“ steht im Menü „Mein Konto“ oben rechts
         if (b.name === 'ansicht-als-rolle') {
-          await page.locator('header.topbar .account-menu > button').click()
+          await page.locator('header.topbar .account-menu:not(.new-menu) > button').click()
           await page.locator('#konto-menue').waitFor()
         }
         if (b.name === 'mitgliedsakte') {
