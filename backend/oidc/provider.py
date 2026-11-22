@@ -42,6 +42,7 @@ SCOPES = ("openid", "profile", "email", "groups")
 CODE_PREFIX = "oidc:code:"
 TOKEN_PREFIX = "oidc:token:"  # noqa: S105 (Cache-Schlüssel, kein Passwort)
 MAX_PARAM = 500
+MAX_HINT = 8000
 # Sitzungsschlüssel: client_id -> Zeitpunkt der Abmeldung von dieser Nextcloud
 LOGGED_OUT_KEY = "oidc_logged_out"
 # Diese Angaben von ``prompt`` verlangen eine sichtbare Bestätigung statt stiller Anmeldung
@@ -149,11 +150,11 @@ def _with_query(url: str, params: dict) -> str:
     return urlunsplit((parts.scheme, parts.netloc, parts.path, joined, ""))
 
 
-def _param(params, name: str) -> str:
+def _param(params, name: str, limit: int = MAX_PARAM) -> str:
     value = params.get(name)
     if isinstance(value, list):
         value = value[0] if value else ""
-    return str(value or "")[:MAX_PARAM]
+    return str(value or "")[:limit]
 
 
 def describe(params) -> dict:
@@ -298,7 +299,8 @@ def end_session(request, params) -> dict:
     nur an die eingetragene Nextcloud (gleiche Herkunft), sonst an ihre Startseite.
     """
     client = find_client(_param(params, "client_id"))
-    hint = _param(params, "id_token_hint")
+    # Ein ID-Token ist länger als die übrigen Angaben
+    hint = _param(params, "id_token_hint", MAX_HINT)
     if client is None and hint:
         client = _client_from_hint(hint)
     if client is None:

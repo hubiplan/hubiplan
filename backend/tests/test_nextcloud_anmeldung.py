@@ -489,7 +489,8 @@ def test_nach_abmeldung_nicht_still_wieder_angemeldet(api, orgs, board_a):
     again = start(c, client)
     assert again.status_code == 409
     assert again.json() == {"confirm": True, "name": "Nextcloud"}
-    assert start(c, client, prompt="none").json()["redirect"].endswith("interaction_required")
+    silent = parse_qs(urlsplit(start(c, client, prompt="none").json()["redirect"]).query)
+    assert silent["error"] == ["interaction_required"]
     # Bei HUBIplan bleibt man angemeldet
     assert c.get("/api/me/").status_code == 200
 
