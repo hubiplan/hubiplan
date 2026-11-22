@@ -200,7 +200,8 @@ export function StatusMessage({ message }: { message: string | null }) {
 
 /** Unterpunkte; `section` setzt in der Seitenleiste eine Zwischenüberschrift. */
 export function Tabs({ items }: { items: { to: string; label: string; section?: string }[] }) {
-  // Im App-Rahmen stehen die Punkte in der Seitenleiste (UX-Audit 31.10. W09)
+  // Viele Punkte, Punkte mit Zwischenüberschriften und solche, die das Menü schon führt,
+  // stehen im Menü; wenige Unterpunkte einer Seite als Reiter im Inhalt (W6)
   if (useSubNav(items)) return null
   return (
     <nav className="tabs" aria-label={t('Bereiche')}>

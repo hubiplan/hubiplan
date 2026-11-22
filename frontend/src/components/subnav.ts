@@ -11,25 +11,43 @@ export interface SubNavItem {
   group?: { key: string; label: string; to?: string }
   /** Zwischenüberschrift: steht vor dem ersten Punkt eines neuen Abschnitts (VW-06) */
   section?: string
+  /** Steht als Reiter im Inhalt, nicht im Menü (Konzept Web-Oberfläche W6: höchstens drei Ebenen) */
+  tab?: boolean
 }
 
 export interface SubNavApi {
   set: (id: string, items: SubNavItem[] | null) => void
+  /** Pfade, die das Menü des aktuellen Menüpunkts schon fest zeigt */
+  fixed?: string[]
 }
 
 export const SubNavContext = createContext<SubNavApi | null>(null)
 
-/** Meldet Unterpunkte an; true, wenn die Seitenleiste sie zeigt. */
+/** Höchstens so viele Unterpunkte stehen als Reiter im Inhalt; mehr bleiben im Menü */
+export const MAX_TABS = 7
+
+/**
+ * Meldet Unterpunkte an; true, wenn das Menü sie zeigt. Wenige Unterpunkte ohne
+ * Zwischenüberschriften, die das Menü nicht schon fest führt, erscheinen stattdessen als
+ * Reiter im Inhalt (W6): Sie bleiben angemeldet, damit Pfadzeile und Seitentitel stimmen.
+ */
 export function useSubNav(items: SubNavItem[]): boolean {
   const api = useContext(SubNavContext)
   const id = useId()
-  const key = JSON.stringify(items)
+  const set = api?.set
+  const fixed = api?.fixed
+  const inMenu =
+    !!api &&
+    (items.length > MAX_TABS ||
+      items.some((i) => i.section) ||
+      (!!fixed && items.every((i) => fixed.includes(i.to))))
+  const key = JSON.stringify(inMenu ? items : items.map((i) => ({ ...i, tab: true })))
   useLayoutEffect(() => {
-    if (!api) return
-    api.set(id, JSON.parse(key) as SubNavItem[])
-    return () => api.set(id, null)
-  }, [api, id, key])
-  return !!api
+    if (!set) return
+    set(id, JSON.parse(key) as SubNavItem[])
+    return () => set(id, null)
+  }, [set, id, key])
+  return inMenu
 }
 
 export interface NavNode {

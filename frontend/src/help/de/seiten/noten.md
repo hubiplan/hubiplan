@@ -9,7 +9,7 @@ stichworte: [Noten, Notenarchiv, Notenbestand, Chor, Arrangement, Stimme]
 
 # Noten
 
-Das Notenarchiv verwaltet Stücke, Arrangements, Stimmen und digitale Notenunterlagen. Ohne das Modul Musik, etwa bei einem Chor ohne Auftrittsplanung, steht es als eigener Menüpunkt **Noten** in der Seitenleiste; mit Musik findest du es unter Musik › Notenbestand.
+Das Notenarchiv verwaltet Stücke, Arrangements, Stimmen und digitale Notenunterlagen. Ohne das Modul Musik, etwa bei einem Chor ohne Auftrittsplanung, steht es als eigener Menüpunkt **Noten** im Menü; mit Musik findest du es unter Musik › Notenbestand.
 
 Pflegen darf, wer das Recht „Notenbestand pflegen“ hat. Rollen mit Musikrechten können den Bestand lesen, damit Programme und Proben Arrangements auswählen können.
 

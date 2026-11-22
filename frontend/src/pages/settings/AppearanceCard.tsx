@@ -7,11 +7,14 @@ import { helpShortcutEnabled, setHelpShortcutEnabled } from '../../help/shortcut
 import { t } from '../../i18n/index.ts'
 import { colorSchemeChoice, setColorSchemeChoice } from '../../theme/colorScheme.ts'
 import type { ColorSchemeChoice } from '../../theme/colorScheme.ts'
+import { density, setDensity } from '../../theme/density.ts'
+import type { Density } from '../../theme/density.ts'
 
 export function AppearanceCard() {
   const [value, setValue] = useState<ColorSchemeChoice>(colorSchemeChoice())
   const [busy, setBusy] = useState(false)
   const [shortcut, setShortcut] = useState(helpShortcutEnabled())
+  const [dense, setDense] = useState<Density>(density())
   const [error, setError] = useState<string | null>(null)
 
   async function choose(next: ColorSchemeChoice) {
@@ -48,6 +51,22 @@ export function AppearanceCard() {
         <option value="light">{t('Hell')}</option>
         <option value="dark">{t('Dunkel')}</option>
         <option value="auto">{t('Wie Gerät')}</option>
+      </SelectField>
+      {/* W5: kompakte Darstellung für große Bildschirme und lange Listen */}
+      <SelectField
+        label={t('Dichte')}
+        value={dense}
+        onChange={(e) => {
+          const next = e.target.value as Density
+          setDensity(next)
+          setDense(next)
+        }}
+        hint={t(
+          'Kompakt zeigt mehr Zeilen und kleinere Felder. Gilt in diesem Browser; auf Geräten mit Fingerbedienung bleiben Knöpfe groß.',
+        )}
+      >
+        <option value="comfortable">{t('Bequem')}</option>
+        <option value="compact">{t('Kompakt')}</option>
       </SelectField>
       {/* VW-03: Einzeltasten-Kürzel abschaltbar (WCAG 2.1.4) */}
       <Checkbox

@@ -1,0 +1,13 @@
+{
+  "hinweis": "Gestaltungswerte, die die Web-Oberfläche mit den Apps (Android und iOS) teilt. Ein Test vergleicht theme.css damit; bei Änderungen die Apps mitziehen.",
+  "marke": { "primaer": "#0e7c66", "akzent": "#f2b33d" },
+  "radius": { "klein": 4, "normal": 6, "gross": 8, "blatt": 12 },
+  "schrift": {
+    "titelGross": 28,
+    "titel": 22,
+    "ueberschrift": 17,
+    "text": 15,
+    "klein": 13,
+    "marke": 12
+  }
+}

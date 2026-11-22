@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { appearanceApi } from '../api/appearance.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { initColorScheme, setColorSchemeChoice, setColorSchemePath } from '../theme/colorScheme.ts'
+import { initDensity } from '../theme/density.ts'
 
 let started = false
 
@@ -17,6 +18,7 @@ export function ColorSchemeSync() {
     if (!started) {
       started = true
       initColorScheme()
+      initDensity()
     }
     setColorSchemePath(pathname)
   }, [pathname])

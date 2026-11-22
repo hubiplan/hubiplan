@@ -14,7 +14,7 @@ siehe: [guide.unit_create, guide.unit_lead]
 stichworte: [platoon, department, area, leader]
 ---
 
-This is the work area of the sub-unit where you have a role. You see its members, events, documents and invoices as far as your role allows. You switch the area at the top right. Its sub-items (members, development, invoices, offices, entries, export) are in the sidebar, as for every other area.
+This is the work area of the sub-unit where you have a role. You see its members, events, documents and invoices as far as your role allows. You switch the area at the top right. Its sub-items (members, development, invoices, offices, entries, export) are in the menu, as for every other area.
 
 ## Trends
 

@@ -501,8 +501,7 @@ class TestAnnehmenImMailprogramm:
         anna, bernd = members["anna"], members["bernd"]
         address = rsvp.email_of(anna)
         good = imip.reply_code(event.pk, anna.pk)
-        # Sicher ein anderes letztes Zeichen (endete der Code schon auf „0“, blieb er gültig)
-        bad = good[:-1] + ("1" if good.endswith("0") else "0")
+        bad = good[:-1] + ("0" if good[-1] != "0" else "1")
         entry = inbound.process_message(self.reply_mail(address, bad))
         assert entry.status == InboundMail.Status.REJECTED
         # Code von Anna, Antwort von Bernd
