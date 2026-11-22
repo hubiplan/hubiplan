@@ -24,13 +24,14 @@ function renderApp(path: string) {
 }
 
 describe('Bereiche des Menüs', () => {
-  it('jeder Menüpunkt gehört zu einem der sieben Bereiche und hat eine Beschreibung', () => {
+  it('jeder Menüpunkt gehört zu einem der acht Bereiche und hat eine Beschreibung', () => {
     const ids = AREAS.map((a) => a.id)
     expect(ids).toEqual([
       'start',
       'mitglieder',
       'planung',
       'kommunikation',
+      'webseite',
       'vereinsleben',
       'finanzen',
       'verein',

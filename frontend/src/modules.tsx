@@ -23,11 +23,18 @@ export interface Workspace {
 }
 
 export type AreaId =
-  'start' | 'mitglieder' | 'planung' | 'kommunikation' | 'vereinsleben' | 'finanzen' | 'verein'
+  | 'start'
+  | 'mitglieder'
+  | 'planung'
+  | 'kommunikation'
+  | 'webseite'
+  | 'vereinsleben'
+  | 'finanzen'
+  | 'verein'
 
 export interface AppModule {
   id: string
-  /** Bereich der Bereichsleiste (Konzept Web-Oberfläche: sieben Bereiche) */
+  /** Bereich der Bereichsleiste (Konzept Web-Oberfläche: acht Bereiche) */
   area: AreaId
   label: string
   /** Ein kurzer Satzteil, was man dort tut (Bereichsübersicht) */
@@ -123,7 +130,7 @@ export interface AppArea {
 }
 
 /**
- * Die sieben Bereiche der Bereichsleiste, in fester Reihenfolge. Jeder Menüpunkt gehört zu
+ * Die acht Bereiche der Bereichsleiste, in fester Reihenfolge. Jeder Menüpunkt gehört zu
  * genau einem Bereich; das Bereichsmenü daneben zeigt nur die Punkte des gewählten Bereichs.
  */
 export const AREAS: AppArea[] = [
@@ -141,6 +148,12 @@ export const AREAS: AppArea[] = [
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
   },
   { id: 'kommunikation', label: t('Kommunikation'), icon: icon('M3 6h18v12H3zM3 6l9 7 9-7') },
+  // Die Webseite ist ein eigener Bereich, nicht unter Kommunikation versteckt (Ralf 22.11.)
+  {
+    id: 'webseite',
+    label: t('Webseite'),
+    icon: icon('M3 5h18v14H3zM3 9h18M6 7h.01M8.5 7h.01M7 13h6M7 16h10'),
+  },
   {
     id: 'vereinsleben',
     label: t('Vereinsleben'),
@@ -458,7 +471,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'webseite',
-    area: 'kommunikation',
+    area: 'webseite',
     label: t('Webseite'),
     text: t('Inhalte, Gestaltung und Betrieb der Vereinswebseite'),
     path: '/webseite',

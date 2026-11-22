@@ -71,20 +71,20 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
   },
   {
     id: 'kommunikation',
-    label: () => t('Rundschreiben, Dokumente und Webseite'),
+    label: () => t('Rundschreiben und Dokumente'),
     keys: [
       'guide.circular_send',
       'guide.letter_write',
       'guide.document_upload',
       'guide.folder_share',
-      'guide.website_text',
-      'guide.website_images',
     ],
   },
   {
     id: 'webseite',
-    label: () => t('Webseite gestalten'),
+    label: () => t('Webseite pflegen'),
     keys: [
+      'guide.website_text',
+      'guide.website_images',
       'guide.website_design',
       'guide.website_home',
       'guide.website_page',
