@@ -8,7 +8,7 @@ reihe: 10
 stichworte: [booking, occupancy, room, loan, reservation]
 ---
 
-1. Open [Bookings](/belegung) under Equipment & rooms.
+1. Open [Bookings](/belegung) under Planning.
 2. Choose **Book**.
 3. Choose the item, purpose and time, or instead of a time an event that the booking then follows.
 4. Set a weekly, monthly or yearly repetition if needed.

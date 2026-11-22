@@ -398,7 +398,7 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
     expect(groupOf('seiten/umfragen.md')).toBe('kommunikation')
     expect(groupOf('seiten/geschaeftspartner.md')).toBe('finanzen')
     expect(groupOf('seiten/wettbewerbe.md')).toBe('vereinsleben')
-    expect(groupOf('seiten/belegung.md')).toBe('verein')
+    expect(groupOf('seiten/belegung.md')).toBe('planung')
     expect(groupOf('seiten/finanzen-beitragslaeufe.md')).toBe('finanzen')
     expect(groupOf('seiten/mein-bereich.md')).toBe('start')
     expect(groupOf('seiten/mein-konto-briefvorlage.md')).toBe('konto')
