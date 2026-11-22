@@ -21,6 +21,7 @@ export const HELP_GROUPS: readonly HelpGroup[] = [
   'mitglieder',
   'planung',
   'kommunikation',
+  'webseite',
   'vereinsleben',
   'finanzen',
   'verein',

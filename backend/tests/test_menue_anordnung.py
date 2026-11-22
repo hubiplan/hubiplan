@@ -38,12 +38,12 @@ def test_standard_ohne_eigene_anordnung(api, orgs, board_a):
 
 def test_menuepunkt_als_hauptmenuepunkt_und_verschieben(api, orgs, board_a):
     club = orgs["a"]
-    layout = _layout(*STANDARD_IDS, "webseite", geschaeftspartner="verein")
+    layout = _layout(*STANDARD_IDS, "wettbewerbe", geschaeftspartner="verein")
     resp = api(board_a).put(_url(club), {"layout": layout}, content_type=JSON)
     assert resp.status_code == 200, resp.content
     saved = resp.json()["layout"]
-    assert saved["areas"][-1] == {"id": "webseite"}
-    assert menu_layout.area_of(saved, "webseite") == "webseite"
+    assert saved["areas"][-1] == {"id": "wettbewerbe"}
+    assert menu_layout.area_of(saved, "wettbewerbe") == "wettbewerbe"
     assert menu_layout.area_of(saved, "geschaeftspartner") == "verein"
     assert menu_layout.area_of(saved, "termine") == "planung"
     assert resp.json()["can_undo"] is True

@@ -22,6 +22,11 @@
       "label_en": "Communication"
     },
     {
+      "id": "webseite",
+      "label": "Webseite",
+      "label_en": "Website"
+    },
+    {
       "id": "vereinsleben",
       "label": "Vereinsleben",
       "label_en": "Club life"
@@ -59,7 +64,7 @@
     "umfragen": "kommunikation",
     "pinnwand": "kommunikation",
     "dokumente": "kommunikation",
-    "webseite": "kommunikation",
+    "webseite": "webseite",
     "auslagen": "finanzen",
     "finanzen": "finanzen",
     "geschaeftspartner": "finanzen",

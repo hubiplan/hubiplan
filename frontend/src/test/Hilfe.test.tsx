@@ -396,6 +396,8 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
     expect(groupOf('seiten/chronik.md')).toBe('vereinsleben')
     expect(groupOf('seiten/dokumente.md')).toBe('kommunikation')
     expect(groupOf('seiten/umfragen.md')).toBe('kommunikation')
+    expect(groupOf('seiten/webseite.md')).toBe('webseite')
+    expect(groupOf('seiten/webseite-gestaltung.md')).toBe('webseite')
     expect(groupOf('seiten/geschaeftspartner.md')).toBe('finanzen')
     expect(groupOf('seiten/wettbewerbe.md')).toBe('vereinsleben')
     expect(groupOf('seiten/belegung.md')).toBe('planung')
@@ -412,6 +414,7 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
       'mitglieder',
       'planung',
       'kommunikation',
+      'webseite',
       'vereinsleben',
       'finanzen',
       'verein',
