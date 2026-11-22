@@ -44,7 +44,7 @@ export function NextcloudLogoutPage() {
     }
   }
 
-  const name = answer?.name || 'Nextcloud'
+  const name = answer?.name || t('Nextcloud')
   const stillIn = Boolean(user) && !done
 
   return (

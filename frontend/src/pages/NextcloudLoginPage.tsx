@@ -83,7 +83,7 @@ export function NextcloudLoginPage() {
           <>
             <p>
               {t('Du hast dich von „{name}“ abgemeldet. Möchtest du dich wieder anmelden?', {
-                name: confirm || 'Nextcloud',
+                name: confirm || t('Nextcloud'),
               })}
             </p>
             <p className="muted small">
