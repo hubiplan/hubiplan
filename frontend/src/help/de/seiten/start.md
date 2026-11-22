@@ -5,6 +5,9 @@ routen: [/]
 stichworte:
   [
     Schnellsuche,
+    Bereichsleiste,
+    Bereichsmenü,
+    Neu,
     Suchen,
     Aufgaben,
     Schnellaktionen,
@@ -20,13 +23,17 @@ stichworte:
 
 Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anordnung hat sie für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, **Nächste Termine**, **Jubiläen**, **Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
 
-## Navigation, Hilfe und Schnellsuche
+## Bereiche und Menü
 
-Die Navigation links beginnt mit **Startseite**, **Aufgaben** und **Termine**. Darunter folgen die Bereiche des Vereinslebens, die Organisation und zuletzt die Verwaltung. Abstände gliedern die sichtbaren Bereiche; **Hilfe** bleibt unten abgesetzt.
+Links steht die Bereichsleiste in der Farbe deines Vereins mit bis zu sieben Bereichen: **Start**, **Mitglieder**, **Planung**, **Kommunikation**, **Vereinsleben**, **Finanzen** und **Verein**. Du siehst nur die Bereiche, in denen du etwas darfst. Ein Klick öffnet den Bereich; daneben zeigt das helle Bereichsmenü nur die Seiten dieses Bereichs, etwa unter Planung Termine, Versammlungen, Helferdienste und Aufgaben. Mit **Menü** unten in der Bereichsleiste klappst du das Bereichsmenü ein, wenn eine Liste mehr Platz braucht, und wieder aus; **Hilfe** steht darunter. Am Handy öffnet „Mehr“ das ganze Menü, nach Bereichen gegliedert.
 
-Oben öffnet **Hilfe zu dieser Seite** die Hilfe zur aktuellen Seite; auf schmalen Bildschirmen steht dort nur das Zeichen „?“. **Hilfe** in der Seitenleiste führt zur Übersicht aller Anleitungen. Unter **Mein Konto** findest du deine E-Mail-Adresse, die persönlichen Einstellungen und **Abmelden**.
+**Neu** oben in der Kopfzeile legt von jeder Seite aus etwas an, je nach deinen Rechten etwa einen Termin, ein Mitglied, eine Buchung oder ein Rundschreiben. Es sind dieselben Aktionen wie bei den Schnellaktionen der Startseite.
 
-**Schnellsuche** oben (oder Strg+K, am Mac ⌘K) springt direkt zu einer Seite: Tippe ein paar Buchstaben, etwa „mahn“ für Finanzen › Mahnungen, wähle mit den Pfeiltasten und öffne mit der Eingabetaste. Wer Mitglieder des Vereins sehen darf, findet dort auch Mitglieder nach Name oder Mitgliedsnummer und landet in der Mitgliedsakte. Gefunden wird nur, was du auch im Menü erreichst. Am Handy steht die Schnellsuche oben im Menü („Mehr“).
+## Hilfe und Schnellsuche
+
+Oben öffnet **Hilfe zu dieser Seite** die Hilfe zur aktuellen Seite; auf schmalen Bildschirmen steht dort nur das Zeichen „?“. **Hilfe** unten in der Bereichsleiste führt zur Übersicht aller Anleitungen. Unter **Mein Konto** findest du deine E-Mail-Adresse, die persönlichen Einstellungen und **Abmelden**.
+
+**Schnellsuche** oben in der Mitte (oder Strg+K, am Mac ⌘K) springt direkt zu einer Seite: Tippe ein paar Buchstaben, etwa „mahn“ für Finanzen › Mahnungen, wähle mit den Pfeiltasten und öffne mit der Eingabetaste. Wer Mitglieder des Vereins sehen darf, findet dort auch Mitglieder nach Name oder Mitgliedsnummer und landet in der Mitgliedsakte. Gefunden wird nur, was du auch im Menü erreichst. Am Handy steht die Schnellsuche oben im Menü („Mehr“).
 
 Die Leiste unten am Handy zeigt Start und zwei Bereiche, die zu deiner Rolle passen, etwa Finanzen für die Kasse oder Versammlungen für die Schriftführung; alles andere erreichst du über „Mehr“. Auch Termine aus dem Kalender findest du dort nach ihrem Titel, etwa „versamm“ für die Generalversammlung; die kommenden stehen zuerst. Mit ↶ und ↷ oben nimmst du deine letzten Änderungen zurück oder stellst sie wieder her; der Pfeil ▾ daneben zeigt deine Schritte in diesem Browserfenster. Ältere Änderungen stehen unter Einstellungen › Protokoll.
 

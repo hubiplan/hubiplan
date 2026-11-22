@@ -8,9 +8,11 @@ import { NavTrailContext, navTrail, trailTitle } from './navTrail.ts'
 import type { TrailItem } from './navTrail.ts'
 import { PageSlotProvider } from './PageHeader.tsx'
 import { confirmLeave } from './leaveGuard.ts'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
-import { GROUP_LABELS, bottomNavIds, modules } from '../modules.tsx'
+import { AREAS, bottomNavIds, modules } from '../modules.tsx'
+import { NewMenu } from './NewMenu.tsx'
+import { actionCatalog, deptCatalog } from './home/roleActions.ts'
 import { QuickSearch } from './QuickSearch.tsx'
 import type { QuickPage } from './QuickSearch.tsx'
 import { portalSections } from '../pages/portal/sections.ts'
@@ -39,6 +41,9 @@ import { NewReleaseNotice } from '../news/NewReleaseNotice.tsx'
 import { PERM, rolePreviewApi } from '../api/orgs.ts'
 import { locale, t } from '../i18n/index.ts'
 import { atMost, BP_MEDIUM } from '../theme/breakpoints.ts'
+
+/** Merkt je Gerät, ob das Bereichsmenü eingeklappt ist */
+const MENU_KEY = 'hubiplan.bereichsmenue'
 
 // Seiten außerhalb der Bereiche in der Seitenleiste
 const OTHER_PAGES: Record<string, string> = {
@@ -74,6 +79,24 @@ export function Layout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [navOpen, setNavOpen] = useState(false)
+  // Bereichsmenü neben der Bereichsleiste: einklappbar, damit breite Listen mehr Platz haben
+  const [menuClosed, setMenuClosed] = useState(() => {
+    try {
+      return window.localStorage.getItem(MENU_KEY) === 'zu'
+    } catch {
+      return false
+    }
+  })
+  function toggleMenu() {
+    setMenuClosed((closed) => {
+      try {
+        window.localStorage.setItem(MENU_KEY, closed ? 'auf' : 'zu')
+      } catch {
+        // Ohne Speicher gilt die Wahl bis zum Neuladen
+      }
+      return !closed
+    })
+  }
   // Unterpunkte der aktuellen Seite (früher Reiter), siehe subnav.ts
   const [subNav, setSubNav] = useState<Record<string, SubNavItem[]>>({})
   const setSub = useCallback((id: string, items: SubNavItem[] | null) => {
@@ -285,13 +308,24 @@ export function Layout() {
   )
     .map((id) => visible.find((m) => m.id === id))
     .filter((m): m is (typeof visible)[number] => !!m)
-  // Aufeinanderfolgende Bereiche derselben Gruppe (VW-28)
-  const navGroups: { group: (typeof modules)[number]['group']; items: typeof visible }[] = []
-  for (const m of visible) {
-    const last = navGroups[navGroups.length - 1]
-    if (last && last.group === m.group) last.items.push(m)
-    else navGroups.push({ group: m.group, items: [m] })
-  }
+  // Bereiche der Bereichsleiste mit ihren sichtbaren Menüpunkten (Konzept Web-Oberfläche)
+  // Hat ein Bereich für die Person nur einen Menüpunkt, trägt er dessen Namen und Zeichen
+  // (z. B. „Züge“ statt „Mitglieder“): Hinter dem Namen steckt dann genau diese Seite.
+  const areas = AREAS.map((a) => {
+    const items = visible.filter((m) => m.area === a.id)
+    const only = items.length === 1 && a.id !== 'start' ? items[0] : null
+    return only
+      ? {
+          ...a,
+          items,
+          label:
+            only.id === 'abteilung' && activeDept
+              ? activeDept.label
+              : (only.labelFor?.(active, ws) ?? only.label),
+          icon: only.icon,
+        }
+      : { ...a, items }
+  }).filter((a) => a.items.length > 0)
   const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
   const inModule = (m: (typeof modules)[number]) =>
     modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -338,6 +372,22 @@ export function Layout() {
   const currentModule = visible
     .filter((m) => modulePaths(m).some(matchesPath))
     .sort((a, b) => b.path.length - a.path.length)[0]
+  // Gewählter Bereich: der des aktuellen Menüpunkts; Seiten außerhalb (Hilfe, Mein Konto)
+  // gehören zu keinem
+  const currentArea = areas.find((a) => a.id === currentModule?.area) ?? null
+  const moduleLabel = (m: (typeof modules)[number]) =>
+    m.id === 'abteilung' && activeDept ? activeDept.label : (m.labelFor?.(active, ws) ?? m.label)
+  const moduleLink = (m: (typeof modules)[number]) => m.linkFor?.(active, ws) ?? m.path
+  const moduleTree = (m: (typeof modules)[number]) =>
+    buildNavTree(m.path, m.children?.(active, ws) ?? [], inModule(m) ? Object.values(subNav) : [])
+  // Heißt der Menüpunkt wie sein Bereich (Mitglieder, Finanzen), stehen seine Unterpunkte
+  // direkt im Bereichsmenü: eine Ebene weniger
+  const flat = (m: (typeof modules)[number]) =>
+    m.id === m.area && moduleTree(m).some((n) => n.to === moduleLink(m))
+  // Ein Bereich mit nur einer Seite (Start) braucht kein Bereichsmenü
+  const areaHasMenu =
+    !!currentArea && (currentArea.items.length > 1 || moduleTree(currentArea.items[0]).length > 0)
+  const newActions = active ? actionCatalog(active) : activeDept ? deptCatalog(activeDept) : []
   const trail = currentModule
     ? navTrail(
         pathname,
@@ -439,7 +489,11 @@ export function Layout() {
         <PageSlotProvider>
           <LearningProvider off={!active && !activeDept}>
             <HelpProvider>
-              <div className={`app-shell${navOpen ? ' nav-open' : ''}`}>
+              <div
+                className={`app-shell${navOpen ? ' nav-open' : ''}${
+                  areaHasMenu && !menuClosed ? '' : ' area-menu-off'
+                }`}
+              >
                 <a href="#inhalt" className="skip-link">
                   {t('Zum Inhalt springen')}
                 </a>
@@ -460,14 +514,18 @@ export function Layout() {
                   <NavLink to="/" className="topbar-brand">
                     <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
-                  <div className="topbar-user">
-                    {!narrow && (
+                  {/* Suche in der Mitte: der schnellste Weg zu jeder Seite, jedem Mitglied und Termin */}
+                  {!narrow && (
+                    <div className="topbar-search">
                       <QuickSearch
                         pages={quickPages}
                         memberOrg={quickMemberOrg}
                         eventBase={quickEventBase}
                       />
-                    )}
+                    </div>
+                  )}
+                  <div className="topbar-user">
+                    {!previewOrg && <NewMenu actions={newActions} />}
                     {!narrow && headerTools}
                     {/* VW-02: auch am Handy erreichbar, dort nur als Zeichen mit Namen */}
                     <HelpButton compact={narrow} />
@@ -506,69 +564,174 @@ export function Layout() {
                       {headerTools}
                     </div>
                   )}
-                  {/* Je Gruppe eine Überschrift mit eigener Liste, damit Hilfstechnik die Gruppen
-                      ansagt (UX-Audit 16.11. VW-28) */}
-                  <ul className="sidebar-groups">
-                    {navGroups.map((g, index) => (
-                      <li key={g.group} className={index > 0 ? 'sidebar-group-start' : undefined}>
-                        <h2 className="sidebar-group-label" id={`menue-gruppe-${g.group}`}>
-                          {GROUP_LABELS[g.group]}
-                        </h2>
-                        <ul aria-labelledby={`menue-gruppe-${g.group}`}>
-                          {g.items.map((m) => (
-                            <li key={m.id}>
-                              <NavLink
-                                to={m.linkFor?.(active, ws) ?? m.path}
-                                end={m.path === '/'}
-                                className="sidebar-link"
-                                onClick={choseInNav}
-                              >
-                                {m.icon}
-                                <span>
-                                  {m.id === 'abteilung' && activeDept
-                                    ? activeDept.label
-                                    : (m.labelFor?.(active, ws) ?? m.label)}
-                                </span>
-                              </NavLink>
-                              {inModule(m) && (
-                                // Unterpunkte; tiefere Ebenen nur unter dem aktiven Punkt, Finanzen
-                                // in aufklappbaren Arbeitsgruppen (Konzept S-01)
-                                <SubNavList
-                                  nodes={buildNavTree(
-                                    m.path,
-                                    m.children?.(active, ws) ?? [],
-                                    Object.values(subNav),
+                  {narrow ? (
+                    <>
+                      {/* Handy und Tablet: das ganze Menü, je Bereich eine Überschrift mit eigener
+                          Liste, damit Hilfstechnik die Bereiche ansagt (UX-Audit 16.11. VW-28) */}
+                      <ul className="sidebar-groups">
+                        {areas.map((a, index) => (
+                          <li key={a.id} className={index > 0 ? 'sidebar-group-start' : undefined}>
+                            <h2 className="sidebar-group-label" id={`menue-gruppe-${a.id}`}>
+                              {a.label}
+                            </h2>
+                            <ul aria-labelledby={`menue-gruppe-${a.id}`}>
+                              {a.items.map((m) => (
+                                <li key={m.id}>
+                                  <NavLink
+                                    to={moduleLink(m)}
+                                    end={m.path === '/'}
+                                    className="sidebar-link"
+                                    onClick={choseInNav}
+                                  >
+                                    {m.icon}
+                                    <span>{moduleLabel(m)}</span>
+                                  </NavLink>
+                                  {inModule(m) && (
+                                    <SubNavList
+                                      nodes={moduleTree(m)}
+                                      pathname={pathname}
+                                      onChoose={choseInNav}
+                                    />
                                   )}
-                                  pathname={pathname}
-                                  onChoose={choseInNav}
-                                />
-                              )}
+                                </li>
+                              ))}
+                            </ul>
+                          </li>
+                        ))}
+                      </ul>
+                      {/* Immer am selben Ort erreichbar, unabhängig vom Modul (UI-Audit H-NUI-C) */}
+                      <div className="sidebar-help">
+                        <NavLink to="/hilfe" className="sidebar-link" onClick={choseInNav}>
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                            aria-hidden="true"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01" />
+                          </svg>
+                          <span>{t('Hilfe')}</span>
+                        </NavLink>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Bereichsleiste in Vereinsfarbe: sieben feste Bereiche, immer sichtbar */}
+                      <div className="area-rail">
+                        <ul aria-label={t('Bereiche')}>
+                          {areas.map((a) => (
+                            <li key={a.id}>
+                              <Link
+                                to={moduleLink(a.items[0])}
+                                className={`area-rail-link${
+                                  a.id === currentArea?.id ? ' active' : ''
+                                }`}
+                                aria-current={a.id === currentArea?.id ? 'true' : undefined}
+                              >
+                                {a.icon}
+                                <span>{a.label}</span>
+                              </Link>
                             </li>
                           ))}
                         </ul>
-                      </li>
-                    ))}
-                  </ul>
-                  {/* Immer am selben Ort erreichbar, unabhängig vom Modul (UI-Audit H-NUI-C) */}
-                  <div className="sidebar-help">
-                    <NavLink to="/hilfe" className="sidebar-link" onClick={choseInNav}>
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        aria-hidden="true"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01" />
-                      </svg>
-                      <span>{t('Hilfe')}</span>
-                    </NavLink>
-                  </div>
+                        <div className="area-rail-end">
+                          {areaHasMenu && (
+                            <button
+                              type="button"
+                              className="area-rail-link area-rail-toggle"
+                              aria-expanded={!menuClosed}
+                              aria-controls="bereichsmenue"
+                              onClick={toggleMenu}
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                width="20"
+                                height="20"
+                                aria-hidden="true"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M4 5h16v14H4zM9.5 5v14" />
+                                <path
+                                  d={
+                                    menuClosed
+                                      ? 'M13.5 9.5 16 12l-2.5 2.5'
+                                      : 'M16 9.5 13.5 12l2.5 2.5'
+                                  }
+                                />
+                              </svg>
+                              <span>{t('Menü')}</span>
+                            </button>
+                          )}
+                          <NavLink to="/hilfe" className="area-rail-link">
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="20"
+                              height="20"
+                              aria-hidden="true"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="9" />
+                              <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01" />
+                            </svg>
+                            <span>{t('Hilfe')}</span>
+                          </NavLink>
+                        </div>
+                      </div>
+                      {/* Bereichsmenü: nur die Seiten des gewählten Bereichs, hell und ruhig */}
+                      {currentArea && areaHasMenu && (
+                        <div className="area-menu" id="bereichsmenue" hidden={menuClosed}>
+                          <h2 className="area-menu-title" id="bereichsmenue-titel">
+                            {currentArea.label}
+                          </h2>
+                          <ul aria-labelledby="bereichsmenue-titel">
+                            {currentArea.items.map((m) =>
+                              flat(m) ? (
+                                <li key={m.id} className="area-menu-flat">
+                                  <SubNavList
+                                    nodes={moduleTree(m)}
+                                    pathname={pathname}
+                                    onChoose={choseInNav}
+                                  />
+                                </li>
+                              ) : (
+                                <li key={m.id}>
+                                  <NavLink
+                                    to={moduleLink(m)}
+                                    end={m.path === '/'}
+                                    className="sidebar-link"
+                                    onClick={choseInNav}
+                                  >
+                                    <span>{moduleLabel(m)}</span>
+                                  </NavLink>
+                                  {inModule(m) && (
+                                    <SubNavList
+                                      nodes={moduleTree(m)}
+                                      pathname={pathname}
+                                      onChoose={choseInNav}
+                                    />
+                                  )}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </nav>
                 <div className="sidebar-backdrop" aria-hidden="true" onClick={closeNav} />
                 {narrow && (

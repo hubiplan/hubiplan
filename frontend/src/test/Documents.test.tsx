@@ -179,7 +179,7 @@ describe('Dokumente', () => {
     setup(['members.view'])
     renderApp('/')
     const nav = within(await screen.findByRole('navigation', { name: 'Hauptmenü' }))
-    expect(await nav.findByRole('link', { name: 'Startseite' })).toBeInTheDocument()
+    expect(await nav.findByRole('link', { name: 'Start' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Dokumente' })).not.toBeInTheDocument()
   })
 })

@@ -1,25 +1,26 @@
 // Hilfe: Ort eines Eintrags im Menü (konzepte/hilfe-neustruktur.md, HN1).
 //
-// Die Hilfe ist so gegliedert wie die Seitenleiste: Gruppe › Menüpunkt. Der Ort folgt aus der
+// Die Hilfe ist so gegliedert wie das Menü: Bereich › Menüpunkt. Der Ort folgt aus der
 // ersten Route des Eintrags (oder dem Feld „menue“), damit Hilfe und Menü nie auseinanderlaufen.
 import { t } from '../i18n/index.ts'
-import { GROUP_LABELS, modules } from '../modules.tsx'
-import type { AppModule } from '../modules.tsx'
+import { AREA_LABELS, modules } from '../modules.tsx'
+import type { AreaId } from '../modules.tsx'
 import type { OrgSummary } from '../api/orgs.ts'
 import type { HelpEntry } from './content.ts'
 import { financeGroups, financeSections } from '../pages/finanzen/access.ts'
 import type { FinanceAccess } from '../pages/finanzen/access.ts'
 
-export type HelpGroup = AppModule['group'] | 'konto' | 'plattform'
+export type HelpGroup = AreaId | 'konto' | 'plattform'
 
-/** Gruppen in der Reihenfolge der Seitenleiste; Mein Konto und Plattform am Ende. */
+/** Bereiche in der Reihenfolge der Bereichsleiste; Mein Konto und Plattform am Ende. */
 export const HELP_GROUPS: readonly HelpGroup[] = [
-  'alltag',
-  'planen',
-  'verein',
-  'vereinsleben',
+  'start',
+  'mitglieder',
+  'planung',
   'kommunikation',
-  'verwaltung',
+  'vereinsleben',
+  'finanzen',
+  'verein',
   'konto',
   'plattform',
 ]
@@ -44,13 +45,13 @@ export function placeOf(entry: Pick<HelpEntry, 'routes' | 'menu'>): MenuPlace | 
   if (index < 0) return null
   const m = modules[index]
   if (m.id === 'plattform') return { group: 'plattform', item: m.id, index }
-  return { group: m.group, item: m.id, index }
+  return { group: m.area, item: m.id, index }
 }
 
 export function groupLabel(group: HelpGroup): string {
   if (group === 'konto') return t('Mein Konto')
   if (group === 'plattform') return t('Plattform')
-  return GROUP_LABELS[group]
+  return AREA_LABELS[group]
 }
 
 /** Name des Menüpunkts, wie die Seitenleiste ihn für die Einheit zeigt (z. B. „Züge“). */
