@@ -12,6 +12,8 @@ const WITH_BUTTON: Record<string, string> = {
   'components/RoleEditor.tsx': 'Rollen und Rechte',
   'pages/settings/RolesPage.tsx': 'Rollen und Rechte',
   'pages/settings/NextcloudPage.tsx': 'Zugang: wer sich anmelden darf, Dienstkonto, Sperren',
+  'pages/settings/ApiAccessPage.tsx':
+    'API-Zugang: Bereiche und Ablauf gälten für das fremde Programm schon beim Ankreuzen',
   'pages/settings/PasskeyCard.tsx': 'kleiner Dialog (Name des Passkeys)',
   'pages/platform/PlatformPages.tsx': 'Plattform: wäre schon beim Tippen wirksam',
   // Mitgliedsakte: Zeiträume und Abrechnung

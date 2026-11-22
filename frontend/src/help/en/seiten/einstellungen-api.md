@@ -8,7 +8,7 @@ stichworte:
   [API, interface, key, federation software, federation, other programs, data exchange, OpenAPI]
 ---
 
-With an API access another program reads data of your unit, for example your federation's software, a website of your own or a display board. Each access has its own key, may only read what you tick and expires by itself.
+With an API access another program reads data of your unit, for example your umbrella association's software, a website of your own or a display board. Each access has its own key, may only read what you tick and expires by itself.
 
 These accesses never provide names, addresses or bank details of individual members, and an access cannot change anything. Create a separate access for each program; then one can be deleted without disturbing the others.
 

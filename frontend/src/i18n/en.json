@@ -10985,7 +10985,7 @@
   "Der vorige Schlüssel gilt noch bis {date}.": "The previous key remains valid until {date}.",
   "Wieder einschalten": "Switch on again",
   "API-Zugänge": "API accesses",
-  "Mit einem API-Zugang liest ein anderes Programm Daten dieser Einheit, etwa die Software des Dachverbands oder eine eigene Webseite. Jeder Zugang hat einen eigenen Schlüssel, darf nur das Angekreuzte lesen und läuft von selbst ab.": "With an API access another program reads data of this unit, for example the federation’s software or a website of your own. Each access has its own key, may only read what is ticked and expires by itself.",
+  "Mit einem API-Zugang liest ein anderes Programm Daten dieser Einheit, etwa die Software des Dachverbands oder eine eigene Webseite. Jeder Zugang hat einen eigenen Schlüssel, darf nur das Angekreuzte lesen und läuft von selbst ab.": "With an API access another program reads data of this unit, for example the umbrella association’s software or a website of your own. Each access has its own key, may only read what is ticked and expires by itself.",
   "Namen, Anschriften und andere Angaben zu einzelnen Mitgliedern gibt es über diese Zugänge nicht. Ändern kann ein Zugang nichts.": "Names, addresses and other details of individual members are not available through these accesses. An access cannot change anything.",
   "Adresse der Schnittstelle": "Address of the interface",
   "Beschreibung für Entwickler": "Description for developers",
