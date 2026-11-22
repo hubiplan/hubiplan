@@ -4,7 +4,19 @@ titel: Sich in der App zurechtfinden
 routen: [/mein-konto/app]
 reihe: 41
 stichworte:
-  [App, Handy, Android, iPhone, Verwaltung, Start, Ich, Neues, ohne Netz, Dunkelmodus, Bedienungshilfen]
+  [
+    App,
+    Handy,
+    Android,
+    iPhone,
+    Verwaltung,
+    Start,
+    Ich,
+    Neues,
+    ohne Netz,
+    Dunkelmodus,
+    Bedienungshilfen,
+  ]
 ---
 
 Unten (auf dem Tablet links) stehen fünf Ziele: „Start“, „Termine“, „Neues“, „Ich“ und ein fünftes je nach Rolle: „Verwaltung“ mit Verwaltungsrechten, sonst „Noten“ oder „Aufgaben“. Welches das ist, wählst du unter „Mein Konto“ › „Einstellungen“ › „Fünfter Reiter“; alles andere erreichst du auf „Start“ unter „Schnell erreichbar“. Nach dem Umbau zeigt „Start“ einmal die Karte „So findest du dich zurecht“; „Verstanden“ schließt sie.
