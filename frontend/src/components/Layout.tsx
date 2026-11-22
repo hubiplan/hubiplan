@@ -409,7 +409,9 @@ export function Layout() {
     .sort((a, b) => b.path.length - a.path.length)[0]
   // Gewählter Bereich: der des aktuellen Menüpunkts; Seiten außerhalb (Hilfe, Mein Konto)
   // gehören zu keinem
-  const currentArea = areas.find((a) => a.id === currentModule?.area) ?? null
+  // Die Bereichsübersicht (/bereich/…) gehört zu ihrem Bereich
+  const overviewOf = /^\/bereich\/([a-z]+)$/.exec(pathname)?.[1]
+  const currentArea = areas.find((a) => a.id === (overviewOf ?? currentModule?.area)) ?? null
   const moduleLabel = (m: (typeof modules)[number]) =>
     m.id === 'abteilung' && activeDept ? activeDept.label : (m.labelFor?.(active, ws) ?? m.label)
   const moduleLink = (m: (typeof modules)[number]) => m.linkFor?.(active, ws) ?? m.path
@@ -484,6 +486,7 @@ export function Layout() {
     if (!currentModule) {
       const section = accountSectionLabel(pathname)
       if (section && pathname !== ACCOUNT_PATH) return t('{section} · Mein Konto', { section })
+      if (overviewOf) return currentArea?.label ?? null
       return OTHER_PAGES[pathname] ?? null
     }
     return trailTitle(trail)
@@ -791,7 +794,22 @@ export function Layout() {
                       {hasMenu && (
                         <div className="area-menu" id="bereichsmenue" hidden={menuClosed}>
                           <h2 className="area-menu-title" id="bereichsmenue-titel">
-                            {menuTitle}
+                            {/* Der Name des Bereichs führt zu seiner Übersicht (W4) */}
+                            {!memberNav &&
+                            currentArea &&
+                            currentArea.id !== 'finanzen' &&
+                            currentArea.items.length > 1 ? (
+                              <NavLink
+                                to={`/bereich/${currentArea.id}`}
+                                aria-label={t('Übersicht des Bereichs {area}', {
+                                  area: currentArea.label,
+                                })}
+                              >
+                                {menuTitle}
+                              </NavLink>
+                            ) : (
+                              menuTitle
+                            )}
                           </h2>
                           <ul aria-labelledby="bereichsmenue-titel">
                             {memberCurrent?.links.map((l) => (

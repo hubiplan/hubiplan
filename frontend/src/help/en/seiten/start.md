@@ -27,7 +27,11 @@ The home page is your workplace in the selected unit. Without a layout of your o
 
 ## Areas and menu
 
-On the left, the area bar in your club's colour shows up to seven areas: **Home**, **Members**, **Planning**, **Communication**, **Club life**, **Finances** and **Club**. You only see the areas in which you have rights. A click opens the area; next to it, the light area menu shows only the pages of that area, for example Events, Meetings, Volunteer duties and Tasks under Planning. **Menu** at the bottom of the area bar collapses the area menu when a list needs more room, and opens it again; **Help** is below it. On a phone, “More” opens the whole menu, grouped by area.
+On the left, the area bar in your club's colour shows up to seven areas: **Home**, **Members**, **Planning**, **Communication**, **Club life**, **Finances** and **Club**. You only see the areas in which you have rights. A click opens the area; next to it, the light area menu shows only the pages of that area, for example Events, Meetings, Volunteer duties and Tasks under Planning. **Menu** at the bottom of the area bar collapses the area menu when a list needs more room, and opens it again; **Help** is below it.
+
+The name of the area above the area menu opens the area overview: all pages of the area with a short note on what you do there and what is waiting there.
+
+On a phone, “More” opens the whole menu, grouped by area.
 
 **New** in the header creates something from any page, depending on your rights for example an event, a member, a booking or a circular. These are the same actions as the quick actions on the home page.
 
