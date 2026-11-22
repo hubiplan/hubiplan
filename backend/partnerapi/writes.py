@@ -364,7 +364,8 @@ class EventView(WriteMixin, PartnerView):
         operation_id="event_update",
         summary="Termin ändern oder absagen",
         description=(
-            "Ändert einen Termin, den dieser Zugang angelegt hat; nur die gesendeten Felder. "
+            "Ändert einen Termin, den dieser Zugang angelegt hat; nur die gesendeten Felder. Kommt "
+            "nur ``starts_at``, zieht das Ende mit (gleiche Dauer). "
             "Absagen mit ``is_cancelled``; gelöscht wird nie. 409, wenn der Termin in HUBIplan "
             "zur Serie oder „nur Vorstand“ wurde." + IDEMPOTENCY_NOTE
         ),
@@ -392,6 +393,9 @@ class EventView(WriteMixin, PartnerView):
             data = dict(ser.validated_data)
             data.pop("external_id", None)
             department = self.chosen_unit(data.pop("unit")) if "unit" in data else event.department
+            if "starts_at" in data and "ends_at" not in data:
+                # Nur der Beginn kommt: Das Ende zieht mit, die Dauer bleibt
+                data["ends_at"] = data["starts_at"] + (event.ends_at - event.starts_at)
             before = snapshot(event)
             moved_from = (event.starts_at, event.ends_at, event.all_day, event.location)
             was_cancelled, old_start = event.is_cancelled, event.starts_at

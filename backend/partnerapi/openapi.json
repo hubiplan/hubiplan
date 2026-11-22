@@ -2872,7 +2872,7 @@
         "x-scope": "termine.schreiben"
       },
       "patch": {
-        "description": "Ändert einen Termin, den dieser Zugang angelegt hat; nur die gesendeten Felder. Absagen mit ``is_cancelled``; gelöscht wird nie. 409, wenn der Termin in HUBIplan zur Serie oder „nur Vorstand“ wurde. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `termine.schreiben`",
+        "description": "Ändert einen Termin, den dieser Zugang angelegt hat; nur die gesendeten Felder. Kommt nur ``starts_at``, zieht das Ende mit (gleiche Dauer). Absagen mit ``is_cancelled``; gelöscht wird nie. 409, wenn der Termin in HUBIplan zur Serie oder „nur Vorstand“ wurde. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `termine.schreiben`",
         "operationId": "event_update",
         "parameters": [
           {

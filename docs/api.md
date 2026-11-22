@@ -165,7 +165,7 @@ Grundsätze:
 
 | Bereich | Aufruf | Inhalt | Modul |
 | --- | --- | --- | --- |
-| `termine.schreiben` | `POST events/`, `GET`/`PATCH events/<id>/` | einzelnen Termin anlegen, ändern, absagen (`is_cancelled`); Sichtbarkeit nur `public` oder `members`; keine Serien, keine Einladungen | `events` |
+| `termine.schreiben` | `POST events/`, `GET`/`PATCH events/<id>/` | einzelnen Termin anlegen, ändern (nur `starts_at`: das Ende zieht mit), absagen (`is_cancelled`); Sichtbarkeit nur `public` oder `members`; keine Serien, keine Einladungen | `events` |
 | `ergebnisse.schreiben` | `GET result-entry/`, `POST result-entry/<id>/` | offene eigene Wettbewerbe mit Einzelwertungen; Werte einliefern (bis 500 je Anfrage), Starter als Mitglied (`member`) oder Gast (`name`, `club`); jede Zeile einzeln geprüft (`accepted`, `rejected`) | `competitions` |
 | `anwesenheit.schreiben` (P) | `POST trainings/`, `GET trainings/<id>/`, `POST trainings/<id>/attendance/` | Trainingstermin anlegen (nie Schießtermin), Mitglieder ein- und austragen (`present`, `absent`) | `training` |
 | `mitglieder.schreiben` (P) | `POST members/<id>/proposals/`, `GET proposals/<id>/` | geänderte Namen und Kontaktdaten als Änderungsmeldung (`portal.ChangeRequest`), höchstens 3 offene je Mitglied und 200 je Zugang; Stand abfragen | `members` |

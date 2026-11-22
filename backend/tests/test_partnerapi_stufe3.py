@@ -175,6 +175,11 @@ def test_termin_anlegen_aendern_absagen(api, club, chef):
     )
     assert patched.status_code == 200, patched.content
     assert patched.json()["visibility"] == "public" and patched.json()["location"] == "Schießhalle"
+    # Nur der Beginn kam: Das Ende zieht mit (Vorgabe zwei Stunden)
+    assert patched.json()["ends_at"].startswith("2027-05-09T")
+    with rls_bypass():
+        moved = Event.objects.get(pk=int(event["id"]))
+        assert moved.ends_at - moved.starts_at == datetime.timedelta(hours=2)
     listed = get(key, "events/?from=2027-05-01&to=2027-05-31").json()["events"]
     assert [e["event_id"] for e in listed] == [event["id"]]
     # Absagen statt löschen
