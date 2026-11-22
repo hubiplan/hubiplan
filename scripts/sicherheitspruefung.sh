@@ -99,12 +99,17 @@ if [ -z "$NUR" ] || [ "$NUR" = abbilder ]; then
         done
         grep -oE '^\s+image: [^ ]+@sha256:[0-9a-f]+' "$WORK/docker-compose.server.yml" | awk '{print $2}'
     } | sort -u)
+    # gosu im PostgreSQL-Abbild bleibt außen vor: Es ist mit einer älteren Go-Fassung gebaut,
+    # trivy meldet dafür jede Lücke der Go-Standardbibliothek. gosu läuft nur beim Start des
+    # Datenbank-Containers, wechselt den Benutzer und endet; es liest nichts aus dem Netz und
+    # nichts von Anwendern. Der Backup-Dienst (USER postgres) ruft es nie auf.
     pruefe() { # Name Abbild [docker-Optionen …]
         local name=$1 bild=$2
         shift 2
         if docker run --rm "$CPUS" -v hubiplan-trivy-cache:/root/.cache "$@" \
             -v "$WORK/.trivyignore:/.trivyignore:ro" "$TRIVY" image --quiet --no-progress \
             --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --skip-files usr/local/bin/gosu --skip-files /usr/local/bin/gosu \
             --ignorefile /.trivyignore "$bild"; then
             echo "Abbild $name: kein Fund (hoch/kritisch mit verfügbarer Korrektur)"
         else
