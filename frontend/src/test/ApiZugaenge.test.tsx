@@ -127,6 +127,8 @@ const personalAccess = {
 const list = (accesses: object[]) => ({
   address: 'https://verein.example/api/partner/v1/',
   docs: 'https://verein.example/api/partner/v1/openapi.json',
+  docs_page: 'https://verein.example/api/partner/v1/docs/',
+  guide: 'https://github.com/hubiplan/hubiplan/blob/main/docs/api.md',
   requests_per_hour: 600,
   writes_per_hour: 60,
   max_days: 365,
@@ -229,6 +231,22 @@ describe('API-Zugänge', () => {
     await user.click(screen.getByRole('button', { name: 'Wieder einschalten' }))
     expect(await screen.findByText('aktiv')).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'POST /api/orgs/7/api-accesses/4/resume/')).toBe(true)
+  })
+
+  it('verlinkt lesbare Beschreibung, OpenAPI-Datei und Anleitung', async () => {
+    renderPage({
+      'GET /api/orgs/7/api-accesses/': () => ({ status: 200, body: list([]) }),
+    })
+    const lesen = await screen.findByRole('link', { name: 'Beschreibung lesen' })
+    expect(lesen).toHaveAttribute('href', 'https://verein.example/api/partner/v1/docs/')
+    expect(screen.getByRole('link', { name: 'OpenAPI-Beschreibung öffnen' })).toHaveAttribute(
+      'href',
+      'https://verein.example/api/partner/v1/openapi.json',
+    )
+    expect(screen.getByRole('link', { name: 'Anleitung für Entwickler' })).toHaveAttribute(
+      'href',
+      'https://github.com/hubiplan/hubiplan/blob/main/docs/api.md',
+    )
   })
 
   it('Personendaten: Empfänger, Rechtsgrundlage und Bestätigung gehen mit', async () => {

@@ -27,6 +27,7 @@ from core.api_base import OrgScopedMixin
 from . import notify, webhooks
 from . import scopes as sc
 from .auth import MODULE
+from .docs_page import DOCS_URL
 from .models import (
     DEFAULT_LIFETIME,
     IDLE_LIFETIME,
@@ -165,7 +166,9 @@ class ApiAccessSerializer(serializers.Serializer):
 
 class ApiAccessListSerializer(serializers.Serializer):
     address = serializers.CharField()
-    docs = serializers.CharField()
+    docs = serializers.CharField(help_text="OpenAPI-Beschreibung (JSON)")
+    docs_page = serializers.CharField(help_text="lesbare Beschreibung ohne Anmeldung")
+    guide = serializers.CharField(help_text="ausführliche Anleitung (docs/api.md)")
     requests_per_hour = serializers.IntegerField()
     writes_per_hour = serializers.IntegerField()
     max_days = serializers.IntegerField()
@@ -496,6 +499,8 @@ class ApiAccessListView(_Writer):
         data = {
             "address": base,
             "docs": f"{base}openapi.json",
+            "docs_page": f"{base}docs/",
+            "guide": DOCS_URL,
             "requests_per_hour": ACCESS_LIMIT,
             "writes_per_hour": WRITE_LIMIT,
             "max_days": DEFAULT_LIFETIME.days,

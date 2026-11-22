@@ -85,6 +85,10 @@ export interface ApiAccessList {
   address: string
   /** Beschreibung der Schnittstelle (OpenAPI) */
   docs: string
+  /** Lesbare Beschreibung ohne Anmeldung */
+  docs_page: string
+  /** Ausführliche Anleitung (docs/api.md) */
+  guide: string
   requests_per_hour: number
   /** Davon höchstens so viele schreibende Anfragen */
   writes_per_hour: number

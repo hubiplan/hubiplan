@@ -477,6 +477,30 @@ def test_openapi_ohne_anmeldung_und_kopie_aktuell(club):
     )
 
 
+def test_lesbare_beschreibung_ohne_anmeldung(club, settings):
+    from partnerapi import docs_page
+
+    docs_page.render.cache_clear()
+    response = Client().get(f"{BASE}docs/")
+    assert response.status_code == 200
+    assert response["Content-Type"].startswith("text/html")
+    assert "default-src 'none'" in response["Content-Security-Policy"]
+    page = response.content.decode()
+    assert "<h1>HUBIplan API für andere Programme</h1>" in page
+    assert "/api/partner/v1/events/" in page
+    assert "termine.schreiben" in page
+    assert 'id="schema-Event"' in page
+    assert 'href="../openapi.json"' in page
+    # nichts von fremden Servern, kein Skript
+    assert "<script" not in page and "src=" not in page
+    english = Client().get(f"{BASE}docs/?lang=en").content.decode()
+    assert "<h1>HUBIplan API for other programs</h1>" in english
+    by_header = Client().get(f"{BASE}docs/", HTTP_ACCEPT_LANGUAGE="en-GB,en;q=0.8")
+    assert by_header.content.decode() == english
+    settings.PARTNER_API_ENABLED = False
+    assert Client().get(f"{BASE}docs/").status_code == 404
+
+
 def test_erinnerung_vor_dem_ablauf_einmal(api, club, chef, key):
     from partnerapi.tasks import remind_expiring
 

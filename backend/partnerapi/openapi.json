@@ -2211,12 +2211,12 @@
     }
   },
   "info": {
-    "description": "API der Vereinsverwaltung HUBIplan. Anmeldung und 2FA sind unter /_allauth/openapi.html dokumentiert.",
+    "description": "Schnittstelle für andere Programme (Verbandssoftware, Webseiten, Fachsoftware, Skripte).\n\n**Anmeldung:** Kopfzeile `Authorization: Bearer hpk_…`. Den Schlüssel vergibt der Vorstand der\nEinheit in HUBIplan unter Einstellungen › API-Zugänge. Er gilt für genau eine Einheit und nur\nfür die dort angekreuzten Bereiche; welcher Bereich nötig ist, steht bei jedem Aufruf.\n\n**Grenzen:** 600 Anfragen je Stunde und Zugang, davon höchstens 60 schreibende, sonst Antwort\n429 mit `Retry-After`.\n\n**Fehler:** `application/problem+json` (RFC 9457) mit einem festen `code`, zum Beispiel\n`invalid_key`, `access_expired`, `access_idle`, `ip_not_allowed`, `missing_scope`,\n`too_many_requests`, `not_found`, `invalid_request`, `legal_basis_missing`,\n`write_not_allowed`, `external_id_exists`, `idempotency_conflict`, `record_locked`,\n`too_many_open`.\n\n**Personendaten** (Verbandsmeldung namentlich, Mitglieder, Ehrungen, Qualifikationen) gibt ein\nZugang nur heraus, wenn die Einheit den Empfänger benannt und die Rechtsgrundlage bestätigt hat.\nKennungen (`id`, `member`) sind feste UUIDs. Jeder Abruf wird bei der Einheit protokolliert.\n\n**Benachrichtigungen:** Auf Wunsch der Einheit sendet HUBIplan bei Änderungen ein `POST` an\neine Adresse des Empfängers, nur mit Art und Kennung, unterschrieben in der Kopfzeile\n`X-HUBIplan-Signature: t=<Unixzeit>,v1=<HMAC-SHA256 über \"<Unixzeit>.<Nachricht>\">`.\n\n**Schreiben** (`POST`, `PATCH`) gibt es nur mit einem eigens angekreuzten Bereich. Geschrieben\nwird Unkritisches (Termin, Ergebnis, Anwesenheit) oder ein Vorschlag bzw. Entwurf, den ein\nMensch in HUBIplan übernimmt; nichts wird gelöscht oder versendet. Ändern kann ein Zugang nur,\nwas er selbst angelegt hat. Mit der Kopfzeile `Idempotency-Key` (bis 100 Zeichen) legt eine\nwiederholte Anfrage innerhalb von 24 Stunden nichts doppelt an; die Antwort trägt dann\n`Idempotency-Replayed: true`. `external_id` ist die eigene Kennung des Dritten, je Zugang\neindeutig; unter `/lookup/` findet man den Datensatz dazu.\n\n**Stabilität:** In `v1` kommen nur Felder und Aufrufe hinzu. Was wegfällt, wird zwölf Monate\nvorher angekündigt. Unbekannte Felder bitte ignorieren.\n\n**Zeiten** stehen in ISO 8601 mit Zeitzone. **Listen** mit `next_cursor` blättert man mit\n`?cursor=…` weiter, bis `next_cursor` `null` ist.\n",
     "license": {
       "name": "AGPL-3.0-or-later"
     },
-    "title": "HUBIplan API",
-    "version": "0.1.0"
+    "title": "HUBIplan API für andere Programme",
+    "version": "1"
   },
   "openapi": "3.0.3",
   "paths": {

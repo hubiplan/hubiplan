@@ -774,12 +774,12 @@ export function ApiAccessPage() {
         <h2>{t('API-Zugänge')}</h2>
         <p className="muted small">
           {t(
-            'Mit einem API-Zugang liest ein anderes Programm Daten dieser Einheit, etwa die Software des Dachverbands oder eine eigene Webseite. Jeder Zugang hat einen eigenen Schlüssel, darf nur das Angekreuzte lesen und läuft von selbst ab.',
+            'Mit einem API-Zugang liest ein anderes Programm Daten dieser Einheit, etwa die Software des Dachverbands oder eine eigene Webseite. Jeder Zugang hat einen eigenen Schlüssel, darf nur das Angekreuzte und läuft von selbst ab.',
           )}
         </p>
         <p className="muted small">
           {t(
-            'Namen, Anschriften und andere Personendaten gibt ein Zugang nur heraus, wenn du den Empfänger benennst und die Rechtsgrundlage bestätigst. Ändern kann ein Zugang nichts.',
+            'Namen, Anschriften und andere Personendaten gibt ein Zugang nur heraus, wenn du den Empfänger benennst und die Rechtsgrundlage bestätigst. Schreiben darf ein Zugang nur in eigens angekreuzten Bereichen.',
           )}
         </p>
         <dl className="small">
@@ -789,8 +789,16 @@ export function ApiAccessPage() {
           </dd>
           <dt>{t('Beschreibung für Entwickler')}</dt>
           <dd>
+            <a href={data.docs_page} target="_blank" rel="noreferrer">
+              {t('Beschreibung lesen')}
+            </a>
+            {' · '}
             <a href={data.docs} target="_blank" rel="noreferrer">
               {t('OpenAPI-Beschreibung öffnen')}
+            </a>
+            {' · '}
+            <a href={data.guide} target="_blank" rel="noreferrer">
+              {t('Anleitung für Entwickler')}
             </a>
           </dd>
           <dt>{t('Grenze')}</dt>
