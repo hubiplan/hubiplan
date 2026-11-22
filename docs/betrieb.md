@@ -1189,13 +1189,13 @@ mit Anhängen bleiben im Postfach. Wer `CLAMD_SOCKET` ohne die Compose-Ergänzun
 
 ## Passwörter und Meldestelle
 
-**Argon2id:** HUBIplan kann Passwörter mit Argon2id speichern (64 MiB, 3 Durchläufe, 4 Fäden;
-`backend/accounts/hashers.py`). In dieser Fassung ist das noch aus, damit ein Rückweg auf die
-vorige Fassung (`deploy/zurueck.sh`) keine Konten aussperrt, denn die kennt Argon2id nicht.
-Einschalten mit `HUBIPLAN_ARGON2=1` in der `.env`, sobald kein solcher Rückweg mehr nötig ist; die
-nächste Fassung schaltet es von sich aus ein. Jedes Konto wird bei seiner nächsten Anmeldung
-umgestellt, niemand muss sein Passwort ändern. Ausschalten stellt bei der nächsten Anmeldung
-wieder auf PBKDF2 um; prüfen kann HUBIplan immer beides.
+**Argon2id:** HUBIplan speichert Passwörter mit Argon2id (64 MiB, 3 Durchläufe, 4 Fäden;
+`backend/accounts/hashers.py`). Jedes Konto wird bei seiner nächsten Anmeldung von PBKDF2
+umgestellt, niemand muss sein Passwort ändern; prüfen kann HUBIplan immer beides.
+`HUBIPLAN_ARGON2=0` in der `.env` speichert wieder mit PBKDF2 und stellt Konten bei der nächsten
+Anmeldung zurück. Nötig ist das nur vor einem Rückweg (`deploy/zurueck.sh`) auf eine Fassung,
+die Argon2id nicht kennt (2026.11.1 und älter): Dort könnten sich umgestellte Konten sonst
+nicht anmelden, bis sie ihr Passwort neu setzen.
 
 **Meldestelle (`/.well-known/security.txt`, RFC 9116):** Jede Instanz nennt dort die vertrauliche
 Meldestelle des Projekts. Wer Meldungen zu seinem Server selbst annehmen will, setzt

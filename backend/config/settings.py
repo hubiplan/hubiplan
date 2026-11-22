@@ -184,12 +184,12 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
-# Passwörter mit Argon2id (accounts/hashers.py). Diese Fassung kann Argon2id prüfen, speichert
-# aber erst damit, wenn HUBIPLAN_ARGON2=1 gesetzt ist: Nach einem Rückweg auf die vorige Fassung
-# (deploy/zurueck.sh), die Argon2id nicht kennt, könnten sich umgestellte Konten sonst nicht mehr
-# anmelden. Die nächste Fassung schaltet es von sich aus ein. Django stellt jedes Konto bei der
-# nächsten Anmeldung um; bestehende PBKDF2-Werte bleiben bis dahin gültig.
-PASSWORD_ARGON2 = env_bool("HUBIPLAN_ARGON2", False)
+# Passwörter mit Argon2id (accounts/hashers.py). Django stellt jedes Konto bei der nächsten
+# Anmeldung um; bestehende PBKDF2-Werte bleiben bis dahin gültig. HUBIPLAN_ARGON2=0 speichert
+# wieder mit PBKDF2 (nötig nur vor einem Rückweg auf eine Fassung, die Argon2id nicht kennt,
+# also vor 2026.11.2); geprüft wird immer beides.
+PASSWORD_ARGON2 = env_bool("HUBIPLAN_ARGON2", True)
+_ARGON2 = env_bool("HUBIPLAN_ARGON2", False)
 _ARGON2 = "accounts.hashers.Argon2idHasher"
 _PBKDF2 = "django.contrib.auth.hashers.PBKDF2PasswordHasher"
 PASSWORD_HASHERS = [_ARGON2, _PBKDF2] if PASSWORD_ARGON2 else [_PBKDF2, _ARGON2]

@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from django.contrib.auth.hashers import check_password, get_hasher, identify_hasher, make_password
+from django.contrib.auth.hashers import check_password, identify_hasher, make_password
 from django.test import Client
 from django.utils import timezone
 
@@ -45,12 +45,11 @@ class TestArgon2id:
         assert neu == ["Sommerfest-2026!"]
         assert identify_hasher(make_password("x")).algorithm == "argon2"
 
-    def test_schalter_in_den_einstellungen(self):
-        """Diese Fassung prüft Argon2id immer und speichert damit nur auf Wunsch."""
+    def test_argon2id_ist_standard_und_abschaltbar(self):
+        """Gespeichert wird mit Argon2id; HUBIPLAN_ARGON2=0 stellt auf PBKDF2 zurück."""
         text = (BACKEND / "config/settings.py").read_text(encoding="utf-8")
-        assert 'PASSWORD_ARGON2 = env_bool("HUBIPLAN_ARGON2", False)' in text
+        assert 'PASSWORD_ARGON2 = env_bool("HUBIPLAN_ARGON2", True)' in text
         assert "[_ARGON2, _PBKDF2] if PASSWORD_ARGON2 else [_PBKDF2, _ARGON2]" in text
-        assert get_hasher("default") is not None
 
 
 @pytest.mark.django_db

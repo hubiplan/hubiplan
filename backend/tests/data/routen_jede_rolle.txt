@@ -1,0 +1,35 @@
+# Routen einer Einheit, die jede Rolle dieser Einheit aufrufen darf, auch ohne passendes Recht.
+# Geprüft von tests/test_routen_durchlauf.py (Schritt 6): Ein Konto, dessen Rolle nur
+# „Schwarzes Brett lesen“ hat, darf sonst nichts erreichen. Jede neue Zeile im Pull Request
+# begründen: Was zeigt die Route, und warum ist das für jede Rolle unbedenklich?
+# Form: METHODE Routenmuster
+
+# Das eine Recht der Prüfrolle
+GET api/orgs/<int:org_id>/pinboard/
+
+# Auswahllisten und Einstellungen ohne Personenbezug
+GET api/orgs/<int:org_id>/places/
+GET api/orgs/<int:org_id>/^department-choices/$
+GET api/orgs/<int:org_id>/^department-choices/(?P<pk>[^/.]+)/$
+GET api/orgs/<int:org_id>/^honorary-titles/$
+GET api/orgs/<int:org_id>/^qualification-types/$
+GET api/orgs/<int:org_id>/^social-links/$
+GET api/orgs/<int:org_id>/^social-links/(?P<pk>[^/.]+)/$
+GET api/orgs/<int:org_id>/^fee-proofs/discounts/$
+GET api/orgs/<int:org_id>/fee-proofs/settings/
+GET api/orgs/<int:org_id>/unit-jubilees/
+
+# Startseite und Hilfe; der Inhalt richtet sich nach den Rechten der Rolle
+GET api/orgs/<int:org_id>/help/
+GET api/orgs/<int:org_id>/home-tiles/
+GET api/orgs/<int:org_id>/open-tasks/
+GET api/orgs/<int:org_id>/setup-status/
+
+# „Ansicht als Rolle“: eigener Zustand lesen und beenden; einschalten braucht das Recht dazu
+GET api/orgs/<int:org_id>/ansicht/
+DELETE api/orgs/<int:org_id>/ansicht/
+
+# Nextcloud-Ablage: nennt nur die Ziele, für die die Rolle ein Recht hat; ohne Recht keine
+# Ablage (die Ansicht prüft je Ziel und lehnt sonst ab, vorher nur „unbekanntes Ziel“)
+GET api/orgs/<int:org_id>/nextcloud-dateien/
+POST api/orgs/<int:org_id>/nextcloud-dateien/

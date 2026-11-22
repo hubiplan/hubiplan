@@ -30,9 +30,9 @@ x-backend-env: &backend-env
   SECURITY_ALERT_EMAIL: ${SECURITY_ALERT_EMAIL:-}
   # Kontakt des Betreibers in /.well-known/security.txt (leer: nur die Meldestelle des Projekts)
   HUBIPLAN_SECURITY_CONTACT: ${HUBIPLAN_SECURITY_CONTACT:-}
-  # Passwörter mit Argon2id speichern; erst setzen, wenn kein Rückweg auf eine Fassung ohne
-  # Argon2id mehr nötig ist (docs/betrieb.md)
-  HUBIPLAN_ARGON2: ${HUBIPLAN_ARGON2:-}
+  # Passwörter mit Argon2id (Standard); 0 nur vor einem Rückweg auf eine Fassung ohne
+  # Argon2id (docs/betrieb.md)
+  HUBIPLAN_ARGON2: ${HUBIPLAN_ARGON2:-1}
   # Optionales mandantenbezogenes Gateway; Zugangsdaten nur in der privaten Server-.env.
   EINVOICE_GATEWAYS: ${EINVOICE_GATEWAYS:-}
   EINVOICE_GATEWAY_TOKENS: ${EINVOICE_GATEWAY_TOKENS:-}
