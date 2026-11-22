@@ -11136,5 +11136,13 @@
   "Hauptmenüpunkt hinzufügen": "Add main menu item",
   "Höchstens {n} Hauptmenüpunkte. Start bleibt vorn.": "At most {n} main menu items. Home stays first.",
   "Neuer Bereich": "New area",
-  "Menü anordnen": "Arrange menu"
+  "Menü anordnen": "Arrange menu",
+  "Du hast dich von „{name}“ abgemeldet. Möchtest du dich wieder anmelden?": "You signed out of “{name}”. Do you want to sign in again?",
+  "Von der Nextcloud abgemeldet": "Signed out of Nextcloud",
+  "Du hast dich von „{name}“ abgemeldet.": "You signed out of “{name}”.",
+  "Bei HUBIplan bist du weiter angemeldet als": "You are still signed in to HUBIplan as",
+  "Die Nextcloud meldet dich erst wieder an, wenn du es dort ausdrücklich bestätigst.": "Nextcloud will only sign you in again once you confirm it there.",
+  "Auch bei HUBIplan abmelden": "Also sign out of HUBIplan",
+  "Bei HUBIplan angemeldet bleiben": "Stay signed in to HUBIplan",
+  "Du bist jetzt auch bei HUBIplan abgemeldet.": "You are now signed out of HUBIplan as well."
 }

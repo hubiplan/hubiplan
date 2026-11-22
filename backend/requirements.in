@@ -35,3 +35,5 @@ cryptography==50.0.2
 httpx[http2]==0.28.1
 # Bankanbindung (FinTS/HBCI): Umsätze direkt bei der Bank abrufen (finance/fints_weg.py)
 fints==5.0.1
+# Passwörter mit Argon2id speichern (config/settings.py PASSWORD_HASHERS)
+argon2-cffi==25.1.0

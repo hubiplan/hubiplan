@@ -75,6 +75,7 @@ Installationspakete an Dritte gehen (siehe unten).
 | Django, Django REST framework, drf-spectacular, dj-database-url, Celery | BSD-3-Clause | |
 | django-allauth, redis (Python-Client), gunicorn, whitenoise, openpyxl | MIT | |
 | python-dateutil | Apache-2.0 oder BSD-3-Clause | |
+| argon2-cffi, argon2-cffi-bindings | MIT | Passwort-Hash Argon2id; bringt die Referenzbibliothek Argon2 mit (CC0-1.0 oder Apache-2.0) |
 | reportlab | BSD | Bringt Schriftdateien mit eigenen Lizenzen mit (Adobe-/Monotype-Typ-1, Vera, DarkGarden); die PDFs von HUBIplan verwenden nur die PDF-Standardschriften (Helvetica, Times) und betten keine Schriftdatei ein |
 | Pillow | MIT-CMU | Enthält native Bibliotheken (FreeType, libjpeg, libtiff u. a.) mit eigenen Lizenzen |
 | verovio | LGPL-3.0-only | Notensatz für MusicXML/MEI/ABC (PDF, MIDI); dynamisch geladene native Bibliothek, austauschbar per `pip`; bringt Notenschriften (Leipzig, Bravura u. a.) unter der SIL Open Font License mit, die nur als Pfade in SVG/PDF landen |

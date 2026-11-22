@@ -39,6 +39,7 @@ import { McpConnectPage } from './pages/McpConnectPage.tsx'
 import { AppLoginPage } from './pages/AppLoginPage.tsx'
 import { AppUnlockPage } from './pages/AppUnlockPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
+import { NextcloudLogoutPage } from './pages/NextcloudLogoutPage.tsx'
 import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
 import { LeaveGuard } from './components/leaveGuard.ts'
@@ -361,6 +362,7 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route path="/oidc/abmelden" element={<NextcloudLogoutPage />} />
           <Route path="/rundschreiben/abmelden/:token" element={<PublicOptOutPage />} />
           <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
           <Route path="/kartenscan/:token" element={<PublicScanPage />} />

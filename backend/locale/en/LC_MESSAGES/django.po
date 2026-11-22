@@ -14423,6 +14423,22 @@ msgstr "Sign-in email changed"
 msgid "Die Anmelde-E-Mail deines HUBIplan-Zugangs lautet jetzt {new}."
 msgstr "The sign-in email of your HUBIplan account is now {new}."
 
+msgid "Neue Anmeldung bei HUBIplan"
+msgstr "New sign-in to HUBIplan"
+
+msgid "Mit deinem HUBIplan-Zugang wurde sich auf einem Gerät angemeldet, das dein Konto bisher nicht kannte: {client}. Das passiert auch, wenn du selbst einen anderen Browser, ein neues Gerät oder ein privates Fenster benutzt."
+msgstr "Your HUBIplan account was used to sign in on a device your account did not know yet: {client}. This also happens when you yourself use a different browser, a new device or a private window."
+
+msgid "HUBIplan-App"
+msgstr "HUBIplan app"
+
+#, python-brace-format
+msgid "{program} unter {system}"
+msgstr "{program} on {system}"
+
+msgid "unbekanntes Programm"
+msgstr "unknown program"
+
 msgid "Hallo {name},\n\n{text}\n\nZeit: {when} Uhr\n\nWarst du das, ist nichts zu tun. Sonst melde dich bitte sofort an, ändere dein Passwort und prüfe unter Mein Konto › Anmeldung & Sicherheit die Zwei-Faktor-Anmeldung. Sag außerdem dem Vorstand Bescheid.\n"
 msgstr "Hello {name},\n\n{text}\n\nTime: {when}\n\nIf this was you, there is nothing to do. Otherwise please sign in right away, change your password and check two-factor authentication under My account › Sign-in & security. Also let the board know.\n"
 

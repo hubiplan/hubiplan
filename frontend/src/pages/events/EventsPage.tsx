@@ -1,10 +1,8 @@
 // Termine: Kalender der aktiven Organisation, Abteilung oder des Mitgliederbereichs.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
-import { PERM } from '../../api/orgs.ts'
-import { DEPT_PERM } from '../../api/portal.ts'
 import { calendarBase, eventApi } from '../../api/events.ts'
 import type { CalendarBase, EventCategory } from '../../api/events.ts'
 import { CalendarView } from '../../components/calendar/CalendarView.tsx'
@@ -18,25 +16,24 @@ import { useTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { ExternalCalendarsPanel } from './ExternalCalendarsPanel.tsx'
 import { t } from '../../i18n/index.ts'
+import { eventAccess } from './sections.ts'
 import { eventSetupTabs } from './setup.ts'
 
 export function EventsPage() {
   const { active, activeDept, activePortal } = useOrg()
+  const { pathname } = useLocation()
+  const access = eventAccess(active, activeDept, activePortal)
   let base: CalendarBase | null = null
-  let manage = false
-  let categories = false
-  let isPortal = false
   if (active && (active.type === 'club' || active.type === 'federation')) {
     base = calendarBase.org(active.id)
-    manage = active.permissions.includes(PERM.eventsManage)
-    categories = manage
   } else if (activeDept) {
     base = calendarBase.dept(activeDept.id)
-    manage = activeDept.permissions.includes(DEPT_PERM.eventsManage)
   } else if (activePortal) {
     base = calendarBase.portal(activePortal.id)
-    isPortal = true
   }
+  const manage = access?.manage ?? false
+  const categories = access?.categories ?? false
+  const isPortal = access?.isPortal ?? false
   if (!base) {
     return (
       <section>
@@ -45,18 +42,15 @@ export function EventsPage() {
       </section>
     )
   }
-  // Einstellungen des Kalenders unter „Einrichtung“, zuletzt (Menüprüfung M-01)
+  // Einstellungen des Kalenders unter „Einrichtung“, zuletzt (Menüprüfung M-01). Kalender,
+  // Kalender-Abo und Einrichtung stehen im Menü (events/sections.ts); im Inhalt nur die Reiter
+  // der Einrichtung und nur dort, nicht als zweite Zeile über dem Kalender (Ralf 22.11.)
   const setupTabs = eventSetupTabs(manage, categories)
-  const tabs = [
-    { to: '/termine', label: t('Kalender') },
-    ...(isPortal ? [{ to: '/termine/abo', label: t('Kalender-Abo') }] : []),
-    ...(setupTabs.length > 0 ? [{ to: '/termine/einrichtung', label: t('Einrichtung') }] : []),
-  ]
+  const onSetup = pathname.startsWith('/termine/einrichtung')
   return (
     <section>
       <PageHeader />
-      {tabs.length > 1 && <Tabs items={tabs} />}
-      {setupTabs.length > 1 && <Tabs items={setupTabs} />}
+      {onSetup && setupTabs.length > 1 && <Tabs items={setupTabs} />}
       <Routes>
         <Route
           index

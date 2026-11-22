@@ -2,7 +2,8 @@
 
 Öffentlich (für die Nextcloud): ``/api/oidc/.well-known/openid-configuration``, ``jwks``,
 ``token``, ``userinfo``. Für die Seite „Bei der Nextcloud anmelden“ in HUBIplan:
-``/api/oidc/authorize/`` (angemeldet, mit CSRF). Einstellungen je Einheit:
+``/api/oidc/authorize/`` (angemeldet, mit CSRF), für „Von der Nextcloud abgemeldet“:
+``/api/oidc/end-session/`` (auch ohne Anmeldung). Einstellungen je Einheit:
 ``/api/orgs/<id>/nextcloud/``.
 """
 
@@ -125,10 +126,25 @@ class AuthorizeView(APIView):
             raise TooMany(key)
         try:
             return Response({"redirect": provider.authorize(request._request, request.data)})
+        except provider.ConfirmNeeded as exc:
+            return Response({"confirm": True, "name": exc.name}, status=409)
         except provider.AuthorizeError as exc:
             return Response(
                 {"detail": exc.message, "redirect": exc.redirect, "back": exc.back}, status=400
             )
+
+
+class EndSessionView(APIView):
+    """Für die Seite „Von der Nextcloud abgemeldet“ (Ziel von ``end_session_endpoint``)."""
+
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        key = f"oidc:end-session:{client_ip(request)}"
+        if too_many(key, 30, 600):
+            raise TooMany(key)
+        return Response(provider.end_session(request._request, request.data))
 
 
 # --- Einstellungen je Einheit ---

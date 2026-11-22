@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from core.securitytxt import security_txt
 from devices import passkey as app_passkey
 
 
@@ -41,6 +42,8 @@ urlpatterns = [
     path("api/", include("core.urls")),
     # Passkeys in der Android-App: welche Apps diese Adresse nutzen dürfen (devices/passkey.py)
     path(".well-known/assetlinks.json", app_passkey.assetlinks, name="assetlinks"),
+    # Meldestelle für Sicherheitslücken (RFC 9116, core/securitytxt.py)
+    path(".well-known/security.txt", security_txt, name="security-txt"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Anmeldung der KI-Assistenten: Beschreibungen unter /.well-known/ (docs/mcp.md)
     path("", include("mcpserver.urls_root")),
