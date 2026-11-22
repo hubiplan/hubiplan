@@ -17739,3 +17739,61 @@ msgid "{n} neuer Beitrag an der Pinnwand"
 msgid_plural "{n} neue Beiträge an der Pinnwand"
 msgstr[0] "{n} new post on the notice board"
 msgstr[1] "{n} new posts on the notice board"
+
+#: organizations/menu_layout.py
+msgid "Ungültiger Name."
+msgstr "Invalid name."
+
+#: organizations/menu_layout.py
+#, python-brace-format
+msgid "Höchstens {MAX_LABEL} Zeichen."
+msgstr "At most {MAX_LABEL} characters."
+
+#: organizations/menu_layout.py
+msgid "Ungültige Anordnung."
+msgstr "Invalid arrangement."
+
+#: organizations/menu_layout.py
+#, python-brace-format
+msgid "Es braucht {MIN_AREAS} bis {MAX_AREAS} Hauptmenüpunkte."
+msgstr "There must be {MIN_AREAS} to {MAX_AREAS} main menu items."
+
+#: organizations/menu_layout.py
+msgid "Ungültiger Hauptmenüpunkt."
+msgstr "Invalid main menu item."
+
+#: organizations/menu_layout.py
+msgid "Ein Hauptmenüpunkt steht doppelt."
+msgstr "A main menu item appears twice."
+
+#: organizations/menu_layout.py
+msgid "Unbekannter Hauptmenüpunkt."
+msgstr "Unknown main menu item."
+
+#: organizations/menu_layout.py
+msgid "Unbekanntes Zeichen."
+msgstr "Unknown icon."
+
+#: organizations/menu_layout.py
+msgid "Start bleibt der erste Hauptmenüpunkt."
+msgstr "Home stays the first main menu item."
+
+#: organizations/menu_layout.py
+msgid "Ungültige Zuordnung."
+msgstr "Invalid assignment."
+
+#: organizations/menu_layout.py
+msgid "Ein Menüpunkt verweist auf einen fehlenden Bereich."
+msgstr "A menu item refers to a missing area."
+
+#: organizations/menu_layout.py
+msgid "Die Startseite bleibt unter Start."
+msgstr "The home page stays under Home."
+
+#: organizations/menu_layout.py
+msgid "Es gibt keine frühere Anordnung."
+msgstr "There is no earlier arrangement."
+
+#: organizations/menu_layout.py
+msgid "Untereinheiten übernehmen das Menü ihres Vereins."
+msgstr "Sub-units use the menu of their club."

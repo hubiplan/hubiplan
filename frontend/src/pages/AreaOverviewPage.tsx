@@ -6,7 +6,8 @@ import { orgApi } from '../api/orgs.ts'
 import type { OpenTask } from '../api/orgs.ts'
 import { useLoad } from '../components/forms.ts'
 import { PageHeader } from '../components/PageHeader.tsx'
-import { AREAS, modules } from '../modules.tsx'
+import { modules } from '../modules.tsx'
+import { areaOf, arrangedAreas } from '../menuLayout.ts'
 import { useOrg } from '../org/OrgContext.tsx'
 import { t } from '../i18n/index.ts'
 
@@ -20,9 +21,10 @@ export function AreaOverviewPage() {
     () => (orgId === null ? Promise.resolve({ items: [] as OpenTask[] }) : orgApi.openTasks(orgId)),
     [orgId],
   )
-  const area = AREAS.find((a) => a.id === areaId)
+  const layout = active?.menu_layout ?? activeDept?.menu_layout ?? null
+  const area = arrangedAreas(layout).find((a) => a.id === areaId)
   const ws = { dept: activeDept, portal: activePortal }
-  const items = modules.filter((m) => m.area === areaId && m.visible(active, ws))
+  const items = modules.filter((m) => areaOf(layout, m) === areaId && m.visible(active, ws))
   if (!area || items.length === 0 || activePortal) return <Navigate to="/" replace />
   const paths = items.flatMap((m) => [m.path, ...(m.also ?? [])])
   // Offene Einträge dem Menüpunkt zuordnen, dessen Pfad am tiefsten passt

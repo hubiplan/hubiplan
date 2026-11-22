@@ -397,6 +397,13 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     units_in_menu = models.BooleanField(
         "Menüpunkt für Untereinheiten zeigen", default=True, db_default=True
     )
+    # Anordnung des Menüs (konzepte/menue-frei-anordnen.md, organizations/menu_layout.py):
+    # nur Abweichungen vom Standard, null = Standard. Untereinheiten übernehmen die des Vereins.
+    menu_layout = models.JSONField("Anordnung des Menüs", null=True, blank=True)
+    # Die letzten fünf vorigen Anordnungen für „Rückgängig“
+    menu_layout_history = models.JSONField(
+        "Frühere Anordnungen des Menüs", default=list, blank=True, db_default=[]
+    )
     photo_approval_required = models.BooleanField(
         "Fotos von Mitgliedern erst nach Freigabe anzeigen", default=False
     )

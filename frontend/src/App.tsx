@@ -54,6 +54,10 @@ const ImprintSettingsPage = lazyPage(
   'ImprintSettingsPage',
 )
 const ModulesPage = lazyPage(() => import('./pages/settings/ModulesPage.tsx'), 'ModulesPage')
+const MenuLayoutPage = lazyPage(
+  () => import('./pages/settings/MenuLayoutPage.tsx'),
+  'MenuLayoutPage',
+)
 const SetupOverviewPage = lazyPage(
   () => import('./pages/settings/SetupOverviewPage.tsx'),
   'SetupOverviewPage',
@@ -585,6 +589,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <ModulesPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="menue"
+              element={
+                <RequireOrg>
+                  <MenuLayoutPage />
                 </RequireOrg>
               }
             />

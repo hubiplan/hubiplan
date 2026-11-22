@@ -10,7 +10,8 @@ import { PageSlotProvider } from './PageHeader.tsx'
 import { confirmLeave } from './leaveGuard.ts'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
-import { AREAS, bottomNavIds, modules } from '../modules.tsx'
+import { bottomNavIds, modules } from '../modules.tsx'
+import { areaOf, arrangedAreas } from '../menuLayout.ts'
 import { NewMenu } from './NewMenu.tsx'
 import { TodoMenu } from './TodoMenu.tsx'
 import { currentMemberArea, memberAreas } from './memberAreas.tsx'
@@ -346,21 +347,26 @@ export function Layout() {
   // Bereiche der Bereichsleiste mit ihren sichtbaren Menüpunkten (Konzept Web-Oberfläche)
   // Hat ein Bereich für die Person nur einen Menüpunkt, trägt er dessen Namen und Zeichen
   // (z. B. „Züge“ statt „Mitglieder“): Hinter dem Namen steckt dann genau diese Seite.
-  const areas = AREAS.map((a) => {
-    const items = visible.filter((m) => m.area === a.id)
-    const only = items.length === 1 && a.id !== 'start' ? items[0] : null
-    return only
-      ? {
-          ...a,
-          items,
-          label:
-            only.id === 'abteilung' && activeDept
-              ? activeDept.label
-              : (only.labelFor?.(active, ws) ?? only.label),
-          icon: only.icon,
-        }
-      : { ...a, items }
-  }).filter((a) => a.items.length > 0)
+  // Anordnung der Einheit (Menü frei anordnen); Untereinheiten übernehmen die ihres Vereins
+  const menuLayout = active?.menu_layout ?? activeDept?.menu_layout ?? null
+  const areas = arrangedAreas(menuLayout)
+    .map((a) => {
+      const items = visible.filter((m) => areaOf(menuLayout, m) === a.id)
+      // Ein selbst benannter Bereich behält seinen Namen auch mit nur einem Menüpunkt
+      const only = items.length === 1 && a.id !== 'start' && !a.named ? items[0] : null
+      return only
+        ? {
+            ...a,
+            items,
+            label:
+              only.id === 'abteilung' && activeDept
+                ? activeDept.label
+                : (only.labelFor?.(active, ws) ?? only.label),
+            icon: only.icon,
+          }
+        : { ...a, items }
+    })
+    .filter((a) => a.items.length > 0)
   const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
   const inModule = (m: (typeof modules)[number]) =>
     modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -410,8 +416,11 @@ export function Layout() {
   // Gewählter Bereich: der des aktuellen Menüpunkts; Seiten außerhalb (Hilfe, Mein Konto)
   // gehören zu keinem
   // Die Bereichsübersicht (/bereich/…) gehört zu ihrem Bereich
-  const overviewOf = /^\/bereich\/([a-z]+)$/.exec(pathname)?.[1]
-  const currentArea = areas.find((a) => a.id === (overviewOf ?? currentModule?.area)) ?? null
+  const overviewOf = /^\/bereich\/([a-z0-9-]+)$/.exec(pathname)?.[1]
+  const currentArea =
+    areas.find(
+      (a) => a.id === (overviewOf ?? (currentModule ? areaOf(menuLayout, currentModule) : null)),
+    ) ?? null
   const moduleLabel = (m: (typeof modules)[number]) =>
     m.id === 'abteilung' && activeDept ? activeDept.label : (m.labelFor?.(active, ws) ?? m.label)
   const moduleLink = (m: (typeof modules)[number]) => m.linkFor?.(active, ws) ?? m.path
@@ -425,7 +434,7 @@ export function Layout() {
   // Heißt der Menüpunkt wie sein Bereich (Mitglieder, Finanzen), stehen seine Unterpunkte
   // direkt im Bereichsmenü: eine Ebene weniger
   const flat = (m: (typeof modules)[number]) =>
-    m.id === m.area && moduleTree(m).some((n) => n.to === moduleLink(m))
+    m.id === areaOf(menuLayout, m) && moduleTree(m).some((n) => n.to === moduleLink(m))
   // Ein Bereich mit nur einer Seite (Start) braucht kein Bereichsmenü
   const areaHasMenu =
     !!currentArea && (currentArea.items.length > 1 || moduleTree(currentArea.items[0]).length > 0)
@@ -865,6 +874,19 @@ export function Layout() {
                               ),
                             )}
                           </ul>
+                          {/* Menü frei anordnen: leiser Weg für alle, die es dürfen */}
+                          {!memberNav &&
+                            active &&
+                            (active.type === 'club' || active.type === 'federation') &&
+                            active.permissions.includes('settings.edit') && (
+                              <Link
+                                to="/einstellungen/menue"
+                                className="area-menu-arrange muted"
+                                onClick={choseInNav}
+                              >
+                                {t('Menü anordnen')}
+                              </Link>
+                            )}
                         </div>
                       )}
                     </>

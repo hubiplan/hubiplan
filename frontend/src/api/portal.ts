@@ -3,6 +3,7 @@ import { t } from '../i18n/index.ts'
 import { api, listParams, request } from './client.ts'
 import type { ListQuery, Paged } from './client.ts'
 import type { CatalogModule, EffectiveTheme } from './orgs.ts'
+import type { MenuLayout } from '../menuLayout.ts'
 import type { MemberRow, Page } from './members.ts'
 import type { DeptTerms } from '../org/terms.ts'
 import type { DatePrecision } from '../components/forms.ts'
@@ -32,6 +33,8 @@ export interface DeptSummary {
   bookings_enabled?: boolean
   expenses_enabled?: boolean
   imprint_key?: string
+  /** Anordnung des Menüs: die des Vereins */
+  menu_layout?: MenuLayout | null
 }
 
 export interface PortalEntry {

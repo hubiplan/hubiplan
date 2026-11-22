@@ -3,14 +3,17 @@
 // Die Hilfe ist so gegliedert wie das Menü: Bereich › Menüpunkt. Der Ort folgt aus der
 // ersten Route des Eintrags (oder dem Feld „menue“), damit Hilfe und Menü nie auseinanderlaufen.
 import { t } from '../i18n/index.ts'
-import { AREA_LABELS, modules } from '../modules.tsx'
+import { modules } from '../modules.tsx'
 import type { AreaId } from '../modules.tsx'
+import { areaOf, arrangedAreas } from '../menuLayout.ts'
+import type { MenuLayout } from '../menuLayout.ts'
 import type { OrgSummary } from '../api/orgs.ts'
 import type { HelpEntry } from './content.ts'
 import { financeGroups, financeSections } from '../pages/finanzen/access.ts'
 import type { FinanceAccess } from '../pages/finanzen/access.ts'
 
-export type HelpGroup = AreaId | 'konto' | 'plattform'
+// Bereiche der Einheit (Menü frei anordnen): Standard oder eigene Kennungen
+export type HelpGroup = AreaId | 'konto' | 'plattform' | (string & {})
 
 /** Bereiche in der Reihenfolge der Bereichsleiste; Mein Konto und Plattform am Ende. */
 export const HELP_GROUPS: readonly HelpGroup[] = [
@@ -38,7 +41,10 @@ export interface MenuPlace {
 const ACCOUNT_ROUTES = ['/mein-konto', '/briefvorlage']
 
 /** Ort eines Eintrags im Menü; null, wenn seine Route zu keinem Menüpunkt gehört. */
-export function placeOf(entry: Pick<HelpEntry, 'routes' | 'menu'>): MenuPlace | null {
+export function placeOf(
+  entry: Pick<HelpEntry, 'routes' | 'menu'>,
+  layout: MenuLayout | null = null,
+): MenuPlace | null {
   const route = entry.menu ?? entry.routes[0]
   if (!route) return null
   const top = route === '/' ? '/' : `/${route.split('/')[1]}`
@@ -47,13 +53,18 @@ export function placeOf(entry: Pick<HelpEntry, 'routes' | 'menu'>): MenuPlace | 
   if (index < 0) return null
   const m = modules[index]
   if (m.id === 'plattform') return { group: 'plattform', item: m.id, index }
-  return { group: m.area, item: m.id, index }
+  return { group: areaOf(layout, m), item: m.id, index }
 }
 
-export function groupLabel(group: HelpGroup): string {
+/** Gruppen der Hilfe in Leistenreihenfolge der Einheit; Mein Konto und Plattform am Ende. */
+export function helpGroups(layout: MenuLayout | null = null): HelpGroup[] {
+  return layout ? [...layout.areas.map((a) => a.id), 'konto', 'plattform'] : [...HELP_GROUPS]
+}
+
+export function groupLabel(group: HelpGroup, layout: MenuLayout | null = null): string {
   if (group === 'konto') return t('Mein Konto')
   if (group === 'plattform') return t('Plattform')
-  return AREA_LABELS[group]
+  return arrangedAreas(layout).find((a) => a.id === group)?.label ?? group
 }
 
 /** Name des Menüpunkts, wie die Seitenleiste ihn für die Einheit zeigt (z. B. „Züge“). */
@@ -124,22 +135,37 @@ export interface HelpSection {
 }
 
 /** Einträge nach Gruppe und Menüpunkt, in der Reihenfolge der Seitenleiste. */
-export function byMenu(entries: HelpEntry[]): HelpSection[] {
+export function byMenu(entries: HelpEntry[], layout: MenuLayout | null = null): HelpSection[] {
   const placed = entries
-    .map((e) => ({ e, p: placeOf(e) }))
+    .map((e) => ({ e, p: placeOf(e, layout) }))
     .filter((x): x is { e: HelpEntry; p: MenuPlace } => !!x.p)
-  return HELP_GROUPS.map((group) => {
-    const inGroup = placed.filter((x) => x.p.group === group)
-    const itemIds = [...new Set(inGroup.sort((a, b) => a.p.index - b.p.index).map((x) => x.p.item))]
-    return {
-      group,
-      items: itemIds.map((item) => ({
-        item,
-        entries: inGroup
-          .filter((x) => x.p.item === item)
-          .map((x) => x.e)
-          .sort(byOrder(item)),
-      })),
-    }
-  }).filter((s) => s.items.length > 0)
+  return helpGroups(layout)
+    .map((group) => {
+      const inGroup = placed.filter((x) => x.p.group === group)
+      const itemIds = [
+        ...new Set(inGroup.sort((a, b) => a.p.index - b.p.index).map((x) => x.p.item)),
+      ]
+      return {
+        group,
+        items: itemIds.map((item) => ({
+          item,
+          entries: inGroup
+            .filter((x) => x.p.item === item)
+            .map((x) => x.e)
+            .sort(byOrder(item)),
+        })),
+      }
+    })
+    .filter((s) => s.items.length > 0)
+}
+
+/**
+ * Platzhalter `{bereich:<Menüpunkt>}` im Hilfetext: Name des Bereichs, in dem der Menüpunkt bei
+ * der Einheit steht (Menü frei anordnen). Ohne Anordnung der vorgegebene Bereich.
+ */
+export function fillAreas(text: string, layout: MenuLayout | null = null): string {
+  return text.replace(/\{bereich:([a-z-]+)\}/g, (all, id: string) => {
+    const m = modules.find((x) => x.id === id)
+    return m ? groupLabel(areaOf(layout, m), layout) : all
+  })
 }

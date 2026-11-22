@@ -6,7 +6,7 @@ routen: [/belegung]
 stichworte: [Buchung, Buchungskalender, Reservierung, Anfrage, Freigabe, Rüstzeit, Serie, Saal]
 ---
 
-Unter Planung › **Belegung** siehst du, wann Infrastruktur und Material mit Buchungskalender belegt
+Unter {bereich:belegung} › **Belegung** siehst du, wann Infrastruktur und Material mit Buchungskalender belegt
 sind. Je Objekt gibt es eine Zeile. Oben schaltest du zwischen **Woche**, **Monat** und **Jahr**
 um und blätterst mit den Knöpfen daneben. Die Monatsansicht zeigt alle Tage des Monats
 nebeneinander (der volle Text steht im Hinweis beim Darüberfahren), die Jahresansicht je Monat die

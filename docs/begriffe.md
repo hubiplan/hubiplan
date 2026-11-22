@@ -50,7 +50,7 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Konto darf in den Mitgliederbereich | **Mitgliederbereich freigeschaltet**; **freischalten**, **sperren** | Member area enabled; enable, block | „Zugang“ allein |
 | Rolle mit allen Rechten in einer Untereinheit | **Leitung**, Handlung **Leitung besetzen** | Head, Assign head | „Verwalter“ |
 | Was auf eine Entscheidung oder Handlung wartet (Startseite, App) | **Zu erledigen** | To do | „Offene Punkte“, „Offene Aufgaben“ dafür |
-| Die neun festen Teile des Menüs der Web-Oberfläche (Start, Mitglieder, Untereinheiten, Planung, Kommunikation, Webseite, Vereinsleben, Finanzen, Verein) | **Bereich**; die Leiste links heißt **Bereichsleiste**, das Menü daneben **Bereichsmenü**, die Seite mit allen Seiten eines Bereichs **Bereichsübersicht** | Area, area bar, area menu, area overview | „Seitenleiste“, „Gruppe“ dafür |
+| Die Teile des Menüs der Web-Oberfläche (vorgegeben: Start, Mitglieder, Untereinheiten, Planung, Kommunikation, Webseite, Vereinsleben, Finanzen, Verein; anpassbar unter Einstellungen › Menü, dort auch **Hauptmenüpunkt** genannt) | **Bereich**; die Leiste links heißt **Bereichsleiste**, das Menü daneben **Bereichsmenü**, die Seite mit allen Seiten eines Bereichs **Bereichsübersicht** | Area, area bar, area menu, area overview | „Seitenleiste“, „Gruppe“ dafür |
 | Wechsel zwischen dem, was man als Mitglied sieht, und der Mitarbeit im Verein | **Sicht**: **Mein Verein** und **Verwaltung** | View mode: My club, Administration | „Modus“, „Ansicht“ dafür |
 | Unterseiten einer Seite oben im Inhalt | **Reiter** | Tabs | „Tabs“, „Register“ |
 | Engere Darstellung für große Bildschirme | **Dichte**: **Bequem**, **Kompakt** | Density: Comfortable, Compact | „Zoom“ |

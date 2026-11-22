@@ -98,6 +98,10 @@ export function baseSettingsItems(active: OrgSummary): SettingsItem[] {
     ...(clubLike && settings
       ? [{ to: '/einstellungen/module', label: t('Module'), section: general, setup: true }]
       : []),
+    // Menü frei anordnen (konzepte/menue-frei-anordnen.md); Untereinheiten übernehmen es
+    ...(clubLike && settings
+      ? [{ to: '/einstellungen/menue', label: t('Menü'), section: general }]
+      : []),
     ...(!unit && theme
       ? [
           {

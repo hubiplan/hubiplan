@@ -68,6 +68,10 @@ class TestUeberblick:
         unit = next(u for u in data["units"] if u["id"] == cal["a"].pk)
         assert unit["permissions"] == ["members.edit", "members.view"]
         assert unit["stufen"] is True
+        # Menü frei anordnen: Gruppen wie im Browser, ohne eigene Anordnung der Standard
+        groups = unit["menu_groups"]
+        assert groups[0]["id"] == "start"
+        assert any(g["id"] == "planung" and "termine" in g["items"] for g in groups)
 
     def test_mitglied_ohne_rechte(self, cal, api):
         _, user, _ = member_with_access(cal["a"], "Otto")

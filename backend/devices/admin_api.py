@@ -52,6 +52,7 @@ from changes import tracking
 from core.api_base import OrgScopedMixin
 from core.ratelimit import TooMany, too_many
 from members.open_tasks import booking_tasks, event_tasks, member_tasks
+from organizations import menu_layout
 
 from . import browser_unlock
 from .auth import AdminTokenAuthentication, DeviceTokenAuthentication
@@ -123,6 +124,9 @@ def admin_units(user) -> list[dict]:
                     "stufen": True,
                     # Eingeschaltete Module (neu, z. B. Bereich „Wettbewerbe“ nur mit Modul)
                     "modules": sorted(org.enabled_modules or []),
+                    # Neu: Hauptmenüpunkte der Einheit mit ihren Menüpunkten (Menü frei
+                    # anordnen); die Apps gruppieren ihre Verwaltung danach, ältere lesen es nicht
+                    "menu_groups": menu_layout.groups(org, lang=getattr(user, "language", "de")),
                 }
             )
     return sorted(units, key=lambda u: u["name"].lower())

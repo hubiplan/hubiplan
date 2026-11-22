@@ -94,6 +94,7 @@ from organizations import (
     help_feedback,
     help_views,
     imprint_views,
+    menu_views,
     setup_status,
     social_views,
 )
@@ -590,6 +591,8 @@ org_patterns = [
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
     path("home-tiles/", hometiles_views.OrgHomeTilesView.as_view(), name="home-tiles"),
+    path("menu-layout/", menu_views.MenuLayoutView.as_view(), name="menu-layout"),
+    path("menu-layout/undo/", menu_views.MenuLayoutUndoView.as_view(), name="menu-layout-undo"),
     path("setup-status/", setup_status.SetupStatusView.as_view(), name="setup-status"),
     path(
         "change-requests/<int:pk>/decide/",

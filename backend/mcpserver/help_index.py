@@ -27,6 +27,7 @@ LANGS = ("de", "en")
 _HEAD = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.S)
 _IMAGE = re.compile(r"!\[([^\]]*)\]\(bild:[^)]*\)")
 _PLACEHOLDER = re.compile(r"\{(\w+)\}")
+_AREA = re.compile(r"\{bereich:([a-z-]+)\}")
 _WORD = re.compile(r"\w+")
 
 
@@ -80,10 +81,23 @@ def _terms() -> dict[str, str]:
 def _terms_and_image(lang: str) -> dict[str, str]:
     with translation.override(lang):
         # Bildschirmfotos gibt es hier nicht; ihr Alternativtext bleibt als Hinweis
-        return {**_terms(), "__bild__": _("Bild")}
+        return {**_terms(), "__bild__": _("Bild"), "__sprache__": lang}
+
+
+def _area(item: str, terms: dict[str, str]) -> str:
+    """Platzhalter ``{bereich:<Menüpunkt>}``: vorgegebener Bereich des Menüpunkts."""
+    from organizations import menu_layout
+
+    std = menu_layout.standard()
+    area_id = std["items"].get(item)
+    area = next((a for a in std["areas"] if a["id"] == area_id), None)
+    if area is None:
+        return item
+    return area["label_en"] if terms.get("__sprache__") == "en" else area["label"]
 
 
 def _clean(text: str, terms: dict[str, str]) -> str:
+    text = _AREA.sub(lambda m: _area(m[1], terms), text)
     text = _PLACEHOLDER.sub(lambda m: terms.get(m[1], m[0]), text)
     image = terms.get("__bild__", "Bild")
     return _IMAGE.sub(lambda m: f"({image}: {m[1]})" if m[1] else "", text)
