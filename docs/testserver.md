@@ -95,6 +95,22 @@ nie eine Freigabe. `scripts/test.sh` startet sie, während der Lauf auf seinen P
 Cloud-Sitzung vor dem Lauf auf dem Testrechner, läuft sie mit dem installierten node/npm
 (`VORPRUEFUNG_OHNE_DOCKER=1`) und holt sich ruff in der festgeschriebenen Fassung.
 
+### Sicherheitsprüfung
+
+`scripts/sicherheitspruefung.sh [ref]` ergänzt den Testlauf (ruff mit den Sicherheitsregeln,
+pip-audit, npm audit) um zwei Prüfungen mit fremden Werkzeugen: **gitleaks** sucht im Stand nach
+eingecheckten Schlüsseln, Tokens und Passwörtern (Funde ohne den Wert), **trivy** sucht in den
+Abbildern nach bekannten Lücken der Systempakete, im gebauten Backend-Abbild und in den fremden
+Abbildern aus den Dockerfiles und `docker-compose.server.yml` (hoch und kritisch, nur mit
+verfügbarer Korrektur). `--nur geheimnisse` oder `--nur abbilder` prüft einen Teil. Bewusste
+Musterwerte stehen in `.gitleaks.toml`, hingenommene Lücken mit Begründung und Datum in
+`.trivyignore`.
+
+Die Prüfung läuft lokal mit Docker, belegt keinen Testplatz (höchstens zwei Kerne) und braucht
+Netz. Sie gehört bewusst nicht zum Merge-Zug: Eine neu bekannt gewordene Lücke in einem
+Basis-Abbild soll keinen fremden Pull Request aufhalten. Sie läuft vor jedem Release
+(docs/releases.md) und nach Änderungen an Dockerfiles, Compose-Dateien oder Abhängigkeiten.
+
 ### Läufe abbrechen
 
 Jeder Lauf meldet oben seine **Lauf-ID** (`hubiplan-test-<Zeit>-<PID>`), und alle seine Container

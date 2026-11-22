@@ -1,0 +1,24 @@
+# Geheimnissuche (scripts/sicherheitspruefung.sh): Standardregeln von gitleaks, dazu die
+# bewussten Musterwerte dieses Repositories. Jede Ausnahme mit Begründung; lieber eine Datei
+# oder ein Muster eng fassen als eine Regel abschalten.
+title = "HUBIplan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Erfundene Schlüssel und Tokens in Tests und Testdaten"
+paths = [
+    '''^backend/tests/''',
+    '''^backend/[a-z_]+/tests/''',
+    '''^frontend/src/test/''',
+    '''^deploy/backup/test[-_].*''',
+    '''^scripts/pruefe-.*\.sh$''',
+]
+
+[[allowlists]]
+description = "Festgeschriebene Paketlisten: Prüfsummen, keine Geheimnisse"
+paths = [
+    '''^backend/requirements(-dev)?\.txt$''',
+    '''^frontend/package-lock\.json$''',
+]

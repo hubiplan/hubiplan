@@ -54,6 +54,9 @@ Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):
    nur die beiden Changelogs, gilt er sofort als getestet (kein neuer Testlauf). Den
    Vorgänger vorher einmal mit `TEST_ALLES=1 scripts/test.sh <Vorgänger>` vollständig
    prüfen, auch die sonst ausgelassenen Teile (docs/testserver.md, „Nur geänderte Teile“).
+   Dazu `scripts/sicherheitspruefung.sh <Vorgänger>` (Geheimnisse im Stand, bekannte Lücken in
+   den Abbildern; docs/testserver.md, „Sicherheitsprüfung“). Funde vor dem Release beheben
+   oder begründet eintragen.
 5. Auf den Testserver ausrollen wie immer.
 6. `scripts/release.sh taggen` prüft:
    - der Stand ist lokal getestet,
