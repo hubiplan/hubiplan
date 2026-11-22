@@ -9,10 +9,10 @@ from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps
 from rest_framework.exceptions import ValidationError
 
-from core.filecheck import JPEG_FORMATS, heic_message, is_heic
+from core.filecheck import BILD_FEHLER, JPEG_FORMATS, heic_message, is_heic
 
 from .content_models import (
     TIMELINE_SLUG,
@@ -50,7 +50,7 @@ def _open(upload) -> Image.Image:
         img.load()
     except ValidationError:
         raise
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+    except BILD_FEHLER as exc:
         upload.seek(0)
         if is_heic(upload.read(16)):
             raise ValidationError({"file": heic_message()}) from exc
@@ -149,12 +149,12 @@ def capture_info(upload) -> tuple:
             naive = datetime.datetime.strptime(raw.strip()[:19], "%Y:%m:%d %H:%M:%S")
             if 1900 <= naive.year <= 2999:
                 taken = timezone.make_aware(naive)
-    except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError):
+    except BILD_FEHLER:
         taken = None
     finally:
         try:
             upload.seek(0)
-        except (OSError, ValueError):
+        except BILD_FEHLER:
             pass
     return taken, name
 

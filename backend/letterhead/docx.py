@@ -18,6 +18,7 @@ from xml.sax.saxutils import escape
 from django.utils import timezone
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
+from core.filecheck import BILD_FEHLER
 from organizations.theme import SURFACE, contrast
 
 from .data import LetterData
@@ -265,7 +266,7 @@ MAX_PICTURE_PIXELS = 40_000_000
 
 def load_picture(source, name: str, max_px: int = 800) -> Picture | None:
     """Bild (Pfad oder Bytes) als PNG; None, wenn es kein lesbares Bild ist."""
-    from PIL import Image, UnidentifiedImageError
+    from PIL import Image
 
     try:
         from core.bildsicher import IMAGE_FORMATS
@@ -278,7 +279,7 @@ def load_picture(source, name: str, max_px: int = 800) -> Picture | None:
         if image.width * image.height > MAX_PICTURE_PIXELS:
             return None
         image.load()
-    except (OSError, UnidentifiedImageError, ValueError, Image.DecompressionBombError):
+    except BILD_FEHLER:
         return None
     if image.mode not in ("RGB", "RGBA"):
         image = image.convert("RGBA")

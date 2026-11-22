@@ -29,6 +29,8 @@ import numpy as np
 from django.utils.translation import gettext
 from PIL import Image
 
+from core.filecheck import BILD_FEHLER
+
 from .. import targets
 from .benchmark import Detection
 
@@ -49,7 +51,7 @@ def _decode(image: bytes) -> np.ndarray:
     try:
         with Image.open(io.BytesIO(image)) as probe:
             w, h = probe.size
-    except (OSError, ValueError) as exc:
+    except BILD_FEHLER as exc:
         raise DetectError(gettext("Das Bild lässt sich nicht lesen.")) from exc
     if w * h > MAX_PIXELS:
         raise DetectError(gettext("Das Bild ist zu groß."))

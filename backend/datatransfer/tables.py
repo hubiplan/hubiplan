@@ -640,7 +640,7 @@ def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") 
             return
         try:
             ElementTree.fromstring(content, forbid_dtd=True)
-        except (ParseError, DefusedXmlException) as exc:
+        except (ParseError, DefusedXmlException, ValueError, LookupError) as exc:
             raise ValidationError(gettext("Die Datei ist kein gültiges XML.")) from exc
         return
     if name == "finance.receipt" and getattr(obj, "content_type", "") in {

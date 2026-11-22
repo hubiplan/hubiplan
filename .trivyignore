@@ -1,3 +1,13 @@
 # Bewusst hingenommene Lücken in Abbildern (scripts/sicherheitspruefung.sh).
 # Je Zeile eine Kennung, davor als Kommentar: betroffenes Abbild, warum HUBIplan nicht
 # betroffen ist, Datum. Einträge wieder entfernen, sobald das Basis-Abbild korrigiert ist.
+
+# caddy:2-alpine, golang.org/x/net (html-Zerleger): quadratischer Aufwand beim Zerlegen von
+# fremdem HTML. Caddy zerlegt bei HUBIplan kein HTML (kein „templates“, nur Weiterleitung und
+# Dateien ausliefern). 22.11.2026
+CVE-2026-78661
+
+# postgres:18-alpine, libxml2 (XInclude): XInclude-Aufrufe geben die Zerlegeschalter nicht
+# weiter. PostgreSQL nutzt libxml2 nur für den Datentyp xml und xpath, ohne XInclude und ohne
+# eigenen Lader mit Netzzugriff; die Datenbank erreicht nur das Backend. 22.11.2026
+CVE-2026-86144

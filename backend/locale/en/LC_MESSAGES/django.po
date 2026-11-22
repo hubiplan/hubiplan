@@ -2621,6 +2621,9 @@ msgstr "At most {MAX_ROWS} rows per file."
 msgid "Die Excel-Datei lässt sich nicht lesen."
 msgstr "The Excel file cannot be read."
 
+msgid "Die CSV-Datei lässt sich nicht lesen."
+msgstr "The CSV file cannot be read."
+
 msgid "Die Excel-Datei ist entpackt zu groß. Bitte als CSV speichern."
 msgstr "The Excel file is too large when unpacked. Please save it as CSV."
 

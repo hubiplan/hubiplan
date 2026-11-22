@@ -11,6 +11,8 @@ from pathlib import Path
 from django.utils.translation import gettext
 from openpyxl import load_workbook
 
+from core.zipsicher import ZIP_FEHLER
+
 MAX_ROWS = 20000
 MAX_COLUMNS = 200
 # Beim Lesen höchstens so viele Zeilen (Daten + Kopf + ein paar Leerzeilen) ansehen,
@@ -78,7 +80,7 @@ def _check_zip(path) -> None:
     try:
         with zipfile.ZipFile(path) as zf:
             infos = zf.infolist()
-    except (zipfile.BadZipFile, OSError) as exc:
+    except ZIP_FEHLER as exc:
         raise ReadError(gettext("Die Excel-Datei lässt sich nicht lesen.")) from exc
     unpacked = sum(i.file_size for i in infos)
     packed = sum(i.compress_size for i in infos) or 1
@@ -93,32 +95,40 @@ def _read_xlsx(path) -> list[list]:
     except Exception as exc:  # noqa: BLE001
         raise ReadError(gettext("Die Excel-Datei lässt sich nicht lesen.")) from exc
     try:
-        ws = wb.worksheets[0]
-        rows = []
-        kept = 0
-        # Angegebene Breite, höchstens MAX_COLUMNS: übergroße Tabellenbreite nicht erst
-        # aufbauen (GA-H02), normale Tabellen aber nicht bis MAX_COLUMNS auffüllen
-        sized = ws.max_column is not None
-        width = min(ws.max_column or MAX_COLUMNS, MAX_COLUMNS)
-        for row in ws.iter_rows(values_only=True, max_col=width):
-            row = row[:width]
-            if not sized:
-                # Ohne Größenangabe füllt openpyxl bis max_col auf: wie bisher nur echte Zellen
-                end = len(row)
-                while end and row[end - 1] is None:
-                    end -= 1
-                row = row[:end]
-            values = [_cell(v) for v in row]
-            rows.append(values)
-            if any(v not in (None, "") for v in values):
-                kept += 1
-            if kept > MAX_ROWS + 1 or len(rows) > MAX_SCAN_ROWS + MAX_ROWS:
-                raise ReadError(
-                    gettext("Höchstens {MAX_ROWS} Zeilen je Datei.").format(MAX_ROWS=MAX_ROWS)
-                )
-        return rows
+        return _xlsx_rows(wb)
+    except ReadError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - beschädigte Datei: openpyxl meldet vieles
+        raise ReadError(gettext("Die Excel-Datei lässt sich nicht lesen.")) from exc
     finally:
         wb.close()
+
+
+def _xlsx_rows(wb) -> list[list]:
+    ws = wb.worksheets[0]
+    rows = []
+    kept = 0
+    # Angegebene Breite, höchstens MAX_COLUMNS: übergroße Tabellenbreite nicht erst
+    # aufbauen (GA-H02), normale Tabellen aber nicht bis MAX_COLUMNS auffüllen
+    sized = ws.max_column is not None
+    width = min(ws.max_column or MAX_COLUMNS, MAX_COLUMNS)
+    for row in ws.iter_rows(values_only=True, max_col=width):
+        row = row[:width]
+        if not sized:
+            # Ohne Größenangabe füllt openpyxl bis max_col auf: wie bisher nur echte Zellen
+            end = len(row)
+            while end and row[end - 1] is None:
+                end -= 1
+            row = row[:end]
+        values = [_cell(v) for v in row]
+        rows.append(values)
+        if any(v not in (None, "") for v in values):
+            kept += 1
+        if kept > MAX_ROWS + 1 or len(rows) > MAX_SCAN_ROWS + MAX_ROWS:
+            raise ReadError(
+                gettext("Höchstens {MAX_ROWS} Zeilen je Datei.").format(MAX_ROWS=MAX_ROWS)
+            )
+    return rows
 
 
 class _Semicolon(csv.excel):
@@ -140,10 +150,14 @@ def _read_csv(path) -> list[list]:
     except csv.Error:
         dialect = _Semicolon
     rows = []
-    for row in csv.reader(io.StringIO(text), dialect):
-        rows.append([_cell(v) for v in row[:MAX_COLUMNS]])
-        if len(rows) > MAX_SCAN_ROWS + MAX_ROWS:
-            raise ReadError(
-                gettext("Höchstens {MAX_ROWS} Zeilen je Datei.").format(MAX_ROWS=MAX_ROWS)
-            )
+    try:
+        # newline="": Zeilenenden gehören dem csv-Leser (einzelnes CR, Umbruch im Feld)
+        for row in csv.reader(io.StringIO(text, newline=""), dialect):
+            rows.append([_cell(v) for v in row[:MAX_COLUMNS]])
+            if len(rows) > MAX_SCAN_ROWS + MAX_ROWS:
+                raise ReadError(
+                    gettext("Höchstens {MAX_ROWS} Zeilen je Datei.").format(MAX_ROWS=MAX_ROWS)
+                )
+    except csv.Error as exc:  # z. B. ein Feld über der Größengrenze, NUL-Zeichen
+        raise ReadError(gettext("Die CSV-Datei lässt sich nicht lesen.")) from exc
     return rows

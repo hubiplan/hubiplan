@@ -1210,6 +1210,28 @@ Meldestelle des Projekts. Wer Meldungen zu seinem Server selbst annehmen will, s
 dieser Kontakt steht dann an erster Stelle. Die Adresse ist öffentlich lesbar, also ein
 Funktionspostfach nehmen.
 
+## Meldungen des Browsers (CSP)
+
+Die Oberfläche trägt eine Content-Security-Policy (`deploy/caddy/site.caddy`). Blockiert der
+Browser danach einen Inhalt, meldet er es an die eigene Instanz: `report-uri /api/csp-report/`
+für ältere Browser, `report-to csp` mit der Kopfzeile `Reporting-Endpoints` für neue. Nichts geht
+an fremde Dienste. Die Plattformverwaltung sieht die Meldungen unter Plattform › Sicherheit.
+
+- `POST /api/csp-report/` nimmt beide Formate ohne Anmeldung an (der Browser schickt keine
+  Zugangsdaten mit) und antwortet immer mit 204. Die Meldungen sind deshalb nicht beglaubigt.
+- Gespeichert wird je Regel, blockierter Herkunft (ohne Pfad) und Seite (ohne Abfrage; Nummern und
+  Schlüssel im Pfad werden zu „…“) ein Eintrag mit Zähler, erstem und letztem Tag und Fassung
+  (Tabelle `CspReport`, App `organizations`): keine Person, keine Einheit, keine Adresse.
+- Grenzen: 16 KB je Sendung, 60 Sendungen je Adresse und Stunde (Zähler nur im Zwischenspeicher),
+  500 verschiedene Einträge. Meldungen aus Browser-Erweiterungen werden verworfen.
+- Für den ersten neuen Eintrag zu einem blockierten Skript geht eine Alarm-Mail hinaus, höchstens
+  eine in 24 Stunden.
+- `GET /api/platform/csp-reports/` liefert die Liste, `DELETE …/<id>/` entfernt einen Eintrag,
+  `DELETE` auf die Liste alle.
+
+Wer einen eigenen Proxy vor HUBIplan betreibt, übernimmt `report-uri`, `report-to` und
+`Reporting-Endpoints` aus `site.caddy`; `scripts/pruefe-caddy.sh` prüft sie.
+
 ## Alarm-Mails und Notfall
 
 HUBIplan schickt sofort eine Mail „[HUBIplan-Sicherheit] …“ bei:
@@ -1221,6 +1243,8 @@ HUBIplan schickt sofort eine Mail „[HUBIplan-Sicherheit] …“ bei:
 - im Verbund: Schlüsselwechsel (eigener und der Gegenstellen), Umzug einer Gegenstelle,
   gehäuft ungültige Unterschriften, eine Gegenstelle mit unerwartetem Schlüssel,
 - in der App: ab 3 fehlgeschlagenen Freischaltungen der Verwaltung in einer Stunde.
+- einem vom Browser gemeldeten blockierten Skript (siehe Meldungen des Browsers; höchstens
+  eine Mail am Tag).
 - Backup fehlgeschlagen, unvollständig oder zu alt (siehe Backups; einmal am Tag).
 - Hintergrundjobs, die länger nicht erfolgreich liefen, als ihr Zeitplan erwarten lässt
   (siehe Hintergrundjobs; einmal am Tag je Stand).

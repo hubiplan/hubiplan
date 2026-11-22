@@ -76,7 +76,7 @@ def _root(data: bytes):
         )
     try:
         return SafeET.fromstring(data, forbid_dtd=True)
-    except (ET.ParseError, DefusedXmlException):
+    except (ET.ParseError, DefusedXmlException, ValueError, LookupError):
         raise EInvoiceError(gettext("Die Datei ist kein gültiges XML.")) from None
 
 
