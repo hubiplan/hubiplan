@@ -14,7 +14,7 @@ siehe: [guide.unit_create, guide.unit_lead]
 stichworte: [Zug, Abteilung, Bereich, Zugführer]
 ---
 
-Das ist der Arbeitsbereich der Untereinheit, in der du eine Rolle hast. Du siehst hier die Mitglieder, Termine, Dokumente und Rechnungen, soweit deine Rolle es erlaubt. Den Bereich wechselst du oben rechts. Die Unterpunkte (Mitglieder, Entwicklung, Rechnungen, Ämter, Meldungen, Export) stehen wie bei allen Bereichen in der Seitenleiste.
+Das ist der Arbeitsbereich der Untereinheit, in der du eine Rolle hast. Du siehst hier die Mitglieder, Termine, Dokumente und Rechnungen, soweit deine Rolle es erlaubt. Den Bereich wechselst du oben rechts. Die Unterpunkte (Mitglieder, Entwicklung, Rechnungen, Ämter, Meldungen, Export) stehen wie bei allen Bereichen im Menü.
 
 ## Entwicklung
 

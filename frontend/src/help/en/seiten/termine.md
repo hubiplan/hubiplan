@@ -20,7 +20,7 @@ You can tell an event’s category not only by its colour: every event has a lig
 
 An open event is laid out like this: at the top are when, where and the calendar, below them a bar with the buttons **Edit**, **Write a circular about it**, **Reminder to everyone without a reply** and **Add to my calendar** (.ics). The **Responses** card shows the number of acceptances, refusals and open replies, Excel and PDF for the participant list and, to expand, everyone who has not replied yet.
 
-The **For this event** card shows one row for each thing that belongs to the event: circulars, meeting, volunteer duty roster, booked rooms and equipment, tasks, the music performance, equipment, the statement in the event finances and the attachments. The area is on the left, its state in the middle and the buttons on the right, for example **Open**, **Show** or + **Create**. **Delete** stands on its own at the very bottom. You only see areas whose module is switched on and for which you have the right. Events, meetings, volunteer duties and tasks are grouped together in the sidebar under “Planning”.
+The **For this event** card shows one row for each thing that belongs to the event: circulars, meeting, volunteer duty roster, booked rooms and equipment, tasks, the music performance, equipment, the statement in the event finances and the attachments. The area is on the left, its state in the middle and the buttons on the right, for example **Open**, **Show** or + **Create**. **Delete** stands on its own at the very bottom. You only see areas whose module is switched on and for which you have the right. Events, meetings, volunteer duties and tasks are together in the menu in the “Planning” area.
 
 ## Attachments
 

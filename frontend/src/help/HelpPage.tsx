@@ -440,9 +440,7 @@ function PagesTab({ entries }: { entries: HelpEntry[] }) {
   }, [])
   return (
     <>
-      <p className="muted">
-        {t('Zu jeder Seite eine kurze Erklärung, geordnet wie die Seitenleiste.')}
-      </p>
+      <p className="muted">{t('Zu jeder Seite eine kurze Erklärung, geordnet wie das Menü.')}</p>
       <MenuList
         entries={entries.filter((e) => e.kind === 'page')}
         render={(items) => <EntryList items={items} />}

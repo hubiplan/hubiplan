@@ -5,7 +5,7 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 
 ## Regeln
 
-- **Menüpunkt = Überschrift.** Ein Unterpunkt in der Seitenleiste heißt genauso wie die
+- **Menüpunkt = Überschrift.** Ein Unterpunkt im Menü heißt genauso wie die
   Überschrift der Seite. Die Überschrift nennt die Unterseite, darüber steht der Pfad aus dem
   Menü (`PageHeader` in `frontend/src/components/PageHeader.tsx`); der Browser-Tab heißt
   „Unterseite · Bereich“.
@@ -50,6 +50,10 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Konto darf in den Mitgliederbereich | **Mitgliederbereich freigeschaltet**; **freischalten**, **sperren** | Member area enabled; enable, block | „Zugang“ allein |
 | Rolle mit allen Rechten in einer Untereinheit | **Leitung**, Handlung **Leitung besetzen** | Head, Assign head | „Verwalter“ |
 | Was auf eine Entscheidung oder Handlung wartet (Startseite, App) | **Zu erledigen** | To do | „Offene Punkte“, „Offene Aufgaben“ dafür |
+| Die sieben festen Teile des Menüs der Web-Oberfläche (Start, Mitglieder, Planung, Kommunikation, Vereinsleben, Finanzen, Verein) | **Bereich**; die Leiste links heißt **Bereichsleiste**, das Menü daneben **Bereichsmenü**, die Seite mit allen Seiten eines Bereichs **Bereichsübersicht** | Area, area bar, area menu, area overview | „Seitenleiste“, „Gruppe“ dafür |
+| Wechsel zwischen dem, was man als Mitglied sieht, und der Mitarbeit im Verein | **Sicht**: **Mein Verein** und **Verwaltung** | View mode: My club, Administration | „Modus“, „Ansicht“ dafür |
+| Unterseiten einer Seite oben im Inhalt | **Reiter** | Tabs | „Tabs“, „Register“ |
+| Engere Darstellung für große Bildschirme | **Dichte**: **Bequem**, **Kompakt** | Density: Comfortable, Compact | „Zoom“ |
 | Rechnungen im App-Bereich Verwaltung | **Rechnungen** | Invoices | „Beiträge“ |
 | Buchungen im App-Bereich Verwaltung | **Kassenbuch** | Cash book | „Kasse“ |
 | Geburtstage und Jubiläen der nächsten Wochen | **Jubiläen und Geburtstage** | Anniversaries and birthdays | „Anlässe“ |

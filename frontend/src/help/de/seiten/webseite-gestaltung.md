@@ -19,7 +19,7 @@ stichworte:
   ]
 ---
 
-Unter **Design und Farben** wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben kommen meist aus dem Erscheinungsbild der Einheit und lassen sich hier anpassen. Die Gestaltung hat in der Seitenleiste eigene Punkte: **Design und Farben**, **Feinabstimmung**, **Bereiche** und **Fassungen**; die Startseite stellt ihr unter Webseite › Startseite zusammen.
+Unter **Design und Farben** wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben kommen meist aus dem Erscheinungsbild der Einheit und lassen sich hier anpassen. Die Gestaltung hat im Menü eigene Punkte: **Design und Farben**, **Feinabstimmung**, **Bereiche** und **Fassungen**; die Startseite stellt ihr unter Webseite › Startseite zusammen.
 
 ## Farben zuordnen
 

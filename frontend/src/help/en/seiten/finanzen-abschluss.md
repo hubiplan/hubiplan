@@ -9,7 +9,7 @@ stichworte: [Year-end closing, cash report, DATEV, retention, reopen, locking]
 
 Under year-end closing you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
 
-The **Cash audit** is a separate tab in the year-end closing. Reports, Taxes, Assets and Allowances have their own items in the Finance sidebar.
+The **Cash audit** is a separate tab in the year-end closing. Reports, Taxes, Assets and Allowances have their own items in the Finance menu.
 
 ## Locking the cash book
 

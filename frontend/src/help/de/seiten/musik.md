@@ -7,7 +7,7 @@ routen: [/musik]
 stichworte: [Musik, Auftritt, Besetzung, Einteilung, Gast, Gage, Abrechnung, Programm]
 ---
 
-Hier planst du Auftritte: Besetzung, Programm, Gäste und Abrechnung. Die übrigen Punkte von Musik stehen in der Seitenleiste: Übersicht, Verfügbarkeiten, Musiker, Proben und Notenausgabe, Notenbestand und Besetzungsvorlagen. Änderungen an vorhandenen Einträgen speichern sich von selbst; Neues legst du mit **Speichern** an.
+Hier planst du Auftritte: Besetzung, Programm, Gäste und Abrechnung. Die übrigen Punkte von Musik stehen im Menü: Übersicht, Verfügbarkeiten, Musiker, Proben und Notenausgabe, Notenbestand und Besetzungsvorlagen. Änderungen an vorhandenen Einträgen speichern sich von selbst; Neues legst du mit **Speichern** an.
 
 ## Auftritt anlegen
 
