@@ -25,11 +25,11 @@ Die Seite gibt es nur, wenn das Modul „API für andere Programme“ eingeschal
 
 ## Was ein Zugang lesen darf
 
-- **Einheit**: Name, Anschrift, Kontakt, Logo und die Untereinheiten.
-- **Termine**: Termine mit der Sichtbarkeit „nach außen öffentlich“, auf Wunsch auch die für Mitglieder. Termine „nur Vorstand“, Zu- und Absagen gibt es nie.
-- **Mitgliederzahlen**: Anzahlen zum Stichtag nach Alter, Geschlecht und Untereinheit, keine Personen.
-- **Vorstand und Ämter**: Rollen mit ihrer Funktionsadresse; Namen nur, wenn sie auf eurer öffentlichen Webseite stehen.
-- **Ergebnisse, Beiträge, Dokumente**: nur, was eure Webseite veröffentlicht.
+- Einheit: Name, Anschrift, Kontakt, Logo und die Untereinheiten.
+- Termine: Termine mit der Sichtbarkeit „nach außen öffentlich“, auf Wunsch auch die für Mitglieder. Termine „nur Vorstand“, Zu- und Absagen gibt es nie.
+- Mitgliederzahlen: Anzahlen zum Stichtag nach Alter, Geschlecht und Untereinheit, keine Personen.
+- Vorstand und Ämter: Rollen mit ihrer Funktionsadresse; Namen nur, wenn sie auf eurer öffentlichen Webseite stehen.
+- Ergebnisse, Beiträge, Dokumente: nur, was eure Webseite veröffentlicht.
 
 Ein Bereich erscheint nur, wenn das Modul dazu eingeschaltet ist. Mit **Gilt für** begrenzt ihr einen Zugang auf eine Untereinheit; er sieht dann nur deren Daten.
 

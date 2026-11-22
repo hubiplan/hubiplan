@@ -16,11 +16,11 @@ The page only exists if the module “API for other programs” is switched on a
 
 ## What an access may read
 
-- **Unit**: name, address, contact, logo and the sub-units.
-- **Events**: events with the visibility “public”, optionally also those for members. Board-only events and replies are never included.
-- **Member numbers**: counts on a reference date by age, gender and sub-unit, no persons.
-- **Board and offices**: roles with their functional address; names only if they appear on your public website.
-- **Results, posts, documents**: only what your website publishes.
+- Unit: name, address, contact, logo and the sub-units.
+- Events: events with the visibility “public”, optionally also those for members. Board-only events and replies are never included.
+- Member numbers: counts on a reference date by age, gender and sub-unit, no persons.
+- Board and offices: roles with their functional address; names only if they appear on your public website.
+- Results, posts, documents: only what your website publishes.
 
 An area only appears if its module is switched on. With **Applies to** you restrict an access to one sub-unit; it then only sees that unit's data.
 
