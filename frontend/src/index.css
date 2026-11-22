@@ -7755,3 +7755,52 @@ html {
   background: var(--color-brand-soft);
   color: var(--color-link);
 }
+
+/* --- Web-Oberfläche W5: Dichte „Kompakt“ ---
+   Kleinere Bedienelemente und engere Tabellen, Karten und Abstände für große Bildschirme und
+   lange Listen (Mein Konto › Profil › Darstellung). Mit Fingerbedienung bleiben die
+   Bedienelemente 44 px hoch (WCAG 2.5.8 empfiehlt große Ziele). */
+:root[data-density='compact'] {
+  --control-height: 2.25rem;
+  --control-padding-y: 0.3rem;
+  --control-padding-x: 0.6rem;
+}
+:root[data-density='compact'] .table th,
+:root[data-density='compact'] .table td {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+:root[data-density='compact'] .card {
+  padding: 1rem;
+}
+:root[data-density='compact'] .content {
+  padding: 1rem 1.25rem;
+}
+:root[data-density='compact'] .area-menu .sidebar-link,
+:root[data-density='compact'] .area-menu-flat > .sidebar-sub > li > .sidebar-sublink {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+@media (pointer: coarse) {
+  :root[data-density='compact'] {
+    --control-height: 2.75rem;
+    --control-padding-y: 0.5rem;
+  }
+}
+
+/* W5: Die Kopfzeile langer Tabellen bleibt unter der Kopfzeile der Seite stehen, damit die
+   Spalten beim Rollen benannt bleiben. In Tabellen, die für sich seitlich rollen, greift das
+   nicht; dort bleibt alles wie zuvor. Dialoge und Kacheln der Startseite rollen für sich und
+   sind ausgenommen. */
+@media not all and (max-width: 50rem) {
+  .content .table:not(.modal *, .home-grid *, .tile *) > thead > tr > th {
+    position: sticky;
+    top: var(--topbar-height, 3.5rem);
+    z-index: 2;
+  }
+}
+@media (max-height: 30rem) {
+  .content .table > thead > tr > th {
+    position: static;
+  }
+}
