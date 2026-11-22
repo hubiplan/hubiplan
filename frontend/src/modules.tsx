@@ -9,6 +9,7 @@ import { memberSections, membersVisible } from './pages/members/access.ts'
 import { websiteSections } from './pages/website/sections.ts'
 import { circularsVisible } from './pages/circulars/access.ts'
 import { portalNav } from './pages/portal/sections.ts'
+import { eventAccess, eventSections } from './pages/events/sections.ts'
 import { departmentSections } from './pages/department/sections.ts'
 import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
@@ -214,6 +215,11 @@ export const modules: AppModule[] = [
             (ws.dept?.events_enabled && ws.dept.permissions.includes(PERM.eventsView)) ||
             ws.portal?.events_enabled
           ),
+    // Kalender und Einrichtung im Menü wie bei den anderen Modulen (Ralf 22.11.)
+    children: (org, ws) => {
+      const items = eventSections(eventAccess(org, ws?.dept ?? null, ws?.portal ?? null))
+      return items.length > 1 ? items : []
+    },
   },
   {
     id: 'versammlungen',
