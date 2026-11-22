@@ -454,6 +454,16 @@ CELERY_BEAT_SCHEDULE = {
         "task": "partnerapi.tasks.remind_expiring",
         "schedule": taeglich(6, 20),
     },
+    # Benachrichtigungen der API (Webhooks) zustellen; ohne fällige Nachricht: nichts zu tun
+    "api-benachrichtigungen": {
+        "task": "partnerapi.tasks.deliver_webhooks",
+        "schedule": 60,
+    },
+    # Abrufprotokoll der API und erledigte Benachrichtigungen nach 90 Tagen löschen
+    "api-protokoll-aufraeumen": {
+        "task": "partnerapi.tasks.purge_logs",
+        "schedule": taeglich(4, 35),
+    },
     # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
     "termine-fremde-kalender": {
         "task": "events.tasks.sync_external_calendars",

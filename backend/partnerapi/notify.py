@@ -52,6 +52,30 @@ EXPIRING = (
         "Wird er nicht mehr gebraucht, ist nichts zu tun.\n"
     ),
 )
+PERSONAL = (
+    gettext_noop("API-Zugang „{name}“ gibt jetzt Personendaten heraus"),
+    gettext_noop(
+        "Hallo,\n\n"
+        "{actor} hat am API-Zugang „{name}“ von „{unit}“ Bereiche mit Personendaten "
+        "eingeschaltet: {scopes}.\n\n"
+        "Empfänger: {partner}\n"
+        "Rechtsgrundlage: {basis}\n\n"
+        "Ist das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › "
+        "API-Zugänge ändern oder löschen: {link}\n"
+    ),
+)
+WEBHOOK_PAUSED = (
+    gettext_noop("Benachrichtigungen des API-Zugangs „{name}“ ruhen"),
+    gettext_noop(
+        "Hallo,\n\n"
+        "die Adresse für Benachrichtigungen des API-Zugangs „{name}“ von „{unit}“ war sieben "
+        "Tage lang nicht erreichbar. HUBIplan sendet dorthin vorerst nichts mehr; der Zugang "
+        "selbst gilt weiter.\n\n"
+        "Letzter Fehler: {error}\n\n"
+        "Ist die Adresse wieder erreichbar, die Benachrichtigungen unter Einstellungen › "
+        "API-Zugänge wieder einschalten: {link}\n"
+    ),
+)
 
 
 def managers(org) -> list:
@@ -124,3 +148,17 @@ def rotated(access, actor) -> None:
 
 def expiring(access) -> None:
     _send(access.organization, EXPIRING, **_values(access))
+
+
+def personal(access, actor) -> None:
+    """Der Zugang gibt neu Personendaten heraus (oder an einen anderen Empfänger)."""
+    org, values = access.organization, _values(access, actor)
+    values["partner"] = access.partner.name if access.partner_id else "–"
+    values["basis"] = lambda: str(access.get_legal_basis_display()) or "–"
+    transaction.on_commit(lambda: _send(org, PERSONAL, **values))
+
+
+def webhook_paused(access) -> None:
+    values = _values(access)
+    values["error"] = access.webhook_last_error or "–"
+    _send(access.organization, WEBHOOK_PAUSED, **values)

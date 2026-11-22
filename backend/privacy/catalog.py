@@ -256,6 +256,29 @@ ACTIVITIES: tuple[Activity, ...] = (
         gettext_noop("Mit den Mitgliedsdaten gelöscht"),
     ),
     Activity(
+        "api",
+        "api",
+        gettext_noop("Weitergabe über die API für andere Programme"),
+        gettext_noop(
+            "Abgleich mit angebundenen Programmen, zum Beispiel Verbandssoftware oder "
+            "Fachsoftware, über einzeln freigegebene API-Zugänge"
+        ),
+        gettext_noop(
+            "Art. 6 Abs. 1 lit. b oder f DSGVO; bei Dienstleistern Vertrag nach Art. 28 DSGVO"
+        ),
+        MEMBERS_SUBJECTS,
+        gettext_noop(
+            "Je Zugang gewählt: Name, Geburtsdatum, Mitgliedsnummer, Kontakt und Anschrift, "
+            "Mitgliedschaft, Untereinheiten, Ehrungen, Qualifikationen"
+        ),
+        gettext_noop(
+            "Die an den API-Zugängen benannten Geschäftspartner (Einstellungen › API-Zugänge)"
+        ),
+        gettext_noop(
+            "Abrufprotokoll 90 Tage; beim Empfänger nach dessen Vertrag oder Rechtsgrundlage"
+        ),
+    ),
+    Activity(
         "accounts",
         "",
         gettext_noop("Benutzerkonten und Anmeldung"),

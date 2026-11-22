@@ -9,6 +9,17 @@ export interface ApiScope {
   unit_ok: boolean
   /** Bereich, der mitgewählt sein muss (sonst leer) */
   needs: string
+  /** Gibt Personendaten heraus: nur mit Empfänger und bestätigter Rechtsgrundlage */
+  personal: boolean
+}
+
+export type LegalBasis = '' | 'processing' | 'transfer'
+export type MemberFieldGroup = 'contact' | 'membership' | 'units'
+
+export interface ApiRead {
+  at: string
+  scope: string
+  count: number
 }
 
 export interface ApiAccess {
@@ -34,6 +45,28 @@ export interface ApiAccess {
   last_used_at: string | null
   last_used_ip: string
   request_count: number
+  /** Empfänger der Personendaten aus den Geschäftspartnern */
+  partner: { id: number; name: string } | null
+  legal_basis: LegalBasis
+  legal_confirmed_at: string | null
+  legal_confirmed_by: string
+  third_country: boolean
+  member_fields: MemberFieldGroup[]
+  only_active: boolean
+  adults_only: boolean
+  /** Verbandsmeldung: a nur Zahlen, b namentlich */
+  report_level: 'a' | 'b'
+  personal: boolean
+  webhook_url: string
+  webhook_events: string[]
+  webhook_state: 'off' | 'ok' | 'failing' | 'paused'
+  webhook_last_ok_at: string | null
+  webhook_last_error: string
+  /** Gelesene Datensätze mit Personendaten im Zeitraum des Abrufprotokolls */
+  records_read: number
+  reads: ApiRead[]
+  /** Geheimnis der Benachrichtigungen: nur in der Antwort, in der es neu entstanden ist */
+  webhook_secret?: string
 }
 
 /** Antwort auf Anlegen und „Neuen Schlüssel erzeugen“: der Schlüssel steht nur hier */
@@ -52,6 +85,11 @@ export interface ApiAccessList {
   overlap_days: number
   scopes: ApiScope[]
   units: { id: number; name: string }[]
+  partners: { id: number; name: string; processor: boolean }[]
+  member_fields: MemberFieldGroup[]
+  webhook_events: { event: string; label: string; scope: string }[]
+  /** So viele Tage bleibt das Abrufprotokoll */
+  log_days: number
   accesses: ApiAccess[]
 }
 
@@ -65,6 +103,17 @@ export interface ApiAccessInput {
   expires_at: string
   allowed_networks: string[]
   embeddable: boolean
+  partner: number | null
+  legal_basis: LegalBasis
+  legal_confirmed: boolean
+  third_country: boolean
+  member_fields: MemberFieldGroup[]
+  only_active: boolean
+  adults_only: boolean
+  report_level: 'a' | 'b'
+  webhook_url: string
+  webhook_events: string[]
+  webhook_resume?: boolean
 }
 
 export const apiAccessApi = {
@@ -78,4 +127,8 @@ export const apiAccessApi = {
     api.post<ApiAccessWithKey>(`/api/orgs/${org}/api-accesses/${id}/rotate/`),
   resume: (org: number, id: number) =>
     api.post<ApiAccess>(`/api/orgs/${org}/api-accesses/${id}/resume/`),
+  webhookSecret: (org: number, id: number) =>
+    api.post<ApiAccess>(`/api/orgs/${org}/api-accesses/${id}/webhook-secret/`),
+  webhookTest: (org: number, id: number) =>
+    api.post<{ ok: boolean; error: string }>(`/api/orgs/${org}/api-accesses/${id}/webhook-test/`),
 }

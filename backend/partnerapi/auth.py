@@ -70,7 +70,7 @@ def find_access(key: str, ip: str) -> ApiAccess:
     now = timezone.now()
     with rls_bypass():
         access = (
-            ApiAccess.objects.select_related("organization", "unit")
+            ApiAccess.objects.select_related("organization", "unit", "partner")
             .filter(Q(key_hash=digest) | Q(previous_key_hash=digest, previous_until__gt=now))
             .first()
         )

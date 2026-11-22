@@ -16746,10 +16746,6 @@ msgid "Bitte Adressen oder Netze eintragen, zum Beispiel 203.0.113.7 oder 203.0.
 msgstr "Please enter addresses or networks, for example 203.0.113.7 or 203.0.113.0/24, at most 20."
 
 #: partnerapi
-msgid "Aus fremden Webseiten aufrufbar geht nur ohne Mitgliedertermine und ohne Mitgliederzahlen: Der Schlüssel steht dann im Quelltext der Webseite."
-msgstr "Callable from other websites is only possible without member events and without member numbers: the key is then visible in the source code of the website."
-
-#: partnerapi
 msgid "Mehr API-Zugänge sind je Einheit nicht möglich."
 msgstr "No more API accesses are possible per unit."
 
@@ -16884,6 +16880,170 @@ msgstr "Must be after “from”."
 #: partnerapi
 msgid "Höchstens zwei Jahre je Abruf."
 msgstr "At most two years per request."
+
+#: partnerapi
+msgid "Aus fremden Webseiten aufrufbar geht nur ohne Mitgliedertermine, Mitgliederzahlen und Personendaten: Der Schlüssel steht dann im Quelltext der Webseite."
+msgstr "Callable from other websites is only possible without member events, member numbers and personal data: the key is then visible in the source code of the website."
+
+#: partnerapi
+msgid "Diesen Geschäftspartner gibt es hier nicht."
+msgstr "This business partner does not exist here."
+
+#: partnerapi
+msgid "Für Personendaten bitte den Empfänger aus den Geschäftspartnern wählen."
+msgstr "For personal data, please choose the recipient from the business partners."
+
+#: partnerapi
+msgid "Für Personendaten bitte die Rechtsgrundlage wählen."
+msgstr "For personal data, please choose the legal basis."
+
+#: partnerapi
+msgid "Bitte die Rechtsgrundlage bestätigen."
+msgstr "Please confirm the legal basis."
+
+#: partnerapi
+msgid "Bitte eine Adresse mit https:// eintragen, ohne Benutzername und Passwort."
+msgstr "Please enter an address starting with https://, without user name and password."
+
+#: partnerapi
+msgid "Auftragsverarbeitung (Vertrag nach Art. 28 DSGVO)"
+msgstr "Processing on behalf (contract under Art. 28 GDPR)"
+
+#: partnerapi
+msgid "Übermittlung an einen eigenen Verantwortlichen"
+msgstr "Transfer to a separate controller"
+
+#: partnerapi
+msgid "nur Zahlen"
+msgstr "numbers only"
+
+#: partnerapi
+msgid "namentlich"
+msgstr "by name"
+
+#: partnerapi
+msgid "API-Zugang „{name}“ gibt jetzt Personendaten heraus"
+msgstr "API access “{name}” now releases personal data"
+
+#: partnerapi
+msgid "Hallo,\n\n{actor} hat am API-Zugang „{name}“ von „{unit}“ Bereiche mit Personendaten eingeschaltet: {scopes}.\n\nEmpfänger: {partner}\nRechtsgrundlage: {basis}\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge ändern oder löschen: {link}\n"
+msgstr "Hello,\n\n{actor} has switched on areas with personal data at the API access “{name}” of “{unit}”: {scopes}.\n\nRecipient: {partner}\nLegal basis: {basis}\n\nIf this is intended, nothing needs to be done. Otherwise change or delete the access under Settings › API accesses: {link}\n"
+
+#: partnerapi
+msgid "Benachrichtigungen des API-Zugangs „{name}“ ruhen"
+msgstr "Notifications of the API access “{name}” are paused"
+
+#: partnerapi
+msgid "Hallo,\n\ndie Adresse für Benachrichtigungen des API-Zugangs „{name}“ von „{unit}“ war sieben Tage lang nicht erreichbar. HUBIplan sendet dorthin vorerst nichts mehr; der Zugang selbst gilt weiter.\n\nLetzter Fehler: {error}\n\nIst die Adresse wieder erreichbar, die Benachrichtigungen unter Einstellungen › API-Zugänge wieder einschalten: {link}\n"
+msgstr "Hello,\n\nthe address for notifications of the API access “{name}” of “{unit}” could not be reached for seven days. HUBIplan will not send anything there for now; the access itself remains valid.\n\nLast error: {error}\n\nOnce the address can be reached again, switch the notifications on again under Settings › API accesses: {link}\n"
+
+#: partnerapi
+msgid "Für Personendaten fehlen Empfänger oder Rechtsgrundlage"
+msgstr "Recipient or legal basis for personal data is missing"
+
+#: partnerapi
+msgid "Die Einheit trägt in HUBIplan unter Einstellungen › API-Zugänge den Empfänger ein und bestätigt die Rechtsgrundlage."
+msgstr "The unit enters the recipient in HUBIplan under Settings › API accesses and confirms the legal basis."
+
+#: partnerapi
+msgid "Datum nach ISO 8601 erwartet."
+msgstr "Date in ISO 8601 format expected."
+
+#: partnerapi
+msgid "active, former oder all erwartet."
+msgstr "active, former or all expected."
+
+#: partnerapi
+msgid "Verbandsmeldung lesen"
+msgstr "Read report to the umbrella association"
+
+#: partnerapi
+msgid "Gemeldete Mitglieder zum Stichtag: Zahlen nach aktiv, passiv und Geburtsmonat; namentlich nur, wenn am Zugang so gewählt"
+msgstr "Reported members on the reference date: counts by active, passive and month of birth; by name only if chosen at the access"
+
+#: partnerapi
+msgid "Mitglieder lesen"
+msgstr "Read members"
+
+#: partnerapi
+msgid "Name, Geburtsdatum und Mitgliedsnummer, dazu nur die am Zugang gewählten Feldgruppen; nie Bankdaten, Bemerkungen, Fotos oder Zusatzfelder"
+msgstr "Name, date of birth and member number, plus only the field groups chosen at the access; never bank details, notes, photos or custom fields"
+
+#: partnerapi
+msgid "Ehrungen lesen"
+msgstr "Read honours"
+
+#: partnerapi
+msgid "Verliehene Ehrungen mit Name der Person und Zeitraum"
+msgstr "Honours awarded with the name of the person and the period"
+
+#: partnerapi
+msgid "Qualifikationen lesen"
+msgstr "Read qualifications"
+
+#: partnerapi
+msgid "Nachweise mit Name der Person, Erwerb und Gültigkeit; nie Bemerkungen und nie Nachweise, die nur eingesehen werden"
+msgstr "Certificates with the name of the person, date acquired and validity; never notes and never certificates that are only inspected"
+
+#: partnerapi
+msgid "Mitglied aufgenommen"
+msgstr "Member admitted"
+
+#: partnerapi
+msgid "Mitglied geändert"
+msgstr "Member changed"
+
+#: partnerapi
+msgid "Austritt eingetragen"
+msgstr "Leaving recorded"
+
+#: partnerapi
+msgid "Mitglied gelöscht"
+msgstr "Member deleted"
+
+#: partnerapi
+msgid "Termin angelegt"
+msgstr "Event created"
+
+#: partnerapi
+msgid "Termin geändert"
+msgstr "Event changed"
+
+#: partnerapi
+msgid "Termin abgesagt"
+msgstr "Event cancelled"
+
+#: partnerapi
+msgid "Termin gelöscht"
+msgstr "Event deleted"
+
+#: partnerapi
+msgid "Es ist keine Adresse eingetragen."
+msgstr "No address has been entered."
+
+#: partnerapi
+msgid "Weitergabe über die API für andere Programme"
+msgstr "Disclosure via the API for other programs"
+
+#: partnerapi
+msgid "Abgleich mit angebundenen Programmen, zum Beispiel Verbandssoftware oder Fachsoftware, über einzeln freigegebene API-Zugänge"
+msgstr "Synchronisation with connected programs, for example association software or specialist software, via individually approved API accesses"
+
+#: partnerapi
+msgid "Art. 6 Abs. 1 lit. b oder f DSGVO; bei Dienstleistern Vertrag nach Art. 28 DSGVO"
+msgstr "Art. 6(1)(b) or (f) GDPR; for service providers a contract under Art. 28 GDPR"
+
+#: partnerapi
+msgid "Je Zugang gewählt: Name, Geburtsdatum, Mitgliedsnummer, Kontakt und Anschrift, Mitgliedschaft, Untereinheiten, Ehrungen, Qualifikationen"
+msgstr "Chosen per access: name, date of birth, member number, contact and address, membership, sub-units, honours, qualifications"
+
+#: partnerapi
+msgid "Die an den API-Zugängen benannten Geschäftspartner (Einstellungen › API-Zugänge)"
+msgstr "The business partners named at the API accesses (Settings › API accesses)"
+
+#: partnerapi
+msgid "Abrufprotokoll 90 Tage; beim Empfänger nach dessen Vertrag oder Rechtsgrundlage"
+msgstr "Retrieval log 90 days; at the recipient according to its contract or legal basis"
 
 #: hometiles
 msgid "{h} Std."
