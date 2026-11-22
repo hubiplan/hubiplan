@@ -30,6 +30,8 @@ x-backend-env: &backend-env
   SECURITY_ALERT_EMAIL: ${SECURITY_ALERT_EMAIL:-}
   # Kontakt des Betreibers in /.well-known/security.txt (leer: nur die Meldestelle des Projekts)
   HUBIPLAN_SECURITY_CONTACT: ${HUBIPLAN_SECURITY_CONTACT:-}
+  # Mail an das Konto bei Anmeldung auf einem unbekannten Gerät (0 schaltet ab)
+  HUBIPLAN_LOGIN_NOTICE: ${HUBIPLAN_LOGIN_NOTICE:-1}
   # Passwörter mit Argon2id (Standard); 0 nur vor einem Rückweg auf eine Fassung ohne
   # Argon2id (docs/betrieb.md)
   HUBIPLAN_ARGON2: ${HUBIPLAN_ARGON2:-1}
