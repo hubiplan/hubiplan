@@ -1187,6 +1187,22 @@ eingehende Dokumente in Quarantäne, bis ein Scanner eingerichtet ist, und Mails
 mit Anhängen bleiben im Postfach. Wer `CLAMD_SOCKET` ohne die Compose-Ergänzung setzt, bekommt
 `VIRUS_SCAN_REQUIRED=1` ebenfalls als Standard (Gesamtaudit 08.11., F-02).
 
+## Passwörter und Meldestelle
+
+**Argon2id:** HUBIplan kann Passwörter mit Argon2id speichern (64 MiB, 3 Durchläufe, 4 Fäden;
+`backend/accounts/hashers.py`). In dieser Fassung ist das noch aus, damit ein Rückweg auf die
+vorige Fassung (`deploy/zurueck.sh`) keine Konten aussperrt, denn die kennt Argon2id nicht.
+Einschalten mit `HUBIPLAN_ARGON2=1` in der `.env`, sobald kein solcher Rückweg mehr nötig ist; die
+nächste Fassung schaltet es von sich aus ein. Jedes Konto wird bei seiner nächsten Anmeldung
+umgestellt, niemand muss sein Passwort ändern. Ausschalten stellt bei der nächsten Anmeldung
+wieder auf PBKDF2 um; prüfen kann HUBIplan immer beides.
+
+**Meldestelle (`/.well-known/security.txt`, RFC 9116):** Jede Instanz nennt dort die vertrauliche
+Meldestelle des Projekts. Wer Meldungen zu seinem Server selbst annehmen will, setzt
+`HUBIPLAN_SECURITY_CONTACT` in der `.env` (E-Mail-Adresse oder `https://…`, mehrere mit Komma);
+dieser Kontakt steht dann an erster Stelle. Die Adresse ist öffentlich lesbar, also ein
+Funktionspostfach nehmen.
+
 ## Alarm-Mails und Notfall
 
 HUBIplan schickt sofort eine Mail „[HUBIplan-Sicherheit] …“ bei:

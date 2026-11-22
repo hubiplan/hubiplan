@@ -11,6 +11,8 @@
 # - der geheime Kopfwert X-Hubiplan-Proxy erreicht weder Backend noch Vereinswebseite
 # - /api/intern/… antwortet von außen mit 404 und erreicht das Backend nicht
 # - die Sicherheits-Kopfzeilen (HSTS usw.) stehen weiter in den Antworten
+# - /.well-known/security.txt geht ans Backend; die Oberfläche trägt CSP und
+#   Cross-Origin-Opener-Policy (Härtung 22.11.)
 #
 #   scripts/pruefe-caddy.sh <Ordner mit deploy/> [docker-run-Optionen, z. B. --cpuset-cpus=…]
 set -euo pipefail
@@ -86,7 +88,7 @@ a=$(anfrage "$ID-proxy" /api/health/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203
     "X-Forwarded-For: 198.51.100.9")
 erwarte "Proxy: X-Real-IP mit Geheimnis als einziges X-Forwarded-For" "$a" 'xff=\[203\.0\.113\.7\]'
 erwarte "Proxy: Geheimnis nicht ans Backend" "$a" 'geheim=\[\]'
-erwarte "Proxy: HSTS" "$a" 'Strict-Transport-Security: max-age=15552000'
+erwarte "Proxy: HSTS" "$a" 'Strict-Transport-Security: max-age=31536000'
 erwarte "Proxy: nosniff" "$a" 'X-Content-Type-Options: nosniff'
 nicht "Proxy: Server-Kopfzeile" "$a" '^ *Server:'
 
@@ -108,12 +110,21 @@ for pfad in "/api/intern/tls/?domain=x.example" /api/intern; do
     nicht "Proxy: $pfad erreicht das Backend nicht" "$a" 'pfad='
 done
 
+# Meldestelle (RFC 9116) kommt vom Backend, nicht aus der Oberfläche
+a=$(anfrage "$ID-proxy" /.well-known/security.txt "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+erwarte "Proxy: security.txt erreicht das Backend" "$a" 'pfad=/\.well-known/security\.txt'
+
+# Oberfläche: fremde Fenster vom eigenen getrennt, CSP bleibt
+a=$(anfrage "$ID-proxy" /mitglieder "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+erwarte "Proxy: Oberfläche mit Cross-Origin-Opener-Policy" "$a" 'Cross-Origin-Opener-Policy: same-origin-allow-popups'
+erwarte "Proxy: Oberfläche mit CSP" "$a" "Content-Security-Policy: default-src 'self'"
+
 # --- Eigenes HTTPS (Caddyfile), hier über HTTP angesprochen
 a=$(anfrage "$ID-direkt" /api/health/ "X-Forwarded-For: 198.51.100.9" "X-Hubiplan-Proxy: $GEHEIM")
 erwarte "Direkt: Verbindungsadresse als X-Forwarded-For" "$a" 'xff=\[[0-9a-f.:]+\]'
 nicht "Direkt: mitgeschicktes X-Forwarded-For verworfen" "$a" '198\.51\.100\.9'
 erwarte "Direkt: Kopfwert nicht ans Backend" "$a" 'geheim=\[\]'
-erwarte "Direkt: HSTS" "$a" 'Strict-Transport-Security: max-age=15552000'
+erwarte "Direkt: HSTS" "$a" 'Strict-Transport-Security: max-age=31536000'
 a=$(anfrage "$ID-direkt" "/api/intern/tls/?domain=x.example")
 erwarte "Direkt: /api/intern/ von außen 404" "$a" 'HTTP/1\.1 404'
 nicht "Direkt: /api/intern/ erreicht das Backend nicht" "$a" 'pfad='

@@ -184,6 +184,16 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+# Passwörter mit Argon2id (accounts/hashers.py). Diese Fassung kann Argon2id prüfen, speichert
+# aber erst damit, wenn HUBIPLAN_ARGON2=1 gesetzt ist: Nach einem Rückweg auf die vorige Fassung
+# (deploy/zurueck.sh), die Argon2id nicht kennt, könnten sich umgestellte Konten sonst nicht mehr
+# anmelden. Die nächste Fassung schaltet es von sich aus ein. Django stellt jedes Konto bei der
+# nächsten Anmeldung um; bestehende PBKDF2-Werte bleiben bis dahin gültig.
+PASSWORD_ARGON2 = env_bool("HUBIPLAN_ARGON2", False)
+_ARGON2 = "accounts.hashers.Argon2idHasher"
+_PBKDF2 = "django.contrib.auth.hashers.PBKDF2PasswordHasher"
+PASSWORD_HASHERS = [_ARGON2, _PBKDF2] if PASSWORD_ARGON2 else [_PBKDF2, _ARGON2]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -608,6 +618,10 @@ API_DOCS_ENABLED = env_bool("DJANGO_API_DOCS_ENABLED", DEBUG)
 SECURITY_ALERTS = env_bool("SECURITY_ALERTS", True)
 SECURITY_ALERT_EMAIL = os.environ.get("SECURITY_ALERT_EMAIL", "")
 ALERT_EXPORT_ROWS = int(os.environ.get("ALERT_EXPORT_ROWS", "200"))
+# /.well-known/security.txt (core/views.py): Kontakt des Betreibers für Sicherheitsmeldungen,
+# als Adresse (mailto:… oder https://…) oder reine E-Mail-Adresse; mehrere mit Komma. Die
+# Meldestelle des Projekts steht immer dabei.
+SECURITY_CONTACT = env_list("HUBIPLAN_SECURITY_CONTACT")
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 12 * 60 * 60  # 12 Stunden
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
