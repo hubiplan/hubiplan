@@ -23,6 +23,7 @@ const scopes = [
     unit_ok: true,
     needs: '',
     personal: false,
+    write: false,
   },
   {
     scope: 'termine.lesen',
@@ -31,6 +32,7 @@ const scopes = [
     unit_ok: true,
     needs: '',
     personal: false,
+    write: false,
   },
   {
     scope: 'termine.mitglieder',
@@ -39,6 +41,7 @@ const scopes = [
     unit_ok: true,
     needs: 'termine.lesen',
     personal: false,
+    write: false,
   },
   {
     scope: 'vorstand.lesen',
@@ -47,6 +50,7 @@ const scopes = [
     unit_ok: false,
     needs: '',
     personal: false,
+    write: false,
   },
   {
     scope: 'mitglieder.lesen',
@@ -55,6 +59,7 @@ const scopes = [
     unit_ok: true,
     needs: '',
     personal: true,
+    write: false,
   },
 ]
 
@@ -78,6 +83,9 @@ const access = {
   last_used_at: null,
   last_used_ip: '',
   request_count: 0,
+  writes: false,
+  write_count: 0,
+  last_write_at: null,
   partner: null,
   legal_basis: '',
   legal_confirmed_at: null,
@@ -120,6 +128,7 @@ const list = (accesses: object[]) => ({
   address: 'https://verein.example/api/partner/v1/',
   docs: 'https://verein.example/api/partner/v1/openapi.json',
   requests_per_hour: 600,
+  writes_per_hour: 60,
   max_days: 365,
   idle_days: 90,
   overlap_days: 7,
@@ -288,5 +297,50 @@ describe('API-Zugänge', () => {
     ).toBeInTheDocument()
     const patch = calls.find((c) => c.key === 'PATCH /api/orgs/7/api-accesses/5/')
     expect(JSON.parse(String(patch?.init?.body))).toEqual({ webhook_resume: true })
+  })
+
+  it('Schreiben steht eigens zur Wahl und am Zugang', async () => {
+    const write = {
+      scope: 'termine.schreiben',
+      label: 'Termine anlegen und ändern',
+      description: 'Einzelne Termine anlegen, ändern und absagen',
+      unit_ok: true,
+      needs: '',
+      personal: false,
+      write: true,
+    }
+    const writing = {
+      ...access,
+      scopes: ['termine.schreiben'],
+      writes: true,
+      write_count: 7,
+      last_write_at: '2026-11-22T09:30:00Z',
+    }
+    const calls = renderPage({
+      'GET /api/orgs/7/api-accesses/': () => ({
+        status: 200,
+        body: { ...list([writing]), scopes: [...scopes, write] },
+      }),
+      'POST /api/orgs/7/api-accesses/': () => ({
+        status: 201,
+        body: { ...writing, id: 6, name: 'Zeitmessung', key: 'hpk_erfunden' },
+      }),
+    })
+    const user = userEvent.setup()
+    expect(await screen.findByText(/Darf schreiben: 7 schreibende Anfragen/)).toBeInTheDocument()
+    expect(screen.getByText(/davon höchstens 60 schreibende/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Zugang anlegen' }))
+    // Ohne Zutun ist kein schreibender Bereich gewählt
+    const box = screen.getByRole('checkbox', { name: 'Termine anlegen und ändern' })
+    expect(box).not.toBeChecked()
+    expect(screen.getByRole('group', { name: 'Was der Zugang schreiben darf' })).toContainElement(
+      box,
+    )
+    await user.type(screen.getByLabelText(/^Name/), 'Zeitmessung')
+    await user.click(box)
+    await user.click(screen.getByRole('button', { name: 'Zugang anlegen' }))
+    await screen.findByDisplayValue('hpk_erfunden')
+    const post = calls.find((c) => c.key === 'POST /api/orgs/7/api-accesses/')
+    expect(JSON.parse(String(post?.init?.body))).toMatchObject({ scopes: ['termine.schreiben'] })
   })
 })

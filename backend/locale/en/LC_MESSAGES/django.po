@@ -16754,8 +16754,8 @@ msgid "Neuer API-Zugang für „{unit}“"
 msgstr "New API access for “{unit}”"
 
 #: partnerapi
-msgid "Hallo,\n\n{actor} hat in HUBIplan den API-Zugang „{name}“ für „{unit}“ angelegt. Ein fremdes Programm kann damit diese Bereiche lesen: {scopes}.\n\nGültig bis: {until}\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge löschen: {link}\n"
-msgstr "Hello,\n\n{actor} has created the API access “{name}” for “{unit}” in HUBIplan. Another program can use it to read these areas: {scopes}.\n\nValid until: {until}\n\nIf this is intended, nothing needs to be done. Otherwise delete the access under Settings › API accesses: {link}\n"
+msgid "Hallo,\n\n{actor} hat in HUBIplan den API-Zugang „{name}“ für „{unit}“ angelegt. Ein fremdes Programm kann damit diese Bereiche nutzen: {scopes}.\n\nGültig bis: {until}\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge löschen: {link}\n"
+msgstr "Hello,\n\n{actor} has created the API access “{name}” for “{unit}” in HUBIplan. Another program can use these areas with it: {scopes}.\n\nValid until: {until}\n\nIf this is intended, nothing needs to be done. Otherwise delete the access under Settings › API accesses: {link}\n"
 
 #: partnerapi
 msgid "Neuer Schlüssel für den API-Zugang „{name}“"
@@ -17044,6 +17044,106 @@ msgstr "The business partners named at the API accesses (Settings › API access
 #: partnerapi
 msgid "Abrufprotokoll 90 Tage; beim Empfänger nach dessen Vertrag oder Rechtsgrundlage"
 msgstr "Retrieval log 90 days; at the recipient according to its contract or legal basis"
+
+#: partnerapi
+msgid "Aus fremden Webseiten aufrufbar geht nur ohne Schreiben: Der Schlüssel steht dann im Quelltext der Webseite."
+msgstr "Callable from other websites is only possible without writing: the key is then visible in the source code of the website."
+
+#: partnerapi
+msgid "API-Zugang „{name}“ darf jetzt schreiben"
+msgstr "API access “{name}” may now write"
+
+#: partnerapi
+msgid "Hallo,\n\n{actor} hat am API-Zugang „{name}“ von „{unit}“ Bereiche eingeschaltet, mit denen ein fremdes Programm Daten anlegen oder ändern kann: {scopes}.\n\nWas das Programm schreibt, steht im Änderungsprotokoll unter „API-Zugang {name}“.\n\nIst das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › API-Zugänge ändern oder löschen: {link}\n"
+msgstr "Hello,\n\n{actor} has switched on areas at the API access “{name}” of “{unit}” with which another program can create or change data: {scopes}.\n\nWhat the program writes is recorded in the change log under “API-Zugang {name}”.\n\nIf this is intended, nothing needs to be done. Otherwise change or delete the access under Settings › API accesses: {link}\n"
+
+#: partnerapi
+msgid "Termine anlegen und ändern"
+msgstr "Create and change events"
+
+#: partnerapi
+msgid "Einzelne Termine anlegen, ändern und absagen; ändern nur, was dieser Zugang selbst angelegt hat, nie löschen, nie Termine „nur Vorstand“"
+msgstr "Create, change and cancel single events; change only what this access created itself, never delete, never board-only events"
+
+#: partnerapi
+msgid "Wettbewerbsergebnisse einliefern"
+msgstr "Deliver competition results"
+
+#: partnerapi
+msgid "Werte einer Auswertesoftware in laufende Wettbewerbe eintragen, Gäste mit Namen anlegen; nie in abgeschlossene Wettbewerbe"
+msgstr "Enter values from scoring software into running competitions, create guests by name; never into finished competitions"
+
+#: partnerapi
+msgid "Training und Anwesenheit eintragen"
+msgstr "Enter training and attendance"
+
+#: partnerapi
+msgid "Trainingstermine anlegen und eintragen, wer da war; nur bei Terminen, die dieser Zugang selbst angelegt hat"
+msgstr "Create training sessions and record who was there; only for sessions this access created itself"
+
+#: partnerapi
+msgid "Änderungen an Mitgliedern vorschlagen"
+msgstr "Propose changes to members"
+
+#: partnerapi
+msgid "Geänderte Namen und Kontaktdaten als Vorschlag einreichen; es gilt erst, wenn jemand im Verein den Vorschlag übernimmt"
+msgstr "Submit changed names and contact details as a proposal; it only takes effect when someone in the club accepts the proposal"
+
+#: partnerapi
+msgid "Mitgliedsausweise prüfen"
+msgstr "Check membership cards"
+
+#: partnerapi
+msgid "Zu einem Ausweis-Code: gültig oder nicht und die Art der Mitgliedschaft, kein Name"
+msgstr "For a card code: valid or not and the type of membership, no name"
+
+#: partnerapi
+msgid "Rundschreiben als Entwurf einliefern"
+msgstr "Deliver circulars as drafts"
+
+#: partnerapi
+msgid "Betreff und Text als Entwurf ablegen; Empfänger wählen und versenden kann nur ein Mensch in HUBIplan"
+msgstr "Store subject and text as a draft; only a person in HUBIplan can choose recipients and send it"
+
+#: partnerapi
+msgid "Ein Zugang, der aus fremden Webseiten aufrufbar ist, schreibt nicht"
+msgstr "An access that is callable from other websites does not write"
+
+#: partnerapi
+msgid "Diese eigene Kennung ist schon vergeben"
+msgstr "This own identifier is already in use"
+
+#: partnerapi
+msgid "Höchstens 100 Zeichen."
+msgstr "At most 100 characters."
+
+#: partnerapi
+msgid "Dieser Idempotency-Key gehört zu einer anderen Anfrage"
+msgstr "This Idempotency-Key belongs to a different request"
+
+#: partnerapi
+msgid "Der Termin wurde in HUBIplan so geändert, dass die API ihn nicht ändert"
+msgstr "The event was changed in HUBIplan in a way that the API does not change it"
+
+#: partnerapi
+msgid "Höchstens {n} Ergebnisse je Anfrage."
+msgstr "At most {n} results per request."
+
+#: partnerapi
+msgid "Höchstens {n} Einträge je Anfrage."
+msgstr "At most {n} entries per request."
+
+#: partnerapi
+msgid "Die Angaben entsprechen dem heutigen Stand."
+msgstr "The details match the current state."
+
+#: partnerapi
+msgid "Zu viele offene Vorschläge; der Verein muss erst welche bearbeiten"
+msgstr "Too many open proposals; the club has to process some first"
+
+#: partnerapi
+msgid "Zu viele Entwürfe; der Verein muss erst welche versenden oder löschen"
+msgstr "Too many drafts; the club has to send or delete some first"
 
 #: hometiles
 msgid "{h} Std."

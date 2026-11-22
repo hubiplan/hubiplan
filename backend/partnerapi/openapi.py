@@ -25,11 +25,14 @@ Schnittstelle für andere Programme (Verbandssoftware, Webseiten, Fachsoftware, 
 Einheit in HUBIplan unter Einstellungen › API-Zugänge. Er gilt für genau eine Einheit und nur
 für die dort angekreuzten Bereiche; welcher Bereich nötig ist, steht bei jedem Aufruf.
 
-**Grenzen:** 600 Anfragen je Stunde und Zugang, sonst Antwort 429 mit `Retry-After`.
+**Grenzen:** 600 Anfragen je Stunde und Zugang, davon höchstens 60 schreibende, sonst Antwort
+429 mit `Retry-After`.
 
 **Fehler:** `application/problem+json` (RFC 9457) mit einem festen `code`, zum Beispiel
 `invalid_key`, `access_expired`, `access_idle`, `ip_not_allowed`, `missing_scope`,
-`too_many_requests`, `not_found`, `invalid_request`, `legal_basis_missing`.
+`too_many_requests`, `not_found`, `invalid_request`, `legal_basis_missing`,
+`write_not_allowed`, `external_id_exists`, `idempotency_conflict`, `record_locked`,
+`too_many_open`.
 
 **Personendaten** (Verbandsmeldung namentlich, Mitglieder, Ehrungen, Qualifikationen) gibt ein
 Zugang nur heraus, wenn die Einheit den Empfänger benannt und die Rechtsgrundlage bestätigt hat.
@@ -38,6 +41,14 @@ Kennungen (`id`, `member`) sind feste UUIDs. Jeder Abruf wird bei der Einheit pr
 **Benachrichtigungen:** Auf Wunsch der Einheit sendet HUBIplan bei Änderungen ein `POST` an
 eine Adresse des Empfängers, nur mit Art und Kennung, unterschrieben in der Kopfzeile
 `X-HUBIplan-Signature: t=<Unixzeit>,v1=<HMAC-SHA256 über "<Unixzeit>.<Nachricht>">`.
+
+**Schreiben** (`POST`, `PATCH`) gibt es nur mit einem eigens angekreuzten Bereich. Geschrieben
+wird Unkritisches (Termin, Ergebnis, Anwesenheit) oder ein Vorschlag bzw. Entwurf, den ein
+Mensch in HUBIplan übernimmt; nichts wird gelöscht oder versendet. Ändern kann ein Zugang nur,
+was er selbst angelegt hat. Mit der Kopfzeile `Idempotency-Key` (bis 100 Zeichen) legt eine
+wiederholte Anfrage innerhalb von 24 Stunden nichts doppelt an; die Antwort trägt dann
+`Idempotency-Replayed: true`. `external_id` ist die eigene Kennung des Dritten, je Zugang
+eindeutig; unter `/lookup/` findet man den Datensatz dazu.
 
 **Stabilität:** In `v1` kommen nur Felder und Aufrufe hinzu. Was wegfällt, wird zwölf Monate
 vorher angekündigt. Unbekannte Felder bitte ignorieren.
@@ -68,11 +79,38 @@ def build() -> dict:
         "bearerFormat": "hpk_…",
         "description": "API-Schlüssel aus Einstellungen › API-Zugänge",
     }
-    for operations in schema.get("paths", {}).values():
-        for operation in operations.values():
+    needed = _scopes(urls.v1_patterns)
+    for route, operations in schema.get("paths", {}).items():
+        for method, operation in operations.items():
             if isinstance(operation, dict):
                 operation["security"] = [{"apiKey": []}]
+                scope = needed.get((route, method))
+                if scope:
+                    # Welcher Bereich nötig ist, steht bei jedem Aufruf
+                    operation["x-scope"] = scope
+                    text = operation.get("description", "")
+                    operation["description"] = f"{text}\n\nBereich: `{scope}`".strip()
     return schema
+
+
+def _scopes(patterns) -> dict[tuple[str, str], str]:
+    """(Adresse, Methode) → nötiger Bereich, aus den Ansichten gelesen."""
+    import re
+
+    out = {}
+    for pattern in patterns:
+        view = getattr(pattern.callback, "view_class", None)
+        if view is None:
+            continue
+        route = "/api/" + re.sub(r"<(?:\w+:)?(\w+)>", r"{\1}", str(pattern.pattern))
+        for method in ("get", "post", "patch", "put"):
+            if not hasattr(view, method):
+                continue
+            write = getattr(view, "write_scope", None) if method != "get" else None
+            scope = write or getattr(view, "scope", None)
+            if scope:
+                out[(route, method)] = scope
+    return out
 
 
 def _short_names(schema: dict) -> dict:

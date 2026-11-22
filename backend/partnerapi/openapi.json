@@ -59,6 +59,54 @@
         ],
         "type": "string"
       },
+      "AttendanceInput": {
+        "properties": {
+          "absent": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "present": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AttendanceOut": {
+        "properties": {
+          "changed": {
+            "description": "geänderte Einträge",
+            "type": "integer"
+          },
+          "present": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "unknown": {
+            "description": "Kennungen, die der Zugang nicht sieht oder die nicht zur Einheit gehören",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "changed",
+          "present",
+          "unknown"
+        ],
+        "type": "object"
+      },
       "Board": {
         "properties": {
           "names_published": {
@@ -97,6 +145,42 @@
           "email",
           "holders",
           "role"
+        ],
+        "type": "object"
+      },
+      "Card": {
+        "properties": {
+          "member_type": {
+            "description": "Art der Mitgliedschaft",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "active, future, inactive oder unknown",
+            "type": "string"
+          },
+          "valid": {
+            "description": "Ausweis der Einheit mit gültiger Mitgliedschaft",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "member_type",
+          "status",
+          "valid"
+        ],
+        "type": "object"
+      },
+      "CardInput": {
+        "properties": {
+          "code": {
+            "description": "Inhalt des QR-Codes: die Prüfadresse oder ihr letzter Teil",
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
         ],
         "type": "object"
       },
@@ -238,6 +322,57 @@
           "counts",
           "label",
           "total"
+        ],
+        "type": "object"
+      },
+      "Circular": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "description": "draft, sending oder sent",
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "external_id",
+          "id",
+          "status",
+          "subject"
+        ],
+        "type": "object"
+      },
+      "CircularInput": {
+        "properties": {
+          "body": {
+            "description": "Text mit einfacher Auszeichnung: **fett**, *kursiv*, Listen mit „- “",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Dritten, je Zugang eindeutig",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "subject"
         ],
         "type": "object"
       },
@@ -463,6 +598,78 @@
         ],
         "type": "object"
       },
+      "EntryCompetition": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "scorings": {
+            "items": {
+              "$ref": "#/components/schemas/EntryScoring"
+            },
+            "type": "array"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "id",
+          "scorings",
+          "status",
+          "title"
+        ],
+        "type": "object"
+      },
+      "EntryList": {
+        "properties": {
+          "competitions": {
+            "items": {
+              "$ref": "#/components/schemas/EntryCompetition"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "competitions"
+        ],
+        "type": "object"
+      },
+      "EntryScoring": {
+        "properties": {
+          "decimals": {
+            "type": "integer"
+          },
+          "higher_better": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit_label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decimals",
+          "higher_better",
+          "id",
+          "name",
+          "unit_label"
+        ],
+        "type": "object"
+      },
       "Event": {
         "properties": {
           "address": {
@@ -551,6 +758,65 @@
         ],
         "type": "object"
       },
+      "EventInput": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "all_day": {
+            "type": "boolean"
+          },
+          "cancel_note": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Dritten, je Zugang eindeutig",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "is_cancelled": {
+            "description": "abgesagt",
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "unit": {
+            "description": "Untereinheit, sonst die Einheit des Zugangs",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VisibilityEnum"
+              }
+            ],
+            "description": "Vorgabe: members\n\n* `public` - public\n* `members` - members"
+          }
+        },
+        "required": [
+          "starts_at",
+          "title"
+        ],
+        "type": "object"
+      },
       "EventList": {
         "properties": {
           "events": {
@@ -567,6 +833,25 @@
         "required": [
           "events",
           "next_cursor"
+        ],
+        "type": "object"
+      },
+      "ExternalId": {
+        "properties": {
+          "external_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "external_id",
+          "id",
+          "kind"
         ],
         "type": "object"
       },
@@ -715,11 +1000,16 @@
           },
           "requests_per_hour": {
             "type": "integer"
+          },
+          "writes_per_hour": {
+            "description": "schreibende Anfragen je Stunde",
+            "type": "integer"
           }
         },
         "required": [
           "max_page_size",
-          "requests_per_hour"
+          "requests_per_hour",
+          "writes_per_hour"
         ],
         "type": "object"
       },
@@ -960,6 +1250,130 @@
         ],
         "type": "object"
       },
+      "OwnEvent": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "all_day": {
+            "type": "boolean"
+          },
+          "cancel_note": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "id": {
+            "description": "wie ``event_id`` unter /events/",
+            "type": "string"
+          },
+          "is_cancelled": {
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "unit": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "all_day",
+          "cancel_note",
+          "description",
+          "ends_at",
+          "external_id",
+          "id",
+          "is_cancelled",
+          "location",
+          "starts_at",
+          "title",
+          "unit",
+          "updated_at",
+          "visibility"
+        ],
+        "type": "object"
+      },
+      "PatchedPartnerEventInput": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "all_day": {
+            "type": "boolean"
+          },
+          "cancel_note": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Dritten, je Zugang eindeutig",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "is_cancelled": {
+            "description": "abgesagt",
+            "type": "boolean"
+          },
+          "location": {
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "unit": {
+            "description": "Untereinheit, sonst die Einheit des Zugangs",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VisibilityEnum"
+              }
+            ],
+            "description": "Vorgabe: members\n\n* `public` - public\n* `members` - members"
+          }
+        },
+        "type": "object"
+      },
       "Post": {
         "properties": {
           "account": {
@@ -1069,6 +1483,101 @@
           "title",
           "type"
         ],
+        "type": "object"
+      },
+      "Proposal": {
+        "properties": {
+          "changed": {
+            "description": "vorgeschlagene Felder",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decided_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "member": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "description": "pending, accepted oder rejected",
+            "type": "string"
+          }
+        },
+        "required": [
+          "changed",
+          "created_at",
+          "decided_at",
+          "external_id",
+          "id",
+          "member",
+          "status"
+        ],
+        "type": "object"
+      },
+      "ProposalInput": {
+        "properties": {
+          "birth_date": {
+            "format": "date",
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "country": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Dritten, je Zugang eindeutig",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "last_name": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "message": {
+            "description": "Hinweis für den Verein",
+            "maxLength": 300,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 50,
+            "type": "string"
+          },
+          "postal_code": {
+            "maxLength": 10,
+            "type": "string"
+          },
+          "street": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "Qualification": {
@@ -1211,6 +1720,62 @@
         ],
         "type": "object"
       },
+      "ResultInput": {
+        "properties": {
+          "adult": {
+            "description": "Gast ist volljährig",
+            "type": "boolean"
+          },
+          "club": {
+            "description": "Gast: Verein",
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Gastes; ohne sie zählen Name und Verein",
+            "maxLength": 80,
+            "type": "string"
+          },
+          "member": {
+            "description": "Kennung des Mitglieds wie unter /members/ (braucht mitglieder.lesen)",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "Gast: Name",
+            "type": "string"
+          },
+          "scoring": {
+            "description": "Kennung der Einzelwertung",
+            "type": "string"
+          },
+          "value": {
+            "description": "Wert als Zahl; leer löscht ihn",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scoring",
+          "value"
+        ],
+        "type": "object"
+      },
+      "ResultRejected": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "index": {
+            "description": "Stelle in ``results``, ab 0",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "error",
+          "index"
+        ],
+        "type": "object"
+      },
       "ResultRow": {
         "properties": {
           "club": {
@@ -1244,6 +1809,38 @@
           "place",
           "prize",
           "value"
+        ],
+        "type": "object"
+      },
+      "ResultsInput": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ResultInput"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "type": "object"
+      },
+      "ResultsOut": {
+        "properties": {
+          "accepted": {
+            "type": "integer"
+          },
+          "rejected": {
+            "items": {
+              "$ref": "#/components/schemas/ResultRejected"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "accepted",
+          "rejected"
         ],
         "type": "object"
       },
@@ -1383,6 +1980,127 @@
           "title"
         ],
         "type": "object"
+      },
+      "Training": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "time",
+            "nullable": true,
+            "type": "string"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "leader": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "present": {
+            "description": "Kennungen der Anwesenden wie unter /members/",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "starts_at": {
+            "format": "time",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "unit": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "ends_at",
+          "external_id",
+          "id",
+          "kind",
+          "leader",
+          "location",
+          "present",
+          "starts_at",
+          "title",
+          "unit"
+        ],
+        "type": "object"
+      },
+      "TrainingInput": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "ends_at": {
+            "format": "time",
+            "nullable": true,
+            "type": "string"
+          },
+          "external_id": {
+            "description": "eigene Kennung des Dritten, je Zugang eindeutig",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TrainingInputKindEnum"
+          },
+          "leader": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "location": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "starts_at": {
+            "format": "time",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "unit": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "title"
+        ],
+        "type": "object"
+      },
+      "TrainingInputKindEnum": {
+        "description": "* `practice` - practice\n* `training` - training\n* `competition` - competition\n* `other` - other",
+        "enum": [
+          "practice",
+          "training",
+          "competition",
+          "other"
+        ],
+        "type": "string"
       },
       "Unit": {
         "properties": {
@@ -1558,7 +2276,7 @@
     },
     "/api/partner/v1/board/": {
       "get": {
-        "description": "Rollen mit „auf der Webseite zeigen“ und ihre Funktionsadresse. Namen der Amtsinhaber nur, soweit sie auf der öffentlichen Webseite der Einheit stehen (Einwilligung der Person).",
+        "description": "Rollen mit „auf der Webseite zeigen“ und ihre Funktionsadresse. Namen der Amtsinhaber nur, soweit sie auf der öffentlichen Webseite der Einheit stehen (Einwilligung der Person).\n\nBereich: `vorstand.lesen`",
         "operationId": "board",
         "responses": {
           "200": {
@@ -1610,12 +2328,199 @@
         "summary": "Vorstand und Ämter",
         "tags": [
           "board"
-        ]
+        ],
+        "x-scope": "vorstand.lesen"
+      }
+    },
+    "/api/partner/v1/card-check/": {
+      "post": {
+        "description": "Prüft den Code eines Mitgliedsausweises der Einheit, zum Beispiel am Einlass. Zurück kommen nur gültig oder nicht und die Art der Mitgliedschaft, nie Name, Foto oder Nummer. Fremde, gesperrte und unbekannte Ausweise: ``unknown``.\n\nBereich: `ausweis.pruefen`",
+        "operationId": "card_check",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CardInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CardInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Mitgliedsausweis prüfen",
+        "tags": [
+          "card-check"
+        ],
+        "x-scope": "ausweis.pruefen"
+      }
+    },
+    "/api/partner/v1/circular-drafts/": {
+      "post": {
+        "description": "Legt Betreff und Text als Entwurf unter Rundschreiben ab. Empfänger wählt und versendet ein Mensch in HUBIplan; die API versendet nie. Höchstens 20 Entwürfe dieses Zugangs zugleich. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `rundschreiben.schreiben`",
+        "operationId": "circular_draft_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CircularInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CircularInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CircularInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Circular"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Rundschreiben als Entwurf einliefern",
+        "tags": [
+          "circular-drafts"
+        ],
+        "x-scope": "rundschreiben.schreiben"
       }
     },
     "/api/partner/v1/documents/": {
       "get": {
-        "description": "Dokumente und Presseberichte, die auf der öffentlichen Webseite der Einheit stehen. ``url`` ist die öffentliche Adresse der Datei.",
+        "description": "Dokumente und Presseberichte, die auf der öffentlichen Webseite der Einheit stehen. ``url`` ist die öffentliche Adresse der Datei.\n\nBereich: `dokumente.lesen`",
         "operationId": "documents",
         "responses": {
           "200": {
@@ -1667,12 +2572,13 @@
         "summary": "Öffentliche Dokumente",
         "tags": [
           "documents"
-        ]
+        ],
+        "x-scope": "dokumente.lesen"
       }
     },
     "/api/partner/v1/events/": {
       "get": {
-        "description": "Eigene Termine der Einheit und ihrer Untereinheiten als Einzeltermine, Serien aufgelöst, nach Beginn sortiert. Ohne den Bereich „termine.mitglieder“ nur öffentliche Termine. Nie enthalten: Termine „nur Vorstand“, Zu- und Absagen, Teilnehmende, Anhänge, übernommene fremde Termine.",
+        "description": "Eigene Termine der Einheit und ihrer Untereinheiten als Einzeltermine, Serien aufgelöst, nach Beginn sortiert. Ohne den Bereich „termine.mitglieder“ nur öffentliche Termine. Nie enthalten: Termine „nur Vorstand“, Zu- und Absagen, Teilnehmende, Anhänge, übernommene fremde Termine.\n\nBereich: `termine.lesen`",
         "operationId": "events",
         "parameters": [
           {
@@ -1788,12 +2694,302 @@
         "summary": "Termine",
         "tags": [
           "events"
-        ]
+        ],
+        "x-scope": "termine.lesen"
+      },
+      "post": {
+        "description": "Legt einen einzelnen Termin an (keine Serien, keine Zu- und Absagen, kein Versand von Einladungen). Mit einer schon benutzten ``external_id`` kommt 409 mit der Kennung des vorhandenen Termins. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `termine.schreiben`",
+        "operationId": "event_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnEvent"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Termin anlegen",
+        "tags": [
+          "events"
+        ],
+        "x-scope": "termine.schreiben"
+      }
+    },
+    "/api/partner/v1/events/{event_id}/": {
+      "get": {
+        "description": "Ein Termin, den dieser Zugang angelegt hat; sonst 404.\n\nBereich: `termine.schreiben`",
+        "operationId": "event_own",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnEvent"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Selbst angelegter Termin",
+        "tags": [
+          "events"
+        ],
+        "x-scope": "termine.schreiben"
+      },
+      "patch": {
+        "description": "Ändert einen Termin, den dieser Zugang angelegt hat; nur die gesendeten Felder. Kommt nur ``starts_at``, zieht das Ende mit (gleiche Dauer). Absagen mit ``is_cancelled``; gelöscht wird nie. 409, wenn der Termin in HUBIplan zur Serie oder „nur Vorstand“ wurde. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `termine.schreiben`",
+        "operationId": "event_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPartnerEventInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPartnerEventInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPartnerEventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnEvent"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Termin ändern oder absagen",
+        "tags": [
+          "events"
+        ],
+        "x-scope": "termine.schreiben"
       }
     },
     "/api/partner/v1/federation-report/": {
       "get": {
-        "description": "Mitgliedschaften mit einer Mitgliedsart „an Dachverband melden“ am Stichtag: Anzahlen nach aktiv, passiv und Geburtsmonat. ``persons`` gibt es nur, wenn die Einheit am Zugang „namentlich“ gewählt, den Empfänger benannt und die Rechtsgrundlage bestätigt hat: Name, Vorname, Geburtsdatum, Verbandsnummer, Mitgliedsart und Eintritt, nie Anschrift oder Kontakt.",
+        "description": "Mitgliedschaften mit einer Mitgliedsart „an Dachverband melden“ am Stichtag: Anzahlen nach aktiv, passiv und Geburtsmonat. ``persons`` gibt es nur, wenn die Einheit am Zugang „namentlich“ gewählt, den Empfänger benannt und die Rechtsgrundlage bestätigt hat: Name, Vorname, Geburtsdatum, Verbandsnummer, Mitgliedsart und Eintritt, nie Anschrift oder Kontakt.\n\nBereich: `verbandsmeldung.lesen`",
         "operationId": "federation_report",
         "parameters": [
           {
@@ -1866,12 +3062,13 @@
         "summary": "Verbandsmeldung zum Stichtag",
         "tags": [
           "federation-report"
-        ]
+        ],
+        "x-scope": "verbandsmeldung.lesen"
       }
     },
     "/api/partner/v1/honors/": {
       "get": {
-        "description": "Ehrungen, die die Einheit ihren Mitgliedern verliehen hat, mit Zeitraum. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Beitragsfolgen.",
+        "description": "Ehrungen, die die Einheit ihren Mitgliedern verliehen hat, mit Zeitraum. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Beitragsfolgen.\n\nBereich: `ehrungen.lesen`",
         "operationId": "honors",
         "parameters": [
           {
@@ -1968,12 +3165,99 @@
         "summary": "Verliehene Ehrungen",
         "tags": [
           "honors"
+        ],
+        "x-scope": "ehrungen.lesen"
+      }
+    },
+    "/api/partner/v1/lookup/": {
+      "get": {
+        "description": "Kennung des Datensatzes, den dieser Zugang mit der eigenen Kennung ``external_id`` angelegt hat; sonst 404.",
+        "operationId": "external_id",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "external_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "event, training, proposal oder circular",
+            "in": "query",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalId"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Datensatz zur eigenen Kennung",
+        "tags": [
+          "lookup"
         ]
       }
     },
     "/api/partner/v1/members/": {
       "get": {
-        "description": "Immer: Name, Vorname, Titel, Geschlecht, Geburtsdatum, Mitgliedsnummer und Zustand. ``contact``, ``membership`` und ``units`` nur, wenn die Einheit die Feldgruppe am Zugang gewählt hat. Die Einheit kann den Zugang auf aktuelle Mitglieder und auf Volljährige begrenzen. Nie enthalten: Bankdaten, Bemerkungen, Fotos, Zusatzfelder, Rollen und Mitgliedschaften nach Ablauf der Löschfrist. ``changed_since`` findet Änderungen an Person, Kontakt und Mitgliedschaft; ein vollständiger Abgleich in größeren Abständen bleibt sinnvoll.",
+        "description": "Immer: Name, Vorname, Titel, Geschlecht, Geburtsdatum, Mitgliedsnummer und Zustand. ``contact``, ``membership`` und ``units`` nur, wenn die Einheit die Feldgruppe am Zugang gewählt hat. Die Einheit kann den Zugang auf aktuelle Mitglieder und auf Volljährige begrenzen. Nie enthalten: Bankdaten, Bemerkungen, Fotos, Zusatzfelder, Rollen und Mitgliedschaften nach Ablauf der Löschfrist. ``changed_since`` findet Änderungen an Person, Kontakt und Mitgliedschaft; ein vollständiger Abgleich in größeren Abständen bleibt sinnvoll.\n\nBereich: `mitglieder.lesen`",
         "operationId": "members",
         "parameters": [
           {
@@ -2084,12 +3368,13 @@
         "summary": "Mitglieder",
         "tags": [
           "members"
-        ]
+        ],
+        "x-scope": "mitglieder.lesen"
       }
     },
     "/api/partner/v1/members/{member_id}/": {
       "get": {
-        "description": "Wie ein Eintrag der Liste; 404, wenn der Zugang das Mitglied nicht sieht.",
+        "description": "Wie ein Eintrag der Liste; 404, wenn der Zugang das Mitglied nicht sieht.\n\nBereich: `mitglieder.lesen`",
         "operationId": "member",
         "parameters": [
           {
@@ -2161,12 +3446,130 @@
         "summary": "Ein Mitglied",
         "tags": [
           "members"
-        ]
+        ],
+        "x-scope": "mitglieder.lesen"
+      }
+    },
+    "/api/partner/v1/members/{member_id}/proposals/": {
+      "post": {
+        "description": "Reicht geänderte Namen oder Kontaktdaten als Vorschlag ein. Es ändert sich nichts, bis jemand im Verein den Vorschlag übernimmt. Nur Felder, die sich vom heutigen Stand unterscheiden, werden vorgeschlagen; höchstens drei offene Vorschläge je Mitglied. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `mitglieder.schreiben`",
+        "operationId": "member_proposal_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Änderung an einem Mitglied vorschlagen",
+        "tags": [
+          "members"
+        ],
+        "x-scope": "mitglieder.schreiben"
       }
     },
     "/api/partner/v1/news/": {
       "get": {
-        "description": "Neueste Beiträge aus den eigenen Kanälen der Einheit, soweit sie auf ihrer öffentlichen Webseite stehen. Bilder liefert die HUBIplan-Instanz aus.",
+        "description": "Neueste Beiträge aus den eigenen Kanälen der Einheit, soweit sie auf ihrer öffentlichen Webseite stehen. Bilder liefert die HUBIplan-Instanz aus.\n\nBereich: `neuigkeiten.lesen`",
         "operationId": "news",
         "parameters": [
           {
@@ -2238,12 +3641,91 @@
         "summary": "Beiträge",
         "tags": [
           "news"
-        ]
+        ],
+        "x-scope": "neuigkeiten.lesen"
+      }
+    },
+    "/api/partner/v1/proposals/{proposal_id}/": {
+      "get": {
+        "description": "Ob der Verein den Vorschlag dieses Zugangs übernommen oder abgelehnt hat.\n\nBereich: `mitglieder.schreiben`",
+        "operationId": "member_proposal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Proposal"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Stand eines Vorschlags",
+        "tags": [
+          "proposals"
+        ],
+        "x-scope": "mitglieder.schreiben"
       }
     },
     "/api/partner/v1/qualifications/": {
       "get": {
-        "description": "Nachweise der Mitglieder mit Erwerb und Gültigkeit. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Arten, bei denen nur die Einsicht vermerkt wird (zum Beispiel das Führungszeugnis).",
+        "description": "Nachweise der Mitglieder mit Erwerb und Gültigkeit. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Arten, bei denen nur die Einsicht vermerkt wird (zum Beispiel das Führungszeugnis).\n\nBereich: `qualifikationen.lesen`",
         "operationId": "qualifications",
         "parameters": [
           {
@@ -2349,12 +3831,189 @@
         "summary": "Qualifikationen",
         "tags": [
           "qualifications"
-        ]
+        ],
+        "x-scope": "qualifikationen.lesen"
+      }
+    },
+    "/api/partner/v1/result-entry/": {
+      "get": {
+        "description": "Eigene Wettbewerbe mit Rangliste, die noch nicht endgültig abgeschlossen sind, mit ihren Einzelwertungen. Keine Starter und keine Namen.\n\nBereich: `ergebnisse.schreiben`",
+        "operationId": "result_entry",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Wettbewerbe, die Ergebnisse annehmen",
+        "tags": [
+          "result-entry"
+        ],
+        "x-scope": "ergebnisse.schreiben"
+      }
+    },
+    "/api/partner/v1/result-entry/{competition_id}/": {
+      "post": {
+        "description": "Trägt Werte in Einzelwertungen eines laufenden Wettbewerbs ein, höchstens 500 je Anfrage. Starter ist ein Mitglied (``member``) oder ein Gast (``name``, ``club``); fehlende Starter werden angelegt. Jede Zeile wird einzeln geprüft: Abgelehnte stehen mit Grund in ``rejected``, die übrigen gelten. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `ergebnisse.schreiben`",
+        "operationId": "results_deliver",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "competition_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResultsInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ResultsInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ResultsInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsOut"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Ergebnisse einliefern",
+        "tags": [
+          "result-entry"
+        ],
+        "x-scope": "ergebnisse.schreiben"
       }
     },
     "/api/partner/v1/results/": {
       "get": {
-        "description": "Wettbewerbe, die auf der öffentlichen Webseite der Einheit stehen, neueste zuerst.",
+        "description": "Wettbewerbe, die auf der öffentlichen Webseite der Einheit stehen, neueste zuerst.\n\nBereich: `ergebnisse.lesen`",
         "operationId": "results",
         "parameters": [
           {
@@ -2434,12 +4093,13 @@
         "summary": "Veröffentlichte Wettbewerbe",
         "tags": [
           "results"
-        ]
+        ],
+        "x-scope": "ergebnisse.lesen"
       }
     },
     "/api/partner/v1/results/{competition_id}/": {
       "get": {
-        "description": "Wertungen im selben Umfang wie auf der Webseite der Einheit: Namen nur mit Einwilligung, je nach Einstellung nur Einheiten und Mannschaften oder nur die Preisplätze.",
+        "description": "Wertungen im selben Umfang wie auf der Webseite der Einheit: Namen nur mit Einwilligung, je nach Einstellung nur Einheiten und Mannschaften oder nur die Preisplätze.\n\nBereich: `ergebnisse.lesen`",
         "operationId": "result",
         "parameters": [
           {
@@ -2511,12 +4171,13 @@
         "summary": "Rangliste eines Wettbewerbs",
         "tags": [
           "results"
-        ]
+        ],
+        "x-scope": "ergebnisse.lesen"
       }
     },
     "/api/partner/v1/statistics/census/": {
       "get": {
-        "description": "Anzahlen nach Altersgruppe und Geschlecht, dazu je Untereinheit bzw. Verein. Nur Zahlen, keine Personen und keine Wohnorte. ``counts`` und ``genders`` folgen der Reihenfolge von ``gender_labels``.",
+        "description": "Anzahlen nach Altersgruppe und Geschlecht, dazu je Untereinheit bzw. Verein. Nur Zahlen, keine Personen und keine Wohnorte. ``counts`` und ``genders`` folgen der Reihenfolge von ``gender_labels``.\n\nBereich: `statistik.lesen`",
         "operationId": "statistics_census",
         "parameters": [
           {
@@ -2614,12 +4275,306 @@
         "summary": "Mitgliederzahlen zum Stichtag",
         "tags": [
           "statistics"
-        ]
+        ],
+        "x-scope": "statistik.lesen"
+      }
+    },
+    "/api/partner/v1/trainings/": {
+      "post": {
+        "description": "Legt einen Trainingstermin für die Anwesenheit an (kein Schießtermin, kein Eintrag im Schießbuch). Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `anwesenheit.schreiben`",
+        "operationId": "training_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Training"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Trainingstermin anlegen",
+        "tags": [
+          "trainings"
+        ],
+        "x-scope": "anwesenheit.schreiben"
+      }
+    },
+    "/api/partner/v1/trainings/{training_id}/": {
+      "get": {
+        "description": "Ein Trainingstermin dieses Zugangs mit den Anwesenden; sonst 404.\n\nBereich: `anwesenheit.schreiben`",
+        "operationId": "training_own",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "training_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Training"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Selbst angelegter Trainingstermin",
+        "tags": [
+          "trainings"
+        ],
+        "x-scope": "anwesenheit.schreiben"
+      }
+    },
+    "/api/partner/v1/trainings/{training_id}/attendance/": {
+      "post": {
+        "description": "Trägt Mitglieder als anwesend ein (``present``) oder wieder aus (``absent``), höchstens 1000 je Anfrage; nur bei einem Trainingstermin dieses Zugangs. Wer nicht genannt ist, bleibt, wie er ist. Mit der Kopfzeile ``Idempotency-Key`` legt eine wiederholte Anfrage nichts doppelt an.\n\nBereich: `anwesenheit.schreiben`",
+        "operationId": "attendance_set",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "training_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceOut"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Anwesenheit eintragen",
+        "tags": [
+          "trainings"
+        ],
+        "x-scope": "anwesenheit.schreiben"
       }
     },
     "/api/partner/v1/unit/": {
       "get": {
-        "description": "Name, Anschrift, Kontakt und Logo der Einheit des Zugangs (bei einem Zugang für eine\nUntereinheit: dieser Untereinheit).",
+        "description": "Name, Anschrift, Kontakt und Logo der Einheit des Zugangs (bei einem Zugang für eine\nUntereinheit: dieser Untereinheit).\n\nBereich: `einheit.lesen`",
         "operationId": "unit",
         "responses": {
           "200": {
@@ -2671,12 +4626,13 @@
         "summary": "Stammdaten der Einheit",
         "tags": [
           "unit"
-        ]
+        ],
+        "x-scope": "einheit.lesen"
       }
     },
     "/api/partner/v1/unit/logo": {
       "get": {
-        "description": "Logo der Einheit als Bilddatei; 404, wenn keines hinterlegt ist.",
+        "description": "Logo der Einheit als Bilddatei; 404, wenn keines hinterlegt ist.\n\nBereich: `einheit.lesen`",
         "operationId": "unit_logo",
         "responses": {
           "200": {
@@ -2739,12 +4695,13 @@
         "summary": "Logo der Einheit",
         "tags": [
           "unit"
-        ]
+        ],
+        "x-scope": "einheit.lesen"
       }
     },
     "/api/partner/v1/units/": {
       "get": {
-        "description": "Alle aktiven Untereinheiten unter der Einheit des Zugangs. ``parent`` ist die Kennung der Einheit direkt darüber, ``null`` direkt unter der Einheit des Zugangs.",
+        "description": "Alle aktiven Untereinheiten unter der Einheit des Zugangs. ``parent`` ist die Kennung der Einheit direkt darüber, ``null`` direkt unter der Einheit des Zugangs.\n\nBereich: `einheit.lesen`",
         "operationId": "units",
         "responses": {
           "200": {
@@ -2796,7 +4753,8 @@
         "summary": "Untereinheiten als Baum",
         "tags": [
           "units"
-        ]
+        ],
+        "x-scope": "einheit.lesen"
       }
     }
   },

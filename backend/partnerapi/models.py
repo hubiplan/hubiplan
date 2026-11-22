@@ -6,6 +6,10 @@ Schlüssel ``hpk_…`` wird einmal gezeigt; in der Datenbank steht nur seine SHA
 Bereiche mit Personendaten (Stufe 2) gibt es nur mit einem Empfänger aus den Geschäftspartnern
 und einer bestätigten Rechtsgrundlage. Jeder Abruf von Personendaten steht im Abrufprotokoll
 (``ReadLog``). ``RecordRef`` gibt Datensätzen eine feste, undurchsichtige Kennung nach außen.
+
+Schreiben (Stufe 3): ``WrittenRecord`` hält fest, welchen Datensatz ein Zugang angelegt hat
+(nur den darf er ändern) und unter welcher eigenen Kennung des Dritten (``external_id``).
+``IdempotencyKey`` merkt sich die Antwort auf eine schreibende Anfrage für 24 Stunden.
 """
 
 from __future__ import annotations
@@ -41,6 +45,8 @@ HOOK_KEEP = datetime.timedelta(days=3)
 # Scheitert jede Zustellung so lange, ruht die Benachrichtigung des Zugangs
 HOOK_PAUSE_AFTER = datetime.timedelta(days=7)
 HOOK_SECRET_PREFIX = "hpw_"  # noqa: S105 (Kennung, kein Passwort)
+# Antworten auf schreibende Anfragen mit ``Idempotency-Key`` bleiben so lange
+IDEMPOTENCY_KEEP = datetime.timedelta(hours=24)
 MAX_NETWORKS = 20
 MAX_PER_UNIT = 50
 
@@ -110,6 +116,9 @@ class ApiAccess(models.Model):
     last_used_at = models.DateTimeField(null=True, blank=True)
     last_used_ip = models.CharField(max_length=45, blank=True)
     request_count = models.PositiveBigIntegerField(default=0)
+    # Schreibende Anfragen (Stufe 3)
+    write_count = models.PositiveBigIntegerField(default=0, db_default=0)
+    last_write_at = models.DateTimeField(null=True, blank=True)
     reminded_at = models.DateTimeField(null=True, blank=True)
 
     # --- Personendaten (Stufe 2): Empfänger und Rechtsgrundlage ---
@@ -345,3 +354,59 @@ class WebhookDelivery(models.Model):
     @property
     def pending(self) -> bool:
         return self.delivered_at is None and self.dropped_at is None
+
+
+class WrittenRecord(models.Model):
+    """Was ein Zugang angelegt hat. Nur diese Datensätze darf er später ändern; ``external_id``
+    ist die eigene Kennung des Dritten, je Zugang und Art eindeutig."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    access = models.ForeignKey(ApiAccess, on_delete=models.CASCADE, related_name="written")
+    kind = models.CharField(max_length=20)
+    object_id = models.BigIntegerField()
+    external_id = models.CharField(max_length=100, blank=True, default="")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "API-Eintrag"
+        verbose_name_plural = "API-Einträge"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["access", "kind", "object_id"], name="partnerapi_written_unique"
+            ),
+            models.UniqueConstraint(
+                fields=["access", "kind", "external_id"],
+                condition=~models.Q(external_id=""),
+                name="partnerapi_written_external",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.kind} {self.object_id}"
+
+
+class IdempotencyKey(models.Model):
+    """Antwort auf eine schreibende Anfrage: Dieselbe Anfrage mit demselben
+    ``Idempotency-Key`` legt nichts doppelt an und bekommt dieselbe Antwort."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    access = models.ForeignKey(ApiAccess, on_delete=models.CASCADE, related_name="+")
+    key = models.CharField(max_length=100)
+    fingerprint = models.CharField(max_length=64)
+    status = models.PositiveSmallIntegerField(default=0)
+    body = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = "API-Wiederholungsschutz"
+        verbose_name_plural = "API-Wiederholungsschutz"
+        constraints = [
+            models.UniqueConstraint(fields=["access", "key"], name="partnerapi_idempotency_unique")
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.access_id} {self.created_at:%Y-%m-%d}"

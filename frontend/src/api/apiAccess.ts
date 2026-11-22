@@ -11,6 +11,8 @@ export interface ApiScope {
   needs: string
   /** Gibt Personendaten heraus: nur mit Empfänger und bestätigter Rechtsgrundlage */
   personal: boolean
+  /** Schreibt: legt an oder ändert */
+  write: boolean
 }
 
 export type LegalBasis = '' | 'processing' | 'transfer'
@@ -45,6 +47,10 @@ export interface ApiAccess {
   last_used_at: string | null
   last_used_ip: string
   request_count: number
+  /** Darf schreiben (mindestens ein schreibender Bereich) */
+  writes: boolean
+  write_count: number
+  last_write_at: string | null
   /** Empfänger der Personendaten aus den Geschäftspartnern */
   partner: { id: number; name: string } | null
   legal_basis: LegalBasis
@@ -80,6 +86,8 @@ export interface ApiAccessList {
   /** Beschreibung der Schnittstelle (OpenAPI) */
   docs: string
   requests_per_hour: number
+  /** Davon höchstens so viele schreibende Anfragen */
+  writes_per_hour: number
   max_days: number
   idle_days: number
   overlap_days: number

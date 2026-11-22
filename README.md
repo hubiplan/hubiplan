@@ -224,7 +224,9 @@ Schützenverein, Musikverein oder Sportverein.
   Mitgliederzahlen ohne Personen, Vorstand, Veröffentlichtes); mit Ablaufdatum, Grenzen und
   OpenAPI-Beschreibung. Verbandsmeldung, Mitglieder, Ehrungen und Qualifikationen nur mit
   benanntem Empfänger und bestätigter Rechtsgrundlage, mit Abrufprotokoll; Benachrichtigungen
-  bei Änderungen (Webhooks) ([docs/api.md](docs/api.md))
+  bei Änderungen (Webhooks). Schreiben nur mit eigens angekreuzten Bereichen: Termine,
+  Wettbewerbsergebnisse, Anwesenheit, Rundschreiben als Entwurf, Änderungen an Mitgliedern nur
+  als Vorschlag; dazu die Prüfung von Mitgliedsausweisen ([docs/api.md](docs/api.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,

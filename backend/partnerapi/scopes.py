@@ -3,7 +3,8 @@
 Ein API-Zugang bekommt nur die einzeln angekreuzten Bereiche. Jeder Bereich hängt an einem
 Modul der Einheit: Ist das Modul aus, gibt es den Bereich nicht. Bereiche mit ``personal``
 geben Personendaten heraus: Es gibt sie nur für Vereine und nur mit einem Empfänger aus den
-Geschäftspartnern und bestätigter Rechtsgrundlage am Zugang.
+Geschäftspartnern und bestätigter Rechtsgrundlage am Zugang. Bereiche mit ``write`` schreiben
+(Stufe 3): nie mit einem Zugang, der aus fremden Webseiten aufrufbar ist.
 """
 
 from __future__ import annotations
@@ -28,6 +29,8 @@ class Scope:
     org_types: tuple[str, ...] = ("federation", "club")
     # Gibt Personendaten heraus: nur mit Empfänger und bestätigter Rechtsgrundlage
     personal: bool = False
+    # Schreibt: legt an oder ändert, zählt gegen die Schreibgrenze
+    write: bool = False
 
 
 UNIT_READ = "einheit.lesen"
@@ -42,6 +45,12 @@ REPORT_READ = "verbandsmeldung.lesen"
 MEMBERS_READ = "mitglieder.lesen"
 HONORS_READ = "ehrungen.lesen"
 QUALIFICATIONS_READ = "qualifikationen.lesen"
+EVENTS_WRITE = "termine.schreiben"
+RESULTS_WRITE = "ergebnisse.schreiben"
+ATTENDANCE_WRITE = "anwesenheit.schreiben"
+MEMBERS_WRITE = "mitglieder.schreiben"
+CARD_CHECK = "ausweis.pruefen"
+CIRCULARS_WRITE = "rundschreiben.schreiben"
 
 SCOPES: tuple[Scope, ...] = (
     Scope(
@@ -148,6 +157,75 @@ SCOPES: tuple[Scope, ...] = (
         org_types=("club",),
         personal=True,
     ),
+    Scope(
+        EVENTS_WRITE,
+        gettext_noop("Termine anlegen und ändern"),
+        gettext_noop(
+            "Einzelne Termine anlegen, ändern und absagen; ändern nur, was dieser Zugang selbst "
+            "angelegt hat, nie löschen, nie Termine „nur Vorstand“"
+        ),
+        module="events",
+        unit_ok=True,
+        write=True,
+    ),
+    Scope(
+        RESULTS_WRITE,
+        gettext_noop("Wettbewerbsergebnisse einliefern"),
+        gettext_noop(
+            "Werte einer Auswertesoftware in laufende Wettbewerbe eintragen, Gäste mit Namen "
+            "anlegen; nie in abgeschlossene Wettbewerbe"
+        ),
+        module="competitions",
+        write=True,
+    ),
+    Scope(
+        ATTENDANCE_WRITE,
+        gettext_noop("Training und Anwesenheit eintragen"),
+        gettext_noop(
+            "Trainingstermine anlegen und eintragen, wer da war; nur bei Terminen, die dieser "
+            "Zugang selbst angelegt hat"
+        ),
+        module="training",
+        unit_ok=True,
+        needs=MEMBERS_READ,
+        org_types=("club",),
+        personal=True,
+        write=True,
+    ),
+    Scope(
+        MEMBERS_WRITE,
+        gettext_noop("Änderungen an Mitgliedern vorschlagen"),
+        gettext_noop(
+            "Geänderte Namen und Kontaktdaten als Vorschlag einreichen; es gilt erst, wenn "
+            "jemand im Verein den Vorschlag übernimmt"
+        ),
+        module="members",
+        unit_ok=True,
+        needs=MEMBERS_READ,
+        org_types=("club",),
+        personal=True,
+        write=True,
+    ),
+    Scope(
+        CARD_CHECK,
+        gettext_noop("Mitgliedsausweise prüfen"),
+        gettext_noop(
+            "Zu einem Ausweis-Code: gültig oder nicht und die Art der Mitgliedschaft, kein Name"
+        ),
+        module="cards",
+        org_types=("club",),
+        personal=True,
+    ),
+    Scope(
+        CIRCULARS_WRITE,
+        gettext_noop("Rundschreiben als Entwurf einliefern"),
+        gettext_noop(
+            "Betreff und Text als Entwurf ablegen; Empfänger wählen und versenden kann nur ein "
+            "Mensch in HUBIplan"
+        ),
+        module="circulars",
+        write=True,
+    ),
 )
 
 SCOPE_BY_CODE: dict[str, Scope] = {s.code: s for s in SCOPES}
@@ -186,6 +264,11 @@ def personal(codes, report_level: str = "a") -> bool:
     if REPORT_READ in chosen and report_level == "b":
         return True
     return any(SCOPE_BY_CODE[c].personal for c in chosen if c in SCOPE_BY_CODE)
+
+
+def writes(codes) -> bool:
+    """Schreibt diese Auswahl?"""
+    return any(SCOPE_BY_CODE[c].write for c in (codes or []) if c in SCOPE_BY_CODE)
 
 
 def describe(codes) -> list[dict]:

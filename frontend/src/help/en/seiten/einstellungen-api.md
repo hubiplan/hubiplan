@@ -20,12 +20,16 @@ stichworte:
     report to the association,
     webhook,
     notification,
+    writing,
+    scoring software,
+    admission,
+    attendance,
   ]
 ---
 
-With an API access another program reads data of your unit, for example your umbrella association's software, a website of your own or a display board. Each access has its own key, may only read what you tick and expires by itself.
+With an API access another program reads data of your unit, for example your umbrella association's software, a website of your own or a display board. Each access has its own key, may only do what you tick and expires by itself. If you wish, an access may also write, for example create events or enter results from scoring software.
 
-An access only releases names, addresses and other personal data if you name the recipient and confirm the legal basis. Bank details are never included, and an access cannot change anything. Create a separate access for each program; then one can be deleted without disturbing the others.
+An access only releases names, addresses and other personal data if you name the recipient and confirm the legal basis. Bank details are never included. An access can only change something if you give it a writing area, and even then only little, see below. Create a separate access for each program; then one can be deleted without disturbing the others.
 
 The page only exists if the module “API for other programs” is switched on and your role has the additional right “Manage API accesses”. No role receives this right automatically.
 
@@ -61,6 +65,21 @@ With processing on behalf, the business partner receives the role processor and 
 
 Every retrieval of personal data is logged for 90 days. The list shows for each access how many records were retrieved and when last.
 
+## What an access may write
+
+Writing areas are listed separately in the form under “What the access may write” and are never preselected. Only uncritical data is written, or a proposal or draft that someone on your side accepts. No access deletes anything, sends anything or writes to the cash book, invoices, roles or settings.
+
+- Create and change events: single events, including cancelling them. An access can only change events it created itself, and never board-only events. It does not send invitations.
+- Deliver competition results: values from scoring software into running competitions. The access creates missing starters, guests by name. Finished competitions accept nothing more.
+- Enter training and attendance: create training sessions and record who was there, only for the sessions the access created itself.
+- Propose changes to members: changed names and contact details arrive as a change notice. Only what you accept takes effect.
+- Check membership cards: for a card code only the answer whether it is valid and the type of membership comes back, no name. Intended for admission or a locking system.
+- Deliver circulars as drafts: subject and text are stored as a draft under circulars. You choose the recipients and send it yourselves.
+
+Attendance, proposals for members and the card check are areas with personal data and require recipient and legal basis. For attendance and proposals, “Read members” is added, because the other program has to know the members.
+
+What an access writes is recorded in the change log with “API access” and its name instead of a person. The list shows for each access how often it has written and when last. Everyone with the right receives an email as soon as an access may write.
+
 ## Notify on changes
 
 If you enter an **Address for notifications**, HUBIplan tells the other program when a member is admitted or changed, leaves, or an event changes. The message only names the kind of change and an identifier, never content; the program then fetches the data with its key.
@@ -71,16 +90,16 @@ If the address cannot be reached, HUBIplan tries again for up to three days. Aft
 
 ## Key and security
 
-The key is shown on the page exactly once: after creating the access and after **Create new key**. HUBIplan does not store it in readable form. Pass it on securely, not by unencrypted email. For both, HUBIplan asks for a fresh two-factor code, and likewise when an access newly releases personal data or receives a different address for notifications.
+The key is shown on the page exactly once: after creating the access and after **Create new key**. HUBIplan does not store it in readable form. Pass it on securely, not by unencrypted email. For both, HUBIplan asks for a fresh two-factor code, and likewise when an access newly releases personal data, may newly write or receives a different address for notifications.
 
 After **Create new key** the previous key remains valid for seven more days, so the other program can be switched over without an outage. If a key has fallen into the wrong hands, delete the access: it stops working immediately.
 
 Every access expires after one year at the latest; 30 days before, everyone with the right receives an email. Use **Edit** to extend it. If an access is not used for 90 days, HUBIplan switches it off; **Switch on again** puts it back into operation.
 
-Under **Allowed addresses (optional)** you allow requests only from certain IP addresses. **Callable from other websites** is meant for data that is public anyway, because the key is then visible in the website's source code; it is therefore not possible together with member events, member numbers or personal data.
+Under **Allowed addresses (optional)** you allow requests only from certain IP addresses. **Callable from other websites** is meant for data that is public anyway, because the key is then visible in the website's source code; it is therefore not possible together with member events, member numbers, personal data or writing areas.
 
-Creating, changing, key changes and deleting are recorded in the change log. Each access allows 600 requests per hour.
+Creating, changing, key changes and deleting are recorded in the change log. Each access allows 600 requests per hour, of which at most 60 may write.
 
 ## For developers
 
-The address of the interface and its description (OpenAPI) are shown at the top of the page. The key is sent as `Authorization: Bearer hpk_…`. Errors are returned as `application/problem+json` with a fixed `code`.
+The address of the interface and its description (OpenAPI) are shown at the top of the page. The key is sent as `Authorization: Bearer hpk_…`. Errors are returned as `application/problem+json` with a fixed `code`. When writing, the `Idempotency-Key` header prevents a repeated request from creating something twice; with `external_id` the other program gives a record its own identifier.

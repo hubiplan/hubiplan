@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import manage_views, openapi, personal, views
+from . import manage_views, openapi, personal, views, writes
 
 V1 = "partner/v1/"
 
@@ -12,7 +12,8 @@ v1_patterns = [
     path(f"{V1}unit/", views.UnitView.as_view(), name="partner-unit"),
     path(f"{V1}unit/logo", views.UnitLogoView.as_view(), name="partner-unit-logo"),
     path(f"{V1}units/", views.SubUnitsView.as_view(), name="partner-units"),
-    path(f"{V1}events/", views.EventsView.as_view(), name="partner-events"),
+    path(f"{V1}events/", writes.EventsView.as_view(), name="partner-events"),
+    path(f"{V1}events/<str:event_id>/", writes.EventView.as_view(), name="partner-event"),
     path(f"{V1}statistics/census/", views.CensusView.as_view(), name="partner-census"),
     path(f"{V1}board/", views.BoardView.as_view(), name="partner-board"),
     path(f"{V1}results/", views.ResultsView.as_view(), name="partner-results"),
@@ -39,6 +40,41 @@ v1_patterns = [
         f"{V1}qualifications/",
         personal.QualificationsView.as_view(),
         name="partner-qualifications",
+    ),
+    # Stufe 3: Schreiben
+    path(f"{V1}lookup/", writes.ExternalIdView.as_view(), name="partner-lookup"),
+    path(f"{V1}result-entry/", writes.ResultEntryView.as_view(), name="partner-result-entry"),
+    path(
+        f"{V1}result-entry/<str:competition_id>/",
+        writes.ResultsWriteView.as_view(),
+        name="partner-result-deliver",
+    ),
+    path(f"{V1}trainings/", writes.TrainingsView.as_view(), name="partner-trainings"),
+    path(
+        f"{V1}trainings/<str:training_id>/",
+        writes.TrainingView.as_view(),
+        name="partner-training",
+    ),
+    path(
+        f"{V1}trainings/<str:training_id>/attendance/",
+        writes.AttendanceView.as_view(),
+        name="partner-attendance",
+    ),
+    path(
+        f"{V1}members/<str:member_id>/proposals/",
+        writes.MemberProposalsView.as_view(),
+        name="partner-member-proposals",
+    ),
+    path(
+        f"{V1}proposals/<str:proposal_id>/",
+        writes.ProposalView.as_view(),
+        name="partner-proposal",
+    ),
+    path(f"{V1}card-check/", writes.CardCheckView.as_view(), name="partner-card-check"),
+    path(
+        f"{V1}circular-drafts/",
+        writes.CircularDraftsView.as_view(),
+        name="partner-circular-drafts",
     ),
 ]
 

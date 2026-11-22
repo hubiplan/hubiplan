@@ -67,6 +67,8 @@ NICHT = {
     "partnerapi.RecordRef": "Kennungen der API, hängen an den Zugängen der alten Instanz",
     "partnerapi.ReadLog": "Abrufprotokoll der API, nach 90 Tagen gelöscht",
     "partnerapi.WebhookDelivery": "Benachrichtigungen der API, kurzlebige Warteschlange",
+    "partnerapi.WrittenRecord": "Einträge der API, hängen an den Zugängen der alten Instanz",
+    "partnerapi.IdempotencyKey": "Wiederholungsschutz der API, nach 24 Stunden gelöscht",
     "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
     "(McpGrant) und verfällt nach 30 Tagen",
     "todos.TodoShare": "Freigaben an Konten, am Ziel neu vergeben (wie SECRET_FIELDS todos)",

@@ -25,7 +25,7 @@ CREATED = (
     gettext_noop(
         "Hallo,\n\n"
         "{actor} hat in HUBIplan den API-Zugang „{name}“ für „{unit}“ angelegt. Ein fremdes "
-        "Programm kann damit diese Bereiche lesen: {scopes}.\n\n"
+        "Programm kann damit diese Bereiche nutzen: {scopes}.\n\n"
         "Gültig bis: {until}\n\n"
         "Ist das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › "
         "API-Zugänge löschen: {link}\n"
@@ -60,6 +60,17 @@ PERSONAL = (
         "eingeschaltet: {scopes}.\n\n"
         "Empfänger: {partner}\n"
         "Rechtsgrundlage: {basis}\n\n"
+        "Ist das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › "
+        "API-Zugänge ändern oder löschen: {link}\n"
+    ),
+)
+WRITES = (
+    gettext_noop("API-Zugang „{name}“ darf jetzt schreiben"),
+    gettext_noop(
+        "Hallo,\n\n"
+        "{actor} hat am API-Zugang „{name}“ von „{unit}“ Bereiche eingeschaltet, mit denen ein "
+        "fremdes Programm Daten anlegen oder ändern kann: {scopes}.\n\n"
+        "Was das Programm schreibt, steht im Änderungsprotokoll unter „API-Zugang {name}“.\n\n"
         "Ist das so gewollt, ist nichts zu tun. Sonst den Zugang unter Einstellungen › "
         "API-Zugänge ändern oder löschen: {link}\n"
     ),
@@ -156,6 +167,16 @@ def personal(access, actor) -> None:
     values["partner"] = access.partner.name if access.partner_id else "–"
     values["basis"] = lambda: str(access.get_legal_basis_display()) or "–"
     transaction.on_commit(lambda: _send(org, PERSONAL, **values))
+
+
+def writes(access, actor) -> None:
+    """Der Zugang darf neu schreiben (oder mehr als bisher)."""
+    from . import scopes
+
+    org, values = access.organization, _values(access, actor)
+    codes = [c for c in (access.scopes or []) if scopes.SCOPE_BY_CODE[c].write]
+    values["scopes"] = lambda: ", ".join(s["label"] for s in scopes.describe(codes)) or "–"
+    transaction.on_commit(lambda: _send(org, WRITES, **values))
 
 
 def webhook_paused(access) -> None:
