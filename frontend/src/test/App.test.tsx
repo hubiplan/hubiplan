@@ -178,7 +178,10 @@ describe('Layout', () => {
     expect(await screen.findByRole('heading', { name: 'TV Beispielhausen' })).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Hauptmenü' })
     expect(nav).toHaveTextContent('Mitglieder')
-    expect(nav).toHaveTextContent('Verein')
+    // Untereinheiten sind ein eigener Bereich und tragen den Namen des Vereins dafür; im
+    // Bereich Verein bleibt hier nur Einstellungen, der dann so heißt
+    expect(nav).toHaveTextContent('Abteilungen')
+    expect(nav).toHaveTextContent('Einstellungen')
     expect(nav).not.toHaveTextContent('Plattform')
   })
 

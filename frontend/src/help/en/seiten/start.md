@@ -27,7 +27,7 @@ The home page is your workplace in the selected unit. Without a layout of your o
 
 ## Areas and menu
 
-On the left, the area bar in your club's colour shows up to eight areas: **Home**, **Members**, **Planning**, **Communication**, **Website**, **Club life**, **Finances** and **Club**. You only see the areas in which you have rights. A click opens the area; next to it, the light area menu shows only the pages of that area, for example Events, Meetings, Volunteer duties and Tasks under Planning. **Menu** at the bottom of the area bar collapses the area menu when a list needs more room, and opens it again; **Help** is below it.
+On the left, the area bar in your club's colour shows up to nine areas: **Home**, **Members**, **Sub-units** (under the name your club uses for them), **Planning**, **Communication**, **Website**, **Club life**, **Finances** and **Club**. You only see the areas in which you have rights. A click opens the area; next to it, the light area menu shows only the pages of that area, for example Events, Meetings, Volunteer duties and Tasks under Planning. **Menu** at the bottom of the area bar collapses the area menu when a list needs more room, and opens it again; **Help** is below it.
 
 If a page has only a few sub-pages, they appear as tabs at the top of the content, for example in the members setup. The name of the area above the area menu opens the area overview: all pages of the area with a short note on what you do there and what is waiting there.
 

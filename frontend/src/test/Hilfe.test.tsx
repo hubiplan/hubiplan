@@ -412,6 +412,7 @@ describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
     expect(sections.map((s) => s.group)).toEqual([
       'start',
       'mitglieder',
+      'untereinheiten',
       'planung',
       'kommunikation',
       'webseite',
