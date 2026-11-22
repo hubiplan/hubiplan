@@ -5,7 +5,6 @@
 # Form: METHODE Routenmuster
 
 # Das eine Recht der Prüfrolle
-GET api/orgs/<int:org_id>/pinboard/
 
 # Auswahllisten und Einstellungen ohne Personenbezug
 GET api/orgs/<int:org_id>/places/

@@ -39,6 +39,8 @@ from .verbund_netz import app_role
 ABGELEHNT = {401, 403, 404, 405}
 OFFENE_ROUTEN = Path(__file__).parent / "data" / "offene_routen.txt"
 JEDE_ROLLE = Path(__file__).parent / "data" / "routen_jede_rolle.txt"
+# Die Prüfrolle hat genau ein Recht (pinboard.view); Lesen unter der Pinnwand ist ihr erlaubt.
+EIGENES_RECHT = "api/orgs/<int:org_id>/pinboard/"
 
 
 def _zeilen(path: Path) -> list[str]:
@@ -231,6 +233,8 @@ def test_routen_durchlauf(welt):
                 if url is None:
                     continue
                 for method in ("get", "post", "patch", "delete"):
+                    if method == "get" and pat.startswith(EIGENES_RECHT):
+                        continue  # das eine Recht der Prüfrolle: Pinnwand lesen
                     r = _call(ohne_rechte, method, url)
                     if r.status_code in ABGELEHNT:
                         continue
