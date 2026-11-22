@@ -5786,6 +5786,8 @@ label:has(> .file-input:focus-visible) {
 }
 
 .group-cards a {
+  /* Karte als Ganzes ist der Verweis: nur der Titel fett, der Text normal (Ralf 22.11.) */
+  font-weight: 400;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -5801,6 +5803,11 @@ label:has(> .file-input:focus-visible) {
 .group-cards a strong {
   color: var(--color-link);
   font-size: 1.05rem;
+}
+
+.group-cards a > span:not(.group-card-todo) {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
 }
 
 .group-cards a:hover,
