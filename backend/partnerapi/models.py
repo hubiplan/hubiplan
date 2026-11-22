@@ -1,7 +1,11 @@
-"""API-Zugänge für andere Programme (docs/api.md, Stufe 1).
+"""API-Zugänge für andere Programme (docs/api.md).
 
 Ein ``ApiAccess`` gehört genau einer Einheit und trägt einzeln gewählte Bereiche. Der
 Schlüssel ``hpk_…`` wird einmal gezeigt; in der Datenbank steht nur seine SHA-256-Prüfsumme.
+
+Bereiche mit Personendaten (Stufe 2) gibt es nur mit einem Empfänger aus den Geschäftspartnern
+und einer bestätigten Rechtsgrundlage. Jeder Abruf von Personendaten steht im Abrufprotokoll
+(``ReadLog``). ``RecordRef`` gibt Datensätzen eine feste, undurchsichtige Kennung nach außen.
 """
 
 from __future__ import annotations
@@ -10,10 +14,14 @@ import datetime
 import hashlib
 import ipaddress
 import secrets
+import uuid
 
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy
+
+from core.encfields import EncryptedCharField
 
 KEY_PREFIX = "hpk_"  # noqa: S105 (Kennung, kein Passwort)
 
@@ -26,6 +34,13 @@ IDLE_LIFETIME = datetime.timedelta(days=90)
 ROTATE_OVERLAP = datetime.timedelta(days=7)
 # So früh vor dem Ablauf geht die Erinnerung hinaus
 REMIND_BEFORE = datetime.timedelta(days=30)
+# Abrufprotokoll und erledigte Benachrichtigungen bleiben so lange
+LOG_KEEP = datetime.timedelta(days=90)
+# Eine Benachrichtigung wird so lange erneut versucht; danach verfällt sie
+HOOK_KEEP = datetime.timedelta(days=3)
+# Scheitert jede Zustellung so lange, ruht die Benachrichtigung des Zugangs
+HOOK_PAUSE_AFTER = datetime.timedelta(days=7)
+HOOK_SECRET_PREFIX = "hpw_"  # noqa: S105 (Kennung, kein Passwort)
 MAX_NETWORKS = 20
 MAX_PER_UNIT = 50
 
@@ -36,6 +51,10 @@ def hash_key(key: str) -> str:
 
 def new_key() -> str:
     return KEY_PREFIX + secrets.token_urlsafe(32)
+
+
+def new_hook_secret() -> str:
+    return HOOK_SECRET_PREFIX + secrets.token_urlsafe(32)
 
 
 def parse_networks(values) -> list[str]:
@@ -93,8 +112,87 @@ class ApiAccess(models.Model):
     request_count = models.PositiveBigIntegerField(default=0)
     reminded_at = models.DateTimeField(null=True, blank=True)
 
+    # --- Personendaten (Stufe 2): Empfänger und Rechtsgrundlage ---
+    class LegalBasis(models.TextChoices):
+        NONE = "", gettext_lazy("keine")
+        PROCESSING = (
+            "processing",
+            gettext_lazy("Auftragsverarbeitung (Vertrag nach Art. 28 DSGVO)"),
+        )
+        TRANSFER = "transfer", gettext_lazy("Übermittlung an einen eigenen Verantwortlichen")
+
+    class ReportLevel(models.TextChoices):
+        NUMBERS = "a", gettext_lazy("nur Zahlen")
+        NAMES = "b", gettext_lazy("namentlich")
+
+    # Wer die Daten bekommt: ein Geschäftspartner der Einheit
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        verbose_name="Empfänger (Geschäftspartner)",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    legal_basis = models.CharField(
+        "Rechtsgrundlage",
+        max_length=12,
+        choices=LegalBasis.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
+    legal_confirmed_at = models.DateTimeField("Rechtsgrundlage bestätigt am", null=True, blank=True)
+    legal_confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    third_country = models.BooleanField(
+        "Empfänger außerhalb der EU", default=False, db_default=False
+    )
+    # Zusätzliche Feldgruppen der Mitglieder: contact, membership, units (Stammdaten immer)
+    member_fields = models.JSONField("Feldgruppen", default=list, db_default=[], blank=True)
+    only_active = models.BooleanField("nur aktuelle Mitglieder", default=True, db_default=True)
+    adults_only = models.BooleanField("nur Volljährige", default=False, db_default=False)
+    report_level = models.CharField(
+        "Verbandsmeldung",
+        max_length=1,
+        choices=ReportLevel.choices,
+        default=ReportLevel.NUMBERS,
+        db_default="a",
+    )
+
+    # --- Benachrichtigungen (Webhooks) ---
+    webhook_url = models.CharField(
+        "Adresse für Benachrichtigungen", max_length=500, blank=True, default="", db_default=""
+    )
+    webhook_secret = EncryptedCharField(max_length=80, blank=True, default="", db_default="")
+    webhook_events = models.JSONField("Benachrichtigungen", default=list, db_default=[], blank=True)
+    # Seit wann jede Zustellung scheitert (leer: die letzte kam an)
+    webhook_failing_since = models.DateTimeField(null=True, blank=True)
+    webhook_paused_at = models.DateTimeField(null=True, blank=True)
+    webhook_last_ok_at = models.DateTimeField(null=True, blank=True)
+    webhook_last_error = models.CharField(max_length=200, blank=True, default="", db_default="")
+
     audit_fields = frozenset(
-        {"name", "purpose", "recipient", "scopes", "expires_at", "allowed_networks", "embeddable"}
+        {
+            "name",
+            "purpose",
+            "recipient",
+            "scopes",
+            "expires_at",
+            "allowed_networks",
+            "embeddable",
+            "partner",
+            "legal_basis",
+            "legal_confirmed_at",
+            "third_country",
+            "member_fields",
+            "only_active",
+            "adults_only",
+            "report_level",
+            "webhook_url",
+            "webhook_events",
+        }
     )
 
     class Meta:
@@ -127,6 +225,16 @@ class ApiAccess(models.Model):
     def is_active(self) -> bool:
         return self.state == "active"
 
+    @property
+    def personal_ok(self) -> bool:
+        """Empfänger benannt und Rechtsgrundlage bestätigt: Voraussetzung für Personendaten."""
+        return bool(
+            self.partner_id
+            and self.partner.is_active
+            and self.legal_basis
+            and self.legal_confirmed_at
+        )
+
     def issue(self) -> str:
         """Neuer Schlüssel; der bisherige gilt für die Übergangszeit weiter."""
         key = new_key()
@@ -156,3 +264,84 @@ class ApiAccess(models.Model):
             if address.version == network.version and address in network:
                 return True
         return False
+
+
+class RecordRef(models.Model):
+    """Feste, undurchsichtige Kennung eines Datensatzes für die API (nie die interne Nummer)."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    kind = models.CharField(max_length=20)
+    object_id = models.BigIntegerField()
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+    class Meta:
+        verbose_name = "API-Kennung"
+        verbose_name_plural = "API-Kennungen"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "kind", "object_id"], name="partnerapi_ref_unique"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.kind} {self.public_id}"
+
+
+class ReadLog(models.Model):
+    """Abrufprotokoll: welcher Zugang wann wie viele Datensätze mit Personendaten gelesen hat."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    access = models.ForeignKey(ApiAccess, on_delete=models.CASCADE, related_name="read_logs")
+    scope = models.CharField(max_length=40)
+    count = models.PositiveIntegerField(default=0)
+    at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        verbose_name = "API-Abruf"
+        verbose_name_plural = "API-Abrufe"
+        ordering = ["-at", "-pk"]
+        indexes = [models.Index(fields=["access", "-at"])]
+
+    def __str__(self) -> str:
+        return f"{self.scope} {self.count}"
+
+
+class WebhookDelivery(models.Model):
+    """Eine Benachrichtigung an die Adresse eines Zugangs: schlank, nur Art und Kennung."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    access = models.ForeignKey(ApiAccess, on_delete=models.CASCADE, related_name="deliveries")
+    delivery_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    event = models.CharField(max_length=40)
+    object_ref = models.CharField(max_length=40)
+    occurred_at = models.DateTimeField(default=timezone.now)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    next_try_at = models.DateTimeField(default=timezone.now)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    dropped_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=200, blank=True, default="")
+
+    class Meta:
+        verbose_name = "API-Benachrichtigung"
+        verbose_name_plural = "API-Benachrichtigungen"
+        ordering = ["pk"]
+        indexes = [
+            models.Index(
+                fields=["next_try_at"],
+                name="partnerapi_hook_due",
+                condition=models.Q(delivered_at__isnull=True, dropped_at__isnull=True),
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event} {self.object_ref}"
+
+    @property
+    def pending(self) -> bool:
+        return self.delivered_at is None and self.dropped_at is None

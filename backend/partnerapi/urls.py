@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import manage_views, openapi, views
+from . import manage_views, openapi, personal, views
 
 V1 = "partner/v1/"
 
@@ -23,6 +23,23 @@ v1_patterns = [
     ),
     path(f"{V1}news/", views.NewsView.as_view(), name="partner-news"),
     path(f"{V1}documents/", views.DocumentsView.as_view(), name="partner-documents"),
+    path(
+        f"{V1}federation-report/",
+        personal.FederationReportView.as_view(),
+        name="partner-federation-report",
+    ),
+    path(f"{V1}members/", personal.MembersView.as_view(), name="partner-members"),
+    path(
+        f"{V1}members/<str:member_id>/",
+        personal.MemberDetailView.as_view(),
+        name="partner-member",
+    ),
+    path(f"{V1}honors/", personal.HonorsView.as_view(), name="partner-honors"),
+    path(
+        f"{V1}qualifications/",
+        personal.QualificationsView.as_view(),
+        name="partner-qualifications",
+    ),
 ]
 
 api_patterns = [
@@ -43,5 +60,15 @@ org_patterns = [
         "api-accesses/<int:pk>/resume/",
         manage_views.ApiAccessResumeView.as_view(),
         name="api-access-resume",
+    ),
+    path(
+        "api-accesses/<int:pk>/webhook-secret/",
+        manage_views.ApiAccessWebhookSecretView.as_view(),
+        name="api-access-webhook-secret",
+    ),
+    path(
+        "api-accesses/<int:pk>/webhook-test/",
+        manage_views.ApiAccessWebhookTestView.as_view(),
+        name="api-access-webhook-test",
     ),
 ]

@@ -8,6 +8,8 @@ import type {
   ApiAccessInput,
   ApiAccessList,
   ApiAccessWithKey,
+  LegalBasis,
+  MemberFieldGroup,
 } from '../../api/apiAccess.ts'
 import { ApiError } from '../../api/client.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -26,6 +28,37 @@ interface Draft {
   expires: string
   networks: string
   embeddable: boolean
+  partner: string
+  basis: LegalBasis
+  confirmed: boolean
+  thirdCountry: boolean
+  memberFields: MemberFieldGroup[]
+  onlyActive: boolean
+  adultsOnly: boolean
+  reportLevel: 'a' | 'b'
+  hookUrl: string
+  hookEvents: string[]
+}
+
+const REPORT = 'verbandsmeldung.lesen'
+const MEMBERS = 'mitglieder.lesen'
+
+function fieldLabel(group: MemberFieldGroup): string {
+  if (group === 'contact') return t('Kontakt und Anschrift')
+  if (group === 'membership') return t('Mitgliedschaft')
+  return t('Untereinheiten')
+}
+
+function fieldHint(group: MemberFieldGroup): string {
+  if (group === 'contact') return t('E-Mail, Telefon, Straße, PLZ, Ort')
+  if (group === 'membership') return t('Eintritt, Austritt, Mitgliedsart, Verbandsnummer')
+  return t('Züge, Abteilungen und Gruppen des Mitglieds')
+}
+
+function basisLabel(basis: LegalBasis): string {
+  if (basis === 'processing') return t('Auftragsverarbeitung (Vertrag nach Art. 28 DSGVO)')
+  if (basis === 'transfer') return t('Übermittlung an einen eigenen Verantwortlichen')
+  return ''
 }
 
 function day(date: Date): string {
@@ -49,6 +82,16 @@ function emptyDraft(list: ApiAccessList): Draft {
     expires: inDays(Math.min(365, list.max_days)),
     networks: '',
     embeddable: false,
+    partner: '',
+    basis: '',
+    confirmed: false,
+    thirdCountry: false,
+    memberFields: [],
+    onlyActive: true,
+    adultsOnly: false,
+    reportLevel: 'a',
+    hookUrl: '',
+    hookEvents: [],
   }
 }
 
@@ -62,6 +105,16 @@ function draftOf(a: ApiAccess): Draft {
     expires: day(new Date(a.expires_at)),
     networks: a.allowed_networks.join('\n'),
     embeddable: a.embeddable,
+    partner: a.partner ? String(a.partner.id) : '',
+    basis: a.legal_basis,
+    confirmed: !!a.legal_confirmed_at,
+    thirdCountry: a.third_country,
+    memberFields: a.member_fields,
+    onlyActive: a.only_active,
+    adultsOnly: a.adults_only,
+    reportLevel: a.report_level,
+    hookUrl: a.webhook_url,
+    hookEvents: a.webhook_events,
   }
 }
 
@@ -78,6 +131,16 @@ function inputOf(d: Draft): ApiAccessInput {
       .map((line) => line.trim())
       .filter(Boolean),
     embeddable: d.embeddable,
+    partner: d.partner ? Number(d.partner) : null,
+    legal_basis: d.basis,
+    legal_confirmed: d.confirmed,
+    third_country: d.thirdCountry,
+    member_fields: d.memberFields,
+    only_active: d.onlyActive,
+    adults_only: d.adultsOnly,
+    report_level: d.reportLevel,
+    webhook_url: d.hookUrl.trim(),
+    webhook_events: d.hookEvents,
   }
 }
 
@@ -111,6 +174,16 @@ function AccessForm({
     const allowed = new Set(list.scopes.filter((s) => !unit || s.unit_ok).map((s) => s.scope))
     setD({ ...d, unit, scopes: d.scopes.filter((s) => allowed.has(s)) })
   }
+  const personalScopes = new Set(list.scopes.filter((s) => s.personal).map((s) => s.scope))
+  const withReport = d.scopes.includes(REPORT)
+  const personal =
+    d.scopes.some((s) => personalScopes.has(s)) || (withReport && d.reportLevel === 'b')
+  const limits = d.scopes.some((s) => personalScopes.has(s))
+  // Die Bestätigung gilt für genau diesen Empfänger und diese Rechtsgrundlage
+  const choose = (change: Partial<Draft>) => setD({ ...d, ...change, confirmed: false })
+  const hookEvents = list.webhook_events.filter((e) => d.scopes.includes(e.scope))
+  const toggleIn = <T,>(items: T[], item: T, on: boolean) =>
+    on ? [...items, item] : items.filter((x) => x !== item)
   return (
     <form
       className="stack"
@@ -187,12 +260,126 @@ function AccessForm({
                 hint={blocked ? t('nur für die ganze Einheit') : undefined}
                 onChange={(on) => toggle(s.scope, on)}
               />
-              <div className="muted small">{s.description}</div>
+              <div className="muted small">
+                {s.personal && <span className="badge badge-warn">{t('Personendaten')}</span>}{' '}
+                {s.description}
+              </div>
             </div>
           )
         })}
         {errors.scopes && <small className="field-error">{errors.scopes}</small>}
       </fieldset>
+      {withReport && (
+        <SelectField
+          label={t('Verbandsmeldung')}
+          hint={t(
+            'Nur Zahlen: Anzahl nach aktiv, passiv und Geburtsmonat. Namentlich: dazu Name, Geburtsdatum, Verbandsnummer, Mitgliedsart und Eintritt.',
+          )}
+          error={errors.report_level}
+          value={d.reportLevel}
+          onChange={(e) => set('reportLevel', e.target.value === 'b' ? 'b' : 'a')}
+        >
+          <option value="a">{t('nur Zahlen')}</option>
+          <option value="b">{t('namentlich')}</option>
+        </SelectField>
+      )}
+      {d.scopes.includes(MEMBERS) && (
+        <fieldset className="stack-sm">
+          <legend>{t('Was zu jedem Mitglied dazukommt')}</legend>
+          <p className="muted small">
+            {t(
+              'Immer dabei: Name, Titel, Geschlecht, Geburtsdatum und Mitgliedsnummer. Nie dabei: Bankdaten, Bemerkungen, Fotos und Zusatzfelder.',
+            )}
+          </p>
+          {list.member_fields.map((group) => (
+            <div key={group}>
+              <Checkbox
+                label={fieldLabel(group)}
+                checked={d.memberFields.includes(group)}
+                onChange={(on) => set('memberFields', toggleIn(d.memberFields, group, on))}
+              />
+              <div className="muted small">{fieldHint(group)}</div>
+            </div>
+          ))}
+        </fieldset>
+      )}
+      {limits && (
+        <fieldset className="stack-sm">
+          <legend>{t('Welche Mitglieder')}</legend>
+          <Checkbox
+            label={t('Nur aktuelle Mitglieder')}
+            checked={d.onlyActive}
+            onChange={(value) => set('onlyActive', value)}
+          />
+          <Checkbox
+            label={t('Nur Volljährige')}
+            checked={d.adultsOnly}
+            onChange={(value) => set('adultsOnly', value)}
+          />
+        </fieldset>
+      )}
+      {personal && (
+        <fieldset className="stack-sm">
+          <legend>{t('Empfänger und Rechtsgrundlage')}</legend>
+          <p className="muted small">
+            {t(
+              'Dieser Zugang gibt Personendaten heraus. Dafür braucht es einen benannten Empfänger und eine Rechtsgrundlage. Jeder Abruf wird protokolliert.',
+            )}
+          </p>
+          <SelectField
+            label={t('Empfänger (Geschäftspartner)')}
+            hint={
+              list.partners.length === 0
+                ? t('Lege den Empfänger zuerst unter Verwaltung › Geschäftspartner an.')
+                : undefined
+            }
+            error={errors.partner}
+            value={d.partner}
+            onChange={(e) => choose({ partner: e.target.value })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {list.partners.map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            label={t('Rechtsgrundlage')}
+            hint={t(
+              'Auftragsverarbeitung: Der Empfänger arbeitet nur in eurem Auftrag, etwa ein Dienstleister. Übermittlung: Der Empfänger entscheidet selbst über die Daten, etwa der Dachverband nach seiner Satzung.',
+            )}
+            error={errors.legal_basis}
+            value={d.basis}
+            onChange={(e) => choose({ basis: e.target.value as LegalBasis })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            <option value="processing">{basisLabel('processing')}</option>
+            <option value="transfer">{basisLabel('transfer')}</option>
+          </SelectField>
+          <Checkbox
+            label={t('Empfänger außerhalb der EU')}
+            checked={d.thirdCountry}
+            onChange={(value) => set('thirdCountry', value)}
+          />
+          <Checkbox
+            label={
+              d.basis === 'processing'
+                ? t(
+                    'Ich bestätige: Mit dem Empfänger besteht ein Vertrag zur Auftragsverarbeitung.',
+                  )
+                : t(
+                    'Ich bestätige: Für die Weitergabe an den Empfänger gibt es eine Rechtsgrundlage.',
+                  )
+            }
+            checked={d.confirmed}
+            onChange={(value) => set('confirmed', value)}
+          />
+          {errors.legal_confirmed && (
+            <small className="field-error">{errors.legal_confirmed}</small>
+          )}
+        </fieldset>
+      )}
       <div className="grid-2">
         <Field
           label={t('Gültig bis')}
@@ -226,6 +413,32 @@ function AccessForm({
         onChange={(value) => set('embeddable', value)}
       />
       {errors.embeddable && <small className="field-error">{errors.embeddable}</small>}
+      {hookEvents.length > 0 && (
+        <fieldset className="stack-sm">
+          <legend>{t('Benachrichtigen bei Änderungen (optional)')}</legend>
+          <Field
+            label={t('Adresse für Benachrichtigungen')}
+            type="url"
+            maxLength={500}
+            placeholder="https://"
+            hint={t(
+              'HUBIplan meldet dorthin nur, dass sich etwas geändert hat, nie Inhalte. Das andere Programm holt die Daten danach mit seinem Schlüssel ab.',
+            )}
+            error={errors.webhook_url}
+            value={d.hookUrl}
+            onChange={(e) => set('hookUrl', e.target.value)}
+          />
+          {d.hookUrl.trim() !== '' &&
+            hookEvents.map((e) => (
+              <Checkbox
+                key={e.event}
+                label={e.label}
+                checked={d.hookEvents.includes(e.event)}
+                onChange={(on) => set('hookEvents', toggleIn(d.hookEvents, e.event, on))}
+              />
+            ))}
+        </fieldset>
+      )}
       {error && <Alert kind="error">{error}</Alert>}
       <div className="button-row">
         <button type="submit" className="button button-primary" disabled={busy}>
@@ -290,6 +503,26 @@ function NewKey({
   )
 }
 
+/** Das Geheimnis für die Unterschrift der Benachrichtigungen: nur jetzt sichtbar. */
+function NewSecret({ name, secret, onDone }: { name: string; secret: string; onDone: () => void }) {
+  return (
+    <section className="card card-wide stack" aria-live="polite">
+      <h3>{t('Geheimnis der Benachrichtigungen für „{name}“', { name })}</h3>
+      <Alert kind="info">
+        {t(
+          'Mit diesem Geheimnis prüft das andere Programm, dass eine Benachrichtigung wirklich von HUBIplan kommt. Es steht nur jetzt hier.',
+        )}
+      </Alert>
+      <Field label={t('Geheimnis')} readOnly value={secret} onFocus={(e) => e.target.select()} />
+      <div className="button-row">
+        <button type="button" className="button" onClick={onDone}>
+          {t('Fertig')}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function StateBadge({ access }: { access: ApiAccess }) {
   if (access.state === 'expired')
     return <span className="badge badge-cancelled">{t('abgelaufen')}</span>
@@ -303,14 +536,21 @@ export function ApiAccessPage() {
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<number | null>(null)
   const [shown, setShown] = useState<ApiAccessWithKey | null>(null)
+  const [secret, setSecret] = useState<{ id: number; name: string; secret: string } | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [note, setNote] = useState('')
   if (error) return <LoadError message={error} onRetry={reload} />
   if (!data) return <Loading />
   const labels = new Map(data.scopes.map((s) => [s.scope, s.label]))
   const replace = (access: ApiAccess) =>
     setData({ ...data, accesses: data.accesses.map((a) => (a.id === access.id ? access : a)) })
+  const showSecret = (access: ApiAccess) => {
+    if (access.webhook_secret)
+      setSecret({ id: access.id, name: access.name, secret: access.webhook_secret })
+  }
   const act = async (run: () => Promise<void>) => {
     setActionError(null)
+    setNote('')
     try {
       await run()
     } catch (err) {
@@ -347,7 +587,40 @@ export function ApiAccessPage() {
       await apiAccessApi.remove(org.id, access.id)
       setData({ ...data, accesses: data.accesses.filter((a) => a.id !== access.id) })
       if (shown?.id === access.id) setShown(null)
+      if (secret?.id === access.id) setSecret(null)
     })
+  }
+  const newSecret = async (access: ApiAccess) => {
+    const yes = await confirmDialog({
+      final: false,
+      message: t(
+        'Neues Geheimnis für die Benachrichtigungen von „{name}“ erzeugen? Das bisherige gilt sofort nicht mehr.',
+        { name: access.name },
+      ),
+      confirmLabel: t('Neues Geheimnis erzeugen'),
+    })
+    if (!yes) return
+    await act(async () => {
+      const fresh = await apiAccessApi.webhookSecret(org.id, access.id)
+      replace(fresh)
+      showSecret(fresh)
+    })
+  }
+  const testHook = (access: ApiAccess) =>
+    act(async () => {
+      const result = await apiAccessApi.webhookTest(org.id, access.id)
+      if (result.ok)
+        setNote(t('Die Probenachricht an „{name}“ ist angekommen.', { name: access.name }))
+      else setActionError(t('Die Probenachricht kam nicht an: {error}', { error: result.error }))
+    })
+  const hookLine = (a: ApiAccess) => {
+    if (a.webhook_state === 'paused')
+      return t('Benachrichtigungen ruhen: Die Adresse war sieben Tage nicht erreichbar.')
+    if (a.webhook_state === 'failing')
+      return t('Benachrichtigungen kommen zurzeit nicht an: {error}', {
+        error: a.webhook_last_error,
+      })
+    return t('Benachrichtigungen an {url}', { url: a.webhook_url })
   }
   const row = (a: ApiAccess) =>
     editing === a.id ? (
@@ -358,7 +631,9 @@ export function ApiAccessPage() {
           submitLabel={t('Speichern')}
           onCancel={() => setEditing(null)}
           onSubmit={async (input) => {
-            replace(await apiAccessApi.update(org.id, a.id, input))
+            const fresh = await apiAccessApi.update(org.id, a.id, input)
+            replace(fresh)
+            showSecret(fresh)
             setEditing(null)
           }}
         />
@@ -383,6 +658,33 @@ export function ApiAccessPage() {
                 })
               : t('noch nie genutzt')}
           </div>
+          {a.personal && (
+            <div className="small">
+              <span className="badge badge-warn">{t('Personendaten')}</span>{' '}
+              {[
+                a.partner ? t('Empfänger: {name}', { name: a.partner.name }) : t('Empfänger fehlt'),
+                basisLabel(a.legal_basis) || t('Rechtsgrundlage fehlt'),
+                a.third_country ? t('außerhalb der EU') : '',
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </div>
+          )}
+          {a.personal && (
+            <div className="muted small">
+              {a.records_read > 0
+                ? t('{n} Datensätze mit Personendaten in den letzten {days} Tagen abgerufen', {
+                    n: a.records_read,
+                    days: data.log_days,
+                  })
+                : t('Noch keine Personendaten abgerufen')}
+              {a.reads.length > 0 &&
+                ` · ${t('zuletzt {date}', { date: formatDateTime(a.reads[0].at) })}`}
+            </div>
+          )}
+          {a.webhook_state !== 'off' && (
+            <div className={a.webhook_state === 'ok' ? 'muted small' : 'small'}>{hookLine(a)}</div>
+          )}
           {a.state === 'idle' && (
             <div className="small">
               {t('Seit {n} Tagen nicht genutzt und deshalb abgeschaltet.', { n: data.idle_days })}
@@ -406,9 +708,32 @@ export function ApiAccessPage() {
               {t('Wieder einschalten')}
             </button>
           )}
+          {a.webhook_state === 'paused' && (
+            <button
+              type="button"
+              className="button"
+              onClick={() =>
+                void act(async () =>
+                  replace(await apiAccessApi.update(org.id, a.id, { webhook_resume: true })),
+                )
+              }
+            >
+              {t('Benachrichtigungen wieder einschalten')}
+            </button>
+          )}
           <button type="button" className="button" onClick={() => setEditing(a.id)}>
             {t('Bearbeiten')}
           </button>
+          {a.webhook_state !== 'off' && (
+            <button type="button" className="button" onClick={() => void testHook(a)}>
+              {t('Probenachricht senden')}
+            </button>
+          )}
+          {a.webhook_state !== 'off' && (
+            <button type="button" className="button" onClick={() => void newSecret(a)}>
+              {t('Neues Geheimnis erzeugen')}
+            </button>
+          )}
           <button type="button" className="button" onClick={() => void rotate(a)}>
             {t('Neuen Schlüssel erzeugen')}
           </button>
@@ -429,7 +754,7 @@ export function ApiAccessPage() {
         </p>
         <p className="muted small">
           {t(
-            'Namen, Anschriften und andere Angaben zu einzelnen Mitgliedern gibt es über diese Zugänge nicht. Ändern kann ein Zugang nichts.',
+            'Namen, Anschriften und andere Personendaten gibt ein Zugang nur heraus, wenn du den Empfänger benennst und die Rechtsgrundlage bestätigst. Ändern kann ein Zugang nichts.',
           )}
         </p>
         <dl className="small">
@@ -452,9 +777,15 @@ export function ApiAccessPage() {
           <ul className="item-list">{data.accesses.map(row)}</ul>
         )}
         {actionError && <Alert kind="error">{actionError}</Alert>}
+        <p className="muted small" role="status">
+          {note}
+        </p>
       </section>
       {shown && (
         <NewKey shown={shown} overlapDays={data.overlap_days} onDone={() => setShown(null)} />
+      )}
+      {secret && (
+        <NewSecret name={secret.name} secret={secret.secret} onDone={() => setSecret(null)} />
       )}
       <section className="card card-wide">
         <h3>{t('Neuer API-Zugang')}</h3>
@@ -468,6 +799,7 @@ export function ApiAccessPage() {
               const fresh = await apiAccessApi.create(org.id, input)
               setData({ ...data, accesses: [...data.accesses, fresh] })
               setShown(fresh)
+              showSecret(fresh)
               setAdding(false)
             }}
           />

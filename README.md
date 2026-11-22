@@ -222,7 +222,9 @@ Schützenverein, Musikverein oder Sportverein.
 - API für andere Programme: Der Vorstand gibt etwa der Software des Dachverbands oder einer
   eigenen Webseite einen Schlüssel, mit dem sie ausgewählte Daten liest (Einheit, Termine,
   Mitgliederzahlen ohne Personen, Vorstand, Veröffentlichtes); mit Ablaufdatum, Grenzen und
-  OpenAPI-Beschreibung ([docs/api.md](docs/api.md))
+  OpenAPI-Beschreibung. Verbandsmeldung, Mitglieder, Ehrungen und Qualifikationen nur mit
+  benanntem Empfänger und bestätigter Rechtsgrundlage, mit Abrufprotokoll; Benachrichtigungen
+  bei Änderungen (Webhooks) ([docs/api.md](docs/api.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,

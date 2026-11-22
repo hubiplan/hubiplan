@@ -13,7 +13,22 @@
           "limits": {
             "$ref": "#/components/schemas/Limits"
           },
+          "member_fields": {
+            "description": "Feldgruppen unter /members/",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "name": {
+            "type": "string"
+          },
+          "personal_data": {
+            "description": "Empfänger und Rechtsgrundlage für Personendaten sind hinterlegt",
+            "type": "boolean"
+          },
+          "report_level": {
+            "description": "Verbandsmeldung: a (Zahlen), b (namentlich)",
             "type": "string"
           },
           "scopes": {
@@ -27,7 +42,10 @@
           "embeddable",
           "expires_at",
           "limits",
+          "member_fields",
           "name",
+          "personal_data",
+          "report_level",
           "scopes"
         ],
         "type": "object"
@@ -382,7 +400,7 @@
             "type": "string"
           },
           "kind": {
-            "$ref": "#/components/schemas/KindEnum"
+            "$ref": "#/components/schemas/DocumentKindEnum"
           },
           "preview_url": {
             "nullable": true,
@@ -417,6 +435,14 @@
           "url"
         ],
         "type": "object"
+      },
+      "DocumentKindEnum": {
+        "description": "* `pdf` - pdf\n* `image` - image",
+        "enum": [
+          "pdf",
+          "image"
+        ],
+        "type": "string"
       },
       "DocumentList": {
         "properties": {
@@ -544,6 +570,40 @@
         ],
         "type": "object"
       },
+      "FederationReport": {
+        "properties": {
+          "counts": {
+            "items": {
+              "$ref": "#/components/schemas/ReportCount"
+            },
+            "type": "array"
+          },
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "level": {
+            "description": "a: nur Zahlen, b: namentlich",
+            "type": "string"
+          },
+          "persons": {
+            "items": {
+              "$ref": "#/components/schemas/ReportPerson"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "counts",
+          "date",
+          "level",
+          "total"
+        ],
+        "type": "object"
+      },
       "Holder": {
         "properties": {
           "name": {
@@ -552,6 +612,72 @@
         },
         "required": [
           "name"
+        ],
+        "type": "object"
+      },
+      "Honor": {
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "honor": {
+            "description": "Bezeichnung der Ehrung",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "member": {
+            "description": "Kennung des Mitglieds wie unter /members/",
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "description": "besonderer Titel dieser Person",
+            "type": "string"
+          },
+          "valid_from": {
+            "format": "date",
+            "type": "string"
+          },
+          "valid_until": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "first_name",
+          "honor",
+          "id",
+          "last_name",
+          "member",
+          "title",
+          "valid_from",
+          "valid_until"
+        ],
+        "type": "object"
+      },
+      "HonorList": {
+        "properties": {
+          "honors": {
+            "items": {
+              "$ref": "#/components/schemas/Honor"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "honors",
+          "next_cursor"
         ],
         "type": "object"
       },
@@ -582,14 +708,6 @@
         ],
         "type": "object"
       },
-      "KindEnum": {
-        "description": "* `pdf` - pdf\n* `image` - image",
-        "enum": [
-          "pdf",
-          "image"
-        ],
-        "type": "string"
-      },
       "Limits": {
         "properties": {
           "max_page_size": {
@@ -602,6 +720,243 @@
         "required": [
           "max_page_size",
           "requests_per_hour"
+        ],
+        "type": "object"
+      },
+      "Member": {
+        "properties": {
+          "birth_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "birth_year": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "contact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemberContact"
+              }
+            ],
+            "description": "nur mit der Feldgruppe „Kontakt und Anschrift“"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "person oder organization",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "bei Organisationen ihr Name",
+            "type": "string"
+          },
+          "member_number": {
+            "type": "string"
+          },
+          "membership": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemberMembership"
+              }
+            ],
+            "description": "nur mit der Feldgruppe „Mitgliedschaft“"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusEnum"
+          },
+          "title": {
+            "type": "string"
+          },
+          "units": {
+            "description": "nur mit der Feldgruppe „Untereinheiten“",
+            "items": {
+              "$ref": "#/components/schemas/MemberUnit"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "birth_date",
+          "birth_year",
+          "first_name",
+          "gender",
+          "id",
+          "kind",
+          "last_name",
+          "member_number",
+          "status",
+          "title",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "MemberContact": {
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "email",
+          "phone",
+          "postal_code",
+          "street"
+        ],
+        "type": "object"
+      },
+      "MemberList": {
+        "properties": {
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "members",
+          "next_cursor"
+        ],
+        "type": "object"
+      },
+      "MemberMembership": {
+        "properties": {
+          "entry_date": {
+            "description": "erster Eintritt",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "exit_date": {
+            "description": "Austritt, sonst null",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "federation_number": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "member_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemberType"
+              }
+            ],
+            "nullable": true
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/MemberPeriod"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "entry_date",
+          "exit_date",
+          "federation_number",
+          "member_type",
+          "periods"
+        ],
+        "type": "object"
+      },
+      "MemberPeriod": {
+        "properties": {
+          "entry_date": {
+            "format": "date",
+            "type": "string"
+          },
+          "exit_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "exit_reason": {
+            "description": "transfer (Wechsel in anderen Verein) oder other",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_date",
+          "exit_date",
+          "exit_reason"
+        ],
+        "type": "object"
+      },
+      "MemberType": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "reported": {
+            "description": "wird an den Dachverband gemeldet",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active",
+          "name",
+          "reported"
+        ],
+        "type": "object"
+      },
+      "MemberUnit": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "since": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "since"
         ],
         "type": "object"
       },
@@ -716,6 +1071,146 @@
         ],
         "type": "object"
       },
+      "Qualification": {
+        "properties": {
+          "acquired_on": {
+            "format": "date",
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "member": {
+            "description": "Kennung des Mitglieds wie unter /members/",
+            "format": "uuid",
+            "type": "string"
+          },
+          "qualification": {
+            "description": "Bezeichnung der Qualifikation",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "valid_until": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "acquired_on",
+          "first_name",
+          "id",
+          "last_name",
+          "member",
+          "qualification",
+          "updated_at",
+          "valid_until"
+        ],
+        "type": "object"
+      },
+      "QualificationList": {
+        "properties": {
+          "next_cursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "qualifications": {
+            "items": {
+              "$ref": "#/components/schemas/Qualification"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "next_cursor",
+          "qualifications"
+        ],
+        "type": "object"
+      },
+      "ReportCount": {
+        "properties": {
+          "birth_month": {
+            "description": "JJJJ-MM, leer: unbekannt",
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ReportCountKindEnum"
+          }
+        },
+        "required": [
+          "birth_month",
+          "count",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "ReportCountKindEnum": {
+        "description": "* `active` - active\n* `passive` - passive",
+        "enum": [
+          "active",
+          "passive"
+        ],
+        "type": "string"
+      },
+      "ReportPerson": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "birth_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "entry_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "federation_number": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "description": "Kennung des Mitglieds wie unter /members/",
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "member_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "active",
+          "birth_date",
+          "entry_date",
+          "federation_number",
+          "first_name",
+          "id",
+          "last_name",
+          "member_type"
+        ],
+        "type": "object"
+      },
       "ResultRow": {
         "properties": {
           "club": {
@@ -813,6 +1308,15 @@
         "enum": [
           "documents",
           "press"
+        ],
+        "type": "string"
+      },
+      "StatusEnum": {
+        "description": "* `active` - active\n* `upcoming` - upcoming\n* `former` - former",
+        "enum": [
+          "active",
+          "upcoming",
+          "former"
         ],
         "type": "string"
       },
@@ -1287,6 +1791,379 @@
         ]
       }
     },
+    "/api/partner/v1/federation-report/": {
+      "get": {
+        "description": "Mitgliedschaften mit einer Mitgliedsart „an Dachverband melden“ am Stichtag: Anzahlen nach aktiv, passiv und Geburtsmonat. ``persons`` gibt es nur, wenn die Einheit am Zugang „namentlich“ gewählt, den Empfänger benannt und die Rechtsgrundlage bestätigt hat: Name, Vorname, Geburtsdatum, Verbandsnummer, Mitgliedsart und Eintritt, nie Anschrift oder Kontakt.",
+        "operationId": "federation_report",
+        "parameters": [
+          {
+            "description": "Stichtag, Vorgabe heute",
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FederationReport"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Verbandsmeldung zum Stichtag",
+        "tags": [
+          "federation-report"
+        ]
+      }
+    },
+    "/api/partner/v1/honors/": {
+      "get": {
+        "description": "Ehrungen, die die Einheit ihren Mitgliedern verliehen hat, mit Zeitraum. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Beitragsfolgen.",
+        "operationId": "honors",
+        "parameters": [
+          {
+            "description": "nur heute gültige Ehrungen",
+            "in": "query",
+            "name": "current",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "``next_cursor`` der Seite davor",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 bis 200, Vorgabe 100",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "nur diese Untereinheit und die darunter",
+            "in": "query",
+            "name": "unit",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HonorList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Verliehene Ehrungen",
+        "tags": [
+          "honors"
+        ]
+      }
+    },
+    "/api/partner/v1/members/": {
+      "get": {
+        "description": "Immer: Name, Vorname, Titel, Geschlecht, Geburtsdatum, Mitgliedsnummer und Zustand. ``contact``, ``membership`` und ``units`` nur, wenn die Einheit die Feldgruppe am Zugang gewählt hat. Die Einheit kann den Zugang auf aktuelle Mitglieder und auf Volljährige begrenzen. Nie enthalten: Bankdaten, Bemerkungen, Fotos, Zusatzfelder, Rollen und Mitgliedschaften nach Ablauf der Löschfrist. ``changed_since`` findet Änderungen an Person, Kontakt und Mitgliedschaft; ein vollständiger Abgleich in größeren Abständen bleibt sinnvoll.",
+        "operationId": "members",
+        "parameters": [
+          {
+            "description": "nur seitdem geänderte Datensätze",
+            "in": "query",
+            "name": "changed_since",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "``next_cursor`` der Seite davor",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 bis 200, Vorgabe 100",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Vorgabe active; former und all nur ohne die Begrenzung am Zugang",
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "active",
+                "all",
+                "former"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "nur diese Untereinheit und die darunter",
+            "in": "query",
+            "name": "unit",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Mitglieder",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/partner/v1/members/{member_id}/": {
+      "get": {
+        "description": "Wie ein Eintrag der Liste; 404, wenn der Zugang das Mitglied nicht sieht.",
+        "operationId": "member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "member_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Ein Mitglied",
+        "tags": [
+          "members"
+        ]
+      }
+    },
     "/api/partner/v1/news/": {
       "get": {
         "description": "Neueste Beiträge aus den eigenen Kanälen der Einheit, soweit sie auf ihrer öffentlichen Webseite stehen. Bilder liefert die HUBIplan-Instanz aus.",
@@ -1361,6 +2238,117 @@
         "summary": "Beiträge",
         "tags": [
           "news"
+        ]
+      }
+    },
+    "/api/partner/v1/qualifications/": {
+      "get": {
+        "description": "Nachweise der Mitglieder mit Erwerb und Gültigkeit. Es gelten die Begrenzungen des Zugangs (aktuelle Mitglieder, Volljährige, Untereinheit). Nie enthalten: Bemerkungen und Arten, bei denen nur die Einsicht vermerkt wird (zum Beispiel das Führungszeugnis).",
+        "operationId": "qualifications",
+        "parameters": [
+          {
+            "description": "nur seitdem geänderte Datensätze",
+            "in": "query",
+            "name": "changed_since",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "description": "``next_cursor`` der Seite davor",
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "1 bis 200, Vorgabe 100",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "nur diese Untereinheit und die darunter",
+            "in": "query",
+            "name": "unit",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "nur heute gültige Nachweise",
+            "in": "query",
+            "name": "valid",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualificationList"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "summary": "Qualifikationen",
+        "tags": [
+          "qualifications"
         ]
       }
     },

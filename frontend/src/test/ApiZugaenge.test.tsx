@@ -22,6 +22,7 @@ const scopes = [
     description: 'Name, Anschrift, Kontakt, Logo und die Untereinheiten als Baum',
     unit_ok: true,
     needs: '',
+    personal: false,
   },
   {
     scope: 'termine.lesen',
@@ -29,6 +30,7 @@ const scopes = [
     description: 'Termine mit der Sichtbarkeit „nach außen öffentlich“',
     unit_ok: true,
     needs: '',
+    personal: false,
   },
   {
     scope: 'termine.mitglieder',
@@ -36,6 +38,7 @@ const scopes = [
     description: 'Zusätzlich Termine mit der Sichtbarkeit „Mitglieder“',
     unit_ok: true,
     needs: 'termine.lesen',
+    personal: false,
   },
   {
     scope: 'vorstand.lesen',
@@ -43,6 +46,15 @@ const scopes = [
     description: 'Rollen mit „auf der Webseite zeigen“',
     unit_ok: false,
     needs: '',
+    personal: false,
+  },
+  {
+    scope: 'mitglieder.lesen',
+    label: 'Mitglieder lesen',
+    description: 'Name, Geburtsdatum und Mitgliedsnummer',
+    unit_ok: true,
+    needs: '',
+    personal: true,
   },
 ]
 
@@ -66,6 +78,42 @@ const access = {
   last_used_at: null,
   last_used_ip: '',
   request_count: 0,
+  partner: null,
+  legal_basis: '',
+  legal_confirmed_at: null,
+  legal_confirmed_by: '',
+  third_country: false,
+  member_fields: [],
+  only_active: true,
+  adults_only: false,
+  report_level: 'a',
+  personal: false,
+  webhook_url: '',
+  webhook_events: [],
+  webhook_state: 'off',
+  webhook_last_ok_at: null,
+  webhook_last_error: '',
+  records_read: 0,
+  reads: [],
+}
+
+const personalAccess = {
+  ...access,
+  id: 5,
+  name: 'Mitgliederabgleich',
+  state: 'active',
+  scopes: ['mitglieder.lesen'],
+  partner: { id: 31, name: 'Musterbund Software GmbH' },
+  legal_basis: 'processing',
+  legal_confirmed_at: '2026-11-22T09:00:00Z',
+  legal_confirmed_by: 'Erika Beispiel',
+  member_fields: ['contact'],
+  personal: true,
+  webhook_url: 'https://verband.example/hubiplan',
+  webhook_events: ['member.changed'],
+  webhook_state: 'paused',
+  records_read: 12,
+  reads: [{ at: '2026-11-22T10:00:00Z', scope: 'mitglieder.lesen', count: 12 }],
 }
 
 const list = (accesses: object[]) => ({
@@ -77,6 +125,13 @@ const list = (accesses: object[]) => ({
   overlap_days: 7,
   scopes,
   units: [{ id: 12, name: 'Jugend' }],
+  partners: [{ id: 31, name: 'Musterbund Software GmbH', processor: false }],
+  member_fields: ['contact', 'membership', 'units'],
+  webhook_events: [
+    { event: 'member.changed', label: 'Mitglied geändert', scope: 'mitglieder.lesen' },
+    { event: 'event.created', label: 'Termin angelegt', scope: 'termine.lesen' },
+  ],
+  log_days: 90,
   accesses,
 })
 
@@ -165,5 +220,73 @@ describe('API-Zugänge', () => {
     await user.click(screen.getByRole('button', { name: 'Wieder einschalten' }))
     expect(await screen.findByText('aktiv')).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'POST /api/orgs/7/api-accesses/4/resume/')).toBe(true)
+  })
+
+  it('Personendaten: Empfänger, Rechtsgrundlage und Bestätigung gehen mit', async () => {
+    const calls = renderPage({
+      'GET /api/orgs/7/api-accesses/': () => ({ status: 200, body: list([]) }),
+      'POST /api/orgs/7/api-accesses/': () => ({
+        status: 201,
+        body: {
+          ...personalAccess,
+          webhook_state: 'ok',
+          key: 'hpk_erfunden',
+          webhook_secret: 'hpw_erfunden',
+        },
+      }),
+    })
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Zugang anlegen' }))
+    await user.type(screen.getByLabelText(/^Name/), 'Mitgliederabgleich')
+    // Ohne Bereich mit Personendaten gibt es die Felder dazu nicht
+    expect(screen.queryByLabelText('Rechtsgrundlage')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('checkbox', { name: 'Mitglieder lesen' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Kontakt und Anschrift' }))
+    await user.selectOptions(screen.getByLabelText('Empfänger (Geschäftspartner)'), '31')
+    await user.selectOptions(screen.getByLabelText('Rechtsgrundlage'), 'processing')
+    await user.click(screen.getByRole('checkbox', { name: /^Ich bestätige/ }))
+    await user.type(
+      screen.getByLabelText('Adresse für Benachrichtigungen'),
+      'https://verband.example/hubiplan',
+    )
+    // Nur Ereignisse zu gewählten Bereichen stehen zur Wahl
+    expect(screen.queryByRole('checkbox', { name: 'Termin angelegt' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('checkbox', { name: 'Mitglied geändert' }))
+    await user.click(screen.getByRole('button', { name: 'Zugang anlegen' }))
+    expect(await screen.findByDisplayValue('hpw_erfunden')).toBeInTheDocument()
+    const post = calls.find((c) => c.key === 'POST /api/orgs/7/api-accesses/')
+    expect(JSON.parse(String(post?.init?.body))).toMatchObject({
+      scopes: ['mitglieder.lesen'],
+      partner: 31,
+      legal_basis: 'processing',
+      legal_confirmed: true,
+      member_fields: ['contact'],
+      only_active: true,
+      adults_only: false,
+      webhook_url: 'https://verband.example/hubiplan',
+      webhook_events: ['member.changed'],
+    })
+    expect(screen.getByText(/Empfänger: Musterbund Software GmbH/)).toBeInTheDocument()
+  })
+
+  it('zeigt Abrufe von Personendaten und schaltet ruhende Benachrichtigungen wieder ein', async () => {
+    const calls = renderPage({
+      'GET /api/orgs/7/api-accesses/': () => ({ status: 200, body: list([personalAccess]) }),
+      'PATCH /api/orgs/7/api-accesses/5/': () => ({
+        status: 200,
+        body: { ...personalAccess, webhook_state: 'ok' },
+      }),
+    })
+    const user = userEvent.setup()
+    expect(
+      await screen.findByText(/12 Datensätze mit Personendaten in den letzten 90 Tagen abgerufen/),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Benachrichtigungen ruhen/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Benachrichtigungen wieder einschalten' }))
+    expect(
+      await screen.findByText('Benachrichtigungen an https://verband.example/hubiplan'),
+    ).toBeInTheDocument()
+    const patch = calls.find((c) => c.key === 'PATCH /api/orgs/7/api-accesses/5/')
+    expect(JSON.parse(String(patch?.init?.body))).toEqual({ webhook_resume: true })
   })
 })

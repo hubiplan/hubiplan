@@ -2,9 +2,11 @@
 
 Über diese Schnittstelle lesen Programme Dritter Daten einer Einheit: die Software eines
 Dachverbands, eine eigene Webseite, eine Anzeigetafel, ein Skript. Umgesetzt sind **Stufe 0**
-(die Schnittstelle der Vereinswebseite als offene Daten beschrieben, siehe unten) und **Stufe 1**
-(API-Zugänge mit Schlüssel, Lesen ohne Personendaten). Schreiben, Mitgliederdaten für Verbände,
-Benachrichtigungen und die Anmeldung im Namen einer Person sind spätere Stufen.
+(die Schnittstelle der Vereinswebseite als offene Daten beschrieben, siehe unten), **Stufe 1**
+(API-Zugänge mit Schlüssel, Lesen ohne Personendaten) und **Stufe 2** (Verbandsmeldung,
+Mitglieder, Ehrungen und Qualifikationen lesen, nur mit Empfänger und Rechtsgrundlage;
+Benachrichtigungen bei Änderungen). Schreiben und die Anmeldung im Namen einer Person sind
+spätere Stufen.
 
 ## Kurz
 
@@ -18,7 +20,9 @@ Benachrichtigungen und die Anmeldung im Namen einer Person sind spätere Stufen.
 | Abschalten | Betreiber: `HUBIPLAN_API=false` (dann 404 für alles unter `/api/partner/` und die Verwaltung) |
 
 Code: App `backend/partnerapi/` (`models.py` Zugang, `auth.py` Schlüsselprüfung, `scopes.py`
-Bereiche, `views.py` Aufrufe für Dritte, `manage_views.py` Verwaltung, `openapi.py` Beschreibung).
+Bereiche, `views.py` Aufrufe für Dritte, `personal.py` Aufrufe mit Personendaten, `refs.py`
+feste Kennungen, `webhooks.py` und `signals.py` Benachrichtigungen, `manage_views.py`
+Verwaltung, `openapi.py` Beschreibung).
 Oberfläche: `frontend/src/pages/settings/ApiAccessPage.tsx`.
 
 ## Zugang und Schlüssel
@@ -38,20 +42,24 @@ steht nie in der Adresse, sie ergibt sich aus dem Schlüssel.
   nimmt ihn wieder in Betrieb.
 - **Erlaubte Adressen:** wahlweise bis zu 20 IP-Adressen oder Netze. Geprüft wird die echte
   Adresse des Aufrufers hinter dem eigenen Proxy.
-- **Aus fremden Webseiten aufrufbar** (CORS): nur ohne `termine.mitglieder` und
-  `statistik.lesen`, weil der Schlüssel dann im Quelltext der fremden Webseite steht.
+- **Aus fremden Webseiten aufrufbar** (CORS): nur ohne `termine.mitglieder`,
+  `statistik.lesen`, `verbandsmeldung.lesen` und ohne Bereiche mit Personendaten, weil der
+  Schlüssel dann im Quelltext der fremden Webseite steht.
 - **Grenzen:** 600 Abrufe je Stunde und Zugang, 300 je Minute und Adresse; darüber 429 mit
   `Retry-After`. Höchstens 50 Zugänge je Einheit.
-- **Frischer zweiter Faktor** (`accounts/step_up.py`) für Anlegen, Schlüsselwechsel und
-  Wiedereinschalten. `api.manage` setzt „Einstellungen“ voraus und wird nie automatisch
+- **Frischer zweiter Faktor** (`accounts/step_up.py`) für Anlegen, Schlüsselwechsel,
+  Wiedereinschalten, neues Geheimnis der Benachrichtigungen und jede Änderung, die mehr
+  Personendaten herausgibt, den Empfänger wechselt oder die Adresse der Benachrichtigungen
+  ändert. `api.manage` setzt „Einstellungen“ voraus und wird nie automatisch
   vergeben, auch nicht an neue Vorstandsrollen (`NOT_AUTOMATIC`).
 - **Protokoll:** Anlegen, Ändern, Schlüsselwechsel, Wiedereinschalten und Löschen stehen im
   Änderungsprotokoll; zu Anlegen und Schlüsselwechsel geht eine Mail an alle mit `api.manage`.
   Am Zugang stehen letzter Abruf, dessen Adresse und die Zahl der Abrufe.
 - Der Schlüssel gilt nur unter `/api/partner/`, nirgends sonst in HUBIplan.
 
-Die Tabelle ist je Einheit zeilengesichert (`partnerapi/migrations/0002_rls.py`). Zugänge gehen
-bewusst nicht in die Datenübernahme: Nach einem Umzug vergibt die Einheit neue Schlüssel.
+Alle Tabellen sind je Einheit zeilengesichert (`partnerapi/migrations/0002_rls.py`,
+`0004_stufe2_rls.py`). Zugänge, Kennungen, Abrufprotokoll und Benachrichtigungen gehen bewusst
+nicht in die Datenübernahme: Nach einem Umzug vergibt die Einheit neue Schlüssel.
 
 ## Bereiche
 
@@ -71,10 +79,98 @@ dazu eingeschaltet ist; wird das Modul später ausgeschaltet, antwortet der Aufr
 | `neuigkeiten.lesen` | `GET news/` | auf der Webseite gezeigte Beiträge der eigenen Kanäle | `social` |
 | `dokumente.lesen` | `GET documents/` | auf der Webseite veröffentlichte Dokumente und Presseberichte | `website` |
 
-Ein Zugang für eine Untereinheit bekommt nur `einheit.lesen`, die Termine und die Statistik.
+Ein Zugang für eine Untereinheit bekommt nur `einheit.lesen`, die Termine, die Statistik und
+die Bereiche mit Personendaten außer der Verbandsmeldung (siehe unten).
 „Veröffentlicht“ heißt: Die Webseite der Einheit ist öffentlich und zeigt den Inhalt; sonst
 kommt `published: false` mit leerer Liste. Zu- und Absagen, Teilnehmende, Namen einzelner
-Mitglieder, Kontaktdaten von Personen, Kasse und Bank gibt es in Stufe 1 nirgends.
+Mitglieder, Kontaktdaten von Personen, Kasse und Bank gibt es in diesen Bereichen nirgends.
+
+## Personendaten (Stufe 2)
+
+Diese Bereiche gibt es nur für Vereine. Im Katalog tragen sie `personal`.
+
+| Bereich | Aufruf | Inhalt | Modul |
+| --- | --- | --- | --- |
+| `verbandsmeldung.lesen` | `GET federation-report/` | Mitgliedschaften mit einer Mitgliedsart „an Dachverband melden“ am Stichtag (`date`): Anzahl nach aktiv, passiv und Geburtsmonat. Mit „namentlich“ am Zugang zusätzlich `persons`: Name, Vorname, Geburtsdatum, Verbandsnummer, Mitgliedsart, Eintritt | `members` |
+| `mitglieder.lesen` | `GET members/`, `members/<id>/` | Name, Vorname, Titel, Geschlecht, Geburtsdatum, Mitgliedsnummer, Zustand; Feldgruppen nach Wahl am Zugang (`status`, `unit`, `changed_since`, `limit`, `cursor`) | `members` |
+| `ehrungen.lesen` | `GET honors/` | verliehene Ehrungen mit Name und Zeitraum (`current`, `unit`) | `awards` |
+| `qualifikationen.lesen` | `GET qualifications/` | Nachweise mit Name, Erwerb und Gültigkeit (`valid`, `unit`, `changed_since`); nie Arten mit bloßem Einsichtsvermerk | `qualifications` |
+
+**Voraussetzung am Zugang** (sonst lehnt die Verwaltung das Speichern ab, und ein Aufruf
+antwortet mit 403 `legal_basis_missing`):
+
+- **Empfänger:** ein aktiver Geschäftspartner der Einheit (`ApiAccess.partner`).
+- **Rechtsgrundlage:** `processing` (Auftragsverarbeitung, Vertrag nach Art. 28 DSGVO) oder
+  `transfer` (Übermittlung an einen eigenen Verantwortlichen).
+- **Bestätigung** durch den Menschen, der den Zugang anlegt, mit Zeitpunkt und Konto. Sie gilt
+  für genau diesen Empfänger und diese Rechtsgrundlage; ein Wechsel verlangt sie neu.
+
+Die namentliche Verbandsmeldung zählt als Personendaten, die Zahlen nicht. Bei
+Auftragsverarbeitung bekommt der Geschäftspartner die Rolle „Auftragsverarbeiter“ und steht
+damit im Verzeichnis der Verarbeitungstätigkeiten; die Tätigkeit „Weitergabe über die API für
+andere Programme“ steht dort, sobald das Modul an ist (`privacy/catalog.py`). Wird der
+Geschäftspartner abgeschaltet oder gelöscht, gibt der Zugang sofort keine Personendaten mehr
+heraus. Alle mit `api.manage` bekommen eine Mail, sobald ein Zugang neu Personendaten herausgibt.
+
+**Datensparsamkeit:**
+
+- Feldgruppen der Mitglieder (`member_fields`): `contact` (E-Mail, Telefon, Anschrift),
+  `membership` (Eintritt, Austritt, Mitgliedsart, Verbandsnummer, Zeiträume), `units`
+  (Untereinheiten). Nicht gewählte Gruppen fehlen in der Antwort.
+- „Nur aktuelle Mitglieder“ (Vorgabe) und „Nur Volljährige“ begrenzen den Zugang; ohne
+  Geburtsdatum gilt eine Person nicht als volljährig. Die Begrenzung gilt auch für Ehrungen und
+  Qualifikationen.
+- Nie nach außen gehen: Bankdaten, Bemerkungen, Fotos, Zusatzfelder, Rollen, Mitgliedschaften
+  nach Ablauf der Löschfrist, der genaue Austrittsgrund (nur `transfer` oder `other`).
+- Kennungen (`id`, `member`) sind eigene UUIDs je Datensatz (`RecordRef`), nie interne
+  Nummern. Sie entstehen beim ersten Abruf und bleiben gleich.
+
+**Abrufprotokoll:** Jeder Abruf mit Personendaten steht mit Zugang, Bereich, Zeit und Zahl der
+Datensätze in `ReadLog` (90 Tage, Aufgabe `partnerapi.tasks.purge_logs`). Die Seite
+Einstellungen › API-Zugänge zeigt je Zugang die Summe und die letzten Abrufe.
+
+`changed_since` findet Änderungen an Person, Kontakt und Mitgliedschaft samt Eintritt, Austritt,
+Mitgliedsart und Untereinheit. Sammeländerungen (Import) können fehlen; ein vollständiger
+Abgleich in größeren Abständen bleibt sinnvoll.
+
+## Benachrichtigungen (Webhooks)
+
+Am Zugang lässt sich eine https-Adresse eintragen. Ändert sich etwas, sendet HUBIplan dorthin
+ein `POST` mit einer schlanken Nachricht, nie mit Inhalten:
+
+```json
+{
+  "id": "5f0e…",
+  "type": "member.changed",
+  "occurred_at": "2027-03-01T10:15:00+01:00",
+  "unit": "<UUID der Einheit>",
+  "object": { "type": "member", "id": "<Kennung wie unter members/>" }
+}
+```
+
+| Ereignis | Bereich | Wann |
+| --- | --- | --- |
+| `member.created`, `member.changed` | `mitglieder.lesen` | Mitglied aufgenommen; Person, Kontakt, Mitgliedsart oder Untereinheit geändert |
+| `member.left` | `mitglieder.lesen` | Austritt eingetragen |
+| `member.deleted` | `mitglieder.lesen` | Mitgliedschaft gelöscht oder nach der Löschfrist geleert (nur, wenn sie schon einmal abgerufen wurde) |
+| `event.created`, `event.changed`, `event.cancelled`, `event.deleted` | `termine.lesen` | eigener Termin, den der Zugang sehen darf; `object.id` ist `event_id` aus `events/` |
+
+- **Unterschrift:** Kopfzeile `X-HUBIplan-Signature: t=<Unixzeit>,v1=<hex>`; `v1` ist
+  HMAC-SHA256 über `<Unixzeit>.<Nachricht>` mit dem Geheimnis `hpw_…` des Zugangs. Das
+  Geheimnis steht einmal in der Antwort, in der es entsteht, und liegt verschlüsselt in der
+  Datenbank. Dazu `X-HUBIplan-Event` und `X-HUBIplan-Delivery` (gleich `id`).
+- **Zustellung:** mindestens einmal, in Reihenfolge je Zugang. Antwort 2xx gilt als angekommen.
+  Sonst neue Versuche nach 1, 5 und 30 Minuten, danach stündlich, bis zu drei Tage. Scheitert
+  jede Zustellung sieben Tage lang, ruhen die Benachrichtigungen des Zugangs, und alle mit
+  `api.manage` bekommen eine Mail. Empfänger sollten doppelte Nachrichten an `id` erkennen.
+- **Schutz:** nur https, keine internen Adressen, keine Weiterleitungen (`core/safehttp.py`).
+  Gleichartige Nachrichten zu einem Datensatz werden zusammengefasst, solange sie warten.
+- Mitglieder-Ereignisse gibt es nur für Zugänge der ganzen Einheit mit gültiger
+  Rechtsgrundlage; Termine „nur Vorstand“ melden nie, Mitgliedertermine nur mit
+  `termine.mitglieder`.
+- **Ablauf im Code:** `signals.py` merkt eine Änderung beim Speichern nur vor; geprüft und
+  eingereiht wird nach dem Abschluss der Änderung (`transaction.on_commit`), zugestellt jede
+  Minute (`partnerapi.tasks.deliver_webhooks`).
 
 ## Fehler
 
@@ -87,6 +183,7 @@ Antworten mit `application/problem+json` (RFC 9457): `type`, `title`, `status`, 
 | `access_idle` | 401 | Zugang ruht nach 90 Tagen ohne Abruf |
 | `ip_not_allowed` | 403 | Aufruf von einer nicht erlaubten Adresse |
 | `missing_scope` | 403 | Bereich nicht vergeben (`scope` nennt ihn) |
+| `legal_basis_missing` | 403 | Personendaten: Empfänger oder bestätigte Rechtsgrundlage fehlen |
 | `too_many_requests` | 429 | Grenze erreicht, `Retry-After` beachten |
 | `not_found` | 404 | gibt es nicht oder ist nicht veröffentlicht |
 | `invalid_request` | 400 | Angabe ungültig (`errors` nennt das Feld) |
@@ -97,7 +194,7 @@ Innerhalb von `v1` kommen nur Felder, Aufrufe und Bereiche hinzu; nichts fällt 
 seine Bedeutung. Was wegfallen soll, wird zwölf Monate vorher in den Änderungshinweisen
 angekündigt. Programme ignorieren unbekannte Felder. Feldnamen sind englisch, Kennungen von
 Einheiten sind UUIDs, Zeiten stehen in ISO 8601 mit Zeitzone. Die Formate in
-`partnerapi/views.py` sind der Vertrag; `tests/test_partnerapi.py` prüft, dass die Kopie
+`partnerapi/views.py` und `partnerapi/personal.py` sind der Vertrag; `tests/test_partnerapi.py` prüft, dass die Kopie
 [backend/partnerapi/openapi.json](../backend/partnerapi/openapi.json) zum Code passt. Nach Änderungen:
 
 ```bash
@@ -148,7 +245,6 @@ sie zu einer Domain. Auch Dritte dürfen diese Schnittstelle lesen. Es gilt:
 
 | Stufe | Inhalt |
 | --- | --- |
-| 2 | Verbandsmeldung, Mitglieder, Ehrungen, Qualifikationen lesend, nur mit Geschäftspartner und bestätigter Rechtsgrundlage; Benachrichtigungen (Webhooks) |
 | 3 | Schreiben: Termine, Ergebnisse, Anwesenheit, Meldungen; Mitgliederdaten nur als Vorschlag |
 | 4 | Anmeldung im Namen einer Person (OAuth), „Verbinden“ bekannter Anwendungen; betrifft dann auch die Apps |
 

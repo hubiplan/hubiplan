@@ -120,7 +120,10 @@ def test_anlegen_zeigt_schluessel_einmal_protokoll_und_mail(api, club, chef):
     listing = api(chef).get(f"/api/orgs/{club.pk}/api-accesses/").json()
     assert "key" not in listing["accesses"][0]
     assert listing["address"].endswith(BASE)
-    assert {s["scope"] for s in listing["scopes"]} == set(ALL)
+    # Dazu kommen die Bereiche mit Personendaten (Stufe 2, tests/test_partnerapi_stufe2.py)
+    codes = {s["scope"]: s["personal"] for s in listing["scopes"]}
+    assert set(ALL) <= set(codes) and not any(codes[c] for c in ALL)
+    assert codes["mitglieder.lesen"] is True
     assert [m.to for m in mail.outbox] == [["api-vorstand@example.org"]]
     assert "Verbandssoftware" in mail.outbox[0].body and key not in mail.outbox[0].body
 

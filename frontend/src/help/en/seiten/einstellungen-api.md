@@ -5,12 +5,27 @@ modul: api
 rechte: [api.manage]
 routen: [/einstellungen/api]
 stichworte:
-  [API, interface, key, federation software, federation, other programs, data exchange, OpenAPI]
+  [
+    API,
+    interface,
+    key,
+    federation software,
+    federation,
+    other programs,
+    data exchange,
+    OpenAPI,
+    personal data,
+    legal basis,
+    data processing,
+    report to the association,
+    webhook,
+    notification,
+  ]
 ---
 
 With an API access another program reads data of your unit, for example your umbrella association's software, a website of your own or a display board. Each access has its own key, may only read what you tick and expires by itself.
 
-These accesses never provide names, addresses or bank details of individual members, and an access cannot change anything. Create a separate access for each program; then one can be deleted without disturbing the others.
+An access only releases names, addresses and other personal data if you name the recipient and confirm the legal basis. Bank details are never included, and an access cannot change anything. Create a separate access for each program; then one can be deleted without disturbing the others.
 
 The page only exists if the module “API for other programs” is switched on and your role has the additional right “Manage API accesses”. No role receives this right automatically.
 
@@ -22,17 +37,47 @@ The page only exists if the module “API for other programs” is switched on a
 - Board and offices: roles with their functional address; names only if they appear on your public website.
 - Results, posts, documents: only what your website publishes.
 
+For clubs there are also the areas with personal data, see the next section.
+
 An area only appears if its module is switched on. With **Applies to** you restrict an access to one sub-unit; it then only sees that unit's data.
+
+## Personal data
+
+These areas carry the mark “Personal data” and only exist for clubs:
+
+- Report to the association: reported members on the reference date. Under **Report to the association** you choose “numbers only” (counts by active, passive and month of birth) or “by name” (plus name, date of birth, association number, member type and joining date).
+- Members: always name, title, gender, date of birth and member number. Contact and address, membership and sub-units are only added if you tick them.
+- Honours and qualifications: with the name of the person and the period. Qualifications for which only the inspection is recorded, such as a certificate of good conduct, are never released.
+
+Bank details, notes, photos, custom fields and members whose data has been deleted after the retention period are never included. With **Current members only** and **Adults only** you restrict the access further.
+
+For personal data HUBIplan requires three things:
+
+- **Recipient (business partner)**: who receives the data. Create it beforehand under Administration › Business partners.
+- **Legal basis**: processing on behalf if the recipient only works on your instructions, for example a service provider with a contract under Art. 28 GDPR. Transfer if the recipient decides about the data itself, for example the umbrella association under its statutes.
+- The confirmation that the contract or the legal basis exists. It applies to exactly this recipient; if you choose another one, HUBIplan asks again.
+
+With processing on behalf, the business partner receives the role processor and is therefore listed in the register under [Data protection tools](/dsgvo). Everyone with the right receives an email as soon as an access releases personal data. HUBIplan does not replace legal advice: the board decides whether passing the data on is permitted.
+
+Every retrieval of personal data is logged for 90 days. The list shows for each access how many records were retrieved and when last.
+
+## Notify on changes
+
+If you enter an **Address for notifications**, HUBIplan tells the other program when a member is admitted or changed, leaves, or an event changes. The message only names the kind of change and an identifier, never content; the program then fetches the data with its key.
+
+When you first save, HUBIplan shows a secret once. The other program uses it to check that the message really comes from HUBIplan. **Create new secret** replaces it, **Send test message** checks the connection.
+
+If the address cannot be reached, HUBIplan tries again for up to three days. After seven days without success the notifications are paused and everyone with the right receives an email; **Switch notifications on again** puts them back into operation. The access itself remains valid.
 
 ## Key and security
 
-The key is shown on the page exactly once: after creating the access and after **Create new key**. HUBIplan does not store it in readable form. Pass it on securely, not by unencrypted email. For both, HUBIplan asks for a fresh two-factor code.
+The key is shown on the page exactly once: after creating the access and after **Create new key**. HUBIplan does not store it in readable form. Pass it on securely, not by unencrypted email. For both, HUBIplan asks for a fresh two-factor code, and likewise when an access newly releases personal data or receives a different address for notifications.
 
 After **Create new key** the previous key remains valid for seven more days, so the other program can be switched over without an outage. If a key has fallen into the wrong hands, delete the access: it stops working immediately.
 
 Every access expires after one year at the latest; 30 days before, everyone with the right receives an email. Use **Edit** to extend it. If an access is not used for 90 days, HUBIplan switches it off; **Switch on again** puts it back into operation.
 
-Under **Allowed addresses (optional)** you allow requests only from certain IP addresses. **Callable from other websites** is meant for data that is public anyway, because the key is then visible in the website's source code; it is therefore not possible together with member events or member numbers.
+Under **Allowed addresses (optional)** you allow requests only from certain IP addresses. **Callable from other websites** is meant for data that is public anyway, because the key is then visible in the website's source code; it is therefore not possible together with member events, member numbers or personal data.
 
 Creating, changing, key changes and deleting are recorded in the change log. Each access allows 600 requests per hour.
 

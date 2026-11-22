@@ -17,4 +17,6 @@ stichworte: [API, key, federation software, federation, interface, own website, 
 
 The key is shown on the page only now. If it gets lost, **Create new key** helps; the previous one then remains valid for seven more days. The recipient also needs the address of the interface, shown at the top of the page.
 
+If the program should read members, honours, qualifications or the report to the association by name, you also choose the **Recipient (business partner)** and the **Legal basis** and confirm it. Create the recipient beforehand under [Administration › Business partners](/geschaeftspartner). If the program should learn about changes, enter an **Address for notifications**; like the key, the secret for it is shown on the page only once.
+
 If the menu item is missing, the module “API for other programs” is switched off under [Settings › Modules](/einstellungen/module) or your role lacks the additional right “Manage API accesses” ([Roles and permissions](/einstellungen/rollen)).

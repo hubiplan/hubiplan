@@ -64,6 +64,9 @@ NICHT = {
     "Ziel neu",
     "mcpserver.McpGrant": "Freigabe der KI-Schnittstelle, am Ziel neu erteilen",
     "partnerapi.ApiAccess": "API-Zugang (Schlüssel der alten Instanz), am Ziel neu anlegen",
+    "partnerapi.RecordRef": "Kennungen der API, hängen an den Zugängen der alten Instanz",
+    "partnerapi.ReadLog": "Abrufprotokoll der API, nach 90 Tagen gelöscht",
+    "partnerapi.WebhookDelivery": "Benachrichtigungen der API, kurzlebige Warteschlange",
     "letterhead.LetterheadProposal": "Vorschlag eines Assistenten, hängt an dessen Freigabe "
     "(McpGrant) und verfällt nach 30 Tagen",
     "todos.TodoShare": "Freigaben an Konten, am Ziel neu vergeben (wie SECRET_FIELDS todos)",

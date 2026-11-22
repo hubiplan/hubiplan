@@ -253,6 +253,13 @@ class PartnerAccessInfoSerializer(serializers.Serializer):
     scopes = PartnerScopeSerializer(many=True)
     expires_at = serializers.DateTimeField()
     embeddable = serializers.BooleanField()
+    personal_data = serializers.BooleanField(
+        help_text="Empfänger und Rechtsgrundlage für Personendaten sind hinterlegt"
+    )
+    member_fields = serializers.ListField(
+        child=serializers.CharField(), help_text="Feldgruppen unter /members/"
+    )
+    report_level = serializers.CharField(help_text="Verbandsmeldung: a (Zahlen), b (namentlich)")
     limits = PartnerLimitsSerializer()
 
 
@@ -285,6 +292,9 @@ class InfoView(PartnerView):
                 "scopes": sc.describe(self.granted(self.access)),
                 "expires_at": self.access.expires_at,
                 "embeddable": self.access.embeddable,
+                "personal_data": self.access.personal_ok,
+                "member_fields": list(self.access.member_fields or []),
+                "report_level": self.access.report_level,
                 "limits": {"requests_per_hour": ACCESS_LIMIT, "max_page_size": MAX_LIMIT},
             },
         }
