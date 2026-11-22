@@ -39,34 +39,38 @@ export function ViewPicker<T extends object>({
     setName('')
   }
 
+  // Ohne gemerkte Ansicht und ohne gesetzte Filter gibt es nichts zu wählen oder zu merken
+  if (views.length === 0 && isStandard && !naming) return null
   return (
     <div className="view-picker">
-      <label className="view-picker-select small">
-        {t('Ansicht')}
-        <select
-          value={value}
-          onChange={(e) => {
-            const v = e.target.value
-            if (v === '') onApply(standard)
-            else {
-              const found = views.find((x) => x.name === v)
-              if (found) onApply(found.params)
-            }
-          }}
-        >
-          <option value="">{t('Standard')}</option>
-          {views.map((v) => (
-            <option key={v.name} value={v.name}>
-              {v.name}
-            </option>
-          ))}
-          {value === '__eigen' && (
-            <option value="__eigen" disabled>
-              {t('Eigene Auswahl')}
-            </option>
-          )}
-        </select>
-      </label>
+      {views.length > 0 && (
+        <label className="view-picker-select small">
+          {t('Ansicht')}
+          <select
+            value={value}
+            onChange={(e) => {
+              const v = e.target.value
+              if (v === '') onApply(standard)
+              else {
+                const found = views.find((x) => x.name === v)
+                if (found) onApply(found.params)
+              }
+            }}
+          >
+            <option value="">{t('Standard')}</option>
+            {views.map((v) => (
+              <option key={v.name} value={v.name}>
+                {v.name}
+              </option>
+            ))}
+            {value === '__eigen' && (
+              <option value="__eigen" disabled>
+                {t('Eigene Auswahl')}
+              </option>
+            )}
+          </select>
+        </label>
+      )}
       {active ? (
         <button
           type="button"

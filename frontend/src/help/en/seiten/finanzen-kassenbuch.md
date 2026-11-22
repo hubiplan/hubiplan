@@ -28,3 +28,7 @@ If loading accounts or categories fails, **Reload** retries locally. Booking det
 **VAT included in the amount**: if the club is liable for VAT, choose the tax rate for income and expenses (19 %, 7 %, tax-exempt or none). The amount stays gross; HUBIplan calculates net amount and tax. New bookings take the default of the category (Set up › Categories, column **VAT**). For expenses with mixed use, enter the business share under **Deductible input VAT (%)**. The totals are under Finance › Taxes › VAT.
 
 **Record as fixed asset**: for an expense from €250, this button takes the amount, date and text into the fixed asset register (Finance › Fixed assets) and links the asset to the booking.
+
+## Filters and views
+
+Active filters appear as chips above the list; clicking one removes that filter. **Remember as view** stores a selection without the financial year under a name, such as “Cash without document”, and **View** brings it back in any year; this applies to this browser.

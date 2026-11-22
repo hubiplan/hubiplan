@@ -9,6 +9,8 @@ stichworte: [Rechnung, Beitrag, offen, bezahlt, Storno]
 
 Hier stehen alle Rechnungen der Einheit, etwa Mitgliedsbeiträge oder Kosten für Vereinskleidung, mit ihrem Stand: offen, bezahlt, gemahnt oder storniert. Eine einzelne Rechnung legst du hier an; viele auf einmal erzeugt ein Beitragslauf.
 
+Gesetzte Filter stehen als Chips über der Liste; ein Klick entfernt den Filter. Mit **Als Ansicht merken** legst du eine Auswahl unter einem Namen ab, etwa „Überfällige Beitragslauf 2026“, und wählst sie später unter **Ansicht** wieder; das gilt für diesen Browser.
+
 Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode-Schreibvarianten werden vereinheitlicht; „ß“ und „ss“ gelten dabei als gleich. Andere gewählte Filter gelten weiterhin.
 
 Gib einen Suchbegriff ein und bestätige mit **Suchen** oder der Eingabetaste. Status und weitere Filter werden direkt übernommen.
