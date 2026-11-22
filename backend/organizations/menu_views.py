@@ -8,6 +8,7 @@ stellt die vorige Anordnung wieder her. Schreiben braucht ``settings.edit``; Unt
 
 from __future__ import annotations
 
+from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -38,7 +39,7 @@ class MenuLayoutView(OrgScopedMixin, APIView):
 
     def _check_owner(self):
         if menu_layout.owner(self.org) != self.org:
-            raise PermissionDenied("Untereinheiten übernehmen das Menü ihres Vereins.")
+            raise PermissionDenied(_("Untereinheiten übernehmen das Menü ihres Vereins."))
 
     @extend_schema(responses=dict)
     def get(self, request, **kwargs):
@@ -72,7 +73,7 @@ class MenuLayoutUndoView(OrgScopedMixin, APIView):
     @extend_schema(request=None, responses=dict)
     def post(self, request, **kwargs):
         if menu_layout.owner(self.org) != self.org:
-            raise PermissionDenied("Untereinheiten übernehmen das Menü ihres Vereins.")
+            raise PermissionDenied(_("Untereinheiten übernehmen das Menü ihres Vereins."))
         menu_layout.undo(self.org)
         record(
             self.org,

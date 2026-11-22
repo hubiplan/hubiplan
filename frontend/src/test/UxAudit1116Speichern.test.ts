@@ -14,6 +14,8 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/settings/NextcloudPage.tsx': 'Zugang: wer sich anmelden darf, Dienstkonto, Sperren',
   'pages/settings/ApiAccessPage.tsx':
     'API-Zugang: Bereiche und Ablauf gälten für das fremde Programm schon beim Ankreuzen',
+  'pages/settings/MenuLayoutPage.tsx':
+    'Menü der ganzen Einheit: erst in der Vorschau prüfen, dann für alle speichern',
   'pages/settings/PasskeyCard.tsx': 'kleiner Dialog (Name des Passkeys)',
   'pages/platform/PlatformPages.tsx': 'Plattform: wäre schon beim Tippen wirksam',
   // Mitgliedsakte: Zeiträume und Abrechnung

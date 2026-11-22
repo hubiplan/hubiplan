@@ -22,6 +22,7 @@ import re
 from functools import cache
 from pathlib import Path
 
+from django.utils.translation import gettext as _
 from rest_framework.exceptions import ValidationError
 
 VERSION = 1
@@ -66,13 +67,15 @@ def icon_keys() -> set[str]:
 def _label(value, field: str, required: bool) -> str:
     if value is None or value == "":
         if required:
-            raise ValidationError({field: "Bitte einen Namen angeben."})
+            raise ValidationError({field: _("Bitte einen Namen angeben.")})
         return ""
     if not isinstance(value, str):
-        raise ValidationError({field: "Ungültiger Name."})
+        raise ValidationError({field: _("Ungültiger Name.")})
     value = " ".join(value.split())
     if len(value) > MAX_LABEL:
-        raise ValidationError({field: f"Höchstens {MAX_LABEL} Zeichen."})
+        raise ValidationError(
+            {field: _("Höchstens {MAX_LABEL} Zeichen.").format(MAX_LABEL=MAX_LABEL)}
+        )
     return value
 
 
@@ -81,25 +84,31 @@ def clean(layout) -> dict | None:
     if layout is None:
         return None
     if not isinstance(layout, dict):
-        raise ValidationError({"layout": "Ungültige Anordnung."})
+        raise ValidationError({"layout": _("Ungültige Anordnung.")})
     raw_areas = layout.get("areas")
     if not isinstance(raw_areas, list):
-        raise ValidationError({"areas": "Ungültige Anordnung."})
+        raise ValidationError({"areas": _("Ungültige Anordnung.")})
     if not MIN_AREAS <= len(raw_areas) <= MAX_AREAS:
-        raise ValidationError({"areas": f"Es braucht {MIN_AREAS} bis {MAX_AREAS} Hauptmenüpunkte."})
+        raise ValidationError(
+            {
+                "areas": _("Es braucht {MIN_AREAS} bis {MAX_AREAS} Hauptmenüpunkte.").format(
+                    MIN_AREAS=MIN_AREAS, MAX_AREAS=MAX_AREAS
+                )
+            }
+        )
     std = set(standard_area_ids())
     items = set(item_ids())
     areas: list[dict] = []
     seen: set[str] = set()
     for raw in raw_areas:
         if not isinstance(raw, dict) or not isinstance(raw.get("id"), str):
-            raise ValidationError({"areas": "Ungültiger Hauptmenüpunkt."})
+            raise ValidationError({"areas": _("Ungültiger Hauptmenüpunkt.")})
         area_id = raw["id"]
         custom = CUSTOM_ID.match(area_id) is not None
         if area_id in seen:
-            raise ValidationError({"areas": "Ein Hauptmenüpunkt steht doppelt."})
+            raise ValidationError({"areas": _("Ein Hauptmenüpunkt steht doppelt.")})
         if not (area_id in std or area_id in items or custom) or area_id in PINNED:
-            raise ValidationError({"areas": "Unbekannter Hauptmenüpunkt."})
+            raise ValidationError({"areas": _("Unbekannter Hauptmenüpunkt.")})
         seen.add(area_id)
         entry: dict = {"id": area_id}
         label = _label(raw.get("label"), "label", required=custom)
@@ -111,23 +120,25 @@ def clean(layout) -> dict | None:
         icon = raw.get("icon")
         if icon not in (None, ""):
             if icon not in icon_keys():
-                raise ValidationError({"icon": "Unbekanntes Zeichen."})
+                raise ValidationError({"icon": _("Unbekanntes Zeichen.")})
             entry["icon"] = icon
         areas.append(entry)
     if areas[0]["id"] != "start":
-        raise ValidationError({"areas": "Start bleibt der erste Hauptmenüpunkt."})
+        raise ValidationError({"areas": _("Start bleibt der erste Hauptmenüpunkt.")})
     raw_items = layout.get("items") or {}
     if not isinstance(raw_items, dict):
-        raise ValidationError({"items": "Ungültige Zuordnung."})
+        raise ValidationError({"items": _("Ungültige Zuordnung.")})
     placed: dict[str, str] = {}
     for item, area_id in raw_items.items():
         # Unbekannte Menüpunkte (ältere oder neuere Fassung) werden übergangen
         if item not in items or item in PINNED:
             continue
         if area_id not in seen:
-            raise ValidationError({"items": "Ein Menüpunkt verweist auf einen fehlenden Bereich."})
+            raise ValidationError(
+                {"items": _("Ein Menüpunkt verweist auf einen fehlenden Bereich.")}
+            )
         if item in FIXED and area_id != FIXED[item]:
-            raise ValidationError({"items": "Die Startseite bleibt unter Start."})
+            raise ValidationError({"items": _("Die Startseite bleibt unter Start.")})
         placed[item] = area_id
     result = {"v": VERSION, "areas": areas, "items": placed}
     # Nichts verändert: wie Standard speichern
@@ -187,7 +198,7 @@ def save(org, layout, user) -> dict | None:
 def undo(org) -> dict | None:
     history = list(org.menu_layout_history or [])
     if not history:
-        raise ValidationError({"detail": "Es gibt keine frühere Anordnung."})
+        raise ValidationError({"detail": _("Es gibt keine frühere Anordnung.")})
     previous = history.pop().get("layout")
     # Eine früher gespeicherte Anordnung kann Menüpunkte nennen, die es nicht mehr gibt
     try:
