@@ -637,7 +637,7 @@ function MemberSheet({
   unitLabel,
 }: {
   row: MemberRow
-  precision?: DatePrecision
+  precision: DatePrecision
   unitLabel: string
 }) {
   const address = [row.street, [row.postal_code, row.city].filter(Boolean).join(' ')]
