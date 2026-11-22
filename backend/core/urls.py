@@ -106,6 +106,7 @@ from organizations.platform_public import (
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from pinboard import portal as pinboard_portal
+from portal import start as portal_start
 from portal import views as portal_views
 from qualifications import views as qualification_views
 from registrations import public_views as registration_public
@@ -1189,6 +1190,11 @@ urlpatterns = [
         "portal/<int:access_id>/home-tiles/",
         hometiles_views.PortalHomeTilesView.as_view(),
         name="portal-home-tiles",
+    ),
+    path(
+        "portal/<int:access_id>/start/",
+        portal_start.PortalStartView.as_view(),
+        name="portal-start",
     ),
     path("portal/<int:access_id>/surveys/<int:pk>/", survey_portal.DetailView.as_view()),
     path("portal/<int:access_id>/surveys/<int:pk>/answer/", survey_portal.AnswerView.as_view()),

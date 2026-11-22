@@ -17140,3 +17140,45 @@ msgid "{n} anwesend"
 msgid_plural "{n} anwesend"
 msgstr[0] "{n} present"
 msgstr[1] "{n} present"
+
+#: portal start
+msgid "{n} Termin wartet auf deine Rückmeldung"
+msgid_plural "{n} Termine warten auf deine Rückmeldung"
+msgstr[0] "{n} event is waiting for your reply"
+msgstr[1] "{n} events are waiting for your reply"
+
+#: portal start
+msgid "{n} Umfrage wartet auf deine Antwort"
+msgid_plural "{n} Umfragen warten auf deine Antwort"
+msgstr[0] "{n} survey is waiting for your answer"
+msgstr[1] "{n} surveys are waiting for your answer"
+
+#: portal start
+msgid "{n} Sammelbestellung läuft"
+msgid_plural "{n} Sammelbestellungen laufen"
+msgstr[0] "{n} group order is open"
+msgstr[1] "{n} group orders are open"
+
+#: portal start
+msgid "{n} Beitragsnachweis fehlt"
+msgid_plural "{n} Beitragsnachweise fehlen"
+msgstr[0] "{n} fee proof is missing"
+msgstr[1] "{n} fee proofs are missing"
+
+#: portal start
+msgid "{n} Rückfrage zu deinen Auslagen"
+msgid_plural "{n} Rückfragen zu deinen Auslagen"
+msgstr[0] "{n} question about your expenses"
+msgstr[1] "{n} questions about your expenses"
+
+#: portal start
+msgid "{n} Training zum Einchecken offen"
+msgid_plural "{n} Trainings zum Einchecken offen"
+msgstr[0] "{n} training session open for check-in"
+msgstr[1] "{n} training sessions open for check-in"
+
+#: portal start
+msgid "{n} neuer Beitrag an der Pinnwand"
+msgid_plural "{n} neue Beiträge an der Pinnwand"
+msgstr[0] "{n} new post on the notice board"
+msgstr[1] "{n} new posts on the notice board"

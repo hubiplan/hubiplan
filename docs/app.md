@@ -470,6 +470,13 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   `GET/POST …/manage/<id>/checkin/` (aktueller Code mit `refresh_in` und `count`; `open`).
   `training_enabled`, `shooting_log_enabled` und `training_checkin` (Zahl offener Einchecken)
   stehen in `portal`.
+- Startseite der Apps in einem Abruf: `GET /api/portal/<Zugang>/start/` liefert `next_event`
+  (der nächste Termin, der stattfindet, im Format der Terminliste mit `my_response`, sonst
+  `null`), `todo` (was gerade wartet, je Zeile `key`, `title`, `count`, `target`; nur Zeilen mit
+  Zahl über null; `target` ist `events`, `surveys`, `orders`, `fee_proofs`, `expenses`,
+  `training` oder `pinboard`, unbekannte überspringt die App) und `tiles` (wie `home-tiles`).
+  Ältere HUBIplan-Stände antworten mit 404; die App baut die Seite dann aus Terminliste und
+  Kacheln selbst.
 - Kacheln der Übersicht (siehe [startseite-kacheln.md](startseite-kacheln.md)), auch mit dem
   Geräteschlüssel: `GET /api/portal/<Zugang>/home-tiles/` für Mitglieder und
   `GET /api/app/v1/admin/u/<Einheit>/home-tiles/` für die Verwaltung (nicht in Untereinheiten).
