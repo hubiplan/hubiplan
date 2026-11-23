@@ -38,7 +38,7 @@ def result(view, request):
     today = timezone.localdate()
     form = OverviewRange(
         data={
-            "start": request.query_params.get("start", today - datetime.timedelta(days=90)),
+            "start": request.query_params.get("start", today),
             "end": request.query_params.get("end", today + datetime.timedelta(days=180)),
         }
     )
