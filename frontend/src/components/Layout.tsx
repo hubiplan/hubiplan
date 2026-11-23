@@ -874,19 +874,6 @@ export function Layout() {
                               ),
                             )}
                           </ul>
-                          {/* Menü frei anordnen: leiser Weg für alle, die es dürfen */}
-                          {!memberNav &&
-                            active &&
-                            (active.type === 'club' || active.type === 'federation') &&
-                            active.permissions.includes('settings.edit') && (
-                              <Link
-                                to="/einstellungen/menue"
-                                className="area-menu-arrange muted"
-                                onClick={choseInNav}
-                              >
-                                {t('Menü anordnen')}
-                              </Link>
-                            )}
                         </div>
                       )}
                     </>

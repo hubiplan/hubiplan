@@ -1,4 +1,4 @@
-// Verein › Chronik (Modul „Chronik“): Zeitleiste der Vereinsgeschichte pflegen, auch ohne
+// Vereinsleben › Chronik (Modul „Chronik“): Zeitleiste der Vereinsgeschichte pflegen, auch ohne
 // Webseite. Gespeichert wird wie bisher als Textseite „Chronik“ der Webseite; mit Modul
 // „Webseite“ erscheint die veröffentlichte Fassung dort.
 import { Link } from 'react-router-dom'

@@ -43,6 +43,31 @@ describe('Bereiche des Menüs', () => {
     }
   })
 
+  it('Bereich „Einstellungen“ statt „Verein“, Material & Räume unter Planung (Issue #703)', () => {
+    expect(AREAS.find((a) => a.id === 'verein')?.label).toBe('Einstellungen')
+    const areaOf = (id: string) => modules.find((m) => m.id === id)?.area
+    expect(areaOf('material')).toBe('planung')
+    expect(['einstellungen', 'dsgvo', 'plattform'].map(areaOf)).toEqual([
+      'verein',
+      'verein',
+      'verein',
+    ])
+  })
+
+  it('das Bereichsmenü hat keinen Link „Menü anordnen“ mehr (Issue #702)', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['settings.view', 'settings.edit', 'members.view'] })],
+      }),
+    })
+    renderApp('/bereich/verein')
+    const nav = await screen.findByRole('navigation', { name: 'Hauptmenü' })
+    expect(await within(nav).findByText('Einstellungen')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Menü anordnen' })).not.toBeInTheDocument()
+  })
+
   it('die Bereichsübersicht zeigt die Seiten des Bereichs mit Beschreibung und Offenem', async () => {
     const org = testOrg({
       modules: ['events', 'meetings'],

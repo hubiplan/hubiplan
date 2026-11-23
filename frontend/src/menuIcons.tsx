@@ -125,4 +125,10 @@ export const EXTRA_ICONS: ExtraIcon[] = [
     label: t('Landkarte'),
     path: 'M3 6l6-2.5 6 2.5 6-2.5v14.5l-6 2.5-6-2.5-6 2.5zM9 3.5v14.5M15 6v14.5',
   },
+  // Früheres Zeichen des Bereichs „Verein“ (heute „Einstellungen“, Issue #703)
+  {
+    id: 'z-vereinshaus',
+    label: t('Vereinshaus'),
+    path: 'M3 9 12 4l9 5M4 9h16M6 9v9M10 9v9M14 9v9M18 9v9M3 20.5h18',
+  },
 ]

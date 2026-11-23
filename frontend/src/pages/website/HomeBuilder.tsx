@@ -1532,7 +1532,7 @@ function SectionContent({
         <>
           <p className="muted small">
             {t(
-              'Zeigt die neuesten Einträge der Zeitleiste von Verein › Chronik mit einem Link zur ganzen Chronik.',
+              'Zeigt die neuesten Einträge der Zeitleiste von Vereinsleben › Chronik mit einem Link zur ganzen Chronik.',
             )}
           </p>
           {titleField()}

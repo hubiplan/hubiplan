@@ -46,7 +46,7 @@ export function settingsItems(active: OrgSummary): SettingsItem[] {
     : items
 }
 
-/** Einstellungen ohne die Übersicht (Quelle der Einrichtungspunkte unter „Verein“). */
+/** Einstellungen ohne die Übersicht (Quelle der Einrichtungspunkte unter „Einstellungen“). */
 export function baseSettingsItems(active: OrgSummary): SettingsItem[] {
   const can = (perm: string) => active.permissions.includes(perm)
   // Arbeitsbereich einer Untereinheit: Stammdaten pflegt die Einheit darüber
