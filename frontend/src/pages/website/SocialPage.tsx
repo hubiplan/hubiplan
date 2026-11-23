@@ -594,8 +594,8 @@ function PostList({ feed, onChanged }: { feed: number; onChanged: () => void }) 
               <p className="small">
                 {formatDateTime(p.published_at)} · {p.state_label}
                 {p.media_type === 'video' && t(' · Video (nur Vorschaubild)')}
-                {p.like_count !== null && t(' · {n} Likes', { n: p.like_count })}
-                {p.comment_count !== null && t(' · {n} Kommentare', { n: p.comment_count })}
+                {p.like_count !== null && <> · {t('{n} Likes', { n: p.like_count })}</>}
+                {p.comment_count !== null && <> · {t('{n} Kommentare', { n: p.comment_count })}</>}
               </p>
               <p className="pre-line">{p.text || <em>{t('ohne Text')}</em>}</p>
               {p.comments.length > 0 && (
@@ -605,8 +605,8 @@ function PostList({ feed, onChanged }: { feed: number; onChanged: () => void }) 
                       <p className="small">
                         <strong>{k.author || t('unbekannt')}</strong> ·{' '}
                         {formatDateTime(k.published_at)}
-                        {k.state === 'pending' && t(' · wartet auf Freigabe')}
-                        {k.state === 'hidden' && t(' · ausgeblendet')}
+                        {k.state === 'pending' && <> · {t('wartet auf Freigabe')}</>}
+                        {k.state === 'hidden' && <> · {t('ausgeblendet')}</>}
                       </p>
                       <p className="pre-line">{k.text}</p>
                       <div className="button-row">

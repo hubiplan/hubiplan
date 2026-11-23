@@ -1,8 +1,6 @@
 {
-  " · ausgeblendet": " · hidden",
-  " · wartet auf Freigabe": " · awaiting approval",
-  " · {n} Kommentare": " · {n} comments",
-  " · {n} Likes": " · {n} likes",
+  "{n} Kommentare": "{n} comments",
+  "{n} Likes": "{n} likes",
   ". Die genaue Adresse steht auch beim Kanal zum Kopieren.": ". The exact address is also shown with each channel, ready to copy.",
   "Als App-Domain:": "As app domain:",
   "App-Domain": "App domain",
