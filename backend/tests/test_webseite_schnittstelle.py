@@ -112,6 +112,27 @@ class TestZustand:
         )
         assert bad.status_code == 403
 
+    def test_vorschau_nennt_vereinsadressen(self, setup, settings):
+        """Issue #729: Einbetten der Vorschau auch über die Vereinsadresse der Einheit."""
+        from organizations.models import InstanceAddress
+
+        settings.FRONTEND_URL = "https://hubiplan.example"
+        org = setup["org"]
+        InstanceAddress.objects.create(hostname="verein.musterkapelle.example", organization=org)
+        other = Department.objects.create(organization=org, parent=org, name="Musterzug")
+        InstanceAddress.objects.create(hostname="zug.musterzug.example", organization=other)
+        token = services.open_token(setup["site"])
+        resp = Client().post(
+            "/api/public/site/v1/schluessel-a/preview/", {"token": token}, "application/json"
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["frame_origins"] == ["https://verein.musterkapelle.example"]
+        info = get("schluessel-a/", HTTP_X_PREVIEW_SESSION=data["session"]).json()
+        assert info["frame_origins"] == ["https://verein.musterkapelle.example"]
+        # Besucher ohne Vorschau erfahren die Adressen nicht
+        assert "frame_origins" not in get("schluessel-a/").json()
+
     def test_aus_und_modul_aus(self, setup, settings):
         site = setup["site"]
         site.state = "off"
