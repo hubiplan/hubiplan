@@ -95,6 +95,19 @@ def base_url(unit: Organization | None = None, request=None) -> str:
     return main
 
 
+def unit_origins(unit: Organization) -> list[str]:
+    """Vereinsadressen der Einheit und der Einheiten darüber als Origins (Issue #729).
+
+    Die Webseite erlaubt damit das Einbetten der Vorschau auch dann, wenn HUBIplan über die
+    Vereinsadresse statt über die Hauptadresse bedient wird.
+    """
+    chain = [o for o in unit.ancestors() if o.type != Organization.Type.PLATFORM and o.is_active]
+    if not chain:
+        return []
+    hosts = InstanceAddress.objects.filter(organization__in=chain).order_by("hostname")
+    return [f"{_scheme()}://{host}" for host in hosts.values_list("hostname", flat=True)]
+
+
 def rebase(url: str, base: str) -> str:
     """Link auf die Hauptadresse auf eine andere Basisadresse umschreiben."""
     from django.conf import settings

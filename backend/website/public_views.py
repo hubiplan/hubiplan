@@ -24,6 +24,7 @@ from core.ratelimit import too_many, visitor_ip
 from core.tenancy import rls_bypass
 from core.version import running_version
 from organizations import brand_icon
+from organizations.addresses import unit_origins
 from organizations.platform_public import unit_icon
 
 from . import contact, designs, event_page, gallery, home, menu, results, services, style, variants
@@ -194,6 +195,9 @@ class SiteInfoView(_Public):
             "content_language": org.language,
             "hubiplan_imprint": imprint.page_urls(org),
         }
+        if self.preview:
+            # Nur in der Vorschau: Adressen, von denen HUBIplan sie einbetten darf (#729)
+            base["frame_origins"] = unit_origins(org)
         if not self.visible:
             base["maintenance_text"] = site.site.maintenance_text
             return self.respond(base, site, status=503)
@@ -413,7 +417,13 @@ class PreviewView(_Public):
                 status=403,
             )
         session, until = result
-        return self.respond({"session": session, "until": until})
+        return self.respond(
+            {
+                "session": session,
+                "until": until,
+                "frame_origins": unit_origins(website.organization),
+            }
+        )
 
 
 class BoardView(_Public):
