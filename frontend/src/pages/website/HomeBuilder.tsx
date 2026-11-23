@@ -150,7 +150,7 @@ function kindHint(kind: HomeKind): string {
     unit_honors: t('die aktuellen Würdenträger einer Untereinheit'),
     competition: t('Sieger und Stand eines bestimmten Wettbewerbs'),
     albums: t('die ersten Alben der Galerie als Kacheln'),
-    posts: t('die neuesten Beiträge aus Instagram und Facebook'),
+    posts: t('die neuesten eigenen Beiträge und die aus Instagram und Facebook'),
     app: t('Knopf zum Mitgliederbereich, QR-Code und Hinweis auf die App'),
     live_facts: t('Mitgliederzahl, Jahre seit der Gründung und Untereinheiten, immer aktuell'),
     cover: t('ein schmales Bild über der Überschrift der Seite'),
@@ -2135,9 +2135,14 @@ function SectionContent({
           {titleField()}
           <Segments
             label={t('Kanal')}
-            value={d.channel === 'instagram' || d.channel === 'facebook' ? d.channel : 'all'}
+            value={
+              d.channel === 'own' || d.channel === 'instagram' || d.channel === 'facebook'
+                ? d.channel
+                : 'all'
+            }
             options={[
               ['all', t('Alle')],
+              ['own', t('Eigene')],
               ['instagram', 'Instagram'],
               ['facebook', 'Facebook'],
             ]}

@@ -164,7 +164,7 @@ def _entry(hit: dict, fields, body: str | None, snip: bool = True) -> dict:
 
 def build_index(site, events) -> list[dict]:
     """Alle Kandidaten in Reihenfolge Startseite, Textseiten, Untereinheiten, Einleitungen,
-    Alben, Dokumente, Termine (wie die Treffer)."""
+    eigene Beiträge, Alben, Dokumente, Termine (wie die Treffer)."""
     website = site.site
     from . import home
     from .public_views import event_entry
@@ -231,6 +231,26 @@ def build_index(site, events) -> list[dict]:
                     body,
                 )
             )
+    if website.block_on("posts"):
+        # Eigene Beiträge unter „Aktuelles“ (#707), neueste zuerst
+        posts = site.news_posts(all_units=True).select_related("department")
+        for p in sorted(posts, key=lambda p: site._news_values(p)["date"], reverse=True):
+            if p.department_id and p.department_id not in site.unit_slugs:
+                continue
+            v = site._news_values(p)
+            body = plain(v["body"])
+            entries.append(
+                _entry(
+                    {
+                        "kind": "news",
+                        "slug": p.slug,
+                        "title": v["title"],
+                        "date": v["date"].isoformat(),
+                    },
+                    [v["title"], body],
+                    body,
+                )
+            )
     for a in gallery.visible_albums(website).order_by("-date", "title"):
         entries.append(
             _entry(
@@ -287,9 +307,10 @@ def _stand(website) -> str:
     from django.db.models import Count, Max
 
     from .content_models import GalleryAlbum, WebsiteDocument
+    from .news_models import NewsPost
 
     parts = [str(website.updated_at)]
-    for model in (WebsiteText, GalleryAlbum, WebsiteDocument):
+    for model in (WebsiteText, GalleryAlbum, WebsiteDocument, NewsPost):
         field = "updated_at" if any(f.name == "updated_at" for f in model._meta.fields) else "pk"
         agg = model.objects.filter(website=website).aggregate(n=Count("pk"), m=Max(field))
         parts.append(f"{agg['n']}:{agg['m']}")

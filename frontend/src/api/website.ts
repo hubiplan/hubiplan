@@ -330,7 +330,7 @@ export interface HomeSectionData {
   /** Ergebnisse eines Wettbewerbs */
   competition?: number | null
   /** Neueste Beiträge */
-  channel?: 'all' | 'instagram' | 'facebook'
+  channel?: 'all' | 'own' | 'instagram' | 'facebook'
   /** Mitgliederbereich und App */
   qr?: boolean
   store?: boolean
@@ -1137,4 +1137,46 @@ export const documentApi = {
   save: (org: number, id: number, data: DocumentDraft) =>
     api.patch<WebsiteDocument>(`${base(org)}documents/${id}/`, data),
   remove: (org: number, id: number) => api.del(`${base(org)}documents/${id}/`),
+}
+
+// --- Eigene Beiträge unter „Aktuelles“ (#707) ---
+
+export interface NewsVideo {
+  url: string
+  title: string
+  /** Vorschaubild (Nummer aus der Bilderverwaltung) */
+  image: number | null
+}
+
+export interface NewsPost {
+  id: number
+  slug: string
+  title: string
+  /** JJJJ-MM-TT, auch rückwirkend */
+  date: string
+  body: string
+  images: number[]
+  videos: NewsVideo[]
+  department: number | null
+  department_name: string | null
+  is_published: boolean
+  has_changes: boolean
+  published_at: string | null
+  updated_at: string
+}
+
+export type NewsDraft = Partial<
+  Pick<NewsPost, 'slug' | 'title' | 'date' | 'body' | 'images' | 'videos' | 'department'>
+>
+
+export const newsApi = {
+  list: (org: number) =>
+    api.get<{ posts: NewsPost[]; units: { id: number; name: string }[] }>(`${base(org)}news/`),
+  create: (org: number, data: NewsDraft) => api.post<NewsPost>(`${base(org)}news/`, data),
+  save: (org: number, id: number, data: NewsDraft) =>
+    api.put<NewsPost>(`${base(org)}news/${id}/`, data),
+  remove: (org: number, id: number) => api.del(`${base(org)}news/${id}/`),
+  publish: (org: number, id: number) => api.post<NewsPost>(`${base(org)}news/${id}/publish/`),
+  unpublish: (org: number, id: number) =>
+    api.delWith<NewsPost>(`${base(org)}news/${id}/publish/`, {}),
 }

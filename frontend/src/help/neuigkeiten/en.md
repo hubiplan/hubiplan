@@ -16,6 +16,7 @@ November 2026:
 
 #### Website
 
+- Website: **Own posts under “News”.** Under Website › News you write posts with a title, a date (also in the past, e.g. for posts of a former website), text, images and videos. The website mixes them by date with Instagram and Facebook; each post has its own page and older ones are in the archive. Videos appear as a preview image with a link; nothing is embedded. AI assistants can also create posts as drafts.
 - Website: **Clearer fine-tuning.** Design › Fine-tuning now has a bar on the left with the areas of the website from top to bottom (basic style, font, readability, header and menu, title image and home page, subpages, website areas, footer), each with the number of changed controls. The most important controls come first, the rest is under “More settings”.
 - Website: **Eye-catching notice bar.** The notice bar under Website › Overview now appears in the accent colour below the header, with an icon, a button to its target and an optional countdown (“5 days to go”). Style (accent, attention, festive, plain), place (above or below the header, floating at the bottom) and icon can be chosen.
 - Website: **Readable addresses** for dignities, competitions and series, such as `/majestaeten/hubertuskoenige/` instead of a long identifier. You can choose the address yourself; old addresses and links redirect.

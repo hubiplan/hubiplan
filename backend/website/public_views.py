@@ -671,13 +671,16 @@ class GalleryDetailView(_Public):
         return self.respond(data, site)
 
 
-POST_KINDS = ("instagram", "facebook")
+POST_KINDS = ("instagram", "facebook", "own")
 MAX_POSTS_PUBLIC = 50
+MAX_POST_PAGES = 200
 
 
 class PostsView(_Public):
-    """GET ?art=instagram|facebook&anzahl=N&einheit=<slug>: Beiträge aus den eigenen
-    Kanälen, Bilder von dieser Instanz (Besucher haben keinen Kontakt zu Meta)."""
+    """GET ?art=instagram|facebook|own&anzahl=N&seite=S&einheit=<slug>: eigene Beiträge (#707)
+    und Beiträge aus den eigenen Kanälen, nach Datum gemischt; Bilder von dieser Instanz
+    (Besucher haben keinen Kontakt zu Meta). ``seite`` blättert ins Archiv, ``more`` sagt,
+    ob es ältere gibt."""
 
     def get(self, request, key: str):
         site = self.load(request, key)
@@ -690,13 +693,34 @@ class PostsView(_Public):
             limit = max(1, min(int(request.query_params.get("anzahl") or 12), MAX_POSTS_PUBLIC))
         except ValueError:
             limit = 12
+        try:
+            page = max(1, min(int(request.query_params.get("seite") or 1), MAX_POST_PAGES))
+        except ValueError:
+            page = 1
         department_id = None
         slug = request.query_params.get("einheit")
         if slug:
             department_id = next((pk for pk, s in site.unit_slugs.items() if s == slug), None)
             if department_id is None:
                 raise Http404
-        return self.respond({"posts": site.posts(kind, department_id, limit)}, site)
+        offset = (page - 1) * limit
+        found = site.posts(kind, department_id, limit + 1, offset=offset)
+        return self.respond(
+            {"posts": found[:limit], "page": page, "more": len(found) > limit}, site
+        )
+
+
+class NewsPostView(_Public):
+    """GET: ein eigener Beitrag (#707) mit ganzem Text, Bildern und Videos."""
+
+    def get(self, request, key: str, slug: str):
+        site = self.load(request, key)
+        if not site.site.block_on("posts"):
+            raise Http404
+        post = site.news_post(slug)
+        if post is None:
+            raise Http404
+        return self.respond({"post": post}, site)
 
 
 class PostImageView(_Public):

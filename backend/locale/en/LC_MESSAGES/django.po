@@ -17996,3 +17996,93 @@ msgstr "Changes design, colours, style controls, presentation, header image or t
 #: mcpserver/club_design.py
 msgid "Bereich → Namensform: „full“ (Vorname Nachname), „short“ (V. Nachname), „initial“ (Vorname N.) oder null (wie die Webseite). Bereiche aus webseite_gestaltung_ansehen."
 msgstr "Area → name format: “full” (First name Last name), “short” (F. Lastname), “initial” (First name L.) or null (as the website). Areas from webseite_gestaltung_ansehen."
+
+msgid "Vorschaubild (Bildnummer)"
+msgstr "Preview image (image number)"
+
+msgid "Eigene Beiträge unter „Aktuelles“, neueste zuerst (ohne Text; den Text zeigt beitraege_ansehen mit „nummer“). Die Webseite mischt sie nach Datum mit den Beiträgen aus Instagram und Facebook. Untereinheiten: {units}"
+msgstr "Own posts under \"News\", newest first (without text; beitraege_ansehen with \"nummer\" shows the text). The website mixes them by date with the posts from Instagram and Facebook. Sub-units: {units}"
+
+msgid "„videos“ ist eine Liste mit „adresse“, „titel“ und „bild“."
+msgstr "\"videos\" is a list with \"adresse\", \"titel\" and \"bild\"."
+
+msgid "„untereinheit“ muss eine Nummer sein (oder null)."
+msgstr "\"untereinheit\" must be a number (or null)."
+
+msgid "Nichts zu ändern."
+msgstr "Nothing to change."
+
+msgid "Entwurf von Beitrag {pk} geändert."
+msgstr "Draft of post {pk} changed."
+
+msgid "„titel“ fehlt."
+msgstr "\"titel\" is missing."
+
+msgid "„datum“ fehlt (JJJJ-MM-TT)."
+msgstr "\"datum\" is missing (YYYY-MM-DD)."
+
+msgid "Beitrag {pk} als Entwurf angelegt."
+msgstr "Post {pk} created as a draft."
+
+msgid "Sichtbar wird er erst, wenn jemand ihn in HUBIplan unter Webseite › Aktuelles veröffentlicht. In der Vorschau (webseite_vorschau) ist der Entwurf schon zu sehen."
+msgstr "It becomes visible only when someone publishes it in HUBIplan under Website › News. The preview (webseite_vorschau) already shows the draft."
+
+msgid "Veröffentlichte Beiträge löscht nur ein Mensch in HUBIplan (Webseite › Aktuelles)."
+msgstr "Only a person can delete published posts in HUBIplan (Website › News)."
+
+msgid "Entwurf {pk} gelöscht."
+msgstr "Draft {pk} deleted."
+
+msgid "Eigene Beiträge ansehen"
+msgstr "View own posts"
+
+msgid "Listet die eigenen Beiträge unter „Aktuelles“ (Titel, Datum, Stand, Bilder, Videos). Mit „nummer“ ein Beitrag samt Text (Markdown)."
+msgstr "Lists the own posts under \"News\" (title, date, status, images, videos). With \"nummer\", one post including its text (Markdown)."
+
+msgid "Eigenen Beitrag speichern"
+msgstr "Save own post"
+
+msgid "Legt ohne „nummer“ einen eigenen Beitrag unter „Aktuelles“ als Entwurf an („titel“ und „datum“ Pflicht, Datum auch rückwirkend, z. B. für alte Beiträge einer früheren Webseite), mit „nummer“ ändert es den Entwurf; nur angegebene Felder ändern sich. „text“ ist Markdown, Bilder darin als ![Text](bild:<key>) aus bilder_suchen. „bilder“ (Bildnummern) erscheinen unter dem Text, „videos“ als Vorschaubild mit Link (nie eingebettet). Veröffentlicht wird nur in HUBIplan."
+msgstr "Without \"nummer\" it creates an own post under \"News\" as a draft (\"titel\" and \"datum\" required, the date may lie in the past, e.g. for old posts of a former website); with \"nummer\" it changes the draft, only the given fields change. \"text\" is Markdown, images in it as ![Text](bild:<key>) from bilder_suchen. \"bilder\" (image numbers) appear below the text, \"videos\" as a preview image with a link (never embedded). Publishing happens only in HUBIplan."
+
+msgid "JJJJ-MM-TT"
+msgstr "YYYY-MM-DD"
+
+msgid "Teil der Adresse auf der Webseite, z. B. sommerfest-2019; ohne Angabe aus dem Titel"
+msgstr "Part of the address on the website, e.g. summer-party-2019; derived from the title if omitted"
+
+msgid "Nummer einer Untereinheit (Beitrag erscheint auf ihrer Seite), null = Beitrag der Einheit"
+msgstr "Number of a sub-unit (the post appears on its page), null = post of the unit"
+
+msgid "Beitragsentwurf löschen"
+msgstr "Delete post draft"
+
+msgid "Löscht einen eigenen Beitrag, der noch nie veröffentlicht wurde. Veröffentlichte Beiträge löscht nur ein Mensch in HUBIplan."
+msgstr "Deletes an own post that has never been published. Only a person can delete published posts in HUBIplan."
+
+msgid "Höchstens {n} Bilder."
+msgstr "At most {n} images."
+
+msgid "Bitte die Adresse des Videos mit https:// angeben."
+msgstr "Please enter the video address with https://."
+
+msgid "Bitte eine Liste von Videos angeben."
+msgstr "Please provide a list of videos."
+
+msgid "Höchstens {n} Videos."
+msgstr "At most {n} videos."
+
+msgid "Titel des Videos: höchstens {n} Zeichen."
+msgstr "Video title: at most {n} characters."
+
+msgid "Bitte ein Datum angeben (JJJJ-MM-TT)."
+msgstr "Please enter a date (YYYY-MM-DD)."
+
+msgid "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „sommerfest-2019“."
+msgstr "Only lowercase letters, digits and hyphens, e.g. \"summer-party-2019\"."
+
+msgid "Beitrag"
+msgstr "Post"
+
+msgid "neueste eigene Beiträge und die aus Instagram und Facebook"
+msgstr "latest own posts and those from Instagram and Facebook"

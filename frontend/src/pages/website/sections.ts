@@ -22,6 +22,8 @@ const ALL: NavItem[] = [
   { to: '/webseite/bilder', label: t('Bilder'), section: content },
   { to: '/webseite/galerie', label: t('Galerie'), section: content },
   { to: '/webseite/dokumente', label: t('Dokumente'), section: content },
+  // Eigene Beiträge (#707), auch ohne Modul „Social Media“
+  { to: '/webseite/aktuelles', label: t('Aktuelles'), section: content },
   { to: '/webseite/beitraege', label: t('Social Media'), section: content },
   // S1/S3 (Ralf 14.11.2026): Gestaltung in eigenen Punkten, jeder mit Vorschau; „Bereiche“ steht
   // seit 16.11.2026 in der Feinabstimmung (/webseite/bereiche leitet dorthin)
@@ -33,7 +35,7 @@ const ALL: NavItem[] = [
   { to: '/webseite/domain', label: t('Internetadresse'), section: operation },
 ]
 
-/** Verwalter sehen alles. Wer nur Inhalte pflegt, sieht nur „Startseite“ (Inhalte der Abschnitte), „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
+/** Verwalter sehen alles. Wer nur Inhalte pflegt, sieht nur „Startseite“ (Inhalte der Abschnitte), „Texte“, „Bilder“, „Galerie“, „Dokumente“, „Aktuelles“ und „Social Media“. */
 export function websiteSections(org: OrgSummary | null): NavItem[] {
   if (!org) return []
   // Social Media ist ein eigenes Modul
@@ -50,6 +52,7 @@ export function websiteSections(org: OrgSummary | null): NavItem[] {
         '/webseite/bilder',
         '/webseite/galerie',
         '/webseite/dokumente',
+        '/webseite/aktuelles',
         '/webseite/beitraege',
       ].includes(s.to),
     )

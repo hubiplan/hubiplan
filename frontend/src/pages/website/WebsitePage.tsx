@@ -57,6 +57,7 @@ import { NameFormats } from './NameFormats.tsx'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
+import { NewsPage } from './NewsPage.tsx'
 import { ImageHosts } from './ImageHosts.tsx'
 import { LINK, MenuTree } from './MenuTree.tsx'
 import { normalizeMenu } from './menuTree.ts'
@@ -1105,6 +1106,16 @@ function WebsiteAdmin({
           element={
             data.can_edit_content ? (
               <DocumentsPage />
+            ) : (
+              <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
+            )
+          }
+        />
+        <Route
+          path="aktuelles"
+          element={
+            data.can_edit_content ? (
+              <NewsPage />
             ) : (
               <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
             )

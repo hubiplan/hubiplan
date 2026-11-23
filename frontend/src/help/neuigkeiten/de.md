@@ -16,6 +16,7 @@ November 2026:
 
 #### Webseite
 
+- Webseite: **Eigene Beiträge unter „Aktuelles“.** Unter Webseite › Aktuelles schreibt ihr Beiträge mit Titel, Datum (auch rückwirkend, etwa für Beiträge einer früheren Webseite), Text, Bildern und Videos. Die Webseite mischt sie nach Datum mit Instagram und Facebook, jeder Beitrag hat eine eigene Seite, ältere stehen im Archiv. Videos erscheinen als Vorschaubild mit Link, nichts wird eingebettet. Auch KI-Assistenten legen Beiträge als Entwurf an.
 - Webseite: **Feinabstimmung übersichtlich.** Gestaltung › Feinabstimmung hat links eine Leiste mit den Bereichen der Webseite von oben nach unten (Grundstil, Schrift, Lesbarkeit, Kopf und Menü, Titelbild und Startseite, Unterseiten, Bereiche der Webseite, Fuß), jeweils mit der Zahl verstellter Regler. Zuerst stehen die wichtigsten Regler, der Rest unter „Weitere Einstellungen“. Was gerade nicht greift, bleibt ausgegraut sichtbar und sagt warum.
 - Webseite: **Auffällige Hinweisleiste.** Die Hinweisleiste unter Webseite › Übersicht steht jetzt in der Akzentfarbe unter dem Kopf, mit Symbol, Knopf zum Ziel und auf Wunsch Countdown („noch 5 Tage“). Stil (Akzent, Achtung, Festlich, Schlicht), Platz (über oder unter dem Kopf, schwebend unten) und Symbol sind wählbar.
 - Webseite: **Lesbare Adressen** für Würden, Wettbewerbe und Reihen, etwa `/majestaeten/hubertuskoenige/` statt einer langen Kennung. Die Adresse lässt sich selbst wählen; alte Adressen und Links leiten weiter.
