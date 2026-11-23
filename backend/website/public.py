@@ -1159,7 +1159,7 @@ class SiteView:
             else None,
             "posts": self.posts_available(u.pk)
             if self.site.block_on("posts")
-            else {"instagram": False, "facebook": False},
+            else {"instagram": False, "facebook": False, "own": False},
             "honors": self.honors(u) if self.site.block_on("honors") else [],
             "events_url": self.url(f"events/?einheit={self.unit_slugs[u.pk]}")
             if self.site.block_on("events")

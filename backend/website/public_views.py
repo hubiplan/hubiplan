@@ -256,7 +256,7 @@ class SiteInfoView(_Public):
             # Beiträge aus Instagram/Facebook vorhanden? (Abruf über posts/)
             "posts": site.posts_available()
             if site.site.block_on("posts")
-            else {"instagram": False, "facebook": False},
+            else {"instagram": False, "facebook": False, "own": False},
             "posts_url": site.url("posts/") if site.site.block_on("posts") else None,
             "units": [site.unit_summary(u) for u in site.units],
             "statute_url": self.statute_url(request, site)
