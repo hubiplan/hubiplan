@@ -1318,10 +1318,10 @@ class DecoyHit(models.Model):
     """
 
     class Kind(models.TextChoices):
-        MAIL_IN = "mail_in", "Mail an die Köderadresse"
-        MAIL_OUT = "mail_out", "eigene Mail an die Köderadresse"
-        LOGIN = "login", "Anmeldeversuch"
-        LOOKUP = "lookup", "Abruf über die Schnittstelle"
+        MAIL_IN = "mail_in", gettext_lazy("Mail an die Köderadresse")
+        MAIL_OUT = "mail_out", gettext_lazy("eigene Mail an die Köderadresse")
+        LOGIN = "login", gettext_lazy("Anmeldeversuch")
+        LOOKUP = "lookup", gettext_lazy("Abruf über die Schnittstelle")
 
     kind = models.CharField("Art", max_length=10, choices=Kind.choices)
     # Nummer der Köder-Mitgliedschaft; bewusst kein Fremdschlüssel (bleibt nach dem Löschen)

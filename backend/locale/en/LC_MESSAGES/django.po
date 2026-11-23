@@ -2631,6 +2631,18 @@ msgstr ""
 "This address is already in use. A decoy needs an address nobody else writes "
 "to."
 
+msgid "Mail an die Köderadresse"
+msgstr "Email to the decoy address"
+
+msgid "eigene Mail an die Köderadresse"
+msgstr "own email to the decoy address"
+
+msgid "Anmeldeversuch"
+msgstr "Sign-in attempt"
+
+msgid "Abruf über die Schnittstelle"
+msgstr "Lookup through the API"
+
 msgid "Mehr als fünf Köder sind nicht vorgesehen."
 msgstr "More than five decoys are not intended."
 
