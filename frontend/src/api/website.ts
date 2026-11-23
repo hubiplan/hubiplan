@@ -264,11 +264,7 @@ export type HomeKind =
 export type HeaderImageValue = number | number[] | null
 
 export type HomeTarget =
-  | { page: string }
-  | { unit: number }
-  | { event: number }
-  | { url: string }
-  | null
+  { page: string } | { unit: number } | { event: number } | { url: string } | null
 
 export interface HomeButton {
   label: string
