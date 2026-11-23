@@ -55,6 +55,7 @@ const WITH_BUTTON: Record<string, string> = {
   'pages/music/ScoreFoldersPanel.tsx': 'Neuanlage',
   'pages/music/ScoresPage.tsx': 'Neuanlage',
   'pages/music/SettlementPanel.tsx': 'Abrechnung eines Auftritts',
+  'pages/music/UniformsKindsPage.tsx': 'Neuanlage; Name muss in der Einheit eindeutig sein',
   // Sonstiges
   'components/circulars/GreetingsArea.tsx':
     'Glückwünsche: verschickt danach selbständig an Mitglieder',

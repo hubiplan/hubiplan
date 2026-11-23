@@ -120,6 +120,8 @@ MODULE_MODELS = (
     "events.EventAttachment",
     "events.CalendarPublication",
     "events.EventResponse",
+    "music.Uniform",
+    "music.PerformanceKind",
     "music.Performance",
     "music.EnsembleTemplate",
     "music.EnsembleTemplatePosition",

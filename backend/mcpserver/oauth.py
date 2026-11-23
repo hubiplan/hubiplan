@@ -67,6 +67,8 @@ SCOPE_DRAFT = "webseite.entwurf"
 SCOPE_THEME = "verein.erscheinungsbild"
 # Briefbogen der Einheit (Word-Vorlage und PDF-Briefe): wirkt sofort (Issue #470)
 SCOPE_LETTERHEAD = "verein.briefbogen"
+# Musik: Auftritte, Uniformen und Auftrittsarten (Issues #712/#713): wirkt sofort
+SCOPE_MUSIC = "musik.auftritte"
 SCOPES = {
     SCOPE_READ: gettext_lazy(
         "Webseite lesen: Einstellungen, Texte, Startseite und Chronik ansehen"
@@ -84,11 +86,15 @@ SCOPES = {
         "Briefbogen ändern: Aufbau, Logo, Schriften, Linien- und Tabellenfarben und Fußzeile "
         "für Word-Vorlage und PDF-Briefe (gilt sofort für neue Briefe und Rechnungen)"
     ),
+    SCOPE_MUSIC: gettext_lazy(
+        "Musik: Auftritte, Uniformen und Auftrittsarten ansehen und ändern (gilt sofort, "
+        "ohne Vertrag, Gage und Abrechnung)"
+    ),
 }
 DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT)
 # Wirkt sofort und ohne Entwurf: gibt es nur, wenn die Person es beim Verbinden eigens
 # anhakt, auch wenn der Assistent danach fragt (Gesamtaudit 13.11., H-04)
-OPTIONAL_SCOPES = (SCOPE_THEME, SCOPE_LETTERHEAD)
+OPTIONAL_SCOPES = (SCOPE_THEME, SCOPE_LETTERHEAD, SCOPE_MUSIC)
 # Schemata, die nie als Rückleitung taugen
 BAD_SCHEMES = {"javascript", "data", "file", "vbscript", "about", "blob", "ftp", "ws", "wss"}
 SCHEME = re.compile(r"^[a-z][a-z0-9+.-]{1,40}$")

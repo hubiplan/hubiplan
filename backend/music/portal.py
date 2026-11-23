@@ -49,7 +49,13 @@ class OwnAssignments(APIView):
             organization=access.organization,
             musician__membership_id=access.membership_id,
             musician__active=True,
-        ).select_related("performance__event", "position", "musician")
+        ).select_related(
+            "performance__event",
+            "performance__kind",
+            "performance__uniform_choice",
+            "position",
+            "musician",
+        )
 
     def get(self, request, access_id):
         access, rows = self.rows(request, access_id)
@@ -63,7 +69,11 @@ class OwnAssignments(APIView):
                         "location": row.performance.event.location,
                         "meeting_at": row.performance.meeting_at,
                         "meeting_place": row.performance.meeting_place,
-                        "uniform": row.performance.uniform,
+                        "uniform": row.performance.uniform_text(),
+                        "uniform_details": row.performance.uniform_details(),
+                        "performance_kind": (
+                            row.performance.kind.name if row.performance.kind_id else ""
+                        ),
                         "cancelled": row.performance.event.is_cancelled,
                         "instrument": row.position.instrument,
                         "register": row.position.register,

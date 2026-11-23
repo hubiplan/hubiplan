@@ -11,9 +11,15 @@ Plan performances here: staffing, programme, guests and settlement. The other mu
 
 ## Create a performance
 
-Create an individual event in your own calendar, then select it under **Performances**. Add customer, meeting time and place, setup, uniform, formation and notes. Performance times and location remain in the calendar. Use individual events for recurring performances. Open **Performance tasks** to manage tasks through the existing task workspace.
+Create an individual event in your own calendar, then select it under **Performances**. Add performance type, customer, meeting time and place, setup, uniform, formation and notes. Choose uniforms and performance types from the list under [Uniforms and performance types](/musik/uniformen); the type suggests formation and uniform. Use **Performance type** to filter the list; **Performances by year and type** counts them. Performance times and location remain in the calendar. Use individual events for recurring performances. Open **Performance tasks** to manage tasks through the existing task workspace.
 
 The search field is named after the view, for example **Search performances** or **Search musicians**, and filters it, for example by name, instrument or performance. Add new items with the matching button, such as **New performance**; an empty view explains what belongs there and offers the same button. **Search sheet music** filters the current library view. Empty lists and searches without matches show a message. Performance cards group programme, instrumentation, settlement, tasks and calendar links; detail pages show the associated performance above the heading. Totals and programme durations appear in labelled summaries. Responses and availability conflicts use consistent text badges, including in the member area.
+
+## Multi-day festivals: one contract for all days
+
+Create a festival over several days as individual events, because each day has its own times, uniform, meeting point and staffing. The first day holds the contract as main performance: for the further days choose the main performance under **Further day of (contract and fee there)**. If the events belong to one project event in Finance, **Combine all days of the event** on the main performance attaches all other days at once.
+
+Customer, offer, acceptance, fee, invoice and settlement then exist only once, on the main performance; the further days take over the customer. The offer lists all days. Staffing, musicians' responses and their pay stay per day; the musicians' pay for all days is collected in the festival settlement. A day with its own offer or settlement cannot be attached. While the customer's acceptance stands, days can neither be attached nor detached.
 
 ## Staffing and assignments
 

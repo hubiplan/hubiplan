@@ -66,7 +66,10 @@ export function setupGroups(
     groups.push({
       key: 'musik',
       label: t('Musik'),
-      items: [{ to: '/musik/vorlagen', label: t('Besetzungsvorlagen') }],
+      items: [
+        { to: '/musik/vorlagen', label: t('Besetzungsvorlagen') },
+        { to: '/musik/uniformen', label: t('Uniformen und Auftrittsarten') },
+      ],
     })
   }
   return groups.filter((g) => g.items.length > 0)

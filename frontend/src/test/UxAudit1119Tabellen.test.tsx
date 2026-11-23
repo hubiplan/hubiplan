@@ -64,6 +64,8 @@ const WITHOUT_SORT = [
   'pages/members/JubileesPage.tsx',
   'pages/members/MemberFilePage.tsx',
   'pages/members/PublicationSection.tsx',
+  // Auftritte je Jahr und Art: Jahre als Spalten, Arten alphabetisch; kleine Zähltabelle
+  'pages/music/MusicPage.tsx',
   'pages/music/ProgramPanel.tsx',
   'pages/partners/PartnersPage.tsx',
   'pages/platform/PlatformPages.tsx',

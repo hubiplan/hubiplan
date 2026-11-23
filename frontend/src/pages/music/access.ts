@@ -29,5 +29,6 @@ export function musicSections(org: OrgSummary | null) {
       ? [{ to: '/musik/noten', label: t('Notenbestand'), section: scores }]
       : []),
     { to: '/musik/vorlagen', label: t('Besetzungsvorlagen'), section: setup },
+    { to: '/musik/uniformen', label: t('Uniformen und Auftrittsarten'), section: setup },
   ]
 }

@@ -5,7 +5,8 @@ import { Alert } from '../../components/ui.tsx'
 import { t, tc } from '../../i18n/index.ts'
 import { OwnPracticePanel } from './OwnPractice.tsx'
 import { OwnAvailability, AvailabilityHint } from './AvailabilityPage.tsx'
-import { MusicStatus } from './MusicLayout.tsx'
+import { MusicStatus, UniformInfo } from './MusicLayout.tsx'
+import type { UniformDetails } from './MusicLayout.tsx'
 
 export function OwnMusic({ accessId }: { accessId: number }) {
   const url = `/api/portal/${accessId}/music/`
@@ -23,6 +24,8 @@ export function OwnMusic({ accessId }: { accessId: number }) {
           meeting_at: string | null
           meeting_place: string
           uniform: string
+          uniform_details?: UniformDetails
+          performance_kind?: string
           cancelled: boolean
           availability?: string[]
           program?: { title: string; kind: string; duration_seconds: number }[]
@@ -95,12 +98,21 @@ export function OwnMusic({ accessId }: { accessId: number }) {
                     </dd>
                   </div>
                 )}
-                {!!r.uniform && (
+                {!!r.performance_kind && (
                   <div>
-                    <dt>{t('Uniform')}</dt>
-                    <dd>{r.uniform}</dd>
+                    <dt>{t('Auftrittsart')}</dt>
+                    <dd>{r.performance_kind}</dd>
                   </div>
                 )}
+                <UniformInfo
+                  text={r.uniform}
+                  details={r.uniform_details}
+                  imageUrl={
+                    r.uniform_details
+                      ? `/api/portal/${accessId}/music/uniforms/${r.uniform_details.id}/image/`
+                      : undefined
+                  }
+                />
               </dl>
               <MusicStatus status={r.cancelled ? 'declined' : r.status} />
               {!r.cancelled && (

@@ -5,7 +5,8 @@ import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts
 import { usePublicImprint } from '../../components/publicImprint.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { lang, t, tc } from '../../i18n/index.ts'
-import { MusicStatus } from './MusicLayout.tsx'
+import { MusicStatus, UniformInfo } from './MusicLayout.tsx'
+import type { UniformDetails } from './MusicLayout.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
 
 type GuestPerformance = {
@@ -22,6 +23,8 @@ type GuestPerformance = {
   setup_at: string | null
   formation: string
   uniform: string
+  uniform_details?: UniformDetails
+  performance_kind?: string
   notes: string
   instrument: string
   register: string
@@ -134,12 +137,13 @@ function GuestAssignment({ token, rehearsal }: { token: string; rehearsal: boole
               </dd>
             </div>
           )}
-          {row.uniform && (
+          {row.performance_kind && (
             <div>
-              <dt>{t('Uniform')}</dt>
-              <dd>{row.uniform}</dd>
+              <dt>{t('Auftrittsart')}</dt>
+              <dd>{row.performance_kind}</dd>
             </div>
           )}
+          <UniformInfo text={row.uniform} details={row.uniform_details} />
           {row.setup_at && (
             <div>
               <dt>{t('Aufbauzeit')}</dt>

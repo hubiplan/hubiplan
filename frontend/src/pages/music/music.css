@@ -347,3 +347,19 @@
     padding-block: 0.25rem;
   }
 }
+
+/* Uniformen (Issue 712) */
+.music-uniform-image {
+  max-width: min(100%, 16rem);
+  border-radius: var(--radius, 8px);
+}
+
+.music-checklist {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.music-statistics summary {
+  cursor: pointer;
+  font-weight: 600;
+}

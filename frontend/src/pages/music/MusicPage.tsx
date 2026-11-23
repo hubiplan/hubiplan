@@ -9,7 +9,7 @@ import { errorMessage, formatDateTime, useAutoSave, useLoad } from '../../compon
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert, EmptyState, Loading, SaveStatus } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { SettlementPanel } from './SettlementPanel.tsx'
 import { ScoresPage } from './ScoresPage.tsx'
@@ -22,6 +22,8 @@ import { PerformanceOverview } from './PerformanceOverview.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { NoAccessPage } from '../NoticePages.tsx'
+import { UniformsKindsPage } from './UniformsKindsPage.tsx'
+import type { PerformanceKind, Uniform } from './UniformsKindsPage.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; partners: Row[] }
@@ -36,6 +38,10 @@ type Field = {
   initial?: number
   min?: number
   max?: number
+  /** Weitere Felder vorschlagen, wenn sich dieses ändert (z. B. Art → Spielform, Uniform) */
+  suggest?: (value: string) => Record<string, string | number | boolean>
+  /** Feld gesperrt, solange diese Bedingung gilt (z. B. Auftraggeber bei weiterem Tag) */
+  lockedBy?: (values: Record<string, string | number | boolean>) => string | null
 }
 const formations: [string, string][] = [
   ['seated', t('Sitzend')],
@@ -116,6 +122,7 @@ function MusicRoute() {
     )
   if (area === 'proben') return <PracticePage key={org.id} />
   if (area === 'vorlagen') return <EnsembleTemplatesPage key={org.id} />
+  if (area === 'uniformen') return <UniformsKindsPage key={org.id} />
   if (area === 'verfuegbarkeit') return <AvailabilityPage key={org.id} />
   if (/^\d+$/.test(params.get('besetzung') || ''))
     return (
@@ -141,17 +148,34 @@ function MusicWorkspace() {
   const { pathname } = useLocation()
   const [error, setError] = useState('')
   const [filter, setFilter] = useState({ kind: '', value: '' })
+  const [kindFilter, setKindFilter] = useState('')
+  const [notice, setNotice] = useState('')
   const base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
-    const [musicians, skills, performances, positions, assignments, choices] = await Promise.all([
-      api.get<Row[]>(`${base}musicians/`),
-      api.get<Row[]>(`${base}skills/`),
-      api.get<Row[]>(`${base}performances/`),
-      api.get<Row[]>(`${base}positions/`),
-      api.get<Row[]>(`${base}assignments/`),
-      api.get<Choices>(`${base}musicians/choices/`),
-    ])
-    return { musicians, skills, performances, positions, assignments, choices }
+    const [musicians, skills, performances, positions, assignments, choices, uniforms, kinds] =
+      await Promise.all([
+        api.get<Row[]>(`${base}musicians/`),
+        api.get<Row[]>(`${base}skills/`),
+        api.get<Row[]>(`${base}performances/`),
+        api.get<Row[]>(`${base}positions/`),
+        api.get<Row[]>(`${base}assignments/`),
+        api.get<Choices>(`${base}musicians/choices/`),
+        // Auswahllisten (Issues #712/#713): fehlen sie, bleibt die Seite benutzbar
+        api.get<Uniform[]>(`${base}uniforms/`).catch(() => [] as Uniform[]),
+        api
+          .get<PerformanceKind[]>(`${base}performance-kinds/`)
+          .catch(() => [] as PerformanceKind[]),
+      ])
+    return {
+      musicians,
+      skills,
+      performances,
+      positions,
+      assignments,
+      choices,
+      uniforms,
+      kinds,
+    }
   }, [org.id])
   if (load.error)
     return (
@@ -168,7 +192,12 @@ function MusicWorkspace() {
       </>
     )
   const d = load.data
-  const settlement = d.performances.find((p) => String(p.id) === params.get('abrechnung'))
+  const opened = d.performances.find((p) => String(p.id) === params.get('abrechnung'))
+  // Issue #711: Abrechnung eines weiteren Tages ist die des Hauptauftritts
+  const settlement = opened?.main ? d.performances.find((p) => p.id === opened.main) : opened
+  const group = settlement
+    ? [settlement.id, ...((settlement.days as unknown as number[] | undefined) || [])]
+    : []
   if (settlement && org.modules.includes('finance') && org.permissions.includes('finance.view'))
     return (
       <SettlementPanel
@@ -176,15 +205,28 @@ function MusicWorkspace() {
         title={String(settlement.title)}
         customer={Number(settlement.customer) || null}
         assignments={d.assignments
-          .filter((a) => a.performance === settlement.id)
+          .filter((a) => group.includes(Number(a.performance)))
           .map((a) => ({
             id: a.id,
-            name: String(d.musicians.find((m) => m.id === a.musician)?.display_name || a.musician),
+            name:
+              String(d.musicians.find((m) => m.id === a.musician)?.display_name || a.musician) +
+              (group.length > 1
+                ? ` · ${d.performances.find((p) => p.id === a.performance)?.title || ''}`
+                : ''),
           }))}
       />
     )
   const opts = (rows: Row[], name: string): [string, string][] =>
     rows.map((r) => [String(r.id), String(r[name] || r.id)])
+  const pick = <T extends { id: number; active: boolean; name: string }>(
+    rows: T[],
+    current: unknown,
+  ): [string, string][] =>
+    rows.filter((r) => r.active || r.id === current).map((r) => [String(r.id), r.name])
+  const editing = d.performances.find((p) => String(p.id) === params.get('id'))
+  const kindById = (id: unknown) => d.kinds.find((k) => k.id === Number(id))
+  const titleWithDate = (p: Row) =>
+    `${p.title}${p.starts_at ? ` (${formatDateTime(String(p.starts_at))})` : ''}`
   const musicianName = (id: unknown) =>
     String(d.musicians.find((m) => m.id === id)?.display_name || id)
   const fields: Record<string, Field[]> = {
@@ -211,15 +253,49 @@ function MusicWorkspace() {
     performances: [
       { key: 'event', label: t('Termin'), options: opts(d.choices.events, 'title') },
       {
+        key: 'kind',
+        label: t('Auftrittsart'),
+        options: pick(d.kinds, editing?.kind),
+        optional: true,
+        suggest: (value) => {
+          const kind = kindById(value)
+          return {
+            ...(kind?.formation ? { formation: kind.formation } : {}),
+            ...(kind?.uniform ? { uniform_choice: String(kind.uniform) } : {}),
+          }
+        },
+      },
+      {
+        key: 'main',
+        label: t('Weiterer Tag von (Vertrag und Gage dort)'),
+        options: d.performances
+          .filter(
+            (p) =>
+              !p.main &&
+              p.id !== editing?.id &&
+              !(editing?.days as unknown as number[] | undefined)?.length,
+          )
+          .map((p) => [String(p.id), titleWithDate(p)]),
+        optional: true,
+      },
+      {
         key: 'customer',
         label: t('Auftraggeber'),
         options: opts(d.choices.partners, 'name'),
         optional: true,
+        lockedBy: (values) =>
+          values.main ? t('Kommt vom Hauptauftritt und gilt für alle Tage.') : null,
       },
       { key: 'meeting_at', label: t('Treffzeit'), type: 'datetime-local', optional: true },
       { key: 'meeting_place', label: t('Treffpunkt'), optional: true },
       { key: 'setup_at', label: t('Aufbau'), type: 'datetime-local', optional: true },
-      { key: 'uniform', label: t('Uniform'), optional: true },
+      {
+        key: 'uniform_choice',
+        label: t('Uniform'),
+        options: pick(d.uniforms, editing?.uniform_choice),
+        optional: true,
+      },
+      { key: 'uniform', label: t('Ergänzung zur Uniform'), optional: true },
       {
         key: 'remind_days',
         label: t('Erinnerung Tage vorher (0 = aus)'),
@@ -321,6 +397,7 @@ function MusicWorkspace() {
   const row = rows.find((r) => String(r.id) === selected)
   const visibleRows = rows.filter(
     (r) =>
+      (kind !== 'performances' || !kindFilter || String(r.kind) === kindFilter) &&
       (kind !== 'musicians' ||
         !params.get('mitglied') ||
         String(r.membership) === params.get('mitglied')) &&
@@ -333,7 +410,8 @@ function MusicWorkspace() {
         r.register,
         r.notes,
         r.location,
-        r.uniform,
+        r.uniform_text,
+        r.kind_name,
         r.musician ? musicianName(r.musician) : '',
         d.performances.find((p) => p.id === r.performance)?.title,
         d.positions.find((p) => p.id === r.position)?.instrument,
@@ -371,6 +449,7 @@ function MusicWorkspace() {
           ))}
       </nav>
       {error && <Alert kind="error">{error}</Alert>}
+      {notice && <Alert kind="success">{notice}</Alert>}
       <div className="music-toolbar">
         <label>
           {words.search}
@@ -380,12 +459,28 @@ function MusicWorkspace() {
             onChange={(e) => setFilter({ kind, value: e.target.value })}
           />
         </label>
+        {kind === 'performances' && d.kinds.length > 0 && (
+          <label>
+            {t('Auftrittsart')}
+            <select value={kindFilter} onChange={(e) => setKindFilter(e.target.value)}>
+              <option value="">{t('Alle')}</option>
+              {d.kinds.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {canEdit && !selected && (
           <button className="button button-primary" onClick={() => choose(kind, 'neu')}>
             {words.add}
           </button>
         )}
       </div>
+      {kind === 'performances' && !selected && (
+        <KindStatistics performances={d.performances} kinds={d.kinds} />
+      )}
       {canEdit && selected && (
         <Editor
           key={`${kind}-${selected}`}
@@ -474,10 +569,36 @@ function MusicWorkspace() {
                       </dd>
                     </div>
                   )}
-                  {!!r.uniform && (
+                  {!!r.kind_name && (
+                    <div>
+                      <dt>{t('Auftrittsart')}</dt>
+                      <dd>{r.kind_name}</dd>
+                    </div>
+                  )}
+                  {!!r.uniform_text && (
                     <div>
                       <dt>{t('Uniform')}</dt>
-                      <dd>{r.uniform}</dd>
+                      <dd>{r.uniform_text}</dd>
+                    </div>
+                  )}
+                  {!!r.main && (
+                    <div>
+                      <dt>{t('Vertrag und Gage')}</dt>
+                      <dd>
+                        {t('über {title}', {
+                          title: String(d.performances.find((p) => p.id === r.main)?.title || ''),
+                        })}
+                      </dd>
+                    </div>
+                  )}
+                  {!!(r.days as unknown as number[])?.length && (
+                    <div>
+                      <dt>{t('Vertrag und Gage')}</dt>
+                      <dd>
+                        {t('für {n} Tage', {
+                          n: String((r.days as unknown as number[]).length + 1),
+                        })}
+                      </dd>
                     </div>
                   )}
                   <div>
@@ -508,9 +629,42 @@ function MusicWorkspace() {
                     {t('Besetzung planen')}
                   </Link>
                   {org.modules.includes('finance') && org.permissions.includes('finance.view') && (
-                    <Link className="button button-ghost" to={`/musik?abrechnung=${r.id}`}>
-                      {t('Auftrittsabrechnung')}
+                    <Link
+                      className="button button-ghost"
+                      to={`/musik?abrechnung=${r.main || r.id}`}
+                    >
+                      {r.main ? t('Abrechnung des Festes') : t('Auftrittsabrechnung')}
                     </Link>
+                  )}
+                  {canEdit && !r.main && !!r.project && (
+                    <button
+                      className="button button-ghost"
+                      onClick={async () => {
+                        setError('')
+                        setNotice('')
+                        try {
+                          const result = await api.post<{
+                            added: number[]
+                            skipped: { title: string; reason: string }[]
+                          }>(`${base}performances/${r.id}/combine/`)
+                          setNotice(
+                            [
+                              tn(
+                                '{n} weiterer Tag angehängt.',
+                                '{n} weitere Tage angehängt.',
+                                result.added.length,
+                              ),
+                              ...result.skipped.map((x) => `${x.title}: ${x.reason}`),
+                            ].join(' '),
+                          )
+                          await load.reload()
+                        } catch (err) {
+                          setError(errorMessage(err))
+                        }
+                      }}
+                    >
+                      {t('Alle Tage der Veranstaltung zusammenfassen')}
+                    </button>
                   )}
                   <Link className="button button-ghost" to={`/termine?termin=${r.event}`}>
                     {t('Zum Termin')}
@@ -571,6 +725,59 @@ function MusicWorkspace() {
         ))}
       </div>
     </section>
+  )
+}
+
+/** Auftritte je Jahr und Art (Issue #713); abgesagte zählen nicht mit. */
+function KindStatistics({
+  performances,
+  kinds,
+}: {
+  performances: Row[]
+  kinds: PerformanceKind[]
+}) {
+  const counts = new Map<string, Map<string, number>>()
+  for (const p of performances) {
+    if (p.cancelled || !p.starts_at) continue
+    const year = String(p.starts_at).slice(0, 4)
+    const name = p.kind ? kinds.find((k) => k.id === p.kind)?.name || '' : ''
+    const label = name || t('Ohne Art')
+    const row = counts.get(label) ?? new Map<string, number>()
+    row.set(year, (row.get(year) ?? 0) + 1)
+    counts.set(label, row)
+  }
+  if (!counts.size) return null
+  const years = [...new Set([...counts.values()].flatMap((m) => [...m.keys()]))].sort()
+  return (
+    <details className="card music-statistics">
+      <summary>{t('Auftritte je Jahr und Art')}</summary>
+      <div className="table-scroll">
+        <table className="table">
+          <thead>
+            <tr>
+              <th scope="col">{t('Auftrittsart')}</th>
+              {years.map((y) => (
+                <th scope="col" key={y}>
+                  {y}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {[...counts.entries()]
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([label, row]) => (
+                <tr key={label}>
+                  <th scope="row">{label}</th>
+                  {years.map((y) => (
+                    <td key={y}>{row.get(y) ?? 0}</td>
+                  ))}
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
   )
 }
 
@@ -674,11 +881,19 @@ function Editor({
                   required={!f.optional}
                   value={String(values[f.key] ?? '')}
                   disabled={
-                    !!row &&
-                    ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
+                    (!!row &&
+                      ['membership', 'event', 'performance', 'position', 'musician'].includes(
+                        f.key,
+                      )) ||
+                    !!f.lockedBy?.(values)
                   }
                   onChange={(e) => {
-                    setValues((v) => ({ ...v, [f.key]: e.target.value }))
+                    const value = e.target.value
+                    setValues((v) => ({
+                      ...v,
+                      [f.key]: value,
+                      ...(f.suggest && value ? f.suggest(value) : {}),
+                    }))
                     setDirty(true)
                   }}
                 >
@@ -689,7 +904,10 @@ function Editor({
                     </option>
                   ))}
                 </select>
-              ) : f.type === 'textarea' ? (
+              ) : null}
+              {f.options && f.lockedBy?.(values) ? (
+                <small className="muted">{f.lockedBy(values)}</small>
+              ) : f.options ? null : f.type === 'textarea' ? (
                 <textarea
                   value={String(values[f.key])}
                   onChange={(e) => {
