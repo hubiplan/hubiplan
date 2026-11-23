@@ -27,7 +27,7 @@ Unter „Ich“ steht oben dein Mitgliedsausweis (auch ohne Netz, Tippen zeigt i
 
 Es erscheinen nur Punkte, die dein Verein eingeschaltet hat. Rechnungen und Protokolle öffnet die App nur online und speichert sie nicht. Drückst du lange auf das App-Symbol, öffnet „Ausweis zeigen“ den Ausweis direkt. „Mein Konto“ öffnest du über das Symbol oben rechts; dort stellst du unter „Darstellung“ ein, ob die App hell, dunkel oder wie das Gerät erscheint. Die Zurück-Taste führt aus jedem Bereich zuerst zu „Start“; erst dort schließt sie die App.
 
-Die „Verwaltung“ beginnt als Arbeitsplatz: oben „Ausweis prüfen“ und „Neu“ (je nach Rechten Quittung, Buchung, Termin oder Aufgabe), darunter „Zu erledigen“ mit Anzahl (Datenänderungen, Fotos und Termine, die auf dich warten) und die Bereiche, für die du Rechte hast, in den Gruppen des Hauptmenüs im Browser: „Planen“, „Verein“, „Vereinsleben“ und „Verwaltung“. Bei vielen Bereichen schränkt „Bereich suchen“ die Liste ein. Mit dem Pfeil oben links oder der Zurück-Taste kommst du wieder zu dieser Übersicht.
+Die „Verwaltung“ beginnt als Arbeitsplatz: oben „Ausweis prüfen“ und „Neu“ (je nach Rechten Quittung, Buchung, Termin oder Aufgabe), darunter „Zu erledigen“ mit Anzahl (Datenänderungen, Fotos und Termine, die auf dich warten) und die Bereiche, für die du Rechte hast, in den Bereichen des Hauptmenüs im Browser, etwa „Planung“, „Vereinsleben“, „Finanzen“ und „Einstellungen“. Bei vielen Bereichen schränkt „Bereich suchen“ die Liste ein. Mit dem Pfeil oben links oder der Zurück-Taste kommst du wieder zu dieser Übersicht.
 
 Angefangene Formulare sind geschützt: Zurück oder ein Wechsel des Reiters fragt nach, bevor eine Eingabe verloren geht. Datum und Uhrzeit wählst du über die Auswahl des Geräts.
 

@@ -5873,12 +5873,6 @@ label:has(> .file-input:focus-visible) {
   margin: 0.5rem 0;
 }
 
-.area-menu-arrange {
-  display: block;
-  margin: 0.75rem 0.75rem 0;
-  font-size: 0.85rem;
-}
-
 @media (max-width: 50rem) {
   .menu-layout {
     grid-template-columns: 1fr;

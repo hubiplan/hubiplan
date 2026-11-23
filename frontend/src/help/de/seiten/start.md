@@ -27,7 +27,7 @@ Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Ohne eigene Anor
 
 ## Bereiche und Menü
 
-Links steht die Bereichsleiste in der Farbe deines Vereins. Vorgegeben sind die Bereiche **Start**, **Mitglieder**, **Untereinheiten** (mit dem Namen eures Vereins, etwa „Züge“), **Planung**, **Kommunikation**, **Webseite**, **Vereinsleben**, **Finanzen** und **Verein**; eure Einheit kann sie unter Einstellungen › Menü anders anordnen, umbenennen oder einen Menüpunkt selbst zum Bereich machen.
+Links steht die Bereichsleiste in der Farbe deines Vereins. Vorgegeben sind die Bereiche **Start**, **Mitglieder**, **Untereinheiten** (mit dem Namen eures Vereins, etwa „Züge“), **Planung**, **Kommunikation**, **Webseite**, **Vereinsleben**, **Finanzen** und **Einstellungen** (mit DSGVO; Material & Räume steht unter Planung); eure Einheit kann sie unter Einstellungen › Menü anders anordnen, umbenennen oder einen Menüpunkt selbst zum Bereich machen.
 
 Du siehst nur die Bereiche, in denen du etwas darfst. Ein Klick öffnet den Bereich; daneben zeigt das helle Bereichsmenü nur die Seiten dieses Bereichs, etwa unter Planung Termine, Versammlungen, Helferdienste und Aufgaben. Mit **Menü** unten in der Bereichsleiste klappst du das Bereichsmenü ein, wenn eine Liste mehr Platz braucht, und wieder aus; **Hilfe** steht darunter.
 

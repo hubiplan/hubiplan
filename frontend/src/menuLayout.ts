@@ -87,7 +87,7 @@ export function arrangedAreas(layout: MenuLayout | null | undefined): ArrangedAr
   return list.map((a) => ({
     id: a.id,
     label: areaLabel(a),
-    icon: iconOf(a.icon) ?? iconOf(a.id) ?? iconOf('verein'),
+    icon: iconOf(a.icon) ?? iconOf(a.id) ?? iconOf('z-vereinshaus'),
     kind: kindOf(a.id),
     named: !!a.label,
   }))
@@ -158,7 +158,7 @@ export const ICON_KEYS: string[] = [
 
 /** Zeichen, das ein Bereich gerade zeigt (gewählt oder nach seiner Kennung) */
 export function shownIcon(area: MenuLayoutArea): string {
-  return area.icon || (kindOf(area.id) === 'custom' ? 'verein' : area.id)
+  return area.icon || (kindOf(area.id) === 'custom' ? 'z-vereinshaus' : area.id)
 }
 
 /** Erstes Zusatzzeichen, das noch kein Bereich trägt; sonst das erste */

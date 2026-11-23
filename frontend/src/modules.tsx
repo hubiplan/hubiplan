@@ -180,10 +180,15 @@ export const AREAS: AppArea[] = [
     ),
   },
   { id: 'finanzen', label: t('Finanzen'), icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4') },
+  // Bereich „Einstellungen“ statt „Verein“ (Issue #703): In einer Vereinsverwaltung gehört
+  // alles zum Verein; der Bereich enthält nur Einstellungen, DSGVO und Plattform. Die Kennung
+  // bleibt „verein“, damit gespeicherte Menüanordnungen und Links weiter passen.
   {
     id: 'verein',
-    label: t('Verein'),
-    icon: icon('M3 9 12 4l9 5M4 9h16M6 9v9M10 9v9M14 9v9M18 9v9M3 20.5h18'),
+    label: t('Einstellungen'),
+    icon: icon(
+      'M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1',
+    ),
   },
 ]
 
@@ -552,9 +557,10 @@ export const modules: AppModule[] = [
       org.permissions.includes(PERM.privacyView),
   },
   {
-    // Material sowie Räume und Anlagen: ein Menüpunkt (Menüprüfung M-02); Belegung steht in Planung
+    // Material sowie Räume und Anlagen: ein Menüpunkt (Menüprüfung M-02), in Planung neben der
+    // Belegung (Issue #703)
     id: 'material',
-    area: 'verein',
+    area: 'planung',
     label: t('Material & Räume'),
     text: t('Bestand, Ausgabe, Räume und Anlagen'),
     labelFor: (org, ws) => {

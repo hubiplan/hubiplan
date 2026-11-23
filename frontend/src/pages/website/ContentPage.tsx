@@ -498,7 +498,7 @@ function TextForm({
       </section>
     )
 
-  // Chronik mit Modul „Chronik“: Inhalt nur unter Verein › Chronik pflegen (Ralf 09.11.),
+  // Chronik mit Modul „Chronik“: Inhalt nur unter Vereinsleben › Chronik pflegen (Ralf 09.11.),
   // hier bleibt nur, was zur Webseite gehört (Adresse, Menü, Löschen).
   if (text.has_timeline && !chronicle) {
     return (
@@ -515,7 +515,7 @@ function TextForm({
           {current.is_published && current.has_changes && t('Der Entwurf hat Änderungen.')}
         </p>
         <Alert kind="info">
-          {t('Einleitung und Zeitleiste der Chronik pflegst du unter Verein › Chronik.')}{' '}
+          {t('Einleitung und Zeitleiste der Chronik pflegst du unter Vereinsleben › Chronik.')}{' '}
           {org.permissions.includes(PERM.chronicleView) && (
             <Link to="/chronik">{t('Zur Chronik')}</Link>
           )}

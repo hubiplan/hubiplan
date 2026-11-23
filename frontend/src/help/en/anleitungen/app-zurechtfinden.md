@@ -15,7 +15,7 @@ At the bottom (on a tablet, on the left) there are five destinations: “Home”
 
 Only items your club has switched on appear. The app opens invoices and minutes only online and does not store them. Long-press the app icon and “Show ID card” opens your card directly. Open “My account” with the icon at the top right; under “Appearance” you choose whether the app is light, dark or follows the device. The Back button first takes you to “Home” from any area; only there does it close the app.
 
-“Administration” starts as a workspace: “Check card” and “New” at the top (receipt, booking, event or task, depending on your rights), then “To do” with a count (data changes, photos and events waiting for you) and the areas you have rights for, in the groups of the main menu in the browser: “Planning”, “Club”, “Club life” and “Administration”. With many areas, “Find a section” narrows the list. The arrow at the top left or the Back button takes you back to this overview.
+“Administration” starts as a workspace: “Check card” and “New” at the top (receipt, booking, event or task, depending on your rights), then “To do” with a count (data changes, photos and events waiting for you) and the areas you have rights for, in the areas of the main menu in the browser, such as “Planning”, “Club life”, “Finances” and “Settings”. With many areas, “Find a section” narrows the list. The arrow at the top left or the Back button takes you back to this overview.
 
 Forms you have started are protected: Back or switching tabs asks before an entry is lost. You pick date and time with the device's own pickers.
 

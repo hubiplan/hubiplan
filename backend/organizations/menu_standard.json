@@ -43,8 +43,8 @@
     },
     {
       "id": "verein",
-      "label": "Verein",
-      "label_en": "Club"
+      "label": "Einstellungen",
+      "label_en": "Settings"
     }
   ],
   "items": {
@@ -74,7 +74,7 @@
     "finanzen": "finanzen",
     "geschaeftspartner": "finanzen",
     "dsgvo": "verein",
-    "material": "verein",
+    "material": "planung",
     "bestellungen": "vereinsleben",
     "einstellungen": "verein",
     "plattform": "verein"
@@ -223,6 +223,7 @@
     "z-tasse",
     "z-gluehbirne",
     "z-paket",
-    "z-landkarte"
+    "z-landkarte",
+    "z-vereinshaus"
   ]
 }
