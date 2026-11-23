@@ -1309,3 +1309,37 @@ class CspReport(models.Model):
 
     def __str__(self) -> str:
         return f"{self.directive} {self.blocked} ({self.count})"
+
+
+class DecoyHit(models.Model):
+    """Auslösung eines Köders (``organizations.decoys``): Jemand hat Köderdaten benutzt.
+
+    Gezählt je Art, Köder, Angabe und Tag. Ohne Mandantentrennung, nur für die Plattform.
+    """
+
+    class Kind(models.TextChoices):
+        MAIL_IN = "mail_in", gettext_lazy("Mail an die Köderadresse")
+        MAIL_OUT = "mail_out", gettext_lazy("eigene Mail an die Köderadresse")
+        LOGIN = "login", gettext_lazy("Anmeldeversuch")
+        LOOKUP = "lookup", gettext_lazy("Abruf über die Schnittstelle")
+
+    kind = models.CharField("Art", max_length=10, choices=Kind.choices)
+    # Nummer der Köder-Mitgliedschaft; bewusst kein Fremdschlüssel (bleibt nach dem Löschen)
+    membership_id = models.BigIntegerField("Köder", null=True, blank=True)
+    detail = models.CharField("Angabe", max_length=200, blank=True)
+    day = models.DateField("Tag")
+    count = models.PositiveIntegerField("Anzahl", default=1)
+    last_at = models.DateTimeField("zuletzt", default=timezone.now)
+
+    class Meta:
+        ordering = ["-last_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["kind", "membership_id", "detail", "day"], name="decoyhit_einmalig"
+            )
+        ]
+        verbose_name = "Köder-Auslösung"
+        verbose_name_plural = "Köder-Auslösungen"
+
+    def __str__(self) -> str:
+        return f"{self.kind} {self.day} ({self.count})"

@@ -563,6 +563,11 @@ def _process(raw: bytes) -> InboundMail | None:
         "mailing_list": ml,
     }
     rejected = InboundMail.Status.REJECTED
+    # Köderdaten (organizations.decoys): Mail an eine Adresse, die niemand kennen kann
+    from organizations import decoys
+
+    if decoys.check_inbound(recipient_addresses(msg), sender, subject):
+        return _log(**base, status=rejected, reason="Kein Verteiler unter dieser Adresse.")
     if len(raw) > MAX_RAW_BYTES:
         return _log(**base, status=rejected, reason="Mail zu groß.")
     # Termine aus dem Mailprogramm (events.mail_intake): Antworten auf HUBIplans

@@ -52,6 +52,23 @@ Unter jeder Anleitung und Seitenhilfe steht „Hat das geholfen?“. Der Reiter 
 
 Darunter steht unter **Suchen ohne Treffer**, wonach in der Hilfe gesucht und nichts gefunden wurde, mit Zähler. Eingaben mit Ziffern oder E-Mail-Adressen werden nicht gespeichert.
 
+## Sicherheit: Köderdaten
+
+Ein Köder ist ein erfundenes Mitglied, das zu keinem Verein gehört. Es liegt im Datenbereich der Plattform; keine Mitgliederliste, keine Auswertung, kein Export, keine Meldedatei und keine App zeigt es, auch nicht dem Vorstand. In der Datenbank und in jeder Sicherung steht es wie ein echtes Mitglied. Wer Daten an HUBIplan vorbei abgreift, etwa aus einer gestohlenen Sicherung, nimmt den Köder mit, und wer ihn benutzt, fällt auf.
+
+Im Reiter **Sicherheit** legst du mit **Köder anlegen** bis zu fünf Köder an. Name, Anschrift und Geburtsdatum erfindet HUBIplan. Lässt du die Adresse leer, nimmt HUBIplan eine Adresse an der Verteiler-Domain und erkennt Mails dorthin selbst, weil es deren Sammelpostfach ohnehin abholt. Ohne Verteiler-Domain gibst du eine eigene Adresse an, an die sonst niemand schreibt; deren Postfach musst du selbst lesen.
+
+Der Betreiber bekommt eine Sicherheitsmail, je Art höchstens eine in der Stunde, wenn
+
+- eine Mail an die Köderadresse ankommt,
+- sich jemand mit der Köderadresse anmelden will oder für sie ein neues Passwort anfordert,
+- jemand die Nummer des Köders über die Schnittstelle abruft (das geschieht nur beim Durchprobieren von Nummern),
+- HUBIplan selbst dem Köder schreiben will. Diese Mail wird nicht versendet; sie zeigt einen Fehler in HUBIplan, bitte dem Projekt melden.
+
+Unter **Auslösungen** steht, was wann geschah. Eine Auslösung spricht dafür, dass Daten abgeflossen sind: Zugänge, Änderungsprotokoll und Sicherungen prüfen. Werbung an eine erratene Adresse kann vereinzelt vorkommen; Absender und Betreff stehen dabei. Mit **Auslösungen leeren** entfernst du geklärte Einträge.
+
+Köder haben keine Bankverbindung. Der Quelltext von HUBIplan ist offen: Wer ihn kennt und Datenbank samt Schlüssel besitzt, kann Köder erkennen. Gegen das übliche Abgreifen und Benutzen von Adressen helfen sie trotzdem.
+
 ## Sicherheit: Meldungen des Browsers
 
 HUBIplan gibt jedem Browser Regeln mit, was die Oberfläche laden und ausführen darf (Content-Security-Policy). Verstößt eine Seite dagegen, etwa weil jemand ein fremdes Skript einschleusen wollte, blockiert der Browser den Inhalt und meldet es an die eigene Instanz. Der Reiter **Sicherheit** zeigt diese Meldungen: was blockiert wurde, welche Regel gegriffen hat, auf welcher Seite, wie oft, wann zuerst und zuletzt.

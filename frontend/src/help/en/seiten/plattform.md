@@ -52,6 +52,23 @@ Below every guide and page help you find “Did this help?”. The **Help** tab 
 
 Below that, **Searches without results** lists what people searched for in the help without finding anything, with a counter. Entries with digits or email addresses are not stored.
 
+## Security: decoy data
+
+A decoy is an invented member that belongs to no club. It lives in the platform's own data area; no member list, no report, no export, no report file and no app shows it, not even to the board. In the database and in every backup it looks like a real member. Anyone who takes data around HUBIplan, for example from a stolen backup, takes the decoy along, and anyone who uses it stands out.
+
+On the **Security** tab you create up to five decoys with **Create decoy**. HUBIplan invents name, address and date of birth. If you leave the address empty, HUBIplan picks an address at the mailing list domain and detects emails to it by itself, because it fetches that catch-all mailbox anyway. Without a mailing list domain you enter an address of your own that nobody else writes to; you have to read its mailbox yourself.
+
+The operator receives a security email, at most one per hour for each kind, when
+
+- an email arrives at the decoy address,
+- someone tries to sign in with the decoy address or requests a new password for it,
+- someone looks up the decoy's number through the API (this only happens when numbers are being tried out),
+- HUBIplan itself tries to email the decoy. That email is not sent; it indicates a bug in HUBIplan, please report it to the project.
+
+**Triggers** lists what happened and when. A trigger suggests that data has leaked: check accounts, the change log and backups. Advertising to a guessed address can occasionally happen; sender and subject are shown. **Clear triggers** removes entries you have dealt with.
+
+Decoys have no bank details. HUBIplan's source code is open: anyone who knows it and holds the database together with the key can recognise decoys. They still help against the usual harvesting and use of addresses.
+
 ## Security: browser reports
 
 HUBIplan gives every browser rules for what the interface may load and run (Content Security Policy). If a page breaks them, for example because someone tried to inject a foreign script, the browser blocks the content and reports it to your own instance. The **Security** tab shows these reports: what was blocked, which rule applied, on which page, how often, and when first and last.
