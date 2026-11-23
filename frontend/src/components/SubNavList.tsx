@@ -60,7 +60,7 @@ export function SubNavList({
           if (!starts.has(b.node.to)) return renderItems([b.node], 1)
           return (
             <Fragment key={`s:${b.node.to}`}>
-              <li className="sidebar-sub-heading" role="presentation">
+              <li className="sidebar-sub-heading">
                 <span>{section}</span>
               </li>
               {renderItems([b.node], 1)}

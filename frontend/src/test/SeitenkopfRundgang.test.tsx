@@ -46,11 +46,11 @@ const org = testOrg({
 }) as unknown as OrgSummary
 
 /** Menüpunkt → heutige h1, solange die Seite noch nicht umgestellt ist */
-// „/einstellungen“ und „/plattform“ leiten auf ihren ersten Unterpunkt weiter;
+// „/einstellungen“ führt zur Übersicht, „/plattform“ leitet auf ihren ersten Unterpunkt weiter;
 // „/mitglieder/einrichtung“ zeigt gleich den ersten Unterpunkt.
 const ABWEICHUNGEN: Record<string, string> = {
   '/mitglieder/einrichtung': 'Mitgliedsarten',
-  '/einstellungen': 'Einstellungen im Überblick',
+  '/einstellungen/einrichtung': 'Einstellungen im Überblick',
   '/plattform': 'Einheiten',
 }
 
