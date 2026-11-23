@@ -11,9 +11,15 @@ Hier planst du Auftritte: Besetzung, Programm, Gäste und Abrechnung. Die übrig
 
 ## Auftritt anlegen
 
-Lege zuerst einen eigenen Einzeltermin im Kalender an. Unter **Auftritte** wählst du diesen Termin und ergänzt Auftraggeber, Treffzeit und Treffpunkt, Aufbau, Uniform, Spielform und Hinweise. Spielzeit und Ort bleiben im Kalender. Eine Serie braucht für jeden Auftritt einen einzelnen Termin. Aufgaben pflegst du über **Aufgaben zum Auftritt** im Aufgabenbereich.
+Lege zuerst einen eigenen Einzeltermin im Kalender an. Unter **Auftritte** wählst du diesen Termin und ergänzt Auftrittsart, Auftraggeber, Treffzeit und Treffpunkt, Aufbau, Uniform, Spielform und Hinweise. Uniformen und Auftrittsarten wählst du aus der Liste unter [Uniformen und Auftrittsarten](/musik/uniformen); die Art schlägt Spielform und Uniform vor. Über **Auftrittsart** filterst du die Liste, **Auftritte je Jahr und Art** zählt sie. Spielzeit und Ort bleiben im Kalender. Eine Serie braucht für jeden Auftritt einen einzelnen Termin. Aufgaben pflegst du über **Aufgaben zum Auftritt** im Aufgabenbereich.
 
 Das Suchfeld heißt wie die Ansicht, etwa **Auftritte durchsuchen** oder **Musiker durchsuchen**, und filtert sie, zum Beispiel nach Name, Instrument oder Auftritt. Neues legst du mit dem passenden Knopf an, etwa **Neuer Auftritt**; eine leere Ansicht sagt, was dort entsteht, und bietet denselben Knopf an. **Noten suchen** filtert den aktuellen Notenbestand. Bei leerem Bestand und erfolgloser Suche erscheint ein Hinweis. Auftrittskarten bündeln Programm, Besetzung, Abrechnung, Aufgaben und Kalendertermin; Detailseiten zeigen den zugehörigen Auftritt über der Überschrift. Summen und Programmdauern stehen in beschrifteten Übersichten. Rückmeldungen und Verfügbarkeitskonflikte haben einheitliche Textmarkierungen, auch im eigenen Mitgliederbereich.
+
+## Mehrtägige Feste: ein Vertrag für alle Tage
+
+Ein Fest über mehrere Tage legst du als einzelne Termine an, denn jeder Tag hat eigene Zeiten, Uniform, Treffpunkt und Besetzung. Den Vertrag führt der erste Tag als Hauptauftritt: Bei den weiteren Tagen wählst du unter **Weiterer Tag von** den Hauptauftritt. Gehören die Termine in den Finanzen zu einer Veranstaltung, hängt **Alle Tage der Veranstaltung zusammenfassen** beim Hauptauftritt alle übrigen Tage auf einmal an.
+
+Auftraggeber, Angebot, Zusage, Gage, Rechnung und Abrechnung gibt es dann nur einmal, beim Hauptauftritt; die weiteren Tage übernehmen den Auftraggeber. Das Angebot listet alle Tage. Besetzung, Zusagen der Musiker und deren Vergütung bleiben je Tag; die Musikervergütungen aller Tage stehen gesammelt in der Abrechnung des Festes. Einen Tag mit eigenem Angebot oder eigener Abrechnung kannst du nicht anhängen. Solange eine Zusage des Auftraggebers besteht, lassen sich Tage weder anhängen noch lösen.
 
 ## Besetzung und Einteilung
 

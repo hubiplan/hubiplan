@@ -74,7 +74,11 @@ def test_erscheinungsbild_nur_mit_eigenem_haken(club, site, designer):  # noqa: 
     query = params(register()["client_id"], scope=ALL)
     info = with_mfa(designer).get("/api/mcp/oauth/authorize/", query)
     assert info.status_code == 200, info.content
-    assert [s["scope"] for s in info.json()["optional"]] == [THEME, "verein.briefbogen"]
+    assert [s["scope"] for s in info.json()["optional"]] == [
+        THEME,
+        "verein.briefbogen",
+        "musik.auftritte",
+    ]
     assert THEME not in [s["scope"] for s in info.json()["scopes"]]
 
 

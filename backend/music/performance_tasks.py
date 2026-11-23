@@ -39,7 +39,7 @@ def fingerprint(row):
             performance.meeting_at,
             performance.meeting_place,
             performance.setup_at,
-            performance.uniform,
+            performance.uniform_text(),
             performance.formation,
             performance.notes,
         ],
@@ -57,6 +57,12 @@ def fingerprint(row):
             )
         ),
     }
+    # Neue Angaben (Issues #712/#713) nur, wenn gesetzt: sonst bliebe kein Fingerabdruck
+    # gleich, und alle Eingeteilten bekämen nach dem Ausrollen eine Änderungsnachricht.
+    if performance.uniform_choice_id:
+        data["uniform"] = performance.uniform_details()
+    if performance.kind_id:
+        data["kind"] = performance.kind.name
     return hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
 
 

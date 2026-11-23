@@ -174,30 +174,118 @@ class EnsembleTemplatePosition(models.Model):
         return self.instrument
 
 
+FORMATIONS = [("seated", "seated"), ("standing", "standing"), ("march", "march")]
+
+
+def uniform_image_path(instance, filename):
+    return f"music-uniforms/{instance.organization_id}/{uuid.uuid4().hex}.jpg"
+
+
+class Uniform(models.Model):
+    """Uniform der Einheit zur Auswahl am Auftritt (Issue #712)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000, blank=True)
+    # Was dazugehört, z. B. „Mütze“, „weiße Handschuhe“ (höchstens 30 Punkte)
+    checklist = models.JSONField(default=list, blank=True)
+    image = PrivateFileField(storage=private_storage, upload_to=uniform_image_path, blank=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "name"], name="music_uniform_name_once")
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class PerformanceKind(models.Model):
+    """Auftrittsart wie Umzug, Konzert oder Zapfenstreich (Issue #713)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    # Vorschläge beim Wählen der Art; leer: kein Vorschlag
+    formation = models.CharField(max_length=12, choices=FORMATIONS, blank=True)
+    uniform = models.ForeignKey(Uniform, on_delete=models.SET_NULL, null=True, blank=True)
+    # Art auf der Vereinswebseite beim Termin nennen
+    on_website = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "name"], name="music_kind_name_once")
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class Performance(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     event = models.OneToOneField(
         "events.Event", on_delete=models.PROTECT, related_name="performance"
     )
+    # Issue #711: Weitere Tage eines Festes hängen an einem Hauptauftritt. Vertrag, Gage und
+    # Abrechnung führt nur der Hauptauftritt; Besetzung und Zusagen bleiben je Tag.
+    main = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True, related_name="days"
+    )
+    kind = models.ForeignKey(PerformanceKind, on_delete=models.PROTECT, null=True, blank=True)
     customer = models.ForeignKey(
         "billing.BusinessPartner", on_delete=models.PROTECT, null=True, blank=True
     )
     meeting_at = models.DateTimeField(null=True, blank=True)
     meeting_place = models.CharField(max_length=300, blank=True)
     setup_at = models.DateTimeField(null=True, blank=True)
+    uniform_choice = models.ForeignKey(Uniform, on_delete=models.PROTECT, null=True, blank=True)
+    # Freitext: Ergänzung zur gewählten Uniform (früher die einzige Angabe)
     uniform = models.CharField(max_length=300, blank=True)
-    formation = models.CharField(
-        max_length=12,
-        choices=[("seated", "seated"), ("standing", "standing"), ("march", "march")],
-        default="standing",
-    )
+    formation = models.CharField(max_length=12, choices=FORMATIONS, default="standing")
     notes = EncryptedCharField(max_length=5000, blank=True, strict=True)
     remind_days = models.PositiveSmallIntegerField(
         default=3, db_default=3, validators=[MaxValueValidator(30)]
     )
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=~models.Q(main=models.F("pk")), name="music_performance_not_own_main"
+            )
+        ]
+
     def __str__(self):
         return f"Auftritt {self.pk}"
+
+    @property
+    def lead(self):
+        """Auftritt, der Vertrag und Abrechnung führt: der Hauptauftritt oder dieser."""
+        return self.main if self.main_id else self
+
+    def group(self):
+        """Alle Auftritte eines Vertrags: Hauptauftritt und weitere Tage."""
+        lead = self.lead
+        return Performance.objects.filter(models.Q(pk=lead.pk) | models.Q(main_id=lead.pk))
+
+    def uniform_text(self) -> str:
+        """Uniform als eine Zeile: gewählte Uniform und Ergänzung."""
+        name = self.uniform_choice.name if self.uniform_choice_id else ""
+        return " · ".join(part for part in (name, self.uniform) if part)
+
+    def uniform_details(self) -> dict | None:
+        if not self.uniform_choice_id:
+            return None
+        choice = self.uniform_choice
+        return {
+            "id": choice.pk,
+            "name": choice.name,
+            "description": choice.description,
+            "checklist": list(choice.checklist or []),
+            "has_image": bool(choice.image),
+        }
 
 
 class Position(models.Model):

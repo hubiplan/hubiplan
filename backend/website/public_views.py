@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponse
 from django.utils import timezone
@@ -795,7 +796,13 @@ def _events(site: SiteView, unit_slug: str | None):
     qs = _site_events(site, unit_slug)
     now = timezone.now()
     return occurrences(
-        qs.select_related("category", "department", "organization", "registration_setup")
+        qs.select_related(
+            "category",
+            "department",
+            "organization",
+            "registration_setup",
+            "performance__kind",
+        )
         .prefetch_related("attachments")
         .distinct(),
         now - datetime.timedelta(days=EVENT_DAYS_BACK),
@@ -826,6 +833,17 @@ def _site_events(site: SiteView, unit_slug: str | None):
     return qs
 
 
+def _performance_kind(event) -> str | None:
+    if "music" not in (event.organization.enabled_modules or []):
+        return None
+    try:
+        performance = event.performance
+    except ObjectDoesNotExist:
+        return None
+    kind = performance.kind
+    return kind.name if kind and kind.on_website and kind.active else None
+
+
 def event_entry(site: SiteView, o) -> dict:
     """Ein Einzeltermin wie unter ``events/`` (auch für den hervorgehobenen Termin, G3)."""
     return {
@@ -839,6 +857,8 @@ def event_entry(site: SiteView, o) -> dict:
         "address": o.event.address,
         "description": o.event.description,
         "category": o.event.category.name if o.event.category_id else None,
+        # Auftrittsart (Musik, Issue #713), nur wenn die Art auf der Webseite erscheinen soll
+        "performance_kind": _performance_kind(o.event),
         "color": o.event.category.color if o.event.category_id else None,
         "unit": site.unit_slugs.get(o.event.department_id),
         # Termin einer Einheit darüber: deren Name, sonst leer

@@ -79,6 +79,12 @@ from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
 from music.live import MusicLeaderViewSet, OwnLive
+from music.masterdata import (
+    OwnUniformImage,
+    PerformanceKindViewSet,
+    UniformImageView,
+    UniformViewSet,
+)
 from music.payouts import PayoutRunAction, PayoutRuns
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
@@ -189,6 +195,8 @@ org_router.register(
     basename="music-ensemble-template",
 )
 org_router.register("music/skills", music_views.SkillViewSet, basename="music-skill")
+org_router.register("music/uniforms", UniformViewSet, basename="music-uniform")
+org_router.register("music/performance-kinds", PerformanceKindViewSet, basename="music-kind")
 org_router.register(
     "music/performances", music_views.PerformanceViewSet, basename="music-performance"
 )
@@ -310,6 +318,7 @@ org_patterns = [
     path("music/practice/", music_practice.PracticeOverview.as_view()),
     path("music/loans/", music_practice.LoanView.as_view()),
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
+    path("music/uniforms/<int:pk>/image/", UniformImageView.as_view()),
     path("music/performances/<int:pk>/staffing/", music_staffing.StaffingView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
     path("music/performances/<int:pk>/engagement/", EngagementView.as_view()),
@@ -1126,6 +1135,7 @@ urlpatterns = [
     path("portal/<int:access_id>/music/folders/", OwnFolders.as_view()),
     path("portal/<int:access_id>/music/live/<str:target>/", OwnLive.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
+    path("portal/<int:access_id>/music/uniforms/<int:pk>/image/", OwnUniformImage.as_view()),
     path("portal/<int:access_id>/music/absences/", OwnAbsences.as_view()),
     path(
         "depts/<int:dept_id>/todos/<int:pk>/attachments/",

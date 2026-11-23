@@ -107,7 +107,7 @@ Regeln:
   (`HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN`, Standard `claude.ai,claude.com`, Endungen zählen mit),
   warnt sie vor einer Täuschung; ebenso bei einem Programm auf dem eigenen Rechner.
 - Bereiche: `webseite.lesen`, `webseite.entwurf` (schließt lesen ein). Die Hilfe ist immer dabei.
-  `verein.erscheinungsbild` und `verein.briefbogen` gibt es nur, wenn die Person sie auf der Seite eigens anhakt (nicht
+  `verein.erscheinungsbild`, `verein.briefbogen` und `musik.auftritte` gibt es nur, wenn die Person sie auf der Seite eigens anhakt (nicht
   vorangekreuzt), auch wenn der Assistent danach fragt; die Seite schickt den Haken als `extra` mit.
 - Zugriffsschlüssel `hpm_…` 1 Stunde, Erneuerung `hpmr_…` dreht sich bei jeder Nutzung; die
   Verbindung (`McpGrant`) gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung. Wer
@@ -255,7 +255,22 @@ sofort für neue Briefe. Eigener Bereich `verein.briefbogen` (nur mit eigenem Ha
 | `briefbogen_aendern` | briefbogen | `aufbau`, `logo`, `logo_groesse`, `name_neben_logo`, `zweite_zeile_kleiner`, `schrift`, `schrift_ueberschriften`, `ersatzschrift(_ueberschriften)`, `linienfarbe`, `linie_kopf`, `linie_fusszeile`, `titelfarbe`, `tabellenlinien`, `tabellenstreifen`, `fusszeile` {…}; nur Angegebenes ändert sich. Keine Freitexte (Gesamtaudit 15.11., MCP-01): `name_im_kopf`, `zusatzzeile`, `anrede`, `grussformel` liefert `briefbogen_ansehen`, ändern geht nur in HUBIplan |
 | `briefbogen_logo_aus_bild` | briefbogen | Issue #488: Bild der Bilderverwaltung als eigenes Logo nur für den Briefbogen (`LetterheadLogoView`, `letterhead/logo/` bzw. `letterhead/units/<id>/logo/`), `entfernen` setzt zurück aufs Erscheinungsbild; Untereinheiten nur mit eigenem Briefbogen |
 
+## Musik (Bereich `musik.auftritte`)
+
+Issues #712/#713: Uniformen, Auftrittsarten und deren Wahl am Auftritt. Kein Entwurf, Änderungen
+gelten sofort; eigener Bereich `musik.auftritte` (nur mit eigenem Haken beim Verbinden). Die
+Werkzeuge rufen die ViewSets von Musik auf (`music/uniforms/`, `music/performance-kinds/`,
+`music/performances/`, Rechte `music.view`/`music.edit` und Kalenderleserecht). Vertrag, Gage,
+Abrechnung und Uniformbilder gibt es hier nicht.
+
+| Werkzeug | Bereich | Was |
+|---|---|---|
+| `musik_ansehen` | musik | Uniformen (Checkliste, Bild ja/nein), Auftrittsarten (Vorschläge), Auftritte (bis 300) mit `art`, `uniform`, `uniform_ergaenzung`, `spielform`, `hauptauftritt`, `weitere_tage`, `veranstaltung` |
+| `musik_uniform_speichern` | musik | ohne `nummer` anlegen, sonst ändern: `name`, `beschreibung`, `checkliste` (ersetzt, bis 30), `aktiv` |
+| `musik_auftrittsart_speichern` | musik | ohne `nummer` anlegen, sonst ändern: `name`, `spielform`, `uniform`, `auf_webseite`, `aktiv` |
+| `musik_auftritt_aendern` | musik | `nummer` und `art`, `uniform`, `uniform_ergaenzung`, `spielform`, `hauptauftritt` (Issue #711, null löst) |
+
 Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
-`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `club_chronicle.py` (Chronik), `website/upload_views.py` (Hochladelink, Bild per Adresse),
+`club_design.py` (W2/W3), `club_theme.py` (Erscheinungsbild), `club_letterhead.py` (Briefbogen), `club_chronicle.py` (Chronik), `club_music.py` (Musik), `website/upload_views.py` (Hochladelink, Bild per Adresse),
 `oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`, `test_mcp_erscheinungsbild.py`, `test_mcp_briefbogen.py`, `test_mcp_chronik.py`,
 `frontend/src/test/McpConnect.test.tsx`.

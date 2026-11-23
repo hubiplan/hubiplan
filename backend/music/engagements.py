@@ -44,7 +44,7 @@ def current(performance):
         raise serializers.ValidationError(
             gettext("Bitte die Rechnungsanschrift des Auftraggebers vervollständigen.")
         )
-    return {
+    values = {
         "customer": customer.pk,
         "buyer": buyer,
         "title": performance.event.title,
@@ -53,7 +53,7 @@ def current(performance):
         "location": performance.event.location,
         "meeting_at": performance.meeting_at.isoformat() if performance.meeting_at else "",
         "meeting_place": performance.meeting_place,
-        "uniform": performance.uniform,
+        "uniform": performance.uniform_text(),
         "formation": performance.formation,
         "notes": performance.notes,
         "fee": str(account.fee),
@@ -62,6 +62,27 @@ def current(performance):
         "note": account.note,
         "total": str(account.fee + account.travel + account.extras),
     }
+    # Neue Angaben nur, wenn gesetzt: ältere Angebote bleiben so annehmbar.
+    if performance.kind_id:
+        values["kind"] = performance.kind.name
+    days = list(performance.days.select_related("event").order_by("event__starts_at", "pk"))
+    if days:
+        # Issue #711: ein Vertrag für alle Tage des Festes
+        values["days"] = [
+            {
+                "title": row.event.title,
+                "starts_at": row.event.starts_at.isoformat(),
+                "ends_at": row.event.ends_at.isoformat(),
+                "location": row.event.location,
+                "meeting_at": row.meeting_at.isoformat() if row.meeting_at else "",
+                "meeting_place": row.meeting_place,
+                "uniform": row.uniform_text(),
+                "kind": row.kind.name if row.kind_id else "",
+                "cancelled": row.event.is_cancelled,
+            }
+            for row in [performance, *days]
+        ]
+    return values
 
 
 def label(document):
@@ -103,19 +124,43 @@ def pdf(document, letter):
     def dt(raw):
         return timezone.localtime(timezone.datetime.fromisoformat(raw)).strftime("%d.%m.%Y %H:%M")
 
-    paragraph(f"{dt(s['starts_at'])} - {dt(s['ends_at'])}")
-    paragraph(f"{gettext('Ort')}: {s['location']}")
-    if s["meeting_at"] or s["meeting_place"]:
+    if s.get("days"):
         paragraph(
-            f"{gettext('Treffpunkt')}: "
-            f"{dt(s['meeting_at']) if s['meeting_at'] else ''} {s['meeting_place']}"
+            gettext("Dieses Dokument gilt für alle %(n)d Tage zusammen.") % {"n": len(s["days"])}
         )
-    for title, field in [
-        (gettext("Uniform"), "uniform"),
-        (gettext("Weitere Informationen"), "notes"),
-    ]:
-        if s[field]:
-            paragraph(f"{title}: {s[field]}")
+        for day in s["days"]:
+            line = [f"{dt(day['starts_at'])} - {dt(day['ends_at'])}", day["title"]]
+            if day.get("kind"):
+                line.append(day["kind"])
+            if day["location"]:
+                line.append(f"{gettext('Ort')}: {day['location']}")
+            if day["meeting_at"] or day["meeting_place"]:
+                line.append(
+                    f"{gettext('Treffpunkt')}: "
+                    f"{dt(day['meeting_at']) if day['meeting_at'] else ''} {day['meeting_place']}"
+                )
+            if day["uniform"]:
+                line.append(f"{gettext('Uniform')}: {day['uniform']}")
+            if day.get("cancelled"):
+                line.append(gettext("abgesagt"))
+            paragraph(" · ".join(line))
+        if s["notes"]:
+            paragraph(f"{gettext('Weitere Informationen')}: {s['notes']}")
+    else:
+        paragraph(f"{dt(s['starts_at'])} - {dt(s['ends_at'])}")
+        paragraph(f"{gettext('Ort')}: {s['location']}")
+        if s["meeting_at"] or s["meeting_place"]:
+            paragraph(
+                f"{gettext('Treffpunkt')}: "
+                f"{dt(s['meeting_at']) if s['meeting_at'] else ''} {s['meeting_place']}"
+            )
+        for title, field in [
+            (gettext("Art"), "kind"),
+            (gettext("Uniform"), "uniform"),
+            (gettext("Weitere Informationen"), "notes"),
+        ]:
+            if s.get(field):
+                paragraph(f"{title}: {s[field]}")
     story.append(Spacer(1, 3 * mm))
     for title, field in [
         (gettext("Honorar"), "fee"),
@@ -198,7 +243,10 @@ class EngagementView(NoStore, SettlementView):
             choices=["offer", "accept", "reject", "cancel", "confirm"]
         ).run_validation(request.data.get("action"))
         if action == "offer":
-            if performance.event.is_cancelled or performance.event.ends_at <= timezone.now():
+            if all(
+                row.event.is_cancelled or row.event.ends_at <= timezone.now()
+                for row in performance.group().select_related("event")
+            ):
                 raise serializers.ValidationError(
                     gettext("Bitte einen zukünftigen, nicht abgesagten Auftritt wählen.")
                 )

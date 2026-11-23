@@ -125,11 +125,14 @@ def personal_claim(claim):
 
 
 def account_data(account):
-    claims = MusicianClaim.objects.filter(assignment__performance=account.performance)
+    claims = MusicianClaim.objects.filter(
+        assignment__performance__in=account.performance.group()
+    ).select_related("assignment__performance__event")
     rows = [
         {
             **personal_claim(row),
             "assignment": row.assignment_id,
+            "performance": row.assignment.performance_id,
             "attended": row.attended,
             "note": row.note,
         }
@@ -161,6 +164,7 @@ def account_data(account):
     return {
         "id": account.pk,
         "performance": account.performance_id,
+        "days": days_data(account.performance),
         "fee": str(account.fee),
         "travel": str(account.travel),
         "extras": str(account.extras),
@@ -191,6 +195,19 @@ def account_data(account):
     }
 
 
+def days_data(performance):
+    """Alle Tage eines Vertrags mit ihren Einteilungen (Issue #711)."""
+    return [
+        {
+            "id": row.pk,
+            "title": row.event.title,
+            "starts_at": row.event.starts_at,
+            "cancelled": row.event.is_cancelled,
+        }
+        for row in performance.group().select_related("event").order_by("event__starts_at", "pk")
+    ]
+
+
 class SettlementView(OrgScopedMixin, APIView):
     read_permission = "finance.view"
     write_permission = "finance.edit"
@@ -212,6 +229,11 @@ class SettlementView(OrgScopedMixin, APIView):
         performance = get_object_or_404(queryset, pk=pk, organization=self.org)
         if not PerformanceViewSet.visible(self, performance):
             raise NotFound()
+        if performance.main_id:
+            # Issue #711: Vertrag und Abrechnung führt der Hauptauftritt für alle Tage
+            performance = get_object_or_404(queryset, pk=performance.main_id, organization=self.org)
+            if not PerformanceViewSet.visible(self, performance):
+                raise NotFound()
         return performance
 
     def get(self, request, org_id, pk):
@@ -221,7 +243,12 @@ class SettlementView(OrgScopedMixin, APIView):
         return Response(
             account_data(account)
             if account
-            else {"performance": performance.pk, "claims": [], "payments": []}
+            else {
+                "performance": performance.pk,
+                "days": days_data(performance),
+                "claims": [],
+                "payments": [],
+            }
         )
 
     @transaction.atomic
@@ -304,7 +331,7 @@ class SettlementView(OrgScopedMixin, APIView):
             ids = [r["assignment"] for r in rows]
             available = set(
                 Assignment.objects.filter(
-                    organization=self.org, performance=performance, pk__in=ids
+                    organization=self.org, performance__in=performance.group(), pk__in=ids
                 ).values_list("pk", flat=True)
             )
             if (
@@ -342,7 +369,7 @@ class SettlementView(OrgScopedMixin, APIView):
             assignment = get_object_or_404(
                 Assignment,
                 pk=values.pop("assignment"),
-                performance=performance,
+                performance__in=performance.group(),
                 organization=self.org,
             )
             claim, _ = MusicianClaim.objects.get_or_create(
@@ -374,7 +401,7 @@ class SettlementView(OrgScopedMixin, APIView):
             claim = get_object_or_404(
                 MusicianClaim,
                 pk=request.data.get("claim"),
-                assignment__performance=performance,
+                assignment__performance__in=performance.group(),
                 organization=self.org,
             )
             if PayoutItem.objects.filter(claim=claim, released=False).exists():
@@ -387,12 +414,13 @@ class SettlementView(OrgScopedMixin, APIView):
                 )
             previous_status = claim.status
             if action == "approve":
+                day = claim.assignment.performance.event
                 if (
                     claim.status != "draft"
                     or not claim.attended
                     or total(claim) <= 0
-                    or performance.event.is_cancelled
-                    or performance.event.ends_at > timezone.now()
+                    or day.is_cancelled
+                    or day.ends_at > timezone.now()
                 ):
                     raise serializers.ValidationError(
                         gettext(
@@ -434,7 +462,7 @@ class SettlementView(OrgScopedMixin, APIView):
                 get_object_or_404(
                     MusicianClaim,
                     pk=claim_id,
-                    assignment__performance=performance,
+                    assignment__performance__in=performance.group(),
                     organization=self.org,
                 )
                 if claim_id

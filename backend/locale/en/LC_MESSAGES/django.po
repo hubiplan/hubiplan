@@ -17826,3 +17826,155 @@ msgstr "There is no earlier arrangement."
 #: organizations/menu_layout.py
 msgid "Untereinheiten übernehmen das Menü ihres Vereins."
 msgstr "Sub-units use the menu of their club."
+
+#: mcpserver/club_music.py
+msgid "„%(name)s“ muss ein Text mit höchstens %(limit)s Zeichen sein."
+msgstr "“%(name)s” must be text of at most %(limit)s characters."
+
+#: mcpserver/club_music.py
+msgid "Uniformen und Auftrittsarten gelten für die ganze Einheit. Ein Auftritt mit „hauptauftritt“ ist ein weiterer Tag eines Festes: Vertrag und Gage führt der Hauptauftritt. Spielform: seated (sitzend), standing (stehend), march (Umzug)."
+msgstr "Uniforms and performance types apply to the whole unit. A performance with “hauptauftritt” is a further day of a festival: the main performance holds contract and fee. Formation: seated, standing, march (parade)."
+
+#: mcpserver/club_music.py
+msgid "„checkliste“ muss eine Liste von Texten sein."
+msgstr "“checkliste” must be a list of texts."
+
+#: mcpserver/club_music.py
+msgid "Uniform „%(name)s“ gespeichert (Nummer %(id)s)."
+msgstr "Uniform “%(name)s” saved (number %(id)s)."
+
+#: mcpserver/club_music.py
+msgid "„spielform“: seated, standing, march oder leer."
+msgstr "“spielform”: seated, standing, march or empty."
+
+#: mcpserver/club_music.py
+msgid "Auftrittsart „%(name)s“ gespeichert (Nummer %(id)s)."
+msgstr "Performance type “%(name)s” saved (number %(id)s)."
+
+#: mcpserver/club_music.py
+msgid "„spielform“: seated, standing oder march."
+msgstr "“spielform”: seated, standing or march."
+
+#: mcpserver/club_music.py
+msgid "Bitte mindestens eine Angabe zum Ändern nennen."
+msgstr "Please give at least one value to change."
+
+#: mcpserver/club_music.py
+msgid "Musik: Auftritte, Uniformen und Auftrittsarten ansehen"
+msgstr "Music: view performances, uniforms and performance types"
+
+#: mcpserver/club_music.py
+msgid "Liste der Uniformen (mit Checkliste), der Auftrittsarten und der Auftritte mit Art, Uniform, Spielform und Hauptauftritt (mehrtägige Feste). Braucht das Recht, Musik und Termine anzusehen."
+msgstr "List of uniforms (with checklist), performance types and performances with type, uniform, formation and main performance (multi-day festivals). Requires permission to view music and events."
+
+#: mcpserver/club_music.py
+msgid "Musik: Uniform anlegen oder ändern (wirkt sofort)"
+msgstr "Music: add or change a uniform (applies immediately)"
+
+#: mcpserver/club_music.py
+msgid "Ohne „nummer“ neue Uniform anlegen, mit „nummer“ ändern. „checkliste“ ersetzt die ganze Liste dessen, was dazugehört (höchstens 30 Punkte). Bilder lädt eine Person in HUBIplan hoch."
+msgstr "Without “nummer” a new uniform is added, with “nummer” it is changed. “checkliste” replaces the whole list of what belongs to it (at most 30 items). Images are uploaded by a person in HUBIplan."
+
+#: mcpserver/club_music.py
+msgid "Musik: Auftrittsart anlegen oder ändern (wirkt sofort)"
+msgstr "Music: add or change a performance type (applies immediately)"
+
+#: mcpserver/club_music.py
+msgid "Ohne „nummer“ neue Auftrittsart anlegen, mit „nummer“ ändern. Spielform und Uniform sind Vorschläge beim Wählen der Art. „auf_webseite“: Art beim Termin auf der Vereinswebseite nennen."
+msgstr "Without “nummer” a new performance type is added, with “nummer” it is changed. Formation and uniform are suggestions when the type is chosen. “auf_webseite”: show the type with the event on the club website."
+
+#: mcpserver/club_music.py
+msgid "Musik: Art, Uniform oder Hauptauftritt eines Auftritts setzen"
+msgstr "Music: set type, uniform or main performance of a performance"
+
+#: mcpserver/club_music.py
+msgid "Setzt bei einem Auftritt Art, Uniform (Nummer aus musik_ansehen, null entfernt), Ergänzung zur Uniform, Spielform oder den Hauptauftritt (weiterer Tag eines Festes, null löst ihn). Wirkt sofort. Nicht möglich, solange eine Zusage des Auftraggebers besteht."
+msgstr "Sets a performance's type, uniform (number from musik_ansehen, null removes it), uniform note, formation or main performance (further day of a festival, null detaches it). Applies immediately. Not possible while the client's acceptance stands."
+
+#: mcpserver/oauth.py
+msgid "Musik: Auftritte, Uniformen und Auftrittsarten ansehen und ändern (gilt sofort, ohne Vertrag, Gage und Abrechnung)"
+msgstr "Music: view and change performances, uniforms and performance types (applies immediately; no contract, fee or settlement)"
+
+#: music/engagements.py
+msgid "Dieses Dokument gilt für alle %(n)d Tage zusammen."
+msgstr "This document covers all %(n)d days together."
+
+#: music/masterdata.py
+msgid "Umzug"
+msgstr "Procession"
+
+#: music/masterdata.py
+msgid "Parade"
+msgstr "Parade"
+
+#: music/masterdata.py
+msgid "Zapfenstreich"
+msgstr "Tattoo"
+
+#: music/masterdata.py
+msgid "Fackelumzug"
+msgstr "Torchlight procession"
+
+#: music/masterdata.py
+msgid "Frühschoppen"
+msgstr "Morning pint"
+
+#: music/masterdata.py
+msgid "Biwak"
+msgstr "Bivouac"
+
+#: music/masterdata.py
+msgid "Konzert"
+msgstr "Concert"
+
+#: music/masterdata.py
+msgid "Martinsumzug"
+msgstr "St Martin's procession"
+
+#: music/masterdata.py
+msgid "Karneval"
+msgstr "Carnival"
+
+#: music/masterdata.py
+msgid "Ständchen"
+msgstr "Serenade"
+
+#: music/masterdata.py
+msgid "Höchstens %(n)d Punkte in der Checkliste."
+msgstr "At most %(n)d checklist items."
+
+#: music/masterdata.py
+msgid "Dieser Name ist schon vergeben."
+msgstr "This name is already taken."
+
+#: music/masterdata.py
+msgid "Wird noch bei Auftritten verwendet. Bitte stattdessen archivieren."
+msgstr "Still used by performances. Please archive it instead."
+
+#: music/views.py
+msgid "Ein Auftritt kann nicht zu sich selbst gehören."
+msgstr "A performance cannot belong to itself."
+
+#: music/views.py
+msgid "Bitte den Hauptauftritt wählen, nicht einen weiteren Tag."
+msgstr "Please choose the main performance, not a further day."
+
+#: music/views.py
+msgid "Dieser Auftritt hat selbst weitere Tage und bleibt Hauptauftritt."
+msgstr "This performance has further days of its own and stays the main performance."
+
+#: music/views.py
+msgid "Dieser Auftritt ist nicht verfügbar."
+msgstr "This performance is not available."
+
+#: music/views.py
+msgid "Dieser Auftritt hat schon ein eigenes Angebot oder eine eigene Abrechnung und kann deshalb nicht angehängt werden."
+msgstr "This performance already has its own offer or settlement and therefore cannot be attached."
+
+#: music/views.py
+msgid "Archivierte Einträge lassen sich nicht neu wählen."
+msgstr "Archived entries cannot be newly chosen."
+
+#: music/views.py
+msgid "Der Termin gehört zu keiner Veranstaltung."
+msgstr "The event does not belong to any project event."

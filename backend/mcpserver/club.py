@@ -67,10 +67,20 @@ class ClubContext(Context):
     def org_id(self) -> int:
         return self.grant.organization_id
 
-    def call(self, view_cls: type, method: str, path: str, data=None, multipart=None, **kwargs):
+    def call(
+        self,
+        view_cls: type,
+        method: str,
+        path: str,
+        data=None,
+        multipart=None,
+        actions: dict | None = None,
+        **kwargs,
+    ):
         """Ansicht der Oberfläche aufrufen; liefert die Daten der Antwort oder ToolError.
 
-        ``multipart``: Formular mit Dateien (POST), z. B. für das Logo."""
+        ``multipart``: Formular mit Dateien (POST), z. B. für das Logo. ``actions``: bei einem
+        ViewSet die Zuordnung Methode → Aktion, z. B. ``{"patch": "partial_update"}``."""
         outer = self.request
         factory = RequestFactory()
         extra = {
@@ -95,7 +105,7 @@ class ClubContext(Context):
         inner.user = self.grant.user
         inner.session = SessionStore()
         inner.LANGUAGE_CODE = getattr(outer, "LANGUAGE_CODE", "de")
-        view = _for_mcp(view_cls).as_view()
+        view = _for_mcp(view_cls).as_view(actions) if actions else _for_mcp(view_cls).as_view()
         response = view(inner, org_id=self.org_id, **kwargs)
         status = response.status_code
         body = getattr(response, "data", None)
@@ -794,8 +804,16 @@ def tools_for(ctx: Context):
     from .club_chronicle import CHRONICLE_TOOLS
     from .club_design import DESIGN_TOOLS
     from .club_letterhead import LETTERHEAD_TOOLS
+    from .club_music import MUSIC_TOOLS
     from .club_theme import THEME_TOOLS
 
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
-    club = (*CLUB_TOOLS, *DESIGN_TOOLS, *CHRONICLE_TOOLS, *THEME_TOOLS, *LETTERHEAD_TOOLS)
+    club = (
+        *CLUB_TOOLS,
+        *DESIGN_TOOLS,
+        *CHRONICLE_TOOLS,
+        *THEME_TOOLS,
+        *LETTERHEAD_TOOLS,
+        *MUSIC_TOOLS,
+    )
     return (*TOOLS, *(t for t in club if t.scope in scopes))

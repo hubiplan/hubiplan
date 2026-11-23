@@ -46,3 +46,43 @@ export function MusicStatus({ status }: { status: string }) {
     </span>
   )
 }
+
+export type UniformDetails = {
+  id: number
+  name: string
+  description: string
+  checklist: string[]
+  has_image: boolean
+} | null
+
+/** Uniform für Eingeteilte: Name mit Ergänzung, Beschreibung, Checkliste, Bild (Issue #712) */
+export function UniformInfo({
+  text,
+  details,
+  imageUrl,
+}: {
+  text: string
+  details?: UniformDetails
+  imageUrl?: string
+}) {
+  if (!text) return null
+  return (
+    <div>
+      <dt>{t('Uniform')}</dt>
+      <dd className="stack">
+        <span>{text}</span>
+        {!!details?.description && <span className="muted">{details.description}</span>}
+        {!!details?.checklist.length && (
+          <ul className="music-checklist" aria-label={t('Was dazugehört')}>
+            {details.checklist.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        )}
+        {details?.has_image && imageUrl && (
+          <img className="music-uniform-image" src={imageUrl} alt={details.name} />
+        )}
+      </dd>
+    </div>
+  )
+}

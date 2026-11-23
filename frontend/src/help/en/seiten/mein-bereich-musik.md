@@ -11,7 +11,7 @@ As a musician you find your performances, rehearsals, sheet music and absences h
 
 ## Performances and rehearsals
 
-**My performances** lists each date separately, with meeting point, uniform and programme. Respond with **Accept** or **Decline**; your current response is marked. If HUBIplan knows of a conflict with another date, it is shown as text.
+**My performances** lists each date separately, with performance type, meeting point, uniform and programme. The uniform comes with a description, a checklist of what belongs to it and, where available, an image. Respond with **Accept** or **Decline**; your current response is marked. If HUBIplan knows of a conflict with another date, it is shown as text.
 
 ## Sheet music
 

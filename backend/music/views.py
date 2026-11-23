@@ -16,6 +16,80 @@ from .availability import ensure_performance
 from .models import Assignment, Musician, Performance, Position, Skill
 
 
+def accepted(performance) -> bool:
+    return performance.engagement_documents.filter(kind="offer", status="accepted").exists()
+
+
+def validate_main(serializer, attrs):
+    """Issue #711: weitere Tage hängen an einem Hauptauftritt und erben den Auftraggeber."""
+    instance = serializer.instance
+    if "main" not in attrs:
+        main = instance.main if instance else None
+        if main is not None:
+            attrs["customer"] = main.customer
+        return attrs
+    main = attrs["main"]
+    previous = instance.main if instance else None
+    if main == previous:
+        if main is not None:
+            attrs["customer"] = main.customer
+        return attrs
+    if main is not None:
+        view = serializer.context["view"]
+        if instance and main.pk == instance.pk:
+            raise serializers.ValidationError(
+                gettext("Ein Auftritt kann nicht zu sich selbst gehören.")
+            )
+        if main.main_id:
+            raise serializers.ValidationError(
+                gettext("Bitte den Hauptauftritt wählen, nicht einen weiteren Tag.")
+            )
+        if instance and instance.days.exists():
+            raise serializers.ValidationError(
+                gettext("Dieser Auftritt hat selbst weitere Tage und bleibt Hauptauftritt.")
+            )
+        if not PerformanceViewSet.visible(view, main):
+            raise serializers.ValidationError(gettext("Dieser Auftritt ist nicht verfügbar."))
+        if accepted(main):
+            raise serializers.ValidationError(
+                gettext("Bitte zuerst die bestehende Zusage aufheben.")
+            )
+        if instance:
+            own_contract(instance)
+        attrs["customer"] = main.customer
+    if previous is not None and accepted(previous):
+        raise serializers.ValidationError(gettext("Bitte zuerst die bestehende Zusage aufheben."))
+    return attrs
+
+
+def own_contract(performance):
+    """Ein Tag mit eigenem Vertrag oder eigener Abrechnung kann nicht angehängt werden."""
+    from .models import EngagementDocument, MusicianClaim, PerformanceAccount
+
+    account = PerformanceAccount.objects.filter(performance=performance).first()
+    if (
+        EngagementDocument.objects.filter(performance=performance).exists()
+        or MusicianClaim.objects.filter(assignment__performance=performance).exists()
+        or (
+            account
+            and (
+                account.invoice_id
+                or account.fee
+                or account.travel
+                or account.extras
+                or account.payments.exists()
+                or account.previous_invoices.exists()
+            )
+        )
+    ):
+        raise serializers.ValidationError(
+            gettext(
+                "Dieser Auftritt hat schon ein eigenes Angebot oder eine eigene Abrechnung "
+                "und kann deshalb nicht angehängt werden."
+            )
+        )
+
+
 class ScopedSerializer(serializers.ModelSerializer):
     def get_fields(self):
         fields = super().get_fields()
@@ -34,11 +108,20 @@ class ScopedSerializer(serializers.ModelSerializer):
         if self.Meta.model is Musician and not value("membership") and not value("name"):
             raise serializers.ValidationError(gettext("Bitte Mitglied oder Gastnamen angeben."))
         if self.Meta.model is Performance:
+            attrs = validate_main(self, attrs)
+            for key in ("kind", "uniform_choice"):
+                chosen = attrs.get(key)
+                if (
+                    chosen is not None
+                    and not chosen.active
+                    and chosen != getattr(self.instance, key, None)
+                ):
+                    raise serializers.ValidationError(
+                        gettext("Archivierte Einträge lassen sich nicht neu wählen.")
+                    )
             if (
                 self.instance
-                and self.instance.engagement_documents.filter(
-                    kind="offer", status="accepted"
-                ).exists()
+                and accepted(self.instance.lead)
                 and any(
                     k in attrs and attrs[k] != getattr(self.instance, k)
                     for k in [
@@ -47,9 +130,11 @@ class ScopedSerializer(serializers.ModelSerializer):
                         "meeting_place",
                         "setup_at",
                         "uniform",
+                        "uniform_choice",
                         "formation",
                         "notes",
                         "event",
+                        "main",
                     ]
                 )
             ):
@@ -165,6 +250,24 @@ class MusicPerformanceSerializer(ScopedSerializer):
     ends_at = serializers.DateTimeField(source="event.ends_at", read_only=True)
     location = serializers.CharField(source="event.location", read_only=True)
     cancelled = serializers.BooleanField(source="event.is_cancelled", read_only=True)
+    # Veranstaltung (Finanzen), zu der der Termin gehört (Issue #711)
+    project = serializers.IntegerField(source="event.project_id", read_only=True)
+    kind_name = serializers.SerializerMethodField()
+    uniform_text = serializers.SerializerMethodField()
+    uniform_details = serializers.SerializerMethodField()
+    days = serializers.SerializerMethodField()
+
+    def get_kind_name(self, obj) -> str:
+        return obj.kind.name if obj.kind_id else ""
+
+    def get_uniform_text(self, obj) -> str:
+        return obj.uniform_text()
+
+    def get_uniform_details(self, obj) -> dict | None:
+        return obj.uniform_details()
+
+    def get_days(self, obj) -> list[int]:
+        return sorted(day.pk for day in obj.days.all())
 
     class Meta:
         model = Performance
@@ -176,11 +279,19 @@ class MusicPerformanceSerializer(ScopedSerializer):
             "ends_at",
             "location",
             "cancelled",
+            "project",
+            "main",
+            "days",
+            "kind",
+            "kind_name",
             "customer",
             "meeting_at",
             "meeting_place",
             "setup_at",
+            "uniform_choice",
             "uniform",
+            "uniform_text",
+            "uniform_details",
             "formation",
             "notes",
             "remind_days",
@@ -293,6 +404,70 @@ class SkillViewSet(MusicViewSet):
 
 class PerformanceViewSet(MusicViewSet):
     serializer_class = MusicPerformanceSerializer
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("event", "kind", "uniform_choice")
+            .prefetch_related("days")
+        )
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        from .models import PerformanceAccount
+
+        Performance.objects.select_for_update().get(pk=serializer.instance.pk)
+        super().perform_update(serializer)
+        instance = serializer.instance
+        if instance.main_id:
+            # Leere eigene Abrechnung eines angehängten Tages (nur Lesen/Öffnen) fällt weg
+            PerformanceAccount.objects.filter(performance=instance, invoice__isnull=True).delete()
+        # Auftraggeber gilt für alle Tage des Vertrags
+        Performance.objects.filter(main=instance).exclude(customer=instance.customer).update(
+            customer=instance.customer
+        )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def combine(self, request, org_id, pk):
+        """Alle Auftritte derselben Veranstaltung als weitere Tage an diesen hängen."""
+        lead = self.get_object()
+        Performance.objects.select_for_update().get(pk=lead.pk)
+        if lead.main_id:
+            raise serializers.ValidationError(
+                gettext("Bitte den Hauptauftritt wählen, nicht einen weiteren Tag.")
+            )
+        if not lead.event.project_id:
+            raise serializers.ValidationError(gettext("Der Termin gehört zu keiner Veranstaltung."))
+        added, skipped = [], []
+        candidates = (
+            self.get_queryset()
+            .filter(event__project_id=lead.event.project_id)
+            .exclude(pk=lead.pk)
+            .exclude(main=lead)
+            .order_by("event__starts_at", "pk")
+        )
+        for day in candidates:
+            serializer = self.get_serializer(day, data={"main": lead.pk}, partial=True)
+            try:
+                with transaction.atomic():
+                    serializer.is_valid(raise_exception=True)
+                    self.perform_update(serializer)
+                added.append(day.pk)
+            except serializers.ValidationError as exc:
+                detail = exc.detail
+                text = (
+                    " ".join(str(v) for v in detail)
+                    if isinstance(detail, list)
+                    else " ".join(
+                        str(x) for v in detail.values() for x in (v if isinstance(v, list) else [v])
+                    )
+                    if isinstance(detail, dict)
+                    else str(detail)
+                )
+                skipped.append({"id": day.pk, "title": day.event.title, "reason": text})
+        return Response({"added": added, "skipped": skipped})
 
     @action(detail=False, methods=["get"])
     def overview(self, request, org_id):

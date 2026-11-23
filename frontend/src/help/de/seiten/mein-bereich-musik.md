@@ -11,7 +11,7 @@ Als Musikerin oder Musiker findest du hier deine Auftritte, Proben, Noten und Ab
 
 ## Auftritte und Proben
 
-Unter **Meine Auftritte** steht jeder Termin für sich, mit Treffpunkt, Uniform und Programm. Mit **Zusagen** oder **Absagen** meldest du dich zurück; deine aktuelle Rückmeldung ist markiert. Kennt HUBIplan einen Konflikt mit einem anderen Termin, steht das als Text dabei.
+Unter **Meine Auftritte** steht jeder Termin für sich, mit Auftrittsart, Treffpunkt, Uniform und Programm. Zur Uniform stehen Beschreibung, eine Checkliste, was dazugehört, und bei Bedarf ein Bild. Mit **Zusagen** oder **Absagen** meldest du dich zurück; deine aktuelle Rückmeldung ist markiert. Kennt HUBIplan einen Konflikt mit einem anderen Termin, steht das als Text dabei.
 
 ## Noten
 
