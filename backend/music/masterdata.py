@@ -47,7 +47,8 @@ def ensure_default_kinds(org):
 
 
 class ChecklistField(serializers.ListField):
-    child = serializers.CharField(max_length=200)
+    # Leere Zeilen fallen weg
+    child = serializers.CharField(max_length=200, allow_blank=True, trim_whitespace=True)
 
     def to_internal_value(self, data):
         items = [item.strip() for item in super().to_internal_value(data) if item.strip()]

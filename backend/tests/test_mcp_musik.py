@@ -54,13 +54,17 @@ def test_uniform_und_art_setzen(club, musikwart):  # noqa: F811
         )
         performance = Performance.objects.create(organization=club, event=event)
     token = connect(musikwart, club, scope=ALL, haken=[MUSIC])["access_token"]
-    text, failed = call(
+    # „name“ ist auch der Parameter von call(): Werkzeug direkt aufrufen
+    resp = rpc(
         token,
-        "musik_uniform_speichern",
-        name="Winteruniform",
-        checkliste=["Mantel", "Mütze"],
+        "tools/call",
+        {
+            "name": "musik_uniform_speichern",
+            "arguments": {"name": "Winteruniform", "checkliste": ["Mantel", "Mütze"]},
+        },
     )
-    assert not failed, text
+    result = resp.json()["result"]
+    assert not result["isError"], result
     text, failed = call(token, "musik_ansehen")
     assert not failed, text
     data = json.loads(text)
