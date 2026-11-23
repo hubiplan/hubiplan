@@ -53,6 +53,7 @@ import { UndoBar, useDesignHistory } from './designHistory.tsx'
 import { DesignFile } from './DesignFile.tsx'
 import { HomeBuilder, TargetField } from './HomeBuilder.tsx'
 import { t, tc } from '../../i18n/index.ts'
+import { NameFormats } from './NameFormats.tsx'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
@@ -216,6 +217,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'header_image',
   'header_image_narrow',
   'name_format',
+  'name_formats',
   'show_vacant',
   'show_instrument',
   'show_titles',
@@ -910,6 +912,7 @@ function WebsiteAdmin({
               onChange={(e) => set('name_format', e.target.value as WebsiteSettings['name_format'])}
             >
               <option value="full">{t('Vorname Name')}</option>
+              <option value="short">{t('V. Nachname')}</option>
               <option value="initial">{t('Vorname N.')}</option>
             </SelectField>
             <SelectField
@@ -927,6 +930,12 @@ function WebsiteAdmin({
             <Why k="web_names" />
             <Why k="web_consent" />
           </div>
+          <NameFormats
+            value={v.name_formats ?? {}}
+            base={v.name_format}
+            menuItems={website.menu_items}
+            onChange={(next) => set('name_formats', next)}
+          />
           <Checkbox
             label={t('Titel vor dem Namen nennen')}
             hint={t('z. B. „Dr. Max Muster“; Titel aus der Mitgliedsakte')}

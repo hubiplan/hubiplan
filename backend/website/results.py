@@ -125,7 +125,7 @@ class Names:
     def of(self, membership, fallback: str, *, guest: bool = False, adult: bool = False) -> str:
         """``guest``: Gast-Starter oder frei eingetragener Pfandgewinner; erscheint nur mit
         Namen, wenn der Verein ihn als volljährig angegeben hat (``adult``, FF-24 (c), PF-21)."""
-        fmt = self.site.site.name_format
+        fmt = self.site.site.name_format_for("results")
         if membership is None:
             if guest and not adult:
                 return WITHOUT_NAME

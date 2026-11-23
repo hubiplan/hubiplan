@@ -68,6 +68,8 @@ Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in allem,
 
 ## Personen
 
+„Namensform“ legt fest, wie Namen auf der Webseite erscheinen: „Vorname Name“ (Max Muster), „V. Nachname“ (M. Muster) oder „Vorname N.“ (Max M.). Unter „Namensform je Bereich“ wählt ihr für Vorstand und Ansprechpartner, Ämter und ihre Chronik, Mitgliederlisten (auch je Mitgliedsart), In Gedenken, Würdenträger und Ehrungen sowie Ergebnisse eine eigene Form, zum Beispiel den Vorstand mit vollem Namen und die Aktiven als „M. Muster“. Wo nichts gewählt ist, gilt die Namensform darüber; eine Mitgliedsart ohne eigene Wahl folgt den Mitgliederlisten. Die Namensform je Bereich gehört zur Gestaltung: Sie steht erst im Entwurf und erscheint nach „Veröffentlichen“.
+
 „Titel vor dem Namen nennen“ setzt den Titel aus der Mitgliedsakte vor den Namen (z. B. „Dr. Max Muster“), bei Vorstand, Listen und Ergebnissen sowie bei den Vertretungsberechtigten im Impressum (wenn die Rolle mit der Mitgliedsakte verknüpft ist); ausgeschaltet erscheinen Namen ohne Titel. „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.
 
 ## {pl}

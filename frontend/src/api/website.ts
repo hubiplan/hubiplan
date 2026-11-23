@@ -33,7 +33,9 @@ export interface WebsiteSettings {
   style?: StyleValues
   /** Darstellung der festen Bereiche (G5): nur abweichende Varianten; fehlt = Standard */
   layouts?: Record<string, string>
-  name_format: 'full' | 'initial'
+  name_format: NameFormat
+  /** Namensform je Bereich (Issue #709), gehört zum Entwurf; fehlt ein Bereich, gilt name_format */
+  name_formats?: Record<string, NameFormat>
   show_vacant: boolean
   /** Hauptinstrument aus dem Musikmodul unter dem Namen (fehlt bei älteren Ständen) */
   show_instrument?: boolean
@@ -193,6 +195,9 @@ export interface MenuNode {
 }
 
 /** Möglicher Menüpunkt: Baustein, eigene Textseite, Würde oder Überschrift */
+/** „Vorname Name“, „V. Nachname“ (Issue #709) oder „Vorname N.“ */
+export type NameFormat = 'full' | 'short' | 'initial'
+
 export interface MenuItem {
   key: string
   /** Name im Menü (eigener Name oder Standard) */
@@ -458,6 +463,8 @@ export const DRAFT_FIELDS = [
   'header_image_narrow',
   'home_sections',
   'layouts',
+  // Namensform je Bereich (Issue #709)
+  'name_formats',
   // Menü mit Namen, Links und Knopf (KI-Schnittstelle W2): erst nach „Veröffentlichen“ sichtbar
   'menu',
   'block_names',

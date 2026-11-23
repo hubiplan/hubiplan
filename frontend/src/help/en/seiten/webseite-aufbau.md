@@ -71,6 +71,8 @@ With the “Search” section a magnifying glass appears in the menu. It searche
 
 ## People
 
+“Name format” sets how names appear on the website: “First name Last name” (Max Muster), “F. Lastname” (M. Muster) or “First name L.” (Max M.). Under “Name format per area” you choose your own format for board and contacts, offices and their chronicle, member lists (also per member type), in memoriam, title holders and honours and results, for example the board with full names and active members as “M. Muster”. Where nothing is chosen, the name format above applies; a member type without its own choice follows the member lists. The name format per area is part of the design: it is saved as a draft first and appears after “Publish”.
+
 “Show titles before names” puts the title from the member record before the name (e.g. “Dr. Max Muster”) for the board, lists and results as well as for the authorised representatives in the legal notice (if the role is linked to the member record); when off, names appear without a title. “Show main instrument below the name” takes the main instrument from Music › Musicians. “Show postal address for the board” only applies to people with the consent “Postal address” in their member record.
 
 ## Sub-units

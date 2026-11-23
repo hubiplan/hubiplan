@@ -228,8 +228,12 @@ DRAFT_FIELDS = (
     "header_image_narrow",
     "home_sections",
     "layouts",
+    # Namensform je Bereich (Issue #709); die Namensform der Webseite bleibt eine Einstellung
+    "name_formats",
     *MENU_DRAFT_FIELDS,
 )
+# Bereiche mit eigener Namensform (Issue #709); dazu je Mitgliedsart „membertype:<Nummer>“
+NAME_FORMAT_AREAS = ("board", "offices", "members", "memorial", "honors", "results")
 # Kopfbilder stehen am Bild (WebsiteImage.header/header_narrow), nicht an der Webseite
 HEADER_IMAGE_FIELDS = {"header_image": "header", "header_image_narrow": "header_narrow"}
 # #480: mehrere Kopfbilder; die Webseite zeigt bei jedem Aufruf eines davon
@@ -270,6 +274,8 @@ class Website(models.Model):
 
     class NameFormat(models.TextChoices):
         FULL = "full", gettext_lazy("Vorname Name")
+        # Issue #709: Initial und Nachname („D. Asbach“), wie manche Vereine ihre Aktiven nennen
+        SHORT = "short", gettext_lazy("V. Nachname")
         INITIAL = "initial", gettext_lazy("Vorname N.")
 
     class MissingConsent(models.TextChoices):
@@ -397,6 +403,11 @@ class Website(models.Model):
     name_format = models.CharField(
         "Namensform", max_length=10, choices=NameFormat.choices, default=NameFormat.FULL
     )
+    # Issue #709: Bereich (NAME_FORMAT_AREAS oder „membertype:<Nummer>“) → Namensform;
+    # fehlt ein Bereich, gilt name_format. Gehört zum Entwurf der Gestaltung (DRAFT_FIELDS).
+    name_formats = models.JSONField(
+        "Namensform je Bereich", default=dict, blank=True, db_default={}
+    )
     show_vacant = models.BooleanField(
         "unbesetzte Funktionen als „derzeit unbesetzt“ zeigen", default=False
     )
@@ -498,6 +509,20 @@ class Website(models.Model):
                 setattr(self, f"draft_{key}", draft[key])
         # auch die Texte zeigen ihren Entwurf (SiteView.published_texts)
         self.draft_shown = True
+
+    def name_format_for(self, area: str = "", member_type_id: int | None = None) -> str:
+        """Namensform eines Bereichs: eigene Wahl, bei Mitgliederlisten zuerst die der
+        Mitgliedsart, sonst die Namensform der Webseite (Issue #709)."""
+        chosen = self.name_formats if isinstance(self.name_formats, dict) else {}
+        valid = set(self.NameFormat.values)
+        keys = [f"membertype:{member_type_id}"] if member_type_id else []
+        if area:
+            keys.append(area)
+        for key in keys:
+            value = chosen.get(key)
+            if value in valid:
+                return value
+        return self.name_format
 
     def design_choices(self) -> set[str]:
         return set(DESIGNS) | {p.key for p in self.packages()}

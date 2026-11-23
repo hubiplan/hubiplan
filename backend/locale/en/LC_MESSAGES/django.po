@@ -12487,15 +12487,6 @@ msgstr ""
 msgid "beliebig"
 msgstr "any"
 
-msgid ""
-"Ändert Design, Farben, Stilregler, Darstellung oder Kopfbild im Entwurf. "
-"Nur angegebene Werte ändern sich; null setzt einen Wert zurück. Werte aus "
-"webseite_gestaltung_ansehen. Braucht das Recht „Webseite verwalten“."
-msgstr ""
-"Changes design, colours, style controls, layout or header image in the "
-"draft. Only the given values change; null resets a value. Values from "
-"webseite_gestaltung_ansehen. Needs the “Manage website” permission."
-
 msgid "„%(name)s“ muss ein Objekt sein."
 msgstr "“%(name)s” must be an object."
 
@@ -17826,3 +17817,31 @@ msgstr "There is no earlier arrangement."
 #: organizations/menu_layout.py
 msgid "Untereinheiten übernehmen das Menü ihres Vereins."
 msgstr "Sub-units use the menu of their club."
+
+#: website/models.py
+msgid "V. Nachname"
+msgstr "F. Lastname"
+
+#: website/views.py
+msgid "Namensform bitte je Bereich angeben."
+msgstr "Please give the name format per area."
+
+#: website/views.py
+msgid "Unbekannter Bereich „{x0}“."
+msgstr "Unknown area “{x0}”."
+
+#: website/views.py
+msgid "Unbekannte Namensform „{x0}“."
+msgstr "Unknown name format “{x0}”."
+
+#: mcpserver/club_design.py
+msgid "board = Vorstand und Ansprechpartner, offices = Ämter und ihre Chronik, members = alle Mitgliederlisten, membertype:<Nummer> = eine Mitgliedsart, memorial = In Gedenken, honors = Würdenträger und Ehrungen, results = Ergebnisse."
+msgstr "board = board and contacts, offices = offices and their chronicle, members = all member lists, membertype:<number> = one member type, memorial = in memoriam, honors = title holders and honours, results = results."
+
+#: mcpserver/club_design.py
+msgid "Ändert Design, Farben, Stilregler, Darstellung, Kopfbild oder die Namensform je Bereich im Entwurf. Nur angegebene Werte ändern sich; null setzt einen Wert zurück. Werte aus webseite_gestaltung_ansehen. Braucht das Recht „Webseite verwalten“."
+msgstr "Changes design, colours, style controls, presentation, header image or the name format per area in the draft. Only the given values change; null resets a value. Values from webseite_gestaltung_ansehen. Needs the permission “Manage website”."
+
+#: mcpserver/club_design.py
+msgid "Bereich → Namensform: „full“ (Vorname Nachname), „short“ (V. Nachname), „initial“ (Vorname N.) oder null (wie die Webseite). Bereiche aus webseite_gestaltung_ansehen."
+msgstr "Area → name format: “full” (First name Last name), “short” (F. Lastname), “initial” (First name L.) or null (as the website). Areas from webseite_gestaltung_ansehen."
