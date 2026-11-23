@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
@@ -150,65 +151,67 @@ export function ProgramPanel({ performance }: { performance: number }) {
         </button>
       )}
       {editing && canEdit && (
-        <ScoreForm
-          key={editing === 'new' ? 'new' : editing.id}
-          initial={editing === 'new' ? undefined : editing}
-          fields={[
-            {
-              key: 'kind',
-              label: t('Art'),
-              options: [
-                ['piece', t('Stück')],
-                ['pause', t('Pause')],
-                ['encore', t('Zugabe')],
-              ],
-            },
-            {
-              key: 'arrangement',
-              label: t('Arrangement'),
-              options: arrangements
-                .filter(
-                  (a) => a.active || a.id === (editing === 'new' ? null : editing.arrangement),
-                )
-                .map((a) => [String(a.id), a.name]),
-              optional: true,
-            },
-            {
-              key: 'duration_seconds',
-              label: t('Dauer in Sekunden'),
-              type: 'number',
-              optional: true,
-            },
-            { key: 'paper_format', label: t('Format'), options: formats() },
-            { key: 'note', label: t('Hinweis'), optional: true },
-          ]}
-          onClose={() => setEditing(null)}
-          onSave={async (values) => {
-            await act({
-              ...values,
-              action: 'save',
-              ...(editing === 'new' ? {} : { id: editing.id }),
-              duration_seconds:
-                values.duration_seconds === '' ? null : Number(values.duration_seconds),
-            })
-            setEditing(null)
-          }}
-          onAutoSave={
-            editing === 'new'
-              ? undefined
-              : async (_changes, values) => {
-                  // Die Schnittstelle speichert einen Programmpunkt immer als Ganzes
-                  await api.post(url, {
-                    ...values,
-                    action: 'save',
-                    id: editing.id,
-                    duration_seconds:
-                      values.duration_seconds === '' ? null : Number(values.duration_seconds),
-                  })
-                  void load.reload()
-                }
-          }
-        />
+        <EditAt at={editing === 'new' ? null : editKey('program', editing.id)}>
+          <ScoreForm
+            key={editing === 'new' ? 'new' : editing.id}
+            initial={editing === 'new' ? undefined : editing}
+            fields={[
+              {
+                key: 'kind',
+                label: t('Art'),
+                options: [
+                  ['piece', t('Stück')],
+                  ['pause', t('Pause')],
+                  ['encore', t('Zugabe')],
+                ],
+              },
+              {
+                key: 'arrangement',
+                label: t('Arrangement'),
+                options: arrangements
+                  .filter(
+                    (a) => a.active || a.id === (editing === 'new' ? null : editing.arrangement),
+                  )
+                  .map((a) => [String(a.id), a.name]),
+                optional: true,
+              },
+              {
+                key: 'duration_seconds',
+                label: t('Dauer in Sekunden'),
+                type: 'number',
+                optional: true,
+              },
+              { key: 'paper_format', label: t('Format'), options: formats() },
+              { key: 'note', label: t('Hinweis'), optional: true },
+            ]}
+            onClose={() => setEditing(null)}
+            onSave={async (values) => {
+              await act({
+                ...values,
+                action: 'save',
+                ...(editing === 'new' ? {} : { id: editing.id }),
+                duration_seconds:
+                  values.duration_seconds === '' ? null : Number(values.duration_seconds),
+              })
+              setEditing(null)
+            }}
+            onAutoSave={
+              editing === 'new'
+                ? undefined
+                : async (_changes, values) => {
+                    // Die Schnittstelle speichert einen Programmpunkt immer als Ganzes
+                    await api.post(url, {
+                      ...values,
+                      action: 'save',
+                      id: editing.id,
+                      duration_seconds:
+                        values.duration_seconds === '' ? null : Number(values.duration_seconds),
+                    })
+                    void load.reload()
+                  }
+            }
+          />
+        </EditAt>
       )}
       {!p.entries.length && (
         <MusicEmptyState>{t('Noch keine Programmpunkte vorhanden.')}</MusicEmptyState>
@@ -267,6 +270,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
               </button>
             </div>
           )}
+          <EditSlot id={editKey('program', e.id)} />
         </article>
       ))}
       <h2>{t('Besetzung und Notenvorbereitung')}</h2>

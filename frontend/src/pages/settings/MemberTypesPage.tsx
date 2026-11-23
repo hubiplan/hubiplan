@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useState } from 'react'
 import type { FormEvent } from 'react'
 import { memberApi } from '../../api/members.ts'
 import type { MemberType, TypeUsage } from '../../api/members.ts'
@@ -111,17 +112,19 @@ export function MemberTypesPage() {
         </p>
       )}
       {editing !== null && (
-        <TypeForm
-          // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
-          key={editing === 'new' ? 'new' : editing.id}
-          orgId={org.id}
-          type={editing === 'new' ? null : editing}
-          onDone={async () => {
-            setEditing(null)
-            await reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('member-type', editing.id)}>
+          <TypeForm
+            // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
+            key={editing === 'new' ? 'new' : editing.id}
+            orgId={org.id}
+            type={editing === 'new' ? null : editing}
+            onDone={async () => {
+              setEditing(null)
+              await reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {removing && (
         <div className="subcard" role="dialog" aria-label={t('Mitgliedsart entfernen')}>
@@ -186,30 +189,36 @@ export function MemberTypesPage() {
         </thead>
         <tbody>
           {sort.ordered.map((tm) => (
-            <tr key={tm.id} {...sort.rowProps(tm)}>
-              {sort.active && <td className="drag-cell">{sort.handle(tm)}</td>}
-              <td>{tm.name}</td>
-              {fed && <td>{tm.reported ? t('ja') : t('nein')}</td>}
-              <td>{tm.active ? t('ja') : t('nein')}</td>
-              <td>{tm.counts_for_duration ? t('ja') : t('nein')}</td>
-              <td className="actions">
-                {editable && (
-                  <>
-                    <button type="button" className="link-button" onClick={() => setEditing(tm)}>
-                      {t('Bearbeiten')}
-                    </button>{' '}
-                    <button
-                      type="button"
-                      className="link-button"
-                      aria-label={t('{name} löschen', { name: tm.name })}
-                      onClick={() => void askRemove(tm)}
-                    >
-                      {t('Löschen')}
-                    </button>
-                  </>
-                )}
-              </td>
-            </tr>
+            <Fragment key={tm.id}>
+              <tr key={tm.id} {...sort.rowProps(tm)}>
+                {sort.active && <td className="drag-cell">{sort.handle(tm)}</td>}
+                <td>{tm.name}</td>
+                {fed && <td>{tm.reported ? t('ja') : t('nein')}</td>}
+                <td>{tm.active ? t('ja') : t('nein')}</td>
+                <td>{tm.counts_for_duration ? t('ja') : t('nein')}</td>
+                <td className="actions">
+                  {editable && (
+                    <>
+                      <button type="button" className="link-button" onClick={() => setEditing(tm)}>
+                        {t('Bearbeiten')}
+                      </button>{' '}
+                      <button
+                        type="button"
+                        className="link-button"
+                        aria-label={t('{name} löschen', { name: tm.name })}
+                        onClick={() => void askRemove(tm)}
+                      >
+                        {t('Löschen')}
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+              <EditSlot
+                id={editKey('member-type', tm.id)}
+                colSpan={(sort.active ? 1 : 0) + (fed ? 5 : 4)}
+              />
+            </Fragment>
           ))}
         </tbody>
       </table>

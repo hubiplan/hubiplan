@@ -1,3 +1,4 @@
+import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { StatutePanel } from '../../components/StatutePanel.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -119,42 +120,44 @@ function DepartmentRolesPanel({
         )}
       </div>
       {roleEdit !== null && (
-        <RoleForm
-          key={roleEdit === 'new' ? 'new' : roleEdit.id}
-          role={
-            roleEdit === 'new'
-              ? null
-              : { ...roleEdit, holders: roleEdit.holders.map((h) => h.name) }
-          }
-          catalog={catalog}
-          fields={UNIT_ROLE_FIELDS}
-          hasWebsite={hasWebsite}
-          readOnly={!editable}
-          permissionsOptional
-          showPermissions={!!dep.self_managed}
-          onSave={(data) =>
-            roleEdit === 'new'
-              ? orgApi.createDepartmentRole(orgId, dep.id, data)
-              : orgApi.updateDepartmentRole(orgId, roleEdit.id, data)
-          }
-          onDelete={
-            roleEdit === 'new' ? undefined : () => orgApi.deleteDepartmentRole(orgId, roleEdit.id)
-          }
-          confirmDelete={
-            roleEdit === 'new'
-              ? undefined
-              : () =>
-                  confirmRoleRemoval(
-                    roleEdit.name,
-                    roleEdit.holders.map((h) => h.name),
-                  )
-          }
-          onDone={() => {
-            setRoleEdit(null)
-            onChange()
-          }}
-          onCancel={() => setRoleEdit(null)}
-        />
+        <EditAt at={roleEdit === 'new' ? null : editKey('unit-role', roleEdit.id)}>
+          <RoleForm
+            key={roleEdit === 'new' ? 'new' : roleEdit.id}
+            role={
+              roleEdit === 'new'
+                ? null
+                : { ...roleEdit, holders: roleEdit.holders.map((h) => h.name) }
+            }
+            catalog={catalog}
+            fields={UNIT_ROLE_FIELDS}
+            hasWebsite={hasWebsite}
+            readOnly={!editable}
+            permissionsOptional
+            showPermissions={!!dep.self_managed}
+            onSave={(data) =>
+              roleEdit === 'new'
+                ? orgApi.createDepartmentRole(orgId, dep.id, data)
+                : orgApi.updateDepartmentRole(orgId, roleEdit.id, data)
+            }
+            onDelete={
+              roleEdit === 'new' ? undefined : () => orgApi.deleteDepartmentRole(orgId, roleEdit.id)
+            }
+            confirmDelete={
+              roleEdit === 'new'
+                ? undefined
+                : () =>
+                    confirmRoleRemoval(
+                      roleEdit.name,
+                      roleEdit.holders.map((h) => h.name),
+                    )
+            }
+            onDone={() => {
+              setRoleEdit(null)
+              onChange()
+            }}
+            onCancel={() => setRoleEdit(null)}
+          />
+        </EditAt>
       )}
       <RoleTable
         roles={dep.roles.map((r) => ({ ...r, holders: r.holders.map((h) => h.name) }))}
@@ -164,6 +167,7 @@ function DepartmentRolesPanel({
         showPermissions={!!dep.self_managed}
         editLabel={editable ? t('Bearbeiten') : t('Ansehen')}
         onEdit={(r) => setRoleEdit(dep.roles.find((x) => x.id === r.id) ?? null)}
+        slot="unit-role"
         onReorder={
           editable
             ? (ids) => orgApi.reorderDepartmentRoles(orgId, dep.id, ids).then(() => onChange())

@@ -1,5 +1,6 @@
 // Mitglieder › Würdenträger: Würden (frei benannt, z. B. König, Prinz, Zugkönig),
 // Regentschaften mit Begleitpersonen und Foto, Excel-Import der Königsliste.
+import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { EmptyList } from '../../components/EmptyList.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
@@ -162,23 +163,26 @@ function ReignsPanel() {
         <Alert kind="info">{t('Legt zuerst unter „Würden“ an, welche Würden es gibt.')}</Alert>
       )}
       {editing !== null && (
-        <ReignForm
-          key={editing === 'new' ? 'new' : editing.id}
-          reign={editing === 'new' ? null : editing}
-          dignities={dignities.data.filter(
-            (d) => !d.is_archived || (editing !== 'new' && d.id === editing.dignity),
-          )}
-          origins={origins.data ?? []}
-          onDone={async () => {
-            setEditing(null)
-            await reigns.reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('reign', editing.id)}>
+          <ReignForm
+            key={editing === 'new' ? 'new' : editing.id}
+            reign={editing === 'new' ? null : editing}
+            dignities={dignities.data.filter(
+              (d) => !d.is_archived || (editing !== 'new' && d.id === editing.dignity),
+            )}
+            origins={origins.data ?? []}
+            onDone={async () => {
+              setEditing(null)
+              await reigns.reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {message && <Alert kind="error">{message}</Alert>}
       <DataTable
         label={t('Regentschaften')}
+        slot="reign"
         rows={reigns.data}
         rowKey={(r) => r.id}
         columns={columns}
@@ -875,16 +879,18 @@ function DignitiesPanel() {
         />
       )}
       {editing !== null && (
-        <DignityForm
-          key={editing === 'new' ? 'new' : editing.id}
-          dignity={editing === 'new' ? null : editing}
-          units={units.data ?? []}
-          onDone={async () => {
-            setEditing(null)
-            await reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('dignity', editing.id)}>
+          <DignityForm
+            key={editing === 'new' ? 'new' : editing.id}
+            dignity={editing === 'new' ? null : editing}
+            units={units.data ?? []}
+            onDone={async () => {
+              setEditing(null)
+              await reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {message && <Alert kind="error">{message}</Alert>}
       {sorting ? (
@@ -914,6 +920,7 @@ function DignitiesPanel() {
       ) : (
         <DataTable
           label={t('Würden')}
+          slot="dignity"
           rows={data}
           rowKey={(d) => d.id}
           columns={columns}

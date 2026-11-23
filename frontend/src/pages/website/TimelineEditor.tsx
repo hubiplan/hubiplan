@@ -1,4 +1,5 @@
 // Zeitleiste der Chronik: kurze Einträge mit Jahr oder Zeitraum statt einer Textwand.
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { contentApi } from '../../api/website.ts'
 import type { ImagePosition, TimelineEntry, WebsiteImage } from '../../api/website.ts'
@@ -121,13 +122,15 @@ export function TimelineEditor({
           {value.map((e, index) =>
             editing === index ? (
               <li key={`edit-${index}`}>
-                <EntryForm
-                  initial={e}
-                  images={images}
-                  onApply={apply}
-                  onCancel={() => setEditing(null)}
-                  onImagesChanged={onImagesChanged}
-                />
+                <EditAt at={null}>
+                  <EntryForm
+                    initial={e}
+                    images={images}
+                    onApply={apply}
+                    onCancel={() => setEditing(null)}
+                    onImagesChanged={onImagesChanged}
+                  />
+                </EditAt>
               </li>
             ) : (
               <li

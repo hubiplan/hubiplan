@@ -1,6 +1,7 @@
 // Mitglieder › Einrichtung › Ehrungen: Bezeichnungen der Organisation (Verein
 // oder Dachverband) mit optionaler Beitragsanpassung. Verliehen wird in der
 // Mitgliederakte.
+import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { EmptyList } from '../../components/EmptyList.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
@@ -159,17 +160,19 @@ export function HonoraryTitlesPage() {
           })}
       </p>
       {editing !== null && (
-        <TitleForm
-          // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
-          key={editing === 'new' ? 'new' : editing.id}
-          orgId={org.id}
-          title={editing === 'new' ? null : editing}
-          onDone={async () => {
-            setEditing(null)
-            await reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('honor-title', editing.id)}>
+          <TitleForm
+            // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
+            key={editing === 'new' ? 'new' : editing.id}
+            orgId={org.id}
+            title={editing === 'new' ? null : editing}
+            onDone={async () => {
+              setEditing(null)
+              await reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {sorting ? (
@@ -193,6 +196,7 @@ export function HonoraryTitlesPage() {
       ) : (
         <DataTable
           label={t('Ehrungen')}
+          slot="honor-title"
           rows={data}
           rowKey={(tmx) => tmx.id}
           columns={columns}

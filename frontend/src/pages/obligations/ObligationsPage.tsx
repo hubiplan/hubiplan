@@ -1,6 +1,7 @@
 // Fristenkalender: wiederkehrende Pflichten des Vereins (Freistellungsbescheid, Kassenprüfung,
 // Transparenzregister …) mit Erinnerung, Verlauf und Vorschlägen für eingetragene Vereine.
 // Nach einer Vorstandswahl legt HUBIplan die Aufgabe für das Registergericht an.
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { obligationApi } from '../../api/obligations.ts'
 import type {
@@ -340,17 +341,19 @@ export function ObligationsPage() {
     if (editing === o.id) {
       return (
         <li key={o.id}>
-          <ObligationForm
-            initial={draftOf(o)}
-            election={o.trigger === 'election'}
-            roles={data.roles}
-            submitLabel={t('Speichern')}
-            onCancel={() => setEditing(null)}
-            onSubmit={async (input) => {
-              replace(await obligationApi.update(base, o.id, { ...input, version: o.version }))
-              setEditing(null)
-            }}
-          />
+          <EditAt at={null}>
+            <ObligationForm
+              initial={draftOf(o)}
+              election={o.trigger === 'election'}
+              roles={data.roles}
+              submitLabel={t('Speichern')}
+              onCancel={() => setEditing(null)}
+              onSubmit={async (input) => {
+                replace(await obligationApi.update(base, o.id, { ...input, version: o.version }))
+                setEditing(null)
+              }}
+            />
+          </EditAt>
         </li>
       )
     }

@@ -1,6 +1,7 @@
 // Einstellungen › Orte: Orte, die man in Terminen, Wettbewerben, Helferdiensten und
 // Versammlungen immer wieder eingibt, einmal speichern und dort auswählen. Ein Ort kann
 // Räume haben; die Anschrift steht dann nur einmal am Ort (Gebäude).
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { placeApi } from '../../api/places.ts'
 import type { Place, PlaceInput, PlaceSuggestion } from '../../api/places.ts'
@@ -334,15 +335,17 @@ export function PlacesPage() {
   const row = (p: Place) =>
     editing === p.id ? (
       <li key={p.id}>
-        <PlaceForm
-          initial={draftOf(p)}
-          showActive
-          buildings={
-            roomsOf(p.id).length ? [] : buildings.filter((b) => b.id !== p.id && b.is_active)
-          }
-          onCancel={() => setEditing(null)}
-          onAutoSave={async (input) => replace(await placeApi.update(base, p.id, input))}
-        />
+        <EditAt at={null}>
+          <PlaceForm
+            initial={draftOf(p)}
+            showActive
+            buildings={
+              roomsOf(p.id).length ? [] : buildings.filter((b) => b.id !== p.id && b.is_active)
+            }
+            onCancel={() => setEditing(null)}
+            onAutoSave={async (input) => replace(await placeApi.update(base, p.id, input))}
+          />
+        </EditAt>
       </li>
     ) : (
       <li key={p.id} className="item-row">

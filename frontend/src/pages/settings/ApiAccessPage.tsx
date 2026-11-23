@@ -2,6 +2,7 @@
 // eines Dachverbands oder eine eigene Webseite) Daten dieser Einheit lesen und, wenn eigens
 // angekreuzt, schreiben (docs/api.md).
 // Der Schlüssel steht genau einmal auf der Seite: nach dem Anlegen und nach dem Wechsel.
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { apiAccessApi } from '../../api/apiAccess.ts'
 import type {
@@ -640,18 +641,20 @@ export function ApiAccessPage() {
   const row = (a: ApiAccess) =>
     editing === a.id ? (
       <li key={a.id}>
-        <AccessForm
-          list={data}
-          initial={draftOf(a)}
-          submitLabel={t('Speichern')}
-          onCancel={() => setEditing(null)}
-          onSubmit={async (input) => {
-            const fresh = await apiAccessApi.update(org.id, a.id, input)
-            replace(fresh)
-            showSecret(fresh)
-            setEditing(null)
-          }}
-        />
+        <EditAt at={null}>
+          <AccessForm
+            list={data}
+            initial={draftOf(a)}
+            submitLabel={t('Speichern')}
+            onCancel={() => setEditing(null)}
+            onSubmit={async (input) => {
+              const fresh = await apiAccessApi.update(org.id, a.id, input)
+              replace(fresh)
+              showSecret(fresh)
+              setEditing(null)
+            }}
+          />
+        </EditAt>
       </li>
     ) : (
       <li key={a.id} className="item-row">

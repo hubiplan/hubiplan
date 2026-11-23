@@ -1,5 +1,6 @@
 // Geschäftspartner (Konzept geschaeftspartner.md, P1): Lieferanten, Dienstleister, Sponsoren,
 // Behörden und andere außerhalb der Mitgliederliste, mit Ansprechpartnern.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { saveBlob } from '../../api/client.ts'
@@ -883,75 +884,78 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
                 </button>
               </div>
             )}
+            <EditSlot id={editKey('partner-contact', c.id)} />
           </li>
         ))}
       </ul>
       {editing !== null && (
-        <div className="stack">
-          <div className="form-grid">
-            <Field
-              label={t('Vorname')}
-              value={draft.first_name ?? ''}
-              onChange={(e) => setDraft({ ...draft, first_name: e.target.value })}
+        <EditAt at={editing === 'new' ? null : editKey('partner-contact', editing)}>
+          <div className="stack">
+            <div className="form-grid">
+              <Field
+                label={t('Vorname')}
+                value={draft.first_name ?? ''}
+                onChange={(e) => setDraft({ ...draft, first_name: e.target.value })}
+              />
+              <Field
+                label={t('Name')}
+                required
+                value={draft.last_name ?? ''}
+                onChange={(e) => setDraft({ ...draft, last_name: e.target.value })}
+              />
+              <Field
+                label={t('Funktion')}
+                value={draft.function ?? ''}
+                onChange={(e) => setDraft({ ...draft, function: e.target.value })}
+              />
+              <Field
+                label={t('E-Mail')}
+                type="email"
+                value={draft.email ?? ''}
+                onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+              />
+              <Field
+                label={t('Telefon')}
+                type="tel"
+                value={draft.phone ?? ''}
+                onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+              />
+              <Field
+                label={t('Notiz')}
+                value={draft.notes ?? ''}
+                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+              />
+            </div>
+            <Checkbox
+              label={t('Hauptansprechpartner')}
+              checked={!!draft.is_primary}
+              onChange={(is_primary) => setDraft({ ...draft, is_primary })}
             />
-            <Field
-              label={t('Name')}
-              required
-              value={draft.last_name ?? ''}
-              onChange={(e) => setDraft({ ...draft, last_name: e.target.value })}
+            <Checkbox
+              label={t('erhält Rechnungen')}
+              checked={!!draft.receives_invoices}
+              onChange={(receives_invoices) => setDraft({ ...draft, receives_invoices })}
             />
-            <Field
-              label={t('Funktion')}
-              value={draft.function ?? ''}
-              onChange={(e) => setDraft({ ...draft, function: e.target.value })}
+            <Checkbox
+              label={t('erhält Post')}
+              checked={!!draft.receives_mail}
+              onChange={(receives_mail) => setDraft({ ...draft, receives_mail })}
             />
-            <Field
-              label={t('E-Mail')}
-              type="email"
-              value={draft.email ?? ''}
-              onChange={(e) => setDraft({ ...draft, email: e.target.value })}
-            />
-            <Field
-              label={t('Telefon')}
-              type="tel"
-              value={draft.phone ?? ''}
-              onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
-            />
-            <Field
-              label={t('Notiz')}
-              value={draft.notes ?? ''}
-              onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-            />
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-primary"
+                disabled={!draft.last_name?.trim()}
+                onClick={() => void save()}
+              >
+                {t('Ansprechpartner speichern')}
+              </button>
+              <button type="button" className="button" onClick={() => setEditing(null)}>
+                {t('Abbrechen')}
+              </button>
+            </div>
           </div>
-          <Checkbox
-            label={t('Hauptansprechpartner')}
-            checked={!!draft.is_primary}
-            onChange={(is_primary) => setDraft({ ...draft, is_primary })}
-          />
-          <Checkbox
-            label={t('erhält Rechnungen')}
-            checked={!!draft.receives_invoices}
-            onChange={(receives_invoices) => setDraft({ ...draft, receives_invoices })}
-          />
-          <Checkbox
-            label={t('erhält Post')}
-            checked={!!draft.receives_mail}
-            onChange={(receives_mail) => setDraft({ ...draft, receives_mail })}
-          />
-          <div className="button-row">
-            <button
-              type="button"
-              className="button button-primary"
-              disabled={!draft.last_name?.trim()}
-              onClick={() => void save()}
-            >
-              {t('Ansprechpartner speichern')}
-            </button>
-            <button type="button" className="button" onClick={() => setEditing(null)}>
-              {t('Abbrechen')}
-            </button>
-          </div>
-        </div>
+        </EditAt>
       )}
       {error && <Alert kind="error">{error}</Alert>}
       {canEdit && editing === null && (

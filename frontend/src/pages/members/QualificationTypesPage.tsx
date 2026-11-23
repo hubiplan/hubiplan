@@ -1,6 +1,7 @@
 // Mitglieder › Einrichtung › Qualifikationen: Arten des Vereins frei pflegen (z. B. Erste Hilfe,
 // Übungsleiter, Standaufsicht, Einsicht ins Führungszeugnis) mit üblicher Gültigkeit und
 // Vorlauf der Erinnerung. Eingetragen wird in der Mitgliedsakte.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { PERM } from '../../api/orgs.ts'
@@ -263,6 +264,7 @@ export function QualificationTypesPage() {
                     )}
                   </span>
                 )}
+                <EditSlot id={editKey('qualification-type', k.id)} />
               </li>
             ))}
           </ul>
@@ -295,22 +297,24 @@ export function QualificationTypesPage() {
         )}
       </div>
       {editable && editing && (
-        <TypeForm
-          key={editing === 'new' ? 'new' : editing.id}
-          initial={editing === 'new' ? EMPTY : editing}
-          onCancel={() => setEditing(null)}
-          onSave={async (draft) => {
-            const ok = await run(
-              () =>
-                editing === 'new'
-                  ? qualificationApi.createType(org.id, draft)
-                  : qualificationApi.updateType(org.id, editing.id, draft),
-              t('„{name}“ wurde gespeichert.', { name: draft.name }),
-            )
-            if (ok) setEditing(null)
-            return ok
-          }}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('qualification-type', editing.id)}>
+          <TypeForm
+            key={editing === 'new' ? 'new' : editing.id}
+            initial={editing === 'new' ? EMPTY : editing}
+            onCancel={() => setEditing(null)}
+            onSave={async (draft) => {
+              const ok = await run(
+                () =>
+                  editing === 'new'
+                    ? qualificationApi.createType(org.id, draft)
+                    : qualificationApi.updateType(org.id, editing.id, draft),
+                t('„{name}“ wurde gespeichert.', { name: draft.name }),
+              )
+              if (ok) setEditing(null)
+              return ok
+            }}
+          />
+        </EditAt>
       )}
       {editable && !editing && (
         <div className="button-row">

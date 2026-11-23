@@ -1,6 +1,7 @@
 // Datenschutz-Werkzeuge (Lückenliste 20.11.2026, B5): Verzeichnis der Verarbeitungstätigkeiten
 // aus den eingeschalteten Modulen, Auftragsverarbeiter aus den Geschäftspartnern und das
 // Protokoll von Datenpannen mit der 72-Stunden-Frist. Ein Vorschlag, keine Rechtsberatung.
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import { dsgvoApi, dsgvoBase } from '../../api/dsgvo.ts'
@@ -366,32 +367,36 @@ function RegisterArea({ base: url }: { base: string }) {
           )}
         </p>
         {editing === 'new' && (
-          <ActivityForm
-            initial={EMPTY}
-            submitLabel={t('Tätigkeit speichern')}
-            onCancel={() => setEditing(null)}
-            onSubmit={async (input) => {
-              await dsgvoApi.createActivity(url, input)
-              setEditing(null)
-              reload()
-            }}
-          />
+          <EditAt at={null}>
+            <ActivityForm
+              initial={EMPTY}
+              submitLabel={t('Tätigkeit speichern')}
+              onCancel={() => setEditing(null)}
+              onSubmit={async (input) => {
+                await dsgvoApi.createActivity(url, input)
+                setEditing(null)
+                reload()
+              }}
+            />
+          </EditAt>
         )}
         {actionError && <Alert kind="error">{actionError}</Alert>}
         <ul className="item-list dsgvo-list">
           {visible.map((a) => (
             <li key={a.id ?? a.key}>
               {editing === a.id && a.id ? (
-                <ActivityForm
-                  initial={a}
-                  submitLabel={t('Speichern')}
-                  onCancel={() => setEditing(null)}
-                  onSubmit={async (input) => {
-                    await dsgvoApi.updateActivity(url, a.id as number, input)
-                    setEditing(null)
-                    reload()
-                  }}
-                />
+                <EditAt at={null}>
+                  <ActivityForm
+                    initial={a}
+                    submitLabel={t('Speichern')}
+                    onCancel={() => setEditing(null)}
+                    onSubmit={async (input) => {
+                      await dsgvoApi.updateActivity(url, a.id as number, input)
+                      setEditing(null)
+                      reload()
+                    }}
+                  />
+                </EditAt>
               ) : (
                 <details>
                   <summary>
@@ -788,17 +793,19 @@ function BreachesArea({ base: url }: { base: string }) {
                 className={focus === b.id ? 'dsgvo-marked' : undefined}
               >
                 {editing === b.id ? (
-                  <BreachForm
-                    initial={draftOf(b, now)}
-                    submitLabel={t('Speichern')}
-                    onCancel={() => setEditing(null)}
-                    onSubmit={async (input) => {
-                      replace(
-                        await dsgvoApi.updateBreach(url, b.id, { ...input, version: b.version }),
-                      )
-                      setEditing(null)
-                    }}
-                  />
+                  <EditAt at={null}>
+                    <BreachForm
+                      initial={draftOf(b, now)}
+                      submitLabel={t('Speichern')}
+                      onCancel={() => setEditing(null)}
+                      onSubmit={async (input) => {
+                        replace(
+                          await dsgvoApi.updateBreach(url, b.id, { ...input, version: b.version }),
+                        )
+                        setEditing(null)
+                      }}
+                    />
+                  </EditAt>
                 ) : (
                   <div className="item-row">
                     <div className="item-row-info">

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -100,21 +101,23 @@ export function UniformsKindsPage() {
         </button>
       )}
       {canEdit && editUniform && (
-        <UniformForm
-          key={editUniform === 'new' ? 'new' : editUniform.id}
-          initial={editUniform === 'new' ? undefined : editUniform}
-          onCancel={() => setEditUniform(null)}
-          onSave={async (values) => {
-            if (
-              await act(() =>
-                editUniform === 'new'
-                  ? api.post(`${base}uniforms/`, values)
-                  : api.patch(`${base}uniforms/${editUniform.id}/`, values),
+        <EditAt at={editUniform === 'new' ? null : editKey('uniform', editUniform.id)}>
+          <UniformForm
+            key={editUniform === 'new' ? 'new' : editUniform.id}
+            initial={editUniform === 'new' ? undefined : editUniform}
+            onCancel={() => setEditUniform(null)}
+            onSave={async (values) => {
+              if (
+                await act(() =>
+                  editUniform === 'new'
+                    ? api.post(`${base}uniforms/`, values)
+                    : api.patch(`${base}uniforms/${editUniform.id}/`, values),
+                )
               )
-            )
-              setEditUniform(null)
-          }}
-        />
+                setEditUniform(null)
+            }}
+          />
+        </EditAt>
       )}
       {!uniforms.length && <MusicEmptyState>{t('Noch keine Uniformen.')}</MusicEmptyState>}
       {uniforms.map((u) => (
@@ -181,6 +184,7 @@ export function UniformsKindsPage() {
               </button>
             </div>
           )}
+          <EditSlot id={editKey('uniform', u.id)} />
         </article>
       ))}
 
@@ -194,22 +198,24 @@ export function UniformsKindsPage() {
         </button>
       )}
       {canEdit && editKind && (
-        <KindForm
-          key={editKind === 'new' ? 'new' : editKind.id}
-          initial={editKind === 'new' ? undefined : editKind}
-          uniforms={uniforms}
-          onCancel={() => setEditKind(null)}
-          onSave={async (values) => {
-            if (
-              await act(() =>
-                editKind === 'new'
-                  ? api.post(`${base}performance-kinds/`, values)
-                  : api.patch(`${base}performance-kinds/${editKind.id}/`, values),
+        <EditAt at={editKind === 'new' ? null : editKey('kind', editKind.id)}>
+          <KindForm
+            key={editKind === 'new' ? 'new' : editKind.id}
+            initial={editKind === 'new' ? undefined : editKind}
+            uniforms={uniforms}
+            onCancel={() => setEditKind(null)}
+            onSave={async (values) => {
+              if (
+                await act(() =>
+                  editKind === 'new'
+                    ? api.post(`${base}performance-kinds/`, values)
+                    : api.patch(`${base}performance-kinds/${editKind.id}/`, values),
+                )
               )
-            )
-              setEditKind(null)
-          }}
-        />
+                setEditKind(null)
+            }}
+          />
+        </EditAt>
       )}
       {!kinds.length && <MusicEmptyState>{t('Noch keine Auftrittsarten.')}</MusicEmptyState>}
       {kinds.map((k) => (
@@ -252,6 +258,7 @@ export function UniformsKindsPage() {
               </button>
             </div>
           )}
+          <EditSlot id={editKey('kind', k.id)} />
         </article>
       ))}
     </section>

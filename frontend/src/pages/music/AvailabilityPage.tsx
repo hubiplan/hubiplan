@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
@@ -75,18 +76,20 @@ export function AvailabilityPage() {
         </button>
       )}
       {canEdit && selected && (
-        <AbsenceForm
-          key={selected === 'new' ? 'new' : selected.id}
-          initial={selected === 'new' ? undefined : selected}
-          musicians={musicians}
-          onClose={() => setSelected(null)}
-          onSave={async (values, key) => {
-            if (selected === 'new') await api.post(base + 'absences/', values, key)
-            else await api.patch(`${base}absences/${selected.id}/`, values)
-            await load.reload()
-            setSelected(null)
-          }}
-        />
+        <EditAt at={selected === 'new' ? null : editKey('absence', selected.id)}>
+          <AbsenceForm
+            key={selected === 'new' ? 'new' : selected.id}
+            initial={selected === 'new' ? undefined : selected}
+            musicians={musicians}
+            onClose={() => setSelected(null)}
+            onSave={async (values, key) => {
+              if (selected === 'new') await api.post(base + 'absences/', values, key)
+              else await api.patch(`${base}absences/${selected.id}/`, values)
+              await load.reload()
+              setSelected(null)
+            }}
+          />
+        </EditAt>
       )}
       {!items.length && <MusicEmptyState>{t('Keine Abwesenheiten eingetragen.')}</MusicEmptyState>}
       {items.map((row) => (
@@ -128,6 +131,7 @@ export function AvailabilityPage() {
               </button>
             </div>
           )}
+          <EditSlot id={editKey('absence', row.id)} />
         </article>
       ))}
     </section>
@@ -167,20 +171,22 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
         {t('Abwesenheit eintragen')}
       </button>
       {selected && (
-        <AbsenceForm
-          key={selected === 'new' ? 'new' : selected.id}
-          initial={selected === 'new' ? undefined : selected}
-          onClose={() => setSelected(null)}
-          onSave={async (values, key) => {
-            await api.post(
-              url,
-              { action: 'save', ...(selected === 'new' ? {} : { id: selected.id }), ...values },
-              key,
-            )
-            await load.reload()
-            setSelected(null)
-          }}
-        />
+        <EditAt at={selected === 'new' ? null : editKey('my-absence', selected.id)}>
+          <AbsenceForm
+            key={selected === 'new' ? 'new' : selected.id}
+            initial={selected === 'new' ? undefined : selected}
+            onClose={() => setSelected(null)}
+            onSave={async (values, key) => {
+              await api.post(
+                url,
+                { action: 'save', ...(selected === 'new' ? {} : { id: selected.id }), ...values },
+                key,
+              )
+              await load.reload()
+              setSelected(null)
+            }}
+          />
+        </EditAt>
       )}
       {!load.data.items.length && (
         <MusicEmptyState>{t('Keine Abwesenheiten eingetragen.')}</MusicEmptyState>
@@ -222,6 +228,7 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
               {t('Entfernen')}
             </button>
           </div>
+          <EditSlot id={editKey('my-absence', row.id)} />
         </article>
       ))}
     </section>

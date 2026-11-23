@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { FIELD_TYPES, fieldApi } from '../../api/fields.ts'
 import type { FieldDefinition, FieldType, FieldUsage, Subfield } from '../../api/fields.ts'
@@ -116,20 +117,22 @@ export function FieldsAdmin({
           t(' Verbandsweite Felder gelten in allen {pl_dat}.', { pl_dat: terms.pl_dat })}
       </p>
       {editing !== null && (
-        <FieldForm
-          // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
-          key={editing === 'new' ? 'new' : editing.id}
-          orgId={org.id}
-          isFederation={isFederation}
-          api={fieldApi}
-          partners={partners}
-          field={editing === 'new' ? null : editing}
-          onDone={async () => {
-            setEditing(null)
-            await reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('field', editing.id)}>
+          <FieldForm
+            // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
+            key={editing === 'new' ? 'new' : editing.id}
+            orgId={org.id}
+            isFederation={isFederation}
+            api={fieldApi}
+            partners={partners}
+            field={editing === 'new' ? null : editing}
+            onDone={async () => {
+              setEditing(null)
+              await reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {removing && (
         <div className="subcard" role="dialog" aria-label={t('Zusatzfeld entfernen')}>
@@ -229,42 +232,45 @@ export function FieldsAdmin({
           </thead>
           <tbody>
             {current.map((f) => (
-              <tr key={f.id}>
-                <td>
-                  <strong>{f.label}</strong>
-                  {f.inherited && (
-                    <div className="small muted" title={f.owner_name}>
-                      {terms.dv_vom}
-                    </div>
-                  )}
-                  {f.federation_wide && !f.inherited && (
-                    <div className="small muted">{t('verbandsweit')}</div>
-                  )}
-                </td>
-                <td className="small">
-                  {f.repeatable
-                    ? t('wiederholbar: {x}', { x: f.subfields.map((s) => s.label).join(', ') })
-                    : typeLabel(f.field_type)}
-                  {f.field_type === 'choice' && !f.repeatable && ` (${f.choices.join(', ')})`}
-                </td>
-                <td className="actions">
-                  {editable && !f.inherited && (
-                    <>
-                      <button type="button" className="link-button" onClick={() => setEditing(f)}>
-                        {t('Bearbeiten')}
-                      </button>{' '}
-                      <button
-                        type="button"
-                        className="link-button"
-                        aria-label={t('{label} löschen', { label: f.label })}
-                        onClick={() => void askRemove(f)}
-                      >
-                        {t('Löschen')}
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
+              <Fragment key={f.id}>
+                <tr key={f.id}>
+                  <td>
+                    <strong>{f.label}</strong>
+                    {f.inherited && (
+                      <div className="small muted" title={f.owner_name}>
+                        {terms.dv_vom}
+                      </div>
+                    )}
+                    {f.federation_wide && !f.inherited && (
+                      <div className="small muted">{t('verbandsweit')}</div>
+                    )}
+                  </td>
+                  <td className="small">
+                    {f.repeatable
+                      ? t('wiederholbar: {x}', { x: f.subfields.map((s) => s.label).join(', ') })
+                      : typeLabel(f.field_type)}
+                    {f.field_type === 'choice' && !f.repeatable && ` (${f.choices.join(', ')})`}
+                  </td>
+                  <td className="actions">
+                    {editable && !f.inherited && (
+                      <>
+                        <button type="button" className="link-button" onClick={() => setEditing(f)}>
+                          {t('Bearbeiten')}
+                        </button>{' '}
+                        <button
+                          type="button"
+                          className="link-button"
+                          aria-label={t('{label} löschen', { label: f.label })}
+                          onClick={() => void askRemove(f)}
+                        >
+                          {t('Löschen')}
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+                <EditSlot id={editKey('field', f.id)} colSpan={3} />
+              </Fragment>
             ))}
           </tbody>
         </table>

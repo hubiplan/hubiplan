@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
@@ -318,42 +319,47 @@ export function StaffingPage({ performance }: { performance: number }) {
         <h2>{t('Bestehende Einteilungen')}</h2>
         {!plan.assignments.length && <MusicEmptyState />}
         {plan.assignments.map((a) => (
-          <div className="music-row music-actions" key={a.id}>
-            <strong>{a.name}</strong>
-            <span>
-              {plan.positions.find((p) => p.id === a.position)?.instrument}{' '}
-              {plan.positions.find((p) => p.id === a.position)?.register}
-            </span>
-            <MusicStatus status={a.status} />
-            <AvailabilityHint reasons={a.availability} />
-            {canEdit && a.is_guest && (
-              <button className="button button-ghost" onClick={() => setGuest(a.id)}>
-                {t('Gasteinladung verwalten')}
-              </button>
-            )}
-            {canEdit && a.status === 'declined' && !plan.cancelled && (
-              <button
-                className="button button-ghost"
-                onClick={async () => {
-                  if (await confirmDiscard(Object.keys(selected).length > 0)) {
-                    select({})
-                    setReplacement(a.position)
-                  }
-                }}
-              >
-                {t('Ersatz suchen')}
-              </button>
-            )}
-          </div>
+          <Fragment key={a.id}>
+            <div className="music-row music-actions">
+              <strong>{a.name}</strong>
+              <span>
+                {plan.positions.find((p) => p.id === a.position)?.instrument}{' '}
+                {plan.positions.find((p) => p.id === a.position)?.register}
+              </span>
+              <MusicStatus status={a.status} />
+              <AvailabilityHint reasons={a.availability} />
+              {canEdit && a.is_guest && (
+                <button className="button button-ghost" onClick={() => setGuest(a.id)}>
+                  {t('Gasteinladung verwalten')}
+                </button>
+              )}
+              {canEdit && a.status === 'declined' && !plan.cancelled && (
+                <button
+                  className="button button-ghost"
+                  onClick={async () => {
+                    if (await confirmDiscard(Object.keys(selected).length > 0)) {
+                      select({})
+                      setReplacement(a.position)
+                    }
+                  }}
+                >
+                  {t('Ersatz suchen')}
+                </button>
+              )}
+            </div>
+            <EditSlot id={editKey('guest', a.id)} />
+          </Fragment>
         ))}
       </article>
       {canEdit && guest !== null && (
-        <GuestAccessPanel
-          key={guest}
-          assignment={guest}
-          name={plan.assignments.find((a) => a.id === guest)?.name || ''}
-          onClose={() => setGuest(null)}
-        />
+        <EditAt at={editKey('guest', guest)}>
+          <GuestAccessPanel
+            key={guest}
+            assignment={guest}
+            name={plan.assignments.find((a) => a.id === guest)?.name || ''}
+            onClose={() => setGuest(null)}
+          />
+        </EditAt>
       )}
     </section>
   )

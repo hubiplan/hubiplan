@@ -1,6 +1,7 @@
 // Mitglieder › Ämter: wer hatte wann welches Amt (jahresgenau). Frühere Inhaber, die
 // keine Mitglieder mehr sind, stehen als Name ohne Konto; Erfassen und Excel-Import.
-import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useState } from 'react'
 import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
 import { memberApi, todayIso } from '../../api/members.ts'
@@ -173,16 +174,20 @@ function HoldersPanel() {
           <p className="muted">{t('Noch keine Amtsinhaber erfasst.')}</p>
         )}
         {editing !== null && (
-          <EntryForm
-            key={editing === 'new' ? 'new' : editing.id}
-            entry={editing === 'new' ? null : editing}
-            offices={own}
-            onDone={async () => {
-              setEditing(null)
-              await offices.reload()
-            }}
-            onCancel={() => setEditing(null)}
-          />
+          <EditAt
+            at={editing === 'new' ? null : editKey('office', `${editing.office.id}-${editing.id}`)}
+          >
+            <EntryForm
+              key={editing === 'new' ? 'new' : editing.id}
+              entry={editing === 'new' ? null : editing}
+              offices={own}
+              onDone={async () => {
+                setEditing(null)
+                await offices.reload()
+              }}
+              onCancel={() => setEditing(null)}
+            />
+          </EditAt>
         )}
         {message && <Alert kind="error">{message}</Alert>}
       </div>
@@ -249,57 +254,63 @@ function HoldersPanel() {
                   {o.holders.map((h) => {
                     const r: Row = { ...h, office: o }
                     return (
-                      <tr key={h.id}>
-                        <td>{periodText(h)}</td>
-                        <td>
-                          {h.name}
-                          {h.former_entry && h.person === null && (
-                            <span className="muted small">
-                              {h.name_public
-                                ? t(' (kein Mitglied)')
-                                : t(' (kein Mitglied, nicht auf der Webseite)')}
-                            </span>
-                          )}
-                        </td>
-                        {showActions && (
-                          <td className="actions">
-                            {unit !== null && canAssign && h.current && h.membership && (
-                              <button
-                                type="button"
-                                className="link-button"
-                                aria-label={t('{role} von {name} beenden', {
-                                  role: o.name,
-                                  name: h.name,
-                                })}
-                                onClick={() => void endUnitHolder(o, h)}
-                              >
-                                {t('Beenden')}
-                              </button>
-                            )}
-                            {canEdit && h.former_entry && (
-                              <>
-                                <IconButton
-                                  label={t('{name} {x} bearbeiten', {
-                                    name: h.name,
-                                    x: periodText(h),
-                                  })}
-                                  icon={<EditIcon />}
-                                  onClick={() => setEditing(r)}
-                                />
-                                <IconButton
-                                  label={t('{name} {x} löschen', {
-                                    name: h.name,
-                                    x: periodText(h),
-                                  })}
-                                  icon={<DeleteIcon />}
-                                  danger
-                                  onClick={() => void remove(r)}
-                                />
-                              </>
+                      <Fragment key={h.id}>
+                        <tr key={h.id}>
+                          <td>{periodText(h)}</td>
+                          <td>
+                            {h.name}
+                            {h.former_entry && h.person === null && (
+                              <span className="muted small">
+                                {h.name_public
+                                  ? t(' (kein Mitglied)')
+                                  : t(' (kein Mitglied, nicht auf der Webseite)')}
+                              </span>
                             )}
                           </td>
-                        )}
-                      </tr>
+                          {showActions && (
+                            <td className="actions">
+                              {unit !== null && canAssign && h.current && h.membership && (
+                                <button
+                                  type="button"
+                                  className="link-button"
+                                  aria-label={t('{role} von {name} beenden', {
+                                    role: o.name,
+                                    name: h.name,
+                                  })}
+                                  onClick={() => void endUnitHolder(o, h)}
+                                >
+                                  {t('Beenden')}
+                                </button>
+                              )}
+                              {canEdit && h.former_entry && (
+                                <>
+                                  <IconButton
+                                    label={t('{name} {x} bearbeiten', {
+                                      name: h.name,
+                                      x: periodText(h),
+                                    })}
+                                    icon={<EditIcon />}
+                                    onClick={() => setEditing(r)}
+                                  />
+                                  <IconButton
+                                    label={t('{name} {x} löschen', {
+                                      name: h.name,
+                                      x: periodText(h),
+                                    })}
+                                    icon={<DeleteIcon />}
+                                    danger
+                                    onClick={() => void remove(r)}
+                                  />
+                                </>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                        <EditSlot
+                          id={editKey('office', `${o.id}-${h.id}`)}
+                          colSpan={showActions ? 3 : 2}
+                        />
+                      </Fragment>
                     )
                   })}
                 </tbody>

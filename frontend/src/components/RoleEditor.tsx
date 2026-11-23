@@ -1,7 +1,8 @@
 // Rollen: für jede Einheit dieselbe Liste und dieselbe Maske.
 // Was eine Einheit an Angaben zu einer Rolle speichern kann, steht in `fields`;
 // die Rechte kommen aus dem Rechtekatalog der Einheit.
-import { useId } from 'react'
+import { EditSlot, editKey } from './EditInPlace.tsx'
+import { Fragment, useId } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { CatalogModule } from '../api/orgs.ts'
 import { levelOf, permissionAreas, withLevel } from './roles.ts'
@@ -226,8 +227,11 @@ export function RoleTable({
   showPermissions = true,
   onReorder,
   website = false,
+  slot,
 }: {
   roles: RoleLike[]
+  /** Formular zum Bearbeiten erscheint unter der Zeile (EditInPlace, Name der Liste) */
+  slot?: string
   catalog: CatalogModule[]
   /** Reihenfolge per Ziehen speichern (fehlt: keine Griffe) */
   onReorder?: (ids: number[]) => Promise<unknown>
@@ -270,32 +274,38 @@ export function RoleTable({
         </thead>
         <tbody>
           {sort.ordered.map((role) => (
-            <tr key={role.id} {...sort.rowProps(role)}>
-              {sort.active && <td className="drag-cell">{sort.handle(role)}</td>}
-              <td>
-                <strong>{role.name}</strong>
-                {role.description && <div className="muted small">{role.description}</div>}
-              </td>
-              {showPermissions && (
-                <td className="small">
-                  {role.permissions.length === 0 ? (
-                    noPermissions
-                  ) : (
-                    <PermissionSummary codes={role.permissions} catalog={catalog} />
+            <Fragment key={role.id}>
+              <tr key={role.id} {...sort.rowProps(role)}>
+                {sort.active && <td className="drag-cell">{sort.handle(role)}</td>}
+                <td>
+                  <strong>{role.name}</strong>
+                  {role.description && <div className="muted small">{role.description}</div>}
+                </td>
+                {showPermissions && (
+                  <td className="small">
+                    {role.permissions.length === 0 ? (
+                      noPermissions
+                    ) : (
+                      <PermissionSummary codes={role.permissions} catalog={catalog} />
+                    )}
+                  </td>
+                )}
+                <td className={typeof role.holders === 'number' ? 'num' : 'small'}>
+                  {holderText(role.holders)}
+                </td>
+                <td className="actions">
+                  {onEdit && (
+                    <button type="button" className="link-button" onClick={() => onEdit(role)}>
+                      {editLabel}
+                    </button>
                   )}
                 </td>
-              )}
-              <td className={typeof role.holders === 'number' ? 'num' : 'small'}>
-                {holderText(role.holders)}
-              </td>
-              <td className="actions">
-                {onEdit && (
-                  <button type="button" className="link-button" onClick={() => onEdit(role)}>
-                    {editLabel}
-                  </button>
-                )}
-              </td>
-            </tr>
+              </tr>
+              <EditSlot
+                id={slot ? editKey(slot, role.id) : null}
+                colSpan={(sort.active ? 1 : 0) + (showPermissions ? 4 : 3)}
+              />
+            </Fragment>
           ))}
         </tbody>
       </table>

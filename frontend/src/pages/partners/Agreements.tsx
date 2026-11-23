@@ -1,5 +1,6 @@
 // Vereinbarungen an der Partnerakte (Konzept geschaeftspartner.md, P4): Sponsoring mit
 // Zeitraum, Leistung, Gegenleistung, steuerlicher Einordnung, Erinnerung und Dankesbrief.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import {
@@ -228,6 +229,7 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
                 </button>
               </div>
             )}
+            <EditSlot id={editKey('agreement', a.id)} />
           </li>
         ))}
       </ul>
@@ -254,137 +256,146 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
         </div>
       )}
       {editing !== null && (
-        <div className="stack">
-          <div className="form-grid">
-            <SelectField
-              label={t('Art')}
-              value={draft.kind}
-              onChange={(e) => {
-                const kind = e.target.value as AgreementKind
-                // Ein Vertrag zur Auftragsverarbeitung bringt keine Einnahme
-                setDraft({ ...draft, kind, ...(kind === 'dpa' ? { tax_kind: 'none' } : {}) })
-              }}
-            >
-              {AGREEMENT_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {agreementKindLabel(k)}
-                </option>
-              ))}
-            </SelectField>
-            <Field
-              label={t('Bezeichnung')}
-              required
-              value={draft.title ?? ''}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            />
-            <Field
-              label={t('Beginn')}
-              type="date"
-              required
-              value={draft.start ?? ''}
-              onChange={(e) => setDraft({ ...draft, start: e.target.value })}
-            />
-            <Field
-              label={t('Ende')}
-              type="date"
-              value={draft.end ?? ''}
-              onChange={(e) => setDraft({ ...draft, end: e.target.value || null })}
-            />
-            <Field
-              label={t('Betrag in Euro')}
-              type="number"
-              min={0}
-              step="0.01"
-              value={draft.amount ?? ''}
-              onChange={(e) => setDraft({ ...draft, amount: e.target.value || null })}
-            />
-            <Field
-              label={t('Sachleistung')}
-              value={draft.in_kind ?? ''}
-              onChange={(e) => setDraft({ ...draft, in_kind: e.target.value })}
-            />
-            <SelectField
-              label={t('Steuerlich')}
-              hint={t('Aktive Werbung gehört zum wirtschaftlichen Geschäftsbetrieb.')}
-              value={draft.tax_kind}
-              onChange={(e) => setDraft({ ...draft, tax_kind: e.target.value as AgreementTaxKind })}
-            >
-              {AGREEMENT_TAX_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {taxKindLabel(k)}
-                </option>
-              ))}
-            </SelectField>
-            <Field
-              label={t('Kündigungsfrist in Tagen')}
-              type="number"
-              min={0}
-              max={730}
-              value={draft.notice_days ?? ''}
-              onChange={(e) =>
-                setDraft({ ...draft, notice_days: e.target.value ? Number(e.target.value) : null })
-              }
-            />
-            <Field
-              label={t('Erinnerung (Tage vor Ende bzw. Kündigungsfrist)')}
-              type="number"
-              min={0}
-              max={365}
-              value={draft.remind_days ?? 60}
-              onChange={(e) => setDraft({ ...draft, remind_days: Number(e.target.value) || 0 })}
-            />
-          </div>
-          <div className="aid-row">
-            <Why k="sponsoring_tax" />
-            <Why k="contract_renewal" />
-          </div>
-          <Checkbox
-            label={t('Verlängert sich automatisch, wenn niemand kündigt')}
-            checked={!!draft.auto_renew}
-            onChange={(auto_renew) => setDraft({ ...draft, auto_renew })}
-          />
-          <fieldset className="subcard">
-            <legend>{t('Gegenleistung')}</legend>
-            <div className="grid-3">
-              {AGREEMENT_BENEFITS.map((b) => (
-                <Checkbox
-                  key={b}
-                  label={benefitLabel(b)}
-                  checked={(draft.benefits ?? []).includes(b)}
-                  onChange={(on) => toggleBenefit(b, on)}
-                />
-              ))}
+        <EditAt at={editing === 'new' ? null : editKey('agreement', editing)}>
+          <div className="stack">
+            <div className="form-grid">
+              <SelectField
+                label={t('Art')}
+                value={draft.kind}
+                onChange={(e) => {
+                  const kind = e.target.value as AgreementKind
+                  // Ein Vertrag zur Auftragsverarbeitung bringt keine Einnahme
+                  setDraft({ ...draft, kind, ...(kind === 'dpa' ? { tax_kind: 'none' } : {}) })
+                }}
+              >
+                {AGREEMENT_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {agreementKindLabel(k)}
+                  </option>
+                ))}
+              </SelectField>
+              <Field
+                label={t('Bezeichnung')}
+                required
+                value={draft.title ?? ''}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              />
+              <Field
+                label={t('Beginn')}
+                type="date"
+                required
+                value={draft.start ?? ''}
+                onChange={(e) => setDraft({ ...draft, start: e.target.value })}
+              />
+              <Field
+                label={t('Ende')}
+                type="date"
+                value={draft.end ?? ''}
+                onChange={(e) => setDraft({ ...draft, end: e.target.value || null })}
+              />
+              <Field
+                label={t('Betrag in Euro')}
+                type="number"
+                min={0}
+                step="0.01"
+                value={draft.amount ?? ''}
+                onChange={(e) => setDraft({ ...draft, amount: e.target.value || null })}
+              />
+              <Field
+                label={t('Sachleistung')}
+                value={draft.in_kind ?? ''}
+                onChange={(e) => setDraft({ ...draft, in_kind: e.target.value })}
+              />
+              <SelectField
+                label={t('Steuerlich')}
+                hint={t('Aktive Werbung gehört zum wirtschaftlichen Geschäftsbetrieb.')}
+                value={draft.tax_kind}
+                onChange={(e) =>
+                  setDraft({ ...draft, tax_kind: e.target.value as AgreementTaxKind })
+                }
+              >
+                {AGREEMENT_TAX_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {taxKindLabel(k)}
+                  </option>
+                ))}
+              </SelectField>
+              <Field
+                label={t('Kündigungsfrist in Tagen')}
+                type="number"
+                min={0}
+                max={730}
+                value={draft.notice_days ?? ''}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    notice_days: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+              <Field
+                label={t('Erinnerung (Tage vor Ende bzw. Kündigungsfrist)')}
+                type="number"
+                min={0}
+                max={365}
+                value={draft.remind_days ?? 60}
+                onChange={(e) => setDraft({ ...draft, remind_days: Number(e.target.value) || 0 })}
+              />
             </div>
-            <Field
-              label={t('Gegenleistung genauer')}
-              value={draft.benefits_text ?? ''}
-              onChange={(e) => setDraft({ ...draft, benefits_text: e.target.value })}
+            <div className="aid-row">
+              <Why k="sponsoring_tax" />
+              <Why k="contract_renewal" />
+            </div>
+            <Checkbox
+              label={t('Verlängert sich automatisch, wenn niemand kündigt')}
+              checked={!!draft.auto_renew}
+              onChange={(auto_renew) => setDraft({ ...draft, auto_renew })}
             />
-          </fieldset>
-          <TextArea
-            label={t('Notizen')}
-            value={draft.notes ?? ''}
-            onChange={(notes) => setDraft({ ...draft, notes })}
-          />
-          {draft.end && (
-            <p className="muted small">
-              {t('Mit dem Modul Aufgaben erinnert dich HUBIplan rechtzeitig an die Verlängerung.')}
-            </p>
-          )}
-          <div className="button-row">
-            <button
-              type="button"
-              className="button button-primary"
-              disabled={!draft.title?.trim() || !draft.start}
-              onClick={() => void save()}
-            >
-              {t('Vereinbarung speichern')}
-            </button>
-            <button type="button" className="button" onClick={() => setEditing(null)}>
-              {t('Abbrechen')}
-            </button>
+            <fieldset className="subcard">
+              <legend>{t('Gegenleistung')}</legend>
+              <div className="grid-3">
+                {AGREEMENT_BENEFITS.map((b) => (
+                  <Checkbox
+                    key={b}
+                    label={benefitLabel(b)}
+                    checked={(draft.benefits ?? []).includes(b)}
+                    onChange={(on) => toggleBenefit(b, on)}
+                  />
+                ))}
+              </div>
+              <Field
+                label={t('Gegenleistung genauer')}
+                value={draft.benefits_text ?? ''}
+                onChange={(e) => setDraft({ ...draft, benefits_text: e.target.value })}
+              />
+            </fieldset>
+            <TextArea
+              label={t('Notizen')}
+              value={draft.notes ?? ''}
+              onChange={(notes) => setDraft({ ...draft, notes })}
+            />
+            {draft.end && (
+              <p className="muted small">
+                {t(
+                  'Mit dem Modul Aufgaben erinnert dich HUBIplan rechtzeitig an die Verlängerung.',
+                )}
+              </p>
+            )}
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-primary"
+                disabled={!draft.title?.trim() || !draft.start}
+                onClick={() => void save()}
+              >
+                {t('Vereinbarung speichern')}
+              </button>
+              <button type="button" className="button" onClick={() => setEditing(null)}>
+                {t('Abbrechen')}
+              </button>
+            </div>
           </div>
-        </div>
+        </EditAt>
       )}
       {error && <Alert kind="error">{error}</Alert>}
       {canEdit && editing === null && (

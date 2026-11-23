@@ -202,6 +202,42 @@ a:focus-visible,
   min-width: 0;
 }
 
+/* Bearbeiten direkt am Eintrag (components/EditInPlace.tsx): Formular unter dem Eintrag. */
+.edit-at {
+  scroll-margin: var(--space-6);
+}
+
+.edit-slot > .edit-at > .card,
+.edit-slot > .edit-at > form,
+.edit-slot > .edit-at > section {
+  max-width: none;
+  box-shadow: none;
+}
+
+/* In Zeilen mit Flex (z. B. .item-row) nimmt der Platz die ganze Breite unter dem Eintrag */
+div.edit-slot {
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+td.edit-slot {
+  padding: var(--space-2) 0 var(--space-4);
+  white-space: normal;
+}
+
+/* Waagerecht rollende Tabellen: Formular bleibt in der sichtbaren Breite */
+.table-scroll:has(td.edit-slot),
+.table-wrap:has(td.edit-slot) {
+  container-type: inline-size;
+}
+
+.table-scroll td.edit-slot > .edit-at,
+.table-wrap td.edit-slot > .edit-at {
+  position: sticky;
+  left: 0;
+  max-width: 100cqi;
+}
+
 code {
   font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
   font-size: 0.9em;
