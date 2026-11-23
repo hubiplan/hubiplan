@@ -264,7 +264,11 @@ export type HomeKind =
 export type HeaderImageValue = number | number[] | null
 
 export type HomeTarget =
-  { page: string } | { unit: number } | { event: number } | { url: string } | null
+  | { page: string }
+  | { unit: number }
+  | { event: number }
+  | { url: string }
+  | null
 
 export interface HomeButton {
   label: string
@@ -1007,6 +1011,10 @@ export interface SocialFeed {
   last_sync_at: string | null
   last_error: string
   connected_at: string | null
+  /** Weiterleitungs-URI für die Meta-App (Vereinsadresse der Einheit, #723) */
+  redirect_uri: string
+  /** Nur bei Kanälen mit gespeicherter früherer Adresse: Adresse der Einheit */
+  unit_redirect_uri: string | null
   pages: { id: string; name: string }[]
   post_count: number
   pending_count: number
@@ -1024,6 +1032,7 @@ export interface SocialFeedDraft {
   config_id?: string
   via_facebook?: boolean
   app_secret?: string
+  use_unit_address?: boolean
 }
 
 export interface SocialPost {

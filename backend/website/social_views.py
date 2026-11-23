@@ -37,6 +37,8 @@ from .views import _WebsiteMixin
 
 
 def feed_data(feed: SocialFeed) -> dict:
+    uri = social.redirect_uri(feed)
+    unit_uri = social.unit_redirect_uri(feed)
     return {
         "id": feed.pk,
         "kind": feed.kind,
@@ -59,6 +61,9 @@ def feed_data(feed: SocialFeed) -> dict:
         "last_sync_at": feed.last_sync_at,
         "last_error": feed.last_error,
         "connected_at": feed.connected_at,
+        # Weiterleitungs-URI für die Meta-App; abweichende Vereinsadresse nur bei alten Kanälen
+        "redirect_uri": uri,
+        "unit_redirect_uri": unit_uri if unit_uri != uri else None,
         "pages": social.pending_pages(feed) if feed.status == SocialFeed.Status.CHOOSE else [],
         "post_count": feed.posts.count(),
         "pending_count": feed.posts.filter(state=SocialPost.State.PENDING).count(),
@@ -103,6 +108,8 @@ class FeedSerializer(serializers.Serializer):
     app_id = serializers.RegexField(r"^\d{0,40}$", required=False, allow_blank=True)
     config_id = serializers.RegexField(r"^\d{0,40}$", required=False, allow_blank=True)
     via_facebook = serializers.BooleanField(required=False)
+    # Gespeicherte Rücksprungadresse verwerfen, ab jetzt die Vereinsadresse nutzen (#723)
+    use_unit_address = serializers.BooleanField(required=False, write_only=True)
     # Nur schreiben; leer lassen = unverändert
     app_secret = serializers.RegexField(
         r"^[A-Za-z0-9]{0,128}$", required=False, allow_blank=True, write_only=True
@@ -133,7 +140,7 @@ class FeedListView(_WebsiteMixin, APIView):
         return Response(
             {
                 "feeds": [feed_data(f) for f in feeds],
-                "redirect_uri": social.redirect_uri(),
+                "redirect_uri": social.redirect_uri(unit=self.org),
                 "units": [{"id": u.pk, "name": u.name} for u in units],
                 "can_manage": WEBSITE_MANAGE in self.org_permissions,
             }
@@ -197,6 +204,10 @@ class FeedDetailView(_FeedMixin, APIView):
         if data.get("app_secret"):
             social.set_secret(feed, data["app_secret"])
             changes["App-Geheimnis"] = ["…", "neu"]
+        if data.get("use_unit_address") and feed.redirect_base:
+            old = social.redirect_uri(feed)
+            feed.redirect_base = ""
+            changes["Rücksprungadresse"] = [old, social.redirect_uri(feed)]
         feed.save()
         if changes:
             record(self.org, request.user, "update", feed, changes)
@@ -211,11 +222,36 @@ class FeedDetailView(_FeedMixin, APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+def _same_address(request, feed: SocialFeed) -> None:
+    """Meta leitet auf die Rücksprungadresse zurück; die Anmeldung gilt je Adresse (#723)."""
+    from urllib.parse import urlsplit
+
+    from organizations.addresses import normalize_host, unit_for_host
+
+    target = urlsplit(social.redirect_uri(feed)).hostname or ""
+    try:
+        here = normalize_host(request.get_host())
+    except Exception:  # noqa: BLE001
+        return
+    if target == here:
+        return
+    if unit_for_host(target) is None and unit_for_host(here) is None:
+        return
+    raise ValidationError(
+        gettext(
+            "Meta schickt nach dem Verbinden zu %(adresse)s zurück. Bitte dort anmelden "
+            "und den Kanal von dort aus verbinden."
+        )
+        % {"adresse": f"https://{target}"}
+    )
+
+
 class FeedConnectView(_FeedMixin, APIView):
     """POST: Adresse bei Meta zum Verbinden · DELETE: trennen (löscht Zugang und Beiträge)."""
 
     def post(self, request, org_id: int, pk: int):
         feed = self.feed()
+        _same_address(request, feed)
         try:
             url = social.start_connect(feed, request.user)
         except social.MetaError as exc:
@@ -475,12 +511,18 @@ class CallbackView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from organizations.addresses import base_url
+
+        # Zurück auf die Adresse, über die Meta zurückgeleitet hat (Vereinsadresse, #723)
+        back = base_url(request=request)
         state = request.query_params.get("state", "")
         with rls_bypass():
             feed = social.feed_for_state(state, request.user)
             if feed is None:
                 return HttpResponseRedirect(
-                    social.frontend_return(False, "Anmeldung abgelaufen, bitte neu verbinden.")
+                    social.frontend_return(
+                        False, "Anmeldung abgelaufen, bitte neu verbinden.", base=back
+                    )
                 )
             if WEBSITE_MANAGE not in permissions_in(request.user, feed.organization):
                 raise NotFound()
@@ -488,14 +530,14 @@ class CallbackView(APIView):
                 feed.oauth_state = ""
                 feed.save(update_fields=["oauth_state"])
                 reason = request.query_params.get("error_description") or "abgebrochen"
-                return HttpResponseRedirect(social.frontend_return(False, reason))
+                return HttpResponseRedirect(social.frontend_return(False, reason, base=back))
             try:
                 social.finish_connect(feed, request.query_params.get("code", ""))
             except social.MetaError as exc:
                 feed.refresh_from_db()
                 feed.last_error = str(exc)[:500]
                 feed.save(update_fields=["last_error"])
-                return HttpResponseRedirect(social.frontend_return(False, str(exc)))
+                return HttpResponseRedirect(social.frontend_return(False, str(exc), base=back))
             record(
                 feed.organization, request.user, "update", feed, {"Verbindung": [None, str(feed)]}
             )
@@ -503,4 +545,4 @@ class CallbackView(APIView):
                 from .social_jobs import request_sync
 
                 request_sync(feed)
-        return HttpResponseRedirect(social.frontend_return(True))
+        return HttpResponseRedirect(social.frontend_return(True, base=back))

@@ -62,7 +62,6 @@ export function SocialPage() {
             key={f.id}
             feed={f}
             canManage={data.can_manage}
-            redirectUri={data.redirect_uri}
             onChanged={() => void reload()}
           />
         ))}
@@ -183,12 +182,10 @@ function statusText(f: SocialFeed): string {
 function FeedCard({
   feed,
   canManage,
-  redirectUri,
   onChanged,
 }: {
   feed: SocialFeed
   canManage: boolean
-  redirectUri: string
   onChanged: () => void
 }) {
   const org = useActiveOrg()
@@ -333,9 +330,16 @@ function FeedCard({
                   />
                 )}
               </div>
-              <p className="muted small">
-                {t('Weiterleitungsadresse für die Meta-App:')} <code>{redirectUri}</code>
-              </p>
+              <RedirectInfo
+                feed={feed}
+                busy={busy}
+                onUseUnit={() =>
+                  void run(
+                    () => socialApi.save(org.id, feed.id, { use_unit_address: true }),
+                    t('Der Kanal nutzt jetzt die Vereinsadresse.'),
+                  )
+                }
+              />
               <div className="button-row">
                 <button
                   type="button"
@@ -647,6 +651,87 @@ function PostImages({ post, onSaved }: { post: SocialPost; onSaved: () => void }
   )
 }
 
+function hostOf(uri: string): string {
+  try {
+    return new URL(uri).host
+  } catch {
+    return ''
+  }
+}
+
+function CopyCode({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <span className="button-row">
+      <code className="break-all">{value}</code>
+      <button
+        type="button"
+        className="button"
+        onClick={() => {
+          void navigator.clipboard?.writeText(value).then(() => setCopied(true))
+        }}
+      >
+        {copied ? t('Kopiert') : t('Kopieren')}
+      </button>
+    </span>
+  )
+}
+
+/** Weiterleitungs-URI des Kanals zum Kopieren (Issue #723). */
+function RedirectInfo({
+  feed,
+  busy,
+  onUseUnit,
+}: {
+  feed: SocialFeed
+  busy: boolean
+  onUseUnit: () => void
+}) {
+  const host = hostOf(feed.redirect_uri)
+  const elsewhere = host !== '' && host !== window.location.host
+  return (
+    <div className="small">
+      <p className="muted">{t('In der Meta-App als Weiterleitungs-URI (OAuth) eintragen:')}</p>
+      <CopyCode value={feed.redirect_uri} />
+      {host && (
+        <p className="muted">
+          {t('Als App-Domain:')} <code>{host.split(':')[0]}</code>
+        </p>
+      )}
+      {elsewhere && (
+        <p className="muted">
+          {t(
+            'Meta schickt nach dem Verbinden zu {adresse} zurück. Bitte dort anmelden und den Kanal von dort aus verbinden.',
+            {
+              adresse: `https://${host}`,
+            },
+          )}
+        </p>
+      )}
+      {feed.unit_redirect_uri && (
+        <div className="muted">
+          <p>
+            {t(
+              'Dieser Kanal nutzt noch die frühere Adresse, die in eurer Meta-App eingetragen ist. Ihr könnt auf die Vereinsadresse umstellen:',
+            )}{' '}
+            <code className="break-all">{feed.unit_redirect_uri}</code>
+          </p>
+          <p>
+            {t(
+              'Danach die neue Adresse in der Meta-App als Weiterleitungs-URI und App-Domain eintragen und den Kanal neu verbinden.',
+            )}
+          </p>
+          <div className="button-row">
+            <button type="button" className="button" disabled={busy} onClick={onUseUnit}>
+              {t('Vereinsadresse verwenden')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SetupGuide({ redirectUri }: { redirectUri: string }) {
   return (
     <details className="card card-wide">
@@ -698,7 +783,9 @@ function SetupGuide({ redirectUri }: { redirectUri: string }) {
         <li>{t('Facebook: Wer die Seite verwaltet, muss Admin der App sein.')}</li>
         <li>
           {t('Als')} <strong>{t('Weiterleitungs-URI')}</strong> {t('(OAuth) eintragen:')}{' '}
-          <code>{redirectUri}</code>
+          <code className="break-all">{redirectUri}</code> {t('und als')}{' '}
+          <strong>{t('App-Domain')}</strong> <code>{hostOf(redirectUri).split(':')[0]}</code>
+          {t('. Die genaue Adresse steht auch beim Kanal zum Kopieren.')}
         </li>
         <li>{t('Als Datenschutz-URL die Datenschutzhinweise eurer Webseite eintragen.')}</li>
         <li>
