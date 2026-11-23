@@ -150,6 +150,8 @@ function MusicWorkspace() {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState({ kind: '', value: '' })
   const [kindFilter, setKindFilter] = useState('')
+  // Vergangene Auftritte sind zunächst ausgeblendet und lassen sich einblenden
+  const [showPast, setShowPast] = useState(false)
   const [notice, setNotice] = useState('')
   const base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
@@ -396,8 +398,21 @@ function MusicWorkspace() {
       >
     ]
   const row = rows.find((r) => String(r.id) === selected)
+  const now = Date.now()
+  const pastIds = new Set(
+    d.performances
+      .filter((p) => {
+        const end = p.ends_at || p.starts_at
+        return !!end && new Date(String(end)).getTime() < now
+      })
+      .map((p) => p.id),
+  )
+  const performanceOf = (r: Row) => Number(kind === 'performances' ? r.id : r.performance)
+  const withPast = ['performances', 'positions', 'assignments'].includes(kind)
+  const hiddenPast = withPast && !showPast ? rows.filter((r) => pastIds.has(performanceOf(r))) : []
   const visibleRows = rows.filter(
     (r) =>
+      !hiddenPast.includes(r) &&
       (kind !== 'performances' || !kindFilter || String(r.kind) === kindFilter) &&
       (kind !== 'musicians' ||
         !params.get('mitglied') ||
@@ -471,6 +486,23 @@ function MusicWorkspace() {
                 </option>
               ))}
             </select>
+          </label>
+        )}
+        {withPast && pastIds.size > 0 && (
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={showPast}
+              onChange={(e) => setShowPast(e.target.checked)}
+            />
+            <span>
+              {kind === 'performances'
+                ? t('Vergangene Auftritte zeigen')
+                : t('Vergangene Auftritte einbeziehen')}
+              {!showPast &&
+                hiddenPast.length > 0 &&
+                ` (${tn('{n} ausgeblendet', '{n} ausgeblendet', hiddenPast.length)})`}
+            </span>
           </label>
         )}
         {canEdit && !selected && (
