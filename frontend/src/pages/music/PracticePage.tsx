@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { GuestAccessPanel } from './GuestAccessPanel.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -235,40 +236,42 @@ export function PracticePage() {
         </button>
       )}
       {canEdit && selected && tab !== 'overview' && (
-        <ScoreForm
-          key={`${tab}-${selected === 'new' ? key : selected.id}`}
-          initial={selected === 'new' ? undefined : selected}
-          fields={fields[tab as keyof typeof fields]}
-          onClose={() => setSelected(null)}
-          onSave={async (values) => {
-            const endpoint =
-              tab === 'items'
-                ? 'rehearsal-items'
-                : tab === 'invitations'
-                  ? 'rehearsal-invitations'
-                  : tab
-            if (tab === 'loans')
-              await api.post(base + 'loans/', { action: 'issue', ...values }, key)
-            else if (selected === 'new') await api.post(base + endpoint + '/', values)
-            else await api.patch(`${base}${endpoint}/${selected.id}/`, values)
-            setSelected(null)
-            await load.reload()
-          }}
-          onAutoSave={
-            selected === 'new' || tab === 'loans'
-              ? undefined
-              : async (changes) => {
-                  const endpoint =
-                    tab === 'items'
-                      ? 'rehearsal-items'
-                      : tab === 'invitations'
-                        ? 'rehearsal-invitations'
-                        : tab
-                  await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
-                  void load.reload()
-                }
-          }
-        />
+        <EditAt at={selected === 'new' ? null : editKey(tab, selected.id)}>
+          <ScoreForm
+            key={`${tab}-${selected === 'new' ? key : selected.id}`}
+            initial={selected === 'new' ? undefined : selected}
+            fields={fields[tab as keyof typeof fields]}
+            onClose={() => setSelected(null)}
+            onSave={async (values) => {
+              const endpoint =
+                tab === 'items'
+                  ? 'rehearsal-items'
+                  : tab === 'invitations'
+                    ? 'rehearsal-invitations'
+                    : tab
+              if (tab === 'loans')
+                await api.post(base + 'loans/', { action: 'issue', ...values }, key)
+              else if (selected === 'new') await api.post(base + endpoint + '/', values)
+              else await api.patch(`${base}${endpoint}/${selected.id}/`, values)
+              setSelected(null)
+              await load.reload()
+            }}
+            onAutoSave={
+              selected === 'new' || tab === 'loans'
+                ? undefined
+                : async (changes) => {
+                    const endpoint =
+                      tab === 'items'
+                        ? 'rehearsal-items'
+                        : tab === 'invitations'
+                          ? 'rehearsal-invitations'
+                          : tab
+                    await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
+                    void load.reload()
+                  }
+            }
+          />
+        </EditAt>
       )}
       {!(tab === 'overview' ? d.overview : rows).length && <MusicEmptyState />}
       {tab === 'overview' &&
@@ -457,6 +460,7 @@ export function PracticePage() {
               {t('Entfernen')}
             </button>
           )}
+          <EditSlot id={editKey(tab, r.id)} />
         </article>
       ))}
     </section>

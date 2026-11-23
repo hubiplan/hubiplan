@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
@@ -56,13 +57,15 @@ export function EnsembleTemplatesPage() {
         </button>
       )}
       {canEdit && selected && (
-        <TemplateForm
-          key={selected === 'new' ? 'new' : selected.id}
-          initial={selected === 'new' ? undefined : selected}
-          url={url}
-          onClose={() => setSelected(null)}
-          onSaved={() => load.reload()}
-        />
+        <EditAt at={selected === 'new' ? null : editKey('ensemble', selected.id)}>
+          <TemplateForm
+            key={selected === 'new' ? 'new' : selected.id}
+            initial={selected === 'new' ? undefined : selected}
+            url={url}
+            onClose={() => setSelected(null)}
+            onSaved={() => load.reload()}
+          />
+        </EditAt>
       )}
       {!load.data.length && <MusicEmptyState />}
       {load.data.map((row) => (
@@ -86,6 +89,7 @@ export function EnsembleTemplatesPage() {
               {t('Bearbeiten')}
             </button>
           )}
+          <EditSlot id={editKey('ensemble', row.id)} />
         </article>
       ))}
     </section>

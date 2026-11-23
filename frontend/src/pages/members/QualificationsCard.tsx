@@ -1,6 +1,7 @@
 // Qualifikationen in der Mitgliedsakte: Nachweise mit Gültigkeit, eintragen, verlängern,
 // bearbeiten, löschen. Frühere Nachweise derselben Art stehen als Verlauf darunter.
 // Einsichtsvermerke (z. B. Führungszeugnis) haben nur das Datum der Einsicht, keine Bemerkung.
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { todayIso } from '../../api/members.ts'
@@ -196,31 +197,33 @@ export function QualificationsCard({
       const known = options.some((k) => k.id === q.kind)
       return (
         <li key={q.id}>
-          <RecordForm
-            label={t('{name} bearbeiten', { name: q.kind_name })}
-            types={
-              known
-                ? options
-                : [
-                    ...options,
-                    {
-                      id: q.kind,
-                      name: q.kind_name,
-                      inspection_only: q.inspection_only,
-                    } as QualificationType,
-                  ]
-            }
-            initial={q}
-            submitLabel={t('Speichern')}
-            busy={busy}
-            onCancel={() => setEditing(null)}
-            onSave={(data) =>
-              run(() => qualificationApi.updateRecord(orgId, memberId, q.id, data)).then((ok) => {
-                if (ok) setEditing(null)
-                return ok
-              })
-            }
-          />
+          <EditAt at={null}>
+            <RecordForm
+              label={t('{name} bearbeiten', { name: q.kind_name })}
+              types={
+                known
+                  ? options
+                  : [
+                      ...options,
+                      {
+                        id: q.kind,
+                        name: q.kind_name,
+                        inspection_only: q.inspection_only,
+                      } as QualificationType,
+                    ]
+              }
+              initial={q}
+              submitLabel={t('Speichern')}
+              busy={busy}
+              onCancel={() => setEditing(null)}
+              onSave={(data) =>
+                run(() => qualificationApi.updateRecord(orgId, memberId, q.id, data)).then((ok) => {
+                  if (ok) setEditing(null)
+                  return ok
+                })
+              }
+            />
+          </EditAt>{' '}
         </li>
       )
     }

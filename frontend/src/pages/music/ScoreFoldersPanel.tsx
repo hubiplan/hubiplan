@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
 import { errorMessage, useAutoSave, useLoad } from '../../components/forms.ts'
@@ -95,26 +96,28 @@ export function ScoreFoldersPanel({
         </div>
       )}
       {canEdit && editing && (
-        <FolderForm
-          key={editing === 'new' ? 'new' : editing.id}
-          initial={editing === 'new' ? undefined : editing}
-          units={units}
-          onClose={() => setEditing(null)}
-          onSave={async (values) => {
-            if (editing === 'new') await api.post(base + 'score-folders/', values)
-            else await api.patch(`${base}score-folders/${editing.id}/`, values)
-            setEditing(null)
-            await load.reload()
-          }}
-          onAutoSave={
-            editing === 'new'
-              ? undefined
-              : async (changes) => {
-                  await api.patch(`${base}score-folders/${editing.id}/`, changes)
-                  void load.reload()
-                }
-          }
-        />
+        <EditAt at={editing === 'new' ? null : editKey('folder', editing.id)}>
+          <FolderForm
+            key={editing === 'new' ? 'new' : editing.id}
+            initial={editing === 'new' ? undefined : editing}
+            units={units}
+            onClose={() => setEditing(null)}
+            onSave={async (values) => {
+              if (editing === 'new') await api.post(base + 'score-folders/', values)
+              else await api.patch(`${base}score-folders/${editing.id}/`, values)
+              setEditing(null)
+              await load.reload()
+            }}
+            onAutoSave={
+              editing === 'new'
+                ? undefined
+                : async (changes) => {
+                    await api.patch(`${base}score-folders/${editing.id}/`, changes)
+                    void load.reload()
+                  }
+            }
+          />
+        </EditAt>
       )}
       {!folders.length && (
         <MusicEmptyState>{t('Noch keine Notenmappen vorhanden.')}</MusicEmptyState>
@@ -176,6 +179,7 @@ export function ScoreFoldersPanel({
               run={run}
             />
           )}
+          <EditSlot id={editKey('folder', f.id)} />
         </article>
       ))}
     </div>

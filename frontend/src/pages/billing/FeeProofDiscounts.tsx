@@ -1,6 +1,7 @@
 // Finanzen › Beitragssätze: Ermäßigung mit Nachweis einrichten (Frist, Kulanzzeit, Erinnerungen,
 // Arten von Nachweisen) und automatische Anerkennung (docs/beitragsnachweise.md).
-import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../api/client.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
@@ -182,57 +183,60 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
           </thead>
           <tbody>
             {list.data.map((d) => (
-              <tr key={d.id}>
-                <td>
-                  <strong>{d.name}</strong>
-                  {d.is_archived && (
-                    <span className="muted small"> · {t('nicht mehr verwendet')}</span>
-                  )}
-                </td>
-                <td>
-                  {d.amount !== null
-                    ? t('{x} im Jahr', { x: euro(d.amount) })
-                    : t('{p} % weniger', { p: Number(d.discount_percent).toLocaleString() })}
-                </td>
-                <td>
-                  {deadlineText(d)}
-                  {d.grace_days ? ` + ${t('{n} Tage Kulanz', { n: d.grace_days })}` : ''}
-                </td>
-                <td>{d.member_type_name ?? t('alle Mitgliedsarten')}</td>
-                <td className="actions">
-                  {canEdit && (
-                    <span className="button-row">
-                      <button
-                        type="button"
-                        className="link-button"
-                        onClick={() => {
-                          setEditing(d.id)
-                          setDraft(draftOf(d))
-                          setErrors({})
-                        }}
-                      >
-                        {t('Bearbeiten')}
-                      </button>
-                      <button
-                        type="button"
-                        className="link-button"
-                        onClick={() => void archive(d, !d.is_archived)}
-                      >
-                        {d.is_archived ? t('wieder verwenden') : t('nicht mehr verwenden')}
-                      </button>
-                      {!d.in_use && (
+              <Fragment key={d.id}>
+                <tr key={d.id}>
+                  <td>
+                    <strong>{d.name}</strong>
+                    {d.is_archived && (
+                      <span className="muted small"> · {t('nicht mehr verwendet')}</span>
+                    )}
+                  </td>
+                  <td>
+                    {d.amount !== null
+                      ? t('{x} im Jahr', { x: euro(d.amount) })
+                      : t('{p} % weniger', { p: Number(d.discount_percent).toLocaleString() })}
+                  </td>
+                  <td>
+                    {deadlineText(d)}
+                    {d.grace_days ? ` + ${t('{n} Tage Kulanz', { n: d.grace_days })}` : ''}
+                  </td>
+                  <td>{d.member_type_name ?? t('alle Mitgliedsarten')}</td>
+                  <td className="actions">
+                    {canEdit && (
+                      <span className="button-row">
                         <button
                           type="button"
                           className="link-button"
-                          onClick={() => void remove(d)}
+                          onClick={() => {
+                            setEditing(d.id)
+                            setDraft(draftOf(d))
+                            setErrors({})
+                          }}
                         >
-                          {t('Löschen')}
+                          {t('Bearbeiten')}
                         </button>
-                      )}
-                    </span>
-                  )}
-                </td>
-              </tr>
+                        <button
+                          type="button"
+                          className="link-button"
+                          onClick={() => void archive(d, !d.is_archived)}
+                        >
+                          {d.is_archived ? t('wieder verwenden') : t('nicht mehr verwenden')}
+                        </button>
+                        {!d.in_use && (
+                          <button
+                            type="button"
+                            className="link-button"
+                            onClick={() => void remove(d)}
+                          >
+                            {t('Löschen')}
+                          </button>
+                        )}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+                <EditSlot id={editKey('fee-discount', d.id)} colSpan={5} />
+              </Fragment>
             ))}
           </tbody>
         </table>
@@ -273,104 +277,116 @@ export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEd
         </div>
       )}
       {canEdit && editing !== null && (
-        <form className="subcard" onSubmit={(e) => void save(e)}>
-          <h3>
-            {editing === 'new' ? t('Neue Ermäßigung mit Nachweis') : t('Ermäßigung bearbeiten')}
-          </h3>
-          <div className="grid-3">
-            <Field
-              label={t('Bezeichnung')}
-              required
-              placeholder={t('z. B. Studierende')}
-              value={draft.name}
-              error={errors.name}
-              onChange={(e) => set('name', e.target.value)}
+        <EditAt at={editing === 'new' ? null : editKey('fee-discount', editing)}>
+          <form className="subcard" onSubmit={(e) => void save(e)}>
+            <h3>
+              {editing === 'new' ? t('Neue Ermäßigung mit Nachweis') : t('Ermäßigung bearbeiten')}
+            </h3>
+            <div className="grid-3">
+              <Field
+                label={t('Bezeichnung')}
+                required
+                placeholder={t('z. B. Studierende')}
+                value={draft.name}
+                error={errors.name}
+                onChange={(e) => set('name', e.target.value)}
+              />
+              <SelectField
+                label={t('gilt für')}
+                value={draft.member_type}
+                error={errors.member_type}
+                onChange={(e) => set('member_type', e.target.value)}
+              >
+                <option value="">{t('alle Mitgliedsarten')}</option>
+                {(types.data ?? []).map((mt) => (
+                  <option key={mt.id} value={mt.id}>
+                    {mt.name}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField
+                label={t('Ermäßigung als')}
+                value={draft.mode}
+                onChange={(e) => set('mode', e.target.value as Draft['mode'])}
+              >
+                <option value="amount">{t('ermäßigter Jahresbeitrag (€)')}</option>
+                <option value="percent">{t('Abschlag in Prozent')}</option>
+              </SelectField>
+              <Field
+                label={draft.mode === 'amount' ? t('Jahresbeitrag (€)') : t('Abschlag (%)')}
+                inputMode="decimal"
+                required
+                value={draft.value}
+                error={
+                  draft.mode === 'amount'
+                    ? errors.amount
+                    : (errors.discount_percent ?? errors.amount)
+                }
+                onChange={(e) => set('value', e.target.value)}
+              />
+              <Field
+                label={t('Frist im Beitragsjahr')}
+                required
+                placeholder="28.02."
+                hint={t('Tag.Monat.')}
+                value={draft.deadline}
+                error={errors.deadline_day}
+                onChange={(e) => set('deadline', e.target.value)}
+              />
+              <Field
+                label={t('Kulanzzeit in Tagen (freiwillig)')}
+                term="grace_period"
+                type="number"
+                min={0}
+                max={365}
+                value={draft.grace_days}
+                error={errors.grace_days}
+                onChange={(e) => set('grace_days', e.target.value)}
+              />
+              <Field
+                label={t('Nachreichen nach Eintritt in Tagen')}
+                type="number"
+                min={0}
+                max={365}
+                value={draft.late_join_days}
+                error={errors.late_join_days}
+                onChange={(e) => set('late_join_days', e.target.value)}
+              />
+            </div>
+            <label className="field">
+              <span>{t('Arten von Nachweisen (eine je Zeile)')}</span>
+              <textarea
+                rows={3}
+                value={draft.kinds}
+                onChange={(e) => set('kinds', e.target.value)}
+              />
+              {errors.kinds && <small className="field-error">{errors.kinds}</small>}
+            </label>
+            <Checkbox
+              label={t('Nach Fristablauf mitteilen, dass der normale Beitrag gilt')}
+              checked={draft.notify_after}
+              onChange={(value) => set('notify_after', value)}
             />
-            <SelectField
-              label={t('gilt für')}
-              value={draft.member_type}
-              error={errors.member_type}
-              onChange={(e) => set('member_type', e.target.value)}
-            >
-              <option value="">{t('alle Mitgliedsarten')}</option>
-              {(types.data ?? []).map((mt) => (
-                <option key={mt.id} value={mt.id}>
-                  {mt.name}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label={t('Ermäßigung als')}
-              value={draft.mode}
-              onChange={(e) => set('mode', e.target.value as Draft['mode'])}
-            >
-              <option value="amount">{t('ermäßigter Jahresbeitrag (€)')}</option>
-              <option value="percent">{t('Abschlag in Prozent')}</option>
-            </SelectField>
-            <Field
-              label={draft.mode === 'amount' ? t('Jahresbeitrag (€)') : t('Abschlag (%)')}
-              inputMode="decimal"
-              required
-              value={draft.value}
-              error={
-                draft.mode === 'amount' ? errors.amount : (errors.discount_percent ?? errors.amount)
-              }
-              onChange={(e) => set('value', e.target.value)}
-            />
-            <Field
-              label={t('Frist im Beitragsjahr')}
-              required
-              placeholder="28.02."
-              hint={t('Tag.Monat.')}
-              value={draft.deadline}
-              error={errors.deadline_day}
-              onChange={(e) => set('deadline', e.target.value)}
-            />
-            <Field
-              label={t('Kulanzzeit in Tagen (freiwillig)')}
-              term="grace_period"
-              type="number"
-              min={0}
-              max={365}
-              value={draft.grace_days}
-              error={errors.grace_days}
-              onChange={(e) => set('grace_days', e.target.value)}
-            />
-            <Field
-              label={t('Nachreichen nach Eintritt in Tagen')}
-              type="number"
-              min={0}
-              max={365}
-              value={draft.late_join_days}
-              error={errors.late_join_days}
-              onChange={(e) => set('late_join_days', e.target.value)}
-            />
-          </div>
-          <label className="field">
-            <span>{t('Arten von Nachweisen (eine je Zeile)')}</span>
-            <textarea rows={3} value={draft.kinds} onChange={(e) => set('kinds', e.target.value)} />
-            {errors.kinds && <small className="field-error">{errors.kinds}</small>}
-          </label>
-          <Checkbox
-            label={t('Nach Fristablauf mitteilen, dass der normale Beitrag gilt')}
-            checked={draft.notify_after}
-            onChange={(value) => set('notify_after', value)}
-          />
-          <p className="muted small">
-            {t(
-              'Erinnerungen gehen am 15.01. und 14 Tage vor der Frist an alle, die noch keinen Nachweis haben.',
-            )}
-          </p>
-          {errors.detail && <Alert kind="error">{errors.detail}</Alert>}
-          <div className="button-row">
-            <button type="submit" className="button button-primary" disabled={busy}>
-              {t('Speichern')}
-            </button>
-            <button type="button" className="button button-ghost" onClick={() => setEditing(null)}>
-              {t('Abbrechen')}
-            </button>
-          </div>
-        </form>
+            <p className="muted small">
+              {t(
+                'Erinnerungen gehen am 15.01. und 14 Tage vor der Frist an alle, die noch keinen Nachweis haben.',
+              )}
+            </p>
+            {errors.detail && <Alert kind="error">{errors.detail}</Alert>}
+            <div className="button-row">
+              <button type="submit" className="button button-primary" disabled={busy}>
+                {t('Speichern')}
+              </button>
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setEditing(null)}
+              >
+                {t('Abbrechen')}
+              </button>
+            </div>
+          </form>
+        </EditAt>
       )}
     </div>
   )

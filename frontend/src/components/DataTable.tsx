@@ -15,8 +15,9 @@
 // Sortiert, gefiltert und geblättert wird im Browser; das reicht für Listen bis
 // zu einigen tausend Zeilen (Abteilungen, Vereine). Für sehr große Listen wie die
 // Mitgliederliste bleibt die serverseitige Variante.
+import { EditSlot, editKey } from './EditInPlace.tsx'
 import { compareCells, type CellValue } from './sorting.ts'
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { t, tn } from '../i18n/index.ts'
 import { PageNav } from './ListControls.tsx'
@@ -77,6 +78,8 @@ export interface DataTableProps<T> {
    * haben dann gleich breite Spalten, egal wie lang die Inhalte sind.
    */
   fixedLayout?: boolean
+  /** Bearbeiten-Formular erscheint unter der Zeile (EditInPlace, Name der Liste) */
+  slot?: string
 }
 
 const asText = (v: CellValue) => (v === null || v === undefined ? '' : String(v))
@@ -101,6 +104,7 @@ export function DataTable<T>({
   rowClassName,
   toolbar,
   fixedLayout = false,
+  slot,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(
@@ -301,23 +305,29 @@ export function DataTable<T>({
             </thead>
             <tbody>
               {shown.map((row) => (
-                <tr key={rowKey(row)} className={rowClassName?.(row)}>
-                  {columns.map((c) => {
-                    const cls = [c.numeric && 'num', c.optional && 'col-optional']
-                      .filter(Boolean)
-                      .join(' ')
-                    return (
-                      <td key={c.key} className={cls || undefined} data-label={c.label}>
-                        {c.render ? c.render(row) : asText(c.value(row))}
+                <Fragment key={rowKey(row)}>
+                  <tr key={rowKey(row)} className={rowClassName?.(row)}>
+                    {columns.map((c) => {
+                      const cls = [c.numeric && 'num', c.optional && 'col-optional']
+                        .filter(Boolean)
+                        .join(' ')
+                      return (
+                        <td key={c.key} className={cls || undefined} data-label={c.label}>
+                          {c.render ? c.render(row) : asText(c.value(row))}
+                        </td>
+                      )
+                    })}
+                    {actions && (
+                      <td className="actions">
+                        <div className="row-actions">{actions(row)}</div>
                       </td>
-                    )
-                  })}
-                  {actions && (
-                    <td className="actions">
-                      <div className="row-actions">{actions(row)}</div>
-                    </td>
-                  )}
-                </tr>
+                    )}
+                  </tr>
+                  <EditSlot
+                    id={slot ? editKey(slot, rowKey(row)) : null}
+                    colSpan={columns.length + (actions ? 1 : 0)}
+                  />
+                </Fragment>
               ))}
             </tbody>
           </table>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EditAt } from '../../components/EditInPlace.tsx'
 import type { FormEvent } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { displayName, platformApi } from '../../api/orgs.ts'
@@ -120,15 +121,17 @@ export function PlatformOrgsPage() {
 
   if (editing !== null) {
     return (
-      <PlatformOrgForm
-        org={editing === 'new' ? null : editing}
-        parents={federations}
-        onDone={async () => {
-          setEditing(null)
-          await reload()
-        }}
-        onCancel={() => setEditing(null)}
-      />
+      <EditAt at={null}>
+        <PlatformOrgForm
+          org={editing === 'new' ? null : editing}
+          parents={federations}
+          onDone={async () => {
+            setEditing(null)
+            await reload()
+          }}
+          onCancel={() => setEditing(null)}
+        />
+      </EditAt>
     )
   }
 

@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
@@ -214,29 +215,31 @@ export function ScoresPage() {
             )}
           </div>
           {canEdit && selected && (
-            <ScoreForm
-              key={`${tab}-${selected === 'new' ? 'new' : selected.id}`}
-              fields={fields[tab]}
-              initial={selected === 'new' ? undefined : selected}
-              onClose={() => setSelected(null)}
-              onSave={async (values) => {
-                const endpoint = tab === 'files' ? 'score-documents' : tab
-                const target = base + endpoint + '/'
-                if (selected === 'new') await api.post(target, values)
-                else await api.patch(`${target}${selected.id}/`, values)
-                setSelected(null)
-                await load.reload()
-              }}
-              onAutoSave={
-                selected === 'new'
-                  ? undefined
-                  : async (changes) => {
-                      const endpoint = tab === 'files' ? 'score-documents' : tab
-                      await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
-                      void load.reload()
-                    }
-              }
-            />
+            <EditAt at={selected === 'new' ? null : editKey(tab, selected.id)}>
+              <ScoreForm
+                key={`${tab}-${selected === 'new' ? 'new' : selected.id}`}
+                fields={fields[tab]}
+                initial={selected === 'new' ? undefined : selected}
+                onClose={() => setSelected(null)}
+                onSave={async (values) => {
+                  const endpoint = tab === 'files' ? 'score-documents' : tab
+                  const target = base + endpoint + '/'
+                  if (selected === 'new') await api.post(target, values)
+                  else await api.patch(`${target}${selected.id}/`, values)
+                  setSelected(null)
+                  await load.reload()
+                }}
+                onAutoSave={
+                  selected === 'new'
+                    ? undefined
+                    : async (changes) => {
+                        const endpoint = tab === 'files' ? 'score-documents' : tab
+                        await api.patch(`${base}${endpoint}/${selected.id}/`, changes)
+                        void load.reload()
+                      }
+                }
+              />
+            </EditAt>
           )}
           {!visibleRows.length && (
             <MusicEmptyState>
@@ -320,6 +323,7 @@ export function ScoresPage() {
                   )}
                 </div>
               )}
+              <EditSlot id={editKey(tab, r.id)} />
             </article>
           ))}
         </>

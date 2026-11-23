@@ -1,5 +1,6 @@
 // Kasse: Konten und Kategorien verwalten.
-import { useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../api/client.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
@@ -59,18 +60,20 @@ export function AccountsPage() {
         )}
       </p>
       {editing !== null && (
-        <AccountForm
-          // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
-          key={editing === 'new' ? 'new' : editing.id}
-          orgId={org.id}
-          account={editing === 'new' ? null : editing}
-          datev={datevOn}
-          onDone={async () => {
-            setEditing(null)
-            await reload()
-          }}
-          onCancel={() => setEditing(null)}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('account', editing.id)}>
+          <AccountForm
+            // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
+            key={editing === 'new' ? 'new' : editing.id}
+            orgId={org.id}
+            account={editing === 'new' ? null : editing}
+            datev={datevOn}
+            onDone={async () => {
+              setEditing(null)
+              await reload()
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </EditAt>
       )}
       {data.length === 0 ? (
         editing === null && (
@@ -96,37 +99,40 @@ export function AccountsPage() {
           </thead>
           <tbody>
             {data.map((a) => (
-              <tr key={a.id} className={a.is_active ? undefined : 'muted'}>
-                <td>
-                  <strong>{a.name}</strong>
-                  <div className="muted small">
-                    {a.kind_label}
-                    {a.iban && t(' · {x}', { x: a.iban.replace(/(.{4})/g, '$1 ').trim() })}
-                    {!a.is_active && t(' · inaktiv')}
-                  </div>
-                </td>
-                <td>
-                  {euro(a.opening_balance)}
-                  <div className="muted small">
-                    {t('zum')} {formatDate(a.opening_date)}
-                  </div>
-                </td>
-                <td className="num">
-                  <strong>{euro(a.balance)}</strong>
-                  {a.planned_balance !== null && (
+              <Fragment key={a.id}>
+                <tr key={a.id} className={a.is_active ? undefined : 'muted'}>
+                  <td>
+                    <strong>{a.name}</strong>
                     <div className="muted small">
-                      {t('mit vorgemerkten Buchungen')} {euro(a.planned_balance)}
+                      {a.kind_label}
+                      {a.iban && t(' · {x}', { x: a.iban.replace(/(.{4})/g, '$1 ').trim() })}
+                      {!a.is_active && t(' · inaktiv')}
                     </div>
-                  )}
-                </td>
-                <td className="actions">
-                  {canEdit && (
-                    <button type="button" className="link-button" onClick={() => setEditing(a)}>
-                      {t('Bearbeiten')}
-                    </button>
-                  )}
-                </td>
-              </tr>
+                  </td>
+                  <td>
+                    {euro(a.opening_balance)}
+                    <div className="muted small">
+                      {t('zum')} {formatDate(a.opening_date)}
+                    </div>
+                  </td>
+                  <td className="num">
+                    <strong>{euro(a.balance)}</strong>
+                    {a.planned_balance !== null && (
+                      <div className="muted small">
+                        {t('mit vorgemerkten Buchungen')} {euro(a.planned_balance)}
+                      </div>
+                    )}
+                  </td>
+                  <td className="actions">
+                    {canEdit && (
+                      <button type="button" className="link-button" onClick={() => setEditing(a)}>
+                        {t('Bearbeiten')}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+                <EditSlot id={editKey('account', a.id)} colSpan={4} />
+              </Fragment>
             ))}
           </tbody>
         </table>

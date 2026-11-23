@@ -1,7 +1,8 @@
 // Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V7): Übersicht,
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { berlin } from '../../components/calendar/time.ts'
@@ -1188,50 +1189,53 @@ function KindsCard({
         </thead>
         <tbody>
           {(kinds ?? []).map((k) => (
-            <tr key={k.id}>
-              <td>
-                {k.name}
-                {!k.active && <span className="badge">{t('abgeschaltet')}</span>}
-              </td>
-              <td>{baseLabel(k.base)}</td>
-              <td className="num">{k.invite_days}</td>
-              <td>
-                {k.minutes_for === 'voters'
-                  ? t('auch alle Stimmberechtigten')
-                  : t('nur Rollen mit Leserecht')}
-              </td>
-              {canEdit && (
-                <td className="actions">
-                  <div className="button-row">
-                    <button className="button button-ghost" onClick={() => setEditing(k)}>
-                      {t('Bearbeiten')}
-                    </button>
-                    {!k.used && (
-                      <button
-                        className="button button-ghost"
-                        onClick={async () => {
-                          setMessage('')
-                          const yes = await confirmDialog({
-                            final: true,
-                            title: t('Art „{name}“ löschen?', { name: k.name }),
-                            confirmLabel: t('Löschen'),
-                          })
-                          if (!yes) return
-                          try {
-                            await meetingApi.removeKind(base, k.id)
-                            await reload()
-                          } catch (err) {
-                            setMessage(errorMessage(err))
-                          }
-                        }}
-                      >
-                        {t('Löschen')}
-                      </button>
-                    )}
-                  </div>
+            <Fragment key={k.id}>
+              <tr key={k.id}>
+                <td>
+                  {k.name}
+                  {!k.active && <span className="badge">{t('abgeschaltet')}</span>}
                 </td>
-              )}
-            </tr>
+                <td>{baseLabel(k.base)}</td>
+                <td className="num">{k.invite_days}</td>
+                <td>
+                  {k.minutes_for === 'voters'
+                    ? t('auch alle Stimmberechtigten')
+                    : t('nur Rollen mit Leserecht')}
+                </td>
+                {canEdit && (
+                  <td className="actions">
+                    <div className="button-row">
+                      <button className="button button-ghost" onClick={() => setEditing(k)}>
+                        {t('Bearbeiten')}
+                      </button>
+                      {!k.used && (
+                        <button
+                          className="button button-ghost"
+                          onClick={async () => {
+                            setMessage('')
+                            const yes = await confirmDialog({
+                              final: true,
+                              title: t('Art „{name}“ löschen?', { name: k.name }),
+                              confirmLabel: t('Löschen'),
+                            })
+                            if (!yes) return
+                            try {
+                              await meetingApi.removeKind(base, k.id)
+                              await reload()
+                            } catch (err) {
+                              setMessage(errorMessage(err))
+                            }
+                          }}
+                        >
+                          {t('Löschen')}
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                )}
+              </tr>
+              <EditSlot id={editKey('meeting-kind', k.id)} colSpan={canEdit ? 5 : 4} />
+            </Fragment>
           ))}
         </tbody>
       </table>
@@ -1243,15 +1247,17 @@ function KindsCard({
         </div>
       )}
       {editing && (
-        <KindForm
-          key={editing === 'new' ? 'new' : editing.id}
-          base={base}
-          kind={editing === 'new' ? null : editing}
-          onDone={async (saved) => {
-            setEditing(null)
-            if (saved) await reload()
-          }}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('meeting-kind', editing.id)}>
+          <KindForm
+            key={editing === 'new' ? 'new' : editing.id}
+            base={base}
+            kind={editing === 'new' ? null : editing}
+            onDone={async (saved) => {
+              setEditing(null)
+              if (saved) await reload()
+            }}
+          />
+        </EditAt>
       )}
     </section>
   )

@@ -1,3 +1,4 @@
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
@@ -207,23 +208,25 @@ export function SettlementPanel({
         />
       )}
       {canEdit && (
-        <Amounts
-          key={edit?.id || 'new'}
-          labels={{ fee: t('Gage'), allowance: t('Pauschale'), expenses: t('Auslagen') }}
-          initial={{
-            fee: edit?.fee || '0',
-            allowance: edit?.allowance || '0',
-            expenses: edit?.expenses || '0',
-            note: edit?.note || '',
-            attended: edit?.attended || false,
-            assignment: edit?.assignment || assignments[0]?.id || '',
-          }}
-          choices={assignments}
-          onSave={async (values) => {
-            await act({ action: 'claim', ...values })
-            setEdit(null)
-          }}
-        />
+        <EditAt at={edit ? editKey('claim', edit.id) : null} quiet>
+          <Amounts
+            key={edit?.id || 'new'}
+            labels={{ fee: t('Gage'), allowance: t('Pauschale'), expenses: t('Auslagen') }}
+            initial={{
+              fee: edit?.fee || '0',
+              allowance: edit?.allowance || '0',
+              expenses: edit?.expenses || '0',
+              note: edit?.note || '',
+              attended: edit?.attended || false,
+              assignment: edit?.assignment || assignments[0]?.id || '',
+            }}
+            choices={assignments}
+            onSave={async (values) => {
+              await act({ action: 'claim', ...values })
+              setEdit(null)
+            }}
+          />
+        </EditAt>
       )}
       {!d.claims.length && <MusicEmptyState />}
       {d.claims.map((c) => (
@@ -291,6 +294,7 @@ export function SettlementPanel({
           {canEdit && c.status === 'approved' && !c.paid && (
             <PaymentLink onSave={(booking) => act({ action: 'payment', claim: c.id, booking })} />
           )}
+          <EditSlot id={editKey('claim', c.id)} />
         </article>
       ))}
       <h2>{t('Weitere Auftrittsausgaben')}</h2>

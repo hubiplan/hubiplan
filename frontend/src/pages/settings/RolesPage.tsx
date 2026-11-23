@@ -1,3 +1,4 @@
+import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { todayIso } from '../../api/members.ts'
@@ -66,35 +67,38 @@ export function RolesPage() {
           )}
         </p>
         {editing !== null && (
-          <RoleForm
-            // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
-            key={editing === 'new' ? 'new' : editing.id}
-            role={editing === 'new' ? null : { ...editing, holders: editing.assignment_count }}
-            catalog={catalog.data}
-            fields={ALL_ROLE_FIELDS}
-            hasWebsite={org.modules.includes('website')}
-            readOnly={!canEdit}
-            onSave={(data) =>
-              editing === 'new'
-                ? orgApi.createRole(org.id, data)
-                : orgApi.updateRole(org.id, editing.id, data)
-            }
-            onDelete={editing === 'new' ? undefined : () => orgApi.deleteRole(org.id, editing.id)}
-            confirmDelete={
-              editing === 'new' ? undefined : () => confirmAssignedRoleRemoval(editing)
-            }
-            onDone={async () => {
-              setEditing(null)
-              await reloadAll()
-              await refresh()
-            }}
-            onCancel={() => setEditing(null)}
-          />
+          <EditAt at={editing === 'new' ? null : editKey('role', editing.id)}>
+            <RoleForm
+              // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
+              key={editing === 'new' ? 'new' : editing.id}
+              role={editing === 'new' ? null : { ...editing, holders: editing.assignment_count }}
+              catalog={catalog.data}
+              fields={ALL_ROLE_FIELDS}
+              hasWebsite={org.modules.includes('website')}
+              readOnly={!canEdit}
+              onSave={(data) =>
+                editing === 'new'
+                  ? orgApi.createRole(org.id, data)
+                  : orgApi.updateRole(org.id, editing.id, data)
+              }
+              onDelete={editing === 'new' ? undefined : () => orgApi.deleteRole(org.id, editing.id)}
+              confirmDelete={
+                editing === 'new' ? undefined : () => confirmAssignedRoleRemoval(editing)
+              }
+              onDone={async () => {
+                setEditing(null)
+                await reloadAll()
+                await refresh()
+              }}
+              onCancel={() => setEditing(null)}
+            />
+          </EditAt>
         )}
         <RoleTable
           roles={roles.data.map((r) => ({ ...r, holders: r.assignment_count }))}
           catalog={catalogData}
           onEdit={(r) => setEditing(roles.data!.find((x) => x.id === r.id) ?? null)}
+          slot="role"
           editLabel={canEdit ? t('Bearbeiten') : t('Ansehen')}
           onReorder={
             canEdit

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { einvoiceApi } from '../../api/einvoices.ts'
 import type { IncomingInvoice, IncomingMail } from '../../api/einvoices.ts'
@@ -75,13 +76,15 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
       {busy && <p role="status">{t('Die Datei wird hochgeladen …')}</p>}
       <MailboxCard canEdit={canEdit} />
       {shown && (
-        <IncomingDetail
-          key={shown.id}
-          value={shown}
-          canEdit={canEdit}
-          onChanged={changed}
-          onClose={() => setSelected(null)}
-        />
+        <EditAt at={editKey('incoming', shown.id)}>
+          <IncomingDetail
+            key={shown.id}
+            value={shown}
+            canEdit={canEdit}
+            onChanged={changed}
+            onClose={() => setSelected(null)}
+          />
+        </EditAt>
       )}
       <div className="card table-wrap">
         <table>
@@ -95,42 +98,45 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
           </thead>
           <tbody>
             {load.data?.results.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <button className="button button-ghost" onClick={() => setSelected(item)}>
-                    {item.data.number || item.name}
-                  </button>
-                </td>
-                <td>
-                  {item.partner_name || item.data.seller || '—'}
-                  {item.mail && !item.mail.sender_known && (
-                    <>
-                      {' '}
-                      <span className="badge">{t('Absender unbekannt')}</span>
-                    </>
-                  )}
-                  {item.iban_changed && !item.booking && (
-                    <>
-                      {' '}
-                      <span className="badge">{t('Neue IBAN')}</span>
-                    </>
-                  )}
-                </td>
-                <td>
-                  {item.data.payable} {item.data.currency}
-                </td>
-                <td>
-                  {item.booking
-                    ? t('Zugeordnet')
-                    : item.report.status === 'pending'
-                      ? t('Wird geprüft')
-                      : item.status === 'approved'
-                        ? t('Freigegeben')
-                        : item.status === 'rejected'
-                          ? t('Abgelehnt')
-                          : t('Zu prüfen')}
-                </td>
-              </tr>
+              <Fragment key={item.id}>
+                <tr key={item.id}>
+                  <td>
+                    <button className="button button-ghost" onClick={() => setSelected(item)}>
+                      {item.data.number || item.name}
+                    </button>
+                  </td>
+                  <td>
+                    {item.partner_name || item.data.seller || '—'}
+                    {item.mail && !item.mail.sender_known && (
+                      <>
+                        {' '}
+                        <span className="badge">{t('Absender unbekannt')}</span>
+                      </>
+                    )}
+                    {item.iban_changed && !item.booking && (
+                      <>
+                        {' '}
+                        <span className="badge">{t('Neue IBAN')}</span>
+                      </>
+                    )}
+                  </td>
+                  <td>
+                    {item.data.payable} {item.data.currency}
+                  </td>
+                  <td>
+                    {item.booking
+                      ? t('Zugeordnet')
+                      : item.report.status === 'pending'
+                        ? t('Wird geprüft')
+                        : item.status === 'approved'
+                          ? t('Freigegeben')
+                          : item.status === 'rejected'
+                            ? t('Abgelehnt')
+                            : t('Zu prüfen')}
+                  </td>
+                </tr>
+                <EditSlot id={editKey('incoming', item.id)} colSpan={4} />
+              </Fragment>
             ))}
           </tbody>
         </table>

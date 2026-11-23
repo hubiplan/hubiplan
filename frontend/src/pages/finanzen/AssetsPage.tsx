@@ -1,7 +1,8 @@
 // Finanzen › Buchen › Anlagen: Anlagenverzeichnis mit Abschreibung (AfA).
 // Die AfA erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useRowSort } from '../../components/RowSort.tsx'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
@@ -321,14 +322,16 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
       </p>
       {error && <Alert kind="error">{error}</Alert>}
       {editing && (
-        <AssetForm
-          asset={editing === 'new' ? null : editing}
-          preset={editing === 'new' ? preset : {}}
-          taxAreas={settings.data.tax_areas}
-          materials={materials.data ?? []}
-          canEdit={canEdit}
-          onDone={done}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('asset', editing.id)}>
+          <AssetForm
+            asset={editing === 'new' ? null : editing}
+            preset={editing === 'new' ? preset : {}}
+            taxAreas={settings.data.tax_areas}
+            materials={materials.data ?? []}
+            canEdit={canEdit}
+            onDone={done}
+          />
+        </EditAt>
       )}
       <div className="card card-wide">
         {data.assets.length === 0 ? (
@@ -356,42 +359,45 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
             </thead>
             <tbody>
               {sorting.rows.map((a) => (
-                <tr key={a.id}>
-                  <td>
-                    <button type="button" className="link-button" onClick={() => setEditing(a)}>
-                      {a.name}
-                    </button>
-                    <div className="muted small">
-                      {a.tax_area_label}
-                      {a.disposal && ` · ${a.disposal_label} ${formatDate(a.disposed_on ?? '')}`}
-                      {a.material_name && ` · ${a.material_name}`}
-                    </div>
-                  </td>
-                  <td>
-                    {formatDate(a.acquired_on)}
-                    {a.booking_number && <div className="muted small">{a.booking_number}</div>}
-                  </td>
-                  <td className="num">{euro(a.cost)}</td>
-                  <td>
-                    {a.method_label}
-                    {a.method === 'linear' && (
-                      <div className="muted small">{t('{n} Jahre', { n: a.useful_life })}</div>
-                    )}
-                  </td>
-                  <td className="num">{euro(a.values?.depreciation ?? '0')}</td>
-                  <td className="num">{euro(a.values?.book_end ?? '0')}</td>
-                  <td>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        className="button button-ghost"
-                        onClick={() => void remove(a)}
-                      >
-                        {t('Löschen')}
+                <Fragment key={a.id}>
+                  <tr key={a.id}>
+                    <td>
+                      <button type="button" className="link-button" onClick={() => setEditing(a)}>
+                        {a.name}
                       </button>
-                    )}
-                  </td>
-                </tr>
+                      <div className="muted small">
+                        {a.tax_area_label}
+                        {a.disposal && ` · ${a.disposal_label} ${formatDate(a.disposed_on ?? '')}`}
+                        {a.material_name && ` · ${a.material_name}`}
+                      </div>
+                    </td>
+                    <td>
+                      {formatDate(a.acquired_on)}
+                      {a.booking_number && <div className="muted small">{a.booking_number}</div>}
+                    </td>
+                    <td className="num">{euro(a.cost)}</td>
+                    <td>
+                      {a.method_label}
+                      {a.method === 'linear' && (
+                        <div className="muted small">{t('{n} Jahre', { n: a.useful_life })}</div>
+                      )}
+                    </td>
+                    <td className="num">{euro(a.values?.depreciation ?? '0')}</td>
+                    <td className="num">{euro(a.values?.book_end ?? '0')}</td>
+                    <td>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          className="button button-ghost"
+                          onClick={() => void remove(a)}
+                        >
+                          {t('Löschen')}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  <EditSlot id={editKey('asset', a.id)} colSpan={7} />
+                </Fragment>
               ))}
               <tr>
                 <th colSpan={4}>{t('Summe')}</th>

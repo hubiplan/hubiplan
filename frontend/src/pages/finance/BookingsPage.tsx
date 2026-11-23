@@ -1,6 +1,7 @@
 // Kasse: Buchungen erfassen, suchen und mit Belegen versehen.
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { NextcloudPick } from '../../components/NextcloudFiles.tsx'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { FilterChips } from '../../components/liste/FilterChips.tsx'
@@ -338,28 +339,30 @@ export function BookingsPage() {
         </Alert>
       )}
       {editing !== null && (
-        <BookingForm
-          key={typeof editing === 'string' ? `${editing}-${version}` : editing.id}
-          orgId={org.id}
-          isClub={org.type === 'club'}
-          booking={typeof editing === 'string' ? null : editing}
-          kind={typeof editing === 'string' ? editing : editing.kind}
-          accounts={accounts.data}
-          categories={categories.data}
-          departments={departments.data ?? []}
-          projects={projects.data ?? []}
-          vatRegistered={!!settings.data?.vat_registered}
-          canEdit={canEdit}
-          onSaved={(b, again) => {
-            refresh()
-            if (again) setVersion((v) => v + 1)
-            setEditing(again ? b.kind : b, true)
-          }}
-          onClose={() => {
-            setEditing(null)
-            refresh()
-          }}
-        />
+        <EditAt at={typeof editing === 'string' ? null : editKey('booking', editing.id)}>
+          <BookingForm
+            key={typeof editing === 'string' ? `${editing}-${version}` : editing.id}
+            orgId={org.id}
+            isClub={org.type === 'club'}
+            booking={typeof editing === 'string' ? null : editing}
+            kind={typeof editing === 'string' ? editing : editing.kind}
+            accounts={accounts.data}
+            categories={categories.data}
+            departments={departments.data ?? []}
+            projects={projects.data ?? []}
+            vatRegistered={!!settings.data?.vat_registered}
+            canEdit={canEdit}
+            onSaved={(b, again) => {
+              refresh()
+              if (again) setVersion((v) => v + 1)
+              setEditing(again ? b.kind : b, true)
+            }}
+            onClose={() => {
+              setEditing(null)
+              refresh()
+            }}
+          />
+        </EditAt>
       )}
 
       <div className="card card-wide filters">
@@ -511,12 +514,14 @@ export function BookingsPage() {
                 </thead>
                 <tbody>
                   {data.results.map((b) => (
-                    <BookingRow
-                      key={b.id}
-                      booking={b}
-                      account={filter.konto ? Number(filter.konto) : null}
-                      onOpen={() => setEditing(b)}
-                    />
+                    <Fragment key={b.id}>
+                      <BookingRow
+                        booking={b}
+                        account={filter.konto ? Number(filter.konto) : null}
+                        onOpen={() => setEditing(b)}
+                      />
+                      <EditSlot id={editKey('booking', b.id)} colSpan={7} />
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

@@ -18,6 +18,7 @@ import { PracticePage } from './PracticePage.tsx'
 import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { PerformanceOverview } from './PerformanceOverview.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
@@ -482,32 +483,37 @@ function MusicWorkspace() {
         <KindStatistics performances={d.performances} kinds={d.kinds} />
       )}
       {canEdit && selected && (
-        <Editor
-          key={`${kind}-${selected}`}
-          fields={fields[kind]}
-          row={row}
-          defaults={{ membership: params.get('mitglied') || '', event: params.get('termin') || '' }}
-          onClose={() => choose(kind)}
-          onSave={async (values) => {
-            setError('')
-            try {
-              if (row) await api.patch(`${base}${kind}/${row.id}/`, values)
-              else await api.post(`${base}${kind}/`, values)
-              setParams({ art: kind })
-              await load.reload()
-            } catch (err) {
-              setError(errorMessage(err))
+        <EditAt at={row ? editKey(kind, row.id) : null}>
+          <Editor
+            key={`${kind}-${selected}`}
+            fields={fields[kind]}
+            row={row}
+            defaults={{
+              membership: params.get('mitglied') || '',
+              event: params.get('termin') || '',
+            }}
+            onClose={() => choose(kind)}
+            onSave={async (values) => {
+              setError('')
+              try {
+                if (row) await api.patch(`${base}${kind}/${row.id}/`, values)
+                else await api.post(`${base}${kind}/`, values)
+                setParams({ art: kind })
+                await load.reload()
+              } catch (err) {
+                setError(errorMessage(err))
+              }
+            }}
+            onAutoSave={
+              row
+                ? async (changes) => {
+                    await api.patch(`${base}${kind}/${row.id}/`, changes)
+                    void load.reload()
+                  }
+                : undefined
             }
-          }}
-          onAutoSave={
-            row
-              ? async (changes) => {
-                  await api.patch(`${base}${kind}/${row.id}/`, changes)
-                  void load.reload()
-                }
-              : undefined
-          }
-        />
+          />
+        </EditAt>
       )}
       <div className="stack">
         {!visibleRows.length &&
@@ -721,6 +727,7 @@ function MusicWorkspace() {
                 )}
               </div>
             )}
+            <EditSlot id={editKey(kind, r.id)} />
           </article>
         ))}
       </div>

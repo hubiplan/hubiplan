@@ -1,3 +1,4 @@
+import { EditAt } from '../../components/EditInPlace.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -89,16 +90,18 @@ export function ContactPersons({
           {contacts.map((c) =>
             editing !== 'new' && editing?.id === c.id ? (
               <li key={c.id}>
-                <ContactForm
-                  orgId={orgId}
-                  memberId={memberId}
-                  guardians={guardians}
-                  contact={c}
-                  onDone={(changed) => {
-                    setEditing(null)
-                    if (changed) onChange()
-                  }}
-                />
+                <EditAt at={null}>
+                  <ContactForm
+                    orgId={orgId}
+                    memberId={memberId}
+                    guardians={guardians}
+                    contact={c}
+                    onDone={(changed) => {
+                      setEditing(null)
+                      if (changed) onChange()
+                    }}
+                  />
+                </EditAt>
               </li>
             ) : (
               <li key={c.id}>

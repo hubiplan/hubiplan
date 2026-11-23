@@ -2,7 +2,8 @@
 // Für Einheiten mit Kasse; ausgestellt wird nur mit Schalter „steuerbegünstigt mit
 // eigenem Bescheid“ und gültigem Bescheid. Regeln im Backend
 // (finance/donations.py).
-import { useEffect, useState } from 'react'
+import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
+import { Fragment, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { donationApi, earmarkApi } from '../../api/donations.ts'
@@ -365,22 +366,24 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
         />
       )}
       {editing !== null && (
-        <DonationForm
-          key={editing === 'new' ? 'new' : editing.id}
-          initial={editing === 'new' ? null : editing}
-          settings={settings.data}
-          onDirty={setEditDirty}
-          onCancel={() => {
-            setEditDirty(false)
-            setEditing(null)
-          }}
-          onDone={async (text) => {
-            setEditDirty(false)
-            setEditing(null)
-            setMessage({ kind: 'success', text })
-            await list.reload()
-          }}
-        />
+        <EditAt at={editing === 'new' ? null : editKey('donation', editing.id)}>
+          <DonationForm
+            key={editing === 'new' ? 'new' : editing.id}
+            initial={editing === 'new' ? null : editing}
+            settings={settings.data}
+            onDirty={setEditDirty}
+            onCancel={() => {
+              setEditDirty(false)
+              setEditing(null)
+            }}
+            onDone={async (text) => {
+              setEditDirty(false)
+              setEditing(null)
+              setMessage({ kind: 'success', text })
+              await list.reload()
+            }}
+          />
+        </EditAt>
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {list.error && <LoadError message={list.error} onRetry={() => void list.reload()} />}
@@ -407,53 +410,60 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
           </thead>
           <tbody>
             {rows.map((d) => (
-              <tr key={d.id}>
-                {canEdit && (
+              <Fragment key={d.id}>
+                <tr key={d.id}>
+                  {canEdit && (
+                    <td>
+                      {!d.statement && (
+                        <input
+                          type="checkbox"
+                          aria-label={t('{donor_name} {x} auswählen', {
+                            donor_name: d.donor_name,
+                            x: formatDate(d.date),
+                          })}
+                          checked={selected.includes(d.id)}
+                          onChange={(e) => toggle(d.id, e.target.checked)}
+                        />
+                      )}
+                    </td>
+                  )}
+                  <td>{formatDate(d.date)}</td>
                   <td>
-                    {!d.statement && (
-                      <input
-                        type="checkbox"
-                        aria-label={t('{donor_name} {x} auswählen', {
-                          donor_name: d.donor_name,
-                          x: formatDate(d.date),
-                        })}
-                        checked={selected.includes(d.id)}
-                        onChange={(e) => toggle(d.id, e.target.checked)}
-                      />
+                    <strong>{d.donor_name}</strong>
+                    {d.booking_number && (
+                      <span className="muted small">
+                        {' '}
+                        {t('· Buchung')} {d.booking_number}
+                      </span>
                     )}
                   </td>
-                )}
-                <td>{formatDate(d.date)}</td>
-                <td>
-                  <strong>{d.donor_name}</strong>
-                  {d.booking_number && (
-                    <span className="muted small">
-                      {' '}
-                      {t('· Buchung')} {d.booking_number}
-                    </span>
-                  )}
-                </td>
-                <td>
-                  {d.kind_label}
-                  {d.waiver && (
-                    <span className="muted small"> {t('· Verzicht auf Aufwendungsersatz')}</span>
-                  )}
-                </td>
-                <td className="num">{euro(d.amount)}</td>
-                <td>{d.statement_number ?? <span className="muted">{t('offen')}</span>}</td>
-                <td className="actions">
-                  {canEdit && !d.statement && (
-                    <>
-                      <button type="button" className="link-button" onClick={() => void edit(d)}>
-                        {t('Ändern')}
-                      </button>{' '}
-                      <button type="button" className="link-button" onClick={() => void remove(d)}>
-                        {t('Löschen')}
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
+                  <td>
+                    {d.kind_label}
+                    {d.waiver && (
+                      <span className="muted small"> {t('· Verzicht auf Aufwendungsersatz')}</span>
+                    )}
+                  </td>
+                  <td className="num">{euro(d.amount)}</td>
+                  <td>{d.statement_number ?? <span className="muted">{t('offen')}</span>}</td>
+                  <td className="actions">
+                    {canEdit && !d.statement && (
+                      <>
+                        <button type="button" className="link-button" onClick={() => void edit(d)}>
+                          {t('Ändern')}
+                        </button>{' '}
+                        <button
+                          type="button"
+                          className="link-button"
+                          onClick={() => void remove(d)}
+                        >
+                          {t('Löschen')}
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+                <EditSlot id={editKey('donation', d.id)} colSpan={canEdit ? 7 : 6} />
+              </Fragment>
             ))}
           </tbody>
         </table>
