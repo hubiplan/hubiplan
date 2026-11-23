@@ -4,7 +4,7 @@ titel: Webseite › Aktuelles
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aktuelles]
-siehe: [page.website_social, page.website_images]
+siehe: [guide.website_publish, guide.mcp_tasks]
 stichworte: [Aktuelles, Beitrag, Neuigkeiten, Nachrichten, News, Archiv, Video, YouTube]
 ---
 

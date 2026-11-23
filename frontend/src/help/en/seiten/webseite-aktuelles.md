@@ -4,7 +4,7 @@ titel: Website › News
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aktuelles]
-siehe: [page.website_social, page.website_images]
+siehe: [guide.website_publish, guide.mcp_tasks]
 stichworte: [news, post, updates, archive, video, YouTube]
 ---
 
