@@ -71,16 +71,34 @@ App-Geheimcode aus App-Einstellungen › Allgemein. Das Instagram-Konto braucht 
   Benutzername. Ausschalten löscht alle gespeicherten Kommentare des Kanals. Fehlt die
   Berechtigung, laufen die Beiträge weiter, der Kanal zeigt einen Hinweis.
 
+## Eigene Beiträge (Issue #707)
+
+Unter **Webseite › Aktuelles** schreibt die Einheit eigene Beiträge (`NewsPost`): Titel, Datum
+(auch rückwirkend, z. B. alte Beiträge einer früheren Webseite), Text in Markdown (Bilder darin
+als `bild:<key>`), Bilder unter dem Text (Nummern aus der Bilderverwaltung, höchstens 20) und
+Videos als Link mit Vorschaubild (höchstens 6, nie eingebettet). Wie bei den Textseiten gibt es
+Entwurf und veröffentlichte Fassung; die Vorschau zeigt den Entwurf, „Veröffentlichen“ macht ihn
+sichtbar. Ein Beitrag kann zu einer Untereinheit gehören und erscheint dann auf deren Seite.
+Recht: „Inhalte bearbeiten“. Die KI-Schnittstelle legt Beiträge nur als Entwurf an
+(`beitrag_speichern`, docs/mcp.md). Die Webseite mischt eigene Beiträge nach Datum mit denen
+aus Instagram und Facebook; ein eigener Modul-Schalter ist nicht nötig (Baustein `posts`).
+
 ## Öffentliche Schnittstelle
 
-- Info `…/site/v1/<key>/`: `posts` = `{instagram: bool, facebook: bool}` (gibt es sichtbare
-  Beiträge), `posts_url`. Seite einer Untereinheit: ebenso `posts`.
-- `…/site/v1/<key>/posts/?art=instagram|facebook&anzahl=N&einheit=<slug>`: sichtbare
-  Beiträge (neueste zuerst) mit Text, Datum, Link (falls eingeschaltet) und Bildern.
-  Mit „Likes und Kommentarzahl zeigen“ zusätzlich `likes` (Instagram: Likes, Facebook:
-  Reaktionen; `null`, wenn ausgeblendet) und `comment_count`; mit Kommentaren `comments`
-  (`author`, `text`, `published_at`, nur freigegebene).
-- `…/site/v1/<key>/posts/images/<key>/[?size=small]`: Bild von dieser Instanz.
+- Info `…/site/v1/<key>/`: `posts` = `{instagram: bool, facebook: bool, own: bool}` (gibt es
+  sichtbare Beiträge), `posts_url`. Seite einer Untereinheit: ebenso `posts`.
+- `…/site/v1/<key>/posts/?art=instagram|facebook|own&anzahl=N&seite=S&einheit=<slug>`:
+  sichtbare Beiträge (neueste zuerst, eigene nach Datum dazwischen) mit Text, Datum, Link (falls
+  eingeschaltet) und Bildern; `more` sagt, ob es ältere gibt (Archiv, `seite` ab 1). Eigene
+  Beiträge haben `kind` „own“, `title`, `slug`, `date`, `excerpt`, `has_more`, `images` und
+  `videos` (`url`, `title`, `image`); den ganzen Text liefert
+  `…/site/v1/<key>/posts/eigene/<slug>/`.
+  Mit „Likes und Kommentarzahl zeigen“ haben Beiträge aus Instagram und Facebook zusätzlich
+  `likes` (Instagram: Likes, Facebook: Reaktionen; `null`, wenn ausgeblendet) und
+  `comment_count`; mit Kommentaren `comments` (`author`, `text`, `published_at`, nur
+  freigegebene).
+- `…/site/v1/<key>/posts/images/<key>/[?size=small]`: Bild von dieser Instanz; Bilder eigener
+  Beiträge kommen wie alle Bilder der Webseite über `images/<key>/`.
 - Baustein `posts` („Aktuelles“) schaltet alles ab.
 
 Ausgehende Verbindungen des Workers: `api.instagram.com`, `graph.instagram.com`,

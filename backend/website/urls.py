@@ -7,6 +7,7 @@ from . import (
     design_views,
     document_views,
     gallery_views,
+    news_views,
     public_views,
     social_views,
     upload_views,
@@ -78,6 +79,13 @@ org_patterns = [
     ),
     path("website/held/", views.HeldListView.as_view(), name="website-held"),
     path("website/held/<int:pk>/", views.HeldDetailView.as_view(), name="website-held-message"),
+    path("website/news/", news_views.NewsListView.as_view(), name="website-news"),
+    path("website/news/<int:pk>/", news_views.NewsDetailView.as_view(), name="website-news-post"),
+    path(
+        "website/news/<int:pk>/publish/",
+        news_views.NewsPublishView.as_view(),
+        name="website-news-publish",
+    ),
     path("website/texts/", content_views.TextListView.as_view(), name="website-texts"),
     path(
         "website/texts/event-page/",
@@ -310,6 +318,11 @@ public_patterns = [
     path(f"{SITE}bookings/", public_views.BookingsView.as_view(), name="site-bookings"),
     path(f"{SITE}bookings.ics", public_views.BookingsIcsView.as_view(), name="site-bookings-ics"),
     path(f"{SITE}posts/", public_views.PostsView.as_view(), name="site-posts"),
+    path(
+        f"{SITE}posts/eigene/<slug:slug>/",
+        public_views.NewsPostView.as_view(),
+        name="site-news-post",
+    ),
     path(
         f"{SITE}posts/images/<str:image_key>/",
         public_views.PostImageView.as_view(),

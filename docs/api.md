@@ -292,7 +292,7 @@ sie zu einer Domain. Auch Dritte dürfen diese Schnittstelle lesen. Es gilt:
 | `honors/` | Würden und frühere Träger |
 | `galleries/`, `galleries/<Kurzname>/` | Fotoalben |
 | `documents/` | Dokumente und Pressespiegel |
-| `posts/` | Beiträge aus den eigenen Kanälen |
+| `posts/`, `posts/eigene/<Kurzname>/` | eigene Beiträge und Beiträge aus den eigenen Kanälen (Archiv mit `seite`) |
 | `bookings/`, `bookings.ics` | Belegung mit „auf der Webseite“ |
 | `imprint/` | Impressum und Datenschutzhinweise |
 | `search/?q=…` | Suche in den öffentlichen Texten |

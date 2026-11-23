@@ -2440,4 +2440,52 @@ describe('Entwürfe für Beiträge', () => {
     const put = calls.find((c) => c.key === `PUT ${base}social/drafts/3/`)
     expect(JSON.parse(String(put?.init?.body))).toEqual({ done: true })
   })
+  it('eigene Beiträge unter Aktuelles anlegen und veröffentlichen (#707)', async () => {
+    const post = (published: boolean) => ({
+      id: 9,
+      slug: 'sommerfest',
+      title: 'Sommerfest',
+      date: '2019-06-15',
+      body: '',
+      images: [],
+      videos: [],
+      department: null,
+      department_name: null,
+      is_published: published,
+      has_changes: !published,
+      published_at: published ? '2026-11-23T12:00:00Z' : null,
+      updated_at: '2026-11-23T12:00:00Z',
+    })
+    let posts: unknown[] = []
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}news/`]: () => ({ status: 200, body: { posts, units: [] } }),
+        [`POST ${base}news/`]: () => {
+          posts = [post(false)]
+          return { status: 201, body: post(false) }
+        },
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+        [`POST ${base}news/9/publish/`]: () => ({ status: 200, body: post(true) }),
+      },
+      '/webseite/aktuelles',
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByText('Noch keine eigenen Beiträge.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Neuer Beitrag' }))
+    await user.type(screen.getByLabelText(/^Titel/), 'Sommerfest')
+    const date = screen.getByLabelText(/^Datum/)
+    await user.clear(date)
+    await user.type(date, '2019-06-15')
+    await user.click(screen.getByRole('button', { name: 'Anlegen' }))
+    const created = calls.find((c) => c.key === `POST ${base}news/`)
+    expect(JSON.parse(String(created?.init?.body))).toEqual({
+      title: 'Sommerfest',
+      date: '2019-06-15',
+    })
+    const form = await screen.findByRole('form', { name: 'Beitrag bearbeiten' })
+    expect(within(form).getByText(/Noch nicht veröffentlicht/)).toBeInTheDocument()
+    await user.click(within(form).getByRole('button', { name: 'Veröffentlichen' }))
+    expect(await within(form).findByText(/Veröffentlicht am/)).toBeInTheDocument()
+  })
 })

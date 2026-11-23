@@ -21,7 +21,7 @@ def rls_off(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("organizations", "0001_initial"),
-        ("website", "0056_social_ruecksprung_je_kanal"),
+        ("website", "0057_eigene_beitraege"),
     ]
 
     operations = [

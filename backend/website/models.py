@@ -47,7 +47,7 @@ BLOCKS = {
     "search": "Suche",
 }
 BLOCK_HINTS = {
-    "posts": "Beiträge aus Instagram und Facebook (lokal gespeichert)",
+    "posts": "eigene Beiträge und Beiträge aus Instagram und Facebook (lokal gespeichert)",
     "events": "mit Kalender-Abo",
     "board": "Vorstand und Ansprechpartner",
     "members": "Überschrift mit den Mitgliederlisten je Mitgliedsart",
@@ -89,7 +89,8 @@ BLOCK_MODULES = {
     "results": "competitions",
     "repertoire": "scores",
     "history": "chronicle",
-    "posts": "social",
+    # „Aktuelles“ braucht kein Modul mehr: eigene Beiträge gibt es auch ohne Social Media
+    # (#707); Beiträge aus Instagram und Facebook kommen nur mit Modul „social“
 }
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):
 # ``dignity:<Nummer>`` je Würde und ``honorary`` für die Ehrungen. Ohne Eintrag: an.
@@ -910,6 +911,7 @@ from .content_models import (  # noqa: E402, F401
     WebsiteRevision,
     WebsiteText,
 )
+from .news_models import NewsPost  # noqa: E402, F401
 from .social_models import (  # noqa: E402, F401
     SocialComment,
     SocialDraft,

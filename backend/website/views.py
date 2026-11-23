@@ -758,7 +758,7 @@ def unit_section_options(org, website: Website) -> dict:
         "homepage": gettext("Link zur eigenen Homepage, wenn freigegeben"),
         "honors": gettext("aktuelle Majestäten der Untereinheit"),
         "events": gettext("die nächsten Termine der Untereinheit"),
-        "news": gettext("neueste Beiträge aus Instagram und Facebook"),
+        "news": gettext("neueste eigene Beiträge und die aus Instagram und Facebook"),
         "follow": gettext("Links zu den sozialen Medien der Untereinheit"),
     }
     options["home_needs_block"] = {

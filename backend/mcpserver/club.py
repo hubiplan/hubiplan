@@ -805,6 +805,7 @@ def tools_for(ctx: Context):
     from .club_design import DESIGN_TOOLS
     from .club_letterhead import LETTERHEAD_TOOLS
     from .club_music import MUSIC_TOOLS
+    from .club_news import NEWS_TOOLS
     from .club_theme import THEME_TOOLS
 
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
@@ -815,5 +816,6 @@ def tools_for(ctx: Context):
         *THEME_TOOLS,
         *LETTERHEAD_TOOLS,
         *MUSIC_TOOLS,
+        *NEWS_TOOLS,
     )
     return (*TOOLS, *(t for t in club if t.scope in scopes))
