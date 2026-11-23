@@ -11,7 +11,7 @@ Here you define the fixed choice for your performances. Editing requires music e
 
 ## Uniforms
 
-Use **Add uniform** to record, for example, a summer uniform, a winter uniform or traditional costume. Under **What belongs to it** write one line per item, such as “cap” or “white gloves”. You can add an image. On a performance you choose the uniform from the list; use **Uniform note** for deviations such as “without jacket”. Assigned musicians see the uniform, description, checklist and image in the member area.
+Use **Add uniform** to record, for example, a summer uniform, a winter uniform or traditional costume. Under **What belongs to it (one line per item)** write one line per item, such as “cap” or “white gloves”. You can add an image. On a performance you choose the uniform from the list; use **Uniform note** for deviations such as “without jacket”. Assigned musicians see the uniform, description, checklist and image in the member area.
 
 Archive a uniform you no longer wear. It stays on past performances but cannot be newly chosen. It can only be removed while no performance uses it.
 

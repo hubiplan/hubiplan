@@ -17,7 +17,7 @@ Das Suchfeld heißt wie die Ansicht, etwa **Auftritte durchsuchen** oder **Musik
 
 ## Mehrtägige Feste: ein Vertrag für alle Tage
 
-Ein Fest über mehrere Tage legst du als einzelne Termine an, denn jeder Tag hat eigene Zeiten, Uniform, Treffpunkt und Besetzung. Den Vertrag führt der erste Tag als Hauptauftritt: Bei den weiteren Tagen wählst du unter **Weiterer Tag von** den Hauptauftritt. Gehören die Termine in den Finanzen zu einer Veranstaltung, hängt **Alle Tage der Veranstaltung zusammenfassen** beim Hauptauftritt alle übrigen Tage auf einmal an.
+Ein Fest über mehrere Tage legst du als einzelne Termine an, denn jeder Tag hat eigene Zeiten, Uniform, Treffpunkt und Besetzung. Den Vertrag führt der erste Tag als Hauptauftritt: Bei den weiteren Tagen wählst du unter **Weiterer Tag von (Vertrag und Gage dort)** den Hauptauftritt. Gehören die Termine in den Finanzen zu einer Veranstaltung, hängt **Alle Tage der Veranstaltung zusammenfassen** beim Hauptauftritt alle übrigen Tage auf einmal an.
 
 Auftraggeber, Angebot, Zusage, Gage, Rechnung und Abrechnung gibt es dann nur einmal, beim Hauptauftritt; die weiteren Tage übernehmen den Auftraggeber. Das Angebot listet alle Tage. Besetzung, Zusagen der Musiker und deren Vergütung bleiben je Tag; die Musikervergütungen aller Tage stehen gesammelt in der Abrechnung des Festes. Einen Tag mit eigenem Angebot oder eigener Abrechnung kannst du nicht anhängen. Solange eine Zusage des Auftraggebers besteht, lassen sich Tage weder anhängen noch lösen.
 

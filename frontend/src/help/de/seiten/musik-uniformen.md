@@ -11,7 +11,7 @@ Hier legst du die feste Auswahl für eure Auftritte fest. Zum Bearbeiten brauchs
 
 ## Uniformen
 
-Mit **Uniform anlegen** erfasst du zum Beispiel Sommeruniform, Winteruniform oder Tracht. Unter **Was dazugehört** schreibst du eine Zeile je Punkt, etwa „Mütze“ oder „weiße Handschuhe“. Auf Wunsch fügst du ein Bild hinzu. Am Auftritt wählst du die Uniform aus der Liste; ins Feld **Ergänzung zur Uniform** schreibst du Abweichungen, etwa „ohne Jacke“. Eingeteilte Musiker sehen Uniform, Beschreibung, Checkliste und Bild im Mitgliederbereich.
+Mit **Uniform anlegen** erfasst du zum Beispiel Sommeruniform, Winteruniform oder Tracht. Unter **Was dazugehört (eine Zeile je Punkt)** schreibst du eine Zeile je Punkt, etwa „Mütze“ oder „weiße Handschuhe“. Auf Wunsch fügst du ein Bild hinzu. Am Auftritt wählst du die Uniform aus der Liste; ins Feld **Ergänzung zur Uniform** schreibst du Abweichungen, etwa „ohne Jacke“. Eingeteilte Musiker sehen Uniform, Beschreibung, Checkliste und Bild im Mitgliederbereich.
 
 Eine Uniform, die ihr nicht mehr tragt, archivierst du. Sie bleibt an alten Auftritten stehen, lässt sich aber nicht neu wählen. Entfernen geht nur, solange kein Auftritt sie verwendet.
 

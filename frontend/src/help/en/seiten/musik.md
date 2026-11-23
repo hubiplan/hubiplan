@@ -17,7 +17,7 @@ The search field is named after the view, for example **Search performances** or
 
 ## Multi-day festivals: one contract for all days
 
-Create a festival over several days as individual events, because each day has its own times, uniform, meeting point and staffing. The first day holds the contract as main performance: for the further days choose the main performance under **Further day of**. If the events belong to one project event in Finance, **Combine all days of the event** on the main performance attaches all other days at once.
+Create a festival over several days as individual events, because each day has its own times, uniform, meeting point and staffing. The first day holds the contract as main performance: for the further days choose the main performance under **Further day of (contract and fee there)**. If the events belong to one project event in Finance, **Combine all days of the event** on the main performance attaches all other days at once.
 
 Customer, offer, acceptance, fee, invoice and settlement then exist only once, on the main performance; the further days take over the customer. The offer lists all days. Staffing, musicians' responses and their pay stay per day; the musicians' pay for all days is collected in the festival settlement. A day with its own offer or settlement cannot be attached. While the customer's acceptance stands, days can neither be attached nor detached.
 
