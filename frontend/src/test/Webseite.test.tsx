@@ -2191,6 +2191,8 @@ describe('Veröffentlichung in der Mitgliederakte', () => {
       last_sync_at: null,
       last_error: '',
       connected_at: null,
+      redirect_uri: 'https://verein.musterkapelle.test/api/website/social/callback/',
+      unit_redirect_uri: null,
       pages: [],
       post_count: 0,
       pending_count: 0,
@@ -2243,6 +2245,61 @@ describe('Veröffentlichung in der Mitgliederakte', () => {
       via_facebook: true,
       app_secret: 'abc',
     })
+  })
+
+  it('zeigt die Weiterleitungs-URI je Kanal und stellt auf die Vereinsadresse um', async () => {
+    const old = 'https://hubiplan.test/api/website/social/callback/'
+    const unit = 'https://verein.musterkapelle.test/api/website/social/callback/'
+    const feed = {
+      id: 7,
+      kind: 'facebook',
+      kind_label: 'Facebook-Seite',
+      department: null,
+      department_name: null,
+      mode: 'auto',
+      max_posts: 24,
+      show_link: true,
+      strip_hashtags: true,
+      is_active: true,
+      app_id: '123',
+      config_id: '',
+      via_facebook: true,
+      has_secret: true,
+      status: 'new',
+      status_label: 'nicht verbunden',
+      account_name: '',
+      token_expires_at: null,
+      last_sync_at: null,
+      last_error: '',
+      connected_at: null,
+      redirect_uri: old,
+      unit_redirect_uri: unit as string | null,
+      pages: [],
+      post_count: 0,
+      pending_count: 0,
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}social/`]: () => ({
+          status: 200,
+          body: { feeds: [feed], redirect_uri: unit, units: [], can_manage: true },
+        }),
+        [`PUT ${base}social/7/`]: () => ({
+          status: 200,
+          body: { ...feed, redirect_uri: unit, unit_redirect_uri: null },
+        }),
+      },
+      '/webseite/beitraege',
+    )
+    expect(await screen.findByText(old)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Meta schickt nach dem Verbinden zu https:\/\/hubiplan.test/),
+    ).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Vereinsadresse verwenden' }))
+    await waitFor(() => expect(calls.some((c) => c.key === `PUT ${base}social/7/`)).toBe(true))
+    const put = calls.find((c) => c.key === `PUT ${base}social/7/`)
+    expect(JSON.parse(String(put?.init?.body))).toEqual({ use_unit_address: true })
   })
 
   it('führt nach der Rückkehr von Meta zur Seite Social-Media-Beiträge', async () => {
