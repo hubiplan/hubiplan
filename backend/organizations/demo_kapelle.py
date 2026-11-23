@@ -93,7 +93,7 @@ INSTRUMENTS = [
     ("Posaune", "", 3),
     ("Tuba", "", 2),
     ("Klarinette", "", 3),
-    ("Saxophon", "", 2),
+    ("Altsaxofon", "", 2),
     ("Lyra", "", 2),
     ("Kleine Trommel", "", 2),
     ("Große Trommel", "", 1),

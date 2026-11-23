@@ -9,6 +9,7 @@ import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { NoAccessPage } from '../NoticePages.tsx'
+import { InstrumentSelect, loadInstruments } from './InstrumentSelect.tsx'
 
 type Choice = { id: number; name: string }
 type Stock = { id: number; title: string; number: string; version: number }
@@ -309,6 +310,8 @@ function EquipmentForm({
   )
   const [key, setKey] = useState(newRequestKey)
   const [dirty, setDirty] = useState(false)
+  const org = useActiveOrg()
+  const instruments = useLoad(() => loadInstruments(org.id), [org.id])
   useDraftGuard(dirty)
   function change(field: string, value: string) {
     setValues({ ...values, [field]: value })
@@ -413,7 +416,19 @@ function EquipmentForm({
               ['uniform', t('Uniform')],
             ])}
             <div className="music-form-fields">
-              {input('instrument', t('Instrument'))}
+              {instruments.data ? (
+                <label>
+                  {t('Instrument')}
+                  <InstrumentSelect
+                    instruments={instruments.data}
+                    value={values.instrument}
+                    required={false}
+                    onChange={(value) => change('instrument', value)}
+                  />
+                </label>
+              ) : (
+                input('instrument', t('Instrument'))
+              )}
               {input('size', t('Größe / Ausführung'))}
               {input('maintenance_due', t('Nächste Wartung'), 'date')}
             </div>

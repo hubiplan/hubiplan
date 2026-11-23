@@ -8,6 +8,8 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
+import { InstrumentSelect, loadInstruments } from './InstrumentSelect.tsx'
+import type { Instrument } from './InstrumentSelect.tsx'
 
 export type TemplatePosition = { instrument: string; register: string; required: number }
 export type EnsembleTemplate = {
@@ -21,7 +23,13 @@ export type EnsembleTemplate = {
 export function EnsembleTemplatesPage() {
   const org = useActiveOrg(),
     url = `/api/orgs/${org.id}/music/ensemble-templates/`
-  const load = useLoad(() => api.get<EnsembleTemplate[]>(url), [org.id])
+  const load = useLoad(async () => {
+    const [templates, instruments] = await Promise.all([
+      api.get<EnsembleTemplate[]>(url),
+      loadInstruments(org.id),
+    ])
+    return { templates, instruments }
+  }, [org.id])
   const [selected, setSelected] = useState<EnsembleTemplate | 'new' | null>(null)
   if (load.error)
     return (
@@ -62,13 +70,14 @@ export function EnsembleTemplatesPage() {
             key={selected === 'new' ? 'new' : selected.id}
             initial={selected === 'new' ? undefined : selected}
             url={url}
+            instruments={load.data.instruments}
             onClose={() => setSelected(null)}
             onSaved={() => load.reload()}
           />
         </EditAt>
       )}
-      {!load.data.length && <MusicEmptyState />}
-      {load.data.map((row) => (
+      {!load.data.templates.length && <MusicEmptyState />}
+      {load.data.templates.map((row) => (
         <article className="card stack music-record" key={row.id}>
           <strong>
             {row.name} · {row.active ? t('Aktiv') : t('Archiviert')}
@@ -99,11 +108,13 @@ export function EnsembleTemplatesPage() {
 function TemplateForm({
   initial,
   url,
+  instruments,
   onClose,
   onSaved,
 }: {
   initial?: EnsembleTemplate
   url: string
+  instruments: Instrument[]
   onClose: () => void
   onSaved: () => Promise<unknown>
 }) {
@@ -188,16 +199,13 @@ function TemplateForm({
             </legend>
             <label>
               {t('Instrument')}
-              <input
-                required
-                maxLength={100}
+              <InstrumentSelect
+                instruments={instruments}
                 value={p.instrument}
-                onChange={(e) =>
+                onChange={(instrument) =>
                   update({
                     ...values,
-                    positions: values.positions.map((v, n) =>
-                      n === i ? { ...v, instrument: e.target.value } : v,
-                    ),
+                    positions: values.positions.map((v, n) => (n === i ? { ...v, instrument } : v)),
                   })
                 }
               />

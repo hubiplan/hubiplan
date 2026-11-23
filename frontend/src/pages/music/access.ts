@@ -28,6 +28,7 @@ export function musicSections(org: OrgSummary | null) {
     ...(has('scores', 'scores.view')
       ? [{ to: '/musik/noten', label: t('Notenbestand'), section: scores }]
       : []),
+    { to: '/musik/instrumente', label: t('Instrumente'), section: setup },
     { to: '/musik/vorlagen', label: t('Besetzungsvorlagen'), section: setup },
     { to: '/musik/uniformen', label: t('Uniformen und Auftrittsarten'), section: setup },
   ]

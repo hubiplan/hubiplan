@@ -78,6 +78,7 @@ from music.custody_reminders import CustodyReminderView
 from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
+from music.instruments import InstrumentViewSet
 from music.live import MusicLeaderViewSet, OwnLive
 from music.masterdata import (
     OwnUniformImage,
@@ -195,6 +196,7 @@ org_router.register(
     basename="music-ensemble-template",
 )
 org_router.register("music/skills", music_views.SkillViewSet, basename="music-skill")
+org_router.register("music/instruments", InstrumentViewSet, basename="music-instrument")
 org_router.register("music/uniforms", UniformViewSet, basename="music-uniform")
 org_router.register("music/performance-kinds", PerformanceKindViewSet, basename="music-kind")
 org_router.register(

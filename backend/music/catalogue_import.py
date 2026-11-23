@@ -19,6 +19,7 @@ from changes import idempotency
 from core.api_base import OrgScopedMixin
 from organizations.models import Organization
 
+from .instrument_list import canonical
 from .models import Arrangement, Piece, ScorePart
 
 HEADERS = [
@@ -192,6 +193,8 @@ def plan(org, raw):
                 },
             )
             if values["instrument"]:
+                # Schreibweise wie in der Instrumentenliste (neue Namen legt das Speichern an)
+                values["instrument"] = canonical(org, values["instrument"], create=False)
                 add(
                     "parts",
                     {

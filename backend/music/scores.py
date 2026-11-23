@@ -23,6 +23,7 @@ from documents import services as documents
 from documents.models import Document
 from documents.notation import find_part
 
+from .instrument_list import InstrumentField, key
 from .models import Arrangement, Performance, Piece, ProgramEntry, ScoreDocument, ScorePart
 from .views import MusicViewSet, PerformanceViewSet, ScopedSerializer
 
@@ -64,6 +65,7 @@ class MusicScorePartSerializer(ScopedSerializer):
     paper_format = serializers.ChoiceField(choices=["concert", "march"])
     required_players = serializers.IntegerField(min_value=0, max_value=500)
     copies = serializers.IntegerField(min_value=0, max_value=10000)
+    instrument = InstrumentField()
 
     class Meta:
         model = ScorePart
@@ -234,7 +236,8 @@ def notation_info(document):
 
 
 def voice(instrument, register):
-    return instrument.strip().casefold(), register.strip().casefold()
+    # Instrument wie in der Instrumentenliste verglichen („Saxophon“ = „Saxofon“)
+    return key(instrument), register.strip().casefold()
 
 
 def program_data(performance, loan_balances=None):

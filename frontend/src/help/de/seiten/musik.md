@@ -7,7 +7,7 @@ routen: [/musik]
 stichworte: [Musik, Auftritt, Besetzung, Einteilung, Gast, Gage, Abrechnung, Programm]
 ---
 
-Hier planst du Auftritte: Besetzung, Programm, Gäste und Abrechnung. Die übrigen Punkte von Musik stehen im Menü: Übersicht, Verfügbarkeiten, Musiker, Proben und Notenausgabe, Notenbestand und Besetzungsvorlagen. Änderungen an vorhandenen Einträgen speichern sich von selbst; Neues legst du mit **Speichern** an.
+Hier planst du Auftritte: Besetzung, Programm, Gäste und Abrechnung. Die übrigen Punkte von Musik stehen im Menü: Übersicht, Verfügbarkeiten, Musiker, Proben und Notenausgabe, Notenbestand, Instrumente und Besetzungsvorlagen. Änderungen an vorhandenen Einträgen speichern sich von selbst; Neues legst du mit **Speichern** an.
 
 ## Auftritt anlegen
 
@@ -53,7 +53,7 @@ Soll HUBIplan die Einladung verschicken, hinterlegst du beim Musiker die **E-Mai
 
 Beim Auftritt öffnest du **Musikalisches Programm**. Du fügst Stücke und Zugaben mit Arrangement und Pausen mit eigener Dauer hinzu. Bleibt die Dauer leer, gilt die des Arrangements; ein eigener Wert überschreibt sie. Programmpunkte kannst du bearbeiten, entfernen und nach oben oder unten verschieben. HUBIplan zeigt die reguläre Dauer einschließlich Pausen, die Zugaben und die Gesamtdauer; null bedeutet unbekannte Dauer und ist markiert.
 
-Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzung und aktiven Musikern mit Zusage. Schreibweisen werden ohne Groß-/Kleinschreibung und äußere Leerzeichen verglichen; unterschiedliche Instrumentenbezeichnungen bleiben getrennt. Fehlende Musiker, geplante Anzahl und fehlende Exemplare im gewählten Format bleiben sichtbar. Exemplare im anderen Format zählen nicht mit. Bei wiederholten Stücken wird derselbe Notensatz je Format einmal vorbereitet. Fehlende Besetzungsangaben werden markiert. Bestandsänderungen und Arrangementdauern wirken auf bestehende Programme.
+Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzung und aktiven Musikern mit Zusage. Instrumente kommen aus der Liste unter [Instrumente](/musik/instrumente); Groß-/Kleinschreibung, „ph“/„f“ und Leerzeichen spielen beim Vergleich keine Rolle. Fehlende Musiker, geplante Anzahl und fehlende Exemplare im gewählten Format bleiben sichtbar. Exemplare im anderen Format zählen nicht mit. Bei wiederholten Stücken wird derselbe Notensatz je Format einmal vorbereitet. Fehlende Besetzungsangaben werden markiert. Bestandsänderungen und Arrangementdauern wirken auf bestehende Programme.
 
 Beim Auftritt ergänzen **Programmliste als PDF** und **Stimmenliste als PDF** die bisherigen CSV-Exporte. Die Drucklisten enthalten Auftritt, Ort, Erstellungsstand und Seitenzahlen. Die Programmliste zeigt Reihenfolge, Pausen, Zugaben und Dauer; die Stimmenliste Format, freie und fehlende Exemplare, bei Eingeteilten vorhandene Noten, fehlende Musiker, Lagerorte und Lizenzhinweise. Beim Drucken auf aktuelle Bestände und Nutzungsrechte achten.
 

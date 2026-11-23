@@ -20,7 +20,7 @@ const SETUP: Record<string, string> = {
   tax: '/finanzen/einrichtung/kategorien',
   billing: '/finanzen/einrichtung/beitraege',
   donations: '/finanzen/einrichtung/zuwendungen',
-  music: '/musik/vorlagen',
+  music: '/musik/instrumente',
 }
 
 export function ModulesPage() {

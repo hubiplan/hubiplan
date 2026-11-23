@@ -22,6 +22,8 @@ from django.utils.translation import gettext
 from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
+    # Instrumentenliste vor den Fähigkeiten (gleiche Schreibweise, konzepte/instrumente.md)
+    "music.Instrument",
     "music.Musician",
     "music.MusicianAbsence",
     "music.Skill",

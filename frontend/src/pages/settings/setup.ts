@@ -67,6 +67,7 @@ export function setupGroups(
       key: 'musik',
       label: t('Musik'),
       items: [
+        { to: '/musik/instrumente', label: t('Instrumente') },
         { to: '/musik/vorlagen', label: t('Besetzungsvorlagen') },
         { to: '/musik/uniformen', label: t('Uniformen und Auftrittsarten') },
       ],

@@ -7,7 +7,7 @@ routen: [/musik]
 stichworte: [Music, performance, staffing, guest, fee, settlement, programme]
 ---
 
-Plan performances here: staffing, programme, guests and settlement. The other music items are in the menu: Overview, Availability, Musicians, Rehearsals and sheet music checkout, Sheet music library and Instrumentation templates. Changes to existing entries save automatically; create new entries with **Save**.
+Plan performances here: staffing, programme, guests and settlement. The other music items are in the menu: Overview, Availability, Musicians, Rehearsals and sheet music checkout, Sheet music library, Instruments and Instrumentation templates. Changes to existing entries save automatically; create new entries with **Save**.
 
 ## Create a performance
 
@@ -53,7 +53,7 @@ To send an invitation, enter the musician's **Email address for guest invitation
 
 Open **Musical programme** on a performance. Add pieces and encores with an arrangement, and breaks with their own duration. A blank duration uses the arrangement duration; an explicit value overrides it. Edit, remove and move items up/down. Regular duration includes breaks; encore and total durations are shown separately. Zero indicates an unknown duration and is highlighted.
 
-Preparation compares required instruments and parts against planned instrumentation and active musicians who accepted assignments. Names are compared without case sensitivity or surrounding whitespace; different instrument names remain distinct. Missing musicians, planned counts and missing copies in the chosen format are visible. Copies in the other format do not count. Repeated pieces need one set per format. Missing instrumentation is highlighted. Changes to stock and arrangement duration affect existing programmes.
+Preparation compares required instruments and parts against planned instrumentation and active musicians who accepted assignments. Instruments come from the list under [Instruments](/musik/instrumente); case, “ph”/“f” and spaces do not matter when comparing. Missing musicians, planned counts and missing copies in the chosen format are visible. Copies in the other format do not count. Repeated pieces need one set per format. Missing instrumentation is highlighted. Changes to stock and arrangement duration affect existing programmes.
 
 For each performance, **Programme list as PDF** and **Parts list as PDF** complement the existing CSV exports. Printouts include performance, location, creation timestamp and page numbers. The programme lists order, breaks, encores and durations; the parts list shows format, available and missing copies, copies held by assigned musicians, missing musicians, storage locations and licence notes. Check current stock and usage rights before printing.
 
