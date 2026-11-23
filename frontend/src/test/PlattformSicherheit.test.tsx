@@ -10,6 +10,8 @@ import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
 const SESSION = 'GET /_allauth/browser/v1/auth/session'
 const LISTE = '/api/platform/csp-reports/'
+const KOEDER = '/api/platform/decoys/'
+const OHNE_KOEDER = { decoys: [], limit: 5, domain: 'verteiler.example', hits: [] }
 
 const STATE = {
   total: 2,
@@ -47,6 +49,7 @@ function renderPage(routes: Parameters<typeof fakeApi>[0]) {
       status: 200,
       body: [testOrg({ type: 'platform', permissions: ['platform.manage'] })],
     }),
+    [`GET ${KOEDER}`]: () => ({ status: 200, body: OHNE_KOEDER }),
     ...routes,
   })
   render(
@@ -101,5 +104,53 @@ describe('Plattform › Sicherheit', () => {
       [`GET ${LISTE}`]: () => ({ status: 200, body: { ...STATE, total: 500 } }),
     })
     expect(await screen.findByText(/Die Liste ist voll \(500 Einträge\)/)).toBeInTheDocument()
+  })
+
+  it('legt einen Köder an, zeigt Auslösungen und löscht den Köder nach Rückfrage', async () => {
+    const user = userEvent.setup()
+    const koeder = {
+      id: 9,
+      name: 'Karin Brandt',
+      email: 'karin.brandt@verteiler.example',
+      place: '12345 Musterstadt',
+      created: '2026-11-23',
+    }
+    const mitTreffer = {
+      ...OHNE_KOEDER,
+      decoys: [koeder],
+      hits: [
+        {
+          id: 1,
+          kind: 'mail_in',
+          decoy: 'Karin Brandt',
+          detail: 'von fremd@example.net, Betreff: Ihr Gewinn',
+          count: 2,
+          last_at: '2026-11-23T08:15:00+01:00',
+        },
+      ],
+    }
+    const api = renderPage({
+      [`GET ${LISTE}`]: () => ({ status: 200, body: { ...STATE, total: 0, entries: [] } }),
+      [`POST ${KOEDER}`]: () => ({ status: 201, body: mitTreffer }),
+      [`DELETE ${KOEDER}9/`]: () => ({ status: 200, body: OHNE_KOEDER }),
+    })
+    expect(await screen.findByText('Noch kein Köder angelegt.')).toBeInTheDocument()
+    expect(screen.getByText('Bisher hat niemand einen Köder benutzt.')).toBeInTheDocument()
+    expect(screen.getByText(/nimmt eine Adresse an verteiler\.example/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Köder anlegen' }))
+    const zeile = (await screen.findByText('Karin Brandt', { selector: 'strong' })).closest('li')!
+    expect(zeile).toHaveTextContent('karin.brandt@verteiler.example')
+    const gesendet = api.find((c) => c.key === `POST ${KOEDER}`)?.init?.body
+    expect(JSON.parse(String(gesendet))).toEqual({ email: '' })
+    // Auslösung in Worten und mit Warnung
+    expect(screen.getByRole('rowheader', { name: 'Mail an die Köderadresse' })).toBeInTheDocument()
+    expect(screen.getByText(/Jemand hat Köderdaten benutzt/)).toBeInTheDocument()
+
+    await user.click(within(zeile).getByRole('button', { name: 'Köder „Karin Brandt“ löschen' }))
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Köder löschen' }))
+    expect(await screen.findByText('Noch kein Köder angelegt.')).toBeInTheDocument()
+    expect(api.some((c) => c.key === `DELETE ${KOEDER}9/`)).toBe(true)
   })
 })

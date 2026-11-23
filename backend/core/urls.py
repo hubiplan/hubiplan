@@ -91,6 +91,7 @@ from oidc import views as oidc_views
 from orders import portal as orders_portal
 from organizations import (
     csp_reports,
+    decoys,
     help_feedback,
     help_views,
     imprint_views,
@@ -1598,6 +1599,13 @@ urlpatterns = [
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
     path("platform/icon/", org_views.PlatformIconView.as_view(), name="platform-icon"),
     path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
+    path("platform/decoys/", decoys.PlatformDecoysView.as_view(), name="platform-decoys"),
+    path("platform/decoys/<int:pk>/", decoys.PlatformDecoyView.as_view(), name="platform-decoy"),
+    path(
+        "platform/decoy-hits/",
+        decoys.PlatformDecoyHitsView.as_view(),
+        name="platform-decoy-hits",
+    ),
     path(
         "platform/csp-reports/",
         csp_reports.PlatformCspReportsView.as_view(),

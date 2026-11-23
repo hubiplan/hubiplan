@@ -207,6 +207,11 @@ class OutboxBackend(BaseEmailBackend):
                 body = alt[0]
         org_pk = int(org_id) if org_id else None
         private_task = kind == "aufgabe"
+        # Köderdaten (organizations.decoys): nie versenden, aber melden
+        from organizations import decoys
+
+        if decoys.check_outgoing([*message.to, *message.cc, *message.bcc], message.subject):
+            return 1
         with rls_bypass():
             mail = OutgoingMail.objects.create(
                 organization_id=org_pk,

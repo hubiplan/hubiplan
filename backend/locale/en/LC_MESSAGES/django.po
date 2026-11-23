@@ -2624,6 +2624,23 @@ msgstr "The Excel file cannot be read."
 msgid "Die CSV-Datei lässt sich nicht lesen."
 msgstr "The CSV file cannot be read."
 
+msgid ""
+"Diese Adresse wird schon benutzt. Ein Köder braucht eine Adresse, an die "
+"sonst niemand schreibt."
+msgstr ""
+"This address is already in use. A decoy needs an address nobody else writes "
+"to."
+
+msgid "Mehr als fünf Köder sind nicht vorgesehen."
+msgstr "More than five decoys are not intended."
+
+msgid ""
+"Ohne Verteiler-Domain bitte eine eigene Adresse angeben, deren Postfach du "
+"liest."
+msgstr ""
+"Without a mailing list domain, please enter an address of your own whose "
+"mailbox you read."
+
 msgid "Die Excel-Datei ist entpackt zu groß. Bitte als CSV speichern."
 msgstr "The Excel file is too large when unpacked. Please save it as CSV."
 

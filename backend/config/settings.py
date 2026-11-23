@@ -144,6 +144,7 @@ MIDDLEWARE = [
     "changes.middleware.ChangeSetMiddleware",
     "core.filecheck.SafeFileMiddleware",
     "devices.middleware.SignatureFormatMiddleware",
+    "organizations.decoys.DecoyMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

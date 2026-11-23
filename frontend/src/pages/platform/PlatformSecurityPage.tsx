@@ -1,4 +1,5 @@
-// Plattform › Sicherheit: Was Browser an blockierten Inhalten gemeldet haben (CSP-Verstöße).
+// Plattform › Sicherheit: Köderdaten (PlatformDecoys) und was Browser an blockierten Inhalten
+// gemeldet haben (CSP-Verstöße).
 // Gespeichert ohne Person, Einheit und Adresse des Aufrufers (docs/betrieb.md).
 import { useState } from 'react'
 import { securityApi } from '../../api/security.ts'
@@ -9,6 +10,7 @@ import { useRowSearch } from '../../components/RowSearch.tsx'
 import { useRowSort } from '../../components/RowSort.tsx'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { PlatformDecoys } from './PlatformDecoys.tsx'
 
 /** Was blockiert wurde, in Worten: Art des Inhalts oder die fremde Adresse. */
 function blockedLabel(entry: CspEntry): string {
@@ -62,6 +64,7 @@ export function PlatformSecurityPage() {
   if (!data) return <Loading />
   return (
     <>
+      <PlatformDecoys />
       {failed && <Alert kind="error">{failed}</Alert>}
       <div className="card card-wide">
         <h2>{t('Meldungen des Browsers')}</h2>

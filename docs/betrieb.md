@@ -1232,6 +1232,26 @@ an fremde Dienste. Die Plattformverwaltung sieht die Meldungen unter Plattform �
 Wer einen eigenen Proxy vor HUBIplan betreibt, übernimmt `report-uri`, `report-to` und
 `Reporting-Endpoints` aus `site.caddy`; `scripts/pruefe-caddy.sh` prüft sie.
 
+## Köderdaten
+
+Unter Plattform › Sicherheit legt die Plattformverwaltung bis zu fünf Köder an: erfundene
+Mitglieder im Datenbereich der Plattform (`backend/organizations/decoys.py`). Der Zeilenschutz
+der Datenbank gibt Mitglieder nur an die Einheit heraus, der sie gehören, und die Plattform hat
+keinen Mitgliederbereich. Deshalb zeigt kein Verein, kein Dachverband und keine App einen Köder;
+in der Datenbank und in jeder Sicherung steht er wie ein echtes Mitglied.
+
+Auslöser (Tabelle `DecoyHit`, je Art höchstens eine Alarm-Mail in der Stunde):
+
+- Mail an die Köderadresse im Sammelpostfach der Verteiler (`INBOUND_DOMAINS`). Ohne
+  Verteiler-Domain bekommt der Köder eine eigene Adresse, deren Postfach der Betreiber selbst liest.
+- Anmeldung, Anmeldelink oder „Passwort vergessen“ mit der Köderadresse.
+- Abruf der Nummer des Köders über `…/members/<Nummer>/…`.
+- HUBIplan will der Köderadresse selbst schreiben; die Mail wird nicht versendet.
+
+Köder haben keine Bankverbindung. Beim Umzug einer Einheit (`datatransfer`) wandern sie nicht mit;
+auf der neuen Instanz neu anlegen. Weil der Quelltext offen ist, erkennt Köder, wer Datenbank und
+Schlüssel besitzt und danach sucht.
+
 ## Alarm-Mails und Notfall
 
 HUBIplan schickt sofort eine Mail „[HUBIplan-Sicherheit] …“ bei:
