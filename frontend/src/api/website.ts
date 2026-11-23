@@ -985,6 +985,8 @@ export const heldApi = {
 
 export type SocialKind = 'instagram' | 'facebook'
 
+export type SocialCommentsMode = 'off' | 'approval' | 'auto'
+
 export interface SocialFeed {
   id: number
   kind: SocialKind
@@ -996,6 +998,9 @@ export interface SocialFeed {
   show_link: boolean
   strip_hashtags: boolean
   is_active: boolean
+  show_counts: boolean
+  comments: SocialCommentsMode
+  comments_need_connect: boolean
   app_id: string
   config_id: string
   via_facebook: boolean
@@ -1024,6 +1029,8 @@ export interface SocialFeedDraft {
   show_link?: boolean
   strip_hashtags?: boolean
   is_active?: boolean
+  show_counts?: boolean
+  comments?: SocialCommentsMode
   app_id?: string
   config_id?: string
   via_facebook?: boolean
@@ -1040,6 +1047,15 @@ export interface SocialPost {
   published_at: string
   state: 'visible' | 'pending' | 'hidden'
   state_label: string
+  like_count: number | null
+  comment_count: number | null
+  comments: {
+    id: number
+    author: string
+    text: string
+    published_at: string
+    state: 'visible' | 'pending' | 'hidden'
+  }[]
   images: {
     id: number
     url: string
@@ -1100,6 +1116,8 @@ export const socialApi = {
     id: number,
     data: { state?: SocialPost['state']; alt_texts?: Record<string, string> },
   ) => api.put<SocialPost>(`${base(org)}social/posts/${id}/`, data),
+  setComment: (org: number, id: number, state: SocialPost['comments'][number]['state']) =>
+    api.put<SocialPost>(`${base(org)}social/comments/${id}/`, { state }),
 }
 
 // --- Dokumente: Pressespiegel und eigene Dokumente (Ralf 05.11.2026) ---

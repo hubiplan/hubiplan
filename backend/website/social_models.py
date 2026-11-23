@@ -33,6 +33,11 @@ class SocialFeed(models.Model):
         AUTO = "auto", gettext_lazy("automatisch zeigen")
         APPROVAL = "approval", gettext_lazy("erst nach Freigabe")
 
+    class Comments(models.TextChoices):
+        OFF = "off", gettext_lazy("nicht zeigen")
+        APPROVAL = "approval", gettext_lazy("erst nach Freigabe")
+        AUTO = "auto", gettext_lazy("automatisch zeigen")
+
     class Status(models.TextChoices):
         NEW = "new", gettext_lazy("nicht verbunden")
         CHOOSE = "choose", gettext_lazy("Seite auswählen")
@@ -61,6 +66,20 @@ class SocialFeed(models.Model):
     show_link = models.BooleanField("Link zum Beitrag zeigen", default=True)
     strip_hashtags = models.BooleanField("Hashtags am Ende weglassen", default=True)
     is_active = models.BooleanField("Abruf aktiv", default=True)
+    # Likes (bei Facebook: Reaktionen) und Zahl der Kommentare unter dem Beitrag zeigen
+    show_counts = models.BooleanField(
+        "Likes und Kommentarzahl zeigen", default=False, db_default=False
+    )
+    # Kommentartexte Dritter: standardmäßig aus (Datenschutz), sonst wie Beiträge mit Freigabe
+    comments = models.CharField(
+        "Kommentare",
+        max_length=10,
+        choices=Comments.choices,
+        default=Comments.OFF,
+        db_default=Comments.OFF,
+    )
+    # Beim letzten Verbinden wurde Meta um das Lesen von Kommentaren gebeten
+    comments_granted = models.BooleanField(default=False, db_default=False)
     # Eigene Meta-App der Einheit (Geheimnis und Zugang verschlüsselt)
     app_id = models.CharField("App-ID", max_length=40, blank=True)
     # Instagram über die Facebook-Anmeldung („Unified Login“, für neue Meta-Apps der
@@ -155,6 +174,9 @@ class SocialPost(models.Model):
     published_at = models.DateTimeField()
     state = models.CharField(max_length=10, choices=State.choices, default=State.VISIBLE)
     fetched_at = models.DateTimeField(auto_now_add=True)
+    # Likes bzw. Reaktionen und Kommentare laut Meta (leer: unbekannt, z. B. ausgeblendet)
+    like_count = models.PositiveIntegerField(null=True, blank=True)
+    comment_count = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Social-Media-Beitrag"
@@ -194,6 +216,44 @@ class SocialPostImage(models.Model):
     @staticmethod
     def new_key() -> str:
         return secrets.token_urlsafe(12)
+
+
+COMMENT_MAX_TEXT = 1000
+COMMENTS_PER_POST = 20
+
+
+class SocialComment(models.Model):
+    """Kommentar unter einem Beitrag (nur wenn der Kanal Kommentare zeigt).
+
+    Namen Dritter werden gekürzt gespeichert („Erika M.“), Instagram-Kommentare mit dem
+    öffentlichen Benutzernamen. Schaltet der Kanal Kommentare aus, werden sie gelöscht.
+    """
+
+    class State(models.TextChoices):
+        VISIBLE = "visible", gettext_lazy("sichtbar")
+        PENDING = "pending", gettext_lazy("wartet auf Freigabe")
+        HIDDEN = "hidden", gettext_lazy("ausgeblendet")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    post = models.ForeignKey(SocialPost, on_delete=models.CASCADE, related_name="comments")
+    external_id = models.CharField(max_length=80)
+    author = models.CharField("Von", max_length=120, blank=True)
+    text = models.TextField("Text", max_length=COMMENT_MAX_TEXT)
+    published_at = models.DateTimeField()
+    state = models.CharField(max_length=10, choices=State.choices, default=State.PENDING)
+
+    class Meta:
+        verbose_name = "Kommentar zu einem Social-Media-Beitrag"
+        verbose_name_plural = "Kommentare zu Social-Media-Beiträgen"
+        ordering = ["post_id", "published_at", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["post", "external_id"], name="socialcomment_unique")
+        ]
+
+    def __str__(self) -> str:
+        return f"Kommentar von {self.author or '?'}"
 
 
 SOCIAL_DRAFT_MAX_TEXT = 2200  # so lang darf ein Instagram-Beitrag sein

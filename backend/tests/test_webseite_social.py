@@ -18,6 +18,7 @@ from core.tenancy import rls_bypass
 from organizations.models import Department
 from website import social
 from website.models import SocialFeed, SocialPost, SocialPostImage, Website, WebsiteDomain
+from website.social_models import SocialComment
 
 from .factories import give_role, make_user, make_website
 
@@ -61,6 +62,9 @@ class FakeMeta:
         self.business_accounts = []
         self.valid = True
         self.error = None
+        # Kommentare je Beitrag; comments_error: Meta verweigert das Lesen
+        self.comments = {}
+        self.comments_error = None
 
     def request(self, method, url, params):
         self.calls.append((method, url, dict(params)))
@@ -105,6 +109,11 @@ class FakeMeta:
             return {"id": "17841", "username": "verein_a"}
         if url.endswith("/posts"):
             return {"data": self.fb_posts}
+        if url.endswith("/comments"):
+            if self.comments_error:
+                raise self.comments_error
+            post_id = url.rsplit("/", 2)[-2]
+            return {"data": self.comments.get(post_id, [])}
         raise AssertionError(url)
 
     def download(self, url):
@@ -518,6 +527,128 @@ class TestRuecksprungJeEinheit:
         settings.SOCIAL_CALLBACK_BASE = "https://rueckweg.example/"
         data = api(setup["admin"]).get(url(setup["org"])).json()
         assert data["redirect_uri"] == "https://rueckweg.example/api/website/social/callback/"
+
+
+class TestLikesUndKommentare:
+    """Likes, Kommentarzahl und (optional) Kommentartexte unter den Beiträgen."""
+
+    def public(self):
+        return Client().get("/api/public/site/v1/schluessel-a/posts/").json()["posts"]
+
+    def test_standard_ohne_zahlen_und_kommentare(self, setup, api, meta):
+        meta.media = [ig_media(1, like_count=12, comments_count=3)]
+        c, feed_id, _ = connect(api, setup)
+        post = self.public()[0]
+        assert post["likes"] is None and post["comment_count"] is None
+        assert post["comments"] == []
+        # Kommentare werden ohne Schalter nicht einmal abgerufen
+        assert not any(u.endswith("/comments") for _, u, _ in meta.calls)
+        with rls_bypass():
+            stored = SocialPost.objects.get(feed_id=feed_id)
+            assert stored.like_count == 12 and stored.comment_count == 3
+
+    def test_instagram_kommentare_nach_freigabe(self, setup, api, meta):
+        meta.media = [ig_media(1, like_count=12, comments_count=2)]
+        meta.comments = {
+            "m1": [
+                {
+                    "id": "k1",
+                    "text": "Toll!",
+                    "username": "erika_m",
+                    "timestamp": "2026-10-12T13:00:00+0000",
+                },
+                {
+                    "id": "k2",
+                    "text": "Bis bald",
+                    "username": "max_m",
+                    "timestamp": "2026-10-12T14:00:00+0000",
+                },
+            ]
+        }
+        c, feed_id, _ = connect(api, setup, show_counts=True, comments="approval")
+        listed = c.get(url(setup["org"])).json()["feeds"][0]
+        assert listed["comments"] == "approval" and listed["comments_need_connect"] is False
+        post = self.public()[0]
+        assert post["likes"] == 12 and post["comment_count"] == 2
+        assert post["comments"] == []  # wartet auf Freigabe
+        own = c.get(url(setup["org"], "posts/")).json()[0]
+        assert [k["author"] for k in own["comments"]] == ["erika_m", "max_m"]
+        assert {k["state"] for k in own["comments"]} == {"pending"}
+        first = own["comments"][0]["id"]
+        resp = c.put(
+            url(setup["org"], f"comments/{first}/"), {"state": "visible"}, "application/json"
+        )
+        assert resp.status_code == 200, resp.content
+        assert [k["text"] for k in self.public()[0]["comments"]] == ["Toll!"]
+        # Bei Meta gelöscht → hier auch weg
+        meta.comments["m1"] = meta.comments["m1"][1:]
+        c.post(url(setup["org"], f"{feed_id}/sync/"))
+        assert self.public()[0]["comments"] == []
+        # Ausschalten löscht die gespeicherten Kommentare
+        c.put(url(setup["org"], f"{feed_id}/"), {"comments": "off"}, "application/json")
+        with rls_bypass():
+            assert not SocialComment.objects.filter(post__feed_id=feed_id).exists()
+
+    def test_kommentare_brauchen_neue_verbindung(self, setup, api, meta):
+        meta.media = [ig_media(1)]
+        c, feed_id, _ = connect(api, setup)
+        c.put(url(setup["org"], f"{feed_id}/"), {"comments": "auto"}, "application/json")
+        listed = c.get(url(setup["org"])).json()["feeds"][0]
+        assert listed["comments_need_connect"] is True
+
+    def test_facebook_reaktionen_und_gekuerzte_namen(self, setup, api, meta):
+        meta.fb_posts = [
+            {
+                "id": "111_1",
+                "message": "Unser Frühschoppen",
+                "created_time": "2026-10-20T10:00:00+0000",
+                "reactions": {"data": [], "summary": {"total_count": 7}},
+                "comments": {"data": [], "summary": {"total_count": 2}},
+            }
+        ]
+        meta.comments = {
+            "111_1": [
+                {
+                    "id": "c1",
+                    "message": "Schön war's",
+                    "from": {"id": "9", "name": "Erika Mustermann"},
+                    "created_time": "2026-10-20T11:00:00+0000",
+                },
+                {
+                    "id": "c2",
+                    "message": "Danke euch!",
+                    "from": {"id": "111", "name": "Verein A"},
+                    "created_time": "2026-10-20T12:00:00+0000",
+                },
+            ]
+        }
+        c, feed_id, _ = connect(api, setup, kind="facebook", show_counts=True, comments="auto")
+        post = self.public()[0]
+        assert post["likes"] == 7 and post["comment_count"] == 2
+        assert [(k["author"], k["text"]) for k in post["comments"]] == [
+            ("Erika M.", "Schön war's"),
+            ("Verein A", "Danke euch!"),
+        ]
+
+    def test_facebook_fragt_kommentarrecht_an(self, setup, api, meta):
+        c = api(setup["admin"])
+        resp = c.post(
+            url(setup["org"]),
+            {"kind": "facebook", "app_id": "1", "app_secret": "geheim123", "comments": "auto"},
+            "application/json",
+        )
+        start = c.post(url(setup["org"], f"{resp.json()['id']}/connect/")).json()["url"]
+        scope = urllib.parse.parse_qs(urllib.parse.urlsplit(start).query)["scope"][0]
+        assert "pages_read_user_content" in scope
+
+    def test_ohne_kommentarrecht_laufen_beitraege_weiter(self, setup, api, meta):
+        meta.media = [ig_media(1, comments_count=1)]
+        meta.comments_error = social.MetaError("(#10) Permission denied", code=10)
+        c, feed_id, _ = connect(api, setup, comments="auto")
+        with rls_bypass():
+            feed = SocialFeed.objects.get(pk=feed_id)
+            assert feed.status == "ok" and feed.last_error.startswith("Kommentare:")
+            assert SocialPost.objects.filter(feed=feed).count() == 1
 
 
 class TestAbruf:

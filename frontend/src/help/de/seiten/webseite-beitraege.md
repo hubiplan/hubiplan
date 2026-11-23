@@ -19,3 +19,9 @@ Oben pflegt ihr die Social-Media-Kanäle des Vereins, also die Profil-Links, die
 ## Weiterleitungs-URI
 
 Bei jedem Kanal steht die genaue Adresse, die ihr in eurer Meta-App als Weiterleitungs-URI eintragt, mit Knopf **Kopieren**, darunter die App-Domain. Hat eure Einheit eine eigene Vereinsadresse (z. B. `verein.musterverein.example`), führt die Rückkehr von Meta dorthin. Meldet euch dann zum Verbinden unter dieser Adresse an. Kanäle, die schon vorher verbunden waren, behalten ihre alte Adresse; mit **Vereinsadresse verwenden** stellt ihr um und tragt danach die neue Adresse in der Meta-App ein.
+
+## Likes und Kommentare
+
+Mit **Likes und Kommentarzahl zeigen** stehen unter jedem Beitrag auf der Webseite die Zahl der Likes (bei Facebook alle Reaktionen) und der Kommentare. Alben zeigt die Webseite mit allen Bildern.
+
+**Kommentare zeigen** ist zunächst aus, denn Kommentare stammen von anderen Personen. Mit „erst nach Freigabe“ erscheinen neue Kommentare erst nach **Kommentar freigeben**; jeden Kommentar könnt ihr mit **Kommentar ausblenden** wieder verbergen. Nach dem Einschalten den Kanal einmal über **Neu verbinden** verbinden, damit Meta das Lesen der Kommentare erlaubt. Namen von Facebook-Nutzern stehen gekürzt da („Erika M.“), bei Instagram der öffentliche Benutzername. Ausschalten löscht alle gespeicherten Kommentare.

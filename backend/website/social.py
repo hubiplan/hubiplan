@@ -31,11 +31,19 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from access.modules import module_on
 from accounts.mfa import decrypt, encrypt
 
-from .social_models import SocialFeed, SocialPost, SocialPostImage
+from .social_models import (
+    COMMENT_MAX_TEXT,
+    COMMENTS_PER_POST,
+    SocialComment,
+    SocialFeed,
+    SocialPost,
+    SocialPostImage,
+)
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +51,7 @@ TIMEOUT = 20
 MAX_JSON = 2 * 1024 * 1024
 MAX_IMAGE = 15 * 1024 * 1024
 MAX_POSTS_LIMIT = 50
-MAX_IMAGES_PER_POST = 10
+MAX_IMAGES_PER_POST = 20  # so viele Bilder hat ein Instagram-Karussell höchstens
 OAUTH_VALID = datetime.timedelta(minutes=15)
 REFRESH_EVERY = datetime.timedelta(days=7)
 # Bilder nur von den Auslieferungsservern von Meta
@@ -52,6 +60,10 @@ IG_SCOPE = "instagram_business_basic"
 FB_SCOPE = "pages_show_list,pages_read_engagement"
 # Instagram über die Facebook-Anmeldung (Instagram API with Facebook Login)
 IG_FB_SCOPE = "instagram_basic,pages_show_list,pages_read_engagement"
+# Nur, wenn der Kanal Kommentartexte zeigt: Lesen der Kommentare Dritter
+IG_COMMENTS_SCOPE = "instagram_business_manage_comments"
+IG_FB_COMMENTS_SCOPE = "instagram_manage_comments"
+FB_COMMENTS_SCOPE = "pages_read_user_content"
 ASSIGN_ATTEMPTS = 4
 ASSIGN_DELAY = 2.0  # Sekunden
 TOKEN_INVALID = 190  # Fehlercode von Meta: Zugang ungültig oder abgelaufen
@@ -230,15 +242,24 @@ def start_connect(feed: SocialFeed, user) -> str:
     feed.oauth_user = user
     feed.save(update_fields=["oauth_state", "oauth_started_at", "oauth_user"])
     params = {"client_id": feed.app_id, "redirect_uri": redirect_uri(feed), "state": state}
+    wants_comments = feed.comments != SocialFeed.Comments.OFF
+    if feed.comments_granted != wants_comments:
+        feed.comments_granted = wants_comments
+        feed.save(update_fields=["comments_granted"])
     if instagram_login(feed):
-        params.update(response_type="code", scope=IG_SCOPE)
+        scope = IG_SCOPE + (f",{IG_COMMENTS_SCOPE}" if wants_comments else "")
+        params.update(response_type="code", scope=scope)
         return f"https://www.instagram.com/oauth/authorize?{urllib.parse.urlencode(params)}"
     params["response_type"] = "code"
     if feed.config_id:
         # Facebook Login for Business: Berechtigungen stehen in der Konfiguration
         params["config_id"] = feed.config_id
     else:
-        params["scope"] = IG_FB_SCOPE if feed.kind == SocialFeed.Kind.INSTAGRAM else FB_SCOPE
+        if feed.kind == SocialFeed.Kind.INSTAGRAM:
+            scope = IG_FB_SCOPE + (f",{IG_FB_COMMENTS_SCOPE}" if wants_comments else "")
+        else:
+            scope = FB_SCOPE + (f",{FB_COMMENTS_SCOPE}" if wants_comments else "")
+        params["scope"] = scope
     return (
         f"https://www.facebook.com/{graph_version()}/dialog/oauth?{urllib.parse.urlencode(params)}"
     )
@@ -699,7 +720,7 @@ def clean_text(text: str, strip_hashtags: bool) -> str:
 def _instagram_items(feed: SocialFeed, limit: int) -> list[dict]:
     fields = (
         "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,"
-        "children{id,media_type,media_url,thumbnail_url}"
+        "like_count,comments_count,children{id,media_type,media_url,thumbnail_url}"
     )
     url = ig_graph("me/media") if instagram_login(feed) else fb_graph(f"{feed.account_id}/media")
     data = _request(
@@ -732,15 +753,111 @@ def _instagram_items(feed: SocialFeed, limit: int) -> list[dict]:
                 "published_at": _parse_time(m.get("timestamp")),
                 "media_type": media_type,
                 "media": media,
+                "likes": _count(m.get("like_count")),
+                "comment_count": _count(m.get("comments_count")),
             }
         )
     return items
 
 
+def _count(value) -> int | None:
+    try:
+        return max(0, int(value)) if value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _summary_count(edge) -> int | None:
+    if not isinstance(edge, dict):
+        return None
+    return _count((edge.get("summary") or {}).get("total_count"))
+
+
+def short_name(name: str) -> str:
+    """„Erika Mustermann“ → „Erika M.“ (Namen Dritter nur gekürzt speichern)."""
+    parts = (name or "").split()
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0][:60]
+    return f"{parts[0][:60]} {parts[-1][0]}."
+
+
+def _comment_items(feed: SocialFeed, post_id: str) -> list[dict]:
+    """Neueste Kommentare eines Beitrags (oberste Ebene, ohne Antworten)."""
+    params = {"limit": COMMENTS_PER_POST, "access_token": token(feed)}
+    if feed.kind == SocialFeed.Kind.INSTAGRAM:
+        base = ig_graph if instagram_login(feed) else fb_graph
+        params["fields"] = "id,text,username,timestamp"
+        data = _request("GET", base(f"{post_id}/comments"), params).get("data", [])
+        return [
+            {
+                "id": str(c["id"]),
+                "author": str(c.get("username") or "")[:120],
+                "text": str(c.get("text") or ""),
+                "published_at": _parse_time(c.get("timestamp")),
+            }
+            for c in data
+            if c.get("id") and c.get("text")
+        ]
+    params.update(fields="id,message,from,created_time", filter="toplevel", order="chronological")
+    data = _request("GET", fb_graph(f"{post_id}/comments"), params).get("data", [])
+    own = feed.account_id
+    items = []
+    for c in data:
+        if not c.get("id") or not c.get("message"):
+            continue
+        author = c.get("from") or {}
+        name = str(author.get("name") or "")
+        items.append(
+            {
+                "id": str(c["id"]),
+                # Antworten der eigenen Seite mit vollem Namen, andere gekürzt
+                "author": name[:120] if str(author.get("id")) == own else short_name(name),
+                "text": str(c["message"]),
+                "published_at": _parse_time(c.get("created_time")),
+            }
+        )
+    return items
+
+
+def _sync_comments(feed: SocialFeed, post: SocialPost) -> None:
+    items = _comment_items(feed, post.external_id)[-COMMENTS_PER_POST:]
+    existing = {c.external_id: c for c in post.comments.all()}
+    seen = set()
+    state = (
+        SocialComment.State.VISIBLE
+        if feed.comments == SocialFeed.Comments.AUTO
+        else SocialComment.State.PENDING
+    )
+    for item in items:
+        seen.add(item["id"])
+        text = item["text"][:COMMENT_MAX_TEXT]
+        comment = existing.get(item["id"])
+        if comment is None:
+            SocialComment.objects.create(
+                organization_id=post.organization_id,
+                post=post,
+                external_id=item["id"][:80],
+                author=item["author"],
+                text=text,
+                published_at=item["published_at"],
+                state=state,
+            )
+        elif comment.text != text or comment.author != item["author"]:
+            comment.text = text
+            comment.author = item["author"]
+            comment.save(update_fields=["text", "author"])
+    stale = [c.pk for key, c in existing.items() if key not in seen]
+    if stale:
+        SocialComment.objects.filter(pk__in=stale).delete()
+
+
 def _facebook_items(feed: SocialFeed, limit: int) -> list[dict]:
     fields = (
         "id,message,created_time,permalink_url,full_picture,parent_id,"
-        "attachments{type,media,target,subattachments.limit(10){type,media,target}}"
+        "reactions.limit(0).summary(total_count),comments.limit(0).summary(total_count),"
+        "attachments{type,media,target,subattachments.limit(20){type,media,target}}"
     )
     data = _request(
         "GET",
@@ -782,6 +899,8 @@ def _facebook_items(feed: SocialFeed, limit: int) -> list[dict]:
                 "published_at": _parse_time(p.get("created_time")),
                 "media_type": media_type,
                 "media": media,
+                "likes": _summary_count(p.get("reactions")),
+                "comment_count": _summary_count(p.get("comments")),
             }
         )
     return items
@@ -862,6 +981,7 @@ def _sync_feed(feed: SocialFeed) -> int:
     existing = {p.external_id: p for p in feed.posts.all()}
     seen = set()
     created = 0
+    posts_with_comments: list[SocialPost] = []
     for item in items:
         seen.add(item["id"])
         text = clean_text(item["text"], feed.strip_hashtags)
@@ -879,11 +999,19 @@ def _sync_feed(feed: SocialFeed) -> int:
                     state=SocialPost.State.PENDING
                     if feed.mode == SocialFeed.Mode.APPROVAL
                     else SocialPost.State.VISIBLE,
+                    like_count=item.get("likes"),
+                    comment_count=item.get("comment_count"),
                 )
                 _store_images(post, item["media"])
             created += 1
+            posts_with_comments.append(post)
             continue
+        posts_with_comments.append(post)
         changed = []
+        for field, key in (("like_count", "likes"), ("comment_count", "comment_count")):
+            if getattr(post, field) != item.get(key):
+                setattr(post, field, item.get(key))
+                changed.append(field)
         if post.text != text:
             post.text = text
             changed.append("text")
@@ -900,8 +1028,22 @@ def _sync_feed(feed: SocialFeed) -> int:
         for external_id, post in existing.items():
             if external_id not in seen:
                 delete_post(post)
+    comment_error = ""
+    if feed.comments == SocialFeed.Comments.OFF:
+        SocialComment.objects.filter(post__feed=feed).delete()
+    else:
+        for post in posts_with_comments:
+            if post.comment_count == 0:
+                post.comments.all().delete()
+                continue
+            try:
+                _sync_comments(feed, post)
+            except MetaError as exc:
+                # Ohne Freigabe für Kommentare: Beiträge laufen weiter, Hinweis am Kanal
+                comment_error = gettext("Kommentare: %(fehler)s") % {"fehler": str(exc)[:400]}
+                break
     feed.status = SocialFeed.Status.OK
-    feed.last_error = ""
+    feed.last_error = comment_error
     feed.warned_at = None
     feed.last_sync_at = timezone.now()
     feed.save(update_fields=["status", "last_error", "warned_at", "last_sync_at"])

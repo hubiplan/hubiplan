@@ -18331,3 +18331,11 @@ msgid ""
 msgstr ""
 "After connecting, Meta sends you back to %(adresse)s. Please sign in there "
 "and connect the channel from that address."
+
+#: website/social.py
+msgid "Kommentare: %(fehler)s"
+msgstr "Comments: %(fehler)s"
+
+#: website/social_models.py
+msgid "nicht zeigen"
+msgstr "do not show"
