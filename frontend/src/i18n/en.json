@@ -11247,5 +11247,11 @@
   "wie oben ({format})": "as above ({format})",
   "Namensform je Bereich": "Name format per area",
   "Mitgliederliste „{name}“": "Member list “{name}”",
-  "Zum Beispiel den Vorstand mit vollem Namen und die Aktiven als „M. Muster“. Gehört zur Gestaltung und erscheint nach „Veröffentlichen“.": "For example the board with full names and active members as “M. Sample”. Part of the design: appears after “Publish”."
+  "Zum Beispiel den Vorstand mit vollem Namen und die Aktiven als „M. Muster“. Gehört zur Gestaltung und erscheint nach „Veröffentlichen“.": "For example the board with full names and active members as “M. Sample”. Part of the design: appears after “Publish”.",
+  "Vergangene Auftritte zeigen": "Show past performances",
+  "Vergangene Auftritte einbeziehen": "Include past performances",
+  "{n} ausgeblendet": {
+    "one": "{n} hidden",
+    "other": "{n} hidden"
+  }
 }
