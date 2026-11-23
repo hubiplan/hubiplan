@@ -910,4 +910,10 @@ from .content_models import (  # noqa: E402, F401
     WebsiteRevision,
     WebsiteText,
 )
-from .social_models import SocialDraft, SocialFeed, SocialPost, SocialPostImage  # noqa: E402, F401
+from .social_models import (  # noqa: E402, F401
+    SocialComment,
+    SocialDraft,
+    SocialFeed,
+    SocialPost,
+    SocialPostImage,
+)

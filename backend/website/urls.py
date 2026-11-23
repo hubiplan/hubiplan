@@ -187,6 +187,11 @@ org_patterns = [
         name="website-social-sync",
     ),
     path(
+        "website/social/comments/<int:pk>/",
+        social_views.CommentDetailView.as_view(),
+        name="website-social-comment",
+    ),
+    path(
         "website/social/drafts/",
         social_views.SocialDraftListView.as_view(),
         name="website-social-drafts",

@@ -1255,7 +1255,7 @@ class SiteView:
         qs = (
             SocialPost.objects.filter(feed__in=feeds, state=SocialPost.State.VISIBLE)
             .select_related("feed")
-            .prefetch_related("images")
+            .prefetch_related("images", "comments")
             .order_by("-published_at", "-pk")
         )
         if days is not None:
@@ -1273,6 +1273,20 @@ class SiteView:
             "text": post.text,
             "published_at": post.published_at.isoformat(),
             "permalink": post.permalink if post.feed.show_link else None,
+            # Likes bzw. Reaktionen und Kommentarzahl nur, wenn der Kanal sie zeigt
+            "likes": post.like_count if post.feed.show_counts else None,
+            "comment_count": post.comment_count if post.feed.show_counts else None,
+            "comments": [
+                {
+                    "author": c.author,
+                    "text": c.text,
+                    "published_at": c.published_at.isoformat(),
+                }
+                for c in post.comments.all()
+                if c.state == "visible"
+            ]
+            if post.feed.comments != "off"
+            else [],
             "images": [
                 {
                     "url": self.url(f"posts/images/{i.key}/"),

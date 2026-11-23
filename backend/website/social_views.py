@@ -28,6 +28,7 @@ from .content_views import _ContentMixin, image_data
 from .social_models import (
     SOCIAL_DRAFT_MAX_IMAGES,
     SOCIAL_DRAFT_MAX_TEXT,
+    SocialComment,
     SocialDraft,
     SocialFeed,
     SocialPost,
@@ -50,6 +51,11 @@ def feed_data(feed: SocialFeed) -> dict:
         "show_link": feed.show_link,
         "strip_hashtags": feed.strip_hashtags,
         "is_active": feed.is_active,
+        "show_counts": feed.show_counts,
+        "comments": feed.comments,
+        # Kommentare eingeschaltet, aber beim Verbinden nicht bei Meta angefragt: neu verbinden
+        "comments_need_connect": feed.comments != SocialFeed.Comments.OFF
+        and not feed.comments_granted,
         "app_id": feed.app_id,
         "config_id": feed.config_id,
         "via_facebook": feed.via_facebook,
@@ -80,6 +86,18 @@ def post_data(org_id: int, post: SocialPost) -> dict:
         "published_at": post.published_at,
         "state": post.state,
         "state_label": post.get_state_display(),
+        "like_count": post.like_count,
+        "comment_count": post.comment_count,
+        "comments": [
+            {
+                "id": c.pk,
+                "author": c.author,
+                "text": c.text,
+                "published_at": c.published_at,
+                "state": c.state,
+            }
+            for c in post.comments.all()
+        ],
         "images": [
             {
                 "id": i.pk,
@@ -105,6 +123,8 @@ class FeedSerializer(serializers.Serializer):
     show_link = serializers.BooleanField(required=False)
     strip_hashtags = serializers.BooleanField(required=False)
     is_active = serializers.BooleanField(required=False)
+    show_counts = serializers.BooleanField(required=False)
+    comments = serializers.ChoiceField(choices=SocialFeed.Comments.choices, required=False)
     app_id = serializers.RegexField(r"^\d{0,40}$", required=False, allow_blank=True)
     config_id = serializers.RegexField(r"^\d{0,40}$", required=False, allow_blank=True)
     via_facebook = serializers.BooleanField(required=False)
@@ -116,7 +136,15 @@ class FeedSerializer(serializers.Serializer):
     )
 
 
-SETTINGS = ("mode", "max_posts", "show_link", "strip_hashtags", "is_active")
+SETTINGS = (
+    "mode",
+    "max_posts",
+    "show_link",
+    "strip_hashtags",
+    "is_active",
+    "show_counts",
+    "comments",
+)
 # Anmeldung: Änderung erst beim nächsten Verbinden wirksam
 LOGIN_SETTINGS = ("app_id", "config_id", "via_facebook")
 
@@ -209,6 +237,9 @@ class FeedDetailView(_FeedMixin, APIView):
             feed.redirect_base = ""
             changes["Rücksprungadresse"] = [old, social.redirect_uri(feed)]
         feed.save()
+        if feed.comments == SocialFeed.Comments.OFF:
+            # Kommentare Dritter nicht länger aufbewahren als gezeigt
+            SocialComment.objects.filter(post__feed=feed).delete()
         if changes:
             record(self.org, request.user, "update", feed, changes)
         # Der Modus gilt nur für künftige Beiträge; wartende bleiben wartend (UX-Audit 31.10. N07)
@@ -317,7 +348,9 @@ class PostListView(_ContentMixin, APIView):
     """GET ?kanal=<id>: abgerufene Beiträge (neueste zuerst)."""
 
     def get(self, request, org_id: int):
-        qs = SocialPost.objects.filter(feed__website=self.website()).prefetch_related("images")
+        qs = SocialPost.objects.filter(feed__website=self.website()).prefetch_related(
+            "images", "comments"
+        )
         feed = request.query_params.get("kanal")
         if feed and feed.isdigit():
             qs = qs.filter(feed_id=int(feed))
@@ -355,6 +388,41 @@ class PostDetailView(_ContentMixin, APIView):
                 post=post, pk=int(image_id) if image_id.isdigit() else 0
             ).update(alt_text=alt)
         return Response(post_data(self.org.pk, post))
+
+
+class CommentStateSerializer(serializers.Serializer):
+    state = serializers.ChoiceField(choices=SocialComment.State.choices)
+
+
+class CommentDetailView(_ContentMixin, APIView):
+    """PUT {state}: Kommentar freigeben oder ausblenden."""
+
+    @transaction.atomic
+    def put(self, request, org_id: int, pk: int):
+        comment = get_object_or_404(
+            SocialComment.objects.select_related("post"),
+            post__feed__website=self.website(),
+            pk=pk,
+        )
+        ser = CommentStateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        state = ser.validated_data["state"]
+        if state != comment.state:
+            record(
+                self.org,
+                request.user,
+                "update",
+                comment.post,
+                {
+                    "Kommentar": [
+                        comment.get_state_display(),
+                        SocialComment.State(state).label,
+                    ]
+                },
+            )
+            comment.state = state
+            comment.save(update_fields=["state"])
+        return Response(post_data(self.org.pk, comment.post))
 
 
 class PostImageFileView(_ContentMixin, APIView):

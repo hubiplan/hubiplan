@@ -2247,6 +2247,86 @@ describe('Veröffentlichung in der Mitgliederakte', () => {
     })
   })
 
+  it('zeigt Likes und Kommentare und gibt einen Kommentar frei', async () => {
+    const feed = {
+      id: 8,
+      kind: 'instagram',
+      kind_label: 'Instagram',
+      department: null,
+      department_name: null,
+      mode: 'auto',
+      max_posts: 24,
+      show_link: true,
+      strip_hashtags: true,
+      is_active: true,
+      show_counts: true,
+      comments: 'approval',
+      comments_need_connect: false,
+      app_id: '123',
+      config_id: '9',
+      via_facebook: true,
+      has_secret: true,
+      status: 'ok',
+      status_label: 'verbunden',
+      account_name: 'musterkapelle',
+      token_expires_at: null,
+      last_sync_at: null,
+      last_error: '',
+      connected_at: '2026-11-20T10:00:00Z',
+      redirect_uri: 'https://x.test/api/website/social/callback/',
+      unit_redirect_uri: null,
+      pages: [],
+      post_count: 1,
+      pending_count: 0,
+    }
+    const post = {
+      id: 3,
+      feed: 8,
+      media_type: 'image',
+      text: 'Probenwochenende',
+      permalink: '',
+      published_at: '2026-11-20T10:00:00Z',
+      state: 'visible',
+      state_label: 'sichtbar',
+      like_count: 12,
+      comment_count: 1,
+      comments: [
+        {
+          id: 41,
+          author: 'erika_m',
+          text: 'Schön war es!',
+          published_at: '2026-11-20T11:00:00Z',
+          state: 'pending',
+        },
+      ],
+      images: [],
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}social/`]: () => ({
+          status: 200,
+          body: { feeds: [feed], redirect_uri: feed.redirect_uri, units: [], can_manage: true },
+        }),
+        [`GET ${base}social/posts/?kanal=8`]: () => ({ status: 200, body: [post] }),
+        [`PUT ${base}social/comments/41/`]: () => ({ status: 200, body: post }),
+      },
+      '/webseite/beitraege',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Instagram' }))
+    await user.click(screen.getByRole('button', { name: 'Beiträge ansehen' }))
+    expect(await screen.findByText('Schön war es!')).toBeInTheDocument()
+    expect(screen.getByText(/12 Likes · 1 Kommentare/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Kommentare zeigen')).toHaveValue('approval')
+    await user.click(screen.getByRole('button', { name: 'Kommentar freigeben' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === `PUT ${base}social/comments/41/`)).toBe(true),
+    )
+    const put = calls.find((c) => c.key === `PUT ${base}social/comments/41/`)
+    expect(JSON.parse(String(put?.init?.body))).toEqual({ state: 'visible' })
+  })
+
   it('zeigt die Weiterleitungs-URI je Kanal und stellt auf die Vereinsadresse um', async () => {
     const old = 'https://hubiplan.test/api/website/social/callback/'
     const unit = 'https://verein.musterkapelle.test/api/website/social/callback/'

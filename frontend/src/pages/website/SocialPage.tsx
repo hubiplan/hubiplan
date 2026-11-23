@@ -259,7 +259,16 @@ function FeedCard({
         {feed.pending_count > 0 &&
           t(' · {pending_count} warten auf Freigabe', { pending_count: feed.pending_count })}
       </p>
-      {feed.last_error && feed.status !== 'ok' && <Alert kind="error">{feed.last_error}</Alert>}
+      {feed.last_error && (
+        <Alert kind={feed.status === 'ok' ? 'info' : 'error'}>{feed.last_error}</Alert>
+      )}
+      {canManage && feed.comments_need_connect && connected && (
+        <Alert kind="info">
+          {t(
+            'Kommentare sind eingeschaltet. Bitte den Kanal neu verbinden, damit Meta das Lesen der Kommentare erlaubt.',
+          )}
+        </Alert>
+      )}
       {open && (
         <>
           {canManage && feed.status === 'choose' && (
@@ -397,6 +406,36 @@ function FeedCard({
                   void run(() => socialApi.save(org.id, feed.id, { strip_hashtags: v }))
                 }
               />
+              <Checkbox
+                label={t('Likes und Kommentarzahl zeigen')}
+                checked={feed.show_counts}
+                onChange={(v) =>
+                  void run(() => socialApi.save(org.id, feed.id, { show_counts: v }))
+                }
+                hint={
+                  feed.kind === 'facebook'
+                    ? t('Bei Facebook zählen alle Reaktionen, nicht nur „Gefällt mir“.')
+                    : t('Fehlt, wenn das Konto Likes ausgeblendet hat.')
+                }
+              />
+              <SelectField
+                label={t('Kommentare zeigen')}
+                value={feed.comments}
+                onChange={(e) =>
+                  void run(() =>
+                    socialApi.save(org.id, feed.id, {
+                      comments: e.target.value as SocialFeed['comments'],
+                    }),
+                  )
+                }
+                hint={t(
+                  'Kommentare stammen von anderen Personen. Zeigt sie nur, wenn ihr das verantworten könnt; „erst nach Freigabe“ ist sicherer. Ausschalten löscht alle gespeicherten Kommentare. Nach dem Einschalten den Kanal neu verbinden.',
+                )}
+              >
+                <option value="off">{t('nicht zeigen')}</option>
+                <option value="approval">{t('erst nach Freigabe')}</option>
+                <option value="auto">{t('automatisch zeigen')}</option>
+              </SelectField>
             </div>
           )}
           <div className="button-row">
@@ -525,6 +564,15 @@ function PostList({ feed, onChanged }: { feed: number; onChanged: () => void }) 
   const [saveError, setSaveError] = useState<string | null>(null)
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
   if (!data) return <Loading />
+  async function setCommentState(id: number, state: SocialPost['comments'][number]['state']) {
+    setSaveError(null)
+    try {
+      await socialApi.setComment(org.id, id, state)
+      void reload()
+    } catch (err) {
+      setSaveError(errorMessage(err))
+    }
+  }
   async function setState(post: SocialPost, state: SocialPost['state']) {
     setSaveError(null)
     try {
@@ -546,8 +594,47 @@ function PostList({ feed, onChanged }: { feed: number; onChanged: () => void }) 
               <p className="small">
                 {formatDateTime(p.published_at)} · {p.state_label}
                 {p.media_type === 'video' && t(' · Video (nur Vorschaubild)')}
+                {p.like_count !== null && t(' · {n} Likes', { n: p.like_count })}
+                {p.comment_count !== null && t(' · {n} Kommentare', { n: p.comment_count })}
               </p>
               <p className="pre-line">{p.text || <em>{t('ohne Text')}</em>}</p>
+              {p.comments.length > 0 && (
+                <ul className="plain-list social-comments" aria-label={t('Kommentare')}>
+                  {p.comments.map((k) => (
+                    <li key={k.id} className={k.state === 'hidden' ? 'muted' : undefined}>
+                      <p className="small">
+                        <strong>{k.author || t('unbekannt')}</strong> ·{' '}
+                        {formatDateTime(k.published_at)}
+                        {k.state === 'pending' && t(' · wartet auf Freigabe')}
+                        {k.state === 'hidden' && t(' · ausgeblendet')}
+                      </p>
+                      <p className="pre-line">{k.text}</p>
+                      <div className="button-row">
+                        {k.state !== 'visible' && (
+                          <button
+                            type="button"
+                            className="button"
+                            onClick={() => void setCommentState(k.id, 'visible')}
+                          >
+                            {k.state === 'pending'
+                              ? t('Kommentar freigeben')
+                              : t('Kommentar wieder zeigen')}
+                          </button>
+                        )}
+                        {k.state !== 'hidden' && (
+                          <button
+                            type="button"
+                            className="button button-ghost"
+                            onClick={() => void setCommentState(k.id, 'hidden')}
+                          >
+                            {t('Kommentar ausblenden')}
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="button-row">
                 {p.state !== 'visible' && (
                   <button

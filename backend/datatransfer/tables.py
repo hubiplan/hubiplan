@@ -263,6 +263,7 @@ MODULE_MODELS = (
     "website.SocialFeed",
     "website.SocialPost",
     "website.SocialPostImage",
+    "website.SocialComment",
     # Frühere Fassungen der Gestaltung und Entwürfe für Beiträge: nach Bildern, Alben und
     # Dokumenten (Verweise darauf werden umgestellt)
     "website.DesignVersion",
@@ -520,6 +521,7 @@ SECRET_FIELDS = {
         "last_error",
         "last_sync_at",
         "warned_at",
+        "comments_granted",
     },
     # Konten kommen nicht mit; die Namen stehen bei aufgehobenen Abschlüssen in eigenen Feldern
     "finance.reopenedclosing": {"reopened_by"},

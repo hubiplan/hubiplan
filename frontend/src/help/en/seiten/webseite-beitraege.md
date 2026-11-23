@@ -19,3 +19,9 @@ At the top you manage the club’s social media channels, i.e. the profile links
 ## Redirect URI
 
 Each channel shows the exact address to enter in your Meta app as redirect URI, with a **Copy** button, and the app domain below it. If your unit has its own club address (e.g. `verein.musterverein.example`), Meta sends you back there. Sign in at that address to connect. Channels connected before keep their old address; **Use club address** switches over, then enter the new address in the Meta app.
+
+## Likes and comments
+
+With **Show likes and number of comments** each post on the website shows the number of likes (on Facebook all reactions) and comments. Albums appear on the website with all their images.
+
+**Show comments** is off at first, because comments come from other people. With “only after approval”, new comments appear only after **Approve comment**; you can hide any comment again with **Hide comment**. After switching it on, connect the channel once via **Reconnect** so that Meta allows reading the comments. Names of Facebook users are shortened (“Erika M.”); on Instagram the public user name is shown. Switching off deletes all stored comments.

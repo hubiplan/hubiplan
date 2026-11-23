@@ -59,6 +59,17 @@ App-Geheimcode aus App-Einstellungen › Allgemein. Das Instagram-Konto braucht 
   Dritter werden ausgelassen.
 - Trennen oder Löschen des Kanals löscht Zugang, Beiträge und Bilder.
 - Modus „erst nach Freigabe“: neue Beiträge erscheinen erst nach Klick auf „Freigeben“.
+- Alben: bis zu 20 Bilder je Beitrag (Instagram-Karussell, Facebook-Unteranhänge).
+- Likes und Kommentarzahl (Schalter je Kanal, aus): kommen mit dem Abruf der Beiträge und
+  brauchen keine weitere Berechtigung.
+- Kommentartexte (je Kanal „nicht zeigen“ | „erst nach Freigabe“ | „automatisch zeigen“,
+  Standard aus): je Beitrag die neuesten 20 Kommentare der obersten Ebene, ohne Antworten.
+  Zusätzliche Berechtigung beim Verbinden: Instagram `instagram_manage_comments` (alter Weg
+  `instagram_business_manage_comments`), Facebook `pages_read_user_content`; bei einer
+  Konfiguration (`config_id`) muss sie dort eingetragen sein. Nach dem Einschalten neu
+  verbinden. Namen Dritter auf Facebook nur gekürzt („Erika M.“), auf Instagram der öffentliche
+  Benutzername. Ausschalten löscht alle gespeicherten Kommentare des Kanals. Fehlt die
+  Berechtigung, laufen die Beiträge weiter, der Kanal zeigt einen Hinweis.
 
 ## Öffentliche Schnittstelle
 
@@ -66,6 +77,9 @@ App-Geheimcode aus App-Einstellungen › Allgemein. Das Instagram-Konto braucht 
   Beiträge), `posts_url`. Seite einer Untereinheit: ebenso `posts`.
 - `…/site/v1/<key>/posts/?art=instagram|facebook&anzahl=N&einheit=<slug>`: sichtbare
   Beiträge (neueste zuerst) mit Text, Datum, Link (falls eingeschaltet) und Bildern.
+  Mit „Likes und Kommentarzahl zeigen“ zusätzlich `likes` (Instagram: Likes, Facebook:
+  Reaktionen; `null`, wenn ausgeblendet) und `comment_count`; mit Kommentaren `comments`
+  (`author`, `text`, `published_at`, nur freigegebene).
 - `…/site/v1/<key>/posts/images/<key>/[?size=small]`: Bild von dieser Instanz.
 - Baustein `posts` („Aktuelles“) schaltet alles ab.
 

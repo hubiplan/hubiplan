@@ -4397,6 +4397,12 @@ label:has(> .file-input:focus-visible) {
 .social-posts li:has(.social-post-large) {
   grid-template-columns: minmax(0, 1fr);
 }
+/* Kommentare unter einem Beitrag: eingerückt, ohne das Raster der Beitragsliste */
+.social-posts .social-comments li {
+  display: block;
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  border-left: 2px solid var(--color-border);
+}
 .social-post-large {
   margin: 0.5rem 0 0;
 }
