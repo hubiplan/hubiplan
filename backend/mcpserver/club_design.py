@@ -185,6 +185,10 @@ def _design_read(args: dict, ctx: ClubContext) -> str:
         ],
         "kopfbild": v.get("header_image"),
         "kopfbild_schmal": v.get("header_image_narrow"),
+        # Issue #709: Namensform je Bereich; fehlt ein Bereich, gilt die der Webseite
+        "namensform_webseite": site.get("name_format"),
+        "namensform": v.get("name_formats") or {},
+        "namensformen": _name_format_options(site),
         "im_entwurf": sorted((site.get("draft") or {}).keys()),
         "darf_gestalten": data.get("can_manage"),
     }
@@ -197,6 +201,34 @@ def _design_read(args: dict, ctx: ClubContext) -> str:
         + "\n\n"
         + _dump(result)
     )
+
+
+NAME_FORMATS = {
+    "full": "Vorname Nachname",
+    "short": "V. Nachname",
+    "initial": "Vorname N.",
+}
+
+
+def _name_format_options(site: dict) -> dict:
+    """Werte und Bereiche für „namensform“ (Issue #709)."""
+    from website.models import NAME_FORMAT_AREAS
+
+    types = {}
+    for item in site.get("menu_items") or []:
+        key = item.get("toggle") or ""
+        if key.startswith("membertype:"):
+            types[key] = item.get("label") or item.get("default_label") or key
+    return {
+        "werte": NAME_FORMATS,
+        "bereiche": list(NAME_FORMAT_AREAS),
+        "mitgliedsarten": types,
+        "hinweis": _(
+            "board = Vorstand und Ansprechpartner, offices = Ämter und ihre Chronik, members = "
+            "alle Mitgliederlisten, membertype:<Nummer> = eine Mitgliedsart, memorial = In "
+            "Gedenken, honors = Würdenträger und Ehrungen, results = Ergebnisse."
+        ),
+    }
 
 
 def _header_arg(args: dict, name: str):
@@ -236,6 +268,10 @@ def _design_change(args: dict, ctx: ClubContext) -> str:
     for name, key in (("kopfbild", "header_image"), ("kopfbild_schmal", "header_image_narrow")):
         if name in args:
             draft[key] = _header_arg(args, name)
+    formats = _obj(args, "namensform")
+    if formats is not None:
+        merged = {**(v.get("name_formats") or {}), **formats}
+        draft["name_formats"] = {k: x for k, x in merged.items() if x}
     if not draft:
         raise ToolError(_("Bitte angeben, was sich ändern soll (design, stil, farben, …)."))
     saved = _save_draft(ctx, draft)
@@ -898,7 +934,8 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         name="webseite_gestaltung_aendern",
         title=gettext_lazy("Gestaltung ändern (Entwurf)"),
         description=gettext_lazy(
-            "Ändert Design, Farben, Stilregler, Darstellung oder Kopfbild im Entwurf. Nur "
+            "Ändert Design, Farben, Stilregler, Darstellung, Kopfbild oder die Namensform je "
+            "Bereich im Entwurf. Nur "
             "angegebene Werte ändern sich; null setzt einen Wert zurück. Werte aus "
             "webseite_gestaltung_ansehen. Braucht das Recht „Webseite verwalten“."
         ),
@@ -937,6 +974,18 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                     "description": gettext_lazy(
                         "Bildnummer oder Liste von Bildnummern für Handys (unter 600 px Breite) "
                         "oder null (überall das Kopfbild)."
+                    ),
+                },
+                "namensform": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": ["string", "null"],
+                        "enum": ["full", "short", "initial", None],
+                    },
+                    "description": gettext_lazy(
+                        "Bereich → Namensform: „full“ (Vorname Nachname), „short“ (V. Nachname), "
+                        "„initial“ (Vorname N.) oder null (wie die Webseite). Bereiche aus "
+                        "webseite_gestaltung_ansehen."
                     ),
                 },
             }

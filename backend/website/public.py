@@ -47,10 +47,23 @@ def unit_slug(name: str) -> str:
     return slugify(base) or "einheit"
 
 
-def format_name(first: str, last: str, fmt: str, title: str = "") -> str:
-    """„Max Muster“ oder „Max M.“; mit Titel davor („Dr. Max Muster“), wenn die
-    Webseite Titel nennt (Website.show_titles) und die Person einen hat."""
+def _initials(first: str) -> str:
+    """„Hans-Peter Josef“ → „H.-P. J.“ (Issue #709, Namensform „V. Nachname“)."""
+    parts = []
+    for word in first.split():
+        parts.append("-".join(f"{p[0]}." for p in word.split("-") if p))
+    return " ".join(p for p in parts if p)
+
+
+def format_name(first: str, last: str, fmt: str, title: str = "", ordinal: str = "") -> str:
+    """„Max Muster“, „M. Muster“ oder „Max M.“; mit Titel davor („Dr. Max Muster“), wenn die
+    Webseite Titel nennt (Website.show_titles) und die Person einen hat. ``ordinal``
+    (z. B. „II.“) steht hinter dem Vornamen bzw. seinem Anfangsbuchstaben."""
     first, last = (first or "").strip(), (last or "").strip()
+    if fmt == Website.NameFormat.SHORT and last:
+        first = _initials(first)
+    if ordinal:
+        first = f"{first} {ordinal}".strip()
     if fmt == Website.NameFormat.INITIAL and last:
         name = f"{first} {last[0]}.".strip()
     else:
@@ -252,10 +265,13 @@ class SiteView:
         category: str = Category.NAME,
         details: bool = False,
         ordinal: int | None = None,
+        area: str = "",
+        member_type_id: int | None = None,
     ) -> dict | None:
         """Angaben zu einer Person oder None, wenn sie nicht erscheinen darf.
 
         ``ordinal``: Ordnungszahl eines Würdenträgers, steht hinter dem Vornamen.
+        ``area``/``member_type_id``: Bereich für die Namensform (Issue #709).
         """
         membership = self.memberships.get(person.pk) if person else None
         if not self.allowed(membership, category):
@@ -268,10 +284,13 @@ class SiteView:
         from honors.numbering import roman, split_name
 
         first, last = split_name(person, fallback_name)
-        if ordinal:
-            first = f"{first} {roman(ordinal)}.".strip()
+        suffix = f"{roman(ordinal)}." if ordinal else ""
         title = person.title if person is not None and self.site.show_titles else ""
-        name = format_name(first, last, self.site.name_format, title) if last else first
+        fmt = self.site.name_format_for(area, member_type_id)
+        if last:
+            name = format_name(first, last, fmt, title, suffix)
+        else:
+            name = f"{first} {suffix}".strip()
         if not name:
             return None
         data = {"name": name, "photo_url": None}
@@ -394,7 +413,7 @@ class SiteView:
             # Nur mit Einwilligung (Gesamtaudit 05.11. F-01), Widerspruch beim Namen gilt weiter
             if not self.allowed(m, Category.MEMBER_LIST):
                 continue
-            entry = self.person(m.person)
+            entry = self.person(m.person, area="members", member_type_id=mt.pk)
             if entry is None:
                 continue
             if self.site.show_member_since:
@@ -447,7 +466,7 @@ class SiteView:
             # Je Person vom Vorstand freigegeben (Gesamtaudit 05.11. F-01)
             if not self.allowed(self.memberships.get(person.pk), Category.MEMORIAL):
                 continue
-            entry = self.person(person)
+            entry = self.person(person, area="memorial")
             if entry is None:
                 continue
             entry["died"] = p.exit_date.year if p.exit_date else None
@@ -612,7 +631,7 @@ class SiteView:
             holders, keys = [], set()
             for a in self.role_assignments.get(role.pk, []):
                 person, fallback = self.holder_person(a)
-                entry = self.person(person, fallback, details=True)
+                entry = self.person(person, fallback, details=True, area="board")
                 if entry:
                     holders.append(entry)
                     keys.add(self._holder_key(person, fallback))
@@ -634,7 +653,7 @@ class SiteView:
             holders = []
             for a in self.role_assignments.get(role.pk, []):
                 person, fallback = self.holder_person(a)
-                entry = self.person(person, fallback, details=True)
+                entry = self.person(person, fallback, details=True, area="board")
                 if entry:
                     holders.append(entry)
             item = self._role_entry("role", role, holders, role.contact_email)
@@ -700,7 +719,7 @@ class SiteView:
                 if a.needs_name_consent:
                     continue
                 person, fallback = self.holder_person(a)
-                entry = self.person(person, fallback)
+                entry = self.person(person, fallback, area="offices")
                 if entry:
                     entries.append(
                         {
@@ -732,7 +751,7 @@ class SiteView:
             awards = list(awards)
             self.people.load(a.person_id for a in awards)
             for award in awards:
-                entry = self.person(award.person, category=Category.HONORS)
+                entry = self.person(award.person, category=Category.HONORS, area="honors")
                 if entry:
                     # Besonderer Titel des Trägers (#518); nicht bei „N. N.“ ohne Einwilligung
                     if award.display_title and self.allowed(
@@ -889,12 +908,13 @@ class SiteView:
                 reign.name,
                 category=Category.HONORS,
                 ordinal=numbers.get(reign.pk),
+                area="honors",
             )
             if holder is None:
                 continue
             companions = []
             for c in reign.companions.all():
-                entry = self.person(c.person, c.name, category=Category.HONORS)
+                entry = self.person(c.person, c.name, category=Category.HONORS, area="honors")
                 if entry:
                     companions.append({"label": c.label, **entry})
             photo = getattr(reign, "photo", None)
@@ -1113,7 +1133,7 @@ class SiteView:
             for role in self.roles_of_unit(u):
                 holders, keys = [], set()
                 for h in self.unit_role_holders.get(role.pk, []):
-                    entry = self.person(h.membership.person, details=True)
+                    entry = self.person(h.membership.person, details=True, area="board")
                     if entry:
                         holders.append(entry)
                         keys.add(self._holder_key(h.membership.person, ""))

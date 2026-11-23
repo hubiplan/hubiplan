@@ -56,6 +56,7 @@ from .models import (
     MAX_HEADER_IMAGES,
     MAX_IMAGE_HOSTS,
     MENU_DRAFT_FIELDS,
+    NAME_FORMAT_AREAS,
     PREVIEW_LINK_MAX_DAYS,
     DesignVersion,
     PreviewLink,
@@ -102,6 +103,7 @@ SETTINGS_FIELDS = [
     "style",
     "layouts",
     "name_format",
+    "name_formats",
     "show_vacant",
     "show_instrument",
     "show_titles",
@@ -376,6 +378,28 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
+    def validate_name_formats(self, value):
+        """Bereich → Namensform (Issue #709); leer oder null = Namensform der Webseite."""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError(gettext("Namensform bitte je Bereich angeben."))
+        result = {}
+        for key, fmt in value.items():
+            known = key in NAME_FORMAT_AREAS or (
+                isinstance(key, str) and key.startswith("membertype:") and key[11:].isdigit()
+            )
+            if not known:
+                raise serializers.ValidationError(
+                    gettext("Unbekannter Bereich „{x0}“.").format(x0=key)
+                )
+            if fmt in (None, ""):
+                continue
+            if fmt not in Website.NameFormat.values:
+                raise serializers.ValidationError(
+                    gettext("Unbekannte Namensform „{x0}“.").format(x0=fmt)
+                )
+            result[key] = fmt
+        return dict(sorted(result.items()))
+
     def validate_layouts(self, value):
         try:
             return variants.validate(value)
@@ -417,6 +441,7 @@ def live_design(website: Website) -> dict:
         "header_image_narrow": header_image_id(website, "header_image_narrow"),
         "home_sections": normalize_home_sections(website.home_sections),
         "layouts": variants.normalize(website.layouts),
+        "name_formats": website.name_formats if isinstance(website.name_formats, dict) else {},
         "menu": menu.normalize(website.menu, menu.items(website)),
         "block_names": website.block_names if isinstance(website.block_names, dict) else {},
         "menu_links": website.menu_links if isinstance(website.menu_links, dict) else {},

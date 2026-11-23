@@ -29,7 +29,9 @@ def _names(comp, memberships) -> Names:
     site = SimpleNamespace(
         people=SimpleNamespace(load=lambda ids: None),
         consents=services.active_entries([m.pk for m in memberships]),
-        site=SimpleNamespace(name_format=Website.NameFormat.FULL, show_titles=False),
+        site=SimpleNamespace(
+            name_format_for=lambda *_a: Website.NameFormat.FULL, show_titles=False
+        ),
     )
     return Names(site, comp)
 
