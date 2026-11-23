@@ -64,8 +64,30 @@ describe('Bereiche des Menüs', () => {
     })
     renderApp('/bereich/verein')
     const nav = await screen.findByRole('navigation', { name: 'Hauptmenü' })
-    expect(await within(nav).findByText('Einstellungen')).toBeInTheDocument()
+    expect((await within(nav).findAllByText('Einstellungen')).length).toBeGreaterThan(0)
     expect(screen.queryByRole('link', { name: 'Menü anordnen' })).not.toBeInTheDocument()
+  })
+
+  it('Einstellungen: Unterpunkte direkt im Bereichsmenü, DSGVO darunter unter Recht', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [
+          testOrg({
+            permissions: ['settings.view', 'settings.edit', 'members.view', 'privacy.view'],
+          }),
+        ],
+      }),
+    })
+    renderApp('/bereich/verein')
+    const menu = await screen.findByRole('list', { name: 'Einstellungen' })
+    const links = within(menu)
+      .getAllByRole('link')
+      .map((l) => l.textContent)
+    expect(links).toContain('Organisation')
+    expect(links).not.toContain('Einstellungen')
+    expect(links.indexOf('DSGVO')).toBe(links.indexOf('Datenschutz') + 1)
   })
 
   it('die Bereichsübersicht zeigt die Seiten des Bereichs mit Beschreibung und Offenem', async () => {

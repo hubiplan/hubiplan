@@ -349,9 +349,16 @@ export function Layout() {
   // (z. B. „Züge“ statt „Mitglieder“): Hinter dem Namen steckt dann genau diese Seite.
   // Anordnung der Einheit (Menü frei anordnen); Untereinheiten übernehmen die ihres Vereins
   const menuLayout = active?.menu_layout ?? activeDept?.menu_layout ?? null
+  // Menüpunkte, die im selben Bereich wie ihr Elternpunkt stehen, erscheinen als dessen
+  // Unterpunkt (nestUnder, z. B. DSGVO unter Einstellungen); sonst als eigener Eintrag
+  const nestedOf = (p: (typeof modules)[number]) =>
+    visible.filter(
+      (n) => n.nestUnder?.id === p.id && areaOf(menuLayout, n) === areaOf(menuLayout, p),
+    )
+  const nested = new Set(visible.flatMap((p) => nestedOf(p).map((n) => n.id)))
   const areas = arrangedAreas(menuLayout)
     .map((a) => {
-      const items = visible.filter((m) => areaOf(menuLayout, m) === a.id)
+      const items = visible.filter((m) => areaOf(menuLayout, m) === a.id && !nested.has(m.id))
       // Ein selbst benannter Bereich behält seinen Namen auch mit nur einem Menüpunkt
       const only = items.length === 1 && a.id !== 'start' && !a.named ? items[0] : null
       return only
@@ -369,7 +376,9 @@ export function Layout() {
     .filter((a) => a.items.length > 0)
   const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
   const inModule = (m: (typeof modules)[number]) =>
-    modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
+    [m, ...nestedOf(m)]
+      .flatMap(modulePaths)
+      .some((p) => pathname === p || pathname.startsWith(`${p}/`))
   const contextCount =
     orgs.length + departments.length + portalInPicker.length + remoteAccounts.length
   // Im Kopf steht immer der volle Name, der Kurzname nur in der Auswahl.
@@ -424,17 +433,29 @@ export function Layout() {
   const moduleLabel = (m: (typeof modules)[number]) =>
     m.id === 'abteilung' && activeDept ? activeDept.label : (m.labelFor?.(active, ws) ?? m.label)
   const moduleLink = (m: (typeof modules)[number]) => m.linkFor?.(active, ws) ?? m.path
+  // Feste Unterpunkte eines Menüpunkts samt eingehängter Menüpunkte (nestUnder), diese
+  // hinter dem letzten Unterpunkt ihrer Zwischenüberschrift
+  const fixedChildren = (m: (typeof modules)[number]) => {
+    const list = [...(m.children?.(active, ws) ?? [])]
+    for (const n of nestedOf(m)) {
+      const item = { to: moduleLink(n), label: moduleLabel(n), section: n.nestUnder?.section }
+      const last = list.map((c) => c.section).lastIndexOf(item.section)
+      if (last < 0) list.push(item)
+      else list.splice(last + 1, 0, item)
+    }
+    return list
+  }
   const moduleTree = (m: (typeof modules)[number]) =>
     buildNavTree(
       m.path,
-      m.children?.(active, ws) ?? [],
+      fixedChildren(m),
       // Als Reiter gezeigte Unterpunkte stehen im Inhalt, nicht im Menü (W6)
       inModule(m) ? Object.values(subNav).filter((g) => !g.some((i) => i.tab)) : [],
     )
   // Heißt der Menüpunkt wie sein Bereich (Mitglieder, Finanzen), stehen seine Unterpunkte
   // direkt im Bereichsmenü: eine Ebene weniger
   const flat = (m: (typeof modules)[number]) =>
-    m.id === areaOf(menuLayout, m) && moduleTree(m).some((n) => n.to === moduleLink(m))
+    (m.flat || m.id === areaOf(menuLayout, m)) && moduleTree(m).some((n) => n.to === moduleLink(m))
   // Ein Bereich mit nur einer Seite (Start) braucht kein Bereichsmenü
   const areaHasMenu =
     !!currentArea && (currentArea.items.length > 1 || moduleTree(currentArea.items[0]).length > 0)

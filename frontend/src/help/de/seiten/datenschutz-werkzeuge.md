@@ -20,7 +20,7 @@ stichworte:
   ]
 ---
 
-Unter **DSGVO** hält der Vorstand die Unterlagen bereit, die die DSGVO von jedem Verein
+Unter **DSGVO** (in den Einstellungen bei „Recht“) hält der Vorstand die Unterlagen bereit, die die DSGVO von jedem Verein
 mit Mitgliederdaten verlangt: das Verzeichnis der Verarbeitungstätigkeiten, die Liste der
 **Auftragsverarbeiter** und das Protokoll von **Datenpannen**. Die Datenschutzhinweise für
 Mitglieder und Webseite stehen weiter unter Einstellungen › Datenschutz.

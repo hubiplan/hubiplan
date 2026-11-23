@@ -52,6 +52,16 @@ export interface AppModule {
   visible: (org: OrgSummary | null, ws: Workspace) => boolean
   /** Unterpunkte, in der Seitenleiste unter dem aktiven Modul */
   children?: (org: OrgSummary | null, ws?: Workspace) => SubNavItem[]
+  /**
+   * Unterpunkte stehen direkt im Bereichsmenü, ohne den Menüpunkt selbst (wie bei einem
+   * Menüpunkt, der so heißt wie sein Bereich)
+   */
+  flat?: boolean
+  /**
+   * Steht dieser Menüpunkt im selben Bereich wie der genannte, erscheint er als dessen
+   * Unterpunkt (mit dieser Zwischenüberschrift) statt als eigener Eintrag
+   */
+  nestUnder?: { id: string; section: string }
 }
 
 const NO_WS: Workspace = { dept: null, portal: null }
@@ -548,6 +558,8 @@ export const modules: AppModule[] = [
     id: 'dsgvo',
     area: 'verein',
     label: t('DSGVO'),
+    // Unterpunkt der Einstellungen unter „Recht“ (Ralf 23.11.)
+    nestUnder: { id: 'einstellungen', section: t('Recht') },
     text: t('Verzeichnis, Auftragsverarbeiter und Datenpannen'),
     path: '/dsgvo',
     icon: icon('M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6zM9.5 12l2 2 3.5-4'),
@@ -612,6 +624,12 @@ export const modules: AppModule[] = [
     label: t('Einstellungen'),
     text: t('Stammdaten, Erscheinungsbild, Rollen und Module'),
     path: '/einstellungen',
+    // Die Unterpunkte stehen direkt im Bereichsmenü, nicht unter „Einstellungen ›
+    // Einstellungen“ (Ralf 23.11., Issue #703)
+    flat: true,
+    linkFor: (org) => (org ? (settingsItems(org)[0]?.to ?? '/einstellungen') : '/einstellungen'),
+    children: (org) =>
+      org ? settingsItems(org).map((i) => ({ to: i.to, label: i.label, section: i.section })) : [],
     icon: icon(
       'M4 7h8M16 7h4M4 17h4M12 17h8M14 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4M10 15a2 2 0 1 1 0 4 2 2 0 0 1 0-4',
     ),
