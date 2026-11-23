@@ -20,7 +20,7 @@ stichworte:
   ]
 ---
 
-Under **GDPR** the board keeps the documents the GDPR requires from every club that
+Under **Settings › GDPR** (under “Legal”) the board keeps the documents the GDPR requires from every club that
 holds member data: the record of processing activities, the list of processors and the
 log of data breaches. The privacy notices for members and the website remain under
 Settings › Data protection.
