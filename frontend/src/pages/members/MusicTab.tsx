@@ -155,16 +155,16 @@ export function MusicTab({ orgId, memberId }: { orgId: number; memberId: number 
           }}
         >
           <div className="music-form-fields">
-            <label>
-              {t('Instrument')}
+            <label className="field">
+              <span>{t('Instrument')}</span>
               <InstrumentSelect
                 instruments={data.instruments}
                 value={instrument}
                 onChange={setInstrument}
               />
             </label>
-            <label>
-              {t('Register / Stimme')}
+            <label className="field">
+              <span>{t('Register / Stimme')}</span>
               <input
                 maxLength={100}
                 value={register}

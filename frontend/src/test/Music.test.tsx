@@ -66,6 +66,7 @@ it('zeigt die Musik-Unterpunkte mit echten Pfaden in der Seitenleiste', async ()
     '/musik/musiker',
     '/musik/proben',
     '/musik/noten',
+    '/musik/instrumente',
     '/musik/vorlagen',
     '/musik/uniformen',
   ])
