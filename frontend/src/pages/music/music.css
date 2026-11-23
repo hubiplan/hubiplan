@@ -363,3 +363,33 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+/* Instrumentenliste der Einheit (konzepte/instrumente.md) */
+.music-instrument-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.music-instrument-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.music-instrument-list > li > form {
+  flex: 1 1 100%;
+}
+.music-instrument-new {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.music-instrument-new > input {
+  flex: 1 1 12rem;
+}

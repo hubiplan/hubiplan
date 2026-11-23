@@ -17996,3 +17996,240 @@ msgstr "Changes design, colours, style controls, presentation, header image or t
 #: mcpserver/club_design.py
 msgid "Bereich → Namensform: „full“ (Vorname Nachname), „short“ (V. Nachname), „initial“ (Vorname N.) oder null (wie die Webseite). Bereiche aus webseite_gestaltung_ansehen."
 msgstr "Area → name format: “full” (First name Last name), “short” (F. Lastname), “initial” (First name L.) or null (as the website). Areas from webseite_gestaltung_ansehen."
+
+
+#: music/instrument_list.py
+msgid "Piccoloflöte"
+msgstr "Piccolo"
+
+#: music/instrument_list.py
+msgid "Querflöte"
+msgstr "Flute"
+
+#: music/instrument_list.py
+msgid "Altflöte"
+msgstr "Alto flute"
+
+#: music/instrument_list.py
+msgid "Oboe"
+msgstr "Oboe"
+
+#: music/instrument_list.py
+msgid "Englischhorn"
+msgstr "Cor anglais"
+
+#: music/instrument_list.py
+msgid "Fagott"
+msgstr "Bassoon"
+
+#: music/instrument_list.py
+msgid "Es-Klarinette"
+msgstr "E♭ clarinet"
+
+#: music/instrument_list.py
+msgid "Klarinette"
+msgstr "Clarinet"
+
+#: music/instrument_list.py
+msgid "Altklarinette"
+msgstr "Alto clarinet"
+
+#: music/instrument_list.py
+msgid "Bassklarinette"
+msgstr "Bass clarinet"
+
+#: music/instrument_list.py
+msgid "Kontrabassklarinette"
+msgstr "Contrabass clarinet"
+
+#: music/instrument_list.py
+msgid "Sopransaxofon"
+msgstr "Soprano saxophone"
+
+#: music/instrument_list.py
+msgid "Altsaxofon"
+msgstr "Alto saxophone"
+
+#: music/instrument_list.py
+msgid "Tenorsaxofon"
+msgstr "Tenor saxophone"
+
+#: music/instrument_list.py
+msgid "Baritonsaxofon"
+msgstr "Baritone saxophone"
+
+#: music/instrument_list.py
+msgid "Basssaxofon"
+msgstr "Bass saxophone"
+
+#: music/instrument_list.py
+msgid "Piccolotrompete"
+msgstr "Piccolo trumpet"
+
+#: music/instrument_list.py
+msgid "Trompete"
+msgstr "Trumpet"
+
+#: music/instrument_list.py
+msgid "Kornett"
+msgstr "Cornet"
+
+#: music/instrument_list.py
+msgid "Flügelhorn"
+msgstr "Flugelhorn"
+
+#: music/instrument_list.py
+msgid "Horn"
+msgstr "French horn"
+
+#: music/instrument_list.py
+msgid "Tenorhorn"
+msgstr "Tenor horn"
+
+#: music/instrument_list.py
+msgid "Bariton"
+msgstr "Baritone"
+
+#: music/instrument_list.py
+msgid "Euphonium"
+msgstr "Euphonium"
+
+#: music/instrument_list.py
+msgid "Posaune"
+msgstr "Trombone"
+
+#: music/instrument_list.py
+msgid "Bassposaune"
+msgstr "Bass trombone"
+
+#: music/instrument_list.py
+msgid "Es-Tuba"
+msgstr "E♭ tuba"
+
+#: music/instrument_list.py
+msgid "B-Tuba"
+msgstr "B♭ tuba"
+
+#: music/instrument_list.py
+msgid "Sousafon"
+msgstr "Sousaphone"
+
+#: music/instrument_list.py
+msgid "Schlagzeug"
+msgstr "Drum kit"
+
+#: music/instrument_list.py
+msgid "Kleine Trommel"
+msgstr "Snare drum"
+
+#: music/instrument_list.py
+msgid "Große Trommel"
+msgstr "Bass drum"
+
+#: music/instrument_list.py
+msgid "Becken"
+msgstr "Cymbals"
+
+#: music/instrument_list.py
+msgid "Pauken"
+msgstr "Timpani"
+
+#: music/instrument_list.py
+msgid "Lyra"
+msgstr "Bell lyre"
+
+#: music/instrument_list.py
+msgid "Glockenspiel"
+msgstr "Glockenspiel"
+
+#: music/instrument_list.py
+msgid "Xylofon"
+msgstr "Xylophone"
+
+#: music/instrument_list.py
+msgid "Vibrafon"
+msgstr "Vibraphone"
+
+#: music/instrument_list.py
+msgid "Marimbafon"
+msgstr "Marimba"
+
+#: music/instrument_list.py
+msgid "Röhrenglocken"
+msgstr "Tubular bells"
+
+#: music/instrument_list.py
+msgid "Kleinpercussion"
+msgstr "Auxiliary percussion"
+
+#: music/instrument_list.py
+msgid "Spielmannsflöte (Sopran)"
+msgstr "Fife (soprano)"
+
+#: music/instrument_list.py
+msgid "Spielmannsflöte (Alt)"
+msgstr "Fife (alto)"
+
+#: music/instrument_list.py
+msgid "Spielmannsflöte (Tenor)"
+msgstr "Fife (tenor)"
+
+#: music/instrument_list.py
+msgid "Marschtrommel"
+msgstr "Marching drum"
+
+#: music/instrument_list.py
+msgid "Landsknechtstrommel"
+msgstr "Field drum"
+
+#: music/instrument_list.py
+msgid "Fanfare"
+msgstr "Fanfare trumpet"
+
+#: music/instrument_list.py
+msgid "Signalhorn"
+msgstr "Bugle"
+
+#: music/instrument_list.py
+msgid "Schellenbaum"
+msgstr "Jingling Johnny"
+
+#: music/instrument_list.py
+msgid "Kontrabass"
+msgstr "Double bass"
+
+#: music/instrument_list.py
+msgid "E-Bass"
+msgstr "Electric bass"
+
+#: music/instrument_list.py
+msgid "Gitarre"
+msgstr "Guitar"
+
+#: music/instrument_list.py
+msgid "Keyboard"
+msgstr "Keyboard"
+
+#: music/instrument_list.py
+msgid "Klavier"
+msgstr "Piano"
+
+#: music/instrument_list.py
+msgid "Harfe"
+msgstr "Harp"
+
+#: music/instrument_list.py
+msgid "Gesang"
+msgstr "Vocals"
+
+#: music/instruments.py
+msgid "Dieses Instrument gibt es schon."
+msgstr "This instrument already exists."
+
+#: music/instruments.py
+msgid "Dieses Instrument wird noch verwendet. Bitte stattdessen ausblenden."
+msgstr "This instrument is still in use. Please hide it instead."
+
+#: music/instruments.py
+msgid "Bitte alle Instrumente der Liste angeben."
+msgstr "Please include every instrument in the list."

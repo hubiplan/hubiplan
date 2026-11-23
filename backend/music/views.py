@@ -13,6 +13,7 @@ from core.api_base import AuditMixin, OrgScopedMixin
 from events import services
 
 from .availability import ensure_performance
+from .instrument_list import InstrumentField
 from .models import Assignment, Musician, Performance, Position, Skill
 
 
@@ -185,13 +186,11 @@ class ScopedSerializer(serializers.ModelSerializer):
                 )
             if not value("musician").active:
                 raise serializers.ValidationError(gettext("Dieser Musiker ist inaktiv."))
-            if (
-                not value("musician")
-                .skills.filter(
-                    instrument=value("position").instrument, register=value("position").register
-                )
-                .exists()
-            ):
+            from .scores import voice
+
+            if voice(value("position").instrument, value("position").register) not in {
+                voice(s.instrument, s.register) for s in value("musician").skills.all()
+            }:
                 raise serializers.ValidationError(
                     gettext("Für diese Stimme fehlt die instrumentale Fähigkeit.")
                 )
@@ -239,6 +238,8 @@ class MusicMusicianSerializer(ScopedSerializer):
 
 
 class MusicSkillSerializer(ScopedSerializer):
+    instrument = InstrumentField()
+
     class Meta:
         model = Skill
         fields = ["id", "musician", "instrument", "register", "primary"]
@@ -300,6 +301,7 @@ class MusicPerformanceSerializer(ScopedSerializer):
 
 class MusicPositionSerializer(ScopedSerializer):
     required = serializers.IntegerField(min_value=1, max_value=500)
+    instrument = InstrumentField()
 
     class Meta:
         model = Position

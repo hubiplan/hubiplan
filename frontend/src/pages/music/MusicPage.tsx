@@ -24,7 +24,10 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { NoAccessPage } from '../NoticePages.tsx'
 import { UniformsKindsPage } from './UniformsKindsPage.tsx'
+import { InstrumentsPage } from './InstrumentsPage.tsx'
 import type { PerformanceKind, Uniform } from './UniformsKindsPage.tsx'
+import { InstrumentSelect, loadInstruments } from './InstrumentSelect.tsx'
+import type { Instrument } from './InstrumentSelect.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; partners: Row[] }
@@ -124,6 +127,7 @@ function MusicRoute() {
   if (area === 'proben') return <PracticePage key={org.id} />
   if (area === 'vorlagen') return <EnsembleTemplatesPage key={org.id} />
   if (area === 'uniformen') return <UniformsKindsPage key={org.id} />
+  if (area === 'instrumente') return <InstrumentsPage key={org.id} />
   if (area === 'verfuegbarkeit') return <AvailabilityPage key={org.id} />
   if (/^\d+$/.test(params.get('besetzung') || ''))
     return (
@@ -150,25 +154,35 @@ function MusicWorkspace() {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState({ kind: '', value: '' })
   const [kindFilter, setKindFilter] = useState('')
+  // „Wer spielt was“: Musiker und Fähigkeiten nach Instrument filtern
+  const [instrumentFilter, setInstrumentFilter] = useState('')
   // Vergangene Auftritte sind zunächst ausgeblendet und lassen sich einblenden
   const [showPast, setShowPast] = useState(false)
   const [notice, setNotice] = useState('')
   const base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
-    const [musicians, skills, performances, positions, assignments, choices, uniforms, kinds] =
-      await Promise.all([
-        api.get<Row[]>(`${base}musicians/`),
-        api.get<Row[]>(`${base}skills/`),
-        api.get<Row[]>(`${base}performances/`),
-        api.get<Row[]>(`${base}positions/`),
-        api.get<Row[]>(`${base}assignments/`),
-        api.get<Choices>(`${base}musicians/choices/`),
-        // Auswahllisten (Issues #712/#713): fehlen sie, bleibt die Seite benutzbar
-        api.get<Uniform[]>(`${base}uniforms/`).catch(() => [] as Uniform[]),
-        api
-          .get<PerformanceKind[]>(`${base}performance-kinds/`)
-          .catch(() => [] as PerformanceKind[]),
-      ])
+    const [
+      musicians,
+      skills,
+      performances,
+      positions,
+      assignments,
+      choices,
+      uniforms,
+      kinds,
+      instruments,
+    ] = await Promise.all([
+      api.get<Row[]>(`${base}musicians/`),
+      api.get<Row[]>(`${base}skills/`),
+      api.get<Row[]>(`${base}performances/`),
+      api.get<Row[]>(`${base}positions/`),
+      api.get<Row[]>(`${base}assignments/`),
+      api.get<Choices>(`${base}musicians/choices/`),
+      // Auswahllisten (Issues #712/#713): fehlen sie, bleibt die Seite benutzbar
+      api.get<Uniform[]>(`${base}uniforms/`).catch(() => [] as Uniform[]),
+      api.get<PerformanceKind[]>(`${base}performance-kinds/`).catch(() => [] as PerformanceKind[]),
+      loadInstruments(org.id),
+    ])
     return {
       musicians,
       skills,
@@ -178,6 +192,7 @@ function MusicWorkspace() {
       choices,
       uniforms,
       kinds,
+      instruments,
     }
   }, [org.id])
   if (load.error)
@@ -249,7 +264,7 @@ function MusicWorkspace() {
     ],
     skills: [
       { key: 'musician', label: t('Musiker'), options: opts(d.musicians, 'display_name') },
-      { key: 'instrument', label: t('Instrument') },
+      { key: 'instrument', label: t('Instrument'), type: 'instrument' },
       { key: 'register', label: t('Register / Stimme'), optional: true },
       { key: 'primary', label: t('Hauptinstrument'), type: 'checkbox' },
     ],
@@ -312,7 +327,7 @@ function MusicWorkspace() {
     ],
     positions: [
       { key: 'performance', label: t('Auftritt'), options: opts(d.performances, 'title') },
-      { key: 'instrument', label: t('Instrument') },
+      { key: 'instrument', label: t('Instrument'), type: 'instrument' },
       { key: 'register', label: t('Register / Stimme'), optional: true },
       { key: 'required', label: t('Sollbesetzung'), type: 'number' },
     ],
@@ -398,6 +413,22 @@ function MusicWorkspace() {
       >
     ]
   const row = rows.find((r) => String(r.id) === selected)
+  // Instrument → Musiker, die es spielen (aus den Fähigkeiten)
+  const playersOf = new Map<string, Set<number>>()
+  for (const s of d.skills) {
+    const name = String(s.instrument)
+    if (!playersOf.has(name)) playersOf.set(name, new Set())
+    playersOf.get(name)!.add(Number(s.musician))
+  }
+  const listed = [...playersOf.keys()].sort((a, b) => {
+    const pos = (n: string) => d.instruments.find((i) => i.name === n)?.position ?? 99999
+    return pos(a) - pos(b) || a.localeCompare(b)
+  })
+  const instrumentsOf = (musician: unknown) =>
+    d.skills
+      .filter((s) => s.musician === musician)
+      .sort((a, b) => Number(b.primary) - Number(a.primary))
+      .map((s) => String(s.instrument))
   const now = Date.now()
   const pastIds = new Set(
     d.performances
@@ -414,6 +445,11 @@ function MusicWorkspace() {
     (r) =>
       !hiddenPast.includes(r) &&
       (kind !== 'performances' || !kindFilter || String(r.kind) === kindFilter) &&
+      (!musicianArea ||
+        !instrumentFilter ||
+        (kind === 'skills'
+          ? r.instrument === instrumentFilter
+          : (playersOf.get(instrumentFilter) ?? new Set()).has(Number(r.id)))) &&
       (kind !== 'musicians' ||
         !params.get('mitglied') ||
         String(r.membership) === params.get('mitglied')) &&
@@ -475,6 +511,19 @@ function MusicWorkspace() {
             onChange={(e) => setFilter({ kind, value: e.target.value })}
           />
         </label>
+        {musicianArea && listed.length > 0 && (
+          <label>
+            {t('Instrument')}
+            <select value={instrumentFilter} onChange={(e) => setInstrumentFilter(e.target.value)}>
+              <option value="">{t('Alle')}</option>
+              {listed.map((name) => (
+                <option key={name} value={name}>
+                  {`${name} (${playersOf.get(name)!.size})`}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {kind === 'performances' && d.kinds.length > 0 && (
           <label>
             {t('Auftrittsart')}
@@ -519,6 +568,7 @@ function MusicWorkspace() {
           <Editor
             key={`${kind}-${selected}`}
             fields={fields[kind]}
+            instruments={d.instruments}
             row={row}
             defaults={{
               membership: params.get('mitglied') || '',
@@ -587,6 +637,7 @@ function MusicWorkspace() {
             )}
             {kind === 'musicians' && (
               <p>
+                {instrumentsOf(r.id).length > 0 && `${instrumentsOf(r.id).join(', ')} · `}
                 {r.contact} · {r.active ? t('Aktiv') : t('Inaktiv')}
               </p>
             )}
@@ -822,6 +873,7 @@ function KindStatistics({
 
 function Editor({
   fields,
+  instruments,
   row,
   defaults,
   onClose,
@@ -829,6 +881,8 @@ function Editor({
   onAutoSave,
 }: {
   fields: Field[]
+  /** Auswahl für Felder vom Typ „instrument“ */
+  instruments: Instrument[]
   row?: Row
   defaults: Record<string, string>
   onClose: () => void
@@ -915,7 +969,16 @@ function Editor({
           ) : (
             <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
               {f.label}
-              {f.options ? (
+              {f.type === 'instrument' ? (
+                <InstrumentSelect
+                  instruments={instruments}
+                  value={String(values[f.key] ?? '')}
+                  onChange={(value) => {
+                    setValues((v) => ({ ...v, [f.key]: value }))
+                    setDirty(true)
+                  }}
+                />
+              ) : f.options ? (
                 <select
                   required={!f.optional}
                   value={String(values[f.key] ?? '')}
@@ -946,7 +1009,7 @@ function Editor({
               ) : null}
               {f.options && f.lockedBy?.(values) ? (
                 <small className="muted">{f.lockedBy(values)}</small>
-              ) : f.options ? null : f.type === 'textarea' ? (
+              ) : f.options || f.type === 'instrument' ? null : f.type === 'textarea' ? (
                 <textarea
                   value={String(values[f.key])}
                   onChange={(e) => {

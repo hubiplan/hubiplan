@@ -15,6 +15,7 @@ from changes import idempotency
 from core.api_base import OrgScopedMixin
 
 from .availability import Availability, performance_interval
+from .instrument_list import InstrumentField
 from .models import (
     Assignment,
     EnsembleTemplate,
@@ -28,7 +29,7 @@ from .views import MusicViewSet, PerformanceViewSet, ScopedSerializer
 
 
 class TemplatePositionInput(serializers.Serializer):
-    instrument = serializers.CharField(max_length=100)
+    instrument = InstrumentField()
     register = serializers.CharField(max_length=100, allow_blank=True, default="")
     required = serializers.IntegerField(min_value=1, max_value=500)
 
@@ -144,8 +145,9 @@ def staffing_data(performance):
     for m in musicians:
         if m.pk in already or not m.active:
             continue
-        skills = {(s.instrument, s.register) for s in m.skills.all()}
-        matching = [p.pk for p in positions if (p.instrument, p.register) in skills]
+        skills = {voice(s.instrument, s.register) for s in m.skills.all()}
+        primary = {voice(s.instrument, s.register) for s in m.skills.all() if s.primary}
+        matching = [p.pk for p in positions if voice(p.instrument, p.register) in skills]
         if matching:
             candidates.append(
                 {
@@ -154,12 +156,7 @@ def staffing_data(performance):
                     "positions": matching,
                     "availability": availability.reasons(m),
                     "preferred_positions": [
-                        p.pk
-                        for p in positions
-                        if any(
-                            s.primary and s.instrument == p.instrument and s.register == p.register
-                            for s in m.skills.all()
-                        )
+                        p.pk for p in positions if voice(p.instrument, p.register) in primary
                     ],
                 }
             )
@@ -363,10 +360,9 @@ class StaffingView(OrgScopedMixin, APIView):
                         "oder Terminüberschneidung vor."
                     )
                 )
-            if not any(
-                s.instrument == position.instrument and s.register == position.register
-                for s in musician.skills.all()
-            ):
+            if voice(position.instrument, position.register) not in {
+                voice(s.instrument, s.register) for s in musician.skills.all()
+            }:
                 raise serializers.ValidationError(
                     gettext("Für diese Stimme fehlt die instrumentale Fähigkeit.")
                 )

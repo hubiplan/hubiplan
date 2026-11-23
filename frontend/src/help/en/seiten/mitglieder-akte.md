@@ -7,7 +7,7 @@ routen: [/mitglieder/:id]
 stichworte: [record, master data, periods, leaving, honours]
 ---
 
-The tabs follow the order of work: **Personal data**, **Membership**, **Fees**, **Roles and account**, **Competitions**, **Music**, **Photo & website**, **Additional fields** and **History**. Tabs for modules that are switched off are hidden. **Photo & website** brings together the photo, photo requests, publication and the membership card. **Music** shows a short musician profile with the instruments; edit it via **Open in music area**.
+The tabs follow the order of work: **Personal data**, **Membership**, **Fees**, **Roles and account**, **Competitions**, **Music**, **Photo & website**, **Additional fields** and **History**. Tabs for modules that are switched off are hidden. **Photo & website** brings together the photo, photo requests, publication and the membership card. **Music** shows the member's instruments; anyone allowed to edit music adds them there with **Add instrument**. Open everything else about the musician profile via **Open in music area**.
 
 Issued equipment is listed under **Membership**. On a phone, choose the section from the **Area** list. The header shows the name, photo (otherwise the initials), status, membership number, membership type, units and current offices. **Call** and **Email** appear when a phone number or email address is recorded. **More actions** holds request photo, print membership card, record leaving, and access report and deletion.
 

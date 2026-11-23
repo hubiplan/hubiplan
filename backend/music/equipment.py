@@ -15,6 +15,7 @@ from core.api_base import OrgScopedMixin
 from materials import access, services
 from materials.serializers import ItemInput
 
+from .instrument_list import InstrumentField
 from .models import Equipment, EquipmentLoan, EquipmentMaintenance, Musician
 
 CONDITIONS = ["ready", "limited", "defective", "retired"]
@@ -73,7 +74,7 @@ def data(equipment, include_location=False):
 
 class EquipmentInput(serializers.Serializer):
     kind = serializers.ChoiceField(choices=["instrument", "uniform"])
-    instrument = serializers.CharField(max_length=100, allow_blank=True, default="")
+    instrument = InstrumentField(allow_blank=True, default="")
     size = serializers.CharField(max_length=100, allow_blank=True, default="")
     maintenance_due = serializers.DateField(allow_null=True, default=None)
 

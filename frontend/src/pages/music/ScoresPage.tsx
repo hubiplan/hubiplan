@@ -14,6 +14,8 @@ import { formats, duration } from './scoreHelpers.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { CatalogueImportPanel } from './CatalogueImportPanel.tsx'
 import { ScoreFoldersPanel } from './ScoreFoldersPanel.tsx'
+import { InstrumentSelect, loadInstruments } from './InstrumentSelect.tsx'
+import type { Instrument } from './InstrumentSelect.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Field = {
@@ -22,6 +24,8 @@ type Field = {
   type?: string
   options?: [string, string][]
   optional?: boolean
+  /** Auswahl aus der Instrumentenliste (type „instrument“) */
+  instruments?: Instrument[]
 }
 
 export function ScoresPage() {
@@ -32,7 +36,7 @@ export function ScoresPage() {
     [search, setSearch] = useState(''),
     [error, setError] = useState('')
   const load = useLoad(async () => {
-    const [pieces, arrangements, parts, files, documents] = await Promise.all([
+    const [pieces, arrangements, parts, files, documents, instruments] = await Promise.all([
       api.get<Row[]>(base + 'pieces/'),
       api.get<Row[]>(base + 'arrangements/'),
       api.get<Row[]>(base + 'parts/'),
@@ -40,8 +44,9 @@ export function ScoresPage() {
       org.permissions.includes('docs.view')
         ? api.get<Row[]>(base + 'score-documents/documents/')
         : Promise.resolve([]),
+      loadInstruments(org.id),
     ])
-    return { pieces, arrangements, parts, files, documents }
+    return { pieces, arrangements, parts, files, documents, instruments }
   }, [org.id])
   if (load.error)
     return (
@@ -87,7 +92,12 @@ export function ScoresPage() {
     ],
     parts: [
       { key: 'arrangement', label: t('Arrangement'), options: arrOpts },
-      { key: 'instrument', label: t('Instrument') },
+      {
+        key: 'instrument',
+        label: t('Instrument'),
+        type: 'instrument',
+        instruments: d.instruments,
+      },
       { key: 'register', label: t('Register / Stimme'), optional: true },
       {
         key: 'kind',
@@ -405,7 +415,13 @@ export function ScoreForm({
         {fields.map((f) => (
           <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
             {f.label}
-            {f.options ? (
+            {f.type === 'instrument' ? (
+              <InstrumentSelect
+                instruments={f.instruments ?? []}
+                value={String(values[f.key] ?? '')}
+                onChange={(value) => setValues((v) => ({ ...v, [f.key]: value }))}
+              />
+            ) : f.options ? (
               <select
                 required={!f.optional}
                 value={String(values[f.key] ?? '')}

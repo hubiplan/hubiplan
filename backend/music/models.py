@@ -5,6 +5,8 @@ import uuid
 from django.conf import settings
 from django.core.validators import EmailValidator, MaxValueValidator
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
@@ -119,6 +121,41 @@ class MusicianAbsence(models.Model):
 
     def __str__(self):
         return f"Musikerabwesenheit {self.pk}"
+
+
+INSTRUMENT_GROUPS = [
+    ("wood", "wood"),
+    ("brass", "brass"),
+    ("percussion", "percussion"),
+    ("corps", "corps"),
+    ("other", "other"),
+]
+
+
+class Instrument(models.Model):
+    """Instrument aus der festen Liste der Einheit (konzepte/instrumente.md).
+
+    Fähigkeiten, Sollbesetzung, Vorlagen, Notenstimmen und Material speichern weiter den Namen;
+    die Liste sorgt dafür, dass überall dieselbe Schreibweise steht. Umbenennen zieht alle
+    Verwendungen mit.
+    """
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    group = models.CharField(max_length=12, choices=INSTRUMENT_GROUPS, default="other")
+    position = models.PositiveSmallIntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "name"], name="music_instrument_name_once"
+            )
+        ]
+
+    def __str__(self):
+        return self.name
 
 
 class Skill(models.Model):
@@ -901,3 +938,17 @@ class RehearsalNotice(models.Model):
 
     def __str__(self):
         return f"Probenhinweis {self.pk}"
+
+
+@receiver(pre_save)
+def _instrument_from_list(sender, instance, raw=False, **kwargs):
+    """Instrument auf den Eintrag der Instrumentenliste bringen (konzepte/instrumente.md).
+
+    Sicherheitsnetz für alle Wege (Oberfläche, Import, KI-Schnittstelle, Demodaten).
+    """
+    if raw or sender not in (Skill, Position, EnsembleTemplatePosition, ScorePart, Equipment):
+        return
+    if instance.instrument:
+        from .instrument_list import canonical
+
+        instance.instrument = canonical(instance.organization, instance.instrument)

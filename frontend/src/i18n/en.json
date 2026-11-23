@@ -11253,5 +11253,26 @@
   "{n} ausgeblendet": {
     "one": "{n} hidden",
     "other": "{n} hidden"
-  }
+  },
+  "„{name}“ beim Mitglied entfernen?": "Remove “{name}” from this member?",
+  "Als Hauptinstrument": "Make main instrument",
+  "Instrument hinzufügen": "Add instrument",
+  "Holz": "Woodwind",
+  "Blech": "Brass",
+  "Schlagwerk": "Percussion",
+  "Spielleute": "Drum and fife corps",
+  "Weitere": "Other",
+  "Name des Instruments": "Instrument name",
+  "Aus der Liste wählen": "Choose from the list",
+  "Neues Instrument …": "New instrument …",
+  "„{name}“ aus der Liste entfernen?": "Remove “{name}” from the list?",
+  "Instrumente": "Instruments",
+  "Feste Auswahl für Musiker, Sollbesetzung, Vorlagen und Noten. Umbenennen ändert das Instrument überall mit.": "Fixed choice for musicians, required line-up, templates and sheet music. Renaming changes the instrument everywhere.",
+  "Instrument anlegen": "Add instrument",
+  "{n}× verwendet": {
+    "one": "used {n}×",
+    "other": "used {n}×"
+  },
+  "Einblenden": "Show",
+  "Ein neuer Name gilt auch für alle Musiker, Stimmen und Noten mit diesem Instrument.": "A new name also applies to all musicians, parts and sheet music with this instrument."
 }

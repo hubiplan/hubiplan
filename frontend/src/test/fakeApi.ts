@@ -108,6 +108,10 @@ export function fakeApi(routes: Record<string, Handler>) {
       (/^GET \/api\/(orgs|depts)\/\d+\/places\/$/.test(key)
         ? () => ({ status: 200, body: { places: [], can_edit: false, can_manage: false } })
         : undefined) ??
+      // Instrumentenliste der Einheit: ohne eigene Angabe leer (dann freie Eingabe)
+      (/^GET \/api\/orgs\/\d+\/music\/instruments\/$/.test(key)
+        ? () => ({ status: 200, body: [] })
+        : undefined) ??
       // Leitung für die Live-Vorgabe in der App: ohne eigene Angabe keine
       (/^GET \/api\/orgs\/\d+\/music\/leaders\/\?/.test(key)
         ? () => ({ status: 200, body: [] })
