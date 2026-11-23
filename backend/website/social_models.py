@@ -69,6 +69,10 @@ class SocialFeed(models.Model):
     via_facebook = models.BooleanField("Instagram über Facebook-Anmeldung", default=True)
     # Facebook Login for Business: Konfiguration aus der Meta-App (statt Berechtigungsliste)
     config_id = models.CharField("Konfigurations-ID", max_length=40, blank=True)
+    # Feste Basis der Rücksprungadresse (z. B. https://verein.example.org); leer = Vereinsadresse
+    # der Einheit bzw. der Instanz. Bereits verbundene Kanäle behalten so ihre alte Adresse,
+    # die in ihrer Meta-App eingetragen ist (Issue #723).
+    redirect_base = models.CharField("Rücksprungadresse", max_length=300, blank=True, db_default="")
     app_secret = models.TextField(blank=True)
     access_token = models.TextField(blank=True)
     token_expires_at = models.DateTimeField(null=True, blank=True)

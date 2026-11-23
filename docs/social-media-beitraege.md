@@ -17,8 +17,16 @@ App-Geheimnis unter **Webseite › Social Media** ein. Dadurch
 - wird niemand außer der Einheit „Developer“ im Sinne der Meta-Plattformbedingungen
   (insbesondere wird der Herausgeber von HUBIplan kein Auftragsverarbeiter).
 
-Weiterleitungsadresse für die App: `<FRONTEND_URL>/api/website/social/callback/`
-(abweichend: `SOCIAL_CALLBACK_BASE`). Version der Graph-Schnittstelle: `META_GRAPH_VERSION`
+Weiterleitungsadresse für die App: `<Basis>/api/website/social/callback/`. Die Basis ist die
+Vereinsadresse der Einheit, zu der der Kanal gehört (Plattform › Adressen, bei Untereinheiten die
+nächsthöhere Einheit mit eigener Adresse); ohne Vereinsadresse `SOCIAL_CALLBACK_BASE` bzw.
+`FRONTEND_URL` (Issue #723). Die Anmeldung gilt je Adresse, deshalb verbindet man einen Kanal von
+seiner Vereinsadresse aus; von einer anderen Adresse lehnt HUBIplan das Verbinden mit einem
+Hinweis ab, und die Rückkehrseite liegt auf der Adresse, über die Meta zurückgeleitet hat.
+Webseite › Social Media zeigt die genaue Weiterleitungs-URI und die App-Domain je Kanal zum
+Kopieren. Kanäle, die vor der Umstellung schon verbunden waren, behalten die bisherige Adresse
+(Feld `redirect_base`, von Migration `website 0056` gesetzt), bis jemand „Vereinsadresse
+verwenden“ wählt. Version der Graph-Schnittstelle: `META_GRAPH_VERSION`
 (Standard `v26.0`); bei Abkündigung durch Meta in der `.env` anheben.
 
 ### Anmeldewege

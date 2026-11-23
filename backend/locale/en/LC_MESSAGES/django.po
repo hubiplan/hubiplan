@@ -18086,3 +18086,11 @@ msgstr "Post"
 
 msgid "neueste eigene Beiträge und die aus Instagram und Facebook"
 msgstr "latest own posts and those from Instagram and Facebook"
+
+#: website/social_views.py
+msgid ""
+"Meta schickt nach dem Verbinden zu %(adresse)s zurück. Bitte dort anmelden "
+"und den Kanal von dort aus verbinden."
+msgstr ""
+"After connecting, Meta sends you back to %(adresse)s. Please sign in there "
+"and connect the channel from that address."

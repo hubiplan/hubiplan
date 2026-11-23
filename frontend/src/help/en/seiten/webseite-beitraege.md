@@ -15,3 +15,7 @@ Drafts for posts: if an AI assistant has prepared a post, it appears here with t
 At the top you manage the club’s social media channels, i.e. the profile links shown in the website header and in letter templates. They used to be under Settings › Organisation.
 
 **Fetch now** schedules a background fetch. Repeated requests are coalesced; manual and periodic fetches of the same channel never run concurrently. Reload later to see the results. The web process does not wait for Meta or image downloads.
+
+## Redirect URI
+
+Each channel shows the exact address to enter in your Meta app as redirect URI, with a **Copy** button, and the app domain below it. If your unit has its own club address (e.g. `verein.musterverein.example`), Meta sends you back there. Sign in at that address to connect. Channels connected before keep their old address; **Use club address** switches over, then enter the new address in the Meta app.

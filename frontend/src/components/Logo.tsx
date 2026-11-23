@@ -1,4 +1,5 @@
 import { PRODUCT_NAME, usePlatform } from '../theme/platform.ts'
+import { keepLegalForm } from './legalForm.ts'
 
 // Zeichen von HUBIplan: Akte mit H, der Querstrich ist ein ansteigender Steg
 // (Entwurf C3, Ralf 31.10.2026). Akte in der Primärfarbe, Reiter und Steg in der
@@ -78,7 +79,7 @@ export function Logo({
           HUBI<span className="logo-wordmark-light">plan</span>
         </span>
       ) : (
-        <span className="logo-name">{shown}</span>
+        <span className="logo-name">{keepLegalForm(shown)}</span>
       )}
     </span>
   )

@@ -148,14 +148,51 @@ def fb_graph(path: str) -> str:
     return f"https://graph.facebook.com/{graph_version()}/{path.lstrip('/')}"
 
 
-def redirect_uri() -> str:
+CALLBACK_PATH = "/api/website/social/callback/"
+
+
+def instance_callback_base() -> str:
+    """Rücksprung über die Instanz (ohne Vereinsadresse): SOCIAL_CALLBACK_BASE oder FRONTEND_URL."""
+    return (settings.SOCIAL_CALLBACK_BASE or settings.FRONTEND_URL).rstrip("/")
+
+
+def unit_callback_base(unit) -> str:
+    """Vereinsadresse der Einheit oder der nächsthöheren mit eigener Adresse (Issue #723).
+
+    Ohne eingetragene Adresse gilt wie bisher die Instanz.
+    """
+    from organizations.addresses import base_url
+
+    main = settings.FRONTEND_URL.rstrip("/")
+    found = base_url(unit) if unit is not None else main
+    return found if found != main else instance_callback_base()
+
+
+def feed_unit(feed: SocialFeed):
+    return feed.department if feed.department_id else feed.organization
+
+
+def callback_base(feed: SocialFeed) -> str:
+    """Bestehende Kanäle behalten ihre gespeicherte Adresse, sonst gilt die der Einheit."""
+    if feed.redirect_base:
+        return feed.redirect_base.rstrip("/")
+    return unit_callback_base(feed_unit(feed))
+
+
+def redirect_uri(feed: SocialFeed | None = None, unit=None) -> str:
     """Diese Adresse trägt die Einheit in ihrer Meta-App als Weiterleitung ein."""
-    base = (settings.SOCIAL_CALLBACK_BASE or settings.FRONTEND_URL).rstrip("/")
-    return f"{base}/api/website/social/callback/"
+    if feed is not None:
+        return callback_base(feed) + CALLBACK_PATH
+    return unit_callback_base(unit) + CALLBACK_PATH
 
 
-def frontend_return(ok: bool, message: str = "") -> str:
-    base = settings.FRONTEND_URL.rstrip("/")
+def unit_redirect_uri(feed: SocialFeed) -> str:
+    """Adresse, die der Kanal ohne gespeicherte Adresse nutzen würde."""
+    return unit_callback_base(feed_unit(feed)) + CALLBACK_PATH
+
+
+def frontend_return(ok: bool, message: str = "", base: str = "") -> str:
+    base = (base or settings.FRONTEND_URL).rstrip("/")
     query = {"verbunden": "1"} if ok else {"fehler": message[:900] or "unbekannt"}
     # Eigene Rückkehrseite außerhalb der Webseiten-Verwaltung
     return f"{base}/social-rueckkehr?{urllib.parse.urlencode(query)}"
@@ -192,7 +229,7 @@ def start_connect(feed: SocialFeed, user) -> str:
     feed.oauth_started_at = timezone.now()
     feed.oauth_user = user
     feed.save(update_fields=["oauth_state", "oauth_started_at", "oauth_user"])
-    params = {"client_id": feed.app_id, "redirect_uri": redirect_uri(), "state": state}
+    params = {"client_id": feed.app_id, "redirect_uri": redirect_uri(feed), "state": state}
     if instagram_login(feed):
         params.update(response_type="code", scope=IG_SCOPE)
         return f"https://www.instagram.com/oauth/authorize?{urllib.parse.urlencode(params)}"
@@ -245,7 +282,7 @@ def _finish_instagram(feed: SocialFeed, code: str) -> None:
             "client_id": feed.app_id,
             "client_secret": app_secret(feed),
             "grant_type": "authorization_code",
-            "redirect_uri": redirect_uri(),
+            "redirect_uri": redirect_uri(feed),
             "code": code,
         },
     )
@@ -276,7 +313,7 @@ def _finish_facebook(feed: SocialFeed, code: str) -> None:
         {
             "client_id": feed.app_id,
             "client_secret": app_secret(feed),
-            "redirect_uri": redirect_uri(),
+            "redirect_uri": redirect_uri(feed),
             "code": code,
         },
     )

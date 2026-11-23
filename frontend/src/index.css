@@ -554,6 +554,8 @@ button.tab.active {
   font-weight: 700;
   font-size: 1.15rem;
   color: inherit;
+  /* Zweizeilige Namen gleichmäßig auf beide Zeilen verteilen */
+  text-wrap: balance;
 }
 
 .logo-img {
