@@ -88,14 +88,24 @@ export function MenuLayoutPage() {
         target = id
         if (!areas.some((a) => a.id === id)) areas = [...areas, { id }]
       }
-      const order = modules.map((m) => m.id)
-      items[target] = [...(items[target] ?? []), id].sort(
-        (x, y) => order.indexOf(x) - order.indexOf(y),
-      )
-      // Ein Menüpunkt-Bereich, der seinen Menüpunkt verliert und leer ist, entfällt
+      items[target] = [...(items[target] ?? []), id]
+      // Ein Menüpunkt-Bereich, der seinen eigenen Menüpunkt verliert, entfällt; was noch
+      // darin stand (z. B. Noten unter Musik), geht mit dem Menüpunkt mit
+      for (const a of areas) {
+        if (kindOf(a.id) !== 'item' || a.id === target || items[a.id]?.includes(a.id)) continue
+        const rest = items[a.id] ?? []
+        if (rest.length > 0) items[target] = [...(items[target] ?? []), ...rest]
+        delete items[a.id]
+      }
       areas = areas.filter(
-        (a) => kindOf(a.id) !== 'item' || a.id === target || (items[a.id] ?? []).length > 0,
+        (a) => kindOf(a.id) !== 'item' || a.id === target || items[a.id]?.includes(a.id),
       )
+      // Reihenfolge wie im Standard; der eigene Menüpunkt eines Menüpunkt-Bereichs steht vorn
+      const order = modules.map((m) => m.id)
+      for (const key of Object.keys(items))
+        items[key] = [...items[key]].sort(
+          (x, y) => Number(y === key) - Number(x === key) || order.indexOf(x) - order.indexOf(y),
+        )
       return { areas, items }
     })
   }
@@ -325,9 +335,7 @@ export function MenuLayoutPage() {
                           onChange={(e) => moveItem(id, e.target.value)}
                         >
                           {current.areas
-                            .filter(
-                              (a) => a.id !== 'start' && (kindOf(a.id) !== 'item' || a.id === id),
-                            )
+                            .filter((a) => a.id !== 'start')
                             .map((a) =>
                               a.id === id ? null : (
                                 <option key={a.id} value={a.id}>
