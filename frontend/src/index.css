@@ -583,6 +583,11 @@ button.tab.active {
   min-height: 100vh;
   display: grid;
   place-items: center;
+  /* Karte, Sprachumschalter und „mit HUBIplan“ bleiben als Gruppe beisammen in der Mitte;
+     ohne align-content verteilte das Raster den freien Platz auf alle Zeilen, und die
+     kleinen Links standen verloren im Raum (Ralf 23.11.2026) */
+  align-content: center;
+  gap: 0.75rem;
   padding: 1rem;
 }
 
@@ -603,6 +608,10 @@ button.tab.active {
   justify-content: center;
   gap: 0.75rem;
   margin: 0;
+}
+.login-card + .language-switch,
+.login-card + .powered-by {
+  margin-top: 0.25rem;
 }
 
 /* „mit HUBIplan“ unter der Anmeldung bei eigenem Instanznamen (White Label) */
@@ -3852,10 +3861,12 @@ form.card > .save-status:first-child {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Inhalt und Fußzeile stehen als ein ruhiger Block in der Mitte, statt dass die
+     Fußlinks weit abgesetzt am unteren Rand kleben (Ralf 23.11.2026) */
+  justify-content: center;
 }
 
 .public-shell > .login-page {
-  flex: 1;
   min-height: 0;
 }
 
