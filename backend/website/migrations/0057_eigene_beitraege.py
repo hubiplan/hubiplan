@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("organizations", "0078_koeder_ausloesungen"),
-        ("website", "0055_namensform_je_bereich"),
+        ("website", "0056_social_ruecksprung_je_kanal"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
