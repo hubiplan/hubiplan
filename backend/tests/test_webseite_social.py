@@ -430,6 +430,96 @@ class TestVerbinden:
             assert posts[0].media_type == "album" and posts[0].images.count() == 2
 
 
+class TestRuecksprungJeEinheit:
+    """Issue #723: Rücksprung über die Vereinsadresse der Einheit."""
+
+    HOST = "verein.musterkapelle.example"
+
+    @pytest.fixture
+    def adresse(self, setup, settings):
+        from organizations.models import InstanceAddress
+
+        settings.ALLOWED_HOSTS = ["testserver", self.HOST]
+        InstanceAddress.objects.create(hostname=self.HOST, organization=setup["org"])
+        return f"https://{self.HOST}/api/website/social/callback/"
+
+    def anlegen(self, c, setup, **extra):
+        resp = c.post(
+            url(setup["org"]),
+            {"kind": "facebook", "app_id": "123456", "app_secret": "geheim123", **extra},
+            "application/json",
+            HTTP_HOST=self.HOST,
+        )
+        assert resp.status_code == 201, resp.content
+        return resp.json()
+
+    def test_verbinden_ueber_vereinsadresse(self, setup, api, meta, adresse):
+        meta.pages = [{"id": "p1", "name": "Musterkapelle", "access_token": "PAGE"}]
+        c = api(setup["admin"])
+        data = c.get(url(setup["org"]), HTTP_HOST=self.HOST).json()
+        assert data["redirect_uri"] == adresse
+        feed = self.anlegen(c, setup)
+        assert feed["redirect_uri"] == adresse and feed["unit_redirect_uri"] is None
+        # Über die Hauptadresse käme man ohne Anmeldung zurück: klare Meldung statt Fehlschlag
+        resp = c.post(url(setup["org"], f"{feed['id']}/connect/"))
+        assert resp.status_code == 400
+        assert self.HOST in str(resp.json())
+        start = c.post(url(setup["org"], f"{feed['id']}/connect/"), HTTP_HOST=self.HOST)
+        assert start.status_code == 200, start.content
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(start.json()["url"]).query)
+        assert query["redirect_uri"] == [adresse]
+        resp = c.get(
+            f"/api/website/social/callback/?code=CODE&state={query['state'][0]}",
+            HTTP_HOST=self.HOST,
+        )
+        assert resp["Location"].startswith(f"https://{self.HOST}/social-rueckkehr?")
+        exchange = next(x for x in meta.calls if x[1].endswith("oauth/access_token"))
+        assert exchange[2]["redirect_uri"] == adresse
+
+    def test_bestehender_kanal_behaelt_adresse(self, setup, api, meta, adresse):
+        c = api(setup["admin"])
+        feed = self.anlegen(c, setup)
+        alt = "https://hubiplan.example/api/website/social/callback/"
+        with rls_bypass():
+            SocialFeed.objects.filter(pk=feed["id"]).update(
+                redirect_base="https://hubiplan.example"
+            )
+        data = c.get(url(setup["org"]), HTTP_HOST=self.HOST).json()["feeds"][0]
+        assert data["redirect_uri"] == alt and data["unit_redirect_uri"] == adresse
+        # Verbinden geht weiter über die alte Adresse, aber nur von dort aus
+        resp = c.post(url(setup["org"], f"{feed['id']}/connect/"), HTTP_HOST=self.HOST)
+        assert resp.status_code == 400
+        start = c.post(url(setup["org"], f"{feed['id']}/connect/")).json()["url"]
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(start).query)
+        assert query["redirect_uri"] == [alt]
+        # Auf die Vereinsadresse umstellen
+        resp = c.put(
+            url(setup["org"], f"{feed['id']}/"),
+            {"use_unit_address": True},
+            "application/json",
+            HTTP_HOST=self.HOST,
+        )
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["redirect_uri"] == adresse
+        assert resp.json()["unit_redirect_uri"] is None
+
+    def test_untereinheit_erbt_adresse(self, setup, api, adresse):
+        with rls_bypass():
+            dept = Department.objects.create(
+                name="Jugendorchester",
+                organization=setup["org"],
+                parent=setup["org"],
+            )
+        c = api(setup["admin"])
+        feed = self.anlegen(c, setup, department=dept.pk)
+        assert feed["redirect_uri"] == adresse
+
+    def test_ohne_vereinsadresse_wie_bisher(self, setup, api, settings):
+        settings.SOCIAL_CALLBACK_BASE = "https://rueckweg.example/"
+        data = api(setup["admin"]).get(url(setup["org"])).json()
+        assert data["redirect_uri"] == "https://rueckweg.example/api/website/social/callback/"
+
+
 class TestAbruf:
     def test_bilder_neu_geschrieben_und_hashtags_weg(self, setup, api, meta):
         meta.media = [ig_media(1)]
