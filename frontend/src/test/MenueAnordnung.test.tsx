@@ -154,6 +154,51 @@ describe('Anordnung des Menüs', () => {
     expect(names.indexOf('Schießsport')).toBeLessThan(names.indexOf('Webseite'))
   })
 
+  it('ein Menüpunkt als Hauptmenüpunkt nimmt weitere Menüpunkte auf', async () => {
+    const musik: MenuLayout = {
+      v: 1,
+      areas: [...AREAS.map((a) => ({ id: a.id })), { id: 'musik' }],
+      items: {},
+    }
+    const org = testOrg({ modules: ['events'], permissions: ['settings.edit', 'settings.view'] })
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      'GET /api/orgs/7/menu-layout/': () => ({
+        status: 200,
+        body: { layout: musik, can_undo: false, owned: true, max_areas: 12 },
+      }),
+      'PUT /api/orgs/7/menu-layout/': () => ({
+        status: 200,
+        body: { layout: null, can_undo: true, owned: true, max_areas: 12 },
+      }),
+    })
+    renderApp('/einstellungen/menue')
+    const move = await screen.findByRole('combobox', { name: '„Noten“ verschieben nach' })
+    expect(within(move).getByRole('option', { name: 'Musik' })).toBeInTheDocument()
+    fireEvent.change(move, { target: { value: 'musik' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Speichern' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'PUT /api/orgs/7/menu-layout/')).toBe(true),
+    )
+    const put = calls.find((c) => c.key === 'PUT /api/orgs/7/menu-layout/')!
+    const body = JSON.parse(String(put.init?.body)) as { layout: MenuLayout }
+    expect(body.layout.items.noten).toBe('musik')
+    expect(body.layout.areas.map((a) => a.id)).toContain('musik')
+  })
+
+  it('Menüpunkte unter einem Menüpunkt-Hauptmenüpunkt stehen nach dessen Unterseiten', () => {
+    const layout: MenuLayout = {
+      v: 1,
+      areas: [...AREAS.map((a) => ({ id: a.id })), { id: 'musik' }],
+      items: { noten: 'musik' },
+    }
+    const byId = (id: string) => modules.find((m) => m.id === id)!
+    expect(areaOf(layout, byId('musik'))).toBe('musik')
+    expect(areaOf(layout, byId('noten'))).toBe('musik')
+    expect(toArrangement(layout).items.musik).toEqual(['musik', 'noten'])
+  })
+
   it('der Editor verschiebt einen Menüpunkt und speichert die Abweichung', async () => {
     const org = testOrg({
       modules: ['events', 'members'],

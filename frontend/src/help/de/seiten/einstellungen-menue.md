@@ -14,7 +14,7 @@ Die Anordnung bestimmt nur den Ort. Wer was sieht, entscheiden weiter die einges
 
 ## Im Einzelnen
 
-- **Verschieben**: Menüpunkt mit der Maus auf einen anderen Hauptmenüpunkt ziehen oder rechts in der Auswahl „verschieben nach“ den Ziel-Hauptmenüpunkt wählen. **Eigener Hauptmenüpunkt** macht den Menüpunkt selbst zum Hauptmenüpunkt.
+- **Verschieben**: Menüpunkt mit der Maus auf einen anderen Hauptmenüpunkt ziehen oder rechts in der Auswahl „verschieben nach“ den Ziel-Hauptmenüpunkt wählen. **Eigener Hauptmenüpunkt** macht den Menüpunkt selbst zum Hauptmenüpunkt. Einem solchen Hauptmenüpunkt lassen sich weitere Menüpunkte zuordnen, etwa **Noten** unter **Musik**: Sie stehen dann im Menü nach seinen eigenen Unterpunkten. Wird der Menüpunkt selbst wieder verschoben, gehen die zugeordneten Menüpunkte mit.
 - **Reihenfolge**: Mit den Pfeilen wandert ein Hauptmenüpunkt nach oben oder unten. **Start** bleibt immer vorn.
 - **Hauptmenüpunkt hinzufügen**: Name auf Deutsch (und auf Wunsch auf Englisch) und ein Zeichen wählen, dann Menüpunkte hineinschieben. Ein neuer Hauptmenüpunkt bekommt von selbst ein Zeichen, das noch kein anderer trägt; in der Auswahl sind schon vergebene Zeichen gekennzeichnet. Auch die vorgegebenen Hauptmenüpunkte lassen sich umbenennen; ein leeres Namensfeld heißt: wie vorgegeben. Ein leerer Hauptmenüpunkt lässt sich entfernen.
 - **Speichern** gilt sofort für alle. **Rückgängig** holt die vorige Anordnung zurück, **Standard wiederherstellen** ordnet alles wieder so, wie HUBIplan es vorgibt.

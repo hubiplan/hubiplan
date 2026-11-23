@@ -358,7 +358,10 @@ export function Layout() {
   const nested = new Set(visible.flatMap((p) => nestedOf(p).map((n) => n.id)))
   const areas = arrangedAreas(menuLayout)
     .map((a) => {
-      const items = visible.filter((m) => areaOf(menuLayout, m) === a.id && !nested.has(m.id))
+      // Ein Menüpunkt als Hauptmenüpunkt steht vor den Menüpunkten, die ihm zugeordnet sind
+      const items = visible
+        .filter((m) => areaOf(menuLayout, m) === a.id && !nested.has(m.id))
+        .sort((x, y) => Number(y.id === a.id) - Number(x.id === a.id))
       // Ein selbst benannter Bereich behält seinen Namen auch mit nur einem Menüpunkt
       const only = items.length === 1 && a.id !== 'start' && !a.named ? items[0] : null
       return only
