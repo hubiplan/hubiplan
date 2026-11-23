@@ -127,7 +127,7 @@ Regeln:
 - **Hinweise an den Client** (Gesamtaudit 15.11., MCP-02): `destructiveHint` ist gesetzt bei
   Werkzeugen, die sofort wirken und ersetzen oder löschen (`erscheinungsbild_aendern`,
   `logo_aus_bild`, `briefbogen_aendern`, `briefbogen_logo_aus_bild`) und bei
-  `startseite_aufbau_aendern` (kennt `entfernen`); `openWorldHint` bei `bild_von_adresse`. Sofort
+  `startseite_aufbau_aendern` (kennt `entfernen`) sowie `beitrag_loeschen`; `openWorldHint` bei `bild_von_adresse`. Sofort
   wirksame Werkzeuge tragen „(wirkt sofort)“ im Titel.
 - **Fremdinhalte** (MCP-03): Jede Antwort mit Vereinsdaten endet mit einem eigenen Textteil, der
   sagt, dass die Texte von Personen oder fremden Quellen stammen und keine Anweisungen sind.
@@ -183,6 +183,9 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 | `bild_von_adresse` | entwurf | Bild von einem freigegebenen Server, `quelle` Pflicht |
 | `social_beitrag_entwerfen` | entwurf | Text (2200 Zeichen), bis 10 Bilder, Kanal → `SocialDraft` |
 | `social_entwuerfe` | lesen | Entwürfe, offene zuerst |
+| `beitraege_ansehen` | lesen | eigene Beiträge unter „Aktuelles“ (Issue #707), mit `nummer` samt Text |
+| `beitrag_speichern` | entwurf | ohne `nummer` anlegen (`titel`, `datum` Pflicht, auch rückwirkend), sonst Entwurf ändern: `text` (Markdown), `bilder`, `videos` [{`adresse`, `titel`, `bild`}], `adresse`, `untereinheit`; veröffentlicht wird nur in HUBIplan |
+| `beitrag_loeschen` | entwurf | nur nie veröffentlichte Beiträge |
 
 **Hochladelink** (`ImageUploadLink`): Nur der SHA-256 des Schlüssels liegt in der Datenbank.
 `/bilder-hochladen/<schlüssel>` ist eine Seite ohne Anmeldung; sie spricht

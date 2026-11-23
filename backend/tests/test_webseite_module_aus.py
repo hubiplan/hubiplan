@@ -39,7 +39,8 @@ def test_bausteine_abgeschalteter_module_fehlen_in_der_verwaltung(orgs, api):
     org = club_with(orgs)
     make_website(org, public_key=KEY, state="public")
     data = payload(org, api)
-    gone = {"events", "honors", "results", "repertoire", "bookings", "history", "posts"}
+    # „Aktuelles“ bleibt: eigene Beiträge gibt es auch ohne Social Media (#707)
+    gone = {"events", "honors", "results", "repertoire", "bookings", "history"}
     assert not gone & set(data["block_labels"])
     assert not {"events", "honors", "results", "instagram", "facebook"} & set(data["home_labels"])
     assert not gone & {item["key"] for item in data["website"]["menu_items"]}

@@ -1159,7 +1159,7 @@ class SiteView:
             else None,
             "posts": self.posts_available(u.pk)
             if self.site.block_on("posts")
-            else {"instagram": False, "facebook": False},
+            else {"instagram": False, "facebook": False, "own": False},
             "honors": self.honors(u) if self.site.block_on("honors") else [],
             "events_url": self.url(f"events/?einheit={self.unit_slugs[u.pk]}")
             if self.site.block_on("events")
@@ -1224,7 +1224,8 @@ class SiteView:
         ]
 
     def posts_available(self, department_id: int | None = None) -> dict[str, bool]:
-        """Welche Kanäle Beiträge haben (Info für Menü und Startseiten-Bausteine)."""
+        """Welche Kanäle Beiträge haben (Info für Menü und Startseiten-Bausteine); „own“ sind
+        eigene Beiträge (#707)."""
         from .social_models import SocialPost
 
         result = {}
@@ -1235,33 +1236,141 @@ class SiteView:
             result[kind] = SocialPost.objects.filter(
                 feed__in=feeds, state=SocialPost.State.VISIBLE
             ).exists()
+        result["own"] = self.news_posts(department_id).exists()
         return result
 
+    def news_posts(self, department_id: int | None = None, all_units: bool = False):
+        """Eigene Beiträge, die die Webseite zeigt (in der Vorschau auch Entwürfe)."""
+        from .news_models import NewsPost
+
+        qs = NewsPost.objects.filter(website=self.site)
+        if not all_units:
+            qs = qs.filter(department_id=department_id)
+        if getattr(self.site, "draft_shown", False):
+            return qs
+        return qs.exclude(published_at=None)
+
     def posts(
-        self, kind: str | None, department_id: int | None, limit: int, days: int | None = None
+        self,
+        kind: str | None,
+        department_id: int | None,
+        limit: int,
+        days: int | None = None,
+        offset: int = 0,
     ) -> list[dict]:
-        """Neueste sichtbare Beiträge; mit ``days`` nur die der letzten so vielen Tage."""
+        """Neueste sichtbare Beiträge; mit ``days`` nur die der letzten so vielen Tage.
+        Eigene Beiträge (``kind`` „own“ oder alle) stehen nach Datum zwischen denen aus
+        Instagram und Facebook; ``offset`` überspringt so viele (Seiten im Archiv)."""
         import datetime
 
         from django.utils import timezone
 
         from .social_models import SocialPost
 
-        feeds = [
-            f
-            for f in self.social_feeds
-            if f.department_id == department_id and (kind is None or f.kind == kind)
+        since = timezone.now() - datetime.timedelta(days=days) if days is not None else None
+        want = offset + limit
+        entries: list[tuple] = []
+        if kind != "own":
+            feeds = [
+                f
+                for f in self.social_feeds
+                if f.department_id == department_id and (kind is None or f.kind == kind)
+            ]
+            qs = (
+                SocialPost.objects.filter(feed__in=feeds, state=SocialPost.State.VISIBLE)
+                .select_related("feed")
+                .prefetch_related("images")
+                .order_by("-published_at", "-pk")
+            )
+            if since is not None:
+                qs = qs.filter(published_at__gte=since)
+            entries += [(p.published_at, p) for p in qs[:want]]
+        if kind in (None, "own"):
+            draft = getattr(self.site, "draft_shown", False)
+            field = "date" if draft else "published_date"
+            qs = self.news_posts(department_id).order_by(f"-{field}", "-pk")
+            if since is not None:
+                qs = qs.filter(**{f"{field}__gte": timezone.localtime(since).date()})
+            entries += [(self._news_moment(p), p) for p in qs[:want]]
+        entries.sort(key=lambda e: e[0], reverse=True)
+        return [
+            self.post_entry(p) if isinstance(p, SocialPost) else self.news_entry(p)
+            for _, p in entries[offset:want]
         ]
-        qs = (
-            SocialPost.objects.filter(feed__in=feeds, state=SocialPost.State.VISIBLE)
-            .select_related("feed")
-            .prefetch_related("images")
-            .order_by("-published_at", "-pk")
-        )
-        if days is not None:
-            qs = qs.filter(published_at__gte=timezone.now() - datetime.timedelta(days=days))
-        qs = qs[:limit]
-        return [self.post_entry(p) for p in qs]
+
+    def _news_values(self, post) -> dict:
+        """Entwurf (Vorschau) oder veröffentlichte Fassung eines eigenen Beitrags."""
+        if getattr(self.site, "draft_shown", False):
+            return {
+                "title": post.title,
+                "date": post.date,
+                "body": post.body,
+                "images": post.images,
+                "videos": post.videos,
+            }
+        return {
+            "title": post.published_title,
+            "date": post.published_date or post.date,
+            "body": post.published_body,
+            "images": post.published_images,
+            "videos": post.published_videos,
+        }
+
+    def _news_moment(self, post):
+        """Zeitpunkt zum Einsortieren: Mittag des Tages (Ortszeit)."""
+        import datetime
+
+        from django.utils import timezone
+
+        day = self._news_values(post)["date"]
+        return timezone.make_aware(datetime.datetime.combine(day, datetime.time(12, 0)))
+
+    def news_entry(self, post, full: bool = False) -> dict:
+        """Eigener Beitrag (#707): Titel, Datum, Text (Markdown), Bilder und Videos als Link."""
+        from . import news
+        from .content import public_body
+
+        v = self._news_values(post)
+        ids = list(v["images"] or [])
+        ids += [x["image"] for x in v["videos"] or [] if isinstance(x, dict) and x.get("image")]
+        known = {i.pk: i for i in WebsiteImage.objects.filter(website=self.site, pk__in=ids)}
+        teaser, more = news.excerpt(v["body"])
+        entry = {
+            "id": self.token("news", post.pk),
+            "kind": "own",
+            "kind_label": "",
+            "account": "",
+            "media_type": "text",
+            "slug": post.slug,
+            "title": v["title"],
+            "date": v["date"].isoformat(),
+            "published_at": self._news_moment(post).isoformat(),
+            "excerpt": teaser,
+            "has_more": more or len(ids) > 1,
+            "text": public_body(v["body"], self.site),
+            "permalink": None,
+            "images": [self.image(known[i]) for i in v["images"] or [] if i in known],
+            "videos": [
+                {
+                    "url": x.get("url", ""),
+                    "title": x.get("title", ""),
+                    "image": self.image(known.get(x.get("image"))),
+                }
+                for x in v["videos"] or []
+                if isinstance(x, dict) and x.get("url")
+            ],
+            "unit": self.unit_slugs.get(post.department_id) if post.department_id else None,
+        }
+        if not full:
+            # In Listen nur der Anriss; der ganze Text steht auf der Seite des Beitrags
+            entry["text"] = ""
+        return entry
+
+    def news_post(self, slug: str) -> dict | None:
+        post = self.news_posts(all_units=True).filter(slug=slug).first()
+        if post is None or (post.department_id and post.department_id not in self.unit_slugs):
+            return None
+        return self.news_entry(post, full=True)
 
     def post_entry(self, post) -> dict:
         return {
@@ -1340,7 +1449,43 @@ class SiteView:
 
         if image.pk in gallery.visible_image_ids(self.site):
             return image
+        # Eigene Beiträge unter „Aktuelles“ (#707): Bilder, Vorschaubilder der Videos und
+        # Bilder im Text (in der Vorschau die des Entwurfs)
+        if image.pk in self.news_image_ids or image.key in self.news_image_keys:
+            return image
         return None
+
+    @cached_property
+    def _news_shown(self) -> list:
+        if not self.site.block_on("posts"):
+            return []
+        return [
+            p
+            for p in self.news_posts(all_units=True)
+            if p.department_id is None or p.department_id in self.unit_slugs
+        ]
+
+    @cached_property
+    def news_image_ids(self) -> set[int]:
+        ids: set[int] = set()
+        for p in self._news_shown:
+            v = self._news_values(p)
+            ids.update(i for i in v["images"] or [] if isinstance(i, int))
+            ids.update(
+                x["image"]
+                for x in v["videos"] or []
+                if isinstance(x, dict) and isinstance(x.get("image"), int)
+            )
+        return ids
+
+    @cached_property
+    def news_image_keys(self) -> set[str]:
+        from .content import _IMAGE_KEY
+
+        keys: set[str] = set()
+        for p in self._news_shown:
+            keys.update(_IMAGE_KEY.findall(self._news_values(p)["body"] or ""))
+        return keys
 
     def image_credits(self) -> list[str]:
         """Bildnachweis fürs Impressum (Ralf 15.11.): Urheber/innen aller Bilder, die auf
