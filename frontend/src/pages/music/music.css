@@ -348,7 +348,7 @@
   }
 }
 
-/* Uniformen (Issue #712) */
+/* Uniformen (Issue 712) */
 .music-uniform-image {
   max-width: min(100%, 16rem);
   border-radius: var(--radius, 8px);
