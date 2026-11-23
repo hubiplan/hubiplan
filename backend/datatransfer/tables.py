@@ -269,6 +269,8 @@ MODULE_MODELS = (
     # Dokumenten (Verweise darauf werden umgestellt)
     "website.DesignVersion",
     "website.SocialDraft",
+    # Eigene Beiträge unter „Aktuelles“ (#707): nach Bildern und Untereinheiten
+    "website.NewsPost",
     # Änderungs- und Kündigungswünsche aus dem Mitgliederbereich (nach den Mitgliedschaften)
     "portal.ChangeRequest",
     "portal.CancellationRequest",
@@ -765,6 +767,29 @@ def fix_json_ids(name: str, obj, ids: IdMap) -> None:
             for old in (obj.images if isinstance(obj.images, list) else [])
             if isinstance(old, int) and (new := ids.get("website.websiteimage", old))
         ]
+    if name == "website.newspost":
+        # Bilder und Vorschaubilder der Videos sind Nummern aus der Bilderverwaltung
+        def image(old):
+            return ids.get("website.websiteimage", old) if isinstance(old, int) else None
+
+        for field in ("images", "published_images"):
+            value = getattr(obj, field)
+            setattr(
+                obj,
+                field,
+                [new for old in (value if isinstance(value, list) else []) if (new := image(old))],
+            )
+        for field in ("videos", "published_videos"):
+            value = getattr(obj, field)
+            setattr(
+                obj,
+                field,
+                [
+                    {**v, "image": image(v.get("image"))}
+                    for v in (value if isinstance(value, list) else [])
+                    if isinstance(v, dict)
+                ],
+            )
     if name == "website.designversion":
         obj.data = remap_design(obj.data, ids)
     if name == "exchange.exporttemplate":
@@ -980,6 +1005,11 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
         from website.home import remap as remap_sections
 
         obj.home_sections = remap_sections(obj.home_sections, ids.get)
+    elif name == "website.newspost":
+        # Bilder im Text eigener Beiträge (#707) mit ``bild:<key>``
+        for old, new in renamed.items():
+            for field in ("body", "published_body"):
+                setattr(obj, field, getattr(obj, field).replace(f"bild:{old}", f"bild:{new}"))
     elif name in ("website.websitetext", "website.websiterevision"):
         # Abschnitte (G3/G4) verweisen mit Nummern auf Bilder, Alben, Termine und Rollen
         from website.home import remap as remap_sections

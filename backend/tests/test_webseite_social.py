@@ -676,7 +676,7 @@ class TestSchnittstelle:
         meta.media = [ig_media(1), ig_media(2)]
         c, feed_id, _ = connect(api, setup)
         info = Client().get("/api/public/site/v1/schluessel-a/").json()
-        assert info["posts"] == {"instagram": True, "facebook": False}
+        assert info["posts"] == {"instagram": True, "facebook": False, "own": False}
         data = Client().get("/api/public/site/v1/schluessel-a/posts/?art=instagram&anzahl=1").json()
         assert len(data["posts"]) == 1
         post = data["posts"][0]
@@ -706,7 +706,7 @@ class TestSchnittstelle:
         site.save()
         assert Client().get("/api/public/site/v1/schluessel-a/posts/").status_code == 404
         info = Client().get("/api/public/site/v1/schluessel-a/").json()
-        assert info["posts"] == {"instagram": False, "facebook": False}
+        assert info["posts"] == {"instagram": False, "facebook": False, "own": False}
 
     def test_kanal_einer_untereinheit(self, setup, api, meta):
         unit = Department.objects.create(

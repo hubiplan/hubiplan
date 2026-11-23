@@ -98,7 +98,7 @@ KIND_HINTS = {
     "unit_honors": "die aktuellen Würdenträger einer Untereinheit",
     "competition": "Sieger und Stand eines bestimmten Wettbewerbs",
     "albums": "die ersten Alben der Galerie als Kacheln",
-    "posts": "die neuesten Beiträge aus Instagram und Facebook",
+    "posts": "die neuesten eigenen Beiträge und die aus Instagram und Facebook",
     "app": "Knopf zum Mitgliederbereich, QR-Code und Hinweis auf die App",
     "live_facts": "Mitgliederzahl, Jahre seit der Gründung und Untereinheiten, immer aktuell",
 }
@@ -700,7 +700,7 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
         return {
             "title": title,
             "count": count if isinstance(count, int) and 1 <= count <= 6 else 3,
-            "channel": _choice(data.get("channel"), ("all", "instagram", "facebook"), "all"),
+            "channel": _choice(data.get("channel"), ("all", "own", "instagram", "facebook"), "all"),
             "days": clean_days(data.get("days")),
         }
     if kind == "app":
