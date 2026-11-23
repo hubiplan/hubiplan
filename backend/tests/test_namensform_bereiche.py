@@ -87,7 +87,13 @@ def kapelle(orgs):
     org = orgs["a"]
     org.enabled_modules = ["members", "events", "website"]
     org.save()
-    web = make_website(org, public_key=KEY, state="public")
+    web = make_website(
+        org,
+        public_key=KEY,
+        state="public",
+        privacy_mode="link",
+        privacy_url="https://example.org/datenschutz",
+    )
     aktiv = MemberType.objects.create(organization=org, name="aktiv", active=True)
     passiv = MemberType.objects.create(organization=org, name="passiv")
     dora = make_member(org, "Dora", "Asbeck", member_type=aktiv)
