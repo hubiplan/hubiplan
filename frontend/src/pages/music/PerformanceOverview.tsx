@@ -75,7 +75,7 @@ function issueText(issue: Issue) {
 
 export function PerformanceOverview() {
   const org = useActiveOrg()
-  const [range, setRange] = useState(() => ({ start: day(-90), end: day(180) }))
+  const [range, setRange] = useState(() => ({ start: day(0), end: day(180) }))
   const [filter, setFilter] = useState(range)
   const [page, setPage] = useState(1)
   const load = useLoad(

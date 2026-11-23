@@ -14,7 +14,7 @@ it('zeigt Handlungsbedarf mit direkten Links und ohne Finanzhinweise ohne Lesere
     return date.toISOString().slice(0, 10)
   }
   fakeApi({
-    [`GET /api/orgs/7/music/performances/overview/?start=${day(-90)}&end=${day(180)}&page=1`]:
+    [`GET /api/orgs/7/music/performances/overview/?start=${day(0)}&end=${day(180)}&page=1`]:
       () => ({
         status: 200,
         body: {
