@@ -583,3 +583,18 @@ def test_abruf_erkennt_umsaetze_aus_hochgeladener_datei(c, fin, konto, bank, clu
     assert data["lines"] == 1 and data["duplicates"] == 2
     with tenant_context(club.pk):
         assert BankLine.objects.filter(account_id=konto).count() == 3
+
+
+def test_abbrechen_nur_durch_die_person_die_begonnen_hat(c, fin, konto, bank, club, api):
+    """Sicherheitsprüfung 26.11.2026, B-M06."""
+    from .factories import give_role, make_user
+
+    url, _ = bank(tan=True)
+    access = eingerichtet(c, fin, url)
+    task = schritt(c, fin, access, "fetch").json()["task"]
+    other = make_user("zweite-kasse@example.org")
+    give_role(other, club, ["finance.view", "finance.edit"], name="Zweite Kasse")
+    assert api(other).post(f"{fin}/bank-tasks/{task}/cancel/").status_code == 400
+    with tenant_context(club.pk):
+        assert BankTask.objects.get(pk=task).status == "tan"
+    assert c.post(f"{fin}/bank-tasks/{task}/cancel/").status_code == 204

@@ -18339,3 +18339,7 @@ msgstr "Comments: %(fehler)s"
 #: website/social_models.py
 msgid "nicht zeigen"
 msgstr "do not show"
+
+#: billing/sepa.py
+msgid "Für diesen Zahler wird gerade ein Mandat angelegt. Bitte noch einmal."
+msgstr "A mandate is being created for this payer right now. Please try again."

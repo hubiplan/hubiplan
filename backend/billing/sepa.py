@@ -14,6 +14,7 @@ from xml.etree import ElementTree as ET
 
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -175,18 +176,27 @@ def create_mandate(
     Mandate.objects.filter(payer, organization=org, status=Mandate.Status.ACTIVE).update(
         status=Mandate.Status.REVOKED, revoked_on=timezone.localdate()
     )
-    return Mandate.objects.create(
-        organization=org,
-        membership=membership,
-        club=club,
-        household=household,
-        reference=next_reference(org, membership, club, household),
-        scheme=scheme,
-        signed_on=signed_on,
-        source=source,
-        created_by=user,
-        **clean,
-    )
+    try:
+        with transaction.atomic():
+            return Mandate.objects.create(
+                organization=org,
+                membership=membership,
+                club=club,
+                household=household,
+                reference=next_reference(org, membership, club, household),
+                scheme=scheme,
+                signed_on=signed_on,
+                source=source,
+                created_by=user,
+                **clean,
+            )
+    except IntegrityError as exc:
+        # Zwei gleichzeitige Anfragen: Die Datenbank lässt je Zahler nur ein gültiges Mandat zu
+        if "mandat_aktiv_" not in str(exc):
+            raise
+        raise ValidationError(
+            gettext("Für diesen Zahler wird gerade ein Mandat angelegt. Bitte noch einmal.")
+        ) from exc
 
 
 def revoke(mandate: Mandate, on: datetime.date | None = None) -> None:

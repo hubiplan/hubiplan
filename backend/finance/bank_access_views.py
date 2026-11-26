@@ -278,5 +278,11 @@ class BankTaskViewSet(FinanceMixin, mixins.ListModelMixin, viewsets.GenericViewS
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, org_id: int, pk=None):
-        bank_fetch.cancel(self._task(pk))
+        task = self._task(pk)
+        # Wie beim Fortsetzen: Den Dialog mit der Bank beendet nur, wer ihn begonnen hat (B-M06)
+        if task.user_id != request.user.pk:
+            raise serializers.ValidationError(
+                gettext("Diesen Vorgang hat eine andere Person begonnen.")
+            )
+        bank_fetch.cancel(task)
         return Response(status=status.HTTP_204_NO_CONTENT)

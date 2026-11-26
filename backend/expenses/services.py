@@ -903,11 +903,25 @@ def pay(
 
 
 def booking_cancelled(booking) -> None:
-    """Storno der Auszahlung: Die Auslage ist wieder freigegeben (aus finance.services)."""
-    claim = ExpenseClaim.objects.filter(booking=booking).first()
-    if claim is None and booking.split_of_id:
-        claim = ExpenseClaim.objects.filter(booking_id=booking.split_of_id).first()
+    """Storno der Auszahlung: Die Auslage ist wieder freigegeben (aus finance.services).
+
+    Bei einer aufgeteilten Auszahlung erst, wenn alle Teile storniert sind; sonst ließe sich
+    der volle Betrag ein zweites Mal auszahlen (Sicherheitsprüfung 26.11.2026, B-H05).
+    """
+    from django.db.models import Q
+
+    from finance.models import Booking
+
+    head_id = booking.split_of_id or booking.pk
+    claim = ExpenseClaim.objects.select_for_update().filter(booking_id=head_id).first()
     if claim is None or claim.status != S.PAID:
+        return
+    still_booked = (
+        Booking.objects.filter(Q(pk=head_id) | Q(split_of_id=head_id))
+        .filter(cancellation__isnull=True)
+        .exists()
+    )
+    if still_booked:
         return
     claim.status = S.APPROVED
     claim.booking = None
@@ -918,6 +932,15 @@ def booking_cancelled(booking) -> None:
         row.receipt = None
         row.save(update_fields=["receipt"])
     log(claim, ExpenseEvent.Kind.REOPENED, None, booking.display_number, who="Kasse")
+
+
+def file_is_booking_receipt(row) -> bool:
+    """Liegt dieselbe Datei als Beleg an einer Buchung? Beim Auszahlen wird der Antragsbeleg
+    Buchungsbeleg (dieselbe Datei). Nach einem Storno zeigt der Antrag nicht mehr darauf, der
+    aufbewahrungspflichtige Beleg der stornierten Buchung aber weiter: Die Datei bleibt."""
+    from finance.models import Receipt
+
+    return bool(row.file) and Receipt.objects.filter(file=row.file.name).exists()
 
 
 # --- Verzicht (Aufwandsspende, A5) ---
@@ -1138,7 +1161,7 @@ def purge(now: datetime.datetime | None = None) -> dict:
         )
         for claim in old:
             for row in claim.files.all():
-                if row.file and not row.receipt_id:
+                if row.file and not row.receipt_id and not file_is_booking_receipt(row):
                     delete_on_commit(row.file)
                 row.delete()
                 stats["files"] += 1
@@ -1160,7 +1183,7 @@ def purge(now: datetime.datetime | None = None) -> dict:
         )
         for claim in drafts:
             for row in claim.files.all():
-                if row.file:
+                if row.file and not file_is_booking_receipt(row):
                     delete_on_commit(row.file)
             claim.delete()
             stats["drafts"] += 1

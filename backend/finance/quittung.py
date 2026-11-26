@@ -164,6 +164,18 @@ def _store_pdf(receipt: CashReceipt, booking: Booking, content: bytes, name: str
 
 
 @transaction.atomic
+def _booking_vat(receipt: CashReceipt) -> str:
+    """Steuersatz der Buchung zur Quittung: der Satz auf der Quittung, sonst die Vorgabe der
+    Kategorie wie beim Buchen von Hand (Sicherheitsprüfung 26.11.2026, B-M02)."""
+    from . import vat
+
+    if receipt.vat_rate is not None:
+        code = next((c for c, pct in vat.RATES.items() if pct == receipt.vat_rate), None)
+        if code is not None:
+            return code
+    return receipt.category.vat_rate if receipt.category_id else ""
+
+
 def finalize(receipt: CashReceipt, user, *, confirmed: bool, signed_at=None) -> CashReceipt:
     """Abschluss: Buchung im Kassenbuch, Belegnummer, unveränderliches PDF als Beleg."""
     from billing import pdf
@@ -217,6 +229,7 @@ def finalize(receipt: CashReceipt, user, *, confirmed: bool, signed_at=None) -> 
             amount=receipt.amount,
             account=receipt.account,
             category=receipt.category,
+            vat_rate=_booking_vat(receipt),
             text=receipt.purpose[:200],
             reference="Quittung",
             counterparty=receipt.counterparty_name[:200],

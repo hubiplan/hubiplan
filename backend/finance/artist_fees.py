@@ -63,20 +63,25 @@ def report(org, year: int) -> dict:
     people: dict[str, dict] = {}
     rows = []
     total = Decimal("0")
+    from . import vat
+
     for b in bookings(org, year):
         name = _name(b)
+        # Ohne gesondert ausgewiesene Umsatzsteuer: bei Buchungen mit Steuersatz das Netto
+        # (Sicherheitsprüfung 26.11.2026, B-M02)
+        amount = vat.split(b.amount, b.vat_rate)[0]
         entry = people.setdefault(
             name.casefold(), {"name": name, "total": Decimal("0"), "count": 0}
         )
-        entry["total"] += b.amount
+        entry["total"] += amount
         entry["count"] += 1
-        total += b.amount
+        total += amount
         rows.append(
             {
                 "id": b.id,
                 "display_number": b.display_number,
                 "date": b.date,
-                "amount": b.amount,
+                "amount": amount,
                 "text": b.text,
                 "name": name,
                 "category": b.frozen_category_name or (b.category.name if b.category else ""),

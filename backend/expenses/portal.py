@@ -112,8 +112,11 @@ class MemberMixin:
     def mine(self):
         return claims_qs(self.org).filter(membership_id=self.access.membership_id)
 
-    def get_claim(self, pk: int) -> ExpenseClaim:
-        claim = self.mine().filter(pk=pk).first()
+    def get_claim(self, pk: int, *, lock: bool = False) -> ExpenseClaim:
+        qs = self.mine().filter(pk=pk)
+        if lock:
+            qs = qs.select_for_update(of=("self",))
+        claim = qs.first()
         if claim is None:
             raise NotFound()
         return claim
@@ -199,13 +202,14 @@ class DetailView(MemberMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, access_id: int, pk: int):
-        claim = self.get_claim(pk)
+        # Gesperrt lesen: sonst läuft das Löschen gegen ein gleichzeitiges Einreichen (B-M07)
+        claim = self.get_claim(pk, lock=True)
         if claim.status != S.DRAFT or claim.number:
             raise serializers.ValidationError(gettext("Nur Entwürfe lassen sich löschen."))
         from core.files import delete_on_commit
 
         for row in claim.files.all():
-            if row.file:
+            if row.file and not services.file_is_booking_receipt(row):
                 delete_on_commit(row.file)
         claim.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -260,7 +264,7 @@ class FileView(MemberMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, access_id: int, pk: int, file_id: int):
-        claim = self.get_claim(pk)
+        claim = self.get_claim(pk, lock=True)
         row = get_object_or_404(ExpenseFile, claim=claim, pk=file_id)
         # Nach dem Einreichen bleiben Belege (nur ergänzen, nie löschen)
         if claim.status != S.DRAFT or claim.number:
@@ -269,7 +273,7 @@ class FileView(MemberMixin, APIView):
             )
         from core.files import delete_on_commit
 
-        if row.file:
+        if row.file and not services.file_is_booking_receipt(row):
             delete_on_commit(row.file)
         row.delete()
         return self.out(claim)

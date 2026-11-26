@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from core.tenancy import tenant_context
+from expenses import services
 from expenses.models import ExpenseClaim, ExpenseLink
 from finance.models import Account, Booking, Category
 
@@ -335,3 +336,35 @@ def test_freigegebene_auslage_ist_verbindlichkeit(s):
     rows = [r for r in data["liabilities"]["items"] if r["number"] == claim["number"]]
     assert len(rows) == 1 and rows[0]["amount"] == Decimal("30.00")
     assert rows[0]["seller"] == "Muster, Anna"
+
+
+def test_teil_storno_gibt_aufgeteilte_auslage_nicht_frei(s):
+    """Sicherheitsprüfung 26.11.2026, B-H05: Erst wenn alle Teile der Auszahlung storniert
+    sind, ist die Auslage wieder freigegeben; der Beleg der stornierten Buchung bleibt."""
+    from finance.models import Receipt
+    from finance.services import cancel_booking
+
+    lines = json.dumps([{"amount": "30.00", "text": "Hemden"}, {"amount": "15.90", "text": "Hüte"}])
+    claim = einreichen(s, lines=lines)
+    url = f"{s['url']}{claim['id']}/"
+    with tenant_context(s["org"].pk):
+        other = Category.objects.create(organization=s["org"], name="Uniformen", kind="expense")
+    cats = {str(claim["lines"][0]["id"]): s["cat"].pk, str(claim["lines"][1]["id"]): other.pk}
+    ok(s["kasse"].patch(url, {"categories": cats}, content_type=JSON))
+    ok(s["kasse"].post(url + "approve/", {}, content_type=JSON))
+    ok(s["kasse"].post(url + "pay/", {"account": s["bank"].pk}, content_type=JSON, **key()))
+    with tenant_context(s["org"].pk):
+        c = ExpenseClaim.objects.get(pk=claim["id"])
+        head = c.booking
+        part = Booking.objects.get(split_of=head)
+        cancel_booking(part, s["kasse_user"], "Falsche Kategorie")
+        c.refresh_from_db()
+        assert c.status == ExpenseClaim.Status.PAID and c.booking_id == head.pk
+        cancel_booking(head, s["kasse_user"], "Falsche Kategorie")
+        c.refresh_from_db()
+        assert c.status == ExpenseClaim.Status.APPROVED and c.booking_id is None
+        # Der Antrag zeigt nicht mehr auf den Buchungsbeleg, die Datei gehört ihm aber weiter
+        row = c.files.get()
+        assert row.receipt_id is None
+        assert Receipt.objects.filter(booking=head, file=row.file.name).exists()
+        assert services.file_is_booking_receipt(row)

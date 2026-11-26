@@ -62,6 +62,11 @@ def _year_lock(org, year: int, *, shared: bool) -> None:
         cursor.execute(f"SELECT {func}(%s, %s)", [org.pk, 200000 + year])
 
 
+def lock_year_shared(org, year: int) -> None:
+    """Geteilte Jahressperre vorab nehmen (vor dem Sperren von Buchungszeilen)."""
+    _year_lock(org, year, shared=True)
+
+
 def ensure_open(org, *, date: datetime.date | None = None, year: int | None = None) -> None:
     """Fehler, wenn das Geschäftsjahr (zum Datum) abgeschlossen ist.
 
@@ -729,10 +734,21 @@ def finance_records_of(unit) -> str:
     Buchungen, Belege und Rechnungen sind aufbewahrungspflichtig (§ 147 AO). Beim Löschen
     der Einheit würden ihre eigenen Finanzdaten mitgelöscht und Zuordnungen in den Büchern
     des Vereins verloren gehen."""
-    from billing.models import DebitRun, Invoice
+    from billing.models import DebitRun, Dunning, IncomingInvoice, Invoice
     from core.tenancy import rls_bypass
+    from expenses.models import ExpenseClaim
 
-    from .models import BankStatement, CashReceipt, Donation, DonationStatement
+    from .models import (
+        BankStatement,
+        Budget,
+        BudgetLine,
+        CashAudit,
+        CashCount,
+        CashReceipt,
+        Donation,
+        DonationStatement,
+        ReserveMovement,
+    )
 
     checks = [
         (Booking.objects.filter(organization=unit), "Buchungen"),
@@ -745,6 +761,16 @@ def finance_records_of(unit) -> str:
         (DonationStatement.objects.filter(organization=unit), "Zuwendungsbestätigungen"),
         (BankStatement.objects.filter(organization=unit), "Kontoauszüge"),
         (YearClosing.objects.filter(organization=unit), "Jahresabschlüsse"),
+        # Sicherheitsprüfung 26.11.2026, B-M05: weitere aufbewahrungspflichtige Unterlagen
+        (Dunning.objects.filter(organization=unit), "Mahnungen"),
+        (IncomingInvoice.objects.filter(organization=unit), "Eingangsrechnungen"),
+        (CashCount.objects.filter(organization=unit), "Kassenzählungen"),
+        (CashAudit.objects.filter(organization=unit), "Kassenprüfungen"),
+        (ReserveMovement.objects.filter(organization=unit), "Rücklagen"),
+        (Budget.objects.filter(organization=unit), "Haushaltspläne"),
+        (BudgetLine.objects.filter(department=unit), "Zeilen im Haushaltsplan"),
+        (ExpenseClaim.objects.filter(organization=unit), "Auslagen"),
+        (ExpenseClaim.objects.filter(department=unit), "zugeordnete Auslagen"),
     ]
     with rls_bypass():
         return next((label for qs, label in checks if qs.exists()), "")
@@ -830,22 +856,36 @@ def clear_reopen_request(closing: YearClosing) -> None:
 
 
 def reopen_year(closing: YearClosing, user, reason: str):
-    """Abschluss aufheben; der alte Stand bleibt mit Grund erhalten (B4)."""
+    """Abschluss aufheben; der alte Stand bleibt mit Grund erhalten (B4).
+
+    Mit dem Abschluss fällt auch das Festhalten von Kategorie und steuerlichem Bereich der
+    Buchungen dieses Jahres weg: Sonst zeigten Berichte und ein neuer Abschluss nach einer
+    Korrektur weiter die alten Werte (Sicherheitsprüfung 26.11.2026, B-H02). Die exklusive
+    Jahressperre hält gleichzeitiges Buchen und Abschließen fern.
+    """
+    from django.db import transaction
+
     from .models import ReopenedClosing
 
     reason = _check_reason(reason)
-    by = closing.closed_by
-    archived = ReopenedClosing.objects.create(
-        organization=closing.organization,
-        year=closing.year,
-        closed_at=closing.closed_at,
-        closed_by_name=(by.get_full_name() or by.email) if by else "",
-        snapshot=closing.snapshot,
-        reopened_by=user,
-        reopened_by_name=(user.get_full_name() or user.email) if user else "",
-        reason=reason[:500],
-    )
-    closing.delete()
+    org, year = closing.organization, closing.year
+    with transaction.atomic():
+        _year_lock(org, year, shared=False)
+        by = closing.closed_by
+        archived = ReopenedClosing.objects.create(
+            organization=org,
+            year=year,
+            closed_at=closing.closed_at,
+            closed_by_name=(by.get_full_name() or by.email) if by else "",
+            snapshot=closing.snapshot,
+            reopened_by=user,
+            reopened_by_name=(user.get_full_name() or user.email) if user else "",
+            reason=reason[:500],
+        )
+        closing.delete()
+        Booking.objects.filter(organization=org, year=year, frozen=True).update(
+            frozen=False, frozen_category_name="", frozen_tax_area=""
+        )
     return archived
 
 
@@ -896,6 +936,9 @@ def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
     und Abteilung."""
     if not connection.in_atomic_block:
         raise RuntimeError("split_booking nur innerhalb einer Transaktion aufrufen.")
+    # Erst die Jahressperre, dann die Zeile: gleiche Reihenfolge wie der Jahresabschluss,
+    # sonst können sich beide gegenseitig blockieren (Sicherheitsprüfung 26.11.2026, B-M03)
+    ensure_open(booking.organization, year=booking.year)
     booking = Booking.objects.select_for_update().select_related("organization").get(pk=booking.pk)
     org = booking.organization
     ensure_open(org, year=booking.year)
@@ -962,6 +1005,10 @@ def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
                 department=booking.department,
                 vat_rate=part["category"].vat_rate,
                 input_tax_share=booking.input_tax_share,
+                # Steuerliche Merkmale gelten für den ganzen Vorgang (B-M02)
+                earmark=booking.earmark,
+                allowance=booking.allowance,
+                artist_fee=booking.artist_fee,
                 split_of=booking,
                 created_by=user,
             )

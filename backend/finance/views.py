@@ -544,7 +544,13 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     def perform_update(self, serializer):
         # Alles in einer Transaktion: Zeile sperren, frisch prüfen, Jahr sperren, schreiben.
         # Sonst endet die Jahressperre vor dem Schreiben, und ein paralleler Abschluss
-        # könnte dazwischenkommen.
+        # könnte dazwischenkommen. Die Jahressperre kommt zuerst, in derselben Reihenfolge wie
+        # beim Jahresabschluss; sonst können sich beide gegenseitig blockieren (B-M03).
+        years = {serializer.instance.year}
+        if serializer.validated_data.get("date"):
+            years.add(self.org.fiscal_year_of(serializer.validated_data["date"]))
+        for year in sorted(years):
+            services.lock_year_shared(self.org, year)
         if self._lock_and_refresh(serializer.instance):
             serializer = self._revalidate(serializer)
         instance = serializer.instance

@@ -1103,17 +1103,32 @@ def refund_credit(invoice: Invoice, user) -> list:
     return counters
 
 
+def _recipient_key(invoice: Invoice) -> tuple | None:
+    """Woran sich „derselbe Empfänger“ festmacht; None, wenn er sich nicht sicher bestimmen
+    lässt (Teilnehmende, anonymisierte und frei eingetragene Empfänger). Der Haushalt gehört
+    dazu: Sonst gälten alle Haushaltsrechnungen als ein Empfänger (Sicherheitsprüfung
+    26.11.2026, B-H04)."""
+    if invoice.recipient_kind in (Invoice.Recipient.REGISTRATION, Invoice.Recipient.ANONYMIZED):
+        return None
+    key = (
+        invoice.membership_id,
+        invoice.department_id,
+        invoice.club_id,
+        invoice.partner_id,
+        invoice.household_id,
+    )
+    return key if any(part is not None for part in key) else None
+
+
 def _same_recipient(a: Invoice, b: Invoice) -> bool:
-    return a.recipient_kind == b.recipient_kind and (
-        a.membership_id,
-        a.department_id,
-        a.club_id,
-        a.partner_id,
-    ) == (b.membership_id, b.department_id, b.club_id, b.partner_id)
+    key = _recipient_key(a)
+    return a.recipient_kind == b.recipient_kind and key is not None and key == _recipient_key(b)
 
 
 def credit_targets(invoice: Invoice):
     """Offene Rechnungen desselben Empfängers, mit denen sich das Guthaben verrechnen lässt."""
+    if _recipient_key(invoice) is None:
+        return Invoice.objects.none()
     return (
         Invoice.objects.filter(
             organization_id=invoice.organization_id,
@@ -1123,6 +1138,7 @@ def credit_targets(invoice: Invoice):
             department_id=invoice.department_id,
             club_id=invoice.club_id,
             partner_id=invoice.partner_id,
+            household_id=invoice.household_id,
         )
         .exclude(pk=invoice.pk)
         .order_by("date", "pk")

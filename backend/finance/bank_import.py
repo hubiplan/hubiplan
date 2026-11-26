@@ -598,6 +598,8 @@ def book(
         amount=line.amount,
         account=line.account,
         category=category,
+        # Vorgabe der Kategorie wie beim Buchen von Hand (Sicherheitsprüfung 26.11.2026, B-M02)
+        vat_rate=category.vat_rate,
         text=(text.strip() or line.purpose or line.name or "Kontoumsatz")[:200],
         reference="Kontoauszug",
         counterparty=line.name[:200],
