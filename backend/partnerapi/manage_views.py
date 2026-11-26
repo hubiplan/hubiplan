@@ -479,10 +479,36 @@ class _Writer(_Base):
         return secret
 
     def sensitive(self, access: ApiAccess, data: dict) -> bool:
-        """Änderungen, die mehr Daten nach außen geben oder an eine andere Stelle senden."""
+        """Änderungen, die mehr Daten nach außen geben, Filter lockern oder Laufzeit verlängern."""
+        scopes_added = "scopes" in data and bool(set(data["scopes"]) - set(access.scopes or []))
+        unit_changed = "unit" in data and (getattr(data["unit"], "pk", None) != access.unit_id)
+        networks_changed = "allowed_networks" in data and data["allowed_networks"] != (
+            access.allowed_networks or []
+        )
+        only_active_relaxed = (
+            "only_active" in data and access.only_active and not data["only_active"]
+        )
+        adults_only_relaxed = (
+            "adults_only" in data and access.adults_only and not data["adults_only"]
+        )
+        fields_added = "member_fields" in data and bool(
+            set(data["member_fields"]) - set(access.member_fields or [])
+        )
+        expiry_extended = (
+            "expires_at" in data
+            and data["expires_at"] is not None
+            and (access.expires_at is None or data["expires_at"] > access.expires_at)
+        )
         return (
             data["_personal_new"]
             or data["_writes_new"]
+            or scopes_added
+            or unit_changed
+            or networks_changed
+            or only_active_relaxed
+            or adults_only_relaxed
+            or fields_added
+            or expiry_extended
             or ("webhook_url" in data and data["webhook_url"] != access.webhook_url)
         )
 

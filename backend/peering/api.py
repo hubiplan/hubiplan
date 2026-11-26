@@ -376,6 +376,21 @@ class CouplingView(_Peering):
         coupling = self.coupling(pk)
         if not coupling.is_open and coupling.state != Coupling.State.PENDING:
             raise ValidationError({"detail": gettext("Die Kopplung ist nicht aktiv.")})
+        # Ausweitung der Datenfreigabe oder automatische Weitergabe erfordert frische Bestätigung
+        widening = False
+        if "options" in request.data:
+            options = request.data.get("options") or {}
+            if bool(options.get("circulars_auto")) and not (coupling.options or {}).get(
+                "circulars_auto"
+            ):
+                widening = True
+        if "packets" in request.data:
+            new_packets = request.data.get("packets") or {}
+            old_packets = coupling.packets or {}
+            if any(v and v != old_packets.get(k) for k, v in new_packets.items()):
+                widening = True
+        if widening:
+            step_up.require(request)
         if "options" in request.data:
             options = request.data.get("options") or {}
             coupling.options = {
@@ -406,7 +421,7 @@ class CouplingView(_Peering):
 class CouplingActionView(_Peering):
     def post(self, request, org_id, pk, action):
         coupling = self.coupling(pk)
-        if action in ("accept", "resume", "move-confirm"):
+        if action in ("accept", "resume", "move-confirm", "more-accept"):
             step_up.require(request)  # Daten fließen danach (Gesamtaudit 15.11., AZ-11)
         try:
             if action == "accept":
@@ -718,6 +733,7 @@ class PlatformKeysView(APIView):
     permission_classes = [IsPlatformAdmin]
 
     def post(self, request):
+        step_up.require(request)
         emergency = request.data.get("mode") == "emergency"
         if str(request.data.get("confirm") or "").strip().upper() != (
             "NOTFALL" if emergency else "WECHSELN"
@@ -735,6 +751,7 @@ class PlatformPeerKeysView(APIView):
     permission_classes = [IsPlatformAdmin]
 
     def post(self, request, pk):
+        step_up.require(request)
         peer = get_object_or_404(Peer, pk=pk)
         try:
             if request.data.get("action") == "confirm":

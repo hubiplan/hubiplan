@@ -77,6 +77,10 @@ def department_contexts(user) -> dict[int, DepartmentContext]:
     result: dict[int, DepartmentContext] = {}
     on = today()
     for access in accesses_of(user):
+        # Ämter gehören dem Mitglied selbst: Ansprechpartner und Erziehungsberechtigte
+        # erben sie nicht (Sicherheitsprüfung 26.11.2026, A-H05)
+        if access.contact_person_id is not None:
+            continue
         club = access.organization
         if club.type != Organization.Type.CLUB or not club.department_access_enabled:
             continue
@@ -405,3 +409,23 @@ def access_info(access: PortalAccess | None) -> dict | None:
         "last_login": access.user.last_login,
         "login": "link" if link_login_allowed(access.user) else "password",
     }
+
+
+def contact_may(access, user, *, invoices: bool = False, represent: bool = False) -> bool:
+    """Darf dieser Zugang für das Mitglied Rechnungen sehen bzw. es vertreten?
+
+    Das Mitglied selbst immer. Ansprechpartner nur mit den Häkchen „erhält Rechnungen“ bzw.
+    „vertritt“; Erziehungsberechtigte immer (Sicherheitsprüfung 26.11.2026, A-H05). Gelesen
+    wird im Bereich des Vereins, sonst blendet RLS den Ansprechpartner aus.
+    """
+    if access.contact_person_id is None:
+        return True
+    from members.models import ContactPerson
+
+    with tenant_context(access.organization_id, user.pk):
+        cp = ContactPerson.objects.filter(pk=access.contact_person_id).first()
+    if cp is None:
+        return False
+    if cp.is_guardian:
+        return True
+    return (not invoices or cp.receives_invoices) and (not represent or cp.represents)

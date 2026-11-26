@@ -26,6 +26,8 @@ def is_invitation(user) -> bool:
 
 
 class InvitationTokenGenerator(PasswordResetTokenGenerator):
+    bind_auth_version = True
+
     def _make_hash_value(self, user, timestamp) -> str:
         # Wie allauths EmailAwarePasswordResetTokenGenerator (dessen Modul lädt diese
         # Klasse beim Import, daher hier nachgebildet): Adressänderung macht Links ungültig.
@@ -38,7 +40,10 @@ class InvitationTokenGenerator(PasswordResetTokenGenerator):
         email = user_email(user)
         emails = {email} if email else set()
         emails.update(EmailAddress.objects.filter(user_id=user.pk).values_list("email", flat=True))
-        return ret + "|".join(sorted(emails))
+        if not self.bind_auth_version:
+            return ret + "|".join(sorted(emails))
+        auth_ver = getattr(user, "auth_version", 0)
+        return f"{ret}{auth_ver}|" + "|".join(sorted(emails))
 
     def check_token(self, user, token):
         if super().check_token(user, token):
@@ -52,7 +57,22 @@ class InvitationTokenGenerator(PasswordResetTokenGenerator):
             return False
         if self._num_seconds(self._now()) - ts > INVITATION_DAYS * 86400:
             return False
-        return any(
+        secrets = [self.secret, *self.secret_fallbacks]
+        if any(
             constant_time_compare(self._make_token_with_timestamp(user, ts, secret), token)
-            for secret in [self.secret, *self.secret_fallbacks]
+            for secret in secrets
+        ):
+            return True
+        # Übergang (eine Fassung lang): Einladungen, die vor der Bindung an auth_version
+        # verschickt wurden, bleiben in ihrer Frist gültig. Danach entfällt dieser Zweig.
+        legacy = _LegacyInvitationTokenGenerator()
+        return any(
+            constant_time_compare(legacy._make_token_with_timestamp(user, ts, secret), token)
+            for secret in secrets
         )
+
+
+class _LegacyInvitationTokenGenerator(InvitationTokenGenerator):
+    """Hashwert der vorigen Fassung (ohne auth_version), nur zum Prüfen alter Einladungen."""
+
+    bind_auth_version = False

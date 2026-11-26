@@ -190,12 +190,24 @@ def _fail(status: int) -> FilesError:
     return error
 
 
-def _ocs(client: Client, method: str, path: str, params: dict | None = None):
+def _ocs(
+    client: Client,
+    method: str,
+    path: str,
+    params: dict | None = None,
+    *,
+    body_params: dict | None = None,
+):
+    """``body_params`` gehen im Rumpf statt in der Adresse (Passwörter gehören nicht in
+    Zugriffsprotokolle)."""
     query = urlencode({**(params or {}), "format": "json"})
     url = f"{client.base_url.rstrip('/')}/ocs/v2.php/{path}?{query}"
-    resp = _call(
-        client, method, url, headers={"OCS-APIRequest": "true", "Accept": "application/json"}
-    )
+    headers = {"OCS-APIRequest": "true", "Accept": "application/json"}
+    body = None
+    if body_params is not None:
+        body = urlencode(body_params).encode("utf-8")
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+    resp = _call(client, method, url, body=body, headers=headers)
     try:
         ocs = json.loads(resp.body or b"{}").get("ocs", {})
     except ValueError:

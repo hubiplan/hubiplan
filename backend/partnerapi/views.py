@@ -561,9 +561,12 @@ class EventsView(PartnerView):
             wanted = request.query_params.get("unit")
             if wanted:
                 try:
-                    unit = Department.objects.filter(
+                    unit_qs = Department.objects.filter(
                         organization=self.org, uuid=wanted, is_active=True
-                    ).first()
+                    )
+                    if self.unit is not None:
+                        unit_qs = unit_qs.filter(pk__in=subtree_ids(self.unit))
+                    unit = unit_qs.first()
                 except (ValueError, TypeError, serializers.DjangoValidationError):
                     unit = None
                 if unit is None:

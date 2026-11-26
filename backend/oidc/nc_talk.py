@@ -148,7 +148,7 @@ def create(event, user) -> TalkRoom:
         raise TalkError(gettext("Talk in der Nextcloud hat keinen Raum angelegt."))
     password = new_password()
     try:
-        _ocs(client, "PUT", f"{API}/{token}/password", {"password": password})
+        _ocs(client, "PUT", f"{API}/{token}/password", body_params={"password": password})
         _ocs(
             client,
             "PUT",

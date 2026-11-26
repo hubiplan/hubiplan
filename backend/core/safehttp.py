@@ -54,27 +54,32 @@ def resolve(host: str, port: int, *, allow_internal: bool = False) -> str:
     return addresses[0]
 
 
-# Präfixe, hinter denen eine IPv4-Adresse steckt (NAT64 nach RFC 6052/8215)
-_NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+# Well-Known-NAT64-Präfix (RFC 6052); 64:ff9b:1::/48 (RFC 8215) ist stets lokal/privat
+_NAT64_WELL_KNOWN = ipaddress.ip_network("64:ff9b::/96")
+_NAT64_LOCAL = ipaddress.ip_network("64:ff9b:1::/48")
 
 
 def is_public(address: str) -> bool:
     """Öffentlich erreichbar, auch nach Übersetzung: IPv6-Adressen, die eine IPv4-Adresse
     tragen (NAT64, 6to4, Teredo, IPv4-mapped), zählen nur, wenn diese öffentlich ist
-    (Gesamtaudit 05.11. GA-13)."""
+    (Gesamtaudit 05.11. GA-13). Lokales NAT64 (64:ff9b:1::/48) und Multicast sind immer gesperrt."""
     ip = ipaddress.ip_address(address)
+    if ip.is_multicast:
+        return False
     if isinstance(ip, ipaddress.IPv6Address):
+        if ip in _NAT64_LOCAL:
+            return False
         embedded = []
         if ip.ipv4_mapped:
             embedded.append(ip.ipv4_mapped)
         if ip.sixtofour:
             embedded.append(ip.sixtofour)
         if ip.teredo:
-            embedded.append(ip.teredo[1])
-        if any(ip in net for net in _NAT64):
+            embedded.extend(ip.teredo)
+        if ip in _NAT64_WELL_KNOWN:
             embedded.append(ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF))
         if embedded:
-            return all(v4.is_global for v4 in embedded)
+            return all(v4.is_global and not v4.is_multicast for v4 in embedded)
     return ip.is_global
 
 

@@ -221,6 +221,24 @@ def verify(request, challenge_id: str, credential, user=None):
     authenticator = webauthn_auth.get_authenticator_by_credential_id(user, binding.credential_id)
     if authenticator is None or authenticator.type != Authenticator.Type.WEBAUTHN:
         raise _failed()
+    # WebAuthn-Signaturzähler (A-L04): monoton steigend prüfen und fortschreiben
+    auth_data = getattr(response.response, "authenticator_data", None)
+    new_counter = getattr(auth_data, "counter", None)
+    if isinstance(new_counter, int) and new_counter >= 0:
+        data = dict(authenticator.data or {})
+        stored_counter = int(data.get("sign_count") or 0)
+        if stored_counter > 0 and new_counter > 0 and new_counter <= stored_counter:
+            logger.warning(
+                "Passkey-Anmeldung abgewiesen (Signaturzähler %s <= %s) für Konto %s",
+                new_counter,
+                stored_counter,
+                user.pk,
+            )
+            raise _failed()
+        if new_counter > stored_counter:
+            data["sign_count"] = new_counter
+            authenticator.data = data
+            authenticator.save(update_fields=["data"])
     return user, authenticator
 
 

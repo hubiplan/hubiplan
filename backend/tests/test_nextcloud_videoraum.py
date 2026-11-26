@@ -55,7 +55,10 @@ class FakeTalk:
         if method == "PUT" and rest[1:] == ["password"]:
             if self.fail_password:
                 return self._ocs({"message": "Passwort zu schwach"}, 400, 400)
-            self.rooms[token]["password"] = query["password"]
+            # Das Passwort steht im Rumpf, nie in der Adresse (Zugriffsprotokolle)
+            assert "password" not in query
+            assert headers["Content-Type"] == "application/x-www-form-urlencoded"
+            self.rooms[token]["password"] = parse_qs(body.decode())["password"][0]
             return self._ocs({})
         if method == "PUT" and rest[1:] == ["description"]:
             self.rooms[token]["description"] = query["description"]
