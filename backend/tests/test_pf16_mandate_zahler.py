@@ -45,8 +45,10 @@ def test_beendete_mandate_mit_den_buechern_anonymisiert():
         status="revoked",
         revoked_on=datetime.date(2025, 6, 1),
     )
+    # Je Zahler höchstens ein gültiges Mandat (B-M07): das ungenutzte gehört einem zweiten Mitglied
+    other = make_member(club, "Otto", "Beispiel")
     unused = _mandate(
-        club, member, "M-2", datetime.date(2020, 1, 1), last_used_on=datetime.date(2022, 3, 1)
+        club, other, "M-2", datetime.date(2020, 1, 1), last_used_on=datetime.date(2022, 3, 1)
     )  # 36 Monate ohne Lastschrift: endete am 01.03.2025
     running = _mandate(
         club, member, "M-3", datetime.date(2024, 1, 1), last_used_on=datetime.date(2025, 11, 1)

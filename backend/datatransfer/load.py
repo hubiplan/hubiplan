@@ -1278,7 +1278,12 @@ class Loader:
             dept.name = name
         dept.short_name = (dept.short_name or "").strip()[:SHORT_NAME_MAX]
         validate_urls(dept)
+        # „Kasse festgeschrieben bis“ erst nach dem Laden der Buchungen setzen (apply_locks):
+        # Sonst weist die Datenbank die alten Buchungen ab (Sicherheitsprüfung 26.11.2026, B-H08)
+        locked_until, dept.finance_locked_until = dept.finance_locked_until, None
         dept.save()
+        if locked_until:
+            self.locked_until[dept.pk] = locked_until
         self.load_logos(dept, d)
         load_imprint(dept, d.get("imprint"))
         load_letterhead(dept, d.get("letterhead"), self)
@@ -1568,7 +1573,11 @@ class Loader:
             raise ValidationError(
                 gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
             ) from exc
+        # Festschreibung erst nach dem Laden der Buchungen (apply_locks, B-H08)
+        locked_until, org.finance_locked_until = org.finance_locked_until, None
         org.save()
+        if locked_until:
+            self.locked_until[org.pk] = locked_until
         self.load_logos(org, data)
         load_imprint(org, data.get("imprint"))
         load_letterhead(org, data.get("letterhead"), self)

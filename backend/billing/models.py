@@ -1343,6 +1343,22 @@ class Mandate(models.Model):
                 | models.Q(membership__isnull=True, club__isnull=True, household__isnull=False),
                 name="mandat_zahler_haushalt",
             ),
+            # Höchstens ein gültiges Mandat je Zahler, auch bei gleichzeitigen Anfragen (B-M07)
+            models.UniqueConstraint(
+                fields=["organization", "membership"],
+                condition=models.Q(membership__isnull=False, status="active"),
+                name="mandat_aktiv_mitglied",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "club"],
+                condition=models.Q(club__isnull=False, status="active"),
+                name="mandat_aktiv_verein",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "household"],
+                condition=models.Q(household__isnull=False, status="active"),
+                name="mandat_aktiv_haushalt",
+            ),
         ]
 
     def __str__(self) -> str:

@@ -14,11 +14,13 @@ from __future__ import annotations
 import base64
 import datetime
 import io
+import secrets
 import zipfile
 from decimal import Decimal, InvalidOperation
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
@@ -68,14 +70,19 @@ def _finish(task: BankTask, status: str, message: str = "") -> None:
 
 
 class _Busy:
-    """Höchstens ein Vorgang je Zugang gleichzeitig (auch über mehrere Worker)."""
+    """Höchstens ein Vorgang je Zugang gleichzeitig (auch über mehrere Worker).
+
+    Jede Sperre trägt ein eigenes Zeichen: Läuft ein Vorgang länger als die Sperre gilt, gibt
+    er am Ende nicht die Sperre eines anderen frei (Sicherheitsprüfung 26.11.2026, B-M06).
+    """
 
     def __init__(self, access: BankAccess):
         self.key = f"bankweg:{access.pk}"
+        self.token = secrets.token_hex(16)
         self.held = False
 
     def __enter__(self):
-        self.held = cache.add(self.key, 1, BUSY_SECONDS)
+        self.held = cache.add(self.key, self.token, BUSY_SECONDS)
         if not self.held:
             raise BankError(
                 "busy", gettext("Für diesen Bankzugang läuft gerade ein anderer Vorgang.")
@@ -83,11 +90,12 @@ class _Busy:
         return self
 
     def __exit__(self, *exc):
-        if self.held:
+        if self.held and cache.get(self.key) == self.token:
             cache.delete(self.key)
 
 
 def _check_lock(access: BankAccess, confirm_retry: bool) -> None:
+    access.refresh_from_db(fields=["failures", "locked_until"])
     now = timezone.now()
     if access.locked_until and access.locked_until > now:
         raise BankError(
@@ -110,12 +118,16 @@ def _check_lock(access: BankAccess, confirm_retry: bool) -> None:
 def _note_failure(access: BankAccess, exc: BankError) -> None:
     if exc.code != "pin":
         return
-    access.failures += 1
-    fields = ["failures"]
-    if access.failures >= 2:
-        access.locked_until = timezone.now() + datetime.timedelta(hours=LOCK_HOURS)
-        fields.append("locked_until")
-    access.save(update_fields=fields)
+    # In der Datenbank zählen: zwei gleichzeitige Fehlversuche zählen beide (B-M06)
+    with transaction.atomic():
+        fresh = BankAccess.objects.select_for_update().get(pk=access.pk)
+        fresh.failures += 1
+        fields = ["failures"]
+        if fresh.failures >= 2:
+            fresh.locked_until = timezone.now() + datetime.timedelta(hours=LOCK_HOURS)
+            fields.append("locked_until")
+        fresh.save(update_fields=fields)
+    access.failures, access.locked_until = fresh.failures, fresh.locked_until
 
 
 def _note_success(access: BankAccess, state: str | None) -> None:

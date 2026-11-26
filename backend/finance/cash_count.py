@@ -83,6 +83,7 @@ def _booking(org, user, *, account, date, kind, amount, category, text, project=
         amount=amount,
         account=account,
         category=category,
+        vat_rate=category.vat_rate if category is not None else "",
         text=text[:200],
         reference="Kassenzählung",
         project=project,
