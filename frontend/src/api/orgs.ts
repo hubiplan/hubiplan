@@ -208,6 +208,8 @@ export interface OrgDetail {
   department_terms?: DeptTerms
   allow_multiple_departments: boolean
   units_in_menu?: boolean
+  /** Protokolle von Versammlungen bestätigen zwei verschiedene Konten */
+  minutes_four_eyes?: boolean
   /** Oberste Einheit führt auch selbst Mitglieder */
   direct_members?: boolean
   /** führt eigene Mitglieder (Mitgliederliste, Mitgliedsarten, Ein-/Austritt) */

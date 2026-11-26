@@ -11314,5 +11314,8 @@
   "Video hinzufügen": "Add video",
   "Aktuelles": "News",
   "die neuesten eigenen Beiträge und die aus Instagram und Facebook": "the latest own posts and those from Instagram and Facebook",
-  "Eigene": "Own"
+  "Eigene": "Own",
+  "Protokolle bestätigen zwei verschiedene Personen": "Minutes are confirmed by two different people",
+  "Leitung und Protokollführung bestätigen ein Protokoll dann nicht mit demselben Konto. Ausschalten, wenn der Verein nur ein Konto für den Vorstand hat.": "The chair and the minute taker then cannot confirm minutes with the same account. Turn off if the club has only one account for the board.",
+  "Die beiden Bestätigungen kommen von zwei verschiedenen Personen.": "The two confirmations come from two different people."
 }

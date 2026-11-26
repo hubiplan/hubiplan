@@ -16,6 +16,8 @@ stichworte: [minutes, resolution, election, resolution book, approval]
 6. The chair and the minute-taker confirm under **Approval of the minutes** with **Confirm as chair** and **Confirm as minute taker**.
 7. Download the approved minutes with **Minutes as PDF**.
 
+The two confirmations come from two different people, each with their own account. If your club has only one account for the board, this can be turned off under [Settings › Organisation](/einstellungen/organisation), under “Meetings”.
+
 With the second confirmation the resolutions get a number and the PDF can no longer be changed. For an accepted election, **Take into office** assigns the elected person to the role.
 
 ![Starting point: Write and approve the minutes](bild:protokoll-freigeben)

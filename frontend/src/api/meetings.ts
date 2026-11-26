@@ -83,6 +83,8 @@ export interface Meeting {
   minute_taker?: string
   note?: string
   agenda?: AgendaItem[]
+  /** Leitung und Protokollführung bestätigen mit verschiedenen Konten */
+  four_eyes?: boolean
   chair_confirmed?: Confirmation | null
   taker_confirmed?: Confirmation | null
   released_at?: string | null

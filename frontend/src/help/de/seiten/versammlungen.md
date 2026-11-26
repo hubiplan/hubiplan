@@ -76,7 +76,9 @@ Nach der Versammlung wählst du **Als durchgeführt markieren**. Die Tagesordnun
 
 ## Freigabe
 
-Unter **Freigabe des Protokolls** bestätigen Leitung und Protokollführung das Protokoll mit **Als Leitung bestätigen** und **Als Protokollführung bestätigen**. Vorher müssen beide unter den Angaben zur Versammlung eingetragen sein. **Vorschau als PDF** zeigt das Protokoll vorher als Entwurf. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf. Mit der zweiten Bestätigung ist das Protokoll freigegeben: Die Beschlüsse bekommen eine fortlaufende Nummer je Jahr (etwa 2027/03), das PDF wird mit Prüfsumme gespeichert und lässt sich nicht mehr ändern. Ist die Dokumentenablage eingeschaltet, legt HUBIplan das PDF im Ordner „Protokolle“ ab, den zunächst nur der Vorstand sieht. **Protokoll als PDF** lädt das freigegebene Protokoll herunter.
+Unter **Freigabe des Protokolls** bestätigen Leitung und Protokollführung das Protokoll mit **Als Leitung bestätigen** und **Als Protokollführung bestätigen**. Vorher müssen beide unter den Angaben zur Versammlung eingetragen sein. Die beiden Bestätigungen kommen von zwei verschiedenen Personen mit eigenem Konto; ein Verein mit nur einem Vorstandskonto schaltet das unter [Einstellungen › Organisation](/einstellungen/organisation) ab.
+
+**Vorschau als PDF** zeigt das Protokoll vorher als Entwurf. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf. Mit der zweiten Bestätigung ist das Protokoll freigegeben: Die Beschlüsse bekommen eine fortlaufende Nummer je Jahr (etwa 2027/03), das PDF wird mit Prüfsumme gespeichert und lässt sich nicht mehr ändern. Ist die Dokumentenablage eingeschaltet, legt HUBIplan das PDF im Ordner „Protokolle“ ab, den zunächst nur der Vorstand sieht. **Protokoll als PDF** lädt das freigegebene Protokoll herunter.
 
 ## Beschlussbuch
 

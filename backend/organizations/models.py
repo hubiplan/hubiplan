@@ -397,6 +397,11 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     units_in_menu = models.BooleanField(
         "Menüpunkt für Untereinheiten zeigen", default=True, db_default=True
     )
+    # Protokoll einer Versammlung: Leitung und Protokollführung bestätigen nicht mit demselben
+    # Konto (Sicherheitsprüfung 26.11., B-M09). Vereine mit nur einem Konto schalten es ab.
+    minutes_four_eyes = models.BooleanField(
+        "Protokolle bestätigen zwei verschiedene Personen", default=True, db_default=True
+    )
     # Anordnung des Menüs (konzepte/menue-frei-anordnen.md, organizations/menu_layout.py):
     # nur Abweichungen vom Standard, null = Standard. Untereinheiten übernehmen die des Vereins.
     menu_layout = models.JSONField("Anordnung des Menüs", null=True, blank=True)

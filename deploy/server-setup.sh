@@ -41,7 +41,9 @@ if [ "$DEPLOY_SPERRE_GEHALTEN" != 1 ]; then
     echo "Manuelles Setup" > "$SETUP_SPERRE/lauf"
 fi
 
-# Beim ersten Mal: .env mit zufälligen Geheimnissen anlegen (nur auf dem Server)
+# Beim ersten Mal: .env mit zufälligen Geheimnissen anlegen (nur auf dem Server). Neue
+# Installationen gleichen eine Kopie am zweiten Ort nur anhängend ab (nie --delete,
+# Sicherheitsprüfung 26.11., D-M02); bestehende behalten ihre Einstellung.
 if [ ! -f .env ]; then
     echo "Lege .env mit neuen Geheimnissen an …"
     umask 077
@@ -51,6 +53,7 @@ ${HUBIPLAN_HINTER_PROXY:+HUBIPLAN_HINTER_PROXY=$HUBIPLAN_HINTER_PROXY}
 ${WEB_PORT:+WEB_PORT=$WEB_PORT}
 DJANGO_SECRET_KEY=$(openssl rand -base64 48 | tr -d '\n/+=')
 POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '\n/+=')
+BACKUP_REMOTE_ANHAENGEND=1
 EOF
 fi
 # Neue Einträge späterer Versionen ergänzen, ohne vorhandene zu ändern

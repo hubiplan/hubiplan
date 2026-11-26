@@ -16,6 +16,8 @@ stichworte: [Protokoll, Beschluss, Wahl, Beschlussbuch, Freigabe]
 6. Leitung und Protokollführung bestätigen unter **Freigabe des Protokolls** mit **Als Leitung bestätigen** und **Als Protokollführung bestätigen**.
 7. Lade das freigegebene Protokoll mit **Protokoll als PDF** herunter.
 
+Die beiden Bestätigungen kommen von zwei verschiedenen Personen mit eigenem Konto. Hat euer Verein nur ein Konto für den Vorstand, lässt sich das unter [Einstellungen › Organisation](/einstellungen/organisation) bei „Versammlungen“ abschalten.
+
 Mit der zweiten Bestätigung bekommen die Beschlüsse eine Nummer, und das PDF lässt sich nicht mehr ändern. Bei einer angenommenen Wahl trägt **Ins Amt übernehmen** die gewählte Person in die Rolle ein.
 
 ![Ausgangspunkt: Protokoll schreiben und freigeben](bild:protokoll-freigeben)

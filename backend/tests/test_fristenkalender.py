@@ -41,9 +41,13 @@ def setup(orgs, api):
     Role.objects.filter(organization=org, name="1. Vorsitzender").update(represents=True)
     kasse = make_user("kasse@example.org", first_name="Karl")
     give_role(kasse, org, permissions=["obligations.view"], name="Kassierer")
+    # Vier-Augen-Prinzip: Die Protokollführung bestätigt mit einem eigenen Konto.
+    schrift = make_user("schrift@example.org", first_name="Max")
+    give_role(schrift, org, permissions=["meetings.edit"], name="Schriftführung")
     return {
         "org": org,
         "chef": api(chef),
+        "schrift": api(schrift),
         "kasse": api(kasse),
         "kasse_role": Role.objects.get(organization=org, name="Kassierer"),
         "base": f"/api/orgs/{org.pk}/obligations/",

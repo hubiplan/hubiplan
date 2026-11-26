@@ -15,6 +15,7 @@ from django.utils.translation import gettext as _
 
 from access.modules import module_on
 from core.i18n import date_text, language_of_org
+from core.tenancy import rls_bypass
 
 from .access import MODULE
 from .catalog import BY_KEY, ELECTION_KEY
@@ -96,7 +97,14 @@ def after_release(meeting, user):
             lines += ["", duty.note]
         description = "\n".join(lines)
         if module_on(org, "todos"):
-            return _todo(org, user, duty, due, description, elections)
+            owner = _todo_owner(org, meeting, user)
+            if owner is not None and owner.pk == user.pk:
+                return _todo(org, user, duty, due, description, elections)
+            if owner is not None:
+                # Vier-Augen-Prinzip: Wer zuletzt bestätigt, hat nicht unbedingt das Recht
+                # für Aufgaben. Dann gehört die Aufgabe dem anderen bestätigenden Konto.
+                with rls_bypass():
+                    return _todo(org, owner, duty, due, description, elections)
         return Obligation.objects.create(
             organization=org,
             title=duty.title[:200],
@@ -106,6 +114,21 @@ def after_release(meeting, user):
             remind_days=duty.days_after,
             role_id=duty.role_id,
         )
+
+
+def _todo_owner(org, meeting, user):
+    """Konto, dem die Aufgabe gehört: wer bestätigt hat und Aufgaben bearbeiten darf.
+
+    Zuerst das Konto, das gerade freigibt, sonst das andere bestätigende Konto. Hat keines
+    das Recht, bleibt es beim Eintrag im Fristenkalender."""
+    from access.permissions import own_permissions_in
+
+    candidates = [user, meeting.chair_confirmed_by, meeting.taker_confirmed_by]
+    with rls_bypass():
+        for candidate in candidates:
+            if candidate is not None and "todos.edit" in own_permissions_in(candidate, org):
+                return candidate
+    return None
 
 
 def _todo(org, user, duty, due, description, elections):

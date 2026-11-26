@@ -37,11 +37,14 @@ def setup(orgs, api):
     org.save()
     chef = make_user("vorsitz@example.org")
     give_role(chef, org, permissions=["meetings.edit"], name="Vorsitz")
+    schrift = make_user("schrift@example.org")
+    give_role(schrift, org, permissions=["meetings.edit"], name="Schriftführung")
     reader = make_user("beisitz@example.org")
     give_role(reader, org, permissions=["meetings.view"], name="Beisitz")
     return {
         "org": org,
         "chef": api(chef),
+        "schrift": api(schrift),
         "reader": api(reader),
         "url": f"/api/orgs/{org.pk}/meetings/",
     }
@@ -616,12 +619,14 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
     payload["version"] = meeting["version"]
     meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
     assert meeting["chair_confirmed"] is None
-    for role in ("chair", "taker"):
-        meeting = ok(
-            s["chef"].post(
-                confirm, {"version": meeting["version"], "role": role}, content_type=JSON
-            )
-        )
+    meeting = ok(
+        s["chef"].post(confirm, {"version": meeting["version"], "role": "chair"}, content_type=JSON)
+    )
+    # Vier-Augen-Prinzip: dasselbe Konto bestätigt nicht auch als Protokollführung
+    body = {"version": meeting["version"], "role": "taker"}
+    resp = s["chef"].post(confirm, body, content_type=JSON)
+    assert resp.status_code == 400 and "zwei verschiedenen Personen" in resp.json()["detail"]
+    meeting = ok(s["schrift"].post(confirm, body, content_type=JSON))
     assert meeting["status"] == "done" and meeting["released_at"]
     # Freigegeben: Titel, Zeit, Leitung und Protokollführung stehen fest
     resp = s["chef"].patch(url, {"title": "Ganz andere Versammlung"}, content_type=JSON)
@@ -652,9 +657,9 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
         "items": [{"id": second["agenda"][0]["id"], "resolutions": [{"text": "X."}]}],
     }
     second = ok(s["chef"].put(url2 + "minutes/", payload, content_type=JSON))
-    for role in ("chair", "taker"):
+    for role, wer in (("chair", "chef"), ("taker", "schrift")):
         second = ok(
-            s["chef"].post(
+            s[wer].post(
                 url2 + "minutes/confirm/",
                 {"version": second["version"], "role": role},
                 content_type=JSON,
@@ -679,9 +684,9 @@ def release(s, meeting, resolutions):
         "items": [{"id": meeting["agenda"][1]["id"], "resolutions": resolutions}],
     }
     meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
-    for role in ("chair", "taker"):
+    for role, wer in (("chair", "chef"), ("taker", "schrift")):
         meeting = ok(
-            s["chef"].post(
+            s[wer].post(
                 url + "minutes/confirm/",
                 {"version": meeting["version"], "role": role},
                 content_type=JSON,
@@ -743,7 +748,7 @@ def test_beschlussbuch(setup, api):
     assert resp.status_code == 200 and resp.content[:2] == b"PK"
     # Als Aufgabe: braucht das Recht dazu
     assert s["chef"].post(f"{detail}todo/", {}, content_type=JSON).status_code == 403
-    planner = make_user("schrift@example.org")
+    planner = make_user("planung@example.org")
     give_role(
         planner, org, permissions=["meetings.edit", "todos.view", "todos.edit"], name="Schrift"
     )
@@ -880,3 +885,36 @@ def test_antraege_aus_dem_mitgliederbereich(setup, api):
     MeetingKind.objects.filter(pk=kind["id"]).update(motion_days=None)
     assert ok(portal.get(url))["upcoming"][0]["motion_until"] is None
     assert second
+
+
+def test_protokoll_vier_augen_abschaltbar(setup):
+    """B-M09: Ein Verein mit nur einem Konto schaltet das Vier-Augen-Prinzip ab."""
+    s = setup
+    org = s["org"]
+    assert org.minutes_four_eyes is True
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    meeting = ok(
+        s["chef"].patch(
+            url,
+            {"status": "held", "chair": "Erika Vorsitz", "minute_taker": "Max Schrift"},
+            content_type=JSON,
+        )
+    )
+    assert ok(s["chef"].get(url))["four_eyes"] is True
+    payload = {
+        "version": meeting["version"],
+        "items": [{"id": meeting["agenda"][1]["id"], "minutes": "Bericht."}],
+    }
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    confirm = url + "minutes/confirm/"
+    meeting = ok(
+        s["chef"].post(confirm, {"version": meeting["version"], "role": "taker"}, content_type=JSON)
+    )
+    body = {"version": meeting["version"], "role": "chair"}
+    assert s["chef"].post(confirm, body, content_type=JSON).status_code == 400
+    org.minutes_four_eyes = False
+    org.save(update_fields=["minutes_four_eyes"])
+    assert ok(s["chef"].get(url))["four_eyes"] is False
+    meeting = ok(s["chef"].post(confirm, body, content_type=JSON))
+    assert meeting["status"] == "done"
