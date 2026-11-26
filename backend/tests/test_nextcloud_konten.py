@@ -347,7 +347,8 @@ def test_grund_ohne_zwei_faktor_in_mail_und_liste(api, orgs, board_a, cloud):
     ]
     mail.outbox.clear()
     assert nc_accounts.sync(client)["disabled"] == 1
-    to_managers = [m for m in mail.outbox if "zweiter@example.org" not in m.to]
+    # Die Rollenverwaltung bekommt eine Mail (auch „zweiter“: die Rolle besteht ja weiter)
+    to_managers = [m for m in mail.outbox if m.to != ["zweiter@example.org"]]
     assert any(
         "zbisher (zweiter@example.org): deaktiviert (keine Zwei-Faktor-Anmeldung" in m.body
         for m in to_managers
