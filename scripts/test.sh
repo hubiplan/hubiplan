@@ -835,6 +835,14 @@ if [ "${BACKUP_TEST:-0}" = "1" ]; then
         -c 'f=$(ls -1t /backups/db_*.enc | head -1); printf x >> "$f"
             if restore-test.sh > /dev/null 2>&1; then echo "Verändertes Backup eingespielt" >&2; exit 1; fi'
     echo "Backup: veränderte Datei wird abgewiesen"
+    # Ein Dump mit eigenen psql-Befehlen führt beim Rücksicherungstest nichts aus (D-H03)
+    docker run --rm "$CPUS" --tmpfs /tmp --entrypoint sh "$BACKUP_IMG" \
+        -c 'printf "SELECT 1;\n\\\\! touch /tmp/ausgefuehrt\n" | gzip > /tmp/boese.sql.gz
+            if BACKUP_DIR=/tmp restore-test.sh --klartext /tmp/boese.sql.gz db_probe.sql.gz.age > /dev/null 2>&1; then
+                echo "Dump mit eigenem Befehl eingespielt" >&2; exit 1
+            fi
+            [ ! -e /tmp/ausgefuehrt ]'
+    echo "Backup: Dump mit eigenen Befehlen wird abgewiesen"
     # Mit öffentlichem Schlüssel: Server kann verschlüsseln, aber nicht lesen
     docker run --rm --network "$ID" "$CPUS" -v "$ID-backups:/backups" --tmpfs /tmp \
         -e PGHOST="$ID-db" -e PGUSER=test -e PGPASSWORD=test -e PGDATABASE=hubiplan \

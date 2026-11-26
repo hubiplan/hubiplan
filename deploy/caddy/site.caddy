@@ -58,14 +58,28 @@ route {
 
 	import media.caddy
 
-	# Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“).
-	# Läuft er nicht, antwortet nur dieser Pfad mit einem Fehler.
+	# Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“) unter
+	# derselben Adresse wie HUBIplan: nur für Testserver, nur mit HUBIPLAN_VEREINSSEITE_PFAD=1
+	# in der .env. Unter derselben Adresse teilt sich die Webseite den Ursprung mit der
+	# Verwaltung; im Echtbetrieb läuft sie deshalb unter eigener Domain (Sicherheitsprüfung
+	# 26.11., D-H01). Ohne den Schalter gibt es den Pfad nicht.
 	# Nicht /webseite/: Den Pfad nutzt die Verwaltung (Webseite › Gestaltung …); beim Neuladen
 	# landete er sonst bei der Vereinswebseite (400). scripts/pruefe-proxy.sh prüft das.
-	redir /vereinsseite /vereinsseite/ 308
-	handle_path /vereinsseite/* {
+	@vereinsseite_kurz {
+		path /vereinsseite
+		expression `"{$HUBIPLAN_VEREINSSEITE_PFAD:0}" == "1"`
+	}
+	redir @vereinsseite_kurz /vereinsseite/ 308
+	@vereinsseite {
+		path /vereinsseite/*
+		expression `"{$HUBIPLAN_VEREINSSEITE_PFAD:0}" == "1"`
+	}
+	handle @vereinsseite {
+		uri strip_prefix /vereinsseite
 		reverse_proxy {$WEBSITE_UPSTREAM:website:8000} {
 			import upstream
+			# Die Sitzung der Verwaltung geht nie an den Webseiten-Dienst
+			header_up Cookie "(^|; *)sessionid=[^;]*" ""
 			# Beim Ausrollen der Webseite kurz warten statt Fehler
 			lb_try_duration 15s
 			lb_try_interval 250ms

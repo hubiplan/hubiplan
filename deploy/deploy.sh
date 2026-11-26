@@ -31,6 +31,14 @@ if [ -z "$HOST" ]; then
     exit 1
 fi
 DIR="${DEPLOY_DIR:-/opt/hubiplan}"
+# Der Ordner steht unten in Befehlen auf dem Server: nur ein gewöhnlicher absoluter Pfad
+case "$DIR" in
+    /*) ;;
+    *) echo "Abbruch: DEPLOY_DIR muss ein absoluter Pfad sein." >&2; exit 1 ;;
+esac
+case "$DIR" in
+    *[!A-Za-z0-9_./-]*) echo "Abbruch: DEPLOY_DIR enthält unzulässige Zeichen." >&2; exit 1 ;;
+esac
 SSH="${SSH:-ssh}"
 # Optional: Pfad zum privaten Schlüssel, z. B. DEPLOY_KEY=~/.ssh/deploy_key
 if [ -n "${DEPLOY_KEY:-}" ]; then

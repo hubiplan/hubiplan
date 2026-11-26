@@ -52,8 +52,12 @@ if [ "$(stat -c %u "$PRIVAT")" != "$(id -u)" ] ||
     exit 1
 fi
 
-# Auftrag übernehmen; ein zweiter Lauf findet ihn dann nicht mehr
-mv -T "$DIR/auftrag" "$DIR/auftrag.laeuft" 2> /dev/null || exit 0
+# Auftrag übernehmen; ein zweiter Lauf findet ihn dann nicht mehr. Er wandert gleich in den
+# Ordner nur für root: Dort kann ihn das Backend (UID 1000) zwischen Prüfung und Lesen nicht
+# mehr gegen eine Pipe oder einen Symlink tauschen (Sicherheitsprüfung 26.11., D-M01).
+AUFTRAG="$PRIVAT/auftrag.laeuft"
+rm -rf "$AUFTRAG"
+mv -T "$DIR/auftrag" "$AUFTRAG" 2> /dev/null || exit 0
 
 # Datei aus PRIVAT in den Auftragsordner legen: rename ersetzt einen Symlink, folgt ihm nicht
 ablegen() {
@@ -72,7 +76,7 @@ ergebnis() {
     } > "$neu"
     ablegen "$neu" ergebnis
     # „laeuft“ ist ein Zwischenstand; der Auftrag bleibt dabei übernommen
-    [ "$status" = laeuft ] || rm -f "$DIR/auftrag.laeuft"
+    [ "$status" = laeuft ] || rm -rf "$AUFTRAG" "$DIR/auftrag.laeuft" || true
     echo "$status: $text"
 }
 fehler() {
@@ -84,8 +88,10 @@ status_schreiben() {
 }
 
 # Nur eine kleine, gewöhnliche Datei lesen (kein Symlink, keine Pipe)
-[ -f "$DIR/auftrag.laeuft" ] && [ ! -L "$DIR/auftrag.laeuft" ] || fehler "Ungültiger Auftrag."
-VERSION="$(head -c 200 "$DIR/auftrag.laeuft" | sed -n 's/^version=//p' | head -n1)"
+[ -f "$AUFTRAG" ] && [ ! -L "$AUFTRAG" ] || fehler "Ungültiger Auftrag."
+VERSION="$(head -c 200 "$AUFTRAG" | sed -n 's/^version=//p' | head -n1)"
+# Für die Anzeige in HUBIplan („Auftrag läuft“): leere Marke im Auftragsordner, nie gelesen
+ablegen "$(mktemp "$PRIVAT/marke.XXXXXX")" auftrag.laeuft || true
 [[ "$VERSION" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+$ ]] || fehler "Ungültiger Auftrag."
 TAG="v$VERSION"
 
@@ -106,10 +112,19 @@ git -C "$QUELLE" fetch --quiet --force --tags "$REPO_URL" '+refs/heads/main:refs
 COMMIT="$(git -C "$QUELLE" rev-parse -q --verify "refs/tags/$TAG^{commit}")" ||
     fehler "Release $TAG gibt es im Repository nicht."
 
+# Sperre auf den Zielstand umschreiben: server-setup.sh übernimmt sie nur, wenn dort der
+# Commit des entpackten Stands steht (wie bei deploy.sh), nicht der Name des Tags
+echo "$COMMIT $(date -u +%Y-%m-%dT%H:%M:%SZ) selbstupdate $TAG" > "$SPERRE/lauf"
+
 # Echtheit: signiert mit einem Schlüssel aus der laufenden Fassung
 SCHLUESSEL="$ZIEL/deploy/release-schluessel"
 grep -q '^[^#[:space:]]' "$SCHLUESSEL" 2> /dev/null || fehler "Kein Release-Schlüssel in der laufenden Fassung."
-git -C "$QUELLE" -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
+# Nur SSH-Signaturen zählen. Ein mit PGP oder X.509 signiertes Tag gäbe Git sonst an gpg und
+# den Schlüsselbund von root weiter, vorbei an release-schluessel (Sicherheitsprüfung 26.11., D-H02).
+git -C "$QUELLE" cat-file tag "refs/tags/$TAG" 2> /dev/null | grep -qx -- '-----BEGIN SSH SIGNATURE-----' ||
+    fehler "$TAG trägt keine SSH-Signatur. Nichts geändert."
+git -C "$QUELLE" -c gpg.program=/bin/false -c gpg.x509.program=/bin/false \
+    -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
     fehler "Signatur von $TAG ist ungültig. Nichts geändert."
 # Die Signatur deckt den Namen im Tag mit ab. Er muss zum angeforderten Release passen, sonst
 # ließe sich ein echtes, anderes signiertes Tag unter diesem Namen unterschieben.

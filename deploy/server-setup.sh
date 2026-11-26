@@ -82,6 +82,14 @@ if ! grep -q '^BACKUP_DB_PASSWORD=' .env; then
     echo "BACKUP_DB_PASSWORD=$(openssl rand -base64 32 | tr -d '\n/+=')" >> .env
 fi
 grep -q '^BACKUP_DB_USER=' .env || echo "BACKUP_DB_USER=hubiplan_backup" >> .env
+# Vereinswebseite unter /vereinsseite/ derselben Adresse gibt es nur noch mit Schalter
+# (Sicherheitsprüfung 26.11., D-H01). Wer sie bisher so betreibt (Testserver mit
+# WEBSITE_PUBLIC_URL=…/vereinsseite/), behält sie.
+if ! grep -q '^HUBIPLAN_VEREINSSEITE_PFAD=' .env \
+    && grep -Eq '^WEBSITE_PUBLIC_URL=.*/vereinsseite/?[[:space:]]*$' .env; then
+    echo "Vereinswebseite läuft unter /vereinsseite/: trage HUBIPLAN_VEREINSSEITE_PFAD=1 ein …"
+    echo "HUBIPLAN_VEREINSSEITE_PFAD=1" >> .env
+fi
 # Öffentlicher Backup-Schlüssel (age1…), mitgegeben von deploy.sh
 if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
     case "$BACKUP_PUBLIC_KEY" in

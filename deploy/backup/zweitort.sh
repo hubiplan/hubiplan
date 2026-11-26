@@ -22,6 +22,7 @@ zweitort_kopieren() {
         --include='datenschluessel.sha256' --include='datenschluessel.sha256.hmac' \
         --include='*.receipt' --include='*.receipt.hmac' \
         --include='restore-test.log' --include='loeschliste.jsonl' --include='kettenkoepfe.log' \
+        --include='loeschliste.jsonl.hmac' --include='kettenkoepfe.log.hmac' \
         --exclude='*' "$1/" "$2"
 }
 

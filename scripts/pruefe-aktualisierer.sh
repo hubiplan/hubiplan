@@ -54,7 +54,7 @@ HUBIPLAN_SELBSTUPDATE=1
 AKTUALISIERUNG_DIR=$T/auftrag
 HUBIPLAN_UPDATE_REPO=$T/repo
 ENV
-export HUBIPLAN_SETUP="cat inhalt > '$T/setup.lauf'" HUBIPLAN_OHNE_SICHERUNG=1 \
+export HUBIPLAN_SETUP="cat inhalt > '$T/setup.lauf'; cut -d ' ' -f 1 '$ZIEL.sperre/lauf' > '$T/setup.sperre'" HUBIPLAN_OHNE_SICHERUNG=1 \
     HUBIPLAN_MIN_FREI_MB=0 HUBIPLAN_DOCKER_DIR=/
 lauf() {
     rm -f "$T/auftrag/ergebnis" "$T/setup.lauf"
@@ -85,6 +85,8 @@ rmdir "$ZIEL.sperre"
 lauf "2026.12.0"
 pruefe "signiertes Release ausgerollt" "$(status)" ok
 pruefe "  Inhalt der neuen Fassung" "$(cat "$T/setup.lauf" 2> /dev/null)" 2
+# D-M01: In der Sperre steht der Commit des Zielstands; nur den übernimmt server-setup.sh
+pruefe "  Sperre nennt den Commit" "$(cat "$T/setup.sperre" 2> /dev/null)" "$(git -C "$T/repo" rev-parse 'v2026.12.0^{commit}')"
 pruefe "  Auftrag erledigt" "$([ -e "$T/auftrag/auftrag" ] || [ -e "$T/auftrag/auftrag.laeuft" ] && echo offen || echo erledigt)" erledigt
 pruefe "  Protokoll" "$(awk '{print $3, $4, $5}' "$ZIEL.protokoll" | tail -n1)" "2026.12.0 selbstupdate ausgerollt"
 pruefe "  Sperre wieder frei" "$([ -d "$ZIEL.sperre" ] && echo belegt || echo frei)" frei
@@ -116,6 +118,14 @@ ln -sf "$T/opfer" "$T/auftrag/auftrag"
 bash "$QUELLE_SKRIPT" "$ZIEL" > /dev/null 2>&1 || true
 pruefe "Auftrag als Symlink abgelehnt" "$(status)" fehler
 pruefe "  fremde Datei unverändert" "$(cat "$T/opfer")" geheim
+
+# D-M01: Eine Pipe als Auftrag hält den Lauf nicht auf (gelesen wird nur im root-Ordner)
+rm -f "$T/auftrag/auftrag" "$T/auftrag/ergebnis"
+mkfifo "$T/auftrag/auftrag"
+timeout 20 bash "$QUELLE_SKRIPT" "$ZIEL" > /dev/null 2>&1 || true
+pruefe "Auftrag als Pipe abgelehnt" "$(status)" fehler
+rm -f "$T/auftrag/auftrag"
+pruefe "  kein Auftrag im root-Ordner übrig" "$([ -e "$T/auftrag.root/auftrag.laeuft" ] && echo ja || echo nein)" nein
 
 # GA-F11: unvollständige Sicherung verhindert das Ausrollen
 git -C "$T/repo" rev-parse v2026.11.0^{commit} > "$ZIEL/.fassung"

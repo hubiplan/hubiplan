@@ -375,7 +375,16 @@ In `/opt/hubiplan/.env`:
 ```bash
 WEBSITE_PREVIEW_ONLY=true          # alle Webseiten nur in der Vorschau (erfundene Daten)
 WEBSITE_PUBLIC_URL=https://test.example.org/vereinsseite/
+HUBIPLAN_VEREINSSEITE_PFAD=1       # Pfad /vereinsseite/ einschalten (nur Testserver)
 ```
+
+Den Pfad gibt es nur mit `HUBIPLAN_VEREINSSEITE_PFAD=1`. `deploy/server-setup.sh` trägt den
+Wert einmal selbst ein, wenn `WEBSITE_PUBLIC_URL` auf `/vereinsseite/` endet. Unter derselben
+Adresse teilt sich die Vereinswebseite den Ursprung mit der Verwaltung: Ein Fehler oder ein
+Designpaket der Webseite könnte im Namen der angemeldeten Person die Verwaltung bedienen.
+Deshalb ist der Pfad nur für Testserver mit erfundenen Daten gedacht; im Echtbetrieb läuft die
+Vereinswebseite unter eigener Domain. Die Sitzung der Verwaltung reicht Caddy nicht an den
+Webseiten-Dienst weiter.
 
 `seed_testdata` richtet die Webseite des Demovereins mit erfundenen Inhalten ein
 (Domain `www.hubertus-grimlinghausen.test`, Wartungsmodus). Ansehen: in HUBIplan unter
