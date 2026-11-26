@@ -152,6 +152,7 @@ def meeting_data(meeting, scope, *, full=False):
     if full:
         released = meeting.minutes_versions.first()
         data.update(
+            four_eyes=scope.org.minutes_four_eyes,
             chair_confirmed=_confirmation(meeting.chair_confirmed_by, meeting.chair_confirmed_at),
             taker_confirmed=_confirmation(meeting.taker_confirmed_by, meeting.taker_confirmed_at),
             released_at=released.released_at if released else None,
@@ -911,6 +912,22 @@ class ConfirmView(Base):
         if not meeting.chair.strip() or not meeting.minute_taker.strip():
             raise ValidationError(
                 {"detail": _("Bitte zuerst Leitung und Protokollführung eintragen.")}
+            )
+        # Vier-Augen-Prinzip: Die zweite Bestätigung kommt von einem anderen Konto
+        other = (
+            meeting.taker_confirmed_by_id
+            if data["role"] == "chair"
+            else meeting.chair_confirmed_by_id
+        )
+        if self.scope.org.minutes_four_eyes and other == request.user.pk:
+            raise ValidationError(
+                {
+                    "detail": _(
+                        "Leitung und Protokollführung müssen von zwei verschiedenen Personen "
+                        "bestätigt werden. Hat der Verein nur ein Konto, lässt sich das "
+                        "unter Einstellungen › Organisation abschalten."
+                    )
+                }
             )
         now = timezone.now()
         if data["role"] == "chair":

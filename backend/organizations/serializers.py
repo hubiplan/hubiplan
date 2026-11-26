@@ -193,6 +193,7 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
             "department_terms",
             "allow_multiple_departments",
             "units_in_menu",
+            "minutes_four_eyes",
             "direct_members",
             "keeps_members",
             "can_switch_members",

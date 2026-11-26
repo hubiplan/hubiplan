@@ -13,6 +13,8 @@ If the club is based at a company or in a building with its own name, enter that
 
 ## In detail
 
+Under “Meetings” you find the switch “Minutes are confirmed by two different people”. While it is on, the chair and the minute taker do not confirm minutes with the same account (four-eyes principle). Only turn it off if your club has a single account for the board.
+
 At the bottom you set the contacts for questions about HUBIplan. They appear in the help under “Who helps us?”, also for sub-units without their own contacts. Like everything else on this page, HUBIplan saves them automatically as soon as a name is entered.
 
 At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In a club they are listed under Settings › Modules, below each module’s switch. In the menu, settings are grouped into General, Legal, Roles and connections, and Data. Only items your role can read appear there; without any such item, “Settings” is not shown at all.

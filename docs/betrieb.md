@@ -725,7 +725,9 @@ acht Testkernen, kein Nachweis einer Produktionsdauer oder paralleler HTTP-Last.
   Ziels lässt die Kopie scheitern (kein „beim ersten Mal vertrauen“). Die Kopie gleicht
   das Ziel standardmäßig mit `--delete` ab; dann steht höchstens einmal am Tag ein
   `HINWEIS` in `backup.log` (kein Fehler, keine Alarm-Mail). `BACKUP_REMOTE_ANHAENGEND=1`
-  lässt `--delete` immer weg (Grenzen siehe unten).
+  lässt `--delete` immer weg (Grenzen siehe unten). Neue Installationen bekommen diesen
+  Wert von `deploy/server-setup.sh` in die `.env`; die Kopie wächst dann, bis am Ziel
+  aufgeräumt wird. Bestehende Installationen behalten ihre Einstellung.
 
 ### Backup-Ziele
 

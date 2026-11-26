@@ -2288,6 +2288,9 @@ function ReleaseCard({
           {t(
             'Leitung und Protokollführung bestätigen das Protokoll. Mit der zweiten Bestätigung ist es freigegeben, die Beschlüsse bekommen ihre Nummer, und es lässt sich nicht mehr ändern. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf.',
           )}
+          {meeting.four_eyes
+            ? ' ' + t('Die beiden Bestätigungen kommen von zwei verschiedenen Personen.')
+            : ''}
         </p>
       )}
       <ul className="confirm-list">

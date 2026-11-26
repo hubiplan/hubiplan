@@ -122,6 +122,24 @@ er wirkt ab dem nächsten Ausrollen. Bis dahin und solange die Adresse in HUBIpl
 eingetragen ist, antwortet HUBIplan dort mit „Unbekannte Adresse“ (400). Mails gehen weiter
 von der festen Absenderadresse aus und teilen sich deren Versandlimit.
 
+## Vereinswebseite nur unter eigener Domain
+
+**Regel für den Echtbetrieb:** Die Vereinswebseite läuft immer unter einer eigenen Domain (oder
+Subdomain), nie unter einem Pfad der Verwaltung. Der Pfad `/vereinsseite/` bleibt aus:
+`HUBIPLAN_VEREINSSEITE_PFAD` wird im Echtbetrieb nicht gesetzt, und `WEBSITE_PUBLIC_URL` zeigt
+auf die eigene Adresse der Webseite.
+
+Grund: Unter derselben Adresse teilen sich Webseite und Verwaltung den Ursprung. Ein Fehler oder
+ein Designpaket der Webseite könnte dann im Namen einer angemeldeten Person die Verwaltung
+bedienen. Der Pfad ist nur für Testserver mit erfundenen Daten gedacht
+(siehe [testserver.md](testserver.md), „Vereinsseite“). Vor dem ersten Echtbetrieb prüfen:
+
+```bash
+grep -E '^(HUBIPLAN_VEREINSSEITE_PFAD|WEBSITE_PUBLIC_URL)=' .env
+```
+
+Die erste Zeile darf fehlen oder `0` sein; die zweite darf nicht auf `/vereinsseite/` enden.
+
 ## Eigene Änderungen und Quellcode (AGPL)
 
 Die Seite `/lizenz` verlinkt den Quellcode der laufenden Fassung (AGPL § 13). Wer HUBIplan mit

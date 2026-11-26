@@ -73,7 +73,9 @@ After the meeting choose **Mark as held**. The agenda is then fixed and the minu
 
 ## Approval
 
-Under **Approval of the minutes** the chair and the minute taker confirm the minutes with **Confirm as chair** and **Confirm as minute taker**. Both must first be entered in the meeting details. **Preview as PDF** shows the minutes as a draft beforehand. Any change to the minutes or the attendance cancels the confirmations. With the second confirmation the minutes are approved: the resolutions receive a consecutive number per year (such as 2027/03), and the PDF is stored with a checksum and can no longer be changed. If document storage is switched on, HUBIplan files the PDF in the folder “Minutes”, which only the board sees at first. **Minutes as PDF** downloads the approved minutes.
+Under **Approval of the minutes** the chair and the minute taker confirm the minutes with **Confirm as chair** and **Confirm as minute taker**. Both must first be entered in the meeting details. The two confirmations come from two different people, each with their own account; a club with only one board account turns this off under [Settings › Organisation](/einstellungen/organisation).
+
+**Preview as PDF** shows the minutes as a draft beforehand. Any change to the minutes or the attendance cancels the confirmations. With the second confirmation the minutes are approved: the resolutions receive a consecutive number per year (such as 2027/03), and the PDF is stored with a checksum and can no longer be changed. If document storage is switched on, HUBIplan files the PDF in the folder “Minutes”, which only the board sees at first. **Minutes as PDF** downloads the approved minutes.
 
 ## Resolution book
 

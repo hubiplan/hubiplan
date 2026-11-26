@@ -18412,3 +18412,11 @@ msgstr "The import would send more than {count} invitations. Please import witho
 #: backend/locale/en/LC_MESSAGES/django.po
 msgid "Senden geht nur noch mit freigeschalteter Verwaltung. Bitte die App aktualisieren."
 msgstr "Sending now requires the unlocked admin area. Please update the app."
+
+#: backend/locale/en/LC_MESSAGES/django.po
+msgid "Leitung und Protokollführung müssen von zwei verschiedenen Personen bestätigt werden. Hat der Verein nur ein Konto, lässt sich das unter Einstellungen › Organisation abschalten."
+msgstr "The chair and the minute taker must be confirmed by two different people. If the club has only one account, this can be turned off under Settings › Organisation."
+
+#: backend/locale/en/LC_MESSAGES/django.po
+msgid "Protokolle bestätigen zwei verschiedene Personen"
+msgstr "Minutes are confirmed by two different people"

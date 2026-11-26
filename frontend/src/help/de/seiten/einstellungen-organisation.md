@@ -13,6 +13,8 @@ Sitzt der Verein bei einer Firma oder in einem Gebäude mit eigenem Namen, tragt
 
 ## Im Einzelnen
 
+Unter „Versammlungen“ steht der Schalter „Protokolle bestätigen zwei verschiedene Personen“. Ist er an, bestätigen Leitung und Protokollführung ein Protokoll nicht mit demselben Konto (Vier-Augen-Prinzip). Schaltet ihn nur aus, wenn euer Verein ein einziges Konto für den Vorstand hat.
+
 Unten legt ihr die Ansprechpartner für Fragen zu HUBIplan fest. Sie erscheinen in der Hilfe unter „Wer hilft bei uns?“, auch für Untereinheiten ohne eigene Ansprechpartner. Wie die übrigen Angaben auf dieser Seite speichert HUBIplan sie automatisch, sobald ein Name eingetragen ist.
 
 Ganz unten führt „Einrichtung der Bereiche“ zu den Einstellungen, die nur einen Bereich betreffen, etwa Mitglieder › Einrichtung oder Finanzen › Einrichtung. Im Verein stehen sie gesammelt unter Einstellungen › Module, je Modul unter dem Schalter. Im Menü sind die Einstellungen in Allgemein, Recht, Rollen und Anbindungen sowie Daten gegliedert. Es stehen dort nur Punkte, für die deine Rolle Leserechte hat; ohne einen solchen Punkt fehlt „Einstellungen“ ganz.

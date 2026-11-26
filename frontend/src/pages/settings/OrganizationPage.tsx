@@ -489,6 +489,19 @@ function OrganizationForm({
                     'Mitgliederbezogene Einstellungen wie Jubiläumsstufen und Zusatzfelder stehen unter Mitglieder → Einrichtung.',
                   )}
                 </p>
+                {(detail.type === 'club' || detail.type === 'federation') && (
+                  <>
+                    <h3>{t('Versammlungen')}</h3>
+                    <Checkbox
+                      label={t('Protokolle bestätigen zwei verschiedene Personen')}
+                      hint={t(
+                        'Leitung und Protokollführung bestätigen ein Protokoll dann nicht mit demselben Konto. Ausschalten, wenn der Verein nur ein Konto für den Vorstand hat.',
+                      )}
+                      checked={v.minutes_four_eyes !== false}
+                      onChange={(val) => set('minutes_four_eyes', val)}
+                    />
+                  </>
+                )}
               </>
             )}
           </>
@@ -532,6 +545,7 @@ const EDITABLE: (keyof OrgDetail)[] = [
   'department_label_plural_en',
   'allow_multiple_departments',
   'units_in_menu',
+  'minutes_four_eyes',
   'keeps_members',
   'department_access_enabled',
   'fiscal_start_month',
