@@ -11,11 +11,13 @@ Hier verbindet ihr die Nextcloud eures Vereins mit HUBIplan, sodass sich Mitglie
 
 Mit **Konten automatisch deaktivieren** schaltet HUBIplan das Nextcloud-Konto ab, sobald jemand bei euch keinen Zugang mehr hat, zum Beispiel weil die Rolle endet. Sitzungen und Sync-Apps werden dabei abgemeldet, die Dateien bleiben. Bekommt die Person wieder eine Rolle, wird das Konto wieder eingeschaltet. Dafür braucht es in der Nextcloud ein eigenes Dienstkonto mit App-Passwort. Mit **Verbindung prüfen** testet ihr es.
 
+Unter „Konten über HUBIplan“ seht ihr, wer sich schon über HUBIplan angemeldet hat und was der nächste Abgleich täte. Hält der Abgleich an, weil zu viele Konten auf einmal betroffen wären, prüft die Rollen und bestätigt dann mit **Jetzt abgleichen**.
+
+## Gründe und Fehler beim Deaktivieren
+
 In der Liste und in der Mail steht, warum ein Konto deaktiviert wird: weil die Person keine Rolle mit Zugang mehr hat, oder weil sie keine Zwei-Faktor-Anmeldung eingerichtet hat. Ohne Zwei-Faktor-Anmeldung ruhen nach Ablauf der Frist die Rechte der Rolle, auch wenn die Rolle weiter besteht. Die Person bekommt dann selbst eine Mail; richtet sie die Zwei-Faktor-Anmeldung unter „Mein Konto“ ein, schaltet HUBIplan das Konto spätestens in der folgenden Nacht wieder ein.
 
 Klappt das Deaktivieren nicht, meldet HUBIplan das einmal per Mail und erinnert erst nach 30 Tagen wieder; auf dieser Seite bleibt der Fehler sichtbar, bis er behoben ist. Meldet **Verbindung prüfen**, dass die Nextcloud eine Passwortbestätigung verlangt, kann das Dienstkonto keine Konten deaktivieren. Dann muss in der `config.php` der Nextcloud unter `allowed_no_password_confirmation_ranges` die Adresse stehen, von der HUBIplan kommt. Das macht, wer die Nextcloud betreibt.
-
-Unter „Konten über HUBIplan“ seht ihr, wer sich schon über HUBIplan angemeldet hat und was der nächste Abgleich täte. Hält der Abgleich an, weil zu viele Konten auf einmal betroffen wären, prüft die Rollen und bestätigt dann mit **Jetzt abgleichen**.
 
 ## Gruppen laufend abgleichen
 

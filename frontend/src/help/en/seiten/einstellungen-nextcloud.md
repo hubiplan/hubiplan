@@ -11,11 +11,13 @@ Here you connect your club's Nextcloud with HUBIplan so members can sign in ther
 
 With **Disable accounts automatically**, HUBIplan switches the Nextcloud account off as soon as someone no longer has access with you, for example because their role ends. Sessions and sync apps are signed out; the files are kept. If the person gets a role again, the account is switched back on. This needs a separate service account with an app password in Nextcloud. Use **Check connection** to test it.
 
+Under “Accounts via HUBIplan” you see who has already signed in via HUBIplan and what the next synchronisation would do. If the synchronisation stops because too many accounts would be affected at once, check the roles and then confirm with **Synchronise now**.
+
+## Reasons and errors when disabling
+
 The list and the email say why an account is being disabled: because the person no longer has a role with access, or because they have not set up two-factor sign-in. Without two-factor sign-in, the permissions of the role are suspended once the deadline has passed, even though the role still exists. The person then gets an email themselves; once they set up two-factor sign-in under “My account”, HUBIplan switches the account back on by the following night at the latest.
 
 If disabling fails, HUBIplan reports it once by email and only reminds you again after 30 days; on this page the error stays visible until it is fixed. If **Check connection** reports that Nextcloud requires a password confirmation, the service account cannot disable any accounts. In that case, Nextcloud's `config.php` must list the address HUBIplan comes from under `allowed_no_password_confirmation_ranges`. Whoever runs the Nextcloud does this.
-
-Under “Accounts via HUBIplan” you see who has already signed in via HUBIplan and what the next synchronisation would do. If the synchronisation stops because too many accounts would be affected at once, check the roles and then confirm with **Synchronise now**.
 
 ## Keep groups in sync
 
