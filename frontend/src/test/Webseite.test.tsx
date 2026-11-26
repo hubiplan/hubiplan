@@ -853,9 +853,14 @@ describe('Webseite', () => {
     const frame = (await screen.findByTitle('Vorschau der Webseite')) as HTMLIFrameElement
     // Ältere Webseiten melden sich nicht: kein Knopf
     expect(screen.queryByRole('button', { name: /Zeigen/ })).toBeNull()
-    const send = (data: unknown, source: MessageEventSource | null = frame.contentWindow) =>
+    // Der Browser nennt bei jeder Nachricht den Ursprung des Absenders: hier die Vorschau
+    const send = (
+      data: unknown,
+      source: MessageEventSource | null = frame.contentWindow,
+      origin = 'https://www.beispiel.test',
+    ) =>
       act(() => {
-        window.dispatchEvent(new MessageEvent('message', { data, source }))
+        window.dispatchEvent(new MessageEvent('message', { data, source, origin }))
       })
     send({ hubiplan: 'zeigen-bereit' })
     const point = await screen.findByRole('button', { name: /Zeigen/ })
@@ -863,6 +868,9 @@ describe('Webseite', () => {
     expect(point).toHaveAttribute('aria-pressed', 'true')
     // Fremde Fenster zählen nicht
     send({ hubiplan: 'bereich', bereich: 'fuss' }, window)
+    expect(screen.queryByRole('heading', { name: 'Fuß', level: 2 })).toBeNull()
+    // Hat sich die Vorschau auf eine fremde Seite bewegt, zählt ihre Nachricht nicht
+    send({ hubiplan: 'bereich', bereich: 'fuss' }, frame.contentWindow, 'https://fremd.example')
     expect(screen.queryByRole('heading', { name: 'Fuß', level: 2 })).toBeNull()
     send({ hubiplan: 'bereich', bereich: 'fuss' })
     expect(await screen.findByRole('heading', { name: 'Fuß', level: 2 })).toBeVisible()
