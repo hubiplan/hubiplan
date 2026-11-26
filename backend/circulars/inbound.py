@@ -536,12 +536,14 @@ def dmarc_passed(msg: EmailMessage) -> bool:
     if dmarc_results(headers[0]) != ["pass"]:
         return False
     # Das Ergebnis muss für genau die Domain gelten, die hier als Absender gelesen wird
-    sender = from_address(msg)
-    if "@" not in sender:
-        return False
     named = re.search(
         r"\bheader\.from\s*=\s*([a-z0-9.-]+)", _without_comments(headers[0]), re.IGNORECASE
     )
+    if not msg.get_all("From"):
+        return named is None
+    sender = from_address(msg)
+    if "@" not in sender:
+        return False
     return named is None or named.group(1).lower().rstrip(".") == sender.rsplit("@", 1)[1]
 
 
