@@ -36,7 +36,9 @@ MIN_FREI_MB="${HUBIPLAN_MIN_FREI_MB:-4096}"
 DOCKER_DIR="${HUBIPLAN_DOCKER_DIR:-/var/lib/docker}"
 
 DIR="${DIR%/}"
-[ -f "$DIR/auftrag" ] || exit 0
+# Auch eine Pipe, ein Ordner oder ein hängender Symlink zählt als Auftrag: Er wird unten
+# übernommen und als ungültig gemeldet, statt den Auftragsordner still zu blockieren.
+[ -e "$DIR/auftrag" ] || [ -L "$DIR/auftrag" ] || exit 0
 
 # Eigener Ordner nur für root, neben dem Auftragsordner (gleiches Dateisystem zum Umbenennen)
 PRIVAT="$DIR.root"
