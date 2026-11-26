@@ -242,6 +242,10 @@ def fetch(url: str, allowed: list[str]) -> SimpleUploadedFile:
             {"url": gettext("Unter dieser Adresse liegt kein JPG-, PNG- oder WebP-Bild.")}
         )
     name = urllib.parse.unquote(parts.path.rsplit("/", 1)[-1])[:100] or "bild"
+    # Kommt nicht als Upload: selbst prüfen
+    from core import virenscan
+
+    virenscan.scan_bytes(resp.body, name)
     return SimpleUploadedFile(name, resp.body, content_type=ctype)
 
 

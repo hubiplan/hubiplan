@@ -420,7 +420,7 @@ def is_automatic(msg: EmailMessage) -> str:
         return "Rückläufer"
     if msg.get_content_type() == "multipart/report":
         return "Rückläufer"
-    sender = parseaddr(str(msg.get("From", "") or ""))[1].lower()
+    sender = from_address(msg)
     local = sender.split("@", 1)[0]
     if local in ("mailer-daemon", "postmaster") or local.startswith(("noreply", "no-reply")):
         return "Absender ohne Postfach"
@@ -502,6 +502,18 @@ def dmarc_results(header: str) -> list[str]:
     return results
 
 
+def from_address(msg: EmailMessage) -> str:
+    """Absender, wenn er eindeutig ist: genau eine „Von“-Zeile mit genau einer Adresse.
+
+    Bei mehreren kann der Mailserver eine andere geprüft haben, als hier gelesen wird; dann
+    gilt die Mail als ohne Absender."""
+    lines = msg.get_all("From") or []
+    if len(lines) != 1:
+        return ""
+    found = [a.strip().lower() for _, a in getaddresses([str(lines[0])]) if a]
+    return found[0] if len(found) == 1 else ""
+
+
 def dmarc_passed(msg: EmailMessage) -> bool:
     """Hat der eigene Mailserver die Herkunft positiv bestätigt (``dmarc=pass``)?
 
@@ -521,7 +533,16 @@ def dmarc_passed(msg: EmailMessage) -> bool:
     if not headers:
         return False
     # Genau ein DMARC-Ergebnis, und das lautet „pass“; mehrere widersprüchliche gelten nicht
-    return dmarc_results(headers[0]) == ["pass"]
+    if dmarc_results(headers[0]) != ["pass"]:
+        return False
+    # Das Ergebnis muss für genau die Domain gelten, die hier als Absender gelesen wird
+    sender = from_address(msg)
+    if "@" not in sender:
+        return False
+    named = re.search(
+        r"\bheader\.from\s*=\s*([a-z0-9.-]+)", _without_comments(headers[0]), re.IGNORECASE
+    )
+    return named is None or named.group(1).lower().rstrip(".") == sender.rsplit("@", 1)[1]
 
 
 def recipient_addresses(msg: EmailMessage) -> list[str]:
@@ -552,7 +573,7 @@ def _process(raw: bytes) -> InboundMail | None:
     message_id = str(msg.get("Message-ID", "") or "").strip()[:300]
     if message_id and InboundMail.objects.filter(message_id=message_id).exists():
         return None
-    sender = parseaddr(str(msg.get("From", "") or ""))[1].lower()
+    sender = from_address(msg)
     subject = re.sub(r"\s+", " ", str(msg.get("Subject", "") or "")).strip()
     ml, recipient = find_list(recipient_addresses(msg))
     base = {

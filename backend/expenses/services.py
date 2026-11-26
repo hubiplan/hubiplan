@@ -430,6 +430,11 @@ def add_file(claim: ExpenseClaim, upload, user) -> ExpenseFile:
     upload.seek(0)
     if content_type == "application/pdf" and not data.startswith(b"%PDF"):
         raise ValidationError({"file": gettext("Die Datei ist kein PDF.")})
+    if content_type.startswith("image/"):
+        from core import filecheck
+
+        if not filecheck.is_image(data[:32]):
+            raise ValidationError({"file": filecheck.image_message()})
     info: dict = {}
     if content_type in ("application/pdf", "application/xml", "text/xml"):
         from finance import einvoice

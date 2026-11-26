@@ -373,6 +373,17 @@ class TestEinladungAnVerteiler:
         assert event.repeat == "weekly" and event.repeat_interval == 2
         assert event.repeat_until == datetime.date(2099, 12, 31) and not event.rsvp_enabled
 
+    def test_serie_mit_riesiger_anzahl_abgewiesen(self, cal, board_a, members, api):
+        create_list(api(board_a), base(cal["a"]))
+        entry = inbound.process_message(invitation(ics(extra="RRULE:FREQ=WEEKLY;COUNT=999999999")))
+        assert entry.status == InboundMail.Status.REJECTED
+
+    def test_serie_mit_anzahl(self, cal, board_a, members, api):
+        create_list(api(board_a), base(cal["a"]))
+        entry = inbound.process_message(invitation(ics(extra="RRULE:FREQ=WEEKLY;COUNT=3")))
+        assert entry.status == InboundMail.Status.WAITING
+        assert entry.event_data["repeat_until"] == "2099-12-17"
+
     def test_outlook_winmail(self, cal, board_a, members, api):
         create_list(api(board_a), base(cal["a"]))
         msg = EmailMessage()

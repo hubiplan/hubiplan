@@ -219,8 +219,11 @@ def unavailable(exc: Exception, request=None) -> None:
     raise ScanUnavailable()
 
 
-def scan_bytes(data: bytes, name: str, request=None) -> None:
-    """Inhalt prüfen, der nicht als Upload kommt (z. B. Bild als base64 aus der App)."""
+def scan_bytes(data: bytes, name: str, request=None, *, strict: bool = False) -> None:
+    """Inhalt prüfen, der nicht als Upload kommt (z. B. Bild als base64 aus der App).
+
+    ``strict``: Ist die Datei zu groß für die Prüfung und die Prüfung Pflicht, gilt sie als
+    ungeprüft (``NotScanned``) statt als sauber. Für Eingänge von außen (Mail, Verbund)."""
     if not enabled():
         return
     try:
@@ -232,6 +235,12 @@ def scan_bytes(data: bytes, name: str, request=None) -> None:
         unavailable(exc, request)
     if stream.too_big:
         logger.info("Nicht auf Viren geprüft (zu groß): %s, %s Bytes", name, len(data))
+        if strict and required():
+            raise NotScanned(
+                gettext(
+                    "Die Datei „{name}“ ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+                ).format(name=name, mb=max_bytes() // (1024 * 1024))
+            )
     if signature:
         found(name, signature, request)
 
@@ -489,7 +498,8 @@ def recheck_quarantine(limit: int = 200) -> dict:
 def inbound_ok(data: bytes, name: str, source: str) -> bool:
     """Datei aus Mail oder Verbund prüfen (Gesamtaudit 01.11., GA-I01).
 
-    False: Schadsoftware gefunden (Alarm ist raus), die Datei wird nicht übernommen.
+    False: Schadsoftware gefunden (Alarm ist raus) oder bei Pflichtprüfung zu groß für die
+    Prüfung; die Datei wird nicht übernommen.
     Ist der Scanner nicht erreichbar, geht ``ScanUnavailable`` weiter: Die Nachricht
     wird dann später erneut zugestellt bzw. abgewiesen, nicht ungeprüft gespeichert.
     """
@@ -497,8 +507,11 @@ def inbound_ok(data: bytes, name: str, source: str) -> bool:
         # Pflicht ohne Scanner: nichts ungeprüft übernehmen (bleibt in der Warteschlange)
         raise ScanUnavailable()
     try:
-        scan_bytes(data, f"{name} ({source})")
+        scan_bytes(data, f"{name} ({source})", strict=True)
     except VirusFound:
+        return False
+    except NotScanned:
+        logger.warning("Eingang nicht übernommen (zu groß für die Virenprüfung): %s", name)
         return False
     return True
 

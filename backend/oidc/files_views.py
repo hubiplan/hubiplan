@@ -112,6 +112,18 @@ class FilesView(OrgScopedMixin, APIView):
             raise ValidationError({"file": gettext("Bitte eine Datei wählen.")})
         if upload.size > nc_files.MAX_FILE:
             raise ValidationError({"file": gettext("Die Datei ist zu groß (höchstens 50 MB).")})
+        from core import virenscan
+
+        # Die Datei geht ohne spätere Prüfung an Nextcloud weiter: zu groß für die
+        # Virenprüfung heißt hier ungeprüft
+        if virenscan.enabled() and virenscan.required() and upload.size > virenscan.max_bytes():
+            raise ValidationError(
+                {
+                    "file": gettext(
+                        "Die Datei ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+                    ).format(mb=virenscan.max_bytes() // (1024 * 1024))
+                }
+            )
         category = str(request.data.get("category") or "")
         if category == FileItem.Category.PERSONAL and request.data.get("personal") not in (
             "1",

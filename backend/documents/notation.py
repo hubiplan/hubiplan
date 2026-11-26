@@ -56,6 +56,15 @@ def _unzip_mxl(data: bytes) -> bytes:
         raise _invalid() from exc
 
 
+def _read_bounded(archive: zipfile.ZipFile, name: str, limit: int) -> bytes:
+    """Nie mehr entpacken als erlaubt: Die Größenangabe im Archiv kann gefälscht sein."""
+    with archive.open(name) as fh:
+        data = fh.read(limit + 1)
+    if len(data) > limit:
+        raise _invalid(gettext("Die Notendatei ist entpackt zu groß."))
+    return data
+
+
 def _mxl_root(data: bytes) -> bytes:
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         infos = archive.infolist()
@@ -64,7 +73,9 @@ def _mxl_root(data: bytes) -> bytes:
         names = {i.filename for i in infos}
         root = None
         if "META-INF/container.xml" in names:
-            container = SafeET.fromstring(archive.read("META-INF/container.xml"))
+            container = SafeET.fromstring(
+                _read_bounded(archive, "META-INF/container.xml", 256 * 1024)
+            )
             for el in container.iter():
                 if _local(el.tag) == "rootfile" and el.get("full-path"):
                     root = posixpath.normpath(el.get("full-path"))
@@ -76,7 +87,7 @@ def _mxl_root(data: bytes) -> bytes:
             )
         if not root or root not in names or root.startswith(("/", "..")):
             raise _invalid()
-        return archive.read(root)
+        return _read_bounded(archive, root, MAX_UNZIPPED)
 
 
 def text_of(data: bytes, content_type: str) -> str:

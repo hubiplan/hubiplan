@@ -167,7 +167,7 @@ export function PrecheckInfo({ precheck }: { precheck?: Precheck }) {
       {precheck.signature && (
         <span className="muted small">
           {precheck.signature.intact
-            ? t('Elektronisch signiert von {signer}', {
+            ? t('Elektronische Signatur mit dem Namen „{signer}“ (Echtheit nicht geprüft)', {
                 signer: precheck.signature.signer || t('unbekannt'),
               })
             : t('Signatur passt nicht zum Inhalt')}

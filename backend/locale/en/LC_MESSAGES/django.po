@@ -18347,3 +18347,11 @@ msgstr "A mandate is being created for this payer right now. Please try again."
 #: locale/en/LC_MESSAGES/django.po
 msgid "Empfänger nicht gespeichert (anonyme Umfrage)"
 msgstr "Recipients not stored (anonymous survey)"
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Die Datei ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+msgstr "The file is too large for the virus scan (at most {mb} MB)."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Die Datei ist kein Foto (JPEG, PNG, WebP oder HEIC)."
+msgstr "The file is not a photo (JPEG, PNG, WebP or HEIC)."

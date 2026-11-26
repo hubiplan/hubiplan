@@ -156,6 +156,24 @@ def remove_white_background(img: Image.Image) -> Image.Image:
     return img
 
 
+def is_image(head: bytes) -> bool:
+    """Beginnt der Inhalt wie ein Foto (JPEG, PNG, GIF, WebP, HEIC/HEIF in allen Spielarten)?"""
+    found = sniff(head)
+    return (found or "").startswith("image/") or head[4:8] == b"ftyp"
+
+
+def image_message() -> str:
+    from django.utils.translation import gettext
+
+    return gettext("Die Datei ist kein Foto (JPEG, PNG, WebP oder HEIC).")
+
+
+SANDBOX_CSP = "default-src 'none'; img-src 'self'; sandbox"
+# Antworten, die auch mit Dateinamen keine Sandbox bekommen: PDF zeigt der Browser sonst nicht
+# an, JSON und HTML sind Antworten der Anwendung selbst
+NO_SANDBOX = ("application/pdf", "application/json", "text/html")
+
+
 def inline_type(content_type: str | None) -> str | None:
     """Gespeicherte Dateiart, falls sie im Browser angezeigt werden darf."""
     ctype = (content_type or "").split(";")[0].strip().lower()
@@ -177,15 +195,21 @@ class SafeFileMiddleware:
         from django.http import FileResponse
 
         response = self.get_response(request)
+        disposition = response.get("Content-Disposition", "")
         if not isinstance(response, FileResponse):
+            # Auch erzeugte Dateien (SVG, MusicXML, Exporte) laufen nie als aktive Seite:
+            # Was als Datei gekennzeichnet ist, bekommt dieselbe CSP ohne Skripte.
+            raw = (response.get("Content-Type") or "").split(";")[0].strip().lower()
+            if raw == "image/svg+xml" or (disposition and raw not in NO_SANDBOX):
+                response.setdefault("Content-Security-Policy", SANDBOX_CSP)
+                response.setdefault("X-Content-Type-Options", "nosniff")
             return response
         ctype = inline_type(response.get("Content-Type"))
-        disposition = response.get("Content-Disposition", "")
         if ctype is None and not disposition.lower().startswith("attachment"):
             response["Content-Disposition"] = "attachment" + disposition[len("inline") :]
             if not disposition:
                 response["Content-Disposition"] = "attachment"
         if ctype != "application/pdf":
-            response["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; sandbox"
+            response["Content-Security-Policy"] = SANDBOX_CSP
         response.setdefault("X-Content-Type-Options", "nosniff")
         return response

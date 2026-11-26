@@ -10,7 +10,7 @@ stichworte:
 
 Hier prüft der Vorstand die Nachweise für ermäßigte Beiträge, etwa Immatrikulationsbescheinigungen. Welche Ermäßigungen es gibt, mit Frist (Vorgabe 28.02.), Kulanzzeit und Arten von Nachweisen, richtet die Kasse unter [Finanzen › Beitragssätze](/finanzen/einrichtung/beitraege) ein; zugeordnet wird in der Mitgliedsakte unter **Ermäßigung mit Nachweis**. Der Menüpunkt erscheint erst, wenn dort mindestens eine Ermäßigung mit Nachweis eingerichtet ist.
 
-**Zu prüfen** zeigt die eingegangenen Nachweise mit Weg (Mitgliederbereich, App, Link, Antwort per E-Mail, Antrag) und der Ampel der Vorprüfung: Bei einem PDF sucht HUBIplan Name, Geburtsdatum, Studium oder Promotion und die Gültigkeit und schlägt „gültig bis“ vor. Fotos liest du selbst. Mit **Anerkennen**, **Rückfrage** oder **Ablehnen** entscheidest du; das Mitglied bekommt eine E-Mail. Danach wird die Datei gelöscht, es bleibt nur der Vermerk.
+**Zu prüfen** zeigt die eingegangenen Nachweise mit Weg (Mitgliederbereich, App, Link, Antwort per E-Mail, Antrag) und der Ampel der Vorprüfung: Bei einem PDF sucht HUBIplan Name, Geburtsdatum, Studium oder Promotion und die Gültigkeit und schlägt „gültig bis“ vor. Grün wird die Ampel nur, wenn alles gefunden wurde, auch das Geburtsdatum. Trägt das PDF eine elektronische Signatur, zeigt HUBIplan den Namen darin an; ob die Signatur echt ist, prüft HUBIplan nicht. Fotos liest du selbst. Mit **Anerkennen**, **Rückfrage** oder **Ablehnen** entscheidest du; das Mitglied bekommt eine E-Mail. Danach wird die Datei gelöscht, es bleibt nur der Vermerk.
 
 ## Im Einzelnen
 

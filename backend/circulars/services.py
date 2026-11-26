@@ -663,6 +663,13 @@ def send_test(circular: Circular, user) -> str:
     first = selection.chosen[0] if selection.chosen else None
     values = first.values if first else {"Vorname": user.first_name, "Nachname": user.last_name}
     content = render_mail(circular, values, first.membership_id if first else None, test=True)
+    # Auch die Probe geht per Mail hinaus: Anhänge wie beim Versand prüfen (Fachfrage FQ16)
+    from core import virenscan
+
+    for att in circular.attachments.all():
+        virenscan.release_ok(
+            att.file, att.name, "Anhang eines Rundschreibens", key=f"rundschreiben:{att.pk}"
+        )
     mail.send(
         user.email,
         f"[Probe] {content['subject']}",
