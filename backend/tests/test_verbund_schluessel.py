@@ -449,3 +449,30 @@ class TestBefehle:
         device = Device.objects.get()
         assert device.revoked_at is not None and device.admin_token_hash == ""
         assert not (tmp_path / "vapid.json").exists()
+
+
+# --- Sicherheitsprüfung 26.11.2026, A-H04: geplanter Wechsel nur mit aktuellem Schlüssel ---
+
+
+def test_verbund_geplanter_wechsel_nur_mit_aktuellem_schluessel(net, world, coupled):
+    peer = coupled["verein_at_verband"]
+    sign, enc = Ed25519PrivateKey.generate(), X25519PrivateKey.generate()
+    pk, epk, at = _raw_pub(sign), _raw_pub(enc), timezone.now().isoformat()
+    proof = identity.b64(sign.sign(identity.key_statement(str(peer.instance_id), pk, epk, at)))
+    payload = {"public_key": pk, "enc_public_key": epk, "at": at, "proof": proof}
+    with pytest.raises(services.Refused) as exc:
+        keys.receive(peer, payload, signed_with="abgeloester-schluessel")
+    assert exc.value.status == 403
+    peer.refresh_from_db()
+    assert peer.public_key != pk
+
+
+def test_verbund_zeitpunkt_ohne_zeitzone_abgelehnt(coupled):
+    peer = coupled["verein_at_verband"]
+    sign, enc = Ed25519PrivateKey.generate(), X25519PrivateKey.generate()
+    pk, epk, at = _raw_pub(sign), _raw_pub(enc), "2026-11-26T08:00:00"
+    proof = identity.b64(sign.sign(identity.key_statement(str(peer.instance_id), pk, epk, at)))
+    payload = {"public_key": pk, "enc_public_key": epk, "at": at, "proof": proof}
+    with pytest.raises(services.Refused) as exc:
+        keys.receive(peer, payload, signed_with=peer.public_key)
+    assert exc.value.status == 422

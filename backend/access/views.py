@@ -141,28 +141,51 @@ def _locks_out(user, org: Organization, role: Role) -> bool:
 
 
 def _has_rights_elsewhere(target, org) -> bool:
-    """Hat das Konto Rechte außerhalb von ``org`` und ihren Untereinheiten?
+    """Hat das Konto Rechte oder Zugänge außerhalb von ``org`` und ihren Untereinheiten?
 
     Plattform-, Staff- und Superuser-Konten zählen immer dazu, ebenso Rechte aus Ämtern in
-    Untereinheiten anderer Vereine. Gelesen wird in der Sicht des Zielkontos, sonst blendet
-    RLS dessen Rollen in fremden Organisationen aus.
+    Untereinheiten, zukünftige Rollenzuweisungen, Mitgliederbereichs-Zugänge (PortalAccess)
+    sowie OIDC-/MCP-Verknüpfungen anderer Vereine. Gelesen wird in der Sicht des Zielkontos
+    bzw. nur über Organisations-IDs, sonst blendet RLS Zeilen fremder Organisationen aus.
     """
+    from django.db.models import Q
+    from django.utils import timezone
+
     from access.permissions import is_platform_admin
     from core.tenancy import rls_bypass, user_view
+    from mcpserver.models import McpGrant
+    from oidc.models import Account as OidcAccount
+    from portal.models import PortalAccess
 
     if target.is_staff or target.is_superuser or is_platform_admin(target):
         return True
     from portal.services import department_contexts
 
+    today = timezone.localdate()
     with user_view(target.pk):
+        # Aktive UND zukünftige (noch nicht beendete) Rollenzuweisungen zählen mit
         org_ids = set(
-            RoleAssignment.objects.active()
-            .filter(user=target)
+            RoleAssignment.objects.filter(user=target)
+            .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=today))
             .values_list("organization_id", flat=True)
         )
         # Rechte über Ämter in Untereinheiten anderer Vereine (Zugführer usw.) zählen mit;
         # sie hängen an der Mitgliedschaft, nicht an einer Rollenzuweisung (Audit 03.11. GA-S02)
         org_ids |= {ctx.club.pk for ctx in department_contexts(target).values() if ctx.permissions}
+    with rls_bypass():
+        org_ids |= set(
+            PortalAccess.objects.filter(user=target).values_list("organization_id", flat=True)
+        )
+        org_ids |= set(
+            OidcAccount.objects.filter(user=target).values_list(
+                "client__organization_id", flat=True
+            )
+        )
+        org_ids |= set(
+            McpGrant.objects.filter(user=target, revoked_at__isnull=True).values_list(
+                "organization_id", flat=True
+            )
+        )
     org_ids.discard(org.pk)
     if not org_ids:
         return False
@@ -185,9 +208,9 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
 
     def get_queryset(self):
         # Freie Einträge früherer Inhaber (Mitglieder › Ämter) haben kein Konto
-        qs = RoleAssignment.objects.filter(organization=self.org, name="").select_related(
-            "user", "role", "person"
-        )
+        qs = RoleAssignment.objects.filter(
+            organization=self.org, name="", user__isnull=False
+        ).select_related("user", "role", "person")
         if self.request.query_params.get("aktiv") == "1":
             qs = qs.active()
         return qs.order_by("user__email", "-valid_from")

@@ -8,6 +8,7 @@ abwärtskompatibel (neue Felder ja, umbenennen oder entfernen nein).
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
+from access.module_gate import gate_names, needs_module
 from admission import views as admission_views
 from billing import partners as partner_views
 from billing import views as billing_views
@@ -238,7 +239,10 @@ urlpatterns = [
         for_app(admin_members.MemberMoveView).as_view(),
         name="app-admin-member-move",
     ),
-    path("members/<int:member_pk>/", include(member_router.urls)),
+    path(
+        "members/<int:member_pk>/",
+        include(gate_names("awards", member_router.urls, "app-admin-member-honorary-title")),
+    ),
     _p("change-requests/", portal_views.ChangeRequestListView, "change-requests"),
     _p(
         "change-requests/<int:pk>/decide/",
@@ -253,10 +257,14 @@ urlpatterns = [
     ),
     _p("changes/<uuid:set_id>/undo/", change_views.UndoView, "undo"),
     _p("birthdays/", jubilee_views.BirthdayView, "birthdays"),
-    _p("jubilees/", jubilee_views.JubileeView, "jubilees"),
+    path(
+        "jubilees/",
+        needs_module("awards", for_app(jubilee_views.JubileeView).as_view()),
+        name="app-admin-jubilees",
+    ),
     path(
         "cards/check/",
-        for_app(admin_members.CardCheckView).as_view(),
+        needs_module("cards", for_app(admin_members.CardCheckView).as_view()),
         name="app-admin-card-check",
     ),
     # B3: Termine der Einheit, Rückmeldungen (gleiche Rechte wie im Browser: events.manage)
@@ -347,5 +355,5 @@ urlpatterns = [
     _p("admission/<int:pk>/<str:action>/", admission_views.ActionView, "admission-action"),
     *booking_patterns("app-admin"),
     *meeting_patterns("app-admin"),
-    path("", include(org_router.urls)),
+    path("", include(gate_names("awards", org_router.urls, "app-admin-honorary-title"))),
 ]

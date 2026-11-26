@@ -118,10 +118,15 @@ def request_body(request) -> bytes:
     raw = getattr(request, "_request", request)
     if hasattr(raw, "_body"):
         return raw._body
-    length = int(raw.META.get("CONTENT_LENGTH") or 0)
-    if length > MAX_SIGNED_BODY:
+    try:
+        length = int(raw.META.get("CONTENT_LENGTH") or 0)
+    except (TypeError, ValueError):
+        raise BodyTooLarge() from None
+    if length < 0 or length > MAX_SIGNED_BODY:
         raise BodyTooLarge()
-    body = raw.read()
+    body = raw.read(MAX_SIGNED_BODY + 1)
+    if len(body) > MAX_SIGNED_BODY:
+        raise BodyTooLarge()
     raw._body = body
     raw._stream = io.BytesIO(body)
     return body

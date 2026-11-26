@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import datetime
 import hashlib
+import hmac
 import logging
 import secrets
 
@@ -633,9 +634,9 @@ class DeviceRenewView(APIView):
         data.is_valid(raise_exception=True)
         v = data.validated_data
         expected = cache.get(cache_key)
-        # Jede Aufgabe nur einmal
-        cache.delete(cache_key)
-        if not expected or expected != v["challenge"]:
+        # Jede Aufgabe nur einmal — Rückgabewert prüfen (atomares Verbrauchen gegen Replay)
+        consumed = cache.delete(cache_key)
+        if not consumed or not expected or not hmac.compare_digest(str(expected), v["challenge"]):
             raise ValidationError({"detail": gettext("Die Aufgabe ist abgelaufen. Bitte erneut.")})
         if not devicekey.verify(
             device.device_key, devicekey.renew_message(device.pk, expected), v["signature"]

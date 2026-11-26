@@ -141,8 +141,10 @@ def test_reset_mfa_nicht_bei_amt_in_fremder_untereinheit(orgs, api, board_a, zug
     assert Authenticator.objects.filter(user=ziel).exists()
 
 
-def test_reset_mfa_bei_amt_ohne_rechte_erlaubt(orgs, api, board_a, zugfuehrer_in_b):
-    """Ein Amt ohne Rechte (reines Ehrenamt) blockiert den Reset nicht."""
+def test_reset_mfa_bei_mitgliederzugang_anderswo_gesperrt(orgs, api, board_a, zugfuehrer_in_b):
+    """Auch ohne Rechte im Amt: Der Mitgliederzugang im anderen Verein hängt an derselben
+    Zwei-Faktor-Anmeldung, also setzt sie nur die Plattform zurück (Sicherheitsprüfung
+    26.11.2026, A-H01; vorher war das erlaubt)."""
     from allauth.mfa.models import Authenticator
 
     from accounts.models import User
@@ -157,5 +159,5 @@ def test_reset_mfa_bei_amt_ohne_rechte_erlaubt(orgs, api, board_a, zugfuehrer_in
     _totp(board_a)
     board = User.objects.get(pk=board_a.pk)
     resp = api(board).post(f"/api/orgs/{orgs['a'].pk}/assignments/{zuordnung.pk}/reset-mfa/")
-    assert resp.status_code == 200, resp.json()
-    assert not Authenticator.objects.filter(user=ziel).exists()
+    assert resp.status_code == 400, resp.json()
+    assert Authenticator.objects.filter(user=ziel).exists()
