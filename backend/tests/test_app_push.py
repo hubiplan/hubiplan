@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.hmac import HMAC
 from django.core import mail as djmail
+from django.test import Client
 
 from audit.models import AuditEntry
 from circulars.models import Circular, CircularRecipient
@@ -327,26 +328,101 @@ class TestRundschreibenPerApp:
         assert rows["Anna"]["channel"] == "mail"
 
 
+class Vorstandsgeraet:
+    """App mit freigeschalteter Verwaltung: Anfragen mit Vorstandsschlüssel und Unterschrift."""
+
+    def __init__(self, user, api):
+        from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
+        from django.core.cache import cache
+
+        from .factories import PASSWORD
+        from .test_app_verwaltung import fresh_code
+
+        cache.clear()
+        secret = generate_totp_secret()
+        TOTP.activate(user, secret)
+        self.key = ec.generate_private_key(ec.SECP256R1())
+        point = self.key.public_key().public_bytes(
+            serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+        )
+        device_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+        resp = Client().post(
+            f"{APP}pair/",
+            {
+                "code": pairing_code(api(user)),
+                "name": "Pixel 8",
+                "device_key": b64(
+                    device_key.public_bytes(
+                        serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+                    )
+                ),
+            },
+            content_type=JSON,
+        )
+        assert resp.status_code == 201, resp.json()
+        self.token = resp.json()["token"]
+        unlocked = app(self.token).post(
+            f"{APP}admin/unlock/",
+            {"password": PASSWORD, "code": fresh_code(secret), "admin_key": b64(point)},
+            content_type=JSON,
+        )
+        assert unlocked.status_code == 201, unlocked.json()
+        self.admin = unlocked.json()["token"]
+
+    def request(self, method: str, path: str, data=None):
+        import time
+
+        from devices import devicekey
+
+        body = json.dumps(data).encode() if data is not None else b""
+        ts = str(int(time.time()))
+        nonce = b64(os.urandom(18))
+        message = devicekey.admin_message(method, path, ts, body, nonce=nonce)
+        client = Client(
+            HTTP_AUTHORIZATION=f"Bearer {self.admin}",
+            HTTP_X_HUBIPLAN_DEVICE=self.token,
+            **{
+                "HTTP_" + devicekey.TIME_HEADER.upper().replace("-", "_"): ts,
+                "HTTP_" + devicekey.NONCE_HEADER.upper().replace("-", "_"): nonce,
+                "HTTP_" + devicekey.SIGNATURE_HEADER.upper().replace("-", "_"): b64(
+                    self.key.sign(message, ec.ECDSA(hashes.SHA256()))
+                ),
+            },
+        )
+        return client.generic(method, path, body, content_type=JSON)
+
+    def get(self, path: str):
+        return self.request("GET", path)
+
+    def post(self, path: str, data: dict):
+        return self.request("POST", path, data)
+
+
+SEND = f"{APP}admin/send/"
+
+
 class TestSendenAusDerApp:
+    """Senden nur mit dem Vorstandsschlüssel (Sicherheitsprüfung 26.11., A-M01)."""
+
     @pytest.fixture
     def vorstand(self, cal, api):
-        """Vorstand mit eigener Mitgliedschaft und App."""
+        """Vorstand mit eigener Mitgliedschaft, App und freigeschalteter Verwaltung."""
         m, user, access = member_with_access(cal["a"], "Vera")
         give_role(user, cal["a"])
-        resp = pair(pairing_code(api(user)))
-        assert resp.status_code == 201, resp.json()
-        return {"user": user, "token": resp.json()["token"], "membership": m}
+        geraet = Vorstandsgeraet(user, api)
+        return {"user": user, "token": geraet.token, "membership": m, "geraet": geraet}
 
     def test_einheiten_und_vorschau(self, cal, vorstand, anna, allow_endpoint):
         register(anna["token"], Receiver())
         make_member(cal["a"], "Bernd", "Berg")
-        data = app(vorstand["token"]).get(f"{APP}send/").json()
-        assert [s["key"] for s in data["senders"]] == [f"org-{cal['a'].pk}"]
-        assert data["max_body"] == 500
-        resp = app(vorstand["token"]).post(
-            f"{APP}send/org/{cal['a'].pk}/",
-            {"subject": "Antreten", "body": "Heute 18 Uhr am Zelt"},
-            content_type=JSON,
+        for data in (
+            app(vorstand["token"]).get(f"{APP}send/").json(),
+            vorstand["geraet"].get(SEND).json(),
+        ):
+            assert [s["key"] for s in data["senders"]] == [f"org-{cal['a'].pk}"]
+            assert data["max_body"] == 500
+        resp = vorstand["geraet"].post(
+            f"{SEND}org/{cal['a'].pk}/", {"subject": "Antreten", "body": "Heute 18 Uhr am Zelt"}
         )
         assert resp.status_code == 200, resp.json()
         counts = resp.json()["counts"]
@@ -367,10 +443,9 @@ class TestSendenAusDerApp:
         receiver = Receiver()
         register(anna["token"], receiver)
         with django_capture_on_commit_callbacks(execute=True):
-            resp = app(vorstand["token"]).post(
-                f"{APP}send/org/{cal['a'].pk}/",
+            resp = vorstand["geraet"].post(
+                f"{SEND}org/{cal['a'].pk}/",
                 {"subject": "Antreten", "body": "Heute 18 Uhr am Zelt", "confirm": True},
-                content_type=JSON,
             )
         assert resp.status_code == 201, resp.json()
         circular = Circular.objects.get()
@@ -380,29 +455,41 @@ class TestSendenAusDerApp:
         assert msg["title"] == "Antreten" and msg["kind"] == "short"
         assert AuditEntry.objects.filter(organization=cal["a"]).exists()
 
+    def test_geraeteschluessel_allein_sendet_nicht(self, cal, vorstand):
+        """Früherer Pfad: 403 (ältere Apps bleiben angemeldet). Neuer: nur Vorstandsschlüssel."""
+        body = {"subject": "Antreten", "body": "Heute 18 Uhr am Zelt", "confirm": True}
+        alt = app(vorstand["token"]).post(f"{APP}send/org/{cal['a'].pk}/", body, content_type=JSON)
+        assert alt.status_code == 403
+        assert "Verwaltung" in alt.json()["detail"]
+        neu = app(vorstand["token"]).post(f"{SEND}org/{cal['a'].pk}/", body, content_type=JSON)
+        assert neu.status_code == 401
+        assert app(vorstand["token"]).get(SEND).status_code == 401
+        assert not Circular.objects.exists()
+
+    def test_gesperrte_verwaltung_sendet_nicht(self, cal, vorstand):
+        Device.objects.filter(user=vorstand["user"]).update(admin_until=None)
+        resp = vorstand["geraet"].post(
+            f"{SEND}org/{cal['a'].pk}/", {"subject": "x", "body": "y", "confirm": True}
+        )
+        assert resp.status_code == 401
+        assert not Circular.objects.exists()
+
     def test_zug_nur_eigene_mitglieder(self, cal, zug, zug2, api):
         leader = make_member(cal["a"], "Leo", "Leiter", departments=[zug])
         make_member(cal["a"], "Gerd", "Grenadier", departments=[zug2])
         user = make_user("leo@example.org")
         PortalAccess.objects.create(organization=cal["a"], membership=leader, user=user)
         dept_role(zug, leader, ["dept.circulars.send"])
-        token = pair(pairing_code(api(user))).json()["token"]
-        senders = app(token).get(f"{APP}send/").json()["senders"]
+        geraet = Vorstandsgeraet(user, api)
+        senders = geraet.get(SEND).json()["senders"]
         assert [s["key"] for s in senders] == [f"dept-{zug.pk}"]
-        resp = app(token).post(
-            f"{APP}send/dept/{zug.pk}/", {"subject": "Zug", "body": "Probe"}, content_type=JSON
-        )
+        resp = geraet.post(f"{SEND}dept/{zug.pk}/", {"subject": "Zug", "body": "Probe"})
         assert resp.json()["counts"]["total"] == 1  # nur Leo selbst, nicht Gerd
         assert (
-            app(token)
-            .post(f"{APP}send/dept/{zug2.pk}/", {"subject": "x", "body": "y"}, content_type=JSON)
-            .status_code
-            == 404
+            geraet.post(f"{SEND}dept/{zug2.pk}/", {"subject": "x", "body": "y"}).status_code == 404
         )
         assert (
-            app(token)
-            .post(f"{APP}send/org/{cal['a'].pk}/", {"subject": "x", "body": "y"}, content_type=JSON)
-            .status_code
+            geraet.post(f"{SEND}org/{cal['a'].pk}/", {"subject": "x", "body": "y"}).status_code
             == 404
         )
 
@@ -411,10 +498,10 @@ class TestSendenAusDerApp:
         resp = app(anna["token"]).post(
             f"{APP}send/org/{cal['a'].pk}/", {"subject": "x", "body": "y"}, content_type=JSON
         )
-        assert resp.status_code == 404
+        assert resp.status_code == 403
 
     def test_zu_lang(self, cal, vorstand):
-        resp = app(vorstand["token"]).post(
-            f"{APP}send/org/{cal['a'].pk}/", {"subject": "x", "body": "y" * 501}, content_type=JSON
+        resp = vorstand["geraet"].post(
+            f"{SEND}org/{cal['a'].pk}/", {"subject": "x", "body": "y" * 501}
         )
         assert resp.status_code == 400

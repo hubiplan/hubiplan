@@ -144,8 +144,9 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `GET /api/portal/<Zugang>/circulars/` | Rundschreiben |
 | `GET /api/portal/<Zugang>/results/` | Meine Ergebnisse: Starts mit Platz, Wert und Einheit des Werts (`unit_label`, z. B. „Ringe“), Titel und Auszeichnungen (Wettbewerbe; leer ohne Modul, `competitions_enabled` im Zugang) |
 | `GET /api/portal/<Zugang>/` | eigenes Profil (`kind`, `display_name`; Organisationen ohne Vorname, Geburtsdatum und Geschlecht) |
-| `GET /api/app/v1/send/` | Einheiten, an deren Mitglieder dieses Konto Kurzmitteilungen senden darf (`circulars.send` im Verein, `dept.circulars.send` im Zug) |
-| `POST /api/app/v1/send/<org|dept>/<id>/` | Kurzmitteilung an alle Mitglieder der Einheit: `subject`, `body`, `confirm` (false: nur Empfängerzahl, true: senden) |
+| `GET /api/app/v1/send/` | Einheiten, an deren Mitglieder dieses Konto Kurzmitteilungen senden darf (`circulars.send` im Verein, `dept.circulars.send` im Zug); nur die Liste, mit dem Geräteschlüssel |
+| `GET /api/app/v1/admin/send/` | Dieselbe Liste mit dem Vorstandsschlüssel |
+| `POST /api/app/v1/admin/send/<org|dept>/<id>/` | Kurzmitteilung an alle Mitglieder der Einheit: `subject`, `body`, `confirm` (false: nur Empfängerzahl, true: senden). Nur mit dem Vorstandsschlüssel (freigeschaltete Verwaltung, unterschriebene Anfrage). Der frühere Pfad `POST /api/app/v1/send/…` mit dem Geräteschlüssel antwortet mit 403 |
 | `PUT /api/app/v1/devices/current/key/` | Geräteschlüsselpaar nachmelden (H7) |
 | `POST /api/app/v1/devices/current/renew/` | Geräteschlüssel erneuern (H7) |
 | `PUT/DELETE /api/app/v1/devices/current/push/` | Push-Endpunkt dieses Geräts melden bzw. abmelden (`kind`, `endpoint`, `p256dh`, `auth`) |

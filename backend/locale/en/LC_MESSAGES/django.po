@@ -18408,3 +18408,7 @@ msgstr "The minutes have been released. The meeting can no longer be changed."
 #: locale/en/LC_MESSAGES/django.po
 msgid "Der Import würde mehr als {count} Einladungen verschicken. Bitte ohne Einladungen importieren und die Konten danach einladen."
 msgstr "The import would send more than {count} invitations. Please import without invitations and invite the accounts afterwards."
+
+#: backend/locale/en/LC_MESSAGES/django.po
+msgid "Senden geht nur noch mit freigeschalteter Verwaltung. Bitte die App aktualisieren."
+msgstr "Sending now requires the unlocked admin area. Please update the app."

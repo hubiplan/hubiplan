@@ -4,6 +4,10 @@ Nur die Art Kurzmitteilung und nur an alle Mitglieder der eigenen Einheit (Verei
 bzw. Zug mit seinen Untereinheiten). Rechte wie im Browser: ``circulars.send`` im
 Verein, ``dept.circulars.send`` in der Abteilung. Ausführliche Rundschreiben mit
 Auswahl und Anhängen bleiben im Browser.
+
+Gesendet wird nur mit dem Vorstandsschlüssel (freigeschaltete Verwaltung samt Unterschrift
+des Geräts) unter ``/api/app/v1/admin/send/``. Der Geräteschlüssel allein reicht dafür nicht;
+mit ihm lässt sich unter dem früheren Pfad nur noch die Liste der Einheiten lesen.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from core.tenancy import scope_of, set_rls
 from organizations.models import Organization
 from portal import services as portal_services
 
+from .admin_api import AppAdminAccess
 from .auth import DeviceTokenAuthentication
 
 
@@ -81,10 +86,31 @@ class SendersView(APIView):
         return Response({"senders": senders(request.user), "max_body": MAX_SHORT_BODY})
 
 
-class SendShortView(APIView):
-    """POST: Kurzmitteilung vorbereiten (``confirm`` false: Empfängerzahl) oder senden."""
+class SendLockedView(APIView):
+    """Früherer Sendepfad mit dem Geräteschlüssel: gesperrt, die App muss aktuell sein.
+
+    403 statt 401, damit ältere Apps das Gerät nicht abmelden."""
 
     authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, kind: str, pk: int):
+        raise PermissionDenied(
+            gettext(
+                "Senden geht nur noch mit freigeschalteter Verwaltung. Bitte die App aktualisieren."
+            )
+        )
+
+
+class AdminSendersView(AppAdminAccess, SendersView):
+    """GET: wie ``SendersView``, mit dem Vorstandsschlüssel."""
+
+
+class SendShortView(AppAdminAccess, APIView):
+    """POST: Kurzmitteilung vorbereiten (``confirm`` false: Empfängerzahl) oder senden.
+
+    Nur mit dem Vorstandsschlüssel."""
+
     permission_classes = [IsAuthenticated]
 
     def resolve(self, request, kind: str, pk: int):

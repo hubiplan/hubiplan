@@ -30,3 +30,5 @@ In the Android app, changed administration forms and short messages ask before d
 In the event list your reply is shown with an icon and plain text: “Attending”, “Not attending” or “Not answered yet”. In dark mode the app tones down light club colours in the top bar so they do not dazzle in the evening.
 
 Android dropdowns expose their expanded or collapsed state in the selected language. The current circular is also marked as selected for accessibility services. Success messages for profile changes and circulars are exposed as polite status messages.
+
+The app sends short messages to all members only while the administration is unlocked. If it is locked, the app says so; after unlocking under “Administration” you continue with the text you started. Older app versions can no longer send and need to be updated.
