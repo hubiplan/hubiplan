@@ -9,6 +9,8 @@ license = "AGPL-3.0-or-later"
 DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["test_*.py"]
 addopts = "-ra"
+# Hängt ein Test, gibt pytest nach dieser Zeit den Stapel aus (bricht nicht ab)
+faulthandler_timeout = 300
 filterwarnings = ["ignore:No directory at:UserWarning"]
 markers = [
     "langsam: dauert mehrere Sekunden; läuft zuerst, damit es parallel nicht am Ende hängt",
