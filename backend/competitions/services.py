@@ -380,12 +380,15 @@ def foreign_standings(competition: Competition) -> dict:
             by_team = {p.team_id: p for p in placings if p.team_id}
             for t in teams:
                 p = by_team.get(t.pk)
+                team_members = sorted(t.members.all(), key=lambda m: m.name)
                 rows.append(
                     {
                         "key": f"t{t.pk}",
                         "team": t.pk,
                         "name": t.name,
-                        "members": [m.name for m in sorted(t.members.all(), key=lambda m: m.name)],
+                        "members": [m.name for m in team_members],
+                        # Für die Webseite: Namen dort nur nach Einwilligung und Alter
+                        "member_starters": [m.pk for m in team_members],
                         **_placing(p, sc),
                     }
                 )

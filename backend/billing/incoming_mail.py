@@ -143,12 +143,15 @@ def addressed_here(raw: bytes) -> bool:
     return False
 
 
-def find_org_id(addresses: list[str]) -> int | None:
-    """Verein zur Plus-Adresse; nur Adressen mit der Domain des Postfachs zählen."""
+def find_org_ids(addresses: list[str]) -> list[int]:
+    """Vereine zu den Plus-Adressen; nur Adressen mit der Domain des Postfachs zählen.
+
+    Eine Mail an zwei Einheiten geht an beide, in der Reihenfolge der Adressen."""
     base = mailbox_address()
     if "@" not in base:
-        return None
+        return []
     base_local, domain = base.split("@", 1)
+    result: list[int] = []
     for address in addresses:
         if "@" not in address:
             continue
@@ -164,9 +167,15 @@ def find_org_id(addresses: list[str]) -> int | None:
                 .values_list("organization_id", flat=True)
                 .first()
             )
-        if org_id:
-            return org_id
-    return None
+        if org_id and org_id not in result:
+            result.append(org_id)
+    return result
+
+
+def find_org_id(addresses: list[str]) -> int | None:
+    """Erster Verein zur Plus-Adresse."""
+    found = find_org_ids(addresses)
+    return found[0] if found else None
 
 
 # --- Eine Mail ---
@@ -220,13 +229,14 @@ def _attachments(msg: EmailMessage) -> tuple[list[tuple[str, bytes]], list[dict]
         if len(found) >= MAX_ATTACHMENTS:
             skipped.append({"name": name, "reason": "too_many"})
             continue
-        if is_pdf and not einvoice.xml_from_pdf(data):
-            # Gewöhnliche PDF-Rechnung oder Anschreiben: keine E-Rechnung
-            skipped.append({"name": name, "reason": "plain_pdf"})
-            continue
+        # Erst prüfen, dann lesen: Die PDF-Bibliothek bekommt keine ungeprüfte Datei von außen
         if not virenscan.inbound_ok(data, name, "Mail an das Rechnungspostfach"):
             skipped.append({"name": name, "reason": "virus"})
             virus = True
+            continue
+        if is_pdf and not einvoice.xml_from_pdf(data):
+            # Gewöhnliche PDF-Rechnung oder Anschreiben: keine E-Rechnung
+            skipped.append({"name": name, "reason": "plain_pdf"})
             continue
         found.append((name, data))
     return found, skipped, virus
@@ -241,16 +251,22 @@ def process_message(raw: bytes) -> str:
     handled = proof_mail.process(msg, recipient_addresses(msg))
     if handled is not None:
         return handled
-    org_id = find_org_id(recipient_addresses(msg))
-    if org_id is None:
+    org_ids = find_org_ids(recipient_addresses(msg))
+    if not org_ids:
         logger.warning("Rechnungspostfach: Mail ohne bekannte Empfängeradresse bleibt liegen")
         return Result.KEEP
     from organizations.models import Organization
 
-    with rls_bypass():
-        org = Organization.objects.get(pk=org_id)
-    with tenant_context(org_id):
-        return _process_for(org, msg)
+    # An mehrere Einheiten adressiert: jede bekommt die Rechnung. Bleibt die Mail für eine
+    # liegen, bleibt sie insgesamt; schon verarbeitete Einheiten erkennen sie beim nächsten
+    # Abruf an der Kennung wieder.
+    results = []
+    for org_id in org_ids:
+        with rls_bypass():
+            org = Organization.objects.get(pk=org_id)
+        with tenant_context(org_id):
+            results.append(_process_for(org, msg))
+    return Result.KEEP if Result.KEEP in results else results[0]
 
 
 def _process_for(org, msg: EmailMessage) -> str:

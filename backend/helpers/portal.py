@@ -169,6 +169,9 @@ class SignupView(Base):
         )
         plan = plans[shift.duty.plan_id]
         membership = self.access.membership
+        # Zwei gleichzeitige Eintragungen derselben Person in verschiedene Schichten nacheinander
+        # prüfen (Überschneidung, Höchstzahl)
+        type(membership).objects.select_for_update().filter(pk=membership.pk).first()
         if plan.signup != HelperPlan.Signup.SELF:
             raise ValidationError({"detail": _("In diesen Plan trägt nur die Verwaltung ein.")})
         if shift.starts_at <= timezone.now():

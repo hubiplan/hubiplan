@@ -87,6 +87,8 @@ from .tables import (
 from .validation import validate_url_data, validate_urls
 
 MAX_JSON_BYTES = 200 * 1024 * 1024
+# Neue Konten mit Einladungsmail je Import (darüber: ohne Einladungen importieren)
+MAX_INVITATIONS = 200
 MAX_FILE_BYTES = 25 * 1024 * 1024  # eine Datei im Archiv (größte Uploadgrenze: 20 MB)
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024  # alle Dateien zusammen, entpackt
 
@@ -231,6 +233,15 @@ class Files:
         self.archive = archive
         self.names = set(archive.namelist()) if archive else set()
         self.total = 0
+
+    def close(self) -> None:
+        """Archiv und die Datei darunter schließen (sonst bleibt je Prüfung eine offen)."""
+        if self.archive is not None:
+            handle = self.archive.fp
+            self.archive.close()
+            if handle is not None:
+                handle.close()
+            self.archive = None
 
     def has(self, path: str | None) -> bool:
         return bool(path) and path in self.names
@@ -905,7 +916,10 @@ def check(job) -> dict:
     # Systemprüfung über Organisationen hinweg; die Rechte hat die API-Ansicht geprüft
     with rls_bypass():
         doc, files = open_file(job.file)
-        return Checker(job, doc, files).check()
+        try:
+            return Checker(job, doc, files).check()
+        finally:
+            files.close()
 
 
 # --- Anlegen ---
@@ -1241,6 +1255,13 @@ class Loader:
             email = (a.get("email") or "").strip().lower()
             user = User.objects.filter(email=email).first() if email else None
             if user is None and email and invite:
+                if len(self.invitations) >= MAX_INVITATIONS:
+                    raise ValidationError(
+                        gettext(
+                            "Der Import würde mehr als {count} Einladungen verschicken. Bitte "
+                            "ohne Einladungen importieren und die Konten danach einladen."
+                        ).format(count=MAX_INVITATIONS)
+                    )
                 names = (a.get("name") or "").split(" ", 1)
                 user = User.objects.create_user(
                     email=email,
@@ -1680,6 +1701,14 @@ def missing_department_permissions(doc: dict, club: Organization, user) -> list[
 def run(job, user) -> dict:
     with rls_bypass():
         doc, files = open_file(job.file)
+    try:
+        return _run(job, user, doc, files)
+    finally:
+        files.close()
+
+
+def _run(job, user, doc: dict, files: Files) -> dict:
+    with rls_bypass():
         preview = Checker(job, doc, files).check()
         if preview["kind"] == "department":
             # Wer den Import startet, braucht die Rechte (nicht nur, wer hochgeladen hat)

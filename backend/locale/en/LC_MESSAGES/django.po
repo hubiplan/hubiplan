@@ -18388,3 +18388,23 @@ msgstr "do not show"
 #: billing/sepa.py
 msgid "Für diesen Zahler wird gerade ein Mandat angelegt. Bitte noch einmal."
 msgstr "A mandate is being created for this payer right now. Please try again."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Empfänger nicht gespeichert (anonyme Umfrage)"
+msgstr "Recipients not stored (anonymous survey)"
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Die Datei ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+msgstr "The file is too large for the virus scan (at most {mb} MB)."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Die Datei ist kein Foto (JPEG, PNG, WebP oder HEIC)."
+msgstr "The file is not a photo (JPEG, PNG, WebP or HEIC)."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Das Protokoll ist freigegeben. Die Versammlung lässt sich nicht mehr ändern."
+msgstr "The minutes have been released. The meeting can no longer be changed."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Der Import würde mehr als {count} Einladungen verschicken. Bitte ohne Einladungen importieren und die Konten danach einladen."
+msgstr "The import would send more than {count} invitations. Please import without invitations and invite the accounts afterwards."

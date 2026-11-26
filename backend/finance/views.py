@@ -23,6 +23,7 @@ from rest_framework.views import APIView
 from access.catalog import FINANCE_EDIT, FINANCE_VIEW, ROLES_MANAGE
 from access.modules import module_on
 from audit.log import diff, record, snapshot
+from core import filecheck
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.files import delete_on_commit
 from members.personsearch import name_ids
@@ -748,6 +749,9 @@ def attach_receipt(org, booking: Booking, upload, user) -> Receipt:
     upload.seek(0)
     if content_type == "application/pdf" and not head.startswith(b"%PDF"):
         raise serializers.ValidationError({"file": gettext("Die Datei ist kein PDF.")})
+    if content_type.startswith("image/") and not filecheck.is_image(head):
+        # Nicht nur der Angabe des Geräts trauen
+        raise serializers.ValidationError({"file": filecheck.image_message()})
     info: dict = {}
     if content_type in ("application/pdf", "application/xml", "text/xml"):
         from . import einvoice
@@ -892,6 +896,8 @@ class ReceiptView(FinanceMixin, APIView):
         if receipt.hidden_at:
             raise serializers.ValidationError(gettext("Der Beleg ist schon ausgeblendet."))
         if not receipt_deletable(receipt, request.user):
+            # Abgeschlossenes Jahr: auch Ausblenden ändert, was die Prüfung sieht
+            _ensure_open(self.org, receipt.booking.year)
             # Aufbewahrungspflicht (§ 147 AO): ausblenden statt löschen, mit Grund
             reason = " ".join(str(request.data.get("reason") or "").split())
             if len(reason) < 3:

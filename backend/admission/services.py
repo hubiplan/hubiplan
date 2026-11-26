@@ -396,6 +396,10 @@ def notify_board(app: Application) -> None:
 
 @transaction.atomic
 def withdraw(app: Application) -> Application:
+    # Zeile sperren und den Stand neu lesen: zwei gleichzeitige Entscheidungen prüfen sonst
+    # beide den alten Zustand
+    Application.objects.select_for_update().get(pk=app.pk)
+    app.refresh_from_db()
     if app.status in Application.DONE_STATES:
         raise ValidationError(gettext("Über den Antrag ist schon entschieden."))
     app.status = Application.Status.WITHDRAWN
@@ -549,6 +553,10 @@ def set_choice(
 def approve(
     app: Application, user, perms: set[str], decision: str, note: str = "", for_unit: bool = False
 ):
+    # Zeile sperren und den Stand neu lesen: zwei gleichzeitige Entscheidungen prüfen sonst
+    # beide den alten Zustand
+    Application.objects.select_for_update().get(pk=app.pk)
+    app.refresh_from_db()
     form = form_for(app.organization)
     rule = form.rule or {}
     if app.status != Application.Status.OPEN:

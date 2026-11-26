@@ -21,6 +21,7 @@ from .models import (
     MAX_OPTIONS,
     MAX_QUESTIONS,
     Survey,
+    SurveyAnswer,
     SurveyOption,
     SurveyParticipation,
     SurveyQuestion,
@@ -353,6 +354,12 @@ def apply(view, survey: Survey, data: dict, *, creating: bool) -> None:
                 }
             )
         survey.names = data["names"]
+        if survey.anonymous and started and survey.pk:
+            # Auf anonym umgestellt: Schon gegebene Antworten verlieren die Verbindung zur
+            # Person und werden neu gemischt, sonst bliebe die Zuordnung in der Datenbank
+            Survey.objects.select_for_update().filter(pk=survey.pk).first()
+            SurveyAnswer.objects.filter(survey=survey).update(participation=None)
+            services.mix_answers(survey)
     if "results" in data and data["results"] != survey.results:
         # Gesamtaudit 15.11., UM-1: Wer unter „nur die Verwaltung sieht das Ergebnis“
         # geantwortet hat, darf nicht nachträglich für alle sichtbar werden

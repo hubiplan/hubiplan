@@ -128,7 +128,9 @@ def send(survey_id: int, kind: str) -> int:
                     title,
                     text,
                     organization=survey.organization,
-                    kind="umfrage",
+                    # Erinnerungen gehen nur an Personen ohne Stimme: bei anonymen Umfragen
+                    # ohne Empfänger im Postausgang
+                    kind="umfrage_anonym" if kind == REMIND and survey.anonymous else "umfrage",
                     fail_silently=True,
                 )
             )

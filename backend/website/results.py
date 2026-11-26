@@ -198,7 +198,8 @@ def _row(names: Names, r: dict, kind: str, depth: str) -> dict:
             if slug:
                 out["unit_slug"] = slug
         if kind == "mannschaft" and depth == "alle":
-            out["members"] = r.get("members", [])
+            # Wie Einzelstarter: Namen nur nach Einwilligung und Alter, nie die rohe Liste
+            out["members"] = [names.of_starter(pk) for pk in r.get("member_starters", [])]
         if r.get("reason"):
             out["note"] = r["reason"]
         return out

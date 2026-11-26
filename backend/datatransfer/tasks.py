@@ -6,7 +6,7 @@ import logging
 
 from celery import shared_task
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
+from django.core.files.base import File
 from django.db import transaction
 from django.utils import timezone
 
@@ -39,22 +39,29 @@ def run_export(job_id: int) -> None:
     _save(job)
     try:
         if job.kind == TransferJob.Kind.DEPARTMENT:
-            content, name, counts = dump.export_department(
+            handle, name, counts = dump.export_department(
                 job.department,
                 with_files=job.with_files,
                 spin_off=(job.options or {}).get("spin_off"),
                 actor=job.created_by,
+                stream=True,
             )
         else:
-            content, name, counts = dump.export_organization(
+            handle, name, counts = dump.export_organization(
                 job.subject or job.organization,
                 with_files=job.with_files,
                 by_platform=bool(job.options.get("by_platform")),
                 actor=job.created_by,
+                stream=True,
             )
-        job.file.save(name, ContentFile(content), save=False)
+        try:
+            size = handle.seek(0, 2)
+            handle.seek(0)
+            job.file.save(name, File(handle, name=name), save=False)
+        finally:
+            handle.close()
         job.file_name = name
-        job.size = len(content)
+        job.size = size
         job.summary = counts
         job.status = TransferJob.Status.DONE
         alarm.export_finished(

@@ -331,6 +331,16 @@ class DetailView(Base):
     def patch(self, request, pk, **kwargs):
         access.require_edit(self.scope)
         meeting = self.meeting(pk, lock=True)
+        if meeting.status == Meeting.Status.DONE:
+            # Das freigegebene Protokoll nennt Titel, Zeit, Leitung und Protokollführung
+            raise ValidationError(
+                {
+                    "detail": _(
+                        "Das Protokoll ist freigegeben. Die Versammlung lässt sich nicht mehr "
+                        "ändern."
+                    )
+                }
+            )
         before = snapshot(meeting)
         ser = MeetingInput(data=request.data, partial=True)
         ser.is_valid(raise_exception=True)
@@ -370,9 +380,13 @@ class DetailView(Base):
             meeting.status = data["status"]
             event.is_cancelled = meeting.status == Meeting.Status.CANCELLED
         event.save()
+        changes = diff(before, snapshot(meeting))
+        if changes and meeting.status == Meeting.Status.MINUTES:
+            # Bestätigt wurde der alte Stand: Die Bestätigungen gelten nicht mehr
+            meeting.chair_confirmed_by = meeting.taker_confirmed_by = None
+            meeting.chair_confirmed_at = meeting.taker_confirmed_at = None
         meeting.version += 1
         meeting.save()
-        changes = diff(before, snapshot(meeting))
         if changes:
             record(self.scope.org, request.user, "update", meeting, changes)
         return Response(meeting_data(meeting, self.scope, full=True))

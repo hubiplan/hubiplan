@@ -118,6 +118,12 @@ class TestEineMail:
         assert not item.mail.sender_known and item.mail.dismissed_at is not None
         assert item.created_by is None
 
+    def test_mail_an_zwei_einheiten_geht_an_beide(self, club, orgs):
+        other = orgs["b"]
+        raw = mail(f"{address(club)}, {address(other)}", [xml_part()])
+        assert incoming_mail.process_message(raw) == Result.MOVE
+        assert len(invoices(club)) == 1 and len(invoices(other)) == 1
+
     def test_zugferd_ja_einfache_pdf_nein(self, club):
         raw = mail(
             address(club),

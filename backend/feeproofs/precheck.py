@@ -19,11 +19,17 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import logging
 import re
 import unicodedata
 
+logger = logging.getLogger(__name__)
+
 GREEN, YELLOW, RED = "green", "yellow", "red"
 MAX_PAGES = 5
+# Grenzen des Kindprozesses, der fremde PDFs liest (wie finance/einvoice.py)
+PDF_PROZESS_SPEICHER = 768 * 1024 * 1024
+PDF_PROZESS_SEKUNDEN = 30
 
 KEYWORDS = (
     "immatrikulationsbescheinigung",
@@ -51,26 +57,33 @@ def _fold(text: str) -> str:
 
 
 def pdf_text(data: bytes) -> str:
-    import pypdfium2 as pdfium
+    """Text der ersten Seiten; läuft in einem eigenen Prozess (feeproofs/pdf_text.py).
 
-    try:
-        doc = pdfium.PdfDocument(data)
-    except Exception:  # noqa: BLE001 - kaputtes oder verschlüsseltes PDF: kein Text
+    Die Datei kommt von außen, auch unangemeldet per Mail. Stürzt die PDF-Bibliothek daran ab
+    oder braucht sie zu viel Speicher, endet nur der Kindprozess; die Vorprüfung meldet dann
+    „kein Text“."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    if not data.lstrip()[:5].startswith(b"%PDF"):
         return ""
     try:
-        parts = []
-        for i in range(min(len(doc), MAX_PAGES)):
-            try:
-                page = doc[i]
-                textpage = page.get_textpage()
-                parts.append(textpage.get_text_range())
-                textpage.close()
-                page.close()
-            except Exception:  # noqa: BLE001, S112 - beschädigte Seite: Text der übrigen Seiten
-                continue
-        return "\n".join(parts)
-    finally:
-        doc.close()
+        lauf = subprocess.run(  # noqa: S603 - festes Modul, keine Shell, PDF über stdin
+            [sys.executable, "-m", "feeproofs.pdf_text", str(MAX_PAGES), str(PDF_PROZESS_SPEICHER)],
+            input=data,
+            capture_output=True,
+            timeout=PDF_PROZESS_SEKUNDEN,
+            cwd=Path(__file__).resolve().parent.parent,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        logger.warning("Vorprüfung: PDF-Text nach %s s abgebrochen", PDF_PROZESS_SEKUNDEN)
+        return ""
+    if lauf.returncode != 0:
+        logger.warning("Vorprüfung: PDF-Text nicht lesbar (Code %s)", lauf.returncode)
+        return ""
+    return lauf.stdout.decode("utf-8", "replace")
 
 
 _SEMESTER_WINTER = re.compile(
@@ -131,19 +144,25 @@ def _der_length(data: bytes, pos: int) -> tuple[int, int]:
 
 
 def signature_info(data: bytes) -> dict | None:
-    """Erste Signatur: unverändert seit dem Signieren? Wer hat signiert? None ohne Signatur."""
+    """Erste Signatur: Passt der Inhalt noch zur Prüfsumme? Welcher Name steht darin? None ohne.
+
+    ``intact`` heißt nur: Die Signatur umfasst die ganze Datei, und die Prüfsumme darin passt zum
+    Inhalt. Ob die Signatur echt ist und wem das Zertifikat gehört, wird nicht geprüft
+    (``verified`` ist immer falsch); der Name ist eine Angabe aus der Datei. Die Oberfläche zeigt
+    das auch so an."""
     match = _BYTE_RANGE.search(data)
     if match is None:
         return None
     a, b, c, d = (int(x) for x in match.groups())
-    if a != 0 or b <= 0 or c <= b or c + d > len(data):
-        return {"intact": False, "signer": ""}
+    # Die Signatur muss bis zum Dateiende reichen: sonst wurde danach etwas angehängt
+    if a != 0 or b <= 0 or c <= b or c + d != len(data):
+        return {"intact": False, "verified": False, "signer": ""}
     signed = data[a : a + b] + data[c : c + d]
     hex_part = data[a + b : c].strip(b"<> \r\n\t")
     try:
         cms = bytes.fromhex(hex_part.decode("ascii"))
     except ValueError:
-        return {"intact": False, "signer": ""}
+        return {"intact": False, "verified": False, "signer": ""}
     intact = False
     at = cms.find(_MESSAGE_DIGEST)
     if at >= 0:
@@ -180,7 +199,7 @@ def signature_info(data: bytes) -> dict | None:
                 break
     except Exception:  # noqa: BLE001 - unbekanntes Format: ohne Namen
         signer = ""
-    return {"intact": intact, "signer": signer}
+    return {"intact": intact, "verified": False, "signer": signer}
 
 
 # --- Prüfung ---
@@ -216,8 +235,9 @@ def check(
         reasons.append("name_missing")
     else:
         reasons.append("name_ok")
+    birth_ok = True
     if birth_date is not None:
-        found_birth = any(v in text for v in _birth_variants(birth_date))
+        found_birth = birth_ok = any(v in text for v in _birth_variants(birth_date))
         reasons.append("birth_ok" if found_birth else "birth_missing")
     keyword = next((k for k in KEYWORDS if k in text), "")
     reasons.append("keyword_ok" if keyword else "keyword_missing")
@@ -234,8 +254,11 @@ def check(
             reasons.append("valid_ok")
     else:
         reasons.append("valid_missing")
+    # Grün (und damit die automatische Anerkennung) nur, wenn auch das Geburtsdatum passt und
+    # eine vorhandene Signatur nicht dem Inhalt widerspricht
+    sig_ok = sig is None or bool(sig.get("intact"))
     if not name_ok:
         result["level"] = RED
-    elif keyword and until is not None and until >= needed_until:
+    elif birth_ok and sig_ok and keyword and until is not None and until >= needed_until:
         result["level"] = GREEN
     return result

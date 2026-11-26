@@ -2,6 +2,8 @@
 export function loginTarget(state: unknown): string {
   const from = (state as { from?: unknown } | null)?.from
   if (typeof from !== 'string' || !from.startsWith('/') || from.startsWith('//')) return '/'
+  // Browser lesen „/\\server“ wie „//server“
+  if (from.includes('\\')) return '/'
   if (from.startsWith('/anmelden')) return '/'
   return from
 }

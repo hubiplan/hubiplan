@@ -114,6 +114,9 @@ def mine_payload(reg: Registration) -> dict:
     }
 
 
+TICKET_IP_LIMIT = 60  # Kartenabrufe je 10 Minuten und Adresse
+
+
 class ConfirmView(_Public):
     def post(self, request, token: str):
         pending = public.find_pending(token)
@@ -151,6 +154,11 @@ class MineTicketsView(_Public):
     def get(self, request, token: str):
         from .views import tickets_response
 
+        # Die Karten werden bei jedem Abruf neu gesetzt (PDF): je Adresse begrenzen
+        if too_many(f"registration:karten:{visitor_ip(request)}", TICKET_IP_LIMIT, 10 * 60):
+            return Response(
+                {"detail": gettext("Zu viele Versuche. Bitte später noch einmal.")}, status=429
+            )
         reg = _own(token)
         with override(self.language(request)), unit_context(reg.organization_id):
             return tickets_response(reg)

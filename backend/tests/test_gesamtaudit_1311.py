@@ -118,6 +118,7 @@ class TestStandZaehler:
             is_active = True
 
             class organization:  # noqa: N801
+                is_active = True
                 enabled_modules = [stand_views.MODULE]
 
         class Bestand:

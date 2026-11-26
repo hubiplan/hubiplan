@@ -10309,7 +10309,7 @@
   "Vorprüfung: passt": "Pre-check: fits",
   "Vorprüfung: genau ansehen": "Pre-check: look closely",
   "Vorprüfung: selbst prüfen": "Pre-check: review yourself",
-  "Elektronisch signiert von {signer}": "Electronically signed by {signer}",
+  "Elektronische Signatur mit dem Namen „{signer}“ (Echtheit nicht geprüft)": "Electronic signature with the name “{signer}” (authenticity not checked)",
   "unbekannt": "unknown",
   "Signatur passt nicht zum Inhalt": "Signature does not match the content",
   "Art des Nachweises": "Type of proof",

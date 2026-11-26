@@ -131,6 +131,7 @@ class _StandPublic(APIView):
         if (
             access is None
             or not access.is_active
+            or not access.organization.is_active
             or MODULE not in (access.organization.enabled_modules or [])
         ):
             # Unbekannte Schlüssel zählen je Adresse, nicht je Schlüssel: Sonst legte jeder

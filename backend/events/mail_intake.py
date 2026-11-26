@@ -25,6 +25,7 @@ Antworten auf HUBIplans eigene Einladungen (W1b) verarbeitet ``handle_reply``.
 from __future__ import annotations
 
 import datetime
+import itertools
 import logging
 import re
 import uuid
@@ -59,6 +60,10 @@ ACTIONS = {NEW: "neuer Termin", UPDATE: "geänderter Termin", CANCEL: "Absage"}
 BOARD_AUDIENCES = ("roles", "boards", "departments")
 SERIES = {"WEEKLY": "weekly", "MONTHLY": "monthly", "YEARLY": "yearly"}
 WEEKDAYS = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
+# Höchstzahl der Termine einer Serie mit Anzahl (COUNT); mehr gilt als nicht übernehmbar
+MAX_SERIES_COUNT = 1000
+# Einladungen über einen Kalenderserver (Herkunft nicht prüfbar) je Verteiler und Konto
+EXTERNAL_PER_HOUR = 20
 
 
 # --- Wer darf ---
@@ -151,7 +156,10 @@ def series_of(invitation: imip.Invitation) -> dict:
     elif count.isdigit():
         from dateutil.rrule import rrulestr
 
-        moments = list(rrulestr(invitation.rrule, dtstart=start))[: int(count)]
+        # Nie die ganze Serie ausrechnen: Eine Einladung kann beliebig viele Termine nennen
+        if not 1 <= int(count) <= MAX_SERIES_COUNT:
+            raise imip.NotUsable(hint)
+        moments = list(itertools.islice(rrulestr(invitation.rrule, dtstart=start), int(count)))
         if moments:
             result["repeat_until"] = moments[-1].date()
     return result
@@ -165,9 +173,13 @@ def visibility_for(ml) -> str:
 
 
 def find_event(ml, uid: str) -> Event | None:
+    """Termin zu dieser Einladung. Der Verteiler einer Abteilung findet nur deren Termine:
+    Sonst könnte ihr Terminverwalter über die Kennung Termine des Vorstands oder anderer
+    Abteilungen ändern oder absagen."""
+    scope = {"department": ml.department} if ml.department_id else {}
     with rls_bypass():
         return (
-            Event.objects.filter(organization=ml.organization, mail_uid=uid)
+            Event.objects.filter(organization=ml.organization, mail_uid=uid, **scope)
             .select_related("organization", "department")
             .order_by("-pk")
             .first()
@@ -279,6 +291,19 @@ def handle(msg: EmailMessage, text: str | None, ml, base: dict):
         action = CANCEL
     else:
         action = UPDATE if existing is not None else NEW
+    if not own:
+        # Über einen Kalenderserver („Antwort an“ statt Absender): Die Herkunft ist nicht
+        # prüfbar. Solche Einladungen warten ohnehin auf Bestätigung; hier nur die Menge
+        # begrenzen, damit niemand Postfach und Speicher damit füllt.
+        from core.ratelimit import too_many
+
+        if too_many(f"imip:fremd:{ml.pk}:{getattr(user, 'pk', 0)}", EXTERNAL_PER_HOUR, 3600):
+            return inbound._log(
+                **base,
+                user=user,
+                status=rejected,
+                reason="Zu viele Einladungen über einen Kalenderserver in einer Stunde.",
+            )
     with rls_bypass():
         older = InboundMail.objects.filter(
             mailing_list=ml,
@@ -756,6 +781,9 @@ def handle_reply(msg: EmailMessage, text: str | None, code: tuple[int, int], bas
     if event is None or membership is None or membership.organization_id != event.organization_id:
         return inbound._log(**base, status=rejected, reason="Termin unbekannt.")
     base["organization"] = event.organization
+    if inbound.dmarc_failed(msg):
+        # Der Absender ist nachweislich gefälscht: keine Rückmeldung in fremdem Namen
+        return inbound._log(**base, status=rejected, reason="Absender nicht bestätigt (DMARC).")
     if text is None:
         return inbound._log(**base, status=rejected, reason="Antwort ohne Kalenderteil.")
     try:

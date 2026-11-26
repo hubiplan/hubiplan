@@ -396,6 +396,12 @@ export function PreviewFrame({
     if (!onPick) return
     function onMessage(e: MessageEvent) {
       if (!frame.current || e.source !== frame.current.contentWindow) return
+      // Nur die Vorschau selbst: Hat sich das Fenster auf eine fremde Seite bewegt, zählt nichts
+      try {
+        if (e.origin !== new URL(frame.current.src, window.location.href).origin) return
+      } catch {
+        return
+      }
       const d = e.data as { hubiplan?: string; bereich?: unknown } | null
       if (d?.hubiplan === 'zeigen-bereit') setReady((n) => n + 1)
       else if (d?.hubiplan === 'bereich' && typeof d.bereich === 'string') pick.current?.(d.bereich)

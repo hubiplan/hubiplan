@@ -623,6 +623,9 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
             )
         )
     assert meeting["status"] == "done" and meeting["released_at"]
+    # Freigegeben: Titel, Zeit, Leitung und Protokollführung stehen fest
+    resp = s["chef"].patch(url, {"title": "Ganz andere Versammlung"}, content_type=JSON)
+    assert resp.status_code == 400
     assert meeting["agenda"][1]["resolutions"][0]["number"].endswith("/01")
     version = MinutesVersion.objects.get(meeting_id=meeting["id"])
     content = version.file.read()

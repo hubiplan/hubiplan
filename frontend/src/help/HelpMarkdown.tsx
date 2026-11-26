@@ -23,7 +23,8 @@ export function HelpMarkdown({ body, onNavigate }: { body: string; onNavigate?: 
   const click = (e: MouseEvent<HTMLDivElement>) => {
     const a = (e.target as HTMLElement).closest('a')
     const href = a?.getAttribute('href')
-    if (!a || !href?.startsWith('/') || e.metaKey || e.ctrlKey || e.shiftKey) return
+    if (!a || !href?.startsWith('/') || href.startsWith('//')) return
+    if (e.metaKey || e.ctrlKey || e.shiftKey) return
     e.preventDefault()
     navigate(href)
     onNavigate?.()

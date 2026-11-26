@@ -1383,7 +1383,7 @@ class DebitRun(models.Model):
     message_id = models.CharField(max_length=35)
     # Die einmal erzeugte Bankdatei: erneutes Herunterladen liefert genau diese,
     # auch wenn sich Bank- oder Vereinsdaten inzwischen geändert haben
-    xml = models.TextField("SEPA-Datei", blank=True, default="")
+    xml = EncryptedTextField("SEPA-Datei", blank=True, default="")
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.CREATED)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     booked_at = models.DateTimeField(null=True, blank=True)

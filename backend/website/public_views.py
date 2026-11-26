@@ -514,6 +514,18 @@ class DocumentFileView(_Public):
             ctype = "image/png" if f.name.endswith(".png") else "image/jpeg"
         else:
             f, ctype = doc.file, doc.content_type
+            # Öffentliche Weitergabe: nur geprüft (wie Anhänge von Terminen)
+            from core import virenscan
+
+            try:
+                virenscan.release_ok(
+                    f,
+                    doc.title or f.name,
+                    "Dokument auf der Webseite",
+                    key=f"webdokument:{doc.pk}:{f.name}",
+                )
+            except Exception as exc:
+                raise Http404 from exc
         response = FileResponse(f.open("rb"), content_type=ctype)
         if ctype == "application/pdf":
             response["Content-Disposition"] = "inline"

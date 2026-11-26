@@ -145,4 +145,10 @@ def download(request, access, score_id):
     if score_id not in rows:
         raise NotFound()
     link, version = rows[score_id]
+    # Weitergabe nach außen (Gäste ohne Konto): nur geprüft, wie Rundschreiben-Anhänge
+    from core import virenscan
+
+    virenscan.release_ok(
+        version.file, version.name, "Noten für Gäste", key=f"gastnoten:{version.pk}"
+    )
     return respond(request, link, version)

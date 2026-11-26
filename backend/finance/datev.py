@@ -65,7 +65,9 @@ COLUMNS = [
 
 def _q(text: str) -> str:
     """Textfeld in Anführungszeichen; Anführungszeichen verdoppelt, keine Zeilenumbrüche."""
-    clean = " ".join(str(text or "").split()).replace('"', '""')
+    clean = " ".join(str(text or "").split())
+    # Kein Feld beginnt mit einem Zeichen, das eine Tabellenkalkulation als Formel liest
+    clean = clean.lstrip("=+-@ ").replace('"', '""')
     return f'"{clean}"'
 
 

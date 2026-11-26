@@ -674,11 +674,16 @@ def build(membership: Membership, org) -> bytes:
             match |= Q(to__icontains=address)
         for mail in OutgoingMail.objects.filter(match, organization_id__in=org_ids):
             # Nur Mails an diese Person (kein Teiltreffer in einer längeren Adresse)
-            to = {a.strip().lower() for a in mail.to.replace(";", ",").split(",")}
-            if to & emails:
+            # Bei mehreren Empfängern nur die eigenen Adressen nennen
+            own = [
+                a.strip()
+                for a in mail.to.replace(";", ",").split(",")
+                if a.strip().lower() in emails
+            ]
+            if own:
                 mails.append(
                     {
-                        "an": mail.to,
+                        "an": ", ".join(own),
                         "betreff": mail.subject,
                         "text": mail.body,
                         "anhänge": [a.get("name") for a in mail.attachments or []],

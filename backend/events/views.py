@@ -741,6 +741,16 @@ class _EventDetail(APIView):
     @transaction.atomic
     def patch(self, request, pk: int, **kwargs):
         event = self.own_event(pk)
+        meeting = getattr(event, "meeting", None)
+        if meeting is not None and meeting.status == meeting.Status.DONE:
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Das Protokoll ist freigegeben. Die Versammlung lässt sich nicht mehr "
+                        "ändern."
+                    )
+                }
+            )
         before = snapshot(event)
         tracked = {f: getattr(event, f) for f in TRACKED}
         was_cancelled, old_start = event.is_cancelled, event.starts_at
