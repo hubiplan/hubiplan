@@ -6,6 +6,7 @@ import { ApiError } from '../api/client.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoFinished, SsoInstance } from '../api/peering.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
+import { loginTarget } from '../auth/loginTarget.ts'
 import { cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
 import { errorMessage, useLoad } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
@@ -266,7 +267,7 @@ export function VerbundFinishPage() {
       return
     }
     if (r.user) setUser(r.user)
-    navigate(r.next || '/', {
+    navigate(loginTarget({ from: r.next }), {
       replace: true,
       state: r.purpose === 'link' ? { linked: true } : undefined,
     })

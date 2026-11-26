@@ -314,3 +314,24 @@ def test_wahl_einer_person_und_rechte(world):
     Meeting.objects.filter(pk=w["meeting"]["id"]).update(status="done")
     assert w["chef"].post(w["live"], {"open": True}, content_type=JSON).status_code == 400
     assert member_live(w, "Anna").status_code == 404
+
+
+def test_vorstandssitzung_verraet_nichtbeteiligten_nichts(world):
+    """Sicherheitsprüfung 26.11. C-M04: Bei geöffneter Anmeldung erfährt nur, wer dazugehört,
+    von einer Sitzung, deren Termin nur der Vorstand sieht."""
+    from events.models import Event
+
+    w = world
+    meeting = Meeting.objects.get(pk=w["meeting"]["id"])
+    Event.objects.filter(pk=meeting.event_id).update(visibility=Event.Visibility.BOARD)
+    code = ok(w["chef"].post(w["live"], {"open": True}, content_type=JSON))["code"]
+    # Dora ist nicht stimmberechtigt und nicht eingetragen
+    assert member_live(w, "Dora").status_code == 404
+    assert checkin(w, "Dora", code=code).status_code == 404
+    # Stimmberechtigte wie bisher
+    assert ok(member_live(w, "Anna"))["voter"] is True
+    assert ok(checkin(w, "Anna", code=code))["status"] == "present"
+    # Entwürfe sind für Nichtbeteiligte ebenfalls unsichtbar
+    Event.objects.filter(pk=meeting.event_id).update(visibility=Event.Visibility.MEMBERS)
+    Meeting.objects.filter(pk=meeting.pk).update(status="draft")
+    assert member_live(w, "Dora").status_code == 404

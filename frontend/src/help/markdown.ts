@@ -23,8 +23,8 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
   if (/^https?:\/\//.test(href)) {
     tokens[idx].attrSet('target', '_blank')
     tokens[idx].attrSet('rel', 'noreferrer noopener')
-  } else if (!href.startsWith('/')) {
-    // Nur eigene Seiten und Webadressen
+  } else if (!href.startsWith('/') || href.startsWith('//') || href.includes('\\')) {
+    // Nur eigene Seiten und Webadressen (nicht „//fremder.server“)
     tokens[idx].attrSet('href', '#')
   }
   return defaultLink(tokens, idx, options, env, self)

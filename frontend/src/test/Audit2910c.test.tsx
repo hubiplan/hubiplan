@@ -119,5 +119,6 @@ describe('UI-Audit 29.10. Teil c', () => {
     rememberTarget({ from: '//boese.example/' })
     expect(rememberedTarget()).toBe('/')
     expect(loginTarget({ from: '/anmelden/link' })).toBe('/')
+    expect(loginTarget({ from: '/\\boese.example/' })).toBe('/')
   })
 })

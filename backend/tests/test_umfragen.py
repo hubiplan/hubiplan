@@ -485,3 +485,21 @@ def test_offene_umfragen_im_zugang(setup):
     me = ok(client.get("/api/me/contexts/"))
     row = next(r for r in me["portal"] if r.get("surveys_enabled"))
     assert row["surveys_open"] == 1
+
+
+def test_umstellen_auf_anonym_loest_die_zuordnung(setup):
+    """Sicherheitsprüfung 26.11. B-M10: Schon gegebene Antworten hängen danach an keiner Person."""
+    from surveys.models import SurveyAnswer
+
+    s = setup
+    survey = new_survey(s, [SINGLE])
+    start(s, survey)
+    client, url = s["portals"]["Anna"]
+    q1 = ok(client.get(url))["surveys"][0]["questions"][0]
+    answer(s, "Anna", survey, [{"question": q1["id"], "options": [q1["options"][0]["id"]]}])
+    assert SurveyAnswer.objects.filter(survey_id=survey["id"], participation__isnull=False).exists()
+    ok(s["chef"].patch(f"{s['url']}{survey['id']}/", {"names": "anonymous"}, content_type=JSON))
+    answers = SurveyAnswer.objects.filter(survey_id=survey["id"])
+    assert answers.count() == 1 and not answers.filter(participation__isnull=False).exists()
+    # Die Teilnahme bleibt (wer geantwortet hat), nur nicht mehr, was
+    assert SurveyParticipation.objects.filter(survey_id=survey["id"]).count() == 1

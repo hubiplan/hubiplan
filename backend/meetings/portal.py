@@ -243,6 +243,16 @@ class LiveBase(Base):
             raise NotFound()
         return meeting
 
+    @staticmethod
+    def open_to_members(meeting: Meeting) -> bool:
+        """Dürfen auch Mitglieder ohne Stimmrecht von dieser Versammlung wissen?"""
+        from events.models import Event
+
+        return (
+            meeting.status != Meeting.Status.DRAFT
+            and meeting.event.visibility != Event.Visibility.BOARD
+        )
+
     def member_live(self, meeting: Meeting) -> dict:
         membership_id = self.access.membership_id
         voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
@@ -250,6 +260,10 @@ class LiveBase(Base):
         if not meeting.checkin_open and me is None and not allowed:
             raise NotFound()
         involved = me is not None or bool(allowed) or membership_id in voter_ids
+        if not involved and not self.open_to_members(meeting):
+            # Vorstandssitzungen und Entwürfe: Wer nicht dazugehört, erfährt auch bei
+            # geöffneter Anmeldung weder Titel noch Zeit und Ort
+            raise NotFound()
         polls = (
             meeting.polls.exclude(status=Poll.Status.DRAFT)
             .select_related("agenda_item", "meeting")
@@ -296,6 +310,12 @@ class CheckinView(LiveBase):
         ser.is_valid(raise_exception=True)
         if not meeting.checkin_open:
             raise ValidationError({"detail": _("Die Anmeldung ist nicht geöffnet.")})
+        if not self.open_to_members(meeting):
+            membership_id = self.access.membership_id
+            voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
+            me, allowed = live.entitlements(meeting, membership_id, voter_ids)
+            if me is None and not allowed and membership_id not in voter_ids:
+                raise NotFound()
         if ser.validated_data["remote"]:
             if not meeting.remote:
                 raise ValidationError(
