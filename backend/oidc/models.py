@@ -321,6 +321,8 @@ class Account(models.Model):
     disabled_by_hubiplan = models.BooleanField(default=False)
     changed_at = models.DateTimeField(null=True, blank=True)
     error = models.CharField(max_length=300, blank=True, default="")
+    # Wann ``error`` zuletzt per Mail gemeldet wurde: derselbe Fehler kommt nicht jede Nacht
+    error_mailed_at = models.DateTimeField(null=True, blank=True)
 
     audit_fields = frozenset({"nc_user", "disabled_by_hubiplan"})
 

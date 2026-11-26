@@ -106,6 +106,20 @@ das Konto wieder, aber nur, wenn HUBIplan es selbst deaktiviert hat. Dateien ble
   bestätigt dann von Hand.
 - Jede Änderung ins Änderungsprotokoll und per E-Mail an alle mit „Rollen und Rechte
   verwalten“ in der Einheit. Die Seite zeigt je Konto, was der nächste Abgleich täte.
+- Mail und Seite nennen den Grund (`claims.NotAllowed.reason`): keine Rolle mit Zugang mehr,
+  Konto gesperrt oder keine Zwei-Faktor-Anmeldung (die Rolle besteht, ihre Rechte ruhen nach
+  Ablauf der Frist, `accounts/mfa_policy.py`). Im letzten Fall bekommt auch die Person selbst
+  eine Mail, wie sie wieder hineinkommt.
+- Scheitert dieselbe Änderung am selben Konto mit demselben Fehler wie beim letzten Lauf, kommt
+  keine neue Mail (`Account.error`, `error_mailed_at`), erst wieder bei anderem Fehler, nach
+  Erfolg oder nach 30 Tagen als Erinnerung. Die Seite zeigt offene Fehler immer.
+- **Passwortbestätigung:** `PUT …/disable` und `…/enable` sind in der Nextcloud mit
+  `PasswordConfirmationRequired` markiert. Mit einem App-Passwort lässt sich das Passwort nicht
+  bestätigen; die Nextcloud antwortet dann mit 403 (fehlendes Recht als Gruppen-Admin ergibt
+  dagegen 404/998). Abhilfe in der `config.php` der Nextcloud:
+  `'allowed_no_password_confirmation_ranges' => ['192.0.2.10/32']` mit der Adresse, von der
+  HUBIplan kommt. „Verbindung prüfen“ erkennt das mit einer Probe ohne Wirkung (Aktivieren
+  eines Benutzernamens, den es nicht gibt).
 
 Einrichtung in der Nextcloud:
 

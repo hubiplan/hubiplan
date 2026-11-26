@@ -3879,8 +3879,53 @@ msgstr ""
 "manage such accounts, so HUBIplan leaves it out. Please manage this "
 "account's groups and whether it is disabled by hand in Nextcloud."
 
-msgid "Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."
-msgstr "The service account may not manage this account (group admin?)."
+msgid "Die Nextcloud lehnt den Auftrag des Dienstkontos ab (Fehler 403)."
+msgstr "Nextcloud rejects the service account's request (error 403)."
+
+msgid "Die Nextcloud verlangt dafür eine Passwortbestätigung."
+msgstr "Nextcloud requires a password confirmation for this."
+
+msgid "Mit dem App-Passwort des Dienstkontos lässt sich das Passwort nicht bestätigen. Abhilfe: in der config.php der Nextcloud unter „allowed_no_password_confirmation_ranges“ die Adresse eintragen, von der HUBIplan kommt. Bis dahin Konten in der Nextcloud von Hand deaktivieren."
+msgstr "The password cannot be confirmed with the service account's app password. Remedy: in Nextcloud's config.php, enter the address HUBIplan comes from under “allowed_no_password_confirmation_ranges”. Until then, disable accounts by hand in Nextcloud."
+
+msgid "Aber: Zum Deaktivieren und Aktivieren von Konten verlangt die Nextcloud eine Passwortbestätigung."
+msgstr "However, Nextcloud requires a password confirmation to disable and enable accounts."
+
+msgid "keine Zwei-Faktor-Anmeldung, Rollenrechte ruhen"
+msgstr "no two-factor sign-in, role permissions are suspended"
+
+msgid "Konto in HUBIplan gesperrt"
+msgstr "account blocked in HUBIplan"
+
+msgid "keine Rolle mit Zugang mehr"
+msgstr "no role with access any more"
+
+#, python-brace-format
+msgid "Aktivieren ging nicht: {error}"
+msgstr "Enabling failed: {error}"
+
+#, python-brace-format
+msgid "Deaktivieren ({reason}) ging nicht: {error}"
+msgstr "Disabling ({reason}) failed: {error}"
+
+#, python-brace-format
+msgid "Deaktivieren ging nicht: {error}"
+msgstr "Disabling failed: {error}"
+
+#, python-brace-format
+msgid "deaktiviert ({reason})"
+msgstr "disabled ({reason})"
+
+#, python-brace-format
+msgid "Nextcloud „{name}“: Dein Konto wurde deaktiviert"
+msgstr "Nextcloud “{name}”: your account was disabled"
+
+#, python-brace-format
+msgid "Dein Konto in der Nextcloud „{name}“ ({host}) wurde deaktiviert, weil für dein HUBIplan-Konto keine Zwei-Faktor-Anmeldung eingerichtet ist. Ohne sie ruhen die Rechte deiner Rolle bei {org}, und damit auch der Zugang zur Nextcloud."
+msgstr "Your account in the Nextcloud “{name}” ({host}) was disabled because no two-factor sign-in is set up for your HUBIplan account. Without it, the permissions of your role at {org} are suspended, and with them access to Nextcloud."
+
+msgid "So geht es wieder: In HUBIplan anmelden und unter „Mein Konto“ die Zwei-Faktor-Anmeldung einrichten. Danach aktiviert HUBIplan dein Nextcloud-Konto spätestens in der folgenden Nacht wieder. Deine Dateien bleiben erhalten."
+msgstr "To get back in: sign in to HUBIplan and set up two-factor sign-in under “My account”. HUBIplan then enables your Nextcloud account again by the following night at the latest. Your files are kept."
 
 #, python-brace-format
 msgid "Die Nextcloud antwortet mit Fehler {status}."
