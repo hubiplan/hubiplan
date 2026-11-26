@@ -1,7 +1,10 @@
 """Finanzamt-Prüfung C3: verkettetes Änderungsprotokoll (erfundene Daten)."""
 # ruff: noqa: F811  (Fixtures als Parameter)
 
+from contextlib import contextmanager
+
 import pytest
+from django.db import IntegrityError, connection, transaction
 
 from audit.chain import seal, verify
 from audit.models import AuditCheck, AuditEntry
@@ -34,6 +37,31 @@ def buchen(c, fin, setup, text):
     assert resp.status_code == 201, resp.json()
 
 
+def _siegelschutz(zustand: str) -> None:
+    # Nur der Eigentümer darf den Auslöser schalten: Rolle der Anwendung kurz verlassen.
+    # Offene Fremdschlüsselprüfungen vorher abschließen, sonst lehnt PostgreSQL ALTER TABLE ab.
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT current_user, session_user")
+        current, session = cursor.fetchone()
+        if current != session:
+            cursor.execute("RESET ROLE")
+        cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
+        cursor.execute(f"ALTER TABLE audit_auditentry {zustand} TRIGGER audit_entry_sealed")
+        cursor.execute("SET CONSTRAINTS ALL DEFERRED")
+        if current != session:
+            cursor.execute(f'SET ROLE "{current}"')
+
+
+@contextmanager
+def ohne_siegelschutz():
+    """Wie jemand mit Eigentümerrechten an der Datenbank: Auslöser aus, ändern, wieder an."""
+    _siegelschutz("DISABLE")
+    try:
+        yield
+    finally:
+        _siegelschutz("ENABLE")
+
+
 def eintraege(club):
     with rls_bypass():
         return list(AuditEntry.objects.filter(organization=club).order_by("seq"))
@@ -60,8 +88,14 @@ def test_aenderung_und_loeschung_fallen_auf(c, fin, club, setup):
     seal(club.pk)
     entries = eintraege(club)
     with rls_bypass():
-        AuditEntry.objects.filter(pk=entries[1].pk).update(user_email="jemand@example.org")
-        # Wer die Datenbank ändert, kann einen gültig verschlüsselten Inhalt einsetzen
+        # Über die Anwendung geht es nicht mehr: Die Datenbank weist die Änderung ab
+        with pytest.raises(IntegrityError, match="versiegelt"), transaction.atomic():
+            AuditEntry.objects.filter(pk=entries[1].pk).update(user_email="jemand@example.org")
+        # Wer die Datenbank selbst in der Hand hat, kann den Schutz abschalten; dann fällt
+        # die Änderung bei der Prüfung der Kette auf
+        with ohne_siegelschutz():
+            AuditEntry.objects.filter(pk=entries[1].pk).update(user_email="jemand@example.org")
+        # … und einen gültig verschlüsselten Inhalt einsetzen
         original = entries[2].changes
         entries[2].changes = {"Betrag": ["1", "2"]}
         entries[2].save(update_fields=["changes"])
@@ -71,7 +105,8 @@ def test_aenderung_und_loeschung_fallen_auf(c, fin, club, setup):
     assert any("Inhalt wurde nachträglich geändert" in p for p in result["problems"])
 
     with rls_bypass():
-        AuditEntry.objects.filter(pk=entries[1].pk).update(user_email=entries[1].user_email)
+        with ohne_siegelschutz():
+            AuditEntry.objects.filter(pk=entries[1].pk).update(user_email=entries[1].user_email)
         entries[2].changes = original
         entries[2].save(update_fields=["changes"])
     assert verify(club.pk)["ok"]

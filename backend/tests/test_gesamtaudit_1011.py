@@ -28,7 +28,10 @@ from finance import camt
 def test_dmarc_nur_echtes_ergebnis(settings, header, passed):
     settings.MAIL_AUTHSERV_ID = "mx.example.org"
     # Wie aus dem Postfach geparst, damit auch gefaltete Köpfe (\n\t) gehen
-    raw = ("Authentication-Results: " + header).replace("\n", "\r\n") + "\r\n\r\nText\r\n"
+    # Mit Absender: Das Ergebnis zählt nur für die Domain, die als Absender gelesen wird
+    raw = ("Authentication-Results: " + header).replace(
+        "\n", "\r\n"
+    ) + "\r\nFrom: Erika Musterfrau <erika@example.org>\r\n\r\nText\r\n"
     msg = message_from_bytes(raw.encode(), policy=policy.default)
     assert inbound.dmarc_passed(msg) is passed
 
