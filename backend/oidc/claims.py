@@ -35,8 +35,20 @@ MEMBERS_GROUP = "Mitglieder"
 NEVER_GROUPS = frozenset({"admin"})
 
 
+# Warum jemand nicht hinein darf (``NotAllowed.reason``)
+REASON_INACTIVE = "inactive"  # Konto, Einheit oder Dienst gesperrt
+REASON_MFA = "mfa"  # Rolle vorhanden, ihre Rechte ruhen ohne Zwei-Faktor-Anmeldung
+REASON_NONE = "none"  # keine Rolle (oder Mitgliedschaft) mit Zugang
+
+
 class NotAllowed(Exception):
-    """Der Benutzer darf sich bei diesem Dienst nicht anmelden (Text für die Oberfläche)."""
+    """Der Benutzer darf sich bei diesem Dienst nicht anmelden (Text für die Oberfläche).
+
+    ``reason``: einer der ``REASON_…``-Werte, für den Kontenabgleich der Nextcloud."""
+
+    def __init__(self, message: str, reason: str = REASON_NONE):
+        super().__init__(message)
+        self.reason = reason
 
 
 @dataclass
@@ -77,7 +89,9 @@ def profile(client: Client, user) -> Profile:
     """Angaben für den Dienst; ``NotAllowed``, wenn der Benutzer nicht hinein darf."""
     org = client.organization
     if not user.is_active or not org.is_active or not client.is_active:
-        raise NotAllowed(gettext("Die Anmeldung bei diesem Dienst ist nicht möglich."))
+        raise NotAllowed(
+            gettext("Die Anmeldung bei diesem Dienst ist nicht möglich."), REASON_INACTIVE
+        )
     on = today()
     with tenant_context(org.pk, user.pk):
         roles = list(
@@ -114,12 +128,14 @@ def profile(client: Client, user) -> Profile:
                 .select_related("role__department")
             )
 
-    roles = [a for a in roles if _counts(user, a)]
-    unit_roles = [h for h in unit_roles if _counts(user, h)]
-    is_member = membership is not None
     if client.audience == Client.Audience.ROLES:
         # Nur Rollen dieser Einheit: Ämter in Untereinheiten zählen nicht, auch nicht als Gruppe
         unit_roles = []
+    # Gäbe es Zugang, wenn die Zwei-Faktor-Regel die Rechte nicht ruhen ließe? (für den Grund)
+    resting = bool(roles) or bool(unit_roles)
+    roles = [a for a in roles if _counts(user, a)]
+    unit_roles = [h for h in unit_roles if _counts(user, h)]
+    is_member = membership is not None
     allowed = bool(roles) or bool(unit_roles)
     if client.audience == Client.Audience.MEMBERS:
         allowed = allowed or is_member
@@ -127,7 +143,8 @@ def profile(client: Client, user) -> Profile:
         raise NotAllowed(
             gettext("Dein Konto hat bei {org} keinen Zugang zu „{name}“.").format(
                 org=org.name, name=client.name
-            )
+            ),
+            REASON_MFA if resting else REASON_NONE,
         )
 
     groups: list[str] = []

@@ -196,6 +196,9 @@ function AccountList({
                   <td>{formatDayTime(r.last_login_at)}</td>
                   <td>
                     {label(r)}
+                    {r.reason && (r.planned === 'disable' || r.disabled_by_hubiplan) && (
+                      <div className="muted small">{r.reason}</div>
+                    )}
                     {r.error && <div className="error small">{r.error}</div>}
                   </td>
                 </tr>

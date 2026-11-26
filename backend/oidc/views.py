@@ -505,6 +505,7 @@ class AccountSerializer(serializers.ModelSerializer):
     email = serializers.CharField(source="user.email", read_only=True)
     name = serializers.SerializerMethodField()
     planned = serializers.SerializerMethodField()
+    reason = serializers.SerializerMethodField()
 
     class Meta:
         model = Account
@@ -519,6 +520,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "changed_at",
             "error",
             "planned",
+            "reason",
         ]
 
     def get_name(self, obj) -> str:
@@ -526,6 +528,10 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def get_planned(self, obj) -> str:
         return self.context.get("planned", {}).get(obj.pk, "")
+
+    def get_reason(self, obj) -> str:
+        """Warum das Konto deaktiviert ist oder wird (leer bei Zugang)."""
+        return nc_accounts.reason_text(self.context.get("reasons", {}).get(obj.pk, ""))
 
 
 def _pairs(text: str) -> list[tuple[str, str]]:
@@ -695,7 +701,9 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         plans = nc_accounts.plan(client)
         planned = {p.account.pk: p.action for p in plans}
         items = sorted((p.account for p in plans), key=lambda a: a.nc_user)
-        return Response(AccountSerializer(items, many=True, context={"planned": planned}).data)
+        reasons = {p.account.pk: p.reason for p in plans}
+        context = {"planned": planned, "reasons": reasons}
+        return Response(AccountSerializer(items, many=True, context=context).data)
 
     @action(detail=True, methods=["post"])
     def check(self, request, *args, **kwargs):

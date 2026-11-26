@@ -127,6 +127,8 @@ export interface NextcloudAccount {
   error: string
   // Was der nächste Abgleich täte
   planned: '' | 'disable' | 'enable'
+  // Warum das Konto deaktiviert ist oder wird (leer bei Zugang)
+  reason: string
 }
 
 export interface NextcloudSyncResult {

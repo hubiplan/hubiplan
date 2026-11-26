@@ -13,8 +13,10 @@ einmal deaktivieren, hält er an und meldet sich, statt zu handeln.
 from __future__ import annotations
 
 import base64
+import datetime
 import json
 import logging
+import secrets
 from dataclasses import dataclass
 from urllib.parse import quote, urlencode
 
@@ -33,6 +35,9 @@ log = logging.getLogger(__name__)
 
 MAX_AT_ONCE = 3
 TIMEOUT = 15
+# Scheitert dieselbe Änderung am selben Konto mit demselben Fehler weiter, kommt die Mail nicht
+# jede Nacht, sondern erst nach so vielen Tagen wieder (als Erinnerung)
+REMIND_DAYS = 30
 
 
 class NextcloudError(Exception):
@@ -63,6 +68,37 @@ def admin_text() -> str:
         "verwalten, HUBIplan lässt es deshalb aus. Gruppen und Sperre dieses Kontos bitte in der "
         "Nextcloud von Hand pflegen."
     )
+
+
+def confirm_text() -> str:
+    """Die Nextcloud verlangt fürs Deaktivieren und Aktivieren eine Passwortbestätigung (403).
+
+    ``PUT cloud/users/<id>/disable|enable`` ist dort mit ``PasswordConfirmationRequired``
+    markiert; mit einem App-Passwort lässt sich das Passwort nicht bestätigen. Fehlendes Recht
+    als Gruppen-Admin ergibt dagegen „nicht gefunden“ (404/998). Kurz, weil der Text je Konto
+    in ``Account.error`` steht; die Abhilfe (``confirm_help``) kommt einmal dazu."""
+    return gettext("Die Nextcloud verlangt dafür eine Passwortbestätigung.")
+
+
+def confirm_help() -> str:
+    """Abhilfe zu ``confirm_text``."""
+    return gettext(
+        "Mit dem App-Passwort des Dienstkontos lässt sich das Passwort nicht bestätigen. "
+        "Abhilfe: in der config.php der Nextcloud unter „allowed_no_password_confirmation_ranges“ "
+        "die Adresse eintragen, von der HUBIplan kommt. Bis dahin Konten in der Nextcloud von "
+        "Hand deaktivieren."
+    )
+
+
+def reason_text(reason: str) -> str:
+    """Warum HUBIplan ein Konto deaktiviert (für Mail und Oberfläche)."""
+    if reason == claims.REASON_MFA:
+        return gettext("keine Zwei-Faktor-Anmeldung, Rollenrechte ruhen")
+    if reason == claims.REASON_INACTIVE:
+        return gettext("Konto in HUBIplan gesperrt")
+    if reason == claims.REASON_NONE:
+        return gettext("keine Rolle mit Zugang mehr")
+    return ""
 
 
 def quiet_texts() -> set[str]:
@@ -122,7 +158,7 @@ def _ocs(client: Client, method: str, path: str, params: dict | None = None) -> 
         raise NextcloudError(gettext("Das Konto gibt es in der Nextcloud nicht (mehr)."), 404)
     if resp.status == 403 or code in (403, 997):
         raise NextcloudError(
-            gettext("Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."), 403
+            gettext("Die Nextcloud lehnt den Auftrag des Dienstkontos ab (Fehler 403)."), 403
         )
     raise NextcloudError(
         gettext("Die Nextcloud antwortet mit Fehler {status}.").format(status=code or resp.status),
@@ -131,14 +167,51 @@ def _ocs(client: Client, method: str, path: str, params: dict | None = None) -> 
 
 
 def check_connection(client: Client) -> str:
-    """Dienstkonto prüfen; liefert den Anzeigenamen, sonst ``NextcloudError``."""
+    """Dienstkonto prüfen; liefert den Anzeigenamen, sonst ``NextcloudError``.
+
+    Mit „Konten automatisch deaktivieren“ auch, ob die Nextcloud das Deaktivieren überhaupt
+    annimmt (siehe ``confirm_text``)."""
     data = _ocs(client, "GET", "cloud/user")
-    return str(data.get("display-name") or data.get("id") or client.service_user)
+    name = str(data.get("display-name") or data.get("id") or client.service_user)
+    if client.manage_accounts and needs_confirmation(client):
+        raise NextcloudError(
+            " ".join(
+                [
+                    gettext("Verbunden als {name}.").format(name=name),
+                    gettext(
+                        "Aber: Zum Deaktivieren und Aktivieren von Konten verlangt die Nextcloud "
+                        "eine Passwortbestätigung."
+                    ),
+                    confirm_help(),
+                ]
+            ),
+            403,
+        )
+    return name
+
+
+def needs_confirmation(client: Client) -> bool:
+    """Lehnt die Nextcloud das Aktivieren/Deaktivieren mangels Passwortbestätigung ab?
+
+    Probe ohne Wirkung: „aktivieren“ für einen Benutzernamen, den es nicht gibt. Die
+    Passwortbestätigung prüft die Nextcloud vor dem Benutzernamen: 403 heißt, sie fehlt;
+    sonst kommt „nicht gefunden“."""
+    probe = f"hubiplan-pruefung-{secrets.token_hex(8)}"
+    try:
+        _ocs(client, "PUT", f"cloud/users/{probe}/enable")
+    except NextcloudError as exc:
+        return exc.code == 403
+    return False
 
 
 def _set_enabled(client: Client, nc_user: str, enabled: bool) -> None:
     verb = "enable" if enabled else "disable"
-    _ocs(client, "PUT", f"cloud/users/{quote(nc_user, safe='')}/{verb}")
+    try:
+        _ocs(client, "PUT", f"cloud/users/{quote(nc_user, safe='')}/{verb}")
+    except NextcloudError as exc:
+        if exc.code == 403:
+            raise NextcloudError(confirm_text(), 403) from exc
+        raise
 
 
 def disable_deleted(client_id: int, nc_user: str) -> bool:
@@ -180,8 +253,15 @@ def remember_login(client: Client, user, prof: claims.Profile) -> None:
             # Wer sich anmelden konnte, ist in der Nextcloud wieder aktiv
             account.disabled_by_hubiplan = False
             account.error = ""
+            account.error_mailed_at = None
             account.save(
-                update_fields=["nc_user", "last_login_at", "disabled_by_hubiplan", "error"]
+                update_fields=[
+                    "nc_user",
+                    "last_login_at",
+                    "disabled_by_hubiplan",
+                    "error",
+                    "error_mailed_at",
+                ]
             )
 
 
@@ -192,6 +272,8 @@ def remember_login(client: Client, user, prof: claims.Profile) -> None:
 class Plan:
     account: Account
     allowed: bool
+    # Warum kein Zugang (``claims.REASON_…``); leer, wenn es Zugang gibt
+    reason: str = ""
 
     @property
     def action(self) -> str:
@@ -203,12 +285,13 @@ class Plan:
         return ""
 
 
-def _allowed(client: Client, user) -> bool:
+def _reason(client: Client, user) -> str:
+    """Leer, wenn der Benutzer hinein darf; sonst der Grund."""
     try:
         claims.profile(client, user)
-    except claims.NotAllowed:
-        return False
-    return True
+    except claims.NotAllowed as exc:
+        return exc.reason or claims.REASON_NONE
+    return ""
 
 
 def plan(client: Client, users: list[int] | None = None) -> list[Plan]:
@@ -220,7 +303,11 @@ def plan(client: Client, users: list[int] | None = None) -> list[Plan]:
         # Verwaltungs- und Dienstkonten fasst der Abgleich nie an (Gesamtaudit 15.11., AUTH-07)
         blocked = client.blocked_usernames()
         accounts = [a for a in qs if a.nc_user.lower() not in blocked]
-    return [Plan(a, _allowed(client, a.user)) for a in accounts]
+    plans = []
+    for account in accounts:
+        reason = _reason(client, account.user)
+        plans.append(Plan(account, not reason, reason))
+    return plans
 
 
 def _too_many(client: Client, disabling: int) -> bool:
@@ -253,10 +340,16 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
         return result
     done: list[str] = []
     failed: list[str] = []
+    # Davon neu oder zur Erinnerung fällig: nur die gehen in die Mail
+    news: list[str] = []
+    # Braucht es den Hinweis zur Passwortbestätigung? (Seite, Mail)
+    help_page = help_mail = False
+    remind_before = now - datetime.timedelta(days=REMIND_DAYS)
     for step in steps:
         account = step.account
         enable = step.action == "enable"
         who = f"{account.nc_user} ({account.user.email})"
+        why = "" if enable else reason_text(step.reason)
         try:
             _set_enabled(client, account.nc_user, enable)
         except NextcloudError as exc:
@@ -269,17 +362,42 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
                         account.save(update_fields=["error"])
                     done.append(f"{who}: {note}")
                 continue
-            account.error = str(exc)[:300]
+            # Vermerk samt Richtung: Derselbe Fehler bei derselben Änderung wie beim letzten
+            # Lauf kommt nicht jede Nacht per Mail, nur als seltene Erinnerung (#733)
+            if enable:
+                note = gettext("Aktivieren ging nicht: {error}").format(error=exc)
+            elif why:
+                note = gettext("Deaktivieren ({reason}) ging nicht: {error}").format(
+                    reason=why, error=exc
+                )
+            else:
+                note = gettext("Deaktivieren ging nicht: {error}").format(error=exc)
+            line = f"{who}: {note}"
+            note = note[:300]
+            fresh = (
+                account.error != note
+                or account.error_mailed_at is None
+                or account.error_mailed_at <= remind_before
+            )
+            account.error = note
+            help_page = help_page or exc.code == 403
+            if fresh:
+                account.error_mailed_at = now
+                news.append(line)
+                help_mail = help_mail or exc.code == 403
             with rls_bypass():
-                account.save(update_fields=["error"])
+                account.save(update_fields=["error", "error_mailed_at"])
             result["errors"] += 1
-            failed.append(f"{who}: {exc}")
+            failed.append(line)
             continue
         account.disabled_by_hubiplan = not enable
         account.changed_at = now
         account.error = ""
+        account.error_mailed_at = None
         with rls_bypass():
-            account.save(update_fields=["disabled_by_hubiplan", "changed_at", "error"])
+            account.save(
+                update_fields=["disabled_by_hubiplan", "changed_at", "error", "error_mailed_at"]
+            )
             record(
                 client.organization,
                 None,
@@ -293,23 +411,78 @@ def sync(client: Client, users: list[int] | None = None, *, confirmed: bool = Fa
                 },
             )
         result["enabled" if enable else "disabled"] += 1
-        label = gettext("aktiviert") if enable else gettext("deaktiviert")
+        if enable:
+            label = gettext("aktiviert")
+        elif why:
+            label = gettext("deaktiviert ({reason})").format(reason=why)
+        else:
+            label = gettext("deaktiviert")
         done.append(f"{who}: {label}")
-    error = ""
-    if result["errors"]:
-        error = (
-            ngettext(
-                "{count} Konto konnte nicht geändert werden.",
-                "{count} Konten konnten nicht geändert werden.",
-                result["errors"],
-            ).format(count=result["errors"])
-            + " "
-            + "; ".join(failed)
-        )
-    _finish(client, error, now)
-    if done or error:
-        _notify(client, error, done)
+        if not enable and step.reason == claims.REASON_MFA:
+            _tell_person(client, account)
+    # Die Seite zeigt alle offenen Fehler; die Mail nur neue (oder zur Erinnerung fällige)
+    _finish(client, _failed_text(failed, help_page, help_first=True), now)
+    if done or news:
+        _notify(client, _failed_text(news, help_mail), done)
     return result
+
+
+def _failed_text(lines: list[str], confirm: bool, *, help_first: bool = False) -> str:
+    """„n Konten konnten nicht geändert werden“ mit den Konten und, wenn nötig, der Abhilfe zur
+    Passwortbestätigung. ``help_first``: Abhilfe vor den Konten (die Seite kürzt den Text, die
+    Konten stehen dort ohnehin in der Liste)."""
+    if not lines:
+        return ""
+    count = ngettext(
+        "{count} Konto konnte nicht geändert werden.",
+        "{count} Konten konnten nicht geändert werden.",
+        len(lines),
+    ).format(count=len(lines))
+    parts = [count, "; ".join(lines)]
+    if confirm:
+        parts.insert(1 if help_first else 2, confirm_help())
+    return " ".join(parts)
+
+
+def _tell_person(client: Client, account: Account) -> None:
+    """Der Person selbst sagen, warum ihr Nextcloud-Konto gesperrt wurde und wie es wieder
+    aufgeht (statt still zu sperren)."""
+    from core.i18n import language_of
+    from outbox.mail import send
+
+    user = account.user
+    if not user.email:
+        return
+    with language_of(user):
+        subject = gettext("Nextcloud „{name}“: Dein Konto wurde deaktiviert").format(
+            name=client.name
+        )
+        body = "\n".join(
+            [
+                gettext(
+                    "Dein Konto in der Nextcloud „{name}“ ({host}) wurde deaktiviert, weil für "
+                    "dein HUBIplan-Konto keine Zwei-Faktor-Anmeldung eingerichtet ist. Ohne sie "
+                    "ruhen die Rechte deiner Rolle bei {org}, und damit auch der Zugang zur "
+                    "Nextcloud."
+                ).format(name=client.name, host=client.host, org=client.organization.name),
+                "",
+                gettext(
+                    "So geht es wieder: In HUBIplan anmelden und unter „Mein Konto“ die "
+                    "Zwei-Faktor-Anmeldung einrichten. Danach aktiviert HUBIplan dein "
+                    "Nextcloud-Konto spätestens in der folgenden Nacht wieder. Deine Dateien "
+                    "bleiben erhalten."
+                ),
+                "",
+            ]
+        )
+    send(
+        [user.email],
+        subject,
+        body,
+        organization=client.organization,
+        kind="nextcloud",
+        fail_silently=True,
+    )
 
 
 def sync_user(user_id: int) -> None:
