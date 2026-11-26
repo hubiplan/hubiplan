@@ -244,7 +244,7 @@ class EncryptedDateField(EncryptedMixin, models.DateField):
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
-        if value is None or is_encrypted(value):
+        if value is None:
             return value
         return encrypt_text(self._plain_to_text(value), _owner_or_fail(model_instance, self), self)
 

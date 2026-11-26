@@ -14,7 +14,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
-import ipaddress
 import json
 import os
 import socket
@@ -31,6 +30,8 @@ from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.utils.translation import gettext
+
+from core import safehttp
 
 # Nur für die App (Eigentümer) und die Gruppe lesbar: Der Backup-Container gehört zur
 # Gruppe der App (group_add in docker-compose.server.yml) und muss die Datei mitsichern.
@@ -93,7 +94,7 @@ def check_endpoint(url: str) -> None:
             gettext("{hostname} ist nicht auflösbar.").format(hostname=parts.hostname)
         ) from exc
     for info in infos:
-        if not ipaddress.ip_address(info[4][0]).is_global:
+        if not safehttp.is_public(info[4][0]):
             raise PushError(
                 gettext("{hostname} zeigt auf eine interne Adresse.").format(
                     hostname=parts.hostname

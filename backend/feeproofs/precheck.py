@@ -19,11 +19,20 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import logging
+import os
 import re
+import subprocess
+import sys
 import unicodedata
+
+log = logging.getLogger(__name__)
 
 GREEN, YELLOW, RED = "green", "yellow", "red"
 MAX_PAGES = 5
+PDF_TEXT_TIMEOUT = 20
+PDF_TEXT_MAX_BYTES = 768 * 1024 * 1024
+MAX_PDF_TEXT_CHARS = 200_000
 
 KEYWORDS = (
     "immatrikulationsbescheinigung",
@@ -50,27 +59,74 @@ def _fold(text: str) -> str:
     return re.sub(r"\s+", " ", text)
 
 
-def pdf_text(data: bytes) -> str:
-    import pypdfium2 as pdfium
+_PDF_TEXT_WORKER = """
+import sys
+import pypdfium2 as pdfium
 
+max_pages = int(sys.argv[1])
+max_chars = int(sys.argv[2])
+data = sys.stdin.buffer.read()
+try:
+    doc = pdfium.PdfDocument(data)
+except Exception:
+    sys.exit(0)
+try:
+    parts = []
+    total = 0
+    for i in range(min(len(doc), max_pages)):
+        try:
+            page = doc[i]
+            textpage = page.get_textpage()
+            chunk = textpage.get_text_range()
+            textpage.close()
+            page.close()
+        except Exception:
+            continue
+        if chunk:
+            remaining = max_chars - total
+            if remaining <= 0:
+                break
+            parts.append(chunk[:remaining])
+            total += len(parts[-1])
+    sys.stdout.buffer.write("\\n".join(parts).encode("utf-8", "replace"))
+finally:
+    doc.close()
+"""
+
+
+def _limit_resources() -> None:
+    if os.name != "posix":
+        return
     try:
-        doc = pdfium.PdfDocument(data)
-    except Exception:  # noqa: BLE001 - kaputtes oder verschlüsseltes PDF: kein Text
+        import resource
+
+        resource.setrlimit(resource.RLIMIT_AS, (PDF_TEXT_MAX_BYTES, PDF_TEXT_MAX_BYTES))
+        resource.setrlimit(resource.RLIMIT_CPU, (PDF_TEXT_TIMEOUT, PDF_TEXT_TIMEOUT))
+    except (ImportError, OSError, ValueError):
+        pass
+
+
+def pdf_text(data: bytes) -> str:
+    if not data or not data.lstrip().startswith(b"%PDF"):
         return ""
     try:
-        parts = []
-        for i in range(min(len(doc), MAX_PAGES)):
-            try:
-                page = doc[i]
-                textpage = page.get_textpage()
-                parts.append(textpage.get_text_range())
-                textpage.close()
-                page.close()
-            except Exception:  # noqa: BLE001, S112 - beschädigte Seite: Text der übrigen Seiten
-                continue
-        return "\n".join(parts)
-    finally:
-        doc.close()
+        proc = subprocess.run(  # noqa: S603 - fester Python-Interpreter mit konstantem Code
+            [sys.executable, "-c", _PDF_TEXT_WORKER, str(MAX_PAGES), str(MAX_PDF_TEXT_CHARS)],
+            input=data,
+            capture_output=True,
+            timeout=PDF_TEXT_TIMEOUT,
+            preexec_fn=_limit_resources if os.name == "posix" else None,
+            check=False,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        log.warning("PDF-Textextraktion für Beitragsnachweis abgebrochen (Timeout/OS-Fehler)")
+        return ""
+    if proc.returncode != 0:
+        log.warning(
+            "PDF-Textextraktion für Beitragsnachweis mit Code %s beendet", proc.returncode
+        )
+        return ""
+    return proc.stdout.decode("utf-8", "replace")
 
 
 _SEMESTER_WINTER = re.compile(
@@ -131,20 +187,25 @@ def _der_length(data: bytes, pos: int) -> tuple[int, int]:
 
 
 def signature_info(data: bytes) -> dict | None:
-    """Erste Signatur: unverändert seit dem Signieren? Wer hat signiert? None ohne Signatur."""
+    """Erste Signatur: ByteRange-Abdeckung und Digest-Hinweis; None ohne Signatur.
+
+    Hinweis: Ohne volle CMS-/Zertifikatsprüfung wird niemals ``intact=True`` bzw.
+    ``verified=True`` behauptet (Sicherheitsprüfung B-H07). ``digest_match`` prüft nur,
+    ob der ByteRange das gesamte Dokument abdeckt und zum eingebetteten messageDigest passt.
+    """
     match = _BYTE_RANGE.search(data)
     if match is None:
         return None
     a, b, c, d = (int(x) for x in match.groups())
-    if a != 0 or b <= 0 or c <= b or c + d > len(data):
-        return {"intact": False, "signer": ""}
+    if a != 0 or b <= 0 or c <= b or c + d != len(data):
+        return {"intact": False, "verified": False, "digest_match": False, "signer": ""}
     signed = data[a : a + b] + data[c : c + d]
     hex_part = data[a + b : c].strip(b"<> \r\n\t")
     try:
         cms = bytes.fromhex(hex_part.decode("ascii"))
     except ValueError:
-        return {"intact": False, "signer": ""}
-    intact = False
+        return {"intact": False, "verified": False, "digest_match": False, "signer": ""}
+    digest_match = False
     at = cms.find(_MESSAGE_DIGEST)
     if at >= 0:
         try:
@@ -156,10 +217,10 @@ def signature_info(data: bytes) -> dict | None:
                     digest = cms[pos : pos + size]
                     for algo in ("sha256", "sha512", "sha384", "sha1"):
                         if hashlib.new(algo, signed).digest() == digest:
-                            intact = True
+                            digest_match = True
                             break
         except IndexError:
-            intact = False
+            digest_match = False
     signer = ""
     try:
         from cryptography.hazmat.primitives.serialization import pkcs7
@@ -180,7 +241,12 @@ def signature_info(data: bytes) -> dict | None:
                 break
     except Exception:  # noqa: BLE001 - unbekanntes Format: ohne Namen
         signer = ""
-    return {"intact": intact, "signer": signer}
+    return {
+        "intact": False,
+        "verified": False,
+        "digest_match": digest_match,
+        "signer": signer,
+    }
 
 
 # --- Prüfung ---
@@ -216,8 +282,10 @@ def check(
         reasons.append("name_missing")
     else:
         reasons.append("name_ok")
+    birth_ok = True
     if birth_date is not None:
         found_birth = any(v in text for v in _birth_variants(birth_date))
+        birth_ok = found_birth
         reasons.append("birth_ok" if found_birth else "birth_missing")
     keyword = next((k for k in KEYWORDS if k in text), "")
     reasons.append("keyword_ok" if keyword else "keyword_missing")
@@ -234,8 +302,9 @@ def check(
             reasons.append("valid_ok")
     else:
         reasons.append("valid_missing")
+    sig_ok = sig is None or bool(sig.get("intact") or sig.get("digest_match"))
     if not name_ok:
         result["level"] = RED
-    elif keyword and until is not None and until >= needed_until:
+    elif birth_ok and sig_ok and keyword and until is not None and until >= needed_until:
         result["level"] = GREEN
     return result

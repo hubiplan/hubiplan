@@ -177,13 +177,29 @@ class SafeFileMiddleware:
         from django.http import FileResponse
 
         response = self.get_response(request)
-        if not isinstance(response, FileResponse):
+        ctype_raw = (response.get("Content-Type") or "").split(";")[0].strip().lower()
+        disposition = response.get("Content-Disposition", "")
+        is_file = isinstance(response, FileResponse)
+        # Auch Nicht-FileResponse-Dateiausgaben (z. B. SVG, MusicXML, inline-Downloads)
+        # dürfen auf der Anwendungsadresse niemals Skripte ausführen.
+        if not is_file:
+            if ctype_raw == "image/svg+xml" or (
+                disposition and ctype_raw not in ("application/pdf", "application/json", "text/html")
+            ):
+                response.setdefault(
+                    "Content-Security-Policy", "default-src 'none'; img-src 'self'; sandbox"
+                )
+                response.setdefault("X-Content-Type-Options", "nosniff")
+            elif ctype_raw == "application/pdf":
+                response.setdefault("X-Content-Type-Options", "nosniff")
             return response
         ctype = inline_type(response.get("Content-Type"))
-        disposition = response.get("Content-Disposition", "")
         if ctype is None and not disposition.lower().startswith("attachment"):
-            response["Content-Disposition"] = "attachment" + disposition[len("inline") :]
-            if not disposition:
+            if disposition.lower().startswith("inline"):
+                response["Content-Disposition"] = "attachment" + disposition[len("inline") :]
+            elif disposition:
+                response["Content-Disposition"] = f"attachment; {disposition}"
+            else:
                 response["Content-Disposition"] = "attachment"
         if ctype != "application/pdf":
             response["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; sandbox"

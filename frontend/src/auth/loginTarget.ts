@@ -1,8 +1,23 @@
 /** Ziel nach der Anmeldung: nur eigene Pfade, sonst die Startseite. */
 export function loginTarget(state: unknown): string {
   const from = (state as { from?: unknown } | null)?.from
-  if (typeof from !== 'string' || !from.startsWith('/') || from.startsWith('//')) return '/'
+  if (
+    typeof from !== 'string' ||
+    !from.startsWith('/') ||
+    from.startsWith('//') ||
+    from.startsWith('/\\') ||
+    /[\x00-\x1f\x7f\\]/.test(from)
+  )
+    return '/'
   if (from.startsWith('/anmelden')) return '/'
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    try {
+      const resolved = new URL(from, window.location.origin)
+      if (resolved.origin !== window.location.origin) return '/'
+    } catch {
+      return '/'
+    }
+  }
   return from
 }
 

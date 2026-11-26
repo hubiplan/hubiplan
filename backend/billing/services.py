@@ -1104,16 +1104,30 @@ def refund_credit(invoice: Invoice, user) -> list:
 
 
 def _same_recipient(a: Invoice, b: Invoice) -> bool:
-    return a.recipient_kind == b.recipient_kind and (
-        a.membership_id,
-        a.department_id,
-        a.club_id,
-        a.partner_id,
-    ) == (b.membership_id, b.department_id, b.club_id, b.partner_id)
+    if a.recipient_kind != b.recipient_kind:
+        return False
+    if a.recipient_kind in (Invoice.Recipient.REGISTRATION, Invoice.Recipient.ANONYMIZED):
+        return False
+    key_a = (a.membership_id, a.department_id, a.club_id, a.partner_id, a.household_id)
+    key_b = (b.membership_id, b.department_id, b.club_id, b.partner_id, b.household_id)
+    return any(x is not None for x in key_a) and key_a == key_b
 
 
 def credit_targets(invoice: Invoice):
     """Offene Rechnungen desselben Empfängers, mit denen sich das Guthaben verrechnen lässt."""
+    if invoice.recipient_kind in (Invoice.Recipient.REGISTRATION, Invoice.Recipient.ANONYMIZED):
+        return Invoice.objects.none()
+    if not any(
+        x is not None
+        for x in (
+            invoice.membership_id,
+            invoice.department_id,
+            invoice.club_id,
+            invoice.partner_id,
+            invoice.household_id,
+        )
+    ):
+        return Invoice.objects.none()
     return (
         Invoice.objects.filter(
             organization_id=invoice.organization_id,
@@ -1123,6 +1137,7 @@ def credit_targets(invoice: Invoice):
             department_id=invoice.department_id,
             club_id=invoice.club_id,
             partner_id=invoice.partner_id,
+            household_id=invoice.household_id,
         )
         .exclude(pk=invoice.pk)
         .order_by("date", "pk")
@@ -1133,12 +1148,16 @@ def credit_targets(invoice: Invoice):
 def apply_credit(invoice: Invoice, target: Invoice) -> None:
     """Guthaben mit einer offenen Rechnung desselben Empfängers verrechnen: die Zahlungen
     wandern samt Kassenbuchung an die andere Rechnung. Das Geld ist schon da."""
+    from finance import services as finance_services
+
     first, second = sorted([invoice, target], key=lambda i: i.pk)
     lock_invoice(first)
     lock_invoice(second)
     invoice.refresh_from_db()
     target.refresh_from_db()
     payments = _ensure_credit(invoice)
+    for payment in payments:
+        finance_services.ensure_open(invoice.organization, date=payment.date)
     from .advances import ensure_unallocated
 
     ensure_unallocated(target)

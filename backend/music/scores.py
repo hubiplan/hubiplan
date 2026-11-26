@@ -228,10 +228,13 @@ def notation_info(document):
     version = document.versions.order_by("-uploaded_at", "-pk").first()
     if version is None or version.content_type not in (notation.MUSICXML, notation.MXL):
         return None
+    from core import virenscan
+
     try:
+        virenscan.ensure_released(version.file)
         with version.file.open("rb") as fh:
             return notation.musicxml_info(notation.text_of(fh.read(), version.content_type))
-    except DjangoValidationError:
+    except (DjangoValidationError, virenscan.Quarantined, virenscan.Infected):
         return None
 
 

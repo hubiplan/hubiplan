@@ -38,7 +38,8 @@ class InvitationTokenGenerator(PasswordResetTokenGenerator):
         email = user_email(user)
         emails = {email} if email else set()
         emails.update(EmailAddress.objects.filter(user_id=user.pk).values_list("email", flat=True))
-        return ret + "|".join(sorted(emails))
+        auth_ver = getattr(user, "auth_version", 0)
+        return f"{ret}{auth_ver}|" + "|".join(sorted(emails))
 
     def check_token(self, user, token):
         if super().check_token(user, token):

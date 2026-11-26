@@ -155,13 +155,15 @@ def _key(value) -> str:
     return text
 
 
-def receive(peer: Peer, payload: dict) -> tuple[dict, transport.PeerKeys]:
+def receive(
+    peer: Peer, payload: dict, *, signed_with: str | None = None
+) -> tuple[dict, transport.PeerKeys]:
     """Ankündigung prüfen. Die Anfrage ist schon mit einem bekannten Schlüssel geprüft."""
     public_key = _key(payload.get("public_key"))
     enc_public_key = _key(payload.get("enc_public_key"))
     at = str(payload.get("at", ""))[:40]
     when = parse_datetime(at)
-    if when is None or when > timezone.now() + identity.TRANSITION:
+    if when is None or not timezone.is_aware(when) or when > timezone.now() + identity.TRANSITION:
         raise services.Refused(422, "Ungültiger Zeitpunkt.")
     statement = identity.key_statement(str(peer.instance_id), public_key, enc_public_key, at)
     if not identity.verify(public_key, statement, str(payload.get("proof", ""))):
@@ -172,6 +174,8 @@ def receive(peer: Peer, payload: dict) -> tuple[dict, transport.PeerKeys]:
         peer = Peer.objects.select_for_update().get(pk=peer.pk)
         if peer.public_key == public_key and peer.enc_public_key == enc_public_key:
             return {"ok": True, "applied": True}, new_keys
+        if peer.keys_changed_at and when <= peer.keys_changed_at:
+            raise services.Refused(422, "Zeitpunkt liegt nicht nach dem letzten Schlüsselwechsel.")
         if payload.get("emergency") is True:
             if (peer.pending_keys or {}).get("public_key") == public_key:
                 return {"ok": True, "pending": True}, new_keys
@@ -185,6 +189,12 @@ def receive(peer: Peer, payload: dict) -> tuple[dict, transport.PeerKeys]:
             peer.save(update_fields=["pending_keys"])
             _notify(peer, emergency=True, fingerprint=fingerprint)
             return {"ok": True, "pending": True}, new_keys
+        # Ein geplanter Wechsel ohne menschliche Bestätigung darf nur vom aktuell gültigen
+        # Schlüssel unterschrieben sein, niemals von einem bereits abgelösten Vorgängerschlüssel.
+        if signed_with is not None and signed_with != peer.public_key:
+            raise services.Refused(
+                403, "Ein geplanter Schlüsselwechsel muss mit dem aktuellen Schlüssel unterschrieben sein."
+            )
         if peer.pending_keys:
             raise services.Refused(
                 409, "Hier wartet ein Notfallwechsel auf Bestätigung; geplanter Wechsel abgelehnt."

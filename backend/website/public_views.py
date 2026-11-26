@@ -125,7 +125,11 @@ class ResolveView(_Public):
             .filter(hostname=host)
             .first()
         )
-        if domain is None or not services.module_enabled(domain.website.organization):
+        if (
+            domain is None
+            or not domain.website.organization.is_active
+            or not services.module_enabled(domain.website.organization)
+        ):
             raise Http404
         return self.respond({"key": domain.website.public_key, "version": API_VERSION})
 
@@ -179,9 +183,9 @@ class SiteInfoView(_Public):
             "design_catalog": designs.export_catalog(),
             # Stilregler (Feinabstimmung): nur verstellte; ältere Webseiten übergehen sie
             "style": style.public(site.site.style),
-            # Darstellung der festen Bereiche (G5) und ihre Einleitungstexte
+            # Darstellung der festen Bereiche (G5) und ihre Einleitungstexte (im Wartungsmodus ausblenden)
             "layouts": variants.public(site.site.layouts),
-            "intros": site.intros(),
+            "intros": site.intros() if self.visible else {},
             # Freigegebene Designpakete (Ralf 2026-11-02); Inhalt über design/<schlüssel>/
             "design_packages": {
                 p.key: {"label": p.label_for(lang), "hash": p.content_hash} for p in packages
@@ -401,7 +405,7 @@ class PreviewView(_Public):
 
     def post(self, request, key: str):
         website = Website.objects.select_related("organization").filter(public_key=key).first()
-        if website is None:
+        if website is None or not website.organization.is_active:
             raise Http404
         if too_many(f"website:preview:{visitor_ip(request)}", 20, 60 * 60):
             from rest_framework.exceptions import Throttled
@@ -514,6 +518,11 @@ class DocumentFileView(_Public):
             ctype = "image/png" if f.name.endswith(".png") else "image/jpeg"
         else:
             f, ctype = doc.file, doc.content_type
+            from core import virenscan
+
+            virenscan.release_ok(
+                f, doc.title or f.name, "Webseiten-Dokument", key=f"webdoc:{doc.pk}:{f.name}"
+            )
         response = FileResponse(f.open("rb"), content_type=ctype)
         if ctype == "application/pdf":
             response["Content-Disposition"] = "inline"

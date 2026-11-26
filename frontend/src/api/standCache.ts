@@ -2,6 +2,7 @@
 import { ApiError, currentAuthGeneration } from './client.ts'
 
 const PREFIX = 'hubiplan.stand.v2.'
+const SESSION_MEMBERS_PREFIX = 'hubiplan.stand.members.v2.'
 const USER = 'hubiplan.stand.user'
 const CHANGE = 'hubiplan:stand-cache'
 const MAX_AGE = 12 * 60 * 60 * 1000
@@ -93,6 +94,16 @@ export function subscribeStandCache(listener: () => void): () => void {
   return () => window.removeEventListener(CHANGE, listener)
 }
 
+function sessionMemberKeys(): string[] {
+  try {
+    return Array.from({ length: sessionStorage.length }, (_, i) => sessionStorage.key(i) || '').filter(
+      (k) => k.startsWith(SESSION_MEMBERS_PREFIX),
+    )
+  } catch {
+    return []
+  }
+}
+
 export function clearStandCache(): void {
   for (const key of keys()) {
     try {
@@ -101,10 +112,69 @@ export function clearStandCache(): void {
       /* Speicher gesperrt. */
     }
   }
+  for (const key of sessionMemberKeys()) {
+    try {
+      sessionStorage.removeItem(key)
+    } catch {
+      /* Speicher gesperrt. */
+    }
+  }
   deadlines.clear()
   blocked.clear()
   memoryPending.clear()
   changed()
+}
+
+/** Bei Sitzungsablauf (C-M05): zwischengespeicherte Personen-/Detail-Daten sofort entfernen,
+ * nur minimale noch nicht übertragene Eingaben (``ops``) behalten. */
+export function scrubStandPiiOnExpiry(): void {
+  for (const key of sessionMemberKeys()) {
+    try {
+      sessionStorage.removeItem(key)
+    } catch {
+      /* Speicher gesperrt. */
+    }
+  }
+  for (const key of keys()) {
+    try {
+      if (!key.startsWith(PREFIX)) {
+        localStorage.removeItem(key)
+        continue
+      }
+      if (!key.endsWith(':local')) {
+        localStorage.removeItem(key)
+        continue
+      }
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const entry = JSON.parse(raw) as Entry<{ ops?: unknown[]; generation?: number }>
+      const ops = Array.isArray(entry?.data?.ops) ? entry.data.ops : []
+      if (ops.length === 0) {
+        localStorage.removeItem(key)
+      } else {
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...entry,
+            data: {
+              starters: [],
+              members: [],
+              ops,
+              recent: [],
+              savedAt: null,
+              generation: entry.data.generation,
+            },
+          }),
+        )
+      }
+    } catch {
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        /* Speicher gesperrt. */
+      }
+    }
+  }
 }
 
 export function bindStandUser(id: number | null): void {
@@ -183,6 +253,11 @@ export function revokeStandCache(scope: string): void {
         /* Speicher gesperrt. */
       }
     }
+  try {
+    sessionStorage.removeItem(`${SESSION_MEMBERS_PREFIX}${scope}`)
+  } catch {
+    /* Speicher gesperrt. */
+  }
   changed()
 }
 
@@ -199,9 +274,39 @@ export function loadStandCache<T>(scope: string, kind: string): T | null {
     ) {
       deadlines.delete(scope)
       localStorage.removeItem(`${PREFIX}${scope}:${kind}`)
+      if (scope.startsWith('token.') && kind === 'local') {
+        try {
+          sessionStorage.removeItem(`${SESSION_MEMBERS_PREFIX}${scope}`)
+        } catch {
+          /* Speicher gesperrt. */
+        }
+      }
       return null
     }
     if (!deadlines.has(scope)) deadlines.set(scope, entry.until)
+    if (
+      scope.startsWith('token.') &&
+      kind === 'local' &&
+      entry.data &&
+      typeof entry.data === 'object'
+    ) {
+      try {
+        const memRaw = sessionStorage.getItem(`${SESSION_MEMBERS_PREFIX}${scope}`)
+        if (memRaw) {
+          const memEntry = JSON.parse(memRaw) as Entry<unknown[]>
+          if (
+            memEntry.owner === owner(scope) &&
+            Number.isFinite(memEntry.until) &&
+            memEntry.until > Date.now() &&
+            Array.isArray(memEntry.data)
+          ) {
+            return { ...(entry.data as Record<string, unknown>), members: memEntry.data } as T
+          }
+        }
+      } catch {
+        /* Ohne Sitzungsspeicher bleibt die Mitgliederliste leer und wird neu geladen. */
+      }
+    }
     return entry.data
   } catch {
     return null
@@ -213,9 +318,30 @@ export function saveStandCache<T>(scope: string, kind: string, data: T, at: stri
   const until = deadlines.get(scope) || 0
   if (until <= Date.now()) return false
   try {
+    let persisted: T = data
+    // Standzugang (C-M05): vollständige Mitgliederliste nie dauerhaft in localStorage ablegen;
+    // sie bleibt nur im tab-gebundenen sessionStorage.
+    if (
+      scope.startsWith('token.') &&
+      kind === 'local' &&
+      data &&
+      typeof data === 'object' &&
+      'members' in (data as Record<string, unknown>)
+    ) {
+      const record = data as Record<string, unknown>
+      try {
+        sessionStorage.setItem(
+          `${SESSION_MEMBERS_PREFIX}${scope}`,
+          JSON.stringify({ owner: owner(scope), until, data: record.members }),
+        )
+      } catch {
+        /* Ohne sessionStorage bleibt die Liste nur im Arbeitsspeicher. */
+      }
+      persisted = { ...record, members: [] } as T
+    }
     localStorage.setItem(
       `${PREFIX}${scope}:${kind}`,
-      JSON.stringify({ owner: owner(scope), until, data }),
+      JSON.stringify({ owner: owner(scope), until, data: persisted }),
     )
     return true
   } catch {

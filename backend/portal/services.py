@@ -77,6 +77,9 @@ def department_contexts(user) -> dict[int, DepartmentContext]:
     result: dict[int, DepartmentContext] = {}
     on = today()
     for access in accesses_of(user):
+        # Erziehungsberechtigte und Firmen-Ansprechpartner erben keine Abteilungs-Verwaltungsrechte
+        if access.contact_person_id is not None:
+            continue
         club = access.organization
         if club.type != Organization.Type.CLUB or not club.department_access_enabled:
             continue

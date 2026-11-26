@@ -288,9 +288,19 @@ def _parse_one(q, row, options, membership_id, own) -> list[SurveyAnswer]:
 
 
 def save_answers(
-    survey: Survey, membership: Membership, data, *, source: str
-) -> SurveyParticipation:
-    """Antworten speichern. Die Umfrage muss gesperrt sein (select_for_update)."""
+    survey: Survey,
+    membership: Membership,
+    data,
+    *,
+    source: str,
+    defer_anonymous_answers: bool = False,
+) -> SurveyParticipation | tuple[SurveyParticipation, list[SurveyAnswer]]:
+    """Antworten speichern. Die Umfrage muss gesperrt sein (select_for_update).
+
+    Bei anonymen Umfragen können die Antworten mit ``defer_anonymous_answers=True`` zurückgegeben
+    und erst nach dem Commit der Teilnahme in einer eigenen Transaktion gespeichert werden, damit
+    Teilnahme und Antwort keine gemeinsame PostgreSQL-Transaktions-ID (``xmin``) teilen.
+    """
     if not is_open(survey):
         raise ValidationError({"detail": _("Die Umfrage ist beendet.")})
     if not is_eligible(survey, membership.pk):
@@ -316,11 +326,21 @@ def save_answers(
     part.save()
     if survey.anonymous:
         random.shuffle(answers)
+        if defer_anonymous_answers:
+            return part, answers
     else:
         for a in answers:
             a.participation = part
     SurveyAnswer.objects.bulk_create(answers)
     return part
+
+
+def store_anonymous_answers(answers: list[SurveyAnswer]) -> None:
+    """Anonyme Antworten in einer eigenen Transaktion speichern (getrennte xmin-ID)."""
+    if not answers:
+        return
+    with transaction.atomic():
+        SurveyAnswer.objects.bulk_create(answers)
 
 
 def withdraw(survey: Survey, membership_id: int) -> None:

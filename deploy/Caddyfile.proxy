@@ -24,7 +24,7 @@
 	import caddy/proxy-ip.caddy
 }
 
-:80 {
+:8080 {
 	import caddy/site.caddy
 }
 

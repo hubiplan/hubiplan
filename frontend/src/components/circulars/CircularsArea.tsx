@@ -365,6 +365,7 @@ function DraftEditor({
     setNotice(null)
     // Fenster sofort öffnen, sonst blockt der Browser es nach dem Warten
     const win = window.open('', '_blank')
+    if (win) win.opener = null
     if (await auto.flush()) {
       const url = circularApi.lettersUrl(base, initial.id, true)
       if (win) win.location.href = url

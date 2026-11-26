@@ -36,7 +36,7 @@ export interface Precheck {
   reasons?: string[]
   valid_until?: string
   kind_hint?: string
-  signature?: { signer?: string; intact?: boolean }
+  signature?: { signer?: string; intact?: boolean; verified?: boolean; digest_match?: boolean }
 }
 
 export interface FeeProof {

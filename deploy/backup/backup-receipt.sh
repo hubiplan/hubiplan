@@ -15,4 +15,9 @@ for artifact in "db_$STAMP.sql.gz.$EXT" "files_$STAMP.tar.gz.$EXT" \
     "dateien_$STAMP.sha256.$EXT" "datenschluessel_$STAMP.$EXT" "datenschluessel_$STAMP.sha256"; do
     verify.sh "$DIR/$artifact"
 done
+for optional in "loeschliste_$STAMP.jsonl" "kettenkoepfe_$STAMP.log"; do
+    if [ -e "$DIR/$optional" ] || [ -e "$DIR/$optional.hmac" ]; then
+        verify.sh "$DIR/$optional"
+    fi
+done
 printf '%s\n' "$STAMP"

@@ -37,11 +37,14 @@ def setup(orgs, api):
     org.save()
     chef = make_user("vorsitz@example.org")
     give_role(chef, org, permissions=["meetings.edit"], name="Vorsitz")
+    schrift = make_user("schrift@example.org")
+    give_role(schrift, org, permissions=["meetings.edit"], name="Schriftführung")
     reader = make_user("beisitz@example.org")
     give_role(reader, org, permissions=["meetings.view"], name="Beisitz")
     return {
         "org": org,
         "chef": api(chef),
+        "schrift": api(schrift),
         "reader": api(reader),
         "url": f"/api/orgs/{org.pk}/meetings/",
     }
@@ -616,12 +619,21 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
     payload["version"] = meeting["version"]
     meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
     assert meeting["chair_confirmed"] is None
-    for role in ("chair", "taker"):
-        meeting = ok(
-            s["chef"].post(
-                confirm, {"version": meeting["version"], "role": role}, content_type=JSON
-            )
+    meeting = ok(
+        s["chef"].post(confirm, {"version": meeting["version"], "role": "chair"}, content_type=JSON)
+    )
+    # Vier-Augen-Prinzip: dieselbe Person darf nicht beide Rollen bestätigen
+    assert (
+        s["chef"]
+        .post(confirm, {"version": meeting["version"], "role": "taker"}, content_type=JSON)
+        .status_code
+        == 400
+    )
+    meeting = ok(
+        s["schrift"].post(
+            confirm, {"version": meeting["version"], "role": "taker"}, content_type=JSON
         )
+    )
     assert meeting["status"] == "done" and meeting["released_at"]
     assert meeting["agenda"][1]["resolutions"][0]["number"].endswith("/01")
     version = MinutesVersion.objects.get(meeting_id=meeting["id"])
@@ -636,6 +648,7 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
     # Danach unveränderlich
     payload["version"] = meeting["version"]
     assert s["chef"].put(url + "minutes/", payload, content_type=JSON).status_code == 400
+    assert s["chef"].patch(url, {"note": "nachher"}, content_type=JSON).status_code == 400
     # Nächste Versammlung im selben Jahr: Beschlussnummer läuft weiter
     second = new_meeting(s, starts_at=meeting["starts_at"], ends_at=meeting["ends_at"])
     url2 = f"{s['url']}{second['id']}/"
@@ -649,9 +662,9 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
         "items": [{"id": second["agenda"][0]["id"], "resolutions": [{"text": "X."}]}],
     }
     second = ok(s["chef"].put(url2 + "minutes/", payload, content_type=JSON))
-    for role in ("chair", "taker"):
+    for client, role in ((s["chef"], "chair"), (s["schrift"], "taker")):
         second = ok(
-            s["chef"].post(
+            client.post(
                 url2 + "minutes/confirm/",
                 {"version": second["version"], "role": role},
                 content_type=JSON,
@@ -676,9 +689,9 @@ def release(s, meeting, resolutions):
         "items": [{"id": meeting["agenda"][1]["id"], "resolutions": resolutions}],
     }
     meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
-    for role in ("chair", "taker"):
+    for client, role in ((s["chef"], "chair"), (s["schrift"], "taker")):
         meeting = ok(
-            s["chef"].post(
+            client.post(
                 url + "minutes/confirm/",
                 {"version": meeting["version"], "role": role},
                 content_type=JSON,

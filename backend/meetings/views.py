@@ -331,6 +331,10 @@ class DetailView(Base):
     def patch(self, request, pk, **kwargs):
         access.require_edit(self.scope)
         meeting = self.meeting(pk, lock=True)
+        if meeting.status == Meeting.Status.DONE:
+            raise ValidationError(
+                {"detail": _("Ein freigegebenes Protokoll lässt sich nicht mehr ändern.")}
+            )
         before = snapshot(meeting)
         ser = MeetingInput(data=request.data, partial=True)
         ser.is_valid(raise_exception=True)
@@ -370,9 +374,12 @@ class DetailView(Base):
             meeting.status = data["status"]
             event.is_cancelled = meeting.status == Meeting.Status.CANCELLED
         event.save()
+        changes = diff(before, snapshot(meeting))
+        if changes and meeting.status == Meeting.Status.MINUTES:
+            meeting.chair_confirmed_by = meeting.taker_confirmed_by = None
+            meeting.chair_confirmed_at = meeting.taker_confirmed_at = None
         meeting.version += 1
         meeting.save()
-        changes = diff(before, snapshot(meeting))
         if changes:
             record(self.scope.org, request.user, "update", meeting, changes)
         return Response(meeting_data(meeting, self.scope, full=True))
@@ -900,9 +907,27 @@ class ConfirmView(Base):
             )
         now = timezone.now()
         if data["role"] == "chair":
+            if meeting.taker_confirmed_by_id == request.user.pk:
+                raise ValidationError(
+                    {
+                        "detail": _(
+                            "Leitung und Protokollführung müssen von zwei verschiedenen Personen "
+                            "bestätigt werden."
+                        )
+                    }
+                )
             meeting.chair_confirmed_by, meeting.chair_confirmed_at = request.user, now
             label = _("Bestätigt (Leitung)")
         else:
+            if meeting.chair_confirmed_by_id == request.user.pk:
+                raise ValidationError(
+                    {
+                        "detail": _(
+                            "Leitung und Protokollführung müssen von zwei verschiedenen Personen "
+                            "bestätigt werden."
+                        )
+                    }
+                )
             meeting.taker_confirmed_by, meeting.taker_confirmed_at = request.user, now
             label = _("Bestätigt (Protokollführung)")
         meeting.version += 1

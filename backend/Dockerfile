@@ -44,7 +44,9 @@ RUN apt-get update -q && apt-get install -y -q --no-install-recommends gettext >
 # einem Eindringling ein Werkzeug. Das Testabbild behält pip.
 RUN if [ "$REQUIREMENTS" = requirements.txt ]; then \
         python -m pip uninstall -y -q setuptools pip; fi
-RUN useradd --create-home --uid 1000 app && mkdir -p /app/media /app/private /app/loeschliste /app/upload-tmp /app/beat && chown -R app /app
+RUN useradd --create-home --uid 1000 app \
+    && mkdir -p /app/media /app/private /app/loeschliste /app/upload-tmp /app/beat \
+    && chown app:app /app/media /app/private /app/loeschliste /app/upload-tmp /app/beat
 USER app
 
 EXPOSE 8000

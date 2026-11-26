@@ -21,7 +21,12 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from access.models import RoleAssignment, RoleAssignmentQuerySet
-from core.encfields import EncryptedCharField, EncryptedDateField, EncryptedEmailField
+from core.encfields import (
+    EncryptedCharField,
+    EncryptedDateField,
+    EncryptedEmailField,
+    EncryptedJSONField,
+)
 
 
 def today() -> datetime.date:
@@ -962,8 +967,8 @@ class TransferRequest(models.Model):
     # Name der Art gespeichert, weil der alte Verein die Arten des neuen nicht sieht (RLS)
     member_type_name = models.CharField("Mitgliedsart (Name)", max_length=100, blank=True)
     entry_date = models.DateField("Eintritt im neuen Verein")
-    # Aufnahmedaten des neuen Vereins (Kontakt, Abteilungen, Vereinsnummer)
-    admission = models.JSONField(default=dict, blank=True)
+    # Aufnahmedaten des neuen Vereins (Kontakt, Abteilungen, Vereinsnummer) — verschlüsselt
+    admission = EncryptedJSONField(default=dict, blank=True)
     message = models.CharField("Nachricht", max_length=500, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     decision = models.CharField(max_length=20, choices=Decision.choices, blank=True)

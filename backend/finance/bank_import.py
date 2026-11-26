@@ -598,6 +598,7 @@ def book(
         amount=line.amount,
         account=line.account,
         category=category,
+        vat_rate=category.vat_rate if category is not None else "",
         text=(text.strip() or line.purpose or line.name or "Kontoumsatz")[:200],
         reference="Kontoauszug",
         counterparty=line.name[:200],

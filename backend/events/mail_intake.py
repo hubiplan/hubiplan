@@ -149,9 +149,14 @@ def series_of(invitation: imip.Invitation) -> dict:
             raise imip.NotUsable(hint)
         result["repeat_until"] = timezone.localtime(parsed[0]).date()
     elif count.isdigit():
+        import itertools
+
         from dateutil.rrule import rrulestr
 
-        moments = list(rrulestr(invitation.rrule, dtstart=start))[: int(count)]
+        n = min(int(count), 500)
+        if n <= 0:
+            raise imip.NotUsable(hint)
+        moments = list(itertools.islice(rrulestr(invitation.rrule, dtstart=start), n))
         if moments:
             result["repeat_until"] = moments[-1].date()
     return result
@@ -167,7 +172,9 @@ def visibility_for(ml) -> str:
 def find_event(ml, uid: str) -> Event | None:
     with rls_bypass():
         return (
-            Event.objects.filter(organization=ml.organization, mail_uid=uid)
+            Event.objects.filter(
+                organization=ml.organization, department=ml.department, mail_uid=uid
+            )
             .select_related("organization", "department")
             .order_by("-pk")
             .first()
@@ -279,17 +286,25 @@ def handle(msg: EmailMessage, text: str | None, ml, base: dict):
         action = CANCEL
     else:
         action = UPDATE if existing is not None else NEW
-    with rls_bypass():
-        older = InboundMail.objects.filter(
-            mailing_list=ml,
-            status=InboundMail.Status.WAITING,
-            event_data__uid=invitation.uid,
-        )
-        for old in older:
-            _drop_stash(old)
-            old.status = rejected
-            old.reason = "Durch eine neuere Einladung ersetzt."
-            old.save(update_fields=["status", "reason"])
+    if not own:
+        from core.ratelimit import too_many
+
+        if too_many(f"imip:ext:{ml.organization_id}:{user.pk}", 10, 3600):
+            return inbound._log(
+                **base, user=user, status=rejected, reason="Zu viele externe Termineinladungen."
+            )
+    if own:
+        with rls_bypass():
+            older = InboundMail.objects.filter(
+                mailing_list=ml,
+                status=InboundMail.Status.WAITING,
+                event_data__uid=invitation.uid,
+            )
+            for old in older:
+                _drop_stash(old)
+                old.status = rejected
+                old.reason = "Durch eine neuere Einladung ersetzt."
+                old.save(update_fields=["status", "reason"])
     if action == CANCEL and existing is None:
         reason = "Absage zu einem Termin, der nicht übernommen wurde."
         return inbound._log(**base, user=user, status=rejected, reason=reason)
@@ -300,7 +315,9 @@ def handle(msg: EmailMessage, text: str | None, ml, base: dict):
         return inbound._log(
             **base, user=user, event=existing, status=rejected, reason="Keine Änderung."
         )
-    files, skipped = _stash_pdfs(msg, ml.organization) if action != CANCEL else ([], [])
+    files, skipped = (
+        _stash_pdfs(msg, ml.organization) if (action != CANCEL and own) else ([], [])
+    )
     data = {**invitation.as_data(), "action": action, "files": files, "skipped": skipped}
     data.update(series)
     if data.get("repeat_until"):
@@ -756,6 +773,8 @@ def handle_reply(msg: EmailMessage, text: str | None, code: tuple[int, int], bas
     if event is None or membership is None or membership.organization_id != event.organization_id:
         return inbound._log(**base, status=rejected, reason="Termin unbekannt.")
     base["organization"] = event.organization
+    if inbound.dmarc_failed(msg):
+        return inbound._log(**base, status=rejected, reason="Absender nicht echt (DMARC-Prüfung).")
     if text is None:
         return inbound._log(**base, status=rejected, reason="Antwort ohne Kalenderteil.")
     try:
@@ -767,12 +786,12 @@ def handle_reply(msg: EmailMessage, text: str | None, code: tuple[int, int], bas
     with rls_bypass():
         address = rsvp.email_of(membership)
     sender = base["sender"]
+    if not address or sender != address:
+        return inbound._log(**base, status=rejected, reason="Antwort nicht vom Mitglied.")
     partstat = ""
     for attendee, state in answer.attendees:
-        if attendee == address or (len(answer.attendees) == 1 and sender == address):
+        if attendee == address or len(answer.attendees) == 1:
             partstat = state
-    if not address or (sender != address and address not in [a for a, _ in answer.attendees]):
-        return inbound._log(**base, status=rejected, reason="Antwort nicht vom Mitglied.")
     status = imip.PARTSTATS.get(partstat)
     if status is None:
         return inbound._log(**base, status=rejected, reason="Antwort ohne Zu- oder Absage.")

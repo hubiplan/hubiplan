@@ -31,6 +31,10 @@ if [ -z "$HOST" ]; then
     exit 1
 fi
 DIR="${DEPLOY_DIR:-/opt/hubiplan}"
+if [[ ! "$DIR" =~ ^/[A-Za-z0-9._/-]+$ ]] || [[ "$DIR" == *..* ]]; then
+    echo "Abbruch: DEPLOY_DIR „$DIR“ enthält unerlaubte Zeichen." >&2
+    exit 1
+fi
 SSH="${SSH:-ssh}"
 # Optional: Pfad zum privaten Schlüssel, z. B. DEPLOY_KEY=~/.ssh/deploy_key
 if [ -n "${DEPLOY_KEY:-}" ]; then

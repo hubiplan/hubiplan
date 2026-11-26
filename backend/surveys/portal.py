@@ -185,15 +185,21 @@ class DetailView(Base):
 
 
 class AnswerView(Base):
-    @transaction.atomic
     def post(self, request, pk, **kwargs):
-        survey = self.survey(pk, lock=True)
-        services.save_answers(
-            survey,
-            self.access.membership,
-            request.data.get("answers"),
-            source=SurveyParticipation.Source.MEMBER,
-        )
+        deferred = []
+        with transaction.atomic():
+            survey = self.survey(pk, lock=True)
+            res = services.save_answers(
+                survey,
+                self.access.membership,
+                request.data.get("answers"),
+                source=SurveyParticipation.Source.MEMBER,
+                defer_anonymous_answers=True,
+            )
+            if isinstance(res, tuple):
+                _, deferred = res
+        if deferred:
+            services.store_anonymous_answers(deferred)
         return Response(survey_data(survey, self.access.membership_id))
 
     @transaction.atomic

@@ -27,6 +27,16 @@ def _billing_on(club) -> bool:
     return "billing" in (club.enabled_modules or [])
 
 
+def _can_see_invoices(access) -> bool:
+    cp = access.contact_person
+    return cp is None or bool(cp.receives_invoices or cp.is_guardian)
+
+
+def _can_manage_mandate(access) -> bool:
+    cp = access.contact_person
+    return cp is None or bool((cp.receives_invoices and cp.represents) or cp.is_guardian)
+
+
 def _own(issuer, access):
     """Eigene Rechnungen und Rechnungen an Haushalte, für die das Mitglied zahlt (H2)."""
     return (
@@ -48,6 +58,8 @@ class PortalInvoicesView(APIView):
 
     def get(self, request, access_id: int):
         access = _portal_access(request.user, access_id)
+        if not _can_see_invoices(access):
+            return Response({"invoices": [], "collective": []})
         club = access.organization
         if not _billing_on(club):
             return Response({"invoices": [], "collective": []})
@@ -107,6 +119,8 @@ class PortalInvoicesView(APIView):
 class PortalInvoicePdfView(APIView):
     def get(self, request, access_id: int, pk: int):
         access = _portal_access(request.user, access_id)
+        if not _can_see_invoices(access):
+            raise Http404
         club = access.organization
         for issuer in portal_issuers(club) or [club]:
             with tenant_context(issuer.pk, request.user.pk):
@@ -187,7 +201,11 @@ class PortalMandateView(APIView):
         }
 
     def get(self, request, access_id: int):
+        from rest_framework.exceptions import PermissionDenied
+
         access, club = self._context(request, access_id)
+        if not _can_see_invoices(access):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         with tenant_context(club.pk, request.user.pk):
             return Response(self._data(club, access))
 
@@ -196,6 +214,7 @@ class PortalMandateView(APIView):
         from django.core.exceptions import ValidationError as DjangoValidationError
         from django.utils import timezone
         from rest_framework import serializers
+        from rest_framework.exceptions import PermissionDenied
 
         from audit.log import record
         from outbox import mail
@@ -204,6 +223,8 @@ class PortalMandateView(APIView):
         from .models import Mandate
 
         access, club = self._context(request, access_id)
+        if not _can_manage_mandate(access):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         with tenant_context(club.pk, request.user.pk):
             if not self._data(club, access)["available"]:
                 raise serializers.ValidationError(
@@ -252,7 +273,7 @@ class PortalMandateView(APIView):
 
     @transaction.atomic
     def delete(self, request, access_id: int):
-        from rest_framework.exceptions import NotFound
+        from rest_framework.exceptions import NotFound, PermissionDenied
 
         from audit.log import record
 
@@ -260,6 +281,8 @@ class PortalMandateView(APIView):
         from .models import Mandate
 
         access, club = self._context(request, access_id)
+        if not _can_manage_mandate(access):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         with tenant_context(club.pk, request.user.pk):
             mandate = Mandate.objects.filter(
                 organization=club,

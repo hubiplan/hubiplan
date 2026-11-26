@@ -12,6 +12,7 @@ import {
   type StandApi,
 } from '../../api/competitions.ts'
 import { useLoad } from '../../components/forms.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 import { LoadError, Loading } from '../../components/ui.tsx'
 import { StandAccessCard } from './BirdSetup.tsx'
 import { BirdStand } from './BirdStand.tsx'
@@ -111,6 +112,29 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
     }, 1000)
     return () => clearInterval(timer)
   }, [api.key])
+  // Standzugang auf geteiltem Gerät: bei Tab-Schließen oder 30 Min. Inaktivität leeren,
+  // solange keine unsynchronisierten Eingaben offen sind (Sicherheitsprüfung C-M05).
+  useEffect(() => {
+    if (!api.key.startsWith('token.')) return
+    const IDLE_MS = 30 * 60 * 1000
+    let idleTimer: ReturnType<typeof setTimeout> | null = null
+    const clearIfSynced = () => {
+      if (pendingStandInputs() === 0) revokeStandCache(api.key)
+    }
+    const resetIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer)
+      idleTimer = setTimeout(clearIfSynced, IDLE_MS)
+    }
+    resetIdle()
+    const events = ['pointerdown', 'keydown', 'touchstart'] as const
+    for (const ev of events) window.addEventListener(ev, resetIdle, { passive: true })
+    window.addEventListener('pagehide', clearIfSynced)
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer)
+      for (const ev of events) window.removeEventListener(ev, resetIdle)
+      window.removeEventListener('pagehide', clearIfSynced)
+    }
+  }, [api.key])
   const {
     data: loaded,
     error,
@@ -131,6 +155,23 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
       throw err
     }
   }, [api.key])
+  const isTokenAccess = api.key.startsWith('token.')
+  async function wipeDeviceStorage() {
+    const pending = pendingStandInputs()
+    if (pending > 0) {
+      const ok = await confirmDialog({
+        final: true,
+        title: t('Gerätespeicher löschen?'),
+        message: t(
+          '{n} Stand-Eingaben sind noch nicht übertragen und gehen beim Löschen verloren. Trotzdem löschen?',
+          { n: pending },
+        ),
+        confirmLabel: t('Löschen und beenden'),
+      })
+      if (!ok) return
+    }
+    revokeStandCache(api.key)
+  }
   const data = !error && standCacheAllowed(api.key) ? loaded : null
   useWakeLock()
   useOfflineReload()
@@ -148,7 +189,7 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
             })}
           </span>
         )}
-        {exit && (
+        {(exit || isTokenAccess) && (
           <div className="button-row push-right stand-head-actions">
             {org &&
               data?.own &&
@@ -163,6 +204,15 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
                   {t('Anderes Gerät per QR-Code')}
                 </button>
               )}
+            {isTokenAccess && data && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => void wipeDeviceStorage()}
+              >
+                {t('Gerätespeicher löschen')}
+              </button>
+            )}
             {exit}
           </div>
         )}

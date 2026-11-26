@@ -24,7 +24,7 @@ ID="pruefe-caddy-$$-$RANDOM"
 GEHEIM=00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff
 TMP=$(mktemp -d)
 aufraeumen() {
-    docker rm -f "$ID-echo" "$ID-proxy" "$ID-direkt" > /dev/null 2>&1 || true
+    docker rm -f "$ID-echo" "$ID-proxy" "$ID-proxy-vs" "$ID-direkt" > /dev/null 2>&1 || true
     docker network rm "$ID" > /dev/null 2>&1 || true
     rm -rf "$TMP"
 }
@@ -53,6 +53,10 @@ docker run -d --name "$ID-echo" --network "$ID" --network-alias backend --networ
 docker run -d --name "$ID-proxy" --network "$ID" "$@" \
     -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -v "$SRC/deploy:/etc/caddy:ro" -v "$TMP/srv:/srv:ro" \
     "$IMG" caddy run --config /etc/caddy/Caddyfile.proxy --adapter caddyfile > /dev/null
+docker run -d --name "$ID-proxy-vs" --network "$ID" "$@" \
+    -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -e HUBIPLAN_VEREINSSEITE_PFAD=1 \
+    -v "$SRC/deploy:/etc/caddy:ro" -v "$TMP/srv:/srv:ro" \
+    "$IMG" caddy run --config /etc/caddy/Caddyfile.proxy --adapter caddyfile > /dev/null
 docker run -d --name "$ID-direkt" --network "$ID" "$@" \
     -e SITE_HOST=http://hubiplan.example.org -v "$SRC/deploy:/etc/caddy:ro" \
     "$IMG" caddy run --config /etc/caddy/Caddyfile --adapter caddyfile > /dev/null
@@ -67,7 +71,9 @@ anfrage() { # Ziel Pfad [Kopfzeile …]
         --header "Host: hubiplan.example.org" "${args[@]}" "http://$ziel$pfad" 2>&1 || true
 }
 for _ in $(seq 1 50); do
-    if anfrage "$ID-proxy" /api/health/ | grep -q 'pfad=' && anfrage "$ID-direkt" /api/health/ | grep -q 'pfad='; then
+    if anfrage "$ID-proxy:8080" /api/health/ | grep -q 'pfad=' \
+        && anfrage "$ID-proxy-vs:8080" /api/health/ | grep -q 'pfad=' \
+        && anfrage "$ID-direkt" /api/health/ | grep -q 'pfad='; then
         break
     fi
     sleep 0.2
@@ -89,42 +95,48 @@ nicht() { # Beschreibung Ausgabe Muster
     fi
 }
 
-# --- Hinter nginx (Caddyfile.proxy)
-a=$(anfrage "$ID-proxy" /api/health/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7" \
+# --- Hinter nginx (Caddyfile.proxy, Port 8080)
+a=$(anfrage "$ID-proxy:8080" /api/health/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7" \
     "X-Forwarded-For: 198.51.100.9")
 erwarte "Proxy: X-Real-IP mit Geheimnis als einziges X-Forwarded-For" "$a" 'xff=\[203\.0\.113\.7\]'
 erwarte "Proxy: Geheimnis nicht ans Backend" "$a" 'geheim=\[\]'
 erwarte "Proxy: HSTS" "$a" 'Strict-Transport-Security: max-age=31536000'
 erwarte "Proxy: nosniff" "$a" 'X-Content-Type-Options: nosniff'
+erwarte "Proxy: X-Frame-Options" "$a" 'X-Frame-Options: DENY'
 nicht "Proxy: Server-Kopfzeile" "$a" '^ *Server:'
 
-a=$(anfrage "$ID-proxy" /api/health/ "X-Real-IP: 203.0.113.7" "X-Forwarded-For: 198.51.100.9")
+a=$(anfrage "$ID-proxy:8080" /api/health/ "X-Real-IP: 203.0.113.7" "X-Forwarded-For: 198.51.100.9")
 erwarte "Proxy: ohne Geheimnis Verbindungsadresse" "$a" 'xff=\[[0-9a-f.:]+\]'
 nicht "Proxy: ohne Geheimnis kein X-Real-IP/X-Forwarded-For vom Aufrufer" "$a" '203\.0\.113\.7|198\.51\.100\.9'
 
-a=$(anfrage "$ID-proxy" /api/health/ "X-Hubiplan-Proxy: falsch" "X-Real-IP: 203.0.113.7")
+a=$(anfrage "$ID-proxy:8080" /api/health/ "X-Hubiplan-Proxy: falsch" "X-Real-IP: 203.0.113.7")
 nicht "Proxy: falsches Geheimnis gilt nicht" "$a" '203\.0\.113\.7'
 erwarte "Proxy: falsches Geheimnis nicht ans Backend" "$a" 'geheim=\[\]'
 
-a=$(anfrage "$ID-proxy" /vereinsseite/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
-erwarte "Proxy: Webseite bekommt die Besucheradresse" "$a" 'xff=\[203\.0\.113\.7\]'
-erwarte "Proxy: Geheimnis nicht an die Webseite" "$a" 'geheim=\[\]'
+# D-H01: /vereinsseite/* im Standard aus (kein Proxy an website), erst mit Opt-in aktiv
+a=$(anfrage "$ID-proxy:8080" /vereinsseite/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+nicht "Proxy: /vereinsseite/ im Standard nicht an Webseite" "$a" 'xff=\['
+
+a=$(anfrage "$ID-proxy-vs:8080" /vereinsseite/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+erwarte "Proxy (Opt-in): Webseite bekommt die Besucheradresse" "$a" 'xff=\[203\.0\.113\.7\]'
+erwarte "Proxy (Opt-in): Geheimnis nicht an die Webseite" "$a" 'geheim=\[\]'
 
 for pfad in "/api/intern/tls/?domain=x.example" /api/intern; do
-    a=$(anfrage "$ID-proxy" "$pfad" "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+    a=$(anfrage "$ID-proxy:8080" "$pfad" "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
     erwarte "Proxy: $pfad von außen 404" "$a" 'HTTP/1\.1 404'
     nicht "Proxy: $pfad erreicht das Backend nicht" "$a" 'pfad='
 done
 
 # Meldestelle (RFC 9116) kommt vom Backend, nicht aus der Oberfläche
-a=$(anfrage "$ID-proxy" /.well-known/security.txt "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+a=$(anfrage "$ID-proxy:8080" /.well-known/security.txt "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
 erwarte "Proxy: security.txt erreicht das Backend" "$a" 'pfad=/\.well-known/security\.txt'
 
 # Oberfläche: fremde Fenster vom eigenen getrennt, CSP bleibt
-a=$(anfrage "$ID-proxy" /mitglieder "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
+a=$(anfrage "$ID-proxy:8080" /mitglieder "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
 erwarte "Proxy: Oberfläche wird ausgeliefert" "$a" 'HTTP/1\.1 200'
 erwarte "Proxy: Oberfläche mit Cross-Origin-Opener-Policy" "$a" 'Cross-Origin-Opener-Policy: same-origin-allow-popups'
 erwarte "Proxy: Oberfläche mit CSP" "$a" "Content-Security-Policy: default-src 'self'"
+erwarte "Proxy: CSP mit object-src none" "$a" "object-src 'none'"
 erwarte "Proxy: CSP meldet Verstöße an die Instanz" "$a" "report-uri /api/csp-report/; report-to csp"
 erwarte "Proxy: Meldeadresse für neue Browser" "$a" 'Reporting-Endpoints: csp="/api/csp-report/"'
 

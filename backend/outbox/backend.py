@@ -74,19 +74,28 @@ class NotAccepted(Exception):
     """Der Mailserver hat eine Nachricht nicht angenommen."""
 
 
-# Links, mit denen man sich anmelden oder ein Konto übernehmen kann. Sie stehen nur in
-# der verschickten Mail, nie im Postausgang, den der Vorstand lesen kann.
+# Links, mit denen man sich anmelden, abstimmen oder fremde Vorgänge bearbeiten kann. Sie stehen
+# nur in der verschickten Mail, nie im Postausgang, den der Vorstand lesen kann.
 SECRET_LINK = re.compile(
-    # Alles, was ein Geheimnis im Pfad trägt (Gesamtaudit 05.11. GA-04)
+    # Alles, was ein Geheimnis im Pfad trägt (Gesamtaudit 05.11. GA-04 + Sicherheitsprüfung)
     r"(https?://\S*?/(?:anmelden/link|passwort-zuruecksetzen|konto/email|foto|ausweis"
-    r"|rundschreiben/bestaetigen|rundschreiben/abmelden)/)\S+"
+    r"|rundschreiben/bestaetigen|rundschreiben/abmelden"
+    r"|umfrage|rueckmeldung|anmeldung/bestaetigen|meine-anmeldung|antrag|nachweis"
+    r"|auslage|bilder-hochladen|mitglied-werden/stand)/)\S+"
 )
 REDACTED = "[Link aus Sicherheitsgründen nicht gespeichert]"
+# Signierte Plus-Antwortadressen (z. B. termin+<id>-<mid>-<hex>@… oder …+nw<key>@…)
+SECRET_REPLY_TAG = re.compile(r"([A-Za-z0-9._-]+)\+[^\s,@<>]+(@[^\s,<>]+)")
 
 
 def redact(text: str) -> str:
     text = SECRET_LINK.sub(lambda m: m.group(1) + REDACTED, text or "")
     return re.sub(r"(https?://\S*?/musik-gast#)\S+", lambda m: m.group(1) + REDACTED, text)
+
+
+def redact_reply_to(addresses: list[str] | None) -> str:
+    raw = ", ".join(addresses or [])
+    return SECRET_REPLY_TAG.sub(r"\1+[gekürzt]\2", raw)
 
 
 def transient(exc: BaseException) -> bool:
@@ -207,6 +216,7 @@ class OutboxBackend(BaseEmailBackend):
                 body = alt[0]
         org_pk = int(org_id) if org_id else None
         private_task = kind == "aufgabe"
+        anon_survey = kind == "umfrage_anonym"
         # Köderdaten (organizations.decoys): nie versenden, aber melden
         from organizations import decoys
 
@@ -215,13 +225,15 @@ class OutboxBackend(BaseEmailBackend):
         with rls_bypass():
             mail = OutgoingMail.objects.create(
                 organization_id=org_pk,
-                to=", ".join([*message.to, *message.cc, *message.bcc]),
-                reply_to=", ".join(message.reply_to or []),
+                to=gettext("[Empfänger anonymisiert]")
+                if anon_survey
+                else ", ".join([*message.to, *message.cc, *message.bcc]),
+                reply_to=redact_reply_to(message.reply_to),
                 subject=gettext("Aufgabenbenachrichtigung")
                 if private_task
                 else message.subject[:300],
                 body=gettext("Inhalt nur an das empfangende Konto versandt.")
-                if private_task
+                if (private_task or anon_survey)
                 else redact(body),
                 attachments=getattr(message, "outbox_attachments", None)
                 or _store_attachments(message, org_pk),

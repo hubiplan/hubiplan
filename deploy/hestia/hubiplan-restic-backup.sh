@@ -47,6 +47,21 @@ export RESTIC_CACHE_DIR=$R/root/.cache/restic
 export RESTIC_PASSWORD_FILE=$R/root/.config/restic/hubiplan.pass
 KONFDATEI=$R/root/.config/restic/hubiplan.conf
 if [ -r "$KONFDATEI" ]; then
+    # D-M02: Konfigurationsdatei vor source auf Typ, Eigentümer und Schreibschutz prüfen
+    if [ -L "$KONFDATEI" ] || [ ! -f "$KONFDATEI" ]; then
+        echo "FEHLER: $KONFDATEI ist keine reguläre Datei" >&2
+        exit 1
+    fi
+    konf_uid=$(stat -c '%u' "$KONFDATEI" 2>/dev/null || echo -1)
+    konf_mode=$(stat -c '%a' "$KONFDATEI" 2>/dev/null || echo 777)
+    if [ "$konf_uid" != "$(id -u)" ] && [ "$konf_uid" != 0 ]; then
+        echo "FEHLER: $KONFDATEI gehört nicht root oder dem aktuellen Benutzer" >&2
+        exit 1
+    fi
+    if [ $(( 8#$konf_mode & 8#022 )) -ne 0 ]; then
+        echo "FEHLER: $KONFDATEI ist für Gruppe oder andere beschreibbar (Modus $konf_mode)" >&2
+        exit 1
+    fi
     set -a
     # shellcheck disable=SC1090
     . "$KONFDATEI"
@@ -54,7 +69,8 @@ if [ -r "$KONFDATEI" ]; then
 fi
 PASSDATEI=$RESTIC_PASSWORD_FILE
 export RESTIC_REPOSITORY=${RESTIC_REPOSITORY:-sftp:storagebox:restic-hubiplan}
-AUFBEWAHRUNG=${RESTIC_AUFBEWAHRUNG:-an}
+# Sicherer Standard (D-M02): am Server nur anhängen, forget/prune von getrenntem Rechner
+AUFBEWAHRUNG=${RESTIC_AUFBEWAHRUNG:-aus}
 WARNGRENZE_GB=${RESTIC_WARNGRENZE_GB:-}
 # Empfänger der Fehlermeldungen: eine Adresse in MAILDATEI (nur auf dem Server), sonst root
 MAILDATEI=$R/root/.config/restic/hubiplan.mailto
@@ -242,9 +258,27 @@ sichern() {
         log "WARNUNG: HUBIplan-Backup von heute fehlt (siehe $BACKUPS/backup.log)"
         FEHLER=1
     fi
+    # D-M02: .env vor dem restic-Upload mit dem öffentlichen age-Schlüssel verschlüsseln,
+    # wenn BACKUP_PUBLIC_KEY gesetzt und age verfügbar ist (so enthält das restic-Repo
+    # selbst ohne age-Privatschlüssel keine Klartext-Passwörter aus .env).
+    ENV_BACKUP="$ENVDATEI"
+    ENV_TMP=""
+    AGE_PUB=$(grep '^BACKUP_PUBLIC_KEY=' "$ENVDATEI" 2>/dev/null | tail -n1 | cut -d= -f2- | tr -d '\r"'\''' || true)
+    if [ -n "$AGE_PUB" ] && [[ "$AGE_PUB" =~ ^age1[0-9a-z]+$ ]] && command -v age >/dev/null 2>&1; then
+        ENV_TMP=$(mktemp -d)
+        chmod 700 "$ENV_TMP"
+        if age -r "$AGE_PUB" -o "$ENV_TMP/hubiplan.env.age" "$ENVDATEI" 2>>"$LOG"; then
+            ENV_BACKUP="$ENV_TMP/hubiplan.env.age"
+        else
+            log "WARNUNG: .env konnte nicht mit age verschlüsselt werden, sichere unverschlüsselt im restic-Repo"
+            rm -rf "$ENV_TMP"
+            ENV_TMP=""
+        fi
+    fi
     nice -n 10 ionice -c3 restic backup --host "$(hostname -f)" --tag hubiplan -q \
-        "$BACKUPS" "$ENVDATEI" >> "$LOG" 2>&1 \
+        "$BACKUPS" "$ENV_BACKUP" >> "$LOG" 2>&1 \
         && log "restic backup ok" || { log "FEHLER: restic backup (Exit $?)"; FEHLER=1; }
+    [ -n "$ENV_TMP" ] && rm -rf "$ENV_TMP"
     # Mail: eigener Snapshot mit Tag „mail“, damit Rücksicherung und Probe der
     # HUBIplan-Sicherungen unverändert bleiben
     MAIL=()

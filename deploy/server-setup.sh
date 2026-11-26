@@ -271,8 +271,13 @@ if [ -n "$($COMPOSE ps -q --status running postgres)" ] \
 fi
 # Stehen keine Migrationen an, läuft die bisherige Fassung bis zum Austausch weiter
 # (die Prüfung liest nur). Im Zweifel (Fehler bei der Prüfung) wird angehalten.
+PG_PASS=$(grep '^POSTGRES_PASSWORD=' .env | tail -n1 | cut -d= -f2-)
+APP_PASS=$(grep '^APP_DB_PASSWORD=' .env | tail -n1 | cut -d= -f2-)
+BACKUP_PASS=$(grep '^BACKUP_DB_PASSWORD=' .env | tail -n1 | cut -d= -f2- || true)
+MIGRATE_URL="postgres://hubiplan:${PG_PASS}@postgres:5432/hubiplan"
 # shellcheck disable=SC2086,SC2016
-if [ -n "$OHNE_ABH" ] && $COMPOSE run -T --rm --no-deps --entrypoint sh backend -c \
+if [ -n "$OHNE_ABH" ] && $COMPOSE run -T --rm --no-deps \
+    -e "MIGRATE_DATABASE_URL=$MIGRATE_URL" --entrypoint sh backend -c \
     'DATABASE_URL="${MIGRATE_DATABASE_URL:-$DATABASE_URL}" DATABASE_APP_ROLE= python manage.py migrate --check --noinput > /dev/null 2>&1'; then
     echo "Keine offenen Migrationen, die bisherige Fassung läuft bis zum Austausch weiter."
     ANHALTEN=""
@@ -306,6 +311,10 @@ echo "Migrationen (höchstens $MIGRATE_TIMEOUT s, Sperren höchstens $MIGRATE_LO
 migrieren() {
     # shellcheck disable=SC2086
     timeout "$MIGRATE_TIMEOUT" $COMPOSE run -T --rm $OHNE_ABH --name "$PROJEKT-migration" \
+        -e RUN_MIGRATIONS=1 \
+        -e "MIGRATE_DATABASE_URL=$MIGRATE_URL" \
+        -e "APP_DB_PASSWORD=$APP_PASS" \
+        -e "BACKUP_DB_PASSWORD=$BACKUP_PASS" \
         -e MIGRATE_VERBOSITY=2 -e "MIGRATE_PGOPTIONS=-c lock_timeout=$MIGRATE_LOCK_TIMEOUT" \
         backend true < /dev/null
 }

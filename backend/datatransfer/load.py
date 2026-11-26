@@ -1233,6 +1233,8 @@ class Loader:
                     d["tables"], dept, self.ids, self.files, self.user
                 )
 
+    MAX_INVITATIONS = 500
+
     def role_assignments(self, org: Organization, data: dict) -> None:
         invite = bool(self.options.get("invite"))
         for a in data.get("role_assignments") or []:
@@ -1241,6 +1243,12 @@ class Loader:
             email = (a.get("email") or "").strip().lower()
             user = User.objects.filter(email=email).first() if email else None
             if user is None and email and invite:
+                if len(self.invitations) >= self.MAX_INVITATIONS:
+                    raise ValidationError(
+                        gettext("Höchstens {n} neue Einladungen je Import sind erlaubt.").format(
+                            n=self.MAX_INVITATIONS
+                        )
+                    )
                 names = (a.get("name") or "").split(" ", 1)
                 user = User.objects.create_user(
                     email=email,
@@ -1277,8 +1285,13 @@ class Loader:
         if name:
             dept.name = name
         dept.short_name = (dept.short_name or "").strip()[:SHORT_NAME_MAX]
+        # Kassen-Festschreibung erst nach dem Laden historischer Buchungen setzen (GoBD-Trigger)
+        locked_until = dept.finance_locked_until
+        dept.finance_locked_until = None
         validate_urls(dept)
         dept.save()
+        if locked_until:
+            self.locked_until[dept.pk] = locked_until
         self.load_logos(dept, d)
         load_imprint(dept, d.get("imprint"))
         load_letterhead(dept, d.get("letterhead"), self)
@@ -1561,6 +1574,8 @@ class Loader:
         org.is_active = True
         org.enabled_modules = list(DEFAULT_MODULES)
         org.federation_member_access = Organization.MemberAccess.NONE
+        locked_until = org.finance_locked_until
+        org.finance_locked_until = None
         try:
             validate_urls(org)
             org.clean()
@@ -1569,6 +1584,8 @@ class Loader:
                 gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
             ) from exc
         org.save()
+        if locked_until:
+            self.locked_until[org.pk] = locked_until
         self.load_logos(org, data)
         load_imprint(org, data.get("imprint"))
         load_letterhead(org, data.get("letterhead"), self)
@@ -1669,45 +1686,50 @@ def missing_department_permissions(doc: dict, club: Organization, user) -> list[
 
 
 def run(job, user) -> dict:
-    with rls_bypass():
-        doc, files = open_file(job.file)
-        preview = Checker(job, doc, files).check()
-        if preview["kind"] == "department":
-            # Wer den Import startet, braucht die Rechte (nicht nur, wer hochgeladen hat)
-            missing = missing_department_permissions(doc, job.organization, user)
-            if missing:
-                raise ValidationError(
-                    [
-                        gettext("Für diesen Import fehlt das Recht „{code}“.").format(code=code)
-                        for code in missing
-                    ]
-                )
-    if preview["error_count"]:
-        raise ValidationError(preview["errors"])
-    with transaction.atomic(), rls_bypass():
-        loader = Loader(job, doc, files, preview, user)
-        if preview["kind"] == "organization":
-            created = loader.run_organization()
-            loader.result["organization"] = {"id": created.pk, "name": created.name}
-        elif preview["kind"] == "unit":
-            created = loader.run_unit()
-            loader.result["organization"] = {"id": created.pk, "name": created.name}
-        else:
-            created = loader.run_department()
-            loader.result["department"] = {"id": created.pk, "name": created.name}
-        invitations = list(loader.invitations)
+    files = None
+    try:
+        with rls_bypass():
+            doc, files = open_file(job.file)
+            preview = Checker(job, doc, files).check()
+            if preview["kind"] == "department":
+                # Wer den Import startet, braucht die Rechte (nicht nur, wer hochgeladen hat)
+                missing = missing_department_permissions(doc, job.organization, user)
+                if missing:
+                    raise ValidationError(
+                        [
+                            gettext("Für diesen Import fehlt das Recht „{code}“.").format(code=code)
+                            for code in missing
+                        ]
+                    )
+        if preview["error_count"]:
+            raise ValidationError(preview["errors"])
+        with transaction.atomic(), rls_bypass():
+            loader = Loader(job, doc, files, preview, user)
+            if preview["kind"] == "organization":
+                created = loader.run_organization()
+                loader.result["organization"] = {"id": created.pk, "name": created.name}
+            elif preview["kind"] == "unit":
+                created = loader.run_unit()
+                loader.result["organization"] = {"id": created.pk, "name": created.name}
+            else:
+                created = loader.run_department()
+                loader.result["department"] = {"id": created.pk, "name": created.name}
+            invitations = list(loader.invitations)
 
-        def send():
-            from accounts.invitations import send_invitation
+            def send():
+                from accounts.invitations import send_invitation
 
-            for invited_user, org, role_name in invitations:
-                send_invitation(invited_user, org, role_name)
+                for invited_user, org, role_name in invitations:
+                    send_invitation(invited_user, org, role_name)
 
-        transaction.on_commit(send)
-    loader.result["invited"] = len(invitations)
-    if preview["kind"] == "unit":
-        couple_spin_off(created, doc, user, loader.result)
-    return loader.result
+            transaction.on_commit(send)
+        loader.result["invited"] = len(invitations)
+        if preview["kind"] == "unit":
+            couple_spin_off(created, doc, user, loader.result)
+        return loader.result
+    finally:
+        if files is not None and getattr(files, "archive", None) is not None:
+            files.archive.close()
 
 
 def couple_spin_off(org: Organization, doc: dict, user, result: dict) -> None:

@@ -105,7 +105,20 @@ def verify_request(public_key, method, path, date, nonce, body, signature) -> bo
     return verify(public_key, signing_input(method, path, date, nonce, body), signature)
 
 
+def verify_request_matched(
+    public_keys, method, path, date, nonce, body, signatures
+) -> str | None:
+    """Liefert den öffentlichen Schlüssel, zu dem eine gültige Unterschrift passt (sonst None)."""
+    data = signing_input(method, path, date, nonce, body)
+    for k in public_keys:
+        if not k:
+            continue
+        for s in signatures:
+            if s and verify(k, data, s):
+                return k
+    return None
+
+
 def verify_request_any(public_keys, method, path, date, nonce, body, signatures) -> bool:
     """Gültig, wenn eine der Unterschriften zu einem der angenommenen Schlüssel passt."""
-    data = signing_input(method, path, date, nonce, body)
-    return any(verify(k, data, s) for k in public_keys if k for s in signatures if s)
+    return verify_request_matched(public_keys, method, path, date, nonce, body, signatures) is not None

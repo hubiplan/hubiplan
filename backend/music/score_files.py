@@ -55,6 +55,9 @@ def own_part(link, parts: list[dict]) -> tuple[str | None, bool]:
 
 def _text(link, version, whole: bool) -> tuple[str, str]:
     """Notentext (bei MusicXML nur die eigene Stimme) und Stimmenname."""
+    from core import virenscan
+
+    virenscan.ensure_released(version.file)
     with version.file.open("rb") as fh:
         raw = fh.read()
     try:

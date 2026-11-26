@@ -340,18 +340,24 @@ def apply(view, survey: Survey, data: dict, *, creating: bool) -> None:
     if "persons" in data:
         survey.persons = check_persons(view, data["persons"])
     if "names" in data and data["names"] != survey.names:
-        if (
-            started
-            and services.participants(survey)
-            and not services.stricter(survey.names, data["names"], services.NAMES_ORDER)
-        ):
-            raise ValidationError(
-                {
-                    "names": _(
-                        "Nach der ersten Antwort lassen sich Namen nur noch strenger schützen."
-                    )
-                }
-            )
+        if started and services.participants(survey):
+            if data["names"] == Survey.Names.ANONYMOUS:
+                raise ValidationError(
+                    {
+                        "names": _(
+                            "Nach der ersten Antwort lässt sich die Umfrage nicht mehr auf "
+                            "anonym umstellen."
+                        )
+                    }
+                )
+            if not services.stricter(survey.names, data["names"], services.NAMES_ORDER):
+                raise ValidationError(
+                    {
+                        "names": _(
+                            "Nach der ersten Antwort lassen sich Namen nur noch strenger schützen."
+                        )
+                    }
+                )
         survey.names = data["names"]
     if "results" in data and data["results"] != survey.results:
         # Gesamtaudit 15.11., UM-1: Wer unter „nur die Verwaltung sieht das Ergebnis“

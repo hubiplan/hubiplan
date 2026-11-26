@@ -238,9 +238,10 @@ MFA_PLATFORM_GRACE = False
 MFA_STEP_UP = True
 # Rundschreiben, Exporte und Buchen ruhen schon in der Frist ohne 2FA (Gesamtaudit 11.11.)
 MFA_IMMEDIATE = True
+_BEAT_ONLY = env_bool("HUBIPLAN_BEAT_ONLY", False)
 # Ein leerer Wert (z. B. aus docker-compose ${MFA_ENCRYPTION_KEYS:-}) gilt als nicht gesetzt
 MFA_ENCRYPTION_KEYS = env_list("MFA_ENCRYPTION_KEYS") or env_list("MFA_ENCRYPTION_KEY")
-if not MFA_ENCRYPTION_KEYS:
+if not MFA_ENCRYPTION_KEYS and not _BEAT_ONLY:
     if not DEBUG:
         raise ImproperlyConfigured("MFA_ENCRYPTION_KEY muss gesetzt sein.")
     # Nur mit DJANGO_DEBUG=true: aus dem SECRET_KEY abgeleitet
@@ -253,7 +254,7 @@ if not MFA_ENCRYPTION_KEYS:
 DATA_KEY_PROVIDERS = env_list("DATA_KEY_PROVIDERS") or ["file"]
 DATA_ENCRYPTION_KEY_FILE = os.environ.get("DATA_ENCRYPTION_KEY_FILE", "")
 DATA_ENCRYPTION_KEYS = env_list("DATA_ENCRYPTION_KEYS") or env_list("DATA_ENCRYPTION_KEY")
-if not DATA_ENCRYPTION_KEYS and not DATA_ENCRYPTION_KEY_FILE:
+if not DATA_ENCRYPTION_KEYS and not DATA_ENCRYPTION_KEY_FILE and not _BEAT_ONLY:
     if not DEBUG:
         raise ImproperlyConfigured("DATA_ENCRYPTION_KEY_FILE muss gesetzt sein.")
     # Nur mit DJANGO_DEBUG=true: aus dem SECRET_KEY abgeleitet

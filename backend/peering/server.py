@@ -109,11 +109,13 @@ class _Signed(APIView):
             return reject(400, "Absender passt nicht.")
         peer = Peer.objects.filter(instance_id=sender).first() if _is_uuid(sender) else None
         keys = services.keys_of(peer, quarantine_ok=True) if peer else None
+        self.verified_key = None
         if keys is not None:
             # Bekannte Absenderin: erst die Unterschrift, dann (teuer) entschlüsseln
-            if not crypto.verify_request_any(
+            self.verified_key = crypto.verify_request_matched(
                 keys.accepted, "POST", request.path, date, nonce, body, signatures
-            ):
+            )
+            if not self.verified_key:
                 _bad_signature(peer)
                 return reject(403, "Unterschrift ungültig.")
         try:
@@ -265,7 +267,7 @@ class KeysView(_Signed):
     def handle(self, peer, payload):
         from . import keys
 
-        result, new_keys = keys.receive(peer, payload)
+        result, new_keys = keys.receive(peer, payload, signed_with=self.verified_key)
         self.reply_keys = new_keys
         return result
 

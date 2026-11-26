@@ -145,4 +145,7 @@ def download(request, access, score_id):
     if score_id not in rows:
         raise NotFound()
     link, version = rows[score_id]
+    from core import virenscan
+
+    virenscan.release_ok(version.file, version.name, "Gast-Noten", key=f"docv:{version.pk}")
     return respond(request, link, version)

@@ -68,14 +68,22 @@ def _finish(task: BankTask, status: str, message: str = "") -> None:
 
 
 class _Busy:
-    """Höchstens ein Vorgang je Zugang gleichzeitig (auch über mehrere Worker)."""
+    """Höchstens ein Vorgang je Zugang gleichzeitig (auch über mehrere Worker).
+
+    Verwendet ein zufälliges Eigentümer-Token (verhindert, dass ein langsam abgelaufener
+    Worker die Sperre eines zweiten Workers löscht)."""
 
     def __init__(self, access: BankAccess):
+        import secrets
+
         self.key = f"bankweg:{access.pk}"
+        self.token = secrets.token_hex(16)
         self.held = False
 
     def __enter__(self):
-        self.held = cache.add(self.key, 1, BUSY_SECONDS)
+        # Großzügige Sperrzeit (> max. Multi-Konto-Abruf), damit die Sperre nicht vorzeitig abläuft
+        ttl = max(BUSY_SECONDS, 360)
+        self.held = cache.add(self.key, self.token, ttl)
         if not self.held:
             raise BankError(
                 "busy", gettext("Für diesen Bankzugang läuft gerade ein anderer Vorgang.")
@@ -83,11 +91,12 @@ class _Busy:
         return self
 
     def __exit__(self, *exc):
-        if self.held:
+        if self.held and cache.get(self.key) == self.token:
             cache.delete(self.key)
 
 
 def _check_lock(access: BankAccess, confirm_retry: bool) -> None:
+    access.refresh_from_db(fields=["failures", "locked_until"])
     now = timezone.now()
     if access.locked_until and access.locked_until > now:
         raise BankError(
@@ -110,12 +119,17 @@ def _check_lock(access: BankAccess, confirm_retry: bool) -> None:
 def _note_failure(access: BankAccess, exc: BankError) -> None:
     if exc.code != "pin":
         return
-    access.failures += 1
-    fields = ["failures"]
-    if access.failures >= 2:
-        access.locked_until = timezone.now() + datetime.timedelta(hours=LOCK_HOURS)
-        fields.append("locked_until")
-    access.save(update_fields=fields)
+    from django.db.models import F
+
+    with transaction.atomic():
+        locked = BankAccess.objects.select_for_update().get(pk=access.pk)
+        BankAccess.objects.filter(pk=locked.pk).update(failures=F("failures") + 1)
+        locked.refresh_from_db(fields=["failures", "locked_until"])
+        if locked.failures >= 2:
+            locked.locked_until = timezone.now() + datetime.timedelta(hours=LOCK_HOURS)
+            locked.save(update_fields=["locked_until"])
+        access.failures = locked.failures
+        access.locked_until = locked.locked_until
 
 
 def _note_success(access: BankAccess, state: str | None) -> None:
@@ -160,8 +174,8 @@ def begin(
         raise BankError("unsupported", gettext("Die Bankanbindung ist nicht eingeschaltet."))
     if kind == BankTask.Kind.FETCH and not access.ready:
         raise BankError("unsupported", gettext("Bitte den Bankzugang zuerst fertig einrichten."))
-    _check_lock(access, confirm_retry)
     with _Busy(access):
+        _check_lock(access, confirm_retry)
         expire_tasks(access)
         if kind == BankTask.Kind.SETUP:
             job = {"kind": "setup", **(options or {})}
@@ -186,6 +200,7 @@ def proceed(org, task: BankTask, user, pin: str, tan: str) -> dict:
     if not enabled(org):
         raise BankError("unsupported", gettext("Die Bankanbindung ist nicht eingeschaltet."))
     with _Busy(access):
+        _check_lock(access, confirm_retry=True)
         expire_tasks(access)
         task.refresh_from_db()
         if task.status != BankTask.Status.TAN:

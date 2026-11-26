@@ -31,7 +31,13 @@ ALLOWED_PREFIXES = ("/api/app/v1/", "/api/portal/", "/api/me/contexts/")
 # Verwaltung (Schritt A8): nur mit dem Vorstandsschlüssel, nie mit dem Geräteschlüssel
 # u/: Einheiten mit Rollen; d/: Untereinheiten mit Rollen nur dort (z. B. Zugführung);
 # signature/: hinterlegte eigene Unterschrift für Quittungen
-ADMIN_PATH = ("/api/app/v1/admin/u/", "/api/app/v1/admin/d/", "/api/app/v1/admin/signature/")
+ADMIN_PATH = (
+    "/api/app/v1/admin/u/",
+    "/api/app/v1/admin/d/",
+    "/api/app/v1/admin/signature/",
+    "/api/app/v1/admin/send/",
+    "/api/app/v1/send/",
+)
 # Kopfzeile mit dem Geräteschlüssel neben dem Vorstandsschlüssel
 DEVICE_HEADER = "X-Hubiplan-Device"
 logger = logging.getLogger(__name__)

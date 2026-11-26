@@ -89,6 +89,18 @@ pruefen() {
         echo "$name: Tags nicht geholt (origin nicht erreichbar), nehme die vorhandenen." >&2
     commit=$(git -C "$repo" rev-parse -q --verify "refs/tags/$tag^{commit}") ||
         abbruch "$name: Tag $tag fehlt. Im Windows-Klon erst „git fetch --tags“ ausführen."
+    local schluessel="$repo/deploy/release-schluessel"
+    if [ -f "$schluessel" ] && grep -q '^[^#[:space:]]' "$schluessel"; then
+        git -C "$repo" cat-file tag "refs/tags/$tag" 2> /dev/null | grep -q '^-----BEGIN SSH SIGNATURE-----$' ||
+            abbruch "$name: Tag $tag trägt keine SSH-Signatur."
+        git -C "$repo" -c gpg.program=/bin/false -c gpg.x509.program=/bin/false \
+            -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$schluessel" \
+            tag -v -- "$tag" > /dev/null 2>&1 ||
+            abbruch "$name: Signatur von Tag $tag ist ungültig (geprüft gegen $schluessel)."
+        local tag_name
+        tag_name="$(git -C "$repo" cat-file tag "refs/tags/$tag" 2> /dev/null | sed -n '1,/^$/s/^tag //p')"
+        [ "$tag_name" = "$tag" ] || abbruch "$name: Signiertes Tag heißt „$tag_name“, nicht $tag."
+    fi
     laufend=$(auf_server "cat '$dir/.fassung' 2> /dev/null" || true)
     laufend="${laufend//[[:space:]]/}"
     if [ -z "$laufend" ]; then

@@ -97,14 +97,16 @@ class PersonalView(PartnerView):
 
     def wanted_unit(self, request):
         from organizations.models import Department
+        from organizations.tree import subtree_ids
 
         raw = request.query_params.get("unit")
         if not raw:
             return None
         try:
-            unit = Department.objects.filter(
-                organization=self.org, uuid=raw, is_active=True
-            ).first()
+            qs = Department.objects.filter(organization=self.org, uuid=raw, is_active=True)
+            if self.unit is not None:
+                qs = qs.filter(pk__in=subtree_ids(self.unit))
+            unit = qs.first()
         except (ValueError, TypeError, serializers.DjangoValidationError):
             unit = None
         if unit is None:

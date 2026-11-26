@@ -112,7 +112,9 @@ class ListView(Base):
         department = (
             get_object_or_404(Department, pk=dept_id, organization=self.org) if dept_id else None
         )
-        notice = create_notice(self.org, department, request.user, request.data, request.FILES)
+        notice = create_notice(
+            self.org, department, request.user, request.data, request.FILES, request
+        )
         key.remember({"id": notice.pk})
         return Response(services.notice_data(notice, self.prefix, can_edit=True), status=201)
 

@@ -420,7 +420,7 @@ def is_automatic(msg: EmailMessage) -> str:
         return "Rückläufer"
     if msg.get_content_type() == "multipart/report":
         return "Rückläufer"
-    sender = parseaddr(str(msg.get("From", "") or ""))[1].lower()
+    sender = _single_from_address(msg)
     local = sender.split("@", 1)[0]
     if local in ("mailer-daemon", "postmaster") or local.startswith(("noreply", "no-reply")):
         return "Absender ohne Postfach"
@@ -502,26 +502,55 @@ def dmarc_results(header: str) -> list[str]:
     return results
 
 
+def _single_from_address(msg: EmailMessage) -> str:
+    """Genau ein From-Header mit genau einer Adresse (Schutz gegen Multi-From-Desync)."""
+    raw_froms = msg.get_all("From") or []
+    if len(raw_froms) != 1:
+        return ""
+    addrs = [a.strip().lower() for _, a in getaddresses([str(raw_froms[0])]) if a]
+    return addrs[0] if len(addrs) == 1 else ""
+
+
 def dmarc_passed(msg: EmailMessage) -> bool:
     """Hat der eigene Mailserver die Herkunft positiv bestätigt (``dmarc=pass``)?
 
-    Zählt nur das oberste Ergebnis genau des eigenen Servers (``MAIL_AUTHSERV_ID``). Ohne
-    diese Einstellung gilt nichts als bestätigt: Den obersten Eintrag kann sonst auch der
-    Absender selbst mitschicken (Gesamtaudit 03.11., GA-V05). Fehlt das Ergebnis oder ist
-    es none/temperror/permerror, gilt die Herkunft ebenfalls als unbestätigt (Gesamtaudit
-    01.11., GA-S03).
+    Zählt nur das oberste Ergebnis genau des eigenen Servers (``MAIL_AUTHSERV_ID``) oberhalb
+    fremder Received-Zeilen. Ohne diese Einstellung gilt nichts als bestätigt: Den obersten
+    Eintrag kann sonst auch der Absender selbst mitschicken (Gesamtaudit 03.11., GA-V05).
     """
     from django.conf import settings
 
     authserv = (getattr(settings, "MAIL_AUTHSERV_ID", "") or "").strip().lower()
     if not authserv:
         return False
-    headers = [str(v) for v in msg.get_all("Authentication-Results") or []]
-    headers = [h for h in headers if _authserv_of(h) == authserv]
+    sender = _single_from_address(msg)
+    if not sender or "@" not in sender:
+        return False
+    sender_domain = sender.rsplit("@", 1)[1]
+    # Nur Authentication-Results oberhalb fremder Received-Einträge werten (eingehende Header
+    # stehen unterhalb der Received-Zeile des eigenen MTA).
+    headers: list[str] = []
+    seen_received = 0
+    for key, val in msg.items():
+        low = key.lower()
+        if low == "received":
+            seen_received += 1
+            if seen_received > 1:
+                break
+        elif low == "authentication-results":
+            text = str(val)
+            if _authserv_of(text) == authserv:
+                headers.append(text)
     if not headers:
         return False
-    # Genau ein DMARC-Ergebnis, und das lautet „pass“; mehrere widersprüchliche gelten nicht
-    return dmarc_results(headers[0]) == ["pass"]
+    top = headers[0]
+    if dmarc_results(top) != ["pass"]:
+        return False
+    # Wenn header.from= genannt ist, muss es zur From-Domain passen
+    m = re.search(r"\bheader\.from\s*=\s*([a-z0-9.-]+)", _without_comments(top), re.IGNORECASE)
+    if m and m.group(1).lower().rstrip(".") != sender_domain:
+        return False
+    return True
 
 
 def recipient_addresses(msg: EmailMessage) -> list[str]:
@@ -552,7 +581,7 @@ def _process(raw: bytes) -> InboundMail | None:
     message_id = str(msg.get("Message-ID", "") or "").strip()[:300]
     if message_id and InboundMail.objects.filter(message_id=message_id).exists():
         return None
-    sender = parseaddr(str(msg.get("From", "") or ""))[1].lower()
+    sender = _single_from_address(msg)
     subject = re.sub(r"\s+", " ", str(msg.get("Subject", "") or "")).strip()
     ml, recipient = find_list(recipient_addresses(msg))
     base = {

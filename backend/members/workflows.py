@@ -614,8 +614,14 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     from .auskunft import _org_ids
 
     AuditEntry.objects.filter(organization_id__in=_org_ids(club), person_id=person.pk).update(
-        changes={}, cleared=True
+        object_repr="", changes={}, cleared=True
     )
+    # Wechselanfragen mit Aufnahmedaten dieses Vereins bereinigen
+    from .models import TransferRequest
+
+    TransferRequest.objects.filter(person=person).filter(
+        Q(from_org=club) | Q(to_org=club)
+    ).update(admission={}, message="", response="")
     MembershipPeriod.objects.filter(membership=membership).update(note="")
     _purge_related(membership, person, club)
 

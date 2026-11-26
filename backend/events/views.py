@@ -741,6 +741,15 @@ class _EventDetail(APIView):
     @transaction.atomic
     def patch(self, request, pk: int, **kwargs):
         event = self.own_event(pk)
+        if hasattr(event, "meeting") and event.meeting.status == event.meeting.Status.DONE:
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Der Termin gehört zu einer abgeschlossenen Versammlung und lässt sich "
+                        "nicht mehr ändern."
+                    )
+                }
+            )
         before = snapshot(event)
         tracked = {f: getattr(event, f) for f in TRACKED}
         was_cancelled, old_start = event.is_cancelled, event.starts_at

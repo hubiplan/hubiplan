@@ -217,6 +217,7 @@ def finalize(receipt: CashReceipt, user, *, confirmed: bool, signed_at=None) -> 
             amount=receipt.amount,
             account=receipt.account,
             category=receipt.category,
+            vat_rate=receipt.vat_rate or (receipt.category.vat_rate if receipt.category else ""),
             text=receipt.purpose[:200],
             reference="Quittung",
             counterparty=receipt.counterparty_name[:200],

@@ -122,13 +122,18 @@ def send(survey_id: int, kind: str) -> int:
                     survey, kind, membership.person.first_name, link.url(survey, membership.pk)
                 )
                 title = subject(survey, kind)
+            mail_kind = (
+                "umfrage_anonym"
+                if kind == REMIND and survey.anonymity == Survey.Anonymity.ANONYMOUS
+                else "umfrage"
+            )
             sent += int(
                 mail.send(
                     address,
                     title,
                     text,
                     organization=survey.organization,
-                    kind="umfrage",
+                    kind=mail_kind,
                     fail_silently=True,
                 )
             )

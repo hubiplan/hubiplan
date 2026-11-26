@@ -77,10 +77,12 @@ def subtree(org) -> list[Organization]:
 
 def _finance_dates(org) -> tuple[datetime.date | None, datetime.date | None]:
     """Frühester und spätester Tag mit Finanzdaten der Einheit (eigener Datenbereich)."""
-    from billing.models import DebitRun, Dunning, IncomingInvoice, Invoice
+    from billing.models import DebitRun, Dunning, IncomingInvoice, Invoice, InvoiceAdvance
+    from expenses.models import ExpenseClaim
     from finance import bank_originals
     from finance.models import (
         Booking,
+        CashAudit,
         CashCount,
         CashReceipt,
         Donation,
@@ -92,14 +94,17 @@ def _finance_dates(org) -> tuple[datetime.date | None, datetime.date | None]:
     sources = [
         (Booking, "date"),
         (Invoice, "date"),
+        (InvoiceAdvance, "created_at__date"),
         (Dunning, "date"),
         (DebitRun, "collection_date"),
         (IncomingInvoice, "created_at__date"),
         (CashCount, "date"),
+        (CashAudit, "audited_on"),
         (CashReceipt, "receipt_date"),
         (Donation, "date"),
         (DonationStatement, "issued_on"),
         (ReserveMovement, "date"),
+        (ExpenseClaim, "created_at__date"),
         (EngagementDocument, "created_at__date"),
         (PayoutRun, "execution_date"),
         (PerformanceAccount, "date"),

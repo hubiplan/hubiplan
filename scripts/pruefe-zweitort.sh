@@ -37,11 +37,18 @@ rsync_lauf() { # $1 Löschoption, Rest: Umgebung
 }
 hinweise() { { cat "$T/sich/backup.log" 2>/dev/null || true; } | grep -c 'HINWEIS: Zweiter Ort' || true; }
 
+# Standard (D-M02): anhängend (kein --delete), kein Hinweis
 rsync_lauf --delete
-grep -q -- '^-a --delete -e ssh' "$T/rsync.aufrufe" || fail "Standard ohne --delete"
+if grep -q -- '--delete' "$T/rsync.aufrufe"; then fail "Standard mit --delete statt anhängend"; fi
+grep -q -- '^-a -e ssh' "$T/rsync.aufrufe" || fail "Standard: rsync nicht aufgerufen"
 grep -q -- "--exclude=\* $T/sich/ ziel.example.org:\$" "$T/rsync.aufrufe" || fail "Quelle/Ziel falsch"
+[ "$(hinweise)" = 0 ] || fail "Hinweis im sicheren Standard"
+
+# Ausdrückliches BACKUP_REMOTE_ANHAENGEND=0 erlaubt --delete mit Hinweis (höchstens 1x/Tag)
+rsync_lauf --delete BACKUP_REMOTE_ANHAENGEND=0
+grep -q -- '^-a --delete -e ssh' "$T/rsync.aufrufe" || fail "ANHAENGEND=0 ohne --delete"
 [ "$(hinweise)" = 1 ] || fail "kein Hinweis bei --delete"
-rsync_lauf --delete
+rsync_lauf --delete BACKUP_REMOTE_ANHAENGEND=0
 [ "$(hinweise)" = 1 ] || fail "Hinweis öfter als einmal am Tag"
 if grep -q FEHLER "$T/sich/backup.log"; then fail "Hinweis enthält FEHLER (run.sh-Status)"; fi
 [ ! -e "$T/sich/.zweitort-hinweis" ] || [ "$(cat "$T/sich/.zweitort-hinweis")" = "$(date +%F)" ] \
@@ -53,13 +60,13 @@ if grep -q -- '--delete' "$T/rsync.aufrufe"; then fail "--delete trotz BACKUP_RE
 grep -q -- '^-a -e ssh' "$T/rsync.aufrufe" || fail "anhängend: rsync nicht aufgerufen"
 [ "$(hinweise)" = 0 ] || fail "Hinweis trotz anhängend"
 # Unvollständiges Backup: backup.sh gibt keine Löschoption vor, dann auch kein Hinweis
-rsync_lauf ""
+rsync_lauf "" BACKUP_REMOTE_ANHAENGEND=0
 if grep -q -- '--delete' "$T/rsync.aufrufe"; then fail "--delete ohne Vorgabe"; fi
 [ "$(hinweise)" = 0 ] || fail "Hinweis ohne --delete"
 # Scheitert rsync, scheitert auch die Kopie
 printf '#!/bin/sh\nexit 23\n' > "$T/rbin/rsync"
 if rsync_lauf --delete BACKUP_REMOTE_ANHAENGEND=1; then fail "rsync-Fehler verschluckt"; fi
-echo "Zweitort: rsync mit --delete nur ohne BACKUP_REMOTE_ANHAENGEND, Hinweis einmal am Tag"
+echo "Zweitort: rsync standardmäßig anhängend, --delete nur mit BACKUP_REMOTE_ANHAENGEND=0"
 
 # --- restic ------------------------------------------------------------------------
 W="$T/w"
@@ -111,25 +118,25 @@ restic_lauf() { # Rückgabewert des Skripts; Umgebung als Argumente
 konf() { printf '%s\n' "$@" > "$W/root/.config/restic/hubiplan.conf"; }
 LOGD="$W/var/log/hubiplan-restic.log"
 
-# Standard: wie bisher forget/prune, dazu ein Hinweis (kein Fehler)
+# Standard (D-M02): wie „aus“, nie forget/prune am Server, dafür Speicherstand
 neu_wurzel
 restic_lauf FAKE_TAG=15 || fail "Standard: Rückgabewert $?"
-grep -q '^forget .*--prune' "$W/restic.aufrufe" || fail "Standard ohne forget/prune"
-if grep -q '^stats' "$W/restic.aufrufe"; then fail "Standard fragt Speicherstand ab"; fi
+if grep -Eq '^(forget|prune)' "$W/restic.aufrufe"; then fail "Standard ruft forget/prune auf"; fi
+grep -q '^stats' "$W/restic.aufrufe" || fail "Standard fragt Speicherstand nicht ab"
 [ -e "$W/var/lib/hubiplan-restic.last-ok" ] || fail "Standard: last-ok fehlt"
-[ "$(grep -c 'HINWEIS: forget/prune läuft' "$LOGD")" = 1 ] || fail "Standard: Hinweis fehlt"
 grep -q '=== Ende (Fehler: 0)' "$LOGD" || fail "Standard: Fehler gemeldet"
 [ ! -e "$W/mail.aus" ] || fail "Standard: Mail ohne Anlass"
-rm "$W/var/lib/hubiplan-restic.last-ok"
-restic_lauf FAKE_TAG=15 || fail "Standard (2. Lauf): Rückgabewert $?"
-[ "$(grep -c 'HINWEIS: forget/prune läuft' "$LOGD")" = 1 ] || fail "Hinweis öfter als einmal am Tag"
-[ -e "$W/var/lib/hubiplan-restic.last-ok" ] || fail "Standard (2. Lauf): last-ok fehlt"
 
-# Ausdrücklich „an“ verhält sich wie der Standard
+# Ausdrücklich „an“: forget/prune auf dem Server mit täglichem Hinweis (kein Fehler)
 neu_wurzel
 konf RESTIC_AUFBEWAHRUNG=an
 restic_lauf FAKE_TAG=15 || fail "an: Rückgabewert $?"
 grep -q '^forget .*--prune' "$W/restic.aufrufe" || fail "an: ohne forget/prune"
+[ "$(grep -c 'HINWEIS: forget/prune läuft' "$LOGD")" = 1 ] || fail "an: Hinweis fehlt"
+rm "$W/var/lib/hubiplan-restic.last-ok"
+restic_lauf FAKE_TAG=15 || fail "an (2. Lauf): Rückgabewert $?"
+[ "$(grep -c 'HINWEIS: forget/prune läuft' "$LOGD")" = 1 ] || fail "Hinweis öfter als einmal am Tag"
+[ -e "$W/var/lib/hubiplan-restic.last-ok" ] || fail "an (2. Lauf): last-ok fehlt"
 
 # „aus“: nie forget/prune, dafür Speicherstand; Monatserster mit check, Probe und Mail
 neu_wurzel

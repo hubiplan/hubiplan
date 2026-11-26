@@ -15,13 +15,15 @@ ANON = "anonymisiert"
 
 def purge_documents(org, bookings, delete_file) -> int:
     """Belegdateien ausgezahlter Auslagen dieser Buchungen entfernen."""
+    from finance.models import Receipt as FinanceReceipt
+
     from .models import ExpenseClaim, ExpenseFile
 
     claims = ExpenseClaim.objects.filter(organization=org, booking__in=bookings)
     n = 0
     for row in ExpenseFile.objects.filter(organization=org, claim__in=claims).exclude(file=""):
         # Gemeinsame Datei mit dem Buchungsbeleg: den löscht die Kasse selbst
-        if row.receipt_id is None:
+        if row.receipt_id is None and not FinanceReceipt.objects.filter(file=row.file.name).exists():
             delete_file(row.file)
         row.file = ""
         row.save(update_fields=["file"])

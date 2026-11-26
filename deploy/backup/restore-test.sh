@@ -114,7 +114,58 @@ initdb -D "$TMP/data" -U restoretest --auth=trust --no-locale --encoding=UTF8 > 
 pg_ctl -D "$TMP/data" -o "-c listen_addresses='' -k $TMP" -w start > /dev/null
 createdb -h "$TMP" -U restoretest restore
 
-read_dump | psql -h "$TMP" -U restoretest -d restore -v ON_ERROR_STOP=1 -q > /dev/null
+# D-H03: Entschlüsselten Dump zuerst getrennt prüfen (PG-18 \restrict-Rahmung, keine
+# ungeschützten psql-Metabefehle wie \! nach \unrestrict) und psql ohne Zugriff auf
+# $IDENTITY / $BACKUP_PASSPHRASE ausführen.
+DUMP_FILE="$TMP/dump.sql"
+umask 077
+read_dump > "$DUMP_FILE"
+python3 - "$DUMP_FILE" <<'PYDUMP'
+import re, sys
+
+path = sys.argv[1]
+token = None
+seen_unrestrict = False
+with open(path, "r", encoding="utf-8", errors="surrogateescape") as fh:
+    for lineno, raw in enumerate(fh, 1):
+        line = raw.rstrip("\r\n")
+        if token is None:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("--"):
+                continue
+            m = re.fullmatch(r"\\restrict\s+([A-Za-z0-9]+)", stripped)
+            if not m or len(m.group(1)) < 8:
+                sys.stderr.write(
+                    f"FEHLER: Dump beginnt in Zeile {lineno} nicht mit PG-18 \\restrict-Schutz.\n"
+                )
+                sys.exit(1)
+            token = m.group(1)
+            continue
+        if seen_unrestrict:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("--"):
+                sys.stderr.write(
+                    f"FEHLER: Unerlaubter Inhalt nach \\unrestrict in Zeile {lineno}.\n"
+                )
+                sys.exit(1)
+            continue
+        if line.startswith("\\unrestrict"):
+            if line.strip() == f"\\unrestrict {token}":
+                seen_unrestrict = True
+            else:
+                sys.stderr.write(
+                    f"FEHLER: Ungültiges \\unrestrict in Zeile {lineno}.\n"
+                )
+                sys.exit(1)
+
+if token is None:
+    sys.stderr.write("FEHLER: Dump enthält keinen \\restrict-Schutz.\n")
+    sys.exit(1)
+PYDUMP
+
+env -i PATH="$PATH" HOME="$TMP" psql -h "$TMP" -U restoretest -d restore -v ON_ERROR_STOP=1 -q \
+    < "$DUMP_FILE" > /dev/null
+rm -f "$DUMP_FILE"
 
 ORGS=$(psql -h "$TMP" -U restoretest -d restore -tAc "SELECT count(*) FROM organizations_organization")
 MEMBERS=$(psql -h "$TMP" -U restoretest -d restore -tAc "SELECT count(*) FROM members_membership")

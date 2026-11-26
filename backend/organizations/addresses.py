@@ -197,8 +197,8 @@ class TlsAskView(APIView):
 
         from core.ratelimit import from_proxy
 
-        # Nur Caddy fragt hier (Gesamtaudit 11.11. S-02)
-        if not from_proxy(request):
+        # Nur Caddy fragt hier direkt an (kein weitergeleiteter Client-Traffic)
+        if not from_proxy(request) or request.META.get("HTTP_X_FORWARDED_FOR"):
             return HttpResponseNotFound()
         domain = normalize_host(request.GET.get("domain", ""))
         if not getattr(settings, "ADDRESSES_FROM_LIST", False) or domain not in listed_hosts():

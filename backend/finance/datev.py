@@ -63,9 +63,17 @@ COLUMNS = [
 ]
 
 
+_FORMULA_PREFIX = ("=", "+", "-", "@", "\t", "\r")
+
+
 def _q(text: str) -> str:
-    """Textfeld in Anführungszeichen; Anführungszeichen verdoppelt, keine Zeilenumbrüche."""
-    clean = " ".join(str(text or "").split()).replace('"', '""')
+    """Textfeld in Anführungszeichen; Anführungszeichen verdoppelt, keine Zeilenumbrüche,
+    Schutz gegen Tabellenkalkulations-Formelinjektion."""
+    raw = str(text or "")
+    clean = " ".join(raw.split())
+    if clean.startswith(_FORMULA_PREFIX):
+        clean = "'" + clean
+    clean = clean.replace('"', '""')
     return f'"{clean}"'
 
 

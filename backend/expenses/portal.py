@@ -199,7 +199,7 @@ class DetailView(MemberMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, access_id: int, pk: int):
-        claim = self.get_claim(pk)
+        claim = ExpenseClaim.objects.select_for_update().get(pk=self.get_claim(pk).pk)
         if claim.status != S.DRAFT or claim.number:
             raise serializers.ValidationError(gettext("Nur Entwürfe lassen sich löschen."))
         from core.files import delete_on_commit
@@ -260,7 +260,7 @@ class FileView(MemberMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, access_id: int, pk: int, file_id: int):
-        claim = self.get_claim(pk)
+        claim = ExpenseClaim.objects.select_for_update().get(pk=self.get_claim(pk).pk)
         row = get_object_or_404(ExpenseFile, claim=claim, pk=file_id)
         # Nach dem Einreichen bleiben Belege (nur ergänzen, nie löschen)
         if claim.status != S.DRAFT or claim.number:

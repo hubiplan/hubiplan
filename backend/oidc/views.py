@@ -432,6 +432,13 @@ class ClientSerializer(serializers.ModelSerializer):
         if attrs.get("service_password", "") is None:
             attrs.pop("service_password")
         inst = self.instance
+        # Ändert sich Zieladresse oder Dienstkonto, darf das gespeicherte App-Passwort nie
+        # mitgenommen werden (sonst ließe es sich über check() an eine fremde Adresse auslesen).
+        if inst is not None and "service_password" not in attrs:
+            url_changed = "base_url" in attrs and attrs["base_url"] != inst.base_url
+            user_changed = "service_user" in attrs and attrs["service_user"] != inst.service_user
+            if url_changed or user_changed:
+                attrs["service_password"] = ""
         manage = attrs.get("manage_accounts", inst.manage_accounts if inst else False)
         if manage:
             user = attrs.get("service_user", inst.service_user if inst else "")
@@ -567,9 +574,20 @@ CALENDAR_FIELDS = (
 
 
 def mapping_changed(client: Client, serializer: ClientSerializer) -> bool:
-    """Ändert die Anfrage Benutzernamen oder Gruppen der Rollen wirklich? Dazu zählt, wer die
-    Vorstandstermine in der Nextcloud sieht (Kalender an oder andere Gruppe)."""
+    """Ändert die Anfrage Zuordnungen, Zieladresse oder Sicherheitseinstellungen wirklich?"""
     data = serializer.validated_data
+    for name in (
+        "base_url",
+        "service_user",
+        "require_mfa",
+        "require_pkce",
+        "audience",
+        "account_group",
+        "groups_board",
+        "groups_roles",
+    ):
+        if name in data and data[name] != getattr(client, name):
+            return True
     if "calendar_board" in data and data["calendar_board"] and not client.calendar_board:
         return True
     # Wer die abgelegten Dateien sieht (Ablage einschalten, andere Gruppe) und was HUBIplan aus der
@@ -671,15 +689,21 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         super().perform_destroy(instance)
 
     def create(self, request, *args, **kwargs):
+        step_up.require(request)
         response = super().create(request, *args, **kwargs)
         # Das Geheimnis gibt es nur in dieser Antwort; gespeichert ist nur die Prüfsumme
         response.data["client_secret"] = self._secret
+        created = Client.objects.filter(pk=response.data.get("id")).first()
+        if created is not None and (created.usernames or created.role_groups):
+            changed = [k for k in ("usernames", "role_groups") if getattr(created, k)]
+            notify_role_managers(self.org, created, request.user, changed)
         return response
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
     def secret(self, request, *args, **kwargs):
         """Neues Geheimnis (das alte gilt sofort nicht mehr)."""
+        step_up.require(request)
         client = self.get_object()
         secret = client.set_secret()
         client.save(update_fields=["secret_hash", "updated_at"])

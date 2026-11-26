@@ -232,6 +232,12 @@ def scan_bytes(data: bytes, name: str, request=None) -> None:
         unavailable(exc, request)
     if stream.too_big:
         logger.info("Nicht auf Viren geprüft (zu groß): %s, %s Bytes", name, len(data))
+        if required():
+            raise NotScanned(
+                gettext(
+                    "Die Datei „{name}“ ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+                ).format(name=name, mb=max_bytes() // (1024 * 1024))
+            )
     if signature:
         found(name, signature, request)
 
@@ -327,7 +333,7 @@ class ClamavUploadHandler(FileUploadHandler):
                 self.file_name,
                 self.size,
             )
-            if self.quarantine and required():
+            if required():
                 raise NotScanned(
                     gettext(
                         "Die Datei „{name}“ ist zu groß für die Virenprüfung (höchstens {mb} MB)."
@@ -498,7 +504,7 @@ def inbound_ok(data: bytes, name: str, source: str) -> bool:
         raise ScanUnavailable()
     try:
         scan_bytes(data, f"{name} ({source})")
-    except VirusFound:
+    except (VirusFound, NotScanned):
         return False
     return True
 

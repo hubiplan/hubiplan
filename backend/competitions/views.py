@@ -1106,6 +1106,8 @@ def _apply_op(org, user, comp, op, conflicts) -> dict:
                 {"starter": s.pk, "name": s.name, "scoring": scoring.pk, "value": str(value)}
             )
         return {"ok": True}
+    if kind in ("hits", "shot", "undo", "draw") and not module_on(org, "shooting"):
+        raise ValidationError(gettext("Das Modul Schießen ist für diese Einheit nicht aktiv."))
     if kind == "hits":
         from . import target_views
 

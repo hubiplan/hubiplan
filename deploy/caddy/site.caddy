@@ -20,6 +20,7 @@ route {
 		# Kamera nur für HUBIplan selbst (Live-Kamera im Standmodus), nie für fremde Rahmen
 		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
 		X-Content-Type-Options "nosniff"
+		?X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
@@ -58,12 +59,19 @@ route {
 
 	import media.caddy
 
-	# Vereinswebseite aus hubiplan-website (eigener Container „website“ im Netz „web“).
-	# Läuft er nicht, antwortet nur dieser Pfad mit einem Fehler.
-	# Nicht /webseite/: Den Pfad nutzt die Verwaltung (Webseite › Gestaltung …); beim Neuladen
-	# landete er sonst bei der Vereinswebseite (400). scripts/pruefe-proxy.sh prüft das.
-	redir /vereinsseite /vereinsseite/ 308
-	handle_path /vereinsseite/* {
+	# Vereinswebseite unter /vereinsseite/* (D-H01): im Produktivbetrieb über eigene Subdomain
+	# trennen (Same-Origin-Isolation); Pfad-Proxy nur mit explizitem Testserver-Opt-in aktiv.
+	@vereinsseite_root {
+		expression `"{$HUBIPLAN_VEREINSSEITE_PFAD:0}" == "1"`
+		path /vereinsseite
+	}
+	redir @vereinsseite_root /vereinsseite/ 308
+	@vereinsseite {
+		expression `"{$HUBIPLAN_VEREINSSEITE_PFAD:0}" == "1"`
+		path /vereinsseite/*
+	}
+	handle @vereinsseite {
+		uri strip_prefix /vereinsseite
 		reverse_proxy {$WEBSITE_UPSTREAM:website:8000} {
 			import upstream
 			# Beim Ausrollen der Webseite kurz warten statt Fehler
@@ -78,7 +86,7 @@ route {
 		# Fremde Seiten, die HUBIplan in einem neuen Fenster öffnen, bekommen keinen Zugriff auf
 		# dieses Fenster (und umgekehrt); eigene neue Fenster (Druckansicht) bleiben verbunden
 		header Cross-Origin-Opener-Policy "same-origin-allow-popups"
-		header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /api/csp-report/; report-to csp"
+		header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /api/csp-report/; report-to csp"
 		# Verstöße meldet der Browser an die eigene Instanz (Plattform › Sicherheit): report-uri
 		# für ältere Browser, report-to mit Reporting-Endpoints für neue
 		header Reporting-Endpoints `csp="/api/csp-report/"`

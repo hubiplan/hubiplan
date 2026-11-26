@@ -109,14 +109,21 @@ class PublicSurveyView(APIView):
         survey, membership = self.resolve(request, token)
         return _no_store(Response(self.data(survey, membership)))
 
-    @transaction.atomic
     def post(self, request, token: str):
-        survey, membership = self.resolve(request, token, lock=True)
-        with rls_bypass():
-            services.save_answers(
-                survey,
-                membership,
-                request.data.get("answers"),
-                source=SurveyParticipation.Source.LINK,
-            )
+        deferred = []
+        with transaction.atomic():
+            survey, membership = self.resolve(request, token, lock=True)
+            with rls_bypass():
+                res = services.save_answers(
+                    survey,
+                    membership,
+                    request.data.get("answers"),
+                    source=SurveyParticipation.Source.LINK,
+                    defer_anonymous_answers=True,
+                )
+                if isinstance(res, tuple):
+                    _, deferred = res
+        if deferred:
+            with rls_bypass():
+                services.store_anonymous_answers(deferred)
         return _no_store(Response(self.data(survey, membership)))

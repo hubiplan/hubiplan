@@ -428,10 +428,18 @@ export function PrintMenu({ org, comp }: { org: number; comp: CompetitionDetail 
     if (!choice) return
     if (choice.startsWith('startkarten')) {
       const labels = choice.endsWith('aufkleber')
-      window.open(certificatesApi.startCardsUrl(org, comp.id, labels, 'name'), '_blank')
+      window.open(
+        certificatesApi.startCardsUrl(org, comp.id, labels, 'name'),
+        '_blank',
+        'noopener,noreferrer',
+      )
       return
     }
-    window.open(competitionsApi.exportUrl(org, comp.id, `als=${choice}`), '_blank')
+    window.open(
+      competitionsApi.exportUrl(org, comp.id, `als=${choice}`),
+      '_blank',
+      'noopener,noreferrer',
+    )
   }
   return (
     <button type="button" className="button button-ghost" onClick={() => void print()}>

@@ -36,7 +36,7 @@ MIN_FREI_MB="${HUBIPLAN_MIN_FREI_MB:-4096}"
 DOCKER_DIR="${HUBIPLAN_DOCKER_DIR:-/var/lib/docker}"
 
 DIR="${DIR%/}"
-[ -f "$DIR/auftrag" ] || exit 0
+[ -e "$DIR/auftrag" ] || [ -L "$DIR/auftrag" ] || exit 0
 
 # Eigener Ordner nur für root, neben dem Auftragsordner (gleiches Dateisystem zum Umbenennen)
 PRIVAT="$DIR.root"
@@ -52,8 +52,8 @@ if [ "$(stat -c %u "$PRIVAT")" != "$(id -u)" ] ||
     exit 1
 fi
 
-# Auftrag übernehmen; ein zweiter Lauf findet ihn dann nicht mehr
-mv -T "$DIR/auftrag" "$DIR/auftrag.laeuft" 2> /dev/null || exit 0
+# Auftrag atomar direkt ins root-eigene Verzeichnis übernehmen (kein TOCTOU im Backend-Ordner)
+mv -T "$DIR/auftrag" "$PRIVAT/auftrag.laeuft" 2> /dev/null || exit 0
 
 # Datei aus PRIVAT in den Auftragsordner legen: rename ersetzt einen Symlink, folgt ihm nicht
 ablegen() {
@@ -72,7 +72,7 @@ ergebnis() {
     } > "$neu"
     ablegen "$neu" ergebnis
     # „laeuft“ ist ein Zwischenstand; der Auftrag bleibt dabei übernommen
-    [ "$status" = laeuft ] || rm -f "$DIR/auftrag.laeuft"
+    [ "$status" = laeuft ] || rm -f "$PRIVAT/auftrag.laeuft"
     echo "$status: $text"
 }
 fehler() {
@@ -83,9 +83,10 @@ status_schreiben() {
     ergebnis laeuft "$1"
 }
 
-# Nur eine kleine, gewöhnliche Datei lesen (kein Symlink, keine Pipe)
-[ -f "$DIR/auftrag.laeuft" ] && [ ! -L "$DIR/auftrag.laeuft" ] || fehler "Ungültiger Auftrag."
-VERSION="$(head -c 200 "$DIR/auftrag.laeuft" | sed -n 's/^version=//p' | head -n1)"
+# Nur eine gewöhnliche Datei ohne Hardlinks lesen (kein Symlink, keine Pipe, nlink == 1)
+[ -f "$PRIVAT/auftrag.laeuft" ] && [ ! -L "$PRIVAT/auftrag.laeuft" ] &&
+    [ "$(stat -c %h "$PRIVAT/auftrag.laeuft")" = 1 ] || fehler "Ungültiger Auftrag."
+VERSION="$(head -c 200 "$PRIVAT/auftrag.laeuft" | sed -n 's/^version=//p' | head -n1)"
 [[ "$VERSION" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+$ ]] || fehler "Ungültiger Auftrag."
 TAG="v$VERSION"
 
@@ -106,15 +107,23 @@ git -C "$QUELLE" fetch --quiet --force --tags "$REPO_URL" '+refs/heads/main:refs
 COMMIT="$(git -C "$QUELLE" rev-parse -q --verify "refs/tags/$TAG^{commit}")" ||
     fehler "Release $TAG gibt es im Repository nicht."
 
-# Echtheit: signiert mit einem Schlüssel aus der laufenden Fassung
+# Echtheit: ausschließlich SSH-Signatur mit einem Schlüssel aus der laufenden Fassung
+# (PGP/X.509 explizit deaktiviert, D-H02)
 SCHLUESSEL="$ZIEL/deploy/release-schluessel"
 grep -q '^[^#[:space:]]' "$SCHLUESSEL" 2> /dev/null || fehler "Kein Release-Schlüssel in der laufenden Fassung."
-git -C "$QUELLE" -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
+git -C "$QUELLE" cat-file tag "refs/tags/$TAG" 2> /dev/null | grep -q '^-----BEGIN SSH SIGNATURE-----$' ||
+    fehler "Signatur von $TAG ist keine SSH-Signatur. Nichts geändert."
+git -C "$QUELLE" -c gpg.program=/bin/false -c gpg.x509.program=/bin/false \
+    -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" \
+    tag -v -- "$TAG" > /dev/null 2>&1 ||
     fehler "Signatur von $TAG ist ungültig. Nichts geändert."
 # Die Signatur deckt den Namen im Tag mit ab. Er muss zum angeforderten Release passen, sonst
 # ließe sich ein echtes, anderes signiertes Tag unter diesem Namen unterschieben.
 NAME="$(git -C "$QUELLE" cat-file tag "refs/tags/$TAG" 2> /dev/null | sed -n '1,/^$/s/^tag //p')"
 [ "$NAME" = "$TAG" ] || fehler "Signiertes Tag heißt „$NAME“, nicht $TAG. Nichts geändert."
+
+# Sperrdatei mit Commit-Hash aktualisieren, damit server-setup.sh die Sperre sauber übernimmt (D-M01)
+echo "$COMMIT $(date -u +%Y-%m-%dT%H:%M:%SZ) selbstupdate" > "$SPERRE/lauf"
 
 # Kein Rückschritt: der laufende Stand steckt im neuen
 LAUFEND="$(tr -d '[:space:]' < "$ZIEL/.fassung" 2> /dev/null || true)"

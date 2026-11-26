@@ -663,6 +663,12 @@ def send_test(circular: Circular, user) -> str:
     first = selection.chosen[0] if selection.chosen else None
     values = first.values if first else {"Vorname": user.first_name, "Nachname": user.last_name}
     content = render_mail(circular, values, first.membership_id if first else None, test=True)
+    from core import virenscan
+
+    for att in circular.attachments.all():
+        virenscan.release_ok(
+            att.file, att.name, f"Rundschreiben-Probe {circular.pk}", key=f"catt:{att.pk}"
+        )
     mail.send(
         user.email,
         f"[Probe] {content['subject']}",

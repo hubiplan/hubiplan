@@ -11314,5 +11314,10 @@
   "Video hinzufügen": "Add video",
   "Aktuelles": "News",
   "die neuesten eigenen Beiträge und die aus Instagram und Facebook": "the latest own posts and those from Instagram and Facebook",
-  "Eigene": "Own"
+  "Eigene": "Own",
+  "Gerätespeicher löschen": "Clear device storage",
+  "Gerätespeicher löschen?": "Clear device storage?",
+  "{n} Stand-Eingaben sind noch nicht übertragen und gehen beim Löschen verloren. Trotzdem löschen?": "{n} range entries have not been synced yet and will be lost if cleared. Clear anyway?",
+  "Löschen und beenden": "Clear and exit",
+  "Signatur vorhanden ({signer}, kryptografisch nicht geprüft)": "Signature present ({signer}, not cryptographically verified)"
 }

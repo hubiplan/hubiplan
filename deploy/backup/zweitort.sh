@@ -10,7 +10,8 @@
 # $1 Backup-Ordner, $2 Ziel (BACKUP_REMOTE), $3 "--delete" oder leer, $4 SSH-Befehl für rsync -e
 zweitort_kopieren() {
     zweitort_loeschen=$3
-    if [ "${BACKUP_REMOTE_ANHAENGEND:-0}" = 1 ]; then
+    # Sicherer Standard (D-M02): anhängend (kein --delete), nur explizites =0 löscht am Zweitort
+    if [ "${BACKUP_REMOTE_ANHAENGEND:-1}" != 0 ]; then
         zweitort_loeschen=""
     elif [ -n "$zweitort_loeschen" ]; then
         zweitort_hinweis "$1"
@@ -21,6 +22,8 @@ zweitort_kopieren() {
         --include='datenschluessel_*.sha256' --include='datenschluessel_*.sha256.hmac' \
         --include='datenschluessel.sha256' --include='datenschluessel.sha256.hmac' \
         --include='*.receipt' --include='*.receipt.hmac' \
+        --include='loeschliste_*.jsonl' --include='loeschliste_*.jsonl.hmac' \
+        --include='kettenkoepfe_*.log' --include='kettenkoepfe_*.log.hmac' \
         --include='restore-test.log' --include='loeschliste.jsonl' --include='kettenkoepfe.log' \
         --exclude='*' "$1/" "$2"
 }

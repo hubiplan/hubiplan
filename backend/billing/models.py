@@ -1343,6 +1343,21 @@ class Mandate(models.Model):
                 | models.Q(membership__isnull=True, club__isnull=True, household__isnull=False),
                 name="mandat_zahler_haushalt",
             ),
+            models.UniqueConstraint(
+                fields=["organization", "membership"],
+                condition=models.Q(status="active", membership__isnull=False),
+                name="mandat_aktiv_mitglied",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "club"],
+                condition=models.Q(status="active", club__isnull=False),
+                name="mandat_aktiv_verein",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "household"],
+                condition=models.Q(status="active", household__isnull=False),
+                name="mandat_aktiv_haushalt",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -1365,9 +1380,9 @@ class DebitRun(models.Model):
         "finance.Account", on_delete=models.PROTECT, related_name="+", verbose_name="Konto"
     )
     message_id = models.CharField(max_length=35)
-    # Die einmal erzeugte Bankdatei: erneutes Herunterladen liefert genau diese,
-    # auch wenn sich Bank- oder Vereinsdaten inzwischen geändert haben
-    xml = models.TextField("SEPA-Datei", blank=True, default="")
+    # Die einmal erzeugte Bankdatei (verschlüsselt, enthält Schuldner-IBANs/Namen): erneutes
+    # Herunterladen liefert genau diese, auch wenn sich Bank- oder Vereinsdaten geändert haben
+    xml = EncryptedTextField("SEPA-Datei", blank=True, default="")
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.CREATED)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     booked_at = models.DateTimeField(null=True, blank=True)

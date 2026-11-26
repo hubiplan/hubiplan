@@ -18339,3 +18339,36 @@ msgstr "Comments: %(fehler)s"
 #: website/social_models.py
 msgid "nicht zeigen"
 msgstr "do not show"
+
+msgid "Informationen zur Authentifizierung wurden nicht angegeben."
+msgstr "Authentication credentials were not provided."
+
+msgid "Das Modul Schießen ist für diese Einheit nicht aktiv."
+msgstr "The shooting module is not active for this unit."
+
+msgid "Höchstens {n} neue Einladungen je Import sind erlaubt."
+msgstr "At most {n} new invitations per import are allowed."
+
+msgid "Der Termin gehört zu einer abgeschlossenen Versammlung und lässt sich nicht mehr ändern."
+msgstr "This event belongs to a finalised meeting and can no longer be changed."
+
+msgid "Diesen Vorgang kann nur abbrechen, wer ihn gestartet hat."
+msgstr "Only the person who started this operation can cancel it."
+
+msgid "Für diese Versammlung bist du nicht zur Teilnahme berechtigt."
+msgstr "You are not eligible to attend this meeting."
+
+msgid "Ein freigegebenes Protokoll lässt sich nicht mehr ändern."
+msgstr "Approved minutes can no longer be changed."
+
+msgid "Leitung und Protokollführung müssen von zwei verschiedenen Personen bestätigt werden."
+msgstr "Chair and minute taker must be confirmed by two different people."
+
+msgid "Die Datei ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+msgstr "The file is too large for the virus scan (at most {mb} MB)."
+
+msgid "[Empfänger anonymisiert]"
+msgstr "[Recipient anonymised]"
+
+msgid "Nach der ersten Antwort lässt sich die Umfrage nicht mehr auf anonym umstellen."
+msgstr "Once the first response has been submitted, the survey can no longer be switched to anonymous."

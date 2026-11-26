@@ -603,7 +603,7 @@ def _refresh(request) -> dict:
     with tracking.suppress(), rls_bypass(), transaction.atomic():
         grant = (
             McpGrant.objects.select_for_update()
-            .select_related("user", "client")
+            .select_related("user", "client", "organization")
             .filter(refresh_hash=digest)
             .first()
         )
@@ -624,18 +624,31 @@ def _refresh(request) -> dict:
         elif not grant.user.is_active or grant.user.auth_version != grant.auth_version:
             ended = "konto"
         else:
-            access, new_refresh = grant.issue()
-            grant.last_used_at = timezone.now()
-            grant.save(
-                update_fields=[
-                    "access_hash",
-                    "access_expires_at",
-                    "refresh_hash",
-                    "previous_refresh_hash",
-                    "retired_refresh_hashes",
-                    "last_used_at",
-                ]
-            )
+            from access.catalog import MCP_CONNECT
+            from access.modules import module_on
+            from access.permissions import permissions_in
+            from accounts.mfa_policy import has_mfa
+
+            if (
+                not grant.organization.is_active
+                or not module_on(grant.organization, "mcp")
+                or not has_mfa(grant.user)
+                or MCP_CONNECT not in permissions_in(grant.user, grant.organization)
+            ):
+                ended = "ungueltig"
+            else:
+                access, new_refresh = grant.issue()
+                grant.last_used_at = timezone.now()
+                grant.save(
+                    update_fields=[
+                        "access_hash",
+                        "access_expires_at",
+                        "refresh_hash",
+                        "previous_refresh_hash",
+                        "retired_refresh_hashes",
+                        "last_used_at",
+                    ]
+                )
     if ended:
         if ended in ("wiederverwendet", "konto"):
             with tracking.suppress(), rls_bypass():

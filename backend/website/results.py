@@ -198,7 +198,13 @@ def _row(names: Names, r: dict, kind: str, depth: str) -> dict:
             if slug:
                 out["unit_slug"] = slug
         if kind == "mannschaft" and depth == "alle":
-            out["members"] = r.get("members", [])
+            starter_ids = r.get("member_starters")
+            if starter_ids is not None:
+                out["members"] = [names.of_starter(pk) for pk in starter_ids]
+            else:
+                out["members"] = [
+                    names.of(None, name, guest=True, adult=False) for name in r.get("members", [])
+                ]
         if r.get("reason"):
             out["note"] = r["reason"]
         return out
@@ -286,7 +292,7 @@ def detail(site, comp) -> dict:
             elif depth == Competition.WebsiteDepth.UNITS:
                 continue
             else:
-                who = names.of(g.membership, g.name)
+                who = names.of(g.membership, g.name, guest=g.membership is None)
             title = {"title": g.full_title or (g.trophy.name if g.trophy_id else ""), "name": who}
             if g.unit_id and names.unit_slug(g.unit_id):
                 title["unit_slug"] = names.unit_slug(g.unit_id)
@@ -412,7 +418,7 @@ def series_detail(site, series) -> dict:
                 names = names_cache.setdefault(comp.pk, Names(site, comp))
             else:
                 names = _ManualNames(site, g.year)
-            who = names.of(g.membership, g.name)
+            who = names.of(g.membership, g.name, guest=g.membership is None)
         titles.append({"year": g.year, "title": g.full_title or g.trophy.name, "name": who})
     return {
         "id": site.token("series", series.pk),
@@ -471,7 +477,7 @@ def trophies(site) -> list:
                     if h["membership"]
                     else None
                 )
-                name = _ManualNames(site, h["year"]).of(m, h["name"])
+                name = _ManualNames(site, h["year"]).of(m, h["name"], guest=m is None)
             rows.append({"year": h["year"], "name": name, "kept": h["kept"]})
         out.append({"name": tr.name, "description": tr.description, "holders": rows})
     return out

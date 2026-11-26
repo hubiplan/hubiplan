@@ -294,6 +294,18 @@ export function previewUrl(base: string, n: number, focus: PreviewFocus = {}): s
   return `${base}vorschau/design/?${params.join('&')}${hash}`
 }
 
+function safePreviewUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  if (url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\')) return url
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') return parsed.href
+  } catch {
+    return null
+  }
+  return null
+}
+
 /** Die echte Webseite in der Vorschau, umschaltbar Handy / Tablet / Bildschirm. Nach einer
  * Änderung zeigt sie die Stelle, die ``focus`` nennt (z. B. den Fuß), und wechselt für das
  * Handymenü auf „Handy“. */
@@ -313,6 +325,8 @@ export function PreviewFrame({
   const org = useActiveOrg()
   const [device, setDevice] = useState<Device>('desktop')
   const [src, setSrc] = useState<string | null>(null)
+  const srcRef = useRef<string | null>(null)
+  srcRef.current = src
   const [error, setError] = useState<string | null>(null)
   const [paneWidth, setPaneWidth] = useState(0)
   const pane = useRef<HTMLDivElement>(null)
@@ -323,18 +337,19 @@ export function PreviewFrame({
   const [pointing, setPointing] = useState(false)
   const count = useRef(0)
   const stamp = stampOf(website)
-  const base = website.url
+  const base = safePreviewUrl(website.url)
 
   async function connect() {
     setError(null)
     try {
       const result = await websiteApi.openPreview(org.id)
-      if (!result.url) {
+      const validUrl = safePreviewUrl(result.url)
+      if (!validUrl) {
         setError(t('Für die Vorschau fehlt noch eine Domain.'))
         return
       }
       markConnected(website)
-      setSrc(result.url)
+      setSrc(validUrl)
     } catch (err) {
       setError(errorMessage(err))
     }
@@ -381,21 +396,28 @@ export function PreviewFrame({
   useEffect(() => {
     pick.current = onPick
   })
+  function expectedPreviewOrigin(): string | null {
+    const current = srcRef.current
+    if (!current) return null
+    try {
+      const origin = new URL(current, window.location.href).origin
+      return origin && origin !== 'null' && /^https?:\/\//.test(origin) ? origin : null
+    } catch {
+      return null
+    }
+  }
   function tell(on: boolean) {
     const target = frame.current?.contentWindow
-    if (!target || !src) return
-    let origin = '*'
-    try {
-      origin = new URL(src, window.location.href).origin
-    } catch {
-      return
-    }
+    const origin = expectedPreviewOrigin()
+    if (!target || !origin) return
     target.postMessage({ hubiplan: 'zeigen', an: on, namen: pickNames ?? {} }, origin)
   }
   useEffect(() => {
     if (!onPick) return
     function onMessage(e: MessageEvent) {
       if (!frame.current || e.source !== frame.current.contentWindow) return
+      const expected = expectedPreviewOrigin()
+      if (!expected || e.origin !== expected) return
       const d = e.data as { hubiplan?: string; bereich?: unknown } | null
       if (d?.hubiplan === 'zeigen-bereit') setReady((n) => n + 1)
       else if (d?.hubiplan === 'bereich' && typeof d.bereich === 'string') pick.current?.(d.bereich)

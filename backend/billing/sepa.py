@@ -165,28 +165,35 @@ def create_mandate(
                 )
             }
         )
-    # Ein Zahler hat höchstens ein gültiges Mandat: ein neues ersetzt das alte
+    # Ein Zahler hat höchstens ein gültiges Mandat: Organisation sperren, altes widerrufen,
+    # neues anlegen — verhindert doppelte aktive Mandate und Referenz-Kollisionen bei Parallelität.
+    from django.db import transaction
+
+    from organizations.models import Organization
+
     if membership is not None:
         payer = Q(membership=membership)
     elif household is not None:
         payer = Q(household=household)
     else:
         payer = Q(club=club)
-    Mandate.objects.filter(payer, organization=org, status=Mandate.Status.ACTIVE).update(
-        status=Mandate.Status.REVOKED, revoked_on=timezone.localdate()
-    )
-    return Mandate.objects.create(
-        organization=org,
-        membership=membership,
-        club=club,
-        household=household,
-        reference=next_reference(org, membership, club, household),
-        scheme=scheme,
-        signed_on=signed_on,
-        source=source,
-        created_by=user,
-        **clean,
-    )
+    with transaction.atomic():
+        Organization.objects.select_for_update().get(pk=org.pk)
+        Mandate.objects.filter(payer, organization=org, status=Mandate.Status.ACTIVE).update(
+            status=Mandate.Status.REVOKED, revoked_on=timezone.localdate()
+        )
+        return Mandate.objects.create(
+            organization=org,
+            membership=membership,
+            club=club,
+            household=household,
+            reference=next_reference(org, membership, club, household),
+            scheme=scheme,
+            signed_on=signed_on,
+            source=source,
+            created_by=user,
+            **clean,
+        )
 
 
 def revoke(mandate: Mandate, on: datetime.date | None = None) -> None:

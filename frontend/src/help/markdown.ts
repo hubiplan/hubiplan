@@ -6,12 +6,16 @@ import { IMAGE_PREFIX, imageUrl } from './content.ts'
 
 const md = new MarkdownIt({ html: false, linkify: false, typographer: false })
 
+const IMAGE_NAME = /^[a-z0-9-]+$/
+
 md.renderer.rules.image = (tokens, idx) => {
   const token = tokens[idx]
   const src = String(token.attrGet('src') ?? '')
   const alt = md.utils.escapeHtml(token.content)
   if (!src.startsWith(IMAGE_PREFIX)) return ''
-  const url = imageUrl(src.slice(IMAGE_PREFIX.length), lang())
+  const name = src.slice(IMAGE_PREFIX.length)
+  if (!IMAGE_NAME.test(name)) return ''
+  const url = imageUrl(name, lang())
   return `<img class="help-image" src="${md.utils.escapeHtml(url)}" alt="${alt}" loading="lazy">`
 }
 
@@ -23,8 +27,8 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
   if (/^https?:\/\//.test(href)) {
     tokens[idx].attrSet('target', '_blank')
     tokens[idx].attrSet('rel', 'noreferrer noopener')
-  } else if (!href.startsWith('/')) {
-    // Nur eigene Seiten und Webadressen
+  } else if (!href.startsWith('/') || href.startsWith('//') || href.startsWith('/\\')) {
+    // Nur eigene Seiten und Webadressen (keine protokollrelativen oder Schema-Links)
     tokens[idx].attrSet('href', '#')
   }
   return defaultLink(tokens, idx, options, env, self)

@@ -606,11 +606,20 @@ def create_invoice(order: MemberOrder, user=None):
     campaign = order.campaign
     org = order.organization
     on = today()
+    cat = payment_category(campaign)
+    vat_percent = None
+    if org.vat_enabled and cat is not None and cat.vat_rate:
+        from finance.models import VatRate
+
+        if cat.vat_rate == VatRate.STANDARD:
+            vat_percent = Decimal("19.00")
+        elif cat.vat_rate == VatRate.REDUCED:
+            vat_percent = Decimal("7.00")
     invoice = Invoice.objects.create(
         organization=org,
         recipient_kind=Invoice.Recipient.MEMBER,
         membership=order.membership,
-        payment_category=payment_category(campaign),
+        payment_category=cat,
         date=on,
         due_date=on + datetime.timedelta(days=DUE_DAYS),
         subject=_("Bestellung {title}").format(title=campaign.title)[:200],
@@ -635,6 +644,7 @@ def create_invoice(order: MemberOrder, user=None):
                 else ""
             )[:200],
             amount=price * line.quantity,
+            vat_rate=vat_percent,
         )
     billing.finalize(invoice)
     order.invoice = invoice

@@ -93,13 +93,18 @@ def _lines() -> list[dict]:
     if target is None or not target.exists():
         return []
     result = []
-    for line in target.read_text(encoding="utf-8").splitlines():
+    for lineno, line in enumerate(target.read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
         try:
             item = json.loads(line)
         except ValueError:
+            logger.warning("Löschliste %s: fehlerhafte JSON-Zeile %s übersprungen", target, lineno)
             continue
         if isinstance(item, dict):
             result.append(item)
+        else:
+            logger.warning("Löschliste %s: unerwarteter Eintrag in Zeile %s übersprungen", target, lineno)
     return result
 
 

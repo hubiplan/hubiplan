@@ -11,6 +11,7 @@ import {
   isStandNetworkError,
   pendingStandInputs,
   removeLegacyStandCache,
+  scrubStandPiiOnExpiry,
   suspendStandUser,
 } from '../api/standCache.ts'
 import { alertDialog, confirmDialog } from '../components/dialog.ts'
@@ -113,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const leaveExpired = useCallback(() => {
     revision.current += 1
     nextAuthGeneration()
+    scrubStandPiiOnExpiry()
     suspendStandUser()
     setExpired(true)
     putUser(null)

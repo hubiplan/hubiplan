@@ -1124,8 +1124,15 @@ class PortalCancellationSerializer(serializers.Serializer):
 class PortalCancellationView(APIView):
     """Kündigung der eigenen Mitgliedschaft einreichen (POST) oder zurücknehmen (DELETE)."""
 
+    @staticmethod
+    def _require_representative(access) -> None:
+        cp = access.contact_person
+        if cp is not None and not (cp.represents or cp.is_guardian):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+
     def post(self, request, access_id: int):
         access = _portal_access(request.user, access_id)
+        self._require_representative(access)
         club = access.organization
         data = PortalCancellationSerializer(data=request.data)
         data.is_valid(raise_exception=True)
@@ -1143,6 +1150,7 @@ class PortalCancellationView(APIView):
 
     def delete(self, request, access_id: int, pk: int):
         access = _portal_access(request.user, access_id)
+        self._require_representative(access)
         club = access.organization
         with tenant_context(club.pk, request.user.pk):
             membership = Membership.objects.select_related("person").get(pk=access.membership_id)

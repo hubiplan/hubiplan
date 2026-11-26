@@ -79,7 +79,11 @@ class StandAccessListView(_Mixin, APIView):
             raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
         label = str(request.data.get("label", "")).strip()[:100]
         day = max(comp.date, timezone.localdate())
-        access, token = StandAccess.create(comp, label, request.user, _end_of_day(day))
+        # Laufzeit deckeln: höchstens 7 Tage im Voraus (kein monatelang offener Dauer-Token)
+        max_day = timezone.localdate() + datetime.timedelta(days=7)
+        access, token = StandAccess.create(
+            comp, label, request.user, _end_of_day(min(day, max_day))
+        )
         record(
             self.org,
             request.user,
@@ -131,6 +135,7 @@ class _StandPublic(APIView):
         if (
             access is None
             or not access.is_active
+            or not access.organization.is_active
             or MODULE not in (access.organization.enabled_modules or [])
         ):
             # Unbekannte Schlüssel zählen je Adresse, nicht je Schlüssel: Sonst legte jeder

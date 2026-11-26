@@ -307,7 +307,6 @@ class Booking(models.Model):
         ]
         indexes = [
             models.Index(fields=["organization", "date"]),
-            models.Index(fields=["organization", "counterparty"]),
         ]
 
     def __str__(self) -> str:
@@ -1562,7 +1561,7 @@ class CashAuditAccount(models.Model):
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
     audit = models.ForeignKey(CashAudit, on_delete=models.CASCADE, related_name="accounts")
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="+")
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="+")
     statement_balance = models.DecimalField(
         "Stand laut Kontoauszug bzw. Zählung",
         max_digits=12,
@@ -1670,7 +1669,7 @@ class BudgetLine(models.Model):
     )
     department = models.ForeignKey(
         "organizations.Department",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="+",

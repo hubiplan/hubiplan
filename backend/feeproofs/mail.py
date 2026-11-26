@@ -116,15 +116,22 @@ def process(msg: EmailMessage, addresses: list[str]) -> str | None:
                 **kwargs,
             )
         for name, content_type, data in files:
-            services.submit(
-                link.membership,
-                link.discount,
-                link.year,
-                name=name,
-                content_type=content_type,
-                data=data,
-                **kwargs,
-            )
+            try:
+                services.submit(
+                    link.membership,
+                    link.discount,
+                    link.year,
+                    name=name,
+                    content_type=content_type,
+                    data=data,
+                    **kwargs,
+                )
+            except Exception:  # noqa: BLE001 - fehlerhafter Anhang darf keine Endlosschleife erzeugen
+                logger.exception(
+                    "Beitragsnachweis: Verarbeitung von Anhang %s fehlgeschlagen, Mail bleibt liegen",
+                    name,
+                )
+                return Result.KEEP
         link.used_at = timezone.now()
         link.save(update_fields=["used_at"])
     return Result.MOVE

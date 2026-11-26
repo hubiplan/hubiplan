@@ -107,6 +107,15 @@ def check_in(meeting: Meeting, membership, *, mode: str) -> Attendance:
             {"detail": _("Organisationsmitglieder trägt die Leitung mit ihrem Vertreter ein.")}
         )
     voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
+    existing = meeting.attendance.filter(membership=membership).exists()
+    if membership.pk not in voter_ids and not existing:
+        if mode == Attendance.Mode.ONLINE:
+            raise ValidationError(
+                {"detail": _("Aus der Ferne teilnehmen können nur Stimmberechtigte.")}
+            )
+        raise ValidationError(
+            {"detail": _("Für diese Versammlung bist du nicht zur Teilnahme berechtigt.")}
+        )
     if mode == Attendance.Mode.ONLINE and membership.pk not in voter_ids:
         raise ValidationError(
             {"detail": _("Aus der Ferne teilnehmen können nur Stimmberechtigte.")}

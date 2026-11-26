@@ -171,7 +171,9 @@ services:
     logging: *logging
     image: postgres:18-alpine@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
     restart: unless-stopped
-    # Der Start wechselt vom root- zum postgres-Benutzer und braucht dafür Rechte
+    # Der Start wechselt vom root- zum postgres-Benutzer und braucht nur diese Capabilities (D-L01)
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
     security_opt: ["no-new-privileges:true"]
     networks: [intern]
     mem_limit: ${POSTGRES_MEM_LIMIT:-2g}
@@ -193,6 +195,9 @@ services:
     <<: *haertung
     image: redis:8-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
     restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
     networks: [intern]
     user: redis
     mem_limit: 384m
@@ -219,14 +224,9 @@ services:
     build: ./backend
     # Nur das Backend ist für Caddy (web) erreichbar
     networks: [intern, ausgang, web]
-    environment:
-      <<: *backend-env
-      RUN_MIGRATIONS: "1"
-      # Nur für Migrationen beim Start; das Startskript entfernt beides vor gunicorn
-      MIGRATE_DATABASE_URL: postgres://hubiplan:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt in .env}@postgres:5432/hubiplan
-      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
-      # Legt die Leserolle hubiplan_backup für den Backup-Dienst an (GA8-06)
-      BACKUP_DB_PASSWORD: ${BACKUP_DB_PASSWORD:-}
+    # Migrationen und Eigentümer-Zugangsdaten laufen nur kurzzeitig im Migrations-Schritt
+    # von deploy/server-setup.sh, nie im dauerhaften Web-Container (D-M03).
+    environment: *backend-env
     healthcheck:
       test:
         - CMD
@@ -280,15 +280,36 @@ services:
       backend:
         condition: service_healthy
 
-  # Zeitgesteuerte Jobs (z. B. Löschfrist täglich)
+  # Zeitgesteuerte Jobs (z. B. Löschfrist täglich): nur interner Zeitplaner, ohne Datenschlüssel,
+  # ohne MFA-/Mail-/IMAP-Zugangsdaten und ohne Ausgangsnetz (D-M03).
   beat:
-    <<: *backend
+    <<: *haertung
+    image: hubiplan-backend
     pull_policy: never
+    restart: unless-stopped
+    read_only: true
     # Zeitplan-Datei auf einem Volume: Sie hält fest, wann jeder Job zuletzt lief, und
     # überlebt so das Ausrollen; verpasste Uhrzeiten holt beat nach (Gesamtaudit 15.11., PF-01)
     command: celery -A config beat --loglevel=info --schedule /app/beat/celerybeat-schedule
     mem_limit: 256m
     cpus: 0.5
+    pids_limit: 64
+    tmpfs:
+      - /tmp:size=32m
+    networks: [intern]
+    environment:
+      DJANGO_DEBUG: "false"
+      HUBIPLAN_BEAT_ONLY: "1"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY fehlt in .env}
+      DJANGO_ALLOWED_HOSTS: ${SITE_HOST:?SITE_HOST fehlt in .env},localhost
+      FRONTEND_URL: https://${SITE_HOST}
+      DATABASE_URL: postgres://hubiplan_app:${APP_DB_PASSWORD:?APP_DB_PASSWORD fehlt in .env}@postgres:5432/hubiplan
+      DATABASE_APP_ROLE: hubiplan_app
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD fehlt in .env}@redis:6379/0
+      CACHE_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      HUBIPLAN_ZEITPLAN_QUEUE: ${HUBIPLAN_ZEITPLAN_QUEUE-zeitplan}
+      HUBIPLAN_EILIG_QUEUE: ${HUBIPLAN_EILIG_QUEUE-eilig}
+      HOME: /tmp
     volumes:
       - beat-zeitplan:/app/beat
     depends_on:
@@ -300,6 +321,7 @@ services:
     <<: *haertung
     build: ./deploy/backup
     restart: unless-stopped
+    read_only: true
     networks: [intern, ausgang]
     # Der Rücksicherungstest startet eine zweite Datenbank; /tmp liegt im Arbeitsspeicher
     # und zählt zur Speichergrenze. Bei großer Datenbank beides in der .env erhöhen.
@@ -308,11 +330,10 @@ services:
     pids_limit: 256
     environment:
       PGHOST: postgres
-      # Leserolle ohne Schreib- und Superuser-Rechte (GA8-06). server-setup.sh setzt beide
-      # Werte; ältere .env ohne sie sichern bis dahin wie bisher als Tabelleneigentümer.
-      PGUSER: ${BACKUP_DB_USER:-hubiplan}
+      # Leserolle ohne Schreib- und Superuser-Rechte (GA8-06, D-M03); kein stiller Superuser-Fallback.
+      PGUSER: ${BACKUP_DB_USER:-hubiplan_backup}
       PGDATABASE: hubiplan
-      PGPASSWORD: ${BACKUP_DB_PASSWORD:-${POSTGRES_PASSWORD}}
+      PGPASSWORD: ${BACKUP_DB_PASSWORD:?BACKUP_DB_PASSWORD fehlt in .env}
       # Öffentlicher age-Schlüssel: Der Server kann Backups verschlüsseln, aber nicht
       # lesen. Den privaten Schlüssel hat nur der Betreiber (siehe docs/betrieb.md).
       BACKUP_PUBLIC_KEY: ${BACKUP_PUBLIC_KEY:-}
@@ -322,8 +343,8 @@ services:
       BACKUP_TIME: ${BACKUP_TIME:-03:15}
       BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-30}
       BACKUP_REMOTE: ${BACKUP_REMOTE:-}
-      # 1: Kopie ohne --delete (Ziel mit rrsync -wo -no-del, siehe docs/betrieb.md)
-      BACKUP_REMOTE_ANHAENGEND: ${BACKUP_REMOTE_ANHAENGEND:-0}
+      # Sicherer Standard 1 (D-M02): Kopie ohne --delete (Ziel mit rrsync -wo -no-del)
+      BACKUP_REMOTE_ANHAENGEND: ${BACKUP_REMOTE_ANHAENGEND:-1}
       TZ: Europe/Berlin
     # Gruppe der App (UID/GID 1000): liest auch Schlüsseldateien mit Rechten 0640
     group_add: ["1000"]
@@ -357,6 +378,9 @@ services:
         HUBIPLAN_SOURCE_URL: ${HUBIPLAN_SOURCE_URL:-https://github.com/hubiplan/hubiplan}
     restart: unless-stopped
     <<: *haertung
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
     cap_add: [NET_BIND_SERVICE]
     # Passend zu grace_period 3s im Caddyfile: Docker wartet nicht die vollen 10 s
     stop_grace_period: 5s
@@ -366,6 +390,8 @@ services:
     pids_limit: 128
     environment:
       SITE_HOST: ${SITE_HOST}
+      # Pfad /vereinsseite/* nur mit explizitem Testserver-Opt-in aktiv (D-H01)
+      HUBIPLAN_VEREINSSEITE_PFAD: ${HUBIPLAN_VEREINSSEITE_PFAD:-0}
     ports:
       - "80:80"
       - "443:443"

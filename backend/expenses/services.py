@@ -430,6 +430,13 @@ def add_file(claim: ExpenseClaim, upload, user) -> ExpenseFile:
     upload.seek(0)
     if content_type == "application/pdf" and not data.startswith(b"%PDF"):
         raise ValidationError({"file": gettext("Die Datei ist kein PDF.")})
+    if content_type.startswith("image/"):
+        from core import filecheck
+
+        sniffed = filecheck.sniff(data[:32])
+        if not sniffed or not sniffed.startswith("image/"):
+            raise ValidationError({"file": gettext("Die Datei ist kein gültiges Bild.")})
+        content_type = sniffed
     info: dict = {}
     if content_type in ("application/pdf", "application/xml", "text/xml"):
         from finance import einvoice
@@ -879,8 +886,12 @@ def pay(
                 uploaded_by=None,
                 einvoice=row.einvoice or {},
             )
-            # Dieselbe Datei: der Antragsbeleg wird Buchungsbeleg (keine Kopie)
-            receipt.file.name = row.file.name
+            # Eigenständige Dateikopie als GoBD-Buchungsbeleg, damit ein späteres Löschen des
+            # Auslagen-Belegs nach Storno/Ablehnung niemals den Kassenbeleg zerstört.
+            from django.core.files.base import ContentFile
+
+            with row.file.open("rb") as src:
+                receipt.file.save(row.name or "beleg", ContentFile(src.read()), save=False)
             receipt.save()
             row.receipt = receipt
             row.save(update_fields=["receipt"])
@@ -903,11 +914,24 @@ def pay(
 
 
 def booking_cancelled(booking) -> None:
-    """Storno der Auszahlung: Die Auslage ist wieder freigegeben (aus finance.services)."""
-    claim = ExpenseClaim.objects.filter(booking=booking).first()
-    if claim is None and booking.split_of_id:
-        claim = ExpenseClaim.objects.filter(booking_id=booking.split_of_id).first()
+    """Storno der Auszahlung: Die Auslage ist erst wieder freigegeben, wenn alle Teile der
+    Buchung (einschließlich Splitbuchungen) storniert wurden (aus finance.services)."""
+    from django.db.models import Q
+
+    from finance.models import Booking
+
+    head_id = booking.split_of_id or booking.pk
+    claim = ExpenseClaim.objects.select_for_update().filter(booking_id=head_id).first()
     if claim is None or claim.status != S.PAID:
+        return
+    # Bei einer Splitbuchung dürfen keine unvollständig stornierten Teilbuchungen verbleiben
+    still_active = (
+        Booking.objects.filter(Q(pk=head_id) | Q(split_of_id=head_id))
+        .filter(cancelled_at__isnull=True)
+        .exclude(pk=booking.pk)
+        .exists()
+    )
+    if still_active:
         return
     claim.status = S.APPROVED
     claim.booking = None
@@ -1136,9 +1160,15 @@ def purge(now: datetime.datetime | None = None) -> dict:
             decided_at__lt=now - datetime.timedelta(days=PURGE_FILES_DAYS),
             files_purged_at__isnull=True,
         )
+        from finance.models import Receipt as FinanceReceipt
+
         for claim in old:
             for row in claim.files.all():
-                if row.file and not row.receipt_id:
+                if (
+                    row.file
+                    and not row.receipt_id
+                    and not FinanceReceipt.objects.filter(file=row.file.name).exists()
+                ):
                     delete_on_commit(row.file)
                 row.delete()
                 stats["files"] += 1

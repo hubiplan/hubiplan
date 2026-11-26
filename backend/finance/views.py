@@ -542,9 +542,16 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
 
     @transaction.atomic
     def perform_update(self, serializer):
-        # Alles in einer Transaktion: Zeile sperren, frisch prüfen, Jahr sperren, schreiben.
-        # Sonst endet die Jahressperre vor dem Schreiben, und ein paralleler Abschluss
-        # könnte dazwischenkommen.
+        # Sperrreihenfolge wie close_year(): erst Jahressperre (shared), dann Zeile sperren,
+        # um AB-BA-Deadlocks zwischen gleichzeitigem Bearbeiten und Jahresabschluss auszuschließen.
+        pre_changed = {
+            k for k, v in serializer.validated_data.items() if v != getattr(serializer.instance, k)
+        }
+        meta_only = pre_changed <= {"project", "allowance", "artist_fee", "earmark"}
+        if not meta_only:
+            self._open(year=serializer.instance.year)
+            if "date" in serializer.validated_data:
+                self._open(date=serializer.validated_data["date"])
         if self._lock_and_refresh(serializer.instance):
             serializer = self._revalidate(serializer)
         instance = serializer.instance
@@ -738,10 +745,17 @@ def attach_receipt(org, booking: Booking, upload, user) -> Receipt:
                 )
             }
         )
-    head = upload.read(16)
+    head = upload.read(32)
     upload.seek(0)
     if content_type == "application/pdf" and not head.startswith(b"%PDF"):
         raise serializers.ValidationError({"file": gettext("Die Datei ist kein PDF.")})
+    if content_type.startswith("image/"):
+        from core import filecheck
+
+        sniffed = filecheck.sniff(head)
+        if not sniffed or not sniffed.startswith("image/"):
+            raise serializers.ValidationError({"file": gettext("Die Datei ist kein gültiges Bild.")})
+        content_type = sniffed
     info: dict = {}
     if content_type in ("application/pdf", "application/xml", "text/xml"):
         from . import einvoice
@@ -886,7 +900,12 @@ class ReceiptView(FinanceMixin, APIView):
         if receipt.hidden_at:
             raise serializers.ValidationError(gettext("Der Beleg ist schon ausgeblendet."))
         if not receipt_deletable(receipt, request.user):
-            # Aufbewahrungspflicht (§ 147 AO): ausblenden statt löschen, mit Grund
+            # Aufbewahrungspflicht (§ 147 AO): ausblenden nur in offenen Jahren / ungesperrter Kasse
+            _ensure_open(self.org, receipt.booking.year)
+            try:
+                services.ensure_not_fixed(receipt.booking)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError(" ".join(exc.messages)) from exc
             reason = " ".join(str(request.data.get("reason") or "").split())
             if len(reason) < 3:
                 raise serializers.ValidationError(

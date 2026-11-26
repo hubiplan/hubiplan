@@ -27,7 +27,7 @@ from core.tenancy import scope_of, set_rls
 from organizations.models import Organization
 from portal import services as portal_services
 
-from .auth import DeviceTokenAuthentication
+from .auth import AdminTokenAuthentication
 
 
 def _clubs(user) -> list[Organization]:
@@ -74,7 +74,7 @@ class SendSerializer(serializers.Serializer):
 class SendersView(APIView):
     """GET: Einheiten, an deren Mitglieder dieses Konto aus der App senden darf."""
 
-    authentication_classes = [DeviceTokenAuthentication]
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -84,7 +84,7 @@ class SendersView(APIView):
 class SendShortView(APIView):
     """POST: Kurzmitteilung vorbereiten (``confirm`` false: Empfängerzahl) oder senden."""
 
-    authentication_classes = [DeviceTokenAuthentication]
+    authentication_classes = [AdminTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def resolve(self, request, kind: str, pk: int):

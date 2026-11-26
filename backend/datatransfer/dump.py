@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime
 import io
 import json
+import tempfile
 import zipfile
 from contextlib import contextmanager
 from decimal import Decimal
@@ -714,7 +715,9 @@ def _header(kind: str, source, with_files: bool) -> dict:
     }
 
 
-def export_organization(org: Organization, *, with_files: bool, by_platform: bool, actor=None):
+def export_organization(
+    org: Organization, *, with_files: bool, by_platform: bool, actor=None, stream: bool = False
+):
     """Daten einer Organisation mit ihren Untereinheiten.
 
     Ein Dachverband bekommt Mitgliedsdaten und Kasse seiner Vereine nur, soweit
@@ -746,7 +749,7 @@ def export_organization(org: Organization, *, with_files: bool, by_platform: boo
         body = dumper.organization(org)
         doc["persons"] = dumper.persons()
         doc["organization"] = body
-        return _finish(doc, dumper, org.name)
+        return _finish(doc, dumper, org.name, stream=stream)
 
 
 @contextmanager
@@ -767,7 +770,12 @@ def consistent_snapshot():
 
 
 def export_department(
-    dept: Department, *, with_files: bool, spin_off: dict | None = None, actor=None
+    dept: Department,
+    *,
+    with_files: bool,
+    spin_off: dict | None = None,
+    actor=None,
+    stream: bool = False,
 ):
     """Eine Abteilung: Stammdaten, Rollen, Mitglieder (mit ihren Vereinsdaten)."""
     club = dept.organization
@@ -811,10 +819,10 @@ def export_department(
             if dept.own_workspace:
                 doc["workspace_tables"] = dumper.tables(dept, members=False)
         doc["persons"] = dumper.persons()
-        return _finish(doc, dumper, dept.name)
+        return _finish(doc, dumper, dept.name, stream=stream)
 
 
-def _finish(doc: dict, dumper: Dumper, name: str) -> tuple[bytes, str, dict]:
+def _finish(doc: dict, dumper: Dumper, name: str, *, stream: bool = False):
     if any(p.get("kind") == "organization" for p in doc.get("persons", [])):
         doc["version"] = VERSION_ORGANIZATIONS
     else:
@@ -826,15 +834,24 @@ def _finish(doc: dict, dumper: Dumper, name: str) -> tuple[bytes, str, dict]:
     doc["counts"] = counts
     payload = json.dumps(doc, ensure_ascii=False, indent=1).encode()
     if not dumper.packer.with_files:
+        if stream:
+            tmp = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024)
+            tmp.write(payload)
+            tmp.seek(0)
+            return tmp, f"{base}.json", counts
         return payload, f"{base}.json", counts
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+    target = tempfile.SpooledTemporaryFile(max_size=10 * 1024 * 1024) if stream else io.BytesIO()
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(JSON_NAME, payload)
         for path, fieldfile in dumper.packer.files:
             try:
-                with fieldfile.open("rb") as handle:
-                    archive.writestr(path, handle.read())
+                with fieldfile.open("rb") as handle, archive.open(path, "w") as dst:
+                    while chunk := handle.read(64 * 1024):
+                        dst.write(chunk)
             except FileNotFoundError:
                 # Datei fehlt im Speicher: Verweis bleibt, der Import meldet es
                 continue
-    return buffer.getvalue(), f"{base}.zip", counts
+    if stream:
+        target.seek(0)
+        return target, f"{base}.zip", counts
+    return target.getvalue(), f"{base}.zip", counts

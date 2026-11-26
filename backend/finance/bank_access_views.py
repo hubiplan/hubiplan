@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, PermissionDenied
 from rest_framework.response import Response
 
 from accounts import step_up
@@ -278,5 +278,10 @@ class BankTaskViewSet(FinanceMixin, mixins.ListModelMixin, viewsets.GenericViewS
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, org_id: int, pk=None):
-        bank_fetch.cancel(self._task(pk))
+        task = self._task(pk)
+        if task.user_id != request.user.pk:
+            raise PermissionDenied(
+                gettext("Diesen Vorgang kann nur abbrechen, wer ihn gestartet hat.")
+            )
+        bank_fetch.cancel(task)
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -14,6 +14,7 @@ import {
   pendingStandInputs,
   removeLegacyStandCache,
   saveStandCache,
+  scrubStandPiiOnExpiry,
   standRevision,
   standTokenKey,
   standUser,
@@ -410,4 +411,28 @@ it('sperrt einen alten Tab bei Kontowechsel in einem anderen Tab', async () => {
     )
   })
   await waitFor(() => expect(standUser()).toBe('999'))
+})
+
+it('schreibt Mitgliederlisten im Standzugang nie dauerhaft in localStorage', async () => {
+  const token = 'abcdefghijkl-no-localstorage-pii'
+  const key = await standTokenKey(token)
+  authorizeStandCache(key, detail.stand_access.expires_at)
+  saveStandCache(key, 'local', local, standRevision())
+  const rawLocal = localStorage.getItem(`hubiplan.stand.v2.${key}:local`) || ''
+  expect(rawLocal).not.toContain('Synthetische Testperson')
+  const loaded = loadStandCache<typeof local>(key, 'local')
+  expect(loaded?.members).toHaveLength(1)
+})
+
+it('entfernt bei Sitzungsablauf PII aus dem Stand-Cache und behält nur offene ops', () => {
+  bindStandUser(testUser.id)
+  const scope = orgStandApi(7, 42).key
+  authorizeStandCache(scope)
+  saveStandCache(scope, 'detail', detail, standRevision())
+  saveStandCache(scope, 'local', { ...local, ops: [{ op: 'score' }] }, standRevision())
+  scrubStandPiiOnExpiry()
+  expect(localStorage.getItem(`hubiplan.stand.v2.${scope}:detail`)).toBeNull()
+  const raw = localStorage.getItem(`hubiplan.stand.v2.${scope}:local`) || ''
+  expect(raw).not.toContain('Synthetische Testperson')
+  expect(raw).toContain('"score"')
 })

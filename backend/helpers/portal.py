@@ -168,7 +168,9 @@ class SignupView(Base):
             pk=pk,
         )
         plan = plans[shift.duty.plan_id]
-        membership = self.access.membership
+        from members.models import Membership
+
+        membership = Membership.objects.select_for_update().get(pk=self.access.membership_id)
         if plan.signup != HelperPlan.Signup.SELF:
             raise ValidationError({"detail": _("In diesen Plan trägt nur die Verwaltung ein.")})
         if shift.starts_at <= timezone.now():

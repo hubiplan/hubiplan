@@ -145,15 +145,18 @@ def profile(client: Client, user) -> Profile:
         if _group(name).casefold() not in reserved:
             groups.append(name)
 
-    # Zugeordnete Gruppen gehen immer mit; Rollen ohne Zuordnung nur mit „je Rolle eine Gruppe“
-    named = [(a.role_id, a.role.name) for a in roles]
-    named += [(h.role_id, f"{h.role.name} ({h.role.department.name})") for h in unit_roles]
-    for role_id, role_name in named:
-        mapped = client.groups_for_role(role_id)
+    # Zugeordnete Gruppen gehen immer mit; Rollen ohne Zuordnung nur mit „je Rolle eine Gruppe“.
+    # Vereinsrollen (access.Role) und Abteilungsämter (organizations.DepartmentRole) stammen aus
+    # verschiedenen Tabellen mit eigenen Nummernkreisen: role_groups gilt nur für Vereinsrollen.
+    for a in roles:
+        mapped = client.groups_for_role(a.role_id)
         if mapped:
             groups += mapped
         elif client.groups_roles:
-            free(role_name)
+            free(a.role.name)
+    if client.groups_roles:
+        for h in unit_roles:
+            free(f"{h.role.name} ({h.role.department.name})")
     if client.groups_units:
         for u in units:
             free(u.name)

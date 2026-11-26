@@ -11,7 +11,7 @@ from __future__ import annotations
 from functools import wraps
 
 from django.http import JsonResponse
-from django.urls import URLPattern
+from django.urls import URLPattern, URLResolver
 from django.utils.translation import gettext
 
 from .modules import module_on
@@ -39,6 +39,16 @@ def _unit_of(kwargs):
 def needs_module(module: str, view):
     @wraps(view)
     def wrapped(request, *args, **kwargs):
+        # Ohne Anmeldung kein 404/403-Orakel über bestehende Einheiten oder aktive Module;
+        # App-Anfragen bringen Authorization mit und werden in DRF authentifiziert.
+        user = getattr(request, "user", None)
+        if not getattr(user, "is_authenticated", False) and not request.META.get(
+            "HTTP_AUTHORIZATION"
+        ):
+            return JsonResponse(
+                {"detail": gettext("Informationen zur Authentifizierung wurden nicht angegeben.")},
+                status=403,
+            )
         if not module_on(_unit_of(kwargs), module):
             return JsonResponse({"detail": gettext("Nicht gefunden.")}, status=404)
         return view(request, *args, **kwargs)
@@ -47,11 +57,19 @@ def needs_module(module: str, view):
 
 
 def gate(module: str, patterns):
-    """Alle Pfade einer Liste an ein Modul binden."""
+    """Alle Pfade einer Liste (auch verschachtelte Resolver) an ein Modul binden."""
     result = []
     for p in patterns:
         if isinstance(p, URLPattern):
             p = URLPattern(p.pattern, needs_module(module, p.callback), p.default_args, p.name)
+        elif isinstance(p, URLResolver):
+            p = URLResolver(
+                p.pattern,
+                gate(module, p.url_patterns),
+                p.default_kwargs,
+                p.app_name,
+                p.namespace,
+            )
         result.append(p)
     return result
 
@@ -62,5 +80,13 @@ def gate_names(module: str, patterns, prefix: str | tuple[str, ...]):
     for p in patterns:
         if isinstance(p, URLPattern) and (p.name or "").startswith(prefix):
             p = URLPattern(p.pattern, needs_module(module, p.callback), p.default_args, p.name)
+        elif isinstance(p, URLResolver):
+            p = URLResolver(
+                p.pattern,
+                gate_names(module, p.url_patterns, prefix),
+                p.default_kwargs,
+                p.app_name,
+                p.namespace,
+            )
         result.append(p)
     return result

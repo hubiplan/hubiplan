@@ -20,10 +20,18 @@ urlpatterns = [
     path("devices/<int:pk>/admin/", views.DeviceAdminLockView.as_view(), name="app-device-admin"),
     path("me/", views.MeView.as_view(), name="app-me"),
     path("me/language/", views.AppLanguageView.as_view(), name="app-language"),
+    # Kurzmitteilungen aus der App: Verwaltungspfad (AdminTokenAuthentication, A-M01);
+    # die alten Pfade bleiben übergangsweise ebenfalls mit AdminTokenAuthentication geschützt.
     path("send/", send.SendersView.as_view(), name="app-senders"),
     path("send/<str:kind>/<int:pk>/", send.SendShortView.as_view(), name="app-send-short"),
     # Verwaltung (Schritt A8)
     path("admin/", admin_api.AdminOverviewView.as_view(), name="app-admin"),
+    path("admin/send/", send.SendersView.as_view(), name="app-admin-senders"),
+    path(
+        "admin/send/<str:kind>/<int:pk>/",
+        send.SendShortView.as_view(),
+        name="app-admin-send-short",
+    ),
     path("admin/unlock/", admin_api.AdminUnlockView.as_view(), name="app-admin-unlock"),
     path(
         "admin/unlock/browser/confirm/",

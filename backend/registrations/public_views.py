@@ -114,8 +114,22 @@ def mine_payload(reg: Registration) -> dict:
     }
 
 
+TOKEN_IP_LIMIT = 60  # Token-Abrufe je 10 Minuten und IP
+
+
+def _limit_public_token(request, kind: str) -> Response | None:
+    if too_many(f"registration:{kind}:{visitor_ip(request)}", TOKEN_IP_LIMIT, 10 * 60):
+        return Response(
+            {"detail": gettext("Zu viele Versuche. Bitte später noch einmal.")}, status=429
+        )
+    return None
+
+
 class ConfirmView(_Public):
     def post(self, request, token: str):
+        limited = _limit_public_token(request, "confirm")
+        if limited is not None:
+            return limited
         pending = public.find_pending(token)
         if pending is None:
             raise Http404
@@ -140,6 +154,9 @@ def _own(token: str) -> Registration:
 
 class MineView(_Public):
     def get(self, request, token: str):
+        limited = _limit_public_token(request, "mine")
+        if limited is not None:
+            return limited
         reg = _own(token)
         with override(self.language(request)):
             return Response(mine_payload(reg))
@@ -151,6 +168,9 @@ class MineTicketsView(_Public):
     def get(self, request, token: str):
         from .views import tickets_response
 
+        limited = _limit_public_token(request, "tickets")
+        if limited is not None:
+            return limited
         reg = _own(token)
         with override(self.language(request)), unit_context(reg.organization_id):
             return tickets_response(reg)
@@ -164,6 +184,9 @@ class CancelIn(serializers.Serializer):
 
 class MineCancelView(_Public):
     def get(self, request, token: str):
+        limited = _limit_public_token(request, "cancel-quote")
+        if limited is not None:
+            return limited
         reg = _own(token)
         with override(self.language(request)), unit_context(reg.organization_id):
             return Response(_quote(reg, request.query_params.get("participants")))

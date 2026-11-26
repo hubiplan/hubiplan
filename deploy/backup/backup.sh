@@ -77,7 +77,8 @@ file_list() {
 
 # Datenbank (PGHOST, PGUSER, PGPASSWORD, PGDATABASE kommen aus der Umgebung)
 if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
-    AGE="age -r $BACKUP_PUBLIC_KEY"
+    printf '%s\n' "$BACKUP_PUBLIC_KEY" | grep -Eq '^age1[0-9a-z]+$' \
+        || fail "BACKUP_PUBLIC_KEY hat kein gültiges age-Format"
     pg_dump --no-owner --no-privileges | gzip -9 > "$WORK/db.sql.gz" \
         || fail "pg_dump ist fehlgeschlagen, kein Backup $STAMP"
     # Vollständig? pg_dump schreibt am Ende eine feste Schlusszeile.
@@ -89,15 +90,15 @@ if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
     if [ -d /data ]; then
         file_list
         LIST="$WORK/dateien.sha256"
-        tar -C /data -czf - . | archive-check.py "$LIST" --copy | $AGE -o "$DIR/files_$STAMP.tar.gz.age.tmp" \
+        tar -C /data -czf - . | archive-check.py "$LIST" --copy | age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/files_$STAMP.tar.gz.age.tmp" \
             || fail "Sicherung der Dateien ist fehlgeschlagen ($STAMP)"
-        $AGE -o "$DIR/dateien_$STAMP.sha256.age.tmp" "$LIST" \
+        age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/dateien_$STAMP.sha256.age.tmp" "$LIST" \
             || fail "Verschlüsseln der Dateiliste fehlgeschlagen ($STAMP)"
     fi
     # Rücksicherungstest jetzt, denn danach kann der Server die Datei nicht mehr lesen
     restore-test.sh --klartext "$WORK/db.sql.gz" "db_$STAMP.sql.gz.age" $LIST \
         || fail "Rücksicherungstest für $STAMP fehlgeschlagen"
-    $AGE -o "$DIR/db_$STAMP.sql.gz.age.tmp" "$WORK/db.sql.gz" \
+    age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/db_$STAMP.sql.gz.age.tmp" "$WORK/db.sql.gz" \
         || fail "Verschlüsseln des Datenbank-Backups fehlgeschlagen ($STAMP)"
     rm -f "$WORK/db.sql.gz"
     sign "$DIR/db_$STAMP.sql.gz.age"
@@ -132,7 +133,9 @@ fi
 # Löschliste (nur Kennungen, keine Namen) neben die Backups legen: Nach dem Einspielen
 # eines Backups auf einem neuen Server gehört sie ins Volume loeschliste (docs/betrieb.md)
 if [ -f /loeschliste/loeschliste.jsonl ]; then
-    cp /loeschliste/loeschliste.jsonl "$DIR/loeschliste.jsonl.tmp" \
+    cp /loeschliste/loeschliste.jsonl "$DIR/loeschliste_$STAMP.jsonl.tmp" \
+        && sign "$DIR/loeschliste_$STAMP.jsonl" \
+        && cp "$DIR/loeschliste_$STAMP.jsonl" "$DIR/loeschliste.jsonl.tmp" \
         && mv "$DIR/loeschliste.jsonl.tmp" "$DIR/loeschliste.jsonl" \
         || fail "Löschliste konnte nicht kopiert werden ($STAMP)"
 fi
@@ -200,6 +203,9 @@ fi
 if psql -At -F ' ' -c "SELECT '$STAMP', organization_id, head_seq, head_hash
         FROM audit_auditcheck WHERE head_seq IS NOT NULL AND head_hash <> ''
         ORDER BY organization_id" > "$WORK/kettenkoepfe" 2>/dev/null; then
+    cp "$WORK/kettenkoepfe" "$DIR/kettenkoepfe_$STAMP.log.tmp" \
+        && sign "$DIR/kettenkoepfe_$STAMP.log" \
+        || echo "$(date '+%F %T') WARNUNG: Signierter Kettenkopf-Schnappschuss fehlgeschlagen ($STAMP)" >> "$DIR/backup.log"
     cat "$WORK/kettenkoepfe" >> "$DIR/kettenkoepfe.log"
     chmod 644 "$DIR/kettenkoepfe.log"
 else
@@ -223,7 +229,7 @@ elif [ "${BACKUP_PRESERVE_EXISTING:-0}" = 1 ]; then
 else
     # Alte Backups entfernen
     # Die Schlüsselkopie bleibt immer (sie wird täglich erneuert)
-    find "$DIR" -maxdepth 1 \( -name '*.enc' -o -name '*.enc.hmac' -o -name '*.age' -o -name '*.age.hmac' -o -name 'datenschluessel_*.sha256' -o -name 'datenschluessel_*.sha256.hmac' \) \
+    find "$DIR" -maxdepth 1 \( -name '*.enc' -o -name '*.enc.hmac' -o -name '*.age' -o -name '*.age.hmac' -o -name 'datenschluessel_*.sha256' -o -name 'datenschluessel_*.sha256.hmac' -o -name 'loeschliste_*.jsonl' -o -name 'loeschliste_*.jsonl.hmac' -o -name 'kettenkoepfe_*.log' -o -name 'kettenkoepfe_*.log.hmac' \) \
         ! -name 'datenschluessel.*' -mtime +"$KEEP_DAYS" -delete
 fi
 

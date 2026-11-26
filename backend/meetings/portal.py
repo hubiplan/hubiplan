@@ -233,8 +233,10 @@ class WithdrawView(Base):
 
 class LiveBase(Base):
     def live_meeting(self, pk, *, lock=False) -> Meeting:
+        # Entwürfe (DRAFT) sind im Mitgliederbereich nie sichtbar oder betretbar
         qs = Meeting.objects.filter(
-            organization=self.access.organization, status__in=live.LIVE_STATES
+            organization=self.access.organization,
+            status__in=(Meeting.Status.INVITED, Meeting.Status.HELD),
         ).select_related("event", "kind", "organization", "department")
         if lock:
             qs = qs.select_for_update(of=("self",))
@@ -247,15 +249,15 @@ class LiveBase(Base):
         membership_id = self.access.membership_id
         voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
         me, allowed = live.entitlements(meeting, membership_id, voter_ids)
+        involved = me is not None or bool(allowed) or membership_id in voter_ids
+        if not involved:
+            raise NotFound()
         if not meeting.checkin_open and me is None and not allowed:
             raise NotFound()
-        involved = me is not None or bool(allowed) or membership_id in voter_ids
         polls = (
             meeting.polls.exclude(status=Poll.Status.DRAFT)
             .select_related("agenda_item", "meeting")
             .prefetch_related("options")
-            if involved
-            else []
         )
         return {
             "id": meeting.pk,

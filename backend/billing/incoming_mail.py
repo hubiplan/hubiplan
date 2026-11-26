@@ -118,9 +118,23 @@ def address_for(org) -> str:
 
 
 def recipient_addresses(msg: EmailMessage) -> list[str]:
+    from django.conf import settings
+
+    configured = (getattr(settings, "EINVOICE_IMAP_ENVELOPE_HEADER", "") or "").strip()
+    if configured:
+        names = (configured,)
+    else:
+        # Envelope-To / X-Original-To / Delivered-To zuerst; oberster Eintrag des eigenen MTA
+        names = ("Envelope-To", "X-Original-To", "Delivered-To", "To", "Cc")
     headers = []
-    for name in ("Delivered-To", "X-Original-To", "Envelope-To", "To", "Cc"):
-        headers.extend(str(v) for v in msg.get_all(name) or [])
+    for name in names:
+        values = msg.get_all(name) or []
+        if values:
+            headers.extend(str(v) for v in values)
+            if name in ("Envelope-To", "X-Original-To", "Delivered-To"):
+                # Sobald ein Envelope-Header des MTA vorhanden ist, keine manipulierbaren To/Cc
+                # als primäre Routing-Quelle anhängen (Verhinderung von Header-Spoofing)
+                break
     return [a.strip().lower() for _, a in getaddresses(headers) if a]
 
 
@@ -143,12 +157,13 @@ def addressed_here(raw: bytes) -> bool:
     return False
 
 
-def find_org_id(addresses: list[str]) -> int | None:
-    """Verein zur Plus-Adresse; nur Adressen mit der Domain des Postfachs zählen."""
+def find_org_ids(addresses: list[str]) -> list[int]:
+    """Alle Vereine zu den passenden Plus-Adressen (Domain des Postfachs)."""
     base = mailbox_address()
     if "@" not in base:
-        return None
+        return []
     base_local, domain = base.split("@", 1)
+    found_ids: list[int] = []
     for address in addresses:
         if "@" not in address:
             continue
@@ -164,9 +179,15 @@ def find_org_id(addresses: list[str]) -> int | None:
                 .values_list("organization_id", flat=True)
                 .first()
             )
-        if org_id:
-            return org_id
-    return None
+        if org_id and org_id not in found_ids:
+            found_ids.append(org_id)
+    return found_ids
+
+
+def find_org_id(addresses: list[str]) -> int | None:
+    """Erster Verein zur Plus-Adresse (Rückwärtskompatibilität für Aufrufer/Tests)."""
+    ids = find_org_ids(addresses)
+    return ids[0] if ids else None
 
 
 # --- Eine Mail ---
@@ -220,13 +241,14 @@ def _attachments(msg: EmailMessage) -> tuple[list[tuple[str, bytes]], list[dict]
         if len(found) >= MAX_ATTACHMENTS:
             skipped.append({"name": name, "reason": "too_many"})
             continue
-        if is_pdf and not einvoice.xml_from_pdf(data):
-            # Gewöhnliche PDF-Rechnung oder Anschreiben: keine E-Rechnung
-            skipped.append({"name": name, "reason": "plain_pdf"})
-            continue
+        # Virenprüfung immer VOR dem Parsen fremder PDF-/XML-Daten (kein ungescanntes PDFium)
         if not virenscan.inbound_ok(data, name, "Mail an das Rechnungspostfach"):
             skipped.append({"name": name, "reason": "virus"})
             virus = True
+            continue
+        if is_pdf and not einvoice.xml_from_pdf(data):
+            # Gewöhnliche PDF-Rechnung oder Anschreiben: keine E-Rechnung
+            skipped.append({"name": name, "reason": "plain_pdf"})
             continue
         found.append((name, data))
     return found, skipped, virus
@@ -241,16 +263,19 @@ def process_message(raw: bytes) -> str:
     handled = proof_mail.process(msg, recipient_addresses(msg))
     if handled is not None:
         return handled
-    org_id = find_org_id(recipient_addresses(msg))
-    if org_id is None:
+    org_ids = find_org_ids(recipient_addresses(msg))
+    if not org_ids:
         logger.warning("Rechnungspostfach: Mail ohne bekannte Empfängeradresse bleibt liegen")
         return Result.KEEP
     from organizations.models import Organization
 
-    with rls_bypass():
-        org = Organization.objects.get(pk=org_id)
-    with tenant_context(org_id):
-        return _process_for(org, msg)
+    results = []
+    for org_id in org_ids:
+        with rls_bypass():
+            org = Organization.objects.get(pk=org_id)
+        with tenant_context(org_id):
+            results.append(_process_for(org, msg))
+    return Result.KEEP if Result.KEEP in results else results[-1]
 
 
 def _process_for(org, msg: EmailMessage) -> str:
