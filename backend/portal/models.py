@@ -18,6 +18,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
+from core.encfields import EncryptedJSONField
+
 
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
@@ -130,9 +132,9 @@ class ChangeRequest(models.Model):
         related_name="+",
     )
     # Nur die geänderten Felder: {"email": "neu@…", "street": …}
-    data = models.JSONField("Änderungen", default=dict)
+    data = EncryptedJSONField("Änderungen", default=dict)
     # Werte zum Zeitpunkt der Meldung (zum Vergleich)
-    previous = models.JSONField("bisherige Werte", default=dict)
+    previous = EncryptedJSONField("bisherige Werte", default=dict)
     message = models.CharField("Nachricht", max_length=500, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     response = models.CharField("Antwort", max_length=500, blank=True)

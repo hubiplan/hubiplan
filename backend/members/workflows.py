@@ -611,11 +611,17 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
             _reduce_identity(person)
     # Personenbezogene Inhalte aus dem Protokoll dieses Vereins und seiner Untereinheiten
     # entfernen (Gesamtaudit 15.11., PF-17)
+    from finance.retention import ANON
+
     from .auskunft import _org_ids
 
     AuditEntry.objects.filter(organization_id__in=_org_ids(club), person_id=person.pk).update(
-        changes={}, cleared=True
+        object_repr=ANON, changes={}, cleared=True
     )
+    # Erledigte Wechselanfragen: Aufnahmedaten und Freitexte leeren
+    TransferRequest.objects.filter(Q(from_org=club) | Q(to_org=club), person=person).exclude(
+        status=TransferRequest.Status.PENDING
+    ).update(admission={}, message="", response="")
     MembershipPeriod.objects.filter(membership=membership).update(note="")
     _purge_related(membership, person, club)
 

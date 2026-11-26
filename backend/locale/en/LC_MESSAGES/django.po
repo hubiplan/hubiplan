@@ -18343,3 +18343,7 @@ msgstr "do not show"
 #: billing/sepa.py
 msgid "Für diesen Zahler wird gerade ein Mandat angelegt. Bitte noch einmal."
 msgstr "A mandate is being created for this payer right now. Please try again."
+
+#: locale/en/LC_MESSAGES/django.po
+msgid "Empfänger nicht gespeichert (anonyme Umfrage)"
+msgstr "Recipients not stored (anonymous survey)"

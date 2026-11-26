@@ -892,6 +892,8 @@ class ReceiptView(FinanceMixin, APIView):
         if receipt.hidden_at:
             raise serializers.ValidationError(gettext("Der Beleg ist schon ausgeblendet."))
         if not receipt_deletable(receipt, request.user):
+            # Abgeschlossenes Jahr: auch Ausblenden ändert, was die Prüfung sieht
+            _ensure_open(self.org, receipt.booking.year)
             # Aufbewahrungspflicht (§ 147 AO): ausblenden statt löschen, mit Grund
             reason = " ".join(str(request.data.get("reason") or "").split())
             if len(reason) < 3:
