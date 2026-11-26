@@ -110,13 +110,13 @@ erwarte "Proxy: falsches Geheimnis nicht ans Backend" "$a" 'geheim=\[\]'
 a=$(anfrage "$ID-proxy" /vereinsseite/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
 erwarte "Proxy: Webseite bekommt die Besucheradresse" "$a" 'xff=\[203\.0\.113\.7\]'
 erwarte "Proxy: Geheimnis nicht an die Webseite" "$a" 'geheim=\[\]'
-erwarte "Proxy: Webseite bekommt den Pfad ohne /vereinsseite" "$a" 'pfad=/$'
+erwarte "Proxy: Webseite bekommt den Pfad ohne /vereinsseite" "$a" 'pfad=/( |$)'
 # D-H01: Die Sitzung der Verwaltung geht nicht an die Webseite, andere Cookies schon
 a=$(anfrage "$ID-proxy" /vereinsseite/aktuelles/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7" \
     "Cookie: sessionid=sitzung-erfunden; csrftoken=abc")
 nicht "Proxy: Sitzung der Verwaltung nicht an die Webseite" "$a" 'sitzung-erfunden'
 erwarte "Proxy: andere Cookies erreichen die Webseite" "$a" 'cookie=\[.*csrftoken=abc\]'
-erwarte "Proxy: Unterseite der Webseite" "$a" 'pfad=/aktuelles/$'
+erwarte "Proxy: Unterseite der Webseite" "$a" 'pfad=/aktuelles/( |$)'
 a=$(anfrage "$ID-proxy" /api/health/ "X-Hubiplan-Proxy: $GEHEIM" "Cookie: sessionid=sitzung-erfunden")
 erwarte "Proxy: Sitzung erreicht weiter das Backend" "$a" 'cookie=\[sessionid=sitzung-erfunden\]'
 
