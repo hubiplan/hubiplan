@@ -27,9 +27,11 @@ from access.catalog import (
     BILLING_VIEW,
     CARDS_EDIT,
     CARDS_MANAGE,
+    CIRCULARS_SEND,
     COMPETITIONS_EDIT,
     COMPETITIONS_MANAGE,
     COMPETITIONS_RESULTS,
+    DEPT_CIRCULARS_SEND,
     DEPT_EVENTS_MANAGE,
     DEPT_MEMBERS_EDIT,
     DEPT_MEMBERS_VIEW,
@@ -89,6 +91,8 @@ ADMIN_PERMISSIONS = (
     # (Beitrittsanträge laufen über members.view/members.edit)
     "bookings.edit",
     "meetings.edit",
+    # Kurzmitteilung aus der App senden: geht nur mit freigeschalteter Verwaltung
+    CIRCULARS_SEND,
 )
 # Untereinheiten (Rollen nur dort, z. B. Zugführung): Pfad /api/app/v1/admin/d/<Untereinheit>/
 DEPT_ADMIN_PERMISSIONS = (
@@ -103,6 +107,7 @@ DEPT_ADMIN_PERMISSIONS = (
     EVENTS_EDIT,
     "bookings.edit",
     "meetings.edit",
+    DEPT_CIRCULARS_SEND,
 )
 ONLY_READING = {EVENTS_VIEW}
 # Freischalten: höchstens 5 Versuche je Gerät in 15 Minuten

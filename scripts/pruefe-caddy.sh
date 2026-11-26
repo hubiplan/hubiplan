@@ -37,7 +37,7 @@ cat > "$TMP/Caddyfile" << 'EOF'
 	admin off
 }
 :8000 {
-	respond "xff=[{http.request.header.X-Forwarded-For}] geheim=[{http.request.header.X-Hubiplan-Proxy}] pfad={path}" 200
+	respond "xff=[{http.request.header.X-Forwarded-For}] geheim=[{http.request.header.X-Hubiplan-Proxy}] cookie=[{http.request.header.Cookie}] pfad={path}" 200
 }
 EOF
 chmod 644 "$TMP/Caddyfile"
@@ -51,7 +51,8 @@ docker network create "$ID" > /dev/null
 docker run -d --name "$ID-echo" --network "$ID" --network-alias backend --network-alias website "$@" \
     -v "$TMP/Caddyfile:/etc/caddy/Caddyfile:ro" "$IMG" > /dev/null
 docker run -d --name "$ID-proxy" --network "$ID" "$@" \
-    -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -v "$SRC/deploy:/etc/caddy:ro" -v "$TMP/srv:/srv:ro" \
+    -e HUBIPLAN_PROXY_GEHEIM="$GEHEIM" -e HUBIPLAN_VEREINSSEITE_PFAD=1 \
+    -v "$SRC/deploy:/etc/caddy:ro" -v "$TMP/srv:/srv:ro" \
     "$IMG" caddy run --config /etc/caddy/Caddyfile.proxy --adapter caddyfile > /dev/null
 docker run -d --name "$ID-direkt" --network "$ID" "$@" \
     -e SITE_HOST=http://hubiplan.example.org -v "$SRC/deploy:/etc/caddy:ro" \
@@ -109,6 +110,15 @@ erwarte "Proxy: falsches Geheimnis nicht ans Backend" "$a" 'geheim=\[\]'
 a=$(anfrage "$ID-proxy" /vereinsseite/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
 erwarte "Proxy: Webseite bekommt die Besucheradresse" "$a" 'xff=\[203\.0\.113\.7\]'
 erwarte "Proxy: Geheimnis nicht an die Webseite" "$a" 'geheim=\[\]'
+erwarte "Proxy: Webseite bekommt den Pfad ohne /vereinsseite" "$a" 'pfad=/( |$)'
+# D-H01: Die Sitzung der Verwaltung geht nicht an die Webseite, andere Cookies schon
+a=$(anfrage "$ID-proxy" /vereinsseite/aktuelles/ "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7" \
+    "Cookie: sessionid=sitzung-erfunden; csrftoken=abc")
+nicht "Proxy: Sitzung der Verwaltung nicht an die Webseite" "$a" 'sitzung-erfunden'
+erwarte "Proxy: andere Cookies erreichen die Webseite" "$a" 'cookie=\[.*csrftoken=abc\]'
+erwarte "Proxy: Unterseite der Webseite" "$a" 'pfad=/aktuelles/( |$)'
+a=$(anfrage "$ID-proxy" /api/health/ "X-Hubiplan-Proxy: $GEHEIM" "Cookie: sessionid=sitzung-erfunden")
+erwarte "Proxy: Sitzung erreicht weiter das Backend" "$a" 'cookie=\[sessionid=sitzung-erfunden\]'
 
 for pfad in "/api/intern/tls/?domain=x.example" /api/intern; do
     a=$(anfrage "$ID-proxy" "$pfad" "X-Hubiplan-Proxy: $GEHEIM" "X-Real-IP: 203.0.113.7")
@@ -137,6 +147,10 @@ erwarte "Direkt: HSTS" "$a" 'Strict-Transport-Security: max-age=31536000'
 a=$(anfrage "$ID-direkt" "/api/intern/tls/?domain=x.example")
 erwarte "Direkt: /api/intern/ von außen 404" "$a" 'HTTP/1\.1 404'
 nicht "Direkt: /api/intern/ erreicht das Backend nicht" "$a" 'pfad='
+
+# D-H01: Ohne HUBIPLAN_VEREINSSEITE_PFAD=1 gibt es /vereinsseite/ nicht (kein Webseiten-Dienst)
+a=$(anfrage "$ID-direkt" /vereinsseite/ "Cookie: sessionid=sitzung-erfunden")
+nicht "Direkt: /vereinsseite/ ohne Schalter erreicht die Webseite nicht" "$a" 'pfad='
 
 if [ "$fehler" -ne 0 ]; then
     echo "Caddy: Verhalten der Konfiguration fehlerhaft (siehe oben)" >&2

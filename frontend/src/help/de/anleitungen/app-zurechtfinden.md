@@ -39,6 +39,8 @@ Listen wie Termine, Mitteilungen, Aufgaben und die Bereiche der Verwaltung läds
 
 In der Android-App fragen geänderte Verwaltungsformulare und Kurzmitteilungen vor dem Verwerfen nach. System-Zurück, sichtbares Zurück sowie Reiter- und Einheitenwechsel verwenden dieselbe Entscheidung. Buchungstext, Betrag, Konto, Kategorie und ein bereits ausgewähltes Belegfoto werden bei einer Android-Zustandswiederherstellung wiederhergestellt; eine laufende Quittungsunterschrift wird an die neue Feldgröße angepasst. Nach einem Serverfehler stehen Hinweise an den betroffenen Feldern. Fehlgeschlagene Buchungs- und Untereinheitenakten lassen sich direkt erneut laden. Private Aufgabenentwürfe bleiben entsprechend der Datenschutzregel nur im Arbeitsspeicher.
 
+Kurzmitteilungen an alle Mitglieder sendet die App nur bei entsperrter Verwaltung. Ist sie gesperrt, zeigt die App das an; nach dem Entsperren unter „Verwaltung“ geht es mit dem begonnenen Text weiter. Ältere App-Versionen können nicht mehr senden und müssen aktualisiert werden.
+
 In der Terminliste steht deine Rückmeldung mit Symbol und Klartext: „Zugesagt“, „Nicht dabei“ oder „Noch offen“. Im Dunkelmodus zeigt die App helle Vereinsfarben in der Kopfleiste gedämpft, damit sie abends nicht blenden.
 
 Auswahllisten der Android-App melden ihren geöffneten oder geschlossenen Zustand in der gewählten Sprache. In der Mitteilungsliste ist die aktuelle Auswahl auch für Bedienungshilfen markiert. Erfolgsnachrichten für Profiländerungen und Mitteilungen werden als höfliche Statusmeldungen bereitgestellt.

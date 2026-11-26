@@ -114,7 +114,18 @@ initdb -D "$TMP/data" -U restoretest --auth=trust --no-locale --encoding=UTF8 > 
 pg_ctl -D "$TMP/data" -o "-c listen_addresses='' -k $TMP" -w start > /dev/null
 createdb -h "$TMP" -U restoretest restore
 
-read_dump | psql -h "$TMP" -U restoretest -d restore -v ON_ERROR_STOP=1 -q > /dev/null
+# Der Dump ist reines SQL und kommt von einem Server, der beim Test mit --age als womöglich
+# übernommen gilt. psql führte darin sonst auch eigene Befehle aus (\! startet ein Programm
+# auf diesem Rechner, neben dem privaten Schlüssel). Deshalb läuft der ganze Dump im
+# gesperrten Modus mit einem Zufallswert, den er nicht kennt: Jeder Befehl mit \ außer dem
+# Ende einer COPY-Tabelle bricht den Test ab. Die Rahmenzeilen, die pg_dump selbst schreibt,
+# fallen vorher weg (Sicherheitsprüfung 26.11., D-H03).
+SPERRWERT=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+[ ${#SPERRWERT} -eq 32 ] || { echo "Kein Zufallswert für den gesperrten Modus" >&2; exit 1; }
+{
+    printf '\\restrict %s\n' "$SPERRWERT"
+    read_dump | sed -E '/^\\(un)?restrict [A-Za-z0-9]+[[:space:]]*$/d'
+} | psql -h "$TMP" -U restoretest -d restore -v ON_ERROR_STOP=1 -q > /dev/null
 
 ORGS=$(psql -h "$TMP" -U restoretest -d restore -tAc "SELECT count(*) FROM organizations_organization")
 MEMBERS=$(psql -h "$TMP" -U restoretest -d restore -tAc "SELECT count(*) FROM members_membership")

@@ -68,6 +68,19 @@ sign() {
     mv "$1.tmp" "$1"
 }
 
+# Prüfsumme für Begleitdateien, die an ihrem Platz fortgeschrieben werden (Löschliste,
+# Kettenköpfe): Wer nur den Backup-Ordner oder den zweiten Ort verändern kann, schiebt so
+# keine andere Fassung unter (Sicherheitsprüfung 26.11., D-M02). Ein Fehler stoppt das
+# Backup nicht, steht aber im Log.
+nebenpruefsumme() {
+    if hmac.sh "$1" > "$1.hmac.tmp" && mv "$1.hmac.tmp" "$1.hmac"; then
+        chmod 644 "$1.hmac"
+    else
+        rm -f "$1.hmac.tmp"
+        echo "$(date '+%F %T') WARNUNG: Prüfsumme für $(basename "$1") nicht geschrieben ($STAMP)" >> "$DIR/backup.log"
+    fi
+}
+
 # Dateiliste mit Prüfsummen, direkt vor dem Archiv (Datenbank und Dateien entstehen
 # nacheinander; die Liste zeigt, welche Dateien genau im Archiv stehen)
 file_list() {
@@ -77,6 +90,14 @@ file_list() {
 
 # Datenbank (PGHOST, PGUSER, PGPASSWORD, PGDATABASE kommen aus der Umgebung)
 if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
+    # Genau ein age-Empfänger, sonst nichts: Der Wert steht unten ohne Anführungszeichen
+    case "$BACKUP_PUBLIC_KEY" in
+        age1*) ;;
+        *) fail "BACKUP_PUBLIC_KEY ist kein age-Empfänger (age1…)" ;;
+    esac
+    case "$BACKUP_PUBLIC_KEY" in
+        *[!a-z0-9]*) fail "BACKUP_PUBLIC_KEY enthält unzulässige Zeichen" ;;
+    esac
     AGE="age -r $BACKUP_PUBLIC_KEY"
     pg_dump --no-owner --no-privileges | gzip -9 > "$WORK/db.sql.gz" \
         || fail "pg_dump ist fehlgeschlagen, kein Backup $STAMP"
@@ -135,6 +156,8 @@ if [ -f /loeschliste/loeschliste.jsonl ]; then
     cp /loeschliste/loeschliste.jsonl "$DIR/loeschliste.jsonl.tmp" \
         && mv "$DIR/loeschliste.jsonl.tmp" "$DIR/loeschliste.jsonl" \
         || fail "Löschliste konnte nicht kopiert werden ($STAMP)"
+    # Mit Prüfsumme wie die Backups: Vor dem Einspielen verify.sh loeschliste.jsonl
+    nebenpruefsumme "$DIR/loeschliste.jsonl"
 fi
 
 # Hauptschlüssel der Datenverschlüsselung (Docker-Secret) verschlüsselt neben die Backups:
@@ -202,6 +225,7 @@ if psql -At -F ' ' -c "SELECT '$STAMP', organization_id, head_seq, head_hash
         ORDER BY organization_id" > "$WORK/kettenkoepfe" 2>/dev/null; then
     cat "$WORK/kettenkoepfe" >> "$DIR/kettenkoepfe.log"
     chmod 644 "$DIR/kettenkoepfe.log"
+    nebenpruefsumme "$DIR/kettenkoepfe.log"
 else
     echo "$(date '+%F %T') WARNUNG: Kettenköpfe nicht geschrieben ($STAMP)" >> "$DIR/backup.log"
 fi

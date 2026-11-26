@@ -287,6 +287,8 @@ services:
     # Zeitplan-Datei auf einem Volume: Sie hält fest, wann jeder Job zuletzt lief, und
     # überlebt so das Ausrollen; verpasste Uhrzeiten holt beat nach (Gesamtaudit 15.11., PF-01)
     command: celery -A config beat --loglevel=info --schedule /app/beat/celerybeat-schedule
+    # Der Zeitplan stellt nur Aufträge in die Warteschlange: kein Weg ins Internet
+    networks: [intern]
     mem_limit: 256m
     cpus: 0.5
     volumes:
@@ -309,10 +311,11 @@ services:
     environment:
       PGHOST: postgres
       # Leserolle ohne Schreib- und Superuser-Rechte (GA8-06). server-setup.sh setzt beide
-      # Werte; ältere .env ohne sie sichern bis dahin wie bisher als Tabelleneigentümer.
-      PGUSER: ${BACKUP_DB_USER:-hubiplan}
+      # Werte. Ohne sie startet der Verbund nicht: Das Backup fällt nie still auf den
+      # Tabelleneigentümer zurück (Sicherheitsprüfung 26.11., D-M03).
+      PGUSER: ${BACKUP_DB_USER:?BACKUP_DB_USER fehlt in .env (hubiplan_backup, setzt deploy/server-setup.sh)}
       PGDATABASE: hubiplan
-      PGPASSWORD: ${BACKUP_DB_PASSWORD:-${POSTGRES_PASSWORD}}
+      PGPASSWORD: ${BACKUP_DB_PASSWORD:?BACKUP_DB_PASSWORD fehlt in .env (setzt deploy/server-setup.sh)}
       # Öffentlicher age-Schlüssel: Der Server kann Backups verschlüsseln, aber nicht
       # lesen. Den privaten Schlüssel hat nur der Betreiber (siehe docs/betrieb.md).
       BACKUP_PUBLIC_KEY: ${BACKUP_PUBLIC_KEY:-}
@@ -358,6 +361,11 @@ services:
     restart: unless-stopped
     <<: *haertung
     cap_add: [NET_BIND_SERVICE]
+    # Dateisystem schreibgeschützt wie beim Backend: Caddy schreibt nur Zertifikate und
+    # seinen Stand in die Volumes /data und /config (Sicherheitsprüfung 26.11., D-M03)
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
     # Passend zu grace_period 3s im Caddyfile: Docker wartet nicht die vollen 10 s
     stop_grace_period: 5s
     networks: [web]
@@ -366,6 +374,8 @@ services:
     pids_limit: 128
     environment:
       SITE_HOST: ${SITE_HOST}
+      # 1: Vereinswebseite zusätzlich unter /vereinsseite/ derselben Adresse (nur Testserver)
+      HUBIPLAN_VEREINSSEITE_PFAD: ${HUBIPLAN_VEREINSSEITE_PFAD:-0}
     ports:
       - "80:80"
       - "443:443"

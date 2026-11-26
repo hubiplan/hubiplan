@@ -924,6 +924,10 @@ bleiben in den Schnappschüssen. Abgleich mit der Datenbank:
 Neuberechnen der Kette sichtbar, solange die getrennte Kopie unberührt ist; gegen jemanden mit
 vollem Zugriff auf Server und zweiten Sicherungsort schützt es nicht.
 
+Zu `loeschliste.jsonl` und `kettenkoepfe.log` schreibt das Backup je eine Prüfsumme
+(`….hmac`, wie bei den Backups mit `BACKUP_HMAC_KEY`). Vor dem Verwenden einer Kopie prüfen:
+`verify.sh loeschliste.jsonl` bzw. `verify.sh kettenkoepfe.log`.
+
 Zusätzlich bekommen die Kassenprüfer (Rolle mit „Kasse lesen“, ohne „Kasse bearbeiten“)
 wöchentlich eine Mail mit derselben Zeile; auch sie lässt sich mit `kettenkoepfe_pruefen`
 prüfen. So liegt ein Stand außerhalb des Servers, selbst wenn Backups fehlen.

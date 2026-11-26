@@ -21,7 +21,9 @@ urlpatterns = [
     path("me/", views.MeView.as_view(), name="app-me"),
     path("me/language/", views.AppLanguageView.as_view(), name="app-language"),
     path("send/", send.SendersView.as_view(), name="app-senders"),
-    path("send/<str:kind>/<int:pk>/", send.SendShortView.as_view(), name="app-send-short"),
+    path("send/<str:kind>/<int:pk>/", send.SendLockedView.as_view(), name="app-send-locked"),
+    path("admin/send/", send.AdminSendersView.as_view(), name="app-admin-senders"),
+    path("admin/send/<str:kind>/<int:pk>/", send.SendShortView.as_view(), name="app-send-short"),
     # Verwaltung (Schritt A8)
     path("admin/", admin_api.AdminOverviewView.as_view(), name="app-admin"),
     path("admin/unlock/", admin_api.AdminUnlockView.as_view(), name="app-admin-unlock"),
