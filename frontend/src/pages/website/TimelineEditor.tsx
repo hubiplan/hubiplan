@@ -7,7 +7,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
-import { ImagePicker } from './images.tsx'
+import { ImagePicker } from './ImagePicker.tsx'
 import { imageLabel } from './imageTools.ts'
 import {
   EMPTY,

@@ -23,7 +23,8 @@ from pathlib import Path
 from django.core.management import call_command
 from django.test import Client
 
-from organizations import demo_kapelle, demo_korps
+from demodaten import kapelle as demo_kapelle
+from demodaten import korps as demo_korps
 from organizations.models import Organization
 from website.models import BLOCKS, Website
 

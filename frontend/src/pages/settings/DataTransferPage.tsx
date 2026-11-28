@@ -1,6 +1,7 @@
 // Einstellungen → Datenübernahme (Export und Import). Vereine des Dachverbands: ClubsPage.tsx
 import { PERM, orgApi } from '../../api/orgs.ts'
-import { ExportSection, ImportSection } from '../../components/DataTransfer.tsx'
+import { ExportSection } from '../../components/ExportSection.tsx'
+import { ImportSection } from '../../components/ImportSection.tsx'
 import { useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'

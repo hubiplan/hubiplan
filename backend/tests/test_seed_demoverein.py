@@ -8,13 +8,13 @@ from django.core.management import call_command
 from access.catalog import SWITCHABLE_MODULES
 from accounts.models import User
 from competitions.models import Competition
+from demodaten import korps as demo_korps
 from entries.models import Entry
 from finance.models import Booking
 from honors.models import Dignity
 from materials.models import MaterialItem
 from members.models import ContactDetails, Membership
 from music.models import Assignment, Musician, Performance, Piece
-from organizations import demo_korps
 from organizations.models import Department, Organization
 from todos.models import Todo, TodoShare
 from website.models import Website

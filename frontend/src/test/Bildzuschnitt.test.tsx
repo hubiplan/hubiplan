@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { useImageCrop } from '../components/ImageCrop.tsx'
 import { croppedName, hasTransparency } from '../components/photoCrop.ts'
-import { LogoUpload } from '../pages/settings/AppearancePage.tsx'
+import { LogoUpload } from '../pages/settings/LogoUpload.tsx'
 import { fakeApi } from './fakeApi.ts'
 
 beforeAll(() => {

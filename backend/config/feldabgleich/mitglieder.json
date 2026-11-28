@@ -1,0 +1,1649 @@
+{
+ "akten": {
+  "antworten": [
+   {
+    "billing_address": {
+     "attention": "Buchhaltung",
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "rechnung@muster.example",
+     "leitweg_id": "",
+     "name": "Muster GmbH",
+     "order_reference": "B-1",
+     "postal_code": "12345",
+     "street": "Musterweg 1",
+     "version": 1
+    },
+    "birth_date": "2003-07-08",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2106",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "anke.annahmer2106@sv-musterstadt.test",
+     "phone": "01234 733722",
+     "postal_code": "12345",
+     "street": "Kirchstraße 70"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6335,
+     "member_type": 2989,
+     "member_type_name": "aktiv",
+     "reported": true,
+     "valid_from": "2021-12-01",
+     "valid_until": null
+    },
+    "department_roles": [
+     {
+      "department_name": "Art",
+      "ended": [],
+      "id": 3920,
+      "role": 3903,
+      "role_name": "Adjutant",
+      "valid_from": "2021-12-01",
+      "valid_until": "2026-11-28"
+     }
+    ],
+    "departments": [
+     {
+      "department": 9299,
+      "department_name": "Batterie Donnerhall",
+      "id": 4064,
+      "valid_from": "2021-12-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 1824,
+      "next": {
+       "date": "2031-12-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 4
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Anke",
+    "gender": "weiblich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": [
+      {
+       "display_title": "Ehrenhauptmann",
+       "fee_text": "",
+       "id": 39,
+       "note": "Beschluss der Versammlung",
+       "owner_name": "SV Musterstadt",
+       "title": 23,
+       "title_name": "Ehrenmitglied",
+       "valid_from": "2025-10-24",
+       "valid_until": null,
+       "year_only": false
+      }
+     ]
+    },
+    "households": [
+     {
+      "id": 46,
+      "kind": "family",
+      "name": "Familie Muster",
+      "others": [
+       {
+        "member_id": 7109,
+        "name": "Carsten Annahmer",
+        "role": ""
+       }
+      ],
+      "role": "",
+      "since": "2025-10-24"
+     }
+    ],
+    "id": 7023,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Annahmer",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2021-12-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 6942,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7042,
+    "photo": {
+     "approved": {
+      "source": "board",
+      "source_label": "Vorstand",
+      "thumbnail_url": "/api/orgs/9285/members/7023/photo/?status=approved&v=1795893642&size=thumb",
+      "uploaded_at": "2026-11-28T19:20:42.905079Z",
+      "url": "/api/orgs/9285/members/7023/photo/?status=approved&v=1795893642"
+     },
+     "pending": null
+    },
+    "photo_consent_at": "2026-11-28",
+    "photo_consent_source": "board",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6335,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "2021-12-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "1996-11-08",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2192",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "carsten.annahmer2192@sv-musterstadt.test",
+     "phone": "",
+     "postal_code": "12345",
+     "street": "Lindenallee 9"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6421,
+     "member_type": 2989,
+     "member_type_name": "aktiv",
+     "reported": true,
+     "valid_from": "2019-02-01",
+     "valid_until": null
+    },
+    "department_roles": [],
+    "departments": [
+     {
+      "department": 9307,
+      "department_name": "Tambour",
+      "id": 4150,
+      "valid_from": "2019-02-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 2858,
+      "next": {
+       "date": "2029-02-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 7
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Carsten",
+    "gender": "männlich",
+    "greetings_opt_out_at": "2026-11-28T19:20:42.480299Z",
+    "honorary_titles": {
+     "federation": [],
+     "own": [
+      {
+       "display_title": "",
+       "fee_text": "",
+       "id": 40,
+       "note": "",
+       "owner_name": "SV Musterstadt",
+       "title": 23,
+       "title_name": "Ehrenmitglied",
+       "valid_from": "2025-10-24",
+       "valid_until": "2026-11-28",
+       "year_only": false
+      }
+     ]
+    },
+    "households": [
+     {
+      "id": 46,
+      "kind": "family",
+      "name": "Familie Muster",
+      "others": [
+       {
+        "member_id": 7023,
+        "name": "Anke Annahmer",
+        "role": ""
+       }
+      ],
+      "role": "",
+      "since": "2025-10-24"
+     }
+    ],
+    "id": 7109,
+    "info_opt_out_at": "2026-11-28T19:20:42.474420Z",
+    "kind": "person",
+    "last_name": "Annahmer",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2019-02-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 7028,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7128,
+    "photo": {
+     "approved": null,
+     "pending": {
+      "source": "board",
+      "source_label": "Vorstand",
+      "thumbnail_url": "/api/orgs/9285/members/7109/photo/?status=pending&v=1795893642&size=thumb",
+      "uploaded_at": "2026-11-28T19:20:42.928570Z",
+      "url": "/api/orgs/9285/members/7109/photo/?status=pending&v=1795893642"
+     }
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6421,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "2019-02-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "1964-09-20",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2061",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "dennis.annahmer2061@sv-musterstadt.test",
+     "phone": "01234 959066",
+     "postal_code": "12345",
+     "street": "Lindenallee 21"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6290,
+     "member_type": 2989,
+     "member_type_name": "aktiv",
+     "reported": true,
+     "valid_from": "1983-04-01",
+     "valid_until": "2026-11-28"
+    },
+    "department_roles": [
+     {
+      "department_name": "Jägerzug Hörnerklang",
+      "ended": [],
+      "id": 3903,
+      "role": 3886,
+      "role_name": "Kassierer",
+      "valid_from": "2016-01-01",
+      "valid_until": "2026-11-28"
+     }
+    ],
+    "departments": [
+     {
+      "department": 9293,
+      "department_name": "Jägerzug Hörnerklang",
+      "id": 4019,
+      "valid_from": "1983-04-01",
+      "valid_until": "2026-11-28",
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 15948,
+      "next": null,
+      "precision": "day",
+      "years": 43
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Dennis",
+    "gender": "männlich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 6978,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Annahmer",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "1983-04-01",
+      "exit_date": "2026-11-28",
+      "exit_reason": "exit",
+      "exit_reason_label": "Austritt",
+      "id": 6897,
+      "note": "auf eigenen Wunsch",
+      "version": 1
+     }
+    ],
+    "person_id": 6997,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": "2028-11-28",
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6290,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "1983-04-01",
+      "valid_until": "2026-11-28"
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "2005-11-16",
+    "birth_year_only": false,
+    "board_roles": [
+     {
+      "id": 3956,
+      "role_name": "Vizepräsident",
+      "valid_from": "2019-03-01",
+      "valid_until": null
+     }
+    ],
+    "club_number": "2011",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "emil.annahmer2011@sv-musterstadt.test",
+     "phone": "01234 995396",
+     "postal_code": "12345",
+     "street": "Schützenstraße 16"
+    },
+    "contact_for": [
+     {
+      "member_id": 7140,
+      "name": "Bäckerei Muster GmbH"
+     }
+    ],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6240,
+     "member_type": 2992,
+     "member_type_name": "Jungschütze",
+     "reported": true,
+     "valid_from": "2019-09-01",
+     "valid_until": null
+    },
+    "department_roles": [],
+    "departments": [
+     {
+      "department": 9287,
+      "department_name": "Grenadierzug Eichenlaub",
+      "id": 3969,
+      "valid_from": "2019-09-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 2646,
+      "next": {
+       "date": "2029-09-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 7
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Emil",
+    "gender": "männlich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 6928,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Annahmer",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2019-09-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 6847,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 6947,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6240,
+      "member_type": 2992,
+      "member_type_name": "Jungschütze",
+      "reported": true,
+      "valid_from": "2019-09-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "1997-07-21",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2096",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "hannes.annahmer2096@sv-musterstadt.test",
+     "phone": "",
+     "postal_code": "12345",
+     "street": "Schützenstraße 45"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": false,
+     "id": 6325,
+     "member_type": 2990,
+     "member_type_name": "passiv",
+     "reported": true,
+     "valid_from": "2021-05-01",
+     "valid_until": null
+    },
+    "department_roles": [
+     {
+      "department_name": "Zug Gut Schuss",
+      "ended": [],
+      "id": 3918,
+      "role": 3901,
+      "role_name": "Kassierer",
+      "valid_from": "2021-05-01",
+      "valid_until": null
+     }
+    ],
+    "departments": [
+     {
+      "department": 9297,
+      "department_name": "Zug Gut Schuss",
+      "id": 4054,
+      "valid_from": "2021-05-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 2038,
+      "next": {
+       "date": "2031-05-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 5
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Hannes",
+    "gender": "männlich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 7013,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Annahmer",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2021-05-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 6932,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7032,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": false,
+      "id": 6325,
+      "member_type": 2990,
+      "member_type_name": "passiv",
+      "reported": true,
+      "valid_from": "2021-05-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": null,
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2223",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "info@baeckerei-muster.example",
+     "phone": "",
+     "postal_code": "12345",
+     "street": "Musterweg 2"
+    },
+    "contact_for": [],
+    "contact_persons": [
+     {
+      "access_email": "",
+      "contact_email": "emil.annahmer2011@sv-musterstadt.test",
+      "contact_phone": "01234 995396",
+      "display_name": "Emil Annahmer",
+      "email": "",
+      "first_name": "",
+      "function": "Geschäftsführung",
+      "gender": "",
+      "id": 20,
+      "is_guardian": false,
+      "is_primary": true,
+      "last_name": "",
+      "linked_member": 6928,
+      "member_access": false,
+      "phone": "",
+      "receives_invoices": true,
+      "receives_mail": true,
+      "represents": true,
+      "since": "2025-10-24",
+      "title": "",
+      "version": 1
+     },
+     {
+      "access_email": "",
+      "contact_email": "maria@muster.example",
+      "contact_phone": "+49 30 1234567",
+      "display_name": "Maria Muster",
+      "email": "maria@muster.example",
+      "first_name": "Maria",
+      "function": "Buchhaltung",
+      "gender": "",
+      "id": 21,
+      "is_guardian": false,
+      "is_primary": false,
+      "last_name": "Muster",
+      "linked_member": null,
+      "member_access": false,
+      "phone": "+49 30 1234567",
+      "receives_invoices": true,
+      "receives_mail": true,
+      "represents": true,
+      "since": null,
+      "title": "",
+      "version": 1
+     }
+    ],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6452,
+     "member_type": 2989,
+     "member_type_name": "aktiv",
+     "reported": true,
+     "valid_from": "2025-10-24",
+     "valid_until": null
+    },
+    "department_roles": [],
+    "departments": [],
+    "duration": {
+     "club": {
+      "days": 401,
+      "next": {
+       "date": "2035-10-24",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 1
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "",
+    "gender": "",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 7140,
+    "info_opt_out_at": null,
+    "kind": "organization",
+    "last_name": "Bäckerei Muster GmbH",
+    "managed_by": null,
+    "organization": {
+     "legal_form": "gmbh",
+     "legal_form_label": "GmbH",
+     "legal_form_other": "",
+     "name_suffix": "",
+     "register": "",
+     "size": 12,
+     "vat_id": "",
+     "website": ""
+    },
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2025-10-24",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 7059,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7159,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": null,
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6452,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "2025-10-24",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "2002-11-09",
+    "birth_year_only": false,
+    "board_roles": [
+     {
+      "id": 3960,
+      "role_name": "Präsident",
+      "valid_from": "2003-03-01",
+      "valid_until": "2011-02-28"
+     }
+    ],
+    "club_number": "2023",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "nora.beispielhoff2023@sv-musterstadt.test",
+     "phone": "01234 988603",
+     "postal_code": "12345",
+     "street": "Am Marktplatz 31"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6252,
+     "member_type": 2989,
+     "member_type_name": "aktiv",
+     "reported": true,
+     "valid_from": "2021-05-01",
+     "valid_until": null
+    },
+    "department_roles": [],
+    "departments": [
+     {
+      "department": 9288,
+      "department_name": "Grenadierzug Treue Kameraden",
+      "id": 3981,
+      "valid_from": "2021-05-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 2038,
+      "next": {
+       "date": "2031-05-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 5
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Nora",
+    "gender": "weiblich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 6940,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Beispielhoff",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2021-05-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 6859,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 6959,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6252,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "2021-05-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "2010-08-19",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2097",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "malte.schablonenkamp2097@sv-musterstadt.test",
+     "phone": "",
+     "postal_code": "12345",
+     "street": "Lindenallee 40"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": {
+     "active": true,
+     "id": 6326,
+     "member_type": 2992,
+     "member_type_name": "Jungschütze",
+     "reported": true,
+     "valid_from": "2025-03-01",
+     "valid_until": null
+    },
+    "department_roles": [],
+    "departments": [
+     {
+      "department": 9297,
+      "department_name": "Zug Gut Schuss",
+      "id": 4055,
+      "valid_from": "2025-03-01",
+      "valid_until": null,
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 638,
+      "next": {
+       "date": "2035-03-01",
+       "years": 10
+      },
+      "precision": "day",
+      "years": 1
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Malte",
+    "gender": "männlich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 7014,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Schablonenkamp",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "2025-03-01",
+      "exit_date": null,
+      "exit_reason": "",
+      "exit_reason_label": "",
+      "id": 6933,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7033,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": null,
+    "purged": false,
+    "status": "active",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": true,
+      "last_login": "2026-11-28T19:20:42.870772Z",
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6326,
+      "member_type": 2992,
+      "member_type_name": "Jungschütze",
+      "reported": true,
+      "valid_from": "2025-03-01",
+      "valid_until": null
+     }
+    ],
+    "version": 1
+   },
+   {
+    "billing_address": null,
+    "birth_date": "1960-02-02",
+    "birth_year_only": false,
+    "board_roles": [],
+    "club_number": "2196",
+    "contact": {
+     "city": "Musterstadt",
+     "country": "Deutschland",
+     "email": "rita.ausdenk2196@sv-musterstadt.test",
+     "phone": "",
+     "postal_code": "12345",
+     "street": "Am Bach 7"
+    },
+    "contact_for": [],
+    "contact_persons": [],
+    "contact_shared": true,
+    "current_type": null,
+    "department_roles": [],
+    "departments": [
+     {
+      "department": 9307,
+      "department_name": "Tambour",
+      "id": 4154,
+      "valid_from": "1982-11-01",
+      "valid_until": "1993-01-23",
+      "version": 1
+     }
+    ],
+    "duration": {
+     "club": {
+      "days": 3737,
+      "next": null,
+      "precision": "day",
+      "years": 10
+     },
+     "federation": null
+    },
+    "exit_reasons": [
+     {
+      "label": "Austritt",
+      "value": "exit"
+     },
+     {
+      "label": "Ausschluss",
+      "value": "exclusion"
+     },
+     {
+      "label": "Streichung",
+      "value": "strike_off"
+     },
+     {
+      "label": "Tod",
+      "value": "death"
+     },
+     {
+      "label": "Wechsel in anderen Verein",
+      "value": "transfer"
+     }
+    ],
+    "federation": null,
+    "first_name": "Rita",
+    "gender": "weiblich",
+    "greetings_opt_out_at": null,
+    "honorary_titles": {
+     "federation": [],
+     "own": []
+    },
+    "households": [],
+    "id": 7113,
+    "info_opt_out_at": null,
+    "kind": "person",
+    "last_name": "Ausdenk",
+    "managed_by": null,
+    "organization": null,
+    "other_memberships": null,
+    "pays_fee_self": false,
+    "periods": [
+     {
+      "entry_date": "1982-11-01",
+      "exit_date": "1993-01-23",
+      "exit_reason": "strike_off",
+      "exit_reason_label": "Streichung",
+      "id": 7032,
+      "note": "",
+      "version": 1
+     }
+    ],
+    "person_id": 7132,
+    "photo": {
+     "approved": null,
+     "pending": null
+    },
+    "photo_consent_at": null,
+    "photo_consent_source": "",
+    "purge_due": "1995-01-23",
+    "purged": false,
+    "status": "former",
+    "summary": {
+     "account": {
+      "app": false,
+      "has_access": false,
+      "last_login": null,
+      "mfa": false
+     },
+     "invoices": {
+      "open": 0,
+      "open_amount": "0.00",
+      "overdue": 0
+     }
+    },
+    "title": "",
+    "type_history": [
+     {
+      "active": true,
+      "id": 6425,
+      "member_type": 2989,
+      "member_type_name": "aktiv",
+      "reported": true,
+      "valid_from": "1982-11-01",
+      "valid_until": "1993-01-23"
+     }
+    ],
+    "version": 1
+   }
+  ],
+  "quelle": "../../api/members.ts",
+  "typ": "MemberDetail"
+ },
+ "ansprechpartner": {
+  "antworten": [
+   [],
+   [
+    {
+     "access_email": "",
+     "contact_email": "emil.annahmer2011@sv-musterstadt.test",
+     "contact_phone": "01234 995396",
+     "display_name": "Emil Annahmer",
+     "email": "",
+     "first_name": "",
+     "function": "Geschäftsführung",
+     "gender": "",
+     "id": 20,
+     "is_guardian": false,
+     "is_primary": true,
+     "last_name": "",
+     "linked_member": 6928,
+     "member_access": false,
+     "phone": "",
+     "receives_invoices": true,
+     "receives_mail": true,
+     "represents": true,
+     "since": "2025-10-24",
+     "title": "",
+     "version": 1
+    },
+    {
+     "access_email": "",
+     "contact_email": "maria@muster.example",
+     "contact_phone": "+49 30 1234567",
+     "display_name": "Maria Muster",
+     "email": "maria@muster.example",
+     "first_name": "Maria",
+     "function": "Buchhaltung",
+     "gender": "",
+     "id": 21,
+     "is_guardian": false,
+     "is_primary": false,
+     "last_name": "Muster",
+     "linked_member": null,
+     "member_access": false,
+     "phone": "+49 30 1234567",
+     "receives_invoices": true,
+     "receives_mail": true,
+     "represents": true,
+     "since": null,
+     "title": "",
+     "version": 1
+    }
+   ]
+  ],
+  "quelle": "../../api/members.ts",
+  "typ": "ContactPerson[]"
+ },
+ "liste": {
+  "antworten": [
+   {
+    "count": 213,
+    "next": "http://testserver/api/orgs/9285/members/?page=2",
+    "previous": null,
+    "results": [
+     {
+      "birth_date": "2003-07-08",
+      "birth_year_only": false,
+      "city": "Musterstadt",
+      "club_number": "2106",
+      "departments": [
+       "Batterie Donnerhall"
+      ],
+      "email": "anke.annahmer2106@sv-musterstadt.test",
+      "entry_date": "2021-12-01",
+      "exit_date": null,
+      "first_name": "Anke",
+      "gender": "weiblich",
+      "honorary_titles": [
+       "Ehrenmitglied"
+      ],
+      "households": [
+       {
+        "id": 46,
+        "kind": "family",
+        "name": "Familie Muster",
+        "role": ""
+       }
+      ],
+      "id": 7023,
+      "kind": "person",
+      "last_name": "Annahmer",
+      "member_number": null,
+      "member_type": "aktiv",
+      "name_suffix": "",
+      "phone": "01234 733722",
+      "photo_url": "/api/orgs/9285/members/7023/photo/?size=thumb&v=1795893642",
+      "postal_code": "12345",
+      "status": "active",
+      "street": "Kirchstraße 70",
+      "title": ""
+     },
+     {
+      "birth_date": "1996-11-08",
+      "birth_year_only": false,
+      "city": "Musterstadt",
+      "club_number": "2192",
+      "departments": [
+       "Tambour"
+      ],
+      "email": "carsten.annahmer2192@sv-musterstadt.test",
+      "entry_date": "2019-02-01",
+      "exit_date": null,
+      "first_name": "Carsten",
+      "gender": "männlich",
+      "honorary_titles": [
+       "Ehrenmitglied"
+      ],
+      "households": [
+       {
+        "id": 46,
+        "kind": "family",
+        "name": "Familie Muster",
+        "role": ""
+       }
+      ],
+      "id": 7109,
+      "kind": "person",
+      "last_name": "Annahmer",
+      "member_number": null,
+      "member_type": "aktiv",
+      "name_suffix": "",
+      "phone": "",
+      "photo_url": null,
+      "postal_code": "12345",
+      "status": "active",
+      "street": "Lindenallee 9",
+      "title": ""
+     },
+     {
+      "birth_date": null,
+      "birth_year_only": false,
+      "city": "Musterstadt",
+      "club_number": "2223",
+      "departments": [],
+      "email": "info@baeckerei-muster.example",
+      "entry_date": "2025-10-24",
+      "exit_date": null,
+      "first_name": "",
+      "gender": "",
+      "honorary_titles": [],
+      "households": [],
+      "id": 7140,
+      "kind": "organization",
+      "last_name": "Bäckerei Muster GmbH",
+      "member_number": null,
+      "member_type": "aktiv",
+      "name_suffix": "",
+      "phone": "",
+      "photo_url": null,
+      "postal_code": "12345",
+      "status": "active",
+      "street": "Musterweg 2",
+      "title": ""
+     }
+    ]
+   },
+   {
+    "count": 213,
+    "next": "http://testserver/api/orgs/9285/members/?page=3",
+    "previous": "http://testserver/api/orgs/9285/members/",
+    "results": []
+   },
+   {
+    "count": 10,
+    "next": null,
+    "previous": null,
+    "results": [
+     {
+      "birth_date": "1960-02-02",
+      "birth_year_only": false,
+      "city": "Musterstadt",
+      "club_number": "2196",
+      "departments": [],
+      "email": "rita.ausdenk2196@sv-musterstadt.test",
+      "entry_date": "1982-11-01",
+      "exit_date": "1993-01-23",
+      "first_name": "Rita",
+      "gender": "weiblich",
+      "honorary_titles": [],
+      "households": [],
+      "id": 7113,
+      "kind": "person",
+      "last_name": "Ausdenk",
+      "member_number": null,
+      "member_type": null,
+      "name_suffix": "",
+      "phone": "",
+      "photo_url": null,
+      "postal_code": "12345",
+      "status": "former",
+      "street": "Am Bach 7",
+      "title": ""
+     }
+    ]
+   },
+   {
+    "count": 10,
+    "next": null,
+    "previous": null,
+    "results": []
+   }
+  ],
+  "quelle": "../../api/members.ts",
+  "typ": "Page<MemberRow>"
+ },
+ "mitgliedsarten": {
+  "antworten": [
+   [
+    {
+     "active": true,
+     "counts_for_duration": true,
+     "id": 2989,
+     "in_use": true,
+     "is_archived": false,
+     "name": "aktiv",
+     "reported": true,
+     "sort_order": 1
+    },
+    {
+     "active": false,
+     "counts_for_duration": true,
+     "id": 2990,
+     "in_use": true,
+     "is_archived": false,
+     "name": "passiv",
+     "reported": true,
+     "sort_order": 1
+    },
+    {
+     "active": false,
+     "counts_for_duration": true,
+     "id": 2991,
+     "in_use": true,
+     "is_archived": false,
+     "name": "Ehrenmitglied",
+     "reported": true,
+     "sort_order": 2
+    },
+    {
+     "active": true,
+     "counts_for_duration": true,
+     "id": 2992,
+     "in_use": true,
+     "is_archived": false,
+     "name": "Jungschütze",
+     "reported": true,
+     "sort_order": 3
+    }
+   ]
+  ],
+  "quelle": "../../api/members.ts",
+  "typ": "MemberType[]"
+ }
+}

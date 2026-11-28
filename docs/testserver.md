@@ -314,7 +314,7 @@ docker compose -f docker-compose.server.yml exec backend python manage.py seed_t
 „Schützenverein Musterstadt 1823 e.V.“ direkt unter der Plattform: sieben Korps, darunter
 Züge (das Tambourkorps ohne Züge), alle schaltbaren Module und Zusatzfunktionen an, mit
 erfundenen Daten für Mitglieder, Kasse, Beiträge, Termine, Würden, Wettbewerbe, Meldungen,
-Rundschreiben-Entwurf und Webseite mit Chronik (`organizations/demo_korps.py`). Wiederholbar;
+Rundschreiben-Entwurf und Webseite mit Chronik (`demodaten/korps.py`). Wiederholbar;
 die Pilotorganisationen und alle anderen Daten bleiben unverändert.
 
 ```bash
@@ -331,7 +331,7 @@ Passwort erzeugt und einmal ausgegeben.
 „Musikkapelle Musterdorf 2009 e.V.“ direkt unter der Plattform, ohne Untereinheiten, in Blau
 und Gold: Musiker mit Instrumenten, Vorstand mit Dirigent auf der Webseite, Ehrenmitglieder,
 verstorbene Mitglieder im Archiv, Termine, Stücke und eine Webseite mit Kopfbild, Galerie und
-dem Menü „Aktuelles · Kapelle · Termine · Galerie · Kontakt“ (`organizations/demo_kapelle.py`).
+dem Menü „Aktuelles · Kapelle · Termine · Galerie · Kontakt“ (`demodaten/kapelle.py`).
 Ist ein Designpaket mit dem Schlüssel `kapelle-furth` eingespielt, nimmt die Webseite es.
 Wiederholbar wie oben.
 

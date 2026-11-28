@@ -1,15 +1,10 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
 // Aufbau (Ralf 15.11.2026): Kopf mit Wann/Ort/Kalender, Aktionsleiste, Rückmeldungen als Karte,
 // „Zu diesem Termin“ als Karte mit einer Zeile je Bereich, Löschen allein unten.
-import { NextcloudPick } from '../NextcloudFiles.tsx'
 import { RouteLinks } from './RouteLinks.tsx'
 import { VideoRoom } from './VideoRoom.tsx'
-import { EventTaskRow } from '../TodoEventLink.tsx'
-import { Link, useNavigate } from 'react-router-dom'
-import { useOptionalOrg } from '../../org/OrgContext.tsx'
-import { EventMaterialRow } from '../MaterialReferences.tsx'
+import { useNavigate } from 'react-router-dom'
 import { useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import { eventApi } from '../../api/events.ts'
 import type {
   CalendarBase,
@@ -19,39 +14,23 @@ import type {
   Occurrence,
 } from '../../api/events.ts'
 import { errorMessage, useLoad } from '../forms.ts'
-import { Alert, Checkbox, Field, Loading } from '../ui.tsx'
+import { Alert, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
-import { RegistrationPanel } from './Registration.tsx'
-import { EventProjectPanel } from './EventProject.tsx'
-import { useEventDocumentLink } from './EventDocumentLink.tsx'
-import { EventRow } from './EventRow.tsx'
+import { RegistrationPanel } from './RegistrationPanel.tsx'
 import { berlin, formatDay, formatRange, toApi } from './time.ts'
 import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { circularApi } from '../../api/circulars.ts'
-import { contentApi } from '../../api/website.ts'
 import { Modal } from '../Modal.tsx'
-import type { CloseGuard } from './EventForm.tsx'
+import type { CloseGuard } from './eventFormHelpers.ts'
 import { t, tc } from '../../i18n/index.ts'
+import { AttachmentsRow } from './AttachmentsRow.tsx'
+import { RelatedCard } from './RelatedCard.tsx'
+import { VisibilityBadge } from './VisibilityBadge.tsx'
 
 export { Modal }
 
 const MAX_BYTES = 15 * 1024 * 1024
-
-function formatSize(bytes: number): string {
-  return bytes >= 1024 * 1024
-    ? t('{x} MB', { x: (bytes / 1024 / 1024).toFixed(1).replace('.', ',') })
-    : t('{x} KB', { x: Math.max(1, Math.round(bytes / 1024)) })
-}
-
-export function VisibilityBadge({ visibility }: { visibility: string }) {
-  if (visibility === 'members') return null
-  return (
-    <span className={`badge badge-${visibility}`}>
-      {visibility === 'public' ? t('nach außen öffentlich') : t('nur Vorstand')}
-    </span>
-  )
-}
 
 /** Rundschreiben zum Termin schreiben: an die Eingeladenen, mit den PDF-Anhängen des Termins. */
 function useCircularWriter(base: string, event: EventDetail) {
@@ -76,208 +55,6 @@ function useCircularWriter(base: string, event: EventDetail) {
     }
   }
   return { busy, error, write }
-}
-
-/**
- * Eigene Veranstaltungsseite auf der Webseite (Anmeldung A4, nur bei öffentlichen Terminen):
- * Titel, Text und Abschnitte unter Webseite › Inhalte, Eckdaten und Anmeldeknopf aus dem Termin.
- */
-function WebPageRow({ orgId, event }: { orgId: number; event: EventDetail }) {
-  const navigate = useNavigate()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const page = event.web_page
-  async function create() {
-    setBusy(true)
-    setError(null)
-    try {
-      const text = await contentApi.eventPage(orgId, event.id)
-      navigate(`/webseite/inhalte?text=${text.id}`)
-    } catch (err) {
-      setError(errorMessage(err))
-      setBusy(false)
-    }
-  }
-  return (
-    <EventRow
-      label={t('Webseite')}
-      actions={
-        page ? (
-          <Link
-            className="button button-ghost"
-            to={`/webseite/inhalte?text=${page.id}`}
-            aria-label={t('Veranstaltungsseite bearbeiten')}
-          >
-            {t('Bearbeiten')}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            className="button button-ghost"
-            disabled={busy}
-            onClick={() => void create()}
-            aria-label={t('Eigene Seite auf der Webseite anlegen')}
-          >
-            <span aria-hidden="true">+</span> {t('Anlegen')}
-          </button>
-        )
-      }
-    >
-      {page ? (
-        <>
-          {t('Veranstaltungsseite: {title}', { title: page.title })}{' '}
-          <span className="muted small">
-            {page.is_published ? t('veröffentlicht') : t('Entwurf, nicht veröffentlicht')}
-          </span>
-        </>
-      ) : (
-        <span className="muted small">
-          {t('keine eigene Seite; Termin erscheint in der Terminliste')}
-        </span>
-      )}
-      {error && <Alert kind="error">{error}</Alert>}
-    </EventRow>
-  )
-}
-
-/**
- * Was am Termin hängt, je eine Zeile: Rundschreiben, Versammlung, Dienstpläne, Belegungen,
- * Aufgaben, Musik, Material, Abrechnung, Anhänge (Menüprüfung 2, N-02; neu gegliedert
- * Ralf 15.11.2026). Leere Bereiche bleiben einzeilig, Auswahlen klappen erst auf Klick auf.
- */
-function RelatedCard({
-  base,
-  event,
-  originalStart,
-  onChanged,
-  attachments,
-}: {
-  base: CalendarBase
-  event: EventDetail
-  originalStart: string
-  onChanged: (event: EventDetail) => void
-  attachments: ReactNode
-}) {
-  const org = useOptionalOrg()?.active
-  const plans = event.helper_plans
-  const bookings = event.bookings
-  const circulars = event.circulars ?? []
-  const book = new URLSearchParams({
-    buchen: '1',
-    termin: String(event.id),
-    titel: event.title,
-    vorkommen: originalStart,
-  })
-  const music = !!org?.modules.includes('music') && !!org.permissions.includes('music.view')
-  return (
-    <section className="card event-card event-related">
-      <h3 className="event-card-title">{t('Zu diesem Termin')}</h3>
-      {circulars.length > 0 && (
-        <EventRow label={t('Rundschreiben')}>
-          <ul className="plain-list">
-            {circulars.map((c) => (
-              <li key={c.id}>
-                <Link to={`/rundschreiben/${c.id}`}>
-                  {t('Rundschreiben: {subject}', { subject: c.subject })}
-                </Link>{' '}
-                <span className="muted small">{c.status_label}</span>
-              </li>
-            ))}
-          </ul>
-        </EventRow>
-      )}
-      {event.meeting && (
-        <EventRow
-          label={t('Versammlung')}
-          actions={
-            <Link
-              className="button button-ghost"
-              to={`/versammlungen?versammlung=${event.meeting.id}`}
-              aria-label={t('Zur Versammlung')}
-            >
-              {t('Öffnen')}
-            </Link>
-          }
-        >
-          {event.meeting.status_label}
-        </EventRow>
-      )}
-      {plans && (plans.length > 0 || event.can_create_helper_plan) && (
-        <EventRow
-          label={t('Dienstplan')}
-          actions={
-            event.can_create_helper_plan &&
-            plans.length === 0 && (
-              <Link
-                className="button button-ghost"
-                to={`/helferdienste?neu=1&termin=${event.id}`}
-                aria-label={t('Dienstplan für diesen Termin anlegen')}
-              >
-                <span aria-hidden="true">+</span> {t('Anlegen')}
-              </Link>
-            )
-          }
-        >
-          {plans.length === 0 ? (
-            <span className="muted small">{t('keiner')}</span>
-          ) : (
-            <ul className="plain-list">
-              {plans.map((p) => (
-                <li key={p.id}>
-                  <Link to={`/helferdienste?plan=${p.id}`}>
-                    {t('Dienstplan: {title}', { title: p.title })}
-                  </Link>{' '}
-                  <span className="muted small">{p.status_label}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </EventRow>
-      )}
-      {bookings && (
-        <EventRow
-          label={t('Belegung')}
-          actions={
-            <Link
-              className="button button-ghost"
-              to={`/belegung?${book}`}
-              aria-label={t('Raum oder Gerät für diesen Termin buchen')}
-            >
-              {t('Buchen')}
-            </Link>
-          }
-        >
-          {bookings.length === 0 ? (
-            <span className="muted small">{t('nichts gebucht')}</span>
-          ) : (
-            <ul className="plain-list">
-              {bookings.map((b) => (
-                <li key={b.id}>
-                  {t('Belegt: {item}', { item: b.item })}{' '}
-                  <span className="muted small">{b.status_label}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </EventRow>
-      )}
-      {event.web_page !== undefined && org && <WebPageRow orgId={org.id} event={event} />}
-      <EventTaskRow base={base} eventId={event.id} />
-      {music && (
-        <EventRow
-          label={t('Musik')}
-          actions={
-            <Link className="button button-ghost" to={`/musik?art=performances&termin=${event.id}`}>
-              {t('Auftritt planen')}
-            </Link>
-          }
-        />
-      )}
-      <EventMaterialRow id={event.id} originalStart={originalStart} sourceBase={base} />
-      <EventProjectPanel base={base} event={event} onChanged={onChanged} />
-      {attachments}
-    </section>
-  )
 }
 
 function rsvpNote(event: EventDetail): string {
@@ -350,181 +127,6 @@ function EventActions({
       </div>
       {circular.error && <Alert kind="error">{circular.error}</Alert>}
     </div>
-  )
-}
-
-/** Zeile „Anhänge“: Liste, Hochladen und Verknüpfen aus der Ablage als Knöpfe nebeneinander. */
-function AttachmentsRow({
-  base,
-  event,
-  busy,
-  inputKey,
-  onUpload,
-  onChanged,
-  onError,
-  setBusy,
-}: {
-  base: CalendarBase
-  event: EventDetail
-  busy: boolean
-  inputKey: number
-  onUpload: (file: File) => void
-  onChanged: (event: EventDetail) => void
-  onError: (text: string) => void
-  setBusy: (busy: boolean) => void
-}) {
-  const input = useRef<HTMLInputElement>(null)
-  const documents = useEventDocumentLink({ base, event, disabled: busy, onChanged }, true)
-  const items = event.attachments
-  return (
-    <EventRow
-      label={t('Anhänge')}
-      actions={
-        event.can_edit && (
-          <>
-            <button
-              type="button"
-              className="button button-ghost"
-              disabled={busy}
-              aria-describedby={`event-${event.id}-file-hint`}
-              onClick={() => input.current?.click()}
-            >
-              <span aria-hidden="true">+</span> {t('Datei hinzufügen')}
-            </button>
-            <input
-              key={inputKey}
-              ref={input}
-              type="file"
-              hidden
-              aria-label={t('Anhang hinzufügen (PDF, JPEG oder PNG, höchstens 15 MB)')}
-              accept="application/pdf,image/jpeg,image/png"
-              disabled={busy}
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) onUpload(file)
-              }}
-            />
-            {!busy && (
-              <NextcloudPick accept={['.pdf', 'image/jpeg', 'image/png']} onFile={onUpload} />
-            )}
-            {documents.button}
-          </>
-        )
-      }
-      extra={documents.panel}
-    >
-      {items.length === 0 && <span className="muted small">{t('keine')}</span>}
-      {items.length > 0 && (
-        <ul className="plain-list">
-          {items.map((a) => (
-            <li key={a.id}>
-              {a.available === false ? (
-                <span className="muted">{a.name}</span>
-              ) : (
-                <a href={a.url} target="_blank" rel="noreferrer">
-                  {a.name}
-                </a>
-              )}{' '}
-              {a.available !== false && <span className="muted small">{formatSize(a.size)}</span>}
-              {a.kind === 'document' && (
-                <span className="muted small"> · {t('aus der Ablage')}</span>
-              )}
-              {event.can_edit && (
-                <button
-                  type="button"
-                  className="link-button"
-                  disabled={busy}
-                  onClick={async () => {
-                    if (
-                      !(await confirmDialog({
-                        final: false,
-                        title: t('Anhang „{name}“ entfernen?', { name: a.name }),
-                        message:
-                          a.kind === 'document'
-                            ? t('Das Dokument bleibt in der Ablage.')
-                            : undefined,
-                        confirmLabel: t('Entfernen'),
-                      }))
-                    )
-                      return
-                    try {
-                      await eventApi.removeAttachment(a.url)
-                      onChanged(await eventApi.get(base, event.id))
-                    } catch (err) {
-                      onError(errorMessage(err))
-                    }
-                  }}
-                >
-                  {t('entfernen')}
-                </button>
-              )}
-              {event.can_edit && event.visibility === 'public' && a.available !== false && (
-                <Checkbox
-                  label={t('auf der Webseite zeigen')}
-                  checked={!!a.on_website}
-                  busy={busy}
-                  onChange={async (value) => {
-                    setBusy(true)
-                    try {
-                      onChanged(await eventApi.showOnWebsite(a.url, value))
-                    } catch (err) {
-                      onError(errorMessage(err))
-                    } finally {
-                      setBusy(false)
-                    }
-                  }}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {event.can_edit && (
-        <div id={`event-${event.id}-file-hint`} className="muted small">
-          {t('PDF, JPEG oder PNG, höchstens 15 MB')}
-        </div>
-      )}
-    </EventRow>
-  )
-}
-
-/** Neuen Termin anlegen (Dialog). */
-export function NewEventDialog({
-  base,
-  date,
-  categories,
-  units,
-  rsvpAllowed,
-  onClose,
-  onSaved,
-}: {
-  base: CalendarBase
-  date: string
-  categories: EventCategory[]
-  units?: EventUnit[]
-  rsvpAllowed?: boolean
-  onClose: () => void
-  onSaved: () => void
-}) {
-  const guard = useRef<CloseGuard | null>(null)
-  return (
-    <Modal
-      title={t('Neuer Termin')}
-      onClose={onClose}
-      beforeClose={() => guard.current?.() ?? true}
-    >
-      <EventForm
-        guardRef={guard}
-        base={base}
-        event={null}
-        date={date}
-        categories={categories}
-        units={units}
-        rsvpAllowed={rsvpAllowed}
-        onCancel={onClose}
-        onSaved={onSaved}
-      />
-    </Modal>
   )
 }
 

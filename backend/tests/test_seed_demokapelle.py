@@ -6,9 +6,10 @@ import pytest
 from django.core.management import call_command
 
 from accounts.models import User
+from demodaten import kapelle as demo_kapelle
+from demodaten import korps as demo_korps
 from members.models import ContactDetails, ExitReason, HonoraryTitleAward, Membership
 from music.models import Musician, Piece, Skill
-from organizations import demo_kapelle, demo_korps
 from organizations.models import Organization
 from website import menu
 from website.content_models import GalleryAlbum, WebsiteImage, WebsiteText

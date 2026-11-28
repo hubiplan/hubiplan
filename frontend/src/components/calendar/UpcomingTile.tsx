@@ -1,6 +1,6 @@
 // Startseiten-Kachel „Nächste Termine“.
 import { useState } from 'react'
-import { NewEventDialog } from './EventDialog.tsx'
+import { NewEventDialog } from './NewEventDialog.tsx'
 import '../../pages/todos.css'
 import { Link } from 'react-router-dom'
 import { eventApi } from '../../api/events.ts'

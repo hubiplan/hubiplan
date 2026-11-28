@@ -18,8 +18,9 @@ import {
 import { Alert, Field, LoadError, Loading, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
-import { ImageChoice, ImagePicker } from './images.tsx'
-import type { Unit } from './images.tsx'
+import { ImageChoice } from './ImageChoice.tsx'
+import { ImagePicker } from './ImagePicker.tsx'
+import type { Unit } from './imagesHelpers.ts'
 import { imageLabel } from './imageTools.ts'
 import { t } from '../../i18n/index.ts'
 

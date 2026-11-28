@@ -43,7 +43,7 @@ Von unten nach oben; eine Schicht importiert nur gleiche und tiefere:
 | Kern | `core` | Mandantentrennung, Verschlüsselung, Dateien, gemeinsame Bausteine |
 | Grundlagen | `organizations`, `accounts`, `access`, `audit` | Einheiten, Konten, Rechte, Protokoll |
 | Fachmodule | alle übrigen | Mitglieder, Kasse, Termine … |
-| Zusammenführung | `config`, `datatransfer`, `mcpserver`, `partnerapi` | Adressen, Schnittstellen nach außen, Datenübernahme |
+| Zusammenführung | `config`, `datatransfer`, `demodaten`, `mcpserver`, `partnerapi` | Adressen, Schnittstellen nach außen, Datenübernahme, Demovereine |
 
 Braucht eine tiefere Schicht etwas aus einer höheren, meldet sich die höhere bei ihr an
 (Verzeichnis, Signal, Rückruf), statt dass die tiefere sie importiert.
@@ -76,10 +76,13 @@ Seiten rufen die Schnittstelle nur über `api/` auf, nie mit `fetch` direkt.
 
 ### Dateigröße
 
-Neue Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen: Komponenten je Thema
-in eigene Dateien, Lade- und Regelteile in Hooks. Die größeren aus dem Bestand stehen in
-`src/test/grosse-dateien.json` und werden nach und nach geteilt
-(`src/test/Dateigroesse.test.ts`).
+Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen
+(`src/test/Dateigroesse.test.ts`, ohne Ausnahmen). Geteilt wird nach Zugehörigkeit: Eine
+Komponente, die andere Dateien benutzen, steht in einer Datei mit ihrem Namen und nimmt mit, was
+nur sie braucht. Was mehrere Dateien eines Bereichs brauchen, steht bei Komponenten in einer
+eigenen Datei, bei Funktionen, Typen und Konstanten in `<bereich>Helpers.ts`. Wird eine einzelne
+Komponente zu groß, kommen Zustand und Abläufe in einen Hook (`use<Name>.ts`) und große Teile der
+Darstellung in eigene Komponenten.
 
 ### Stammdaten gemeinsam laden
 
@@ -104,6 +107,26 @@ oder entfernt, erzeugt die Liste neu:
 
 ```bash
 cd backend && python manage.py api_routen config/api_routen.json
+```
+
+### Felder der Antworten
+
+Die Typen der Antworten schreibt die Web-Oberfläche von Hand (`frontend/src/api/*.ts`). Für
+Bereiche mit Feldabgleich ruft `backend/tests/feldabgleich.py` die Adressen für den Demoverein
+ab und hält echte Antworten in `backend/config/feldabgleich/<bereich>.json` aktuell (dort, weil die
+Testumgebung des Servers den Ordner `frontend` nicht sieht). Daraus erzeugt
+`frontend/scripts/feldabgleich.mjs` Daten mit Typangabe in
+`frontend/src/test/feldabgleich/<bereich>.ts`; `src/test/Feldabgleich.test.ts` prüft, dass sie zu
+den Antworten passen. Die Typprüfung der Oberfläche meldet dann jedes
+Feld, das der Server liefert und der Typ nicht kennt, jedes Pflichtfeld, das fehlt, und jede
+falsche Art. Damit die Antworten jedes Feld zeigen, füllt `backend/tests/feldabgleich_<bereich>.py`
+den Demoverein über die Schnittstelle; Felder ohne Beispiel stehen mit Grund in `OHNE_BEISPIEL`.
+Bisher abgeglichen: Mitglieder (Arten, Liste, Akte, Ansprechpartner). Nach einer Änderung an
+diesen Antworten:
+
+```bash
+cd backend && FELDABGLEICH_SCHREIBEN=1 pytest tests/test_feldabgleich.py
+cd ../frontend && node scripts/feldabgleich.mjs && npm run typecheck
 ```
 
 ### Öffentliche Schnittstelle der Vereinswebseite

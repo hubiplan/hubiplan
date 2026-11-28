@@ -7,7 +7,7 @@ import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { StatusBadge } from './InvoicesPage.tsx'
+import { StatusBadge } from './StatusBadge.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function ReceivedPage() {
