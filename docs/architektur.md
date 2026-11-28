@@ -106,6 +106,23 @@ oder entfernt, erzeugt die Liste neu:
 cd backend && python manage.py api_routen config/api_routen.json
 ```
 
+### Felder der Antworten
+
+Die Typen der Antworten schreibt die Web-Oberfläche von Hand (`frontend/src/api/*.ts`). Für
+Bereiche mit Feldabgleich ruft `backend/tests/feldabgleich.py` die Adressen für den Demoverein
+ab und schreibt echte Antworten als Daten mit Typangabe nach
+`frontend/src/test/feldabgleich/<bereich>.ts`. Die Typprüfung der Oberfläche meldet dann jedes
+Feld, das der Server liefert und der Typ nicht kennt, jedes Pflichtfeld, das fehlt, und jede
+falsche Art. Damit die Antworten jedes Feld zeigen, füllt `backend/tests/feldabgleich_<bereich>.py`
+den Demoverein über die Schnittstelle; Felder ohne Beispiel stehen mit Grund in `OHNE_BEISPIEL`.
+Bisher abgeglichen: Mitglieder (Arten, Liste, Akte, Ansprechpartner). Nach einer Änderung an
+diesen Antworten:
+
+```bash
+cd backend && FELDABGLEICH_SCHREIBEN=1 pytest tests/test_feldabgleich.py
+cd ../frontend && npm run typecheck
+```
+
 ### Öffentliche Schnittstelle der Vereinswebseite
 
 Die Vereinswebseite (`hubiplan-website`) liest nur `/api/public/site/v1/…` und testet gegen eine

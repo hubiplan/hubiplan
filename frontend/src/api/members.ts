@@ -316,6 +316,8 @@ export interface ContactPerson {
   receives_invoices: boolean
   represents: boolean
   member_access: boolean
+  /** Anmelde-E-Mail des Mitgliederzugangs (leer ohne Zugang) */
+  access_email: string
   /** erziehungsberechtigt für ein minderjähriges Mitglied (H4) */
   is_guardian?: boolean
   since: string | null
