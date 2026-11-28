@@ -43,8 +43,9 @@ Hinweise zum Stil:
 - Neue, umbenannte oder entfernte Adressen im Server: `backend/config/api_routen.json` mit
   `python manage.py api_routen config/api_routen.json` neu erzeugen; die Web-Oberfläche prüft
   ihre Aufrufe dagegen ([docs/architektur.md](docs/architektur.md)).
-- Geänderte Antworten unter `/api/public/site/v1/`: `backend/config/webseite_schnittstelle.json`
-  neu schreiben und die Kopie in `hubiplan-website` nachziehen
+- Geänderte Antworten unter `/api/public/site/v1/`: neue Felder im Prüfverein belegen
+  (`backend/tests/webseite_pruefverein.py`), `backend/config/webseite_schnittstelle.json` und
+  `webseite_antworten.json` neu schreiben und die Kopien in `hubiplan-website` nachziehen
   ([docs/architektur.md](docs/architektur.md)).
 - Neue Abhängigkeiten müssen mit der AGPL-3.0 verträglich sein (z. B. MIT, BSD, Apache-2.0,
   LGPL, MPL-2.0). Nicht möglich: GPL-2.0-only, SSPL, „nur nicht-kommerziell“, proprietär.

@@ -124,6 +124,9 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "honorary_layout": ("list", "cards"),
     # Webseite #145 (Ralf 16.11.2026): lange, schmale Tabellen am Bildschirm in zwei Spalten
     "long_tables": ("rows", "columns"),
+    # Anschrift, Telefon und E-Mail aus den Vereinsdaten neben dem Kontaktformular
+    # (hubiplan-website, UX-Audit 16.11. WS-13); Vorgabe an
+    "contact_details": bool,
 }
 
 # hubiplan #526: eigene Schriftfolge (CSS ``font-family``) aus Schriften, die auf dem Gerät
@@ -268,6 +271,7 @@ _BASE_DEFAULTS: dict[str, str | bool] = {
     "ranking": "table",
     "honorary_layout": "list",
     "long_tables": "rows",
+    "contact_details": True,
 }
 _DESIGN_DEFAULTS: dict[str, dict[str, str | bool | None]] = {
     "classic": {
