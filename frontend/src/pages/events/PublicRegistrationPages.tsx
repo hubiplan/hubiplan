@@ -17,7 +17,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { Logo } from '../../components/Logo.tsx'
 import { Alert, Checkbox, Field, Loading, SelectField } from '../../components/ui.tsx'
 import { CancelPanel } from '../../components/calendar/RegistrationCancel.tsx'
-import { PriceList } from '../../components/calendar/Registration.tsx'
+import { PriceList } from '../../components/calendar/PriceList.tsx'
 import { ExtrasFields, HealthConsent } from '../../components/calendar/RegistrationExtras.tsx'
 import {
   asksHealth,

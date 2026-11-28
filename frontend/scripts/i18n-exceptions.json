@@ -6,19 +6,19 @@
     "reason": "Absichtlich zweisprachiger Rückweg zur Sprachwahl."
   },
   {
-    "file": "pages/platform/PlatformPages.tsx",
+    "file": "pages/platform/PlatformOrgForm.tsx",
     "text": "Dachverband",
     "kind": "Property",
     "reason": "Gespeicherter Vorschlag für den frei änderbaren Vereinsbegriff; Vereinssprache bleibt Deutsch."
   },
   {
-    "file": "pages/platform/PlatformPages.tsx",
+    "file": "pages/platform/PlatformOrgForm.tsx",
     "text": "Verein",
     "kind": "Property",
     "reason": "Gespeicherter Vorschlag für den frei änderbaren Vereinsbegriff; Vereinssprache bleibt Deutsch."
   },
   {
-    "file": "components/DataTransfer.tsx",
+    "file": "components/ImportPreviewView.tsx",
     "text": "{Pl}",
     "kind": "Literal",
     "reason": "Wird bereits von fillTerms mit dem lokalisierten Vereinsbegriff ersetzt."
@@ -30,7 +30,7 @@
     "reason": "Beispiel für die feste Platzhaltersyntax im vereinsseitigen Schreiben."
   },
   {
-    "file": "components/DataTransfer.tsx",
+    "file": "components/ImportPreviewView.tsx",
     "text": "{Pl}",
     "kind": "Property",
     "reason": "Beschriftung wird über fillTerms mit dem lokalisierten Vereinsbegriff erzeugt."

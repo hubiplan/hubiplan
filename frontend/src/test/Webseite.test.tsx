@@ -878,7 +878,7 @@ describe('Webseite', () => {
 
   it('Vorschau springt zur geänderten Stelle (Ralf 14.11.)', async () => {
     const { previewUrl } = await import('../pages/website/DesignPreview.tsx')
-    const { previewFocus } = await import('../pages/website/StyleTuning.tsx')
+    const { previewFocus } = await import('../pages/website/styleTuningCatalog.ts')
     const b = 'https://www.beispiel.test/'
     expect(previewUrl(b, 2, previewFocus('footer', true))).toBe(`${b}vorschau/design/?neu=2#fuss`)
     expect(previewUrl(b, 3, previewFocus('page_title', true))).toBe(

@@ -9,17 +9,16 @@ import {
   foldName,
   showValue,
   type CompetitionDetail,
-  type MemberChoice,
   type Scoring,
   type StandApi,
   type Starter,
   type SyncOp,
-  type TargetInfo,
 } from '../../api/competitions.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { StandEnd } from './StandEnd.tsx'
 import { StandFinish } from './StandFinish.tsx'
+import { StandLists } from './StandLists.tsx'
 import { PhotoButton } from './PhotoButton.tsx'
 import type { PhotoSuggestion } from './photo.ts'
 import { TargetPad, type PadHit } from './TargetPad.tsx'
@@ -27,11 +26,7 @@ import { scoreShot, totalText } from './targetMath.ts'
 import { describe, guestOrigin, useStandStore } from './standStore.ts'
 import { t } from '../../i18n/index.ts'
 import { SuggestInput } from '../../components/SuggestInput.tsx'
-
-type Hit =
-  | { kind: 'starter'; starter: Starter }
-  | { kind: 'member'; member: MemberChoice }
-  | { kind: 'guest'; name: string }
+import { blackShare, hitKey, hitLabel, hitName, type Hit } from './standHits.tsx'
 
 export function StandPanel({
   api,
@@ -401,27 +396,6 @@ export function StandPanel({
 
   if (!scoring) return <p className="muted">{t('Zuerst eine Einzelwertung anlegen.')}</p>
 
-  const open = local.starters.filter((s) => !s.values[String(scoring.id)])
-  // Zuletzt erfasst über alle Geräte: Zeitpunkt vom Server, dazu eigene noch nicht
-  // abgeglichene Eingaben; je Schütze nur die letzte mit seinem aktuellen Wert
-  const latest = new Map<number | string, { ref: number | string; name: string; at: string }>()
-  for (const s of local.starters)
-    if (s.scored_at && s.values[String(scoring.id)])
-      latest.set(s.key ?? s.id, { ref: s.key ?? s.id, name: s.name, at: s.scored_at })
-  for (const r of local.recent) {
-    const known = latest.get(r.ref)
-    if (!known || Date.parse(r.at) > Date.parse(known.at))
-      latest.set(r.ref, { ref: r.ref, name: r.name, at: r.at })
-  }
-  const recent = [...latest.values()]
-    .map((r) => {
-      const s = local.starters.find((x) => (x.key ?? x.id) === r.ref)
-      return { ...r, value: s?.values[String(scoring.id)] ?? '' }
-    })
-    .filter((r) => r.value !== '')
-    .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
-    .slice(0, 10)
-
   return (
     <div className={`stand${fullscreen ? ' stand-full' : ''}`}>
       <section className="stand-block" aria-label={t('Erfassen')}>
@@ -725,43 +699,12 @@ export function StandPanel({
             {notice}
           </p>
         )}
-        <details className="stand-section" open={!fullscreen || undefined}>
-          <summary>{t('Zuletzt erfasst ({n})', { n: recent.length })}</summary>
-          <ul className="stand-list">
-            {recent.map((r) => (
-              <li key={`${r.ref}-${r.at}`}>
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => {
-                    const s = local.starters.find((x) => (x.key ?? x.id) === r.ref)
-                    if (s) choose({ kind: 'starter', starter: s })
-                  }}
-                >
-                  {r.name}
-                </button>{' '}
-                <span className="push-right">{showValue(r.value, scoring.decimals)}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-        <details className="stand-section">
-          <summary>{t('Noch offen ({n})', { n: open.length })}</summary>
-          <ul className="stand-list">
-            {open.map((s) => (
-              <li key={s.key ?? s.id}>
-                <button
-                  type="button"
-                  className="link-button"
-                  onClick={() => choose({ kind: 'starter', starter: s })}
-                >
-                  {s.name}
-                </button>
-                <span className="muted"> {s.unit_name || s.club}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <StandLists
+          local={local}
+          scoring={scoring}
+          fullscreen={fullscreen}
+          onChoose={(starter) => choose({ kind: 'starter', starter })}
+        />
       </section>
       {!closed && fullscreen ? (
         <StandEnd
@@ -789,60 +732,4 @@ export function StandPanel({
       )}
     </div>
   )
-}
-
-function hitKey(h: Hit) {
-  if (h.kind === 'starter') return `s-${h.starter.key ?? h.starter.id}`
-  if (h.kind === 'member') return `m-${h.member.membership}`
-  return 'gast'
-}
-
-function hitName(h: Hit) {
-  if (h.kind === 'starter') return h.starter.name
-  if (h.kind === 'member') return h.member.name
-  return h.name
-}
-
-function hitLabel(h: Hit, scoring: Scoring) {
-  if (h.kind === 'starter') {
-    const v = h.starter.values[String(scoring.id)]
-    return (
-      <>
-        <strong>{h.starter.name}</strong>
-        <span className="muted"> {h.starter.unit_name || h.starter.club}</span>
-        {v ? (
-          <span className="push-right">
-            {t('schon')} {showValue(v, scoring.decimals)}
-          </span>
-        ) : null}
-      </>
-    )
-  }
-  if (h.kind === 'member')
-    return (
-      <>
-        <strong>{h.member.name}</strong>
-        <span className="muted">
-          {' '}
-          {h.member.unit_name}
-          {h.member.birth_year ? t(' · {birth_year}', { birth_year: h.member.birth_year }) : ''}
-        </span>
-        <span className="push-right muted">{t('neu')}</span>
-      </>
-    )
-  return (
-    <>
-      {t('Neu:')} <strong>„{h.name}“</strong> {t('als Gast hinzufügen')}
-    </>
-  )
-}
-
-/**
- * Spiegel / äußerster Ring für die Live-Kamera; bei Karten mit einem Spiegel und bei der
- * Fünf-Spiegel-Karte (vier Ecken und Mitte, Ralf 09.11.).
- */
-function blackShare(tm: TargetInfo): number | null {
-  return tm.black_diameter && tm.rings[0] && (tm.spots === 1 || tm.spots === 5)
-    ? tm.black_diameter / tm.rings[0].diameter
-    : null
 }

@@ -76,10 +76,13 @@ Seiten rufen die Schnittstelle nur über `api/` auf, nie mit `fetch` direkt.
 
 ### Dateigröße
 
-Neue Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen: Komponenten je Thema
-in eigene Dateien, Lade- und Regelteile in Hooks. Die größeren aus dem Bestand stehen in
-`src/test/grosse-dateien.json` und werden nach und nach geteilt
-(`src/test/Dateigroesse.test.ts`).
+Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen
+(`src/test/Dateigroesse.test.ts`, ohne Ausnahmen). Geteilt wird nach Zugehörigkeit: Eine
+Komponente, die andere Dateien benutzen, steht in einer Datei mit ihrem Namen und nimmt mit, was
+nur sie braucht. Was mehrere Dateien eines Bereichs brauchen, steht bei Komponenten in einer
+eigenen Datei, bei Funktionen, Typen und Konstanten in `<bereich>Helpers.ts`. Wird eine einzelne
+Komponente zu groß, kommen Zustand und Abläufe in einen Hook (`use<Name>.ts`) und große Teile der
+Darstellung in eigene Komponenten.
 
 ### Stammdaten gemeinsam laden
 

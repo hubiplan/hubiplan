@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { MaterialPicker } from '../pages/materials/MaterialsPage.tsx'
+import { MaterialPicker } from '../pages/materials/MaterialPicker.tsx'
 import { fakeApi } from './fakeApi.ts'
 
 describe('Materialauswahl', () => {

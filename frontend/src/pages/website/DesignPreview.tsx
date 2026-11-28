@@ -12,7 +12,7 @@ import type { AutoSave } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
-import type { PreviewFocus } from './StyleTuning.tsx'
+import type { PreviewFocus } from './styleTuningHelpers.ts'
 
 /** Hinweis „Nicht veröffentlichte Änderungen · Veröffentlichen · Verwerfen“ */
 export function DraftBar({

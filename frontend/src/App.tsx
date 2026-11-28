@@ -99,7 +99,7 @@ const MeetingsPage = lazyPage(() => import('./pages/meetings/MeetingsPage.tsx'),
 const ChronikPage = lazyPage(() => import('./pages/chronik/ChronikPage.tsx'), 'ChronikPage')
 const AreaOverviewPage = lazyPage(() => import('./pages/AreaOverviewPage.tsx'), 'AreaOverviewPage')
 const PartnersPage = lazyPage(() => import('./pages/partners/PartnersPage.tsx'), 'PartnersPage')
-const ScoresOnlyPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'ScoresOnlyPage')
+const ScoresOnlyPage = lazyPage(() => import('./pages/music/ScoresOnlyPage.tsx'), 'ScoresOnlyPage')
 const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'HelpersPage')
 const SurveysPage = lazyPage(() => import('./pages/surveys/SurveysPage.tsx'), 'SurveysPage')
 const PinboardPage = lazyPage(() => import('./pages/pinboard/PinboardPage.tsx'), 'PinboardPage')
@@ -136,23 +136,23 @@ const StandTokenPage = lazyPage(
   'StandTokenPage',
 )
 const PlatformLayout = lazyPage(
-  () => import('./pages/platform/PlatformPages.tsx'),
+  () => import('./pages/platform/PlatformLayout.tsx'),
   'PlatformLayout',
 )
 const PlatformMailPage = lazyPage(
-  () => import('./pages/platform/PlatformPages.tsx'),
+  () => import('./pages/platform/PlatformMailPage.tsx'),
   'PlatformMailPage',
 )
 const PlatformOrgsPage = lazyPage(
-  () => import('./pages/platform/PlatformPages.tsx'),
+  () => import('./pages/platform/PlatformOrgsPage.tsx'),
   'PlatformOrgsPage',
 )
 const PlatformSettingsPage = lazyPage(
-  () => import('./pages/platform/PlatformPages.tsx'),
+  () => import('./pages/platform/PlatformSettingsPage.tsx'),
   'PlatformSettingsPage',
 )
 const PlatformTransferPage = lazyPage(
-  () => import('./pages/platform/PlatformPages.tsx'),
+  () => import('./pages/platform/PlatformTransferPage.tsx'),
   'PlatformTransferPage',
 )
 const PlatformVersionPage = lazyPage(

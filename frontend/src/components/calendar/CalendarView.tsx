@@ -8,7 +8,9 @@ import type { CalendarBase, EventCategory, Occurrence } from '../../api/events.t
 import { useLoad } from '../forms.ts'
 import { LoadError } from '../ui.tsx'
 import { PageActions } from '../PageHeader.tsx'
-import { EventDialog, NewEventDialog, VisibilityBadge } from './EventDialog.tsx'
+import { EventDialog } from './EventDialog.tsx'
+import { NewEventDialog } from './NewEventDialog.tsx'
+import { VisibilityBadge } from './VisibilityBadge.tsx'
 import { RsvpBadge } from './Rsvp.tsx'
 import {
   MONTHS,
