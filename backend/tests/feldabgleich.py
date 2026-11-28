@@ -110,9 +110,42 @@ def mitglieder() -> dict[str, tuple[str, list]]:
     }
 
 
+def termine() -> dict[str, tuple[str, list]]:
+    """Antworten des Bereichs Termine: Name → (Typ, Antworten)."""
+    import datetime
+
+    from django.utils import timezone
+
+    from . import feldabgleich_termine
+
+    club, client = _demoverein()
+    heute = timezone.localdate()
+    von = (heute - datetime.timedelta(days=200)).isoformat()
+    bis = (heute + datetime.timedelta(days=400)).isoformat()
+    feldabgleich_termine.fuelle(client, club, von, bis)
+    liste = _hole(client, club, f"events/?from={von}&to={bis}")
+    ids = list(dict.fromkeys(o["event_id"] for o in liste["items"]))
+    einzeln = [_hole(client, club, f"events/{pk}/") for pk in ids]
+    # die Liste der Rückmeldungen gibt es nur, wo der Termin sie anbietet
+    mit_liste = [e["id"] for e in einzeln if e["rsvp"].get("can_view_list")]
+    return {
+        "kategorien": ("EventCategory[]", [_hole(client, club, "events/categories/")]),
+        "liste": ("EventList", [{**liste, "items": _auswahl(liste["items"])}]),
+        "termine": ("EventDetail", _auswahl(einzeln)),
+        "rueckmeldungen": (
+            "ResponseList",
+            _auswahl([_hole(client, club, f"events/{pk}/responses/") for pk in mit_liste]),
+        ),
+        "fremde_kalender": ("ExternalCalendar[]", [_hole(client, club, "events/external/")]),
+        "veroeffentlichung": ("Publication", [_hole(client, club, "events/publication/")]),
+        "freigabe": ("Sharing", [_hole(client, club, "events/sharing/")]),
+    }
+
+
 # Bereich → (Quelle der Typen in der Oberfläche, Funktion mit den Antworten)
 BEREICHE = {
     "mitglieder": ("../../api/members.ts", mitglieder),
+    "termine": ("../../api/events.ts", termine),
 }
 
 
@@ -131,6 +164,14 @@ OHNE_BEISPIEL = {
         "akten[].managed_by": "Verbund zweier Instanzen",
         # nur in der Antwort auf das Vergeben eines Amts (beendete Vorgänger), sonst leer
         "akten[].department_roles[].ended": "nur beim Speichern",
+    },
+    "termine": {
+        # Videoraum: braucht eine verbundene Nextcloud mit Talk
+        "liste[].items[].video": "Nextcloud Talk",
+        "termine[].video": "Nextcloud Talk",
+        # setzt erst der Versand des Rundschreibens bzw. der nächtliche Erinnerungslauf
+        "termine[].circulars[].sent_at": "erst nach dem Versand",
+        "termine[].reminded_at": "Erinnerungslauf",
     },
 }
 

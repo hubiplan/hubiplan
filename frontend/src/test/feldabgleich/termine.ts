@@ -1,0 +1,3118 @@
+// Erzeugt von scripts/feldabgleich.mjs aus backend/config/feldabgleich, nicht von Hand ändern.
+// Echte Antworten des Servers (Demoverein, erfundene Daten). Meldet die Typprüfung
+// hier einen Fehler, passen Server und Typ nicht zusammen: den Typ in
+// src/api/events.ts anpassen (oder den Server).
+import type { EventCategory, EventDetail, EventList, ExternalCalendar, Publication, ResponseList, Sharing } from '../../api/events.ts'
+
+export const freigabe: (Sharing)[] = [
+ {
+  "down_possible": true,
+  "editable": true,
+  "share_down": true,
+  "share_up": false,
+  "units": [
+   {
+    "has_children": true,
+    "id": 2607,
+    "name": "Gren",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": true,
+    "id": 2611,
+    "name": "Jäger",
+    "own_admin": true,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": true,
+    "id": 2616,
+    "name": "Lust",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": true,
+    "id": 2619,
+    "name": "Art",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": true,
+    "id": 2622,
+    "name": "Reiter",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": true,
+    "id": 2625,
+    "name": "Scheibe",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": false,
+    "id": 2628,
+    "name": "Tambour",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   },
+   {
+    "has_children": false,
+    "id": 2629,
+    "name": "Jugendgruppe",
+    "own_admin": false,
+    "share_down": true,
+    "share_up": true
+   }
+  ],
+  "up_possible": false
+ }
+]
+
+export const fremde_kalender: (ExternalCalendar[])[] = [
+ [
+  {
+   "category": {
+    "color": "#b5462f",
+    "id": 580,
+    "name": "Fest"
+   },
+   "event_count": 1,
+   "has_secret": false,
+   "has_token": true,
+   "hidden": [
+    {
+     "key": "187a1b26430f84f4aa2f56acc0374892e4be2e57",
+     "starts_at": "2026-12-25T09:00:00+00:00",
+     "title": "Bezirksjugendtag"
+    }
+   ],
+   "id": 4,
+   "is_active": true,
+   "kind": "ical",
+   "kind_label": "Kalender-Abo (iCal)",
+   "last_error": "",
+   "last_successful_sync_at": "2026-11-28T20:24:37.200021Z",
+   "last_sync_at": "2026-11-28T20:24:37.200021Z",
+   "name": "Bezirksverband",
+   "share_down": false,
+   "stale_hidden": false,
+   "visibility": "members"
+  }
+ ]
+]
+
+export const kategorien: (EventCategory[])[] = [
+ [
+  {
+   "color": "#b5462f",
+   "id": 580,
+   "is_active": true,
+   "name": "Fest"
+  },
+  {
+   "color": "#6a4f8f",
+   "id": 583,
+   "is_active": true,
+   "name": "Geselliges"
+  },
+  {
+   "color": "#3f6f2f",
+   "id": 582,
+   "is_active": true,
+   "name": "Schießen"
+  },
+  {
+   "color": "#8a5a12",
+   "id": 581,
+   "is_active": true,
+   "name": "Umzug"
+  },
+  {
+   "color": "#2f5f8f",
+   "id": 579,
+   "is_active": true,
+   "name": "Versammlung"
+  }
+ ]
+]
+
+export const liste: (EventList)[] = [
+ {
+  "can_manage": true,
+  "categories": [
+   {
+    "color": "#b5462f",
+    "id": 580,
+    "is_active": true,
+    "name": "Fest"
+   },
+   {
+    "color": "#6a4f8f",
+    "id": 583,
+    "is_active": true,
+    "name": "Geselliges"
+   },
+   {
+    "color": "#3f6f2f",
+    "id": 582,
+    "is_active": true,
+    "name": "Schießen"
+   },
+   {
+    "color": "#8a5a12",
+    "id": 581,
+    "is_active": true,
+    "name": "Umzug"
+   },
+   {
+    "color": "#2f5f8f",
+    "id": 579,
+    "is_active": true,
+    "name": "Versammlung"
+   }
+  ],
+  "from": "2026-05-12T00:00:00+02:00",
+  "items": [
+   {
+    "address": "",
+    "all_day": false,
+    "can_edit": false,
+    "category": {
+     "color": "#6a4f8f",
+     "id": 583,
+     "name": "Geselliges"
+    },
+    "changed_at": null,
+    "department_id": 2612,
+    "ends_at": "2026-05-20T23:00:00+02:00",
+    "event_id": 2226,
+    "hide_end_time": false,
+    "is_cancelled": false,
+    "is_moved": false,
+    "is_series": true,
+    "key": "2226-20260520T180000Z",
+    "level": "department",
+    "location": "",
+    "note": "",
+    "original_start": "2026-05-20T20:00:00+02:00",
+    "own": false,
+    "owner": "Jägerzug Grünröcke",
+    "rsvp_deadline": null,
+    "rsvp_enabled": false,
+    "source": null,
+    "starts_at": "2026-05-20T20:00:00+02:00",
+    "title": "Zugabend",
+    "video": null,
+    "visibility": "members"
+   },
+   {
+    "address": "",
+    "all_day": false,
+    "can_edit": true,
+    "category": {
+     "color": "#2f5f8f",
+     "id": 579,
+     "name": "Versammlung"
+    },
+    "changed_at": null,
+    "department_id": null,
+    "ends_at": "2026-06-08T21:30:00+02:00",
+    "event_id": 2217,
+    "hide_end_time": false,
+    "is_cancelled": false,
+    "is_moved": false,
+    "is_series": true,
+    "key": "2217-20260608T173000Z",
+    "level": "club",
+    "location": "",
+    "note": "",
+    "original_start": "2026-06-08T19:30:00+02:00",
+    "own": true,
+    "owner": "SV Musterstadt",
+    "rsvp_deadline": null,
+    "rsvp_enabled": false,
+    "source": null,
+    "starts_at": "2026-06-08T19:30:00+02:00",
+    "title": "Sitzung der Korpsführer",
+    "video": null,
+    "visibility": "board"
+   },
+   {
+    "address": "",
+    "all_day": false,
+    "can_edit": true,
+    "category": null,
+    "changed_at": null,
+    "department_id": null,
+    "ends_at": "2026-11-04T20:30:00Z",
+    "event_id": 2230,
+    "hide_end_time": false,
+    "is_cancelled": false,
+    "is_moved": false,
+    "is_series": false,
+    "key": "2230-20261104T183000Z",
+    "level": "club",
+    "location": "Schützenhaus",
+    "note": "",
+    "original_start": "2026-11-04T18:30:00Z",
+    "own": true,
+    "owner": "SV Musterstadt",
+    "rsvp_deadline": null,
+    "rsvp_enabled": false,
+    "source": null,
+    "starts_at": "2026-11-04T18:30:00Z",
+    "title": "Vorstandssitzung",
+    "video": null,
+    "visibility": "board"
+   },
+   {
+    "address": "",
+    "all_day": false,
+    "can_edit": false,
+    "category": {
+     "color": "#b5462f",
+     "id": 580,
+     "name": "Fest"
+    },
+    "changed_at": null,
+    "department_id": null,
+    "ends_at": "2026-12-18T20:00:00Z",
+    "event_id": 2231,
+    "hide_end_time": false,
+    "is_cancelled": false,
+    "is_moved": false,
+    "is_series": false,
+    "key": "2231-20261218T180000Z",
+    "level": "club",
+    "location": "Musterhalle",
+    "note": "",
+    "original_start": "2026-12-18T18:00:00Z",
+    "own": true,
+    "owner": "SV Musterstadt",
+    "rsvp_deadline": null,
+    "rsvp_enabled": false,
+    "source": "Bezirksverband",
+    "starts_at": "2026-12-18T18:00:00Z",
+    "title": "Bezirksversammlung",
+    "video": null,
+    "visibility": "members"
+   },
+   {
+    "address": "",
+    "all_day": false,
+    "can_edit": true,
+    "category": {
+     "color": "#6a4f8f",
+     "id": 583,
+     "name": "Geselliges"
+    },
+    "changed_at": "2026-11-28T20:24:35.270308Z",
+    "department_id": null,
+    "ends_at": "2027-05-23T13:00:00Z",
+    "event_id": 2218,
+    "hide_end_time": false,
+    "is_cancelled": false,
+    "is_moved": false,
+    "is_series": false,
+    "key": "2218-20270523T100000Z",
+    "level": "club",
+    "location": "Festwiese",
+    "note": "",
+    "original_start": "2027-05-23T10:00:00Z",
+    "own": true,
+    "owner": "SV Musterstadt",
+    "rsvp_deadline": "2027-05-21T09:00:00Z",
+    "rsvp_enabled": true,
+    "source": null,
+    "starts_at": "2027-05-23T10:00:00Z",
+    "title": "Biwak",
+    "video": null,
+    "visibility": "public"
+   }
+  ],
+  "rsvp_allowed": true,
+  "to": "2027-07-17T00:00:00+02:00",
+  "units": [
+   {
+    "depth": 0,
+    "id": 2629,
+    "name": "Jugendgruppe",
+    "path": "Jugendgruppe"
+   }
+  ]
+ }
+]
+
+export const rueckmeldungen: (ResponseList)[] = [
+ {
+  "capacity": null,
+  "event_id": 2215,
+  "items": [],
+  "open": [
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25886,
+    "name": "Annahmer, Anke"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25972,
+    "name": "Annahmer, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25841,
+    "name": "Annahmer, Dennis"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25791,
+    "name": "Annahmer, Emil"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25876,
+    "name": "Annahmer, Hannes"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25795,
+    "name": "Annahmer, Jakob"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25895,
+    "name": "Annahmer, Kurt"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25850,
+    "name": "Annahmer, Nils"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25798,
+    "name": "Annahmer, Theresa"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25824,
+    "name": "Annahmer, Ulrich"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25825,
+    "name": "Annahmer, Ulrich"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25901,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25967,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25982,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25809,
+    "name": "Annahmer, Walter"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25844,
+    "name": "Ausdenk, Bruno"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25890,
+    "name": "Ausdenk, Carsten"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25828,
+    "name": "Ausdenk, Felix"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25800,
+    "name": "Ausdenk, Greta"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25888,
+    "name": "Ausdenk, Luise"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25801,
+    "name": "Ausgedachtler, Albert"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25930,
+    "name": "Ausgedachtler, Bruno"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25794,
+    "name": "Ausgedachtler, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25843,
+    "name": "Ausgedachtler, Carsten"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25899,
+    "name": "Ausgedachtler, Dennis"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25963,
+    "name": "Ausgedachtler, Hanna"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25838,
+    "name": "Ausgedachtler, Hannes"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25953,
+    "name": "Ausgedachtler, Hannes"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25783,
+    "name": "Ausgedachtler, Ida"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25827,
+    "name": "Ausgedachtler, Klara"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25957,
+    "name": "Ausgedachtler, Kurt"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25869,
+    "name": "Ausgedachtler, Paula"
+   },
+   {
+    "departments": "",
+    "membership_id": 25985,
+    "name": "Ausgedachtler, Sven"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25789,
+    "name": "Ausgedachtler, Walter"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25980,
+    "name": "Beispielhoff, Bruno"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25919,
+    "name": "Beispielhoff, Dennis"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25866,
+    "name": "Beispielhoff, Frieda"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25852,
+    "name": "Beispielhoff, Hannes"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25942,
+    "name": "Beispielhoff, Klara"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25971,
+    "name": "Beispielhoff, Klara"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25814,
+    "name": "Beispielhoff, Ludwig"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25803,
+    "name": "Beispielhoff, Nora"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25884,
+    "name": "Beispielhoff, Oskar"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25817,
+    "name": "Beispielhoff, Paul"
+   },
+   {
+    "departments": "",
+    "membership_id": 25989,
+    "name": "Beispielhoff, Robert"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25983,
+    "name": "Beispielhoff, Sven"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25871,
+    "name": "Beispielhoff, Yannick"
+   },
+   {
+    "departments": "",
+    "membership_id": 25999,
+    "name": "Entwurfner, Anke"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25964,
+    "name": "Entwurfner, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25842,
+    "name": "Entwurfner, Jakob"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25894,
+    "name": "Entwurfner, Nils"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25786,
+    "name": "Entwurfner, Oskar"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25914,
+    "name": "Entwurfner, Paul"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25862,
+    "name": "Entwurfner, Rita"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25968,
+    "name": "Entwurfner, Sven"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25826,
+    "name": "Entwurfner, Ulrich"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25927,
+    "name": "Erdachtberg, Gregor"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25893,
+    "name": "Erdachtberg, Hannes"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25897,
+    "name": "Erdachtberg, Hannes"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25811,
+    "name": "Erdachtberg, Mia"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25868,
+    "name": "Exemplarius, Felix"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25847,
+    "name": "Exemplarius, Hanna"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25944,
+    "name": "Exemplarius, Hanna"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25796,
+    "name": "Exemplarius, Hannes"
+   },
+   {
+    "departments": "",
+    "membership_id": 25988,
+    "name": "Exemplarius, Jakob"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25920,
+    "name": "Exemplarius, Malte"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25805,
+    "name": "Exemplarius, Nils"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25815,
+    "name": "Exemplarius, Robert"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25820,
+    "name": "Exemplarius, Sven"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25913,
+    "name": "Exemplarius, Sven"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25926,
+    "name": "Fiktiwski, Bruno"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25836,
+    "name": "Fiktiwski, Carsten"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25856,
+    "name": "Fiktiwski, Dana"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25906,
+    "name": "Fiktiwski, Felix"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25955,
+    "name": "Fiktiwski, Ingo"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25898,
+    "name": "Fiktiwski, Jakob"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25984,
+    "name": "Fiktiwski, Jakob"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25804,
+    "name": "Fiktiwski, Mia"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25910,
+    "name": "Fiktiwski, Paul"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25978,
+    "name": "Fiktiwski, Rita"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25904,
+    "name": "Fiktiwski, Robert"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25846,
+    "name": "Fiktiwski, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26001,
+    "name": "Kassenprüfer, Karl"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25864,
+    "name": "Modellhaus, Albert"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25950,
+    "name": "Modellhaus, Carsten"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25865,
+    "name": "Modellhaus, Gregor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25970,
+    "name": "Modellhaus, Gregor"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25922,
+    "name": "Modellhaus, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25874,
+    "name": "Modellhaus, Ingo"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25813,
+    "name": "Modellhaus, Nils"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25974,
+    "name": "Modellhaus, Oskar"
+   },
+   {
+    "departments": "",
+    "membership_id": 25997,
+    "name": "Modellhaus, Robert"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25965,
+    "name": "Modellhaus, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25807,
+    "name": "Musterfeld, Britta"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25878,
+    "name": "Musterfeld, Britta"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25879,
+    "name": "Musterfeld, Carsten"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25882,
+    "name": "Musterfeld, Felix"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25939,
+    "name": "Musterfeld, Frieda"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25870,
+    "name": "Musterfeld, Greta"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25833,
+    "name": "Musterfeld, Mia"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25912,
+    "name": "Musterkötter, Anke"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25938,
+    "name": "Musterkötter, Britta"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25943,
+    "name": "Musterkötter, Carsten"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25949,
+    "name": "Musterkötter, Dana"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25925,
+    "name": "Musterkötter, Eva"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25885,
+    "name": "Musterkötter, Ida"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25845,
+    "name": "Musterkötter, Julia"
+   },
+   {
+    "departments": "",
+    "membership_id": 25998,
+    "name": "Musterkötter, Kurt"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25832,
+    "name": "Musterkötter, Malte"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25887,
+    "name": "Musterkötter, Malte"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25802,
+    "name": "Musterkötter, Nils"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25915,
+    "name": "Musterkötter, Nils"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25851,
+    "name": "Musterkötter, Nora"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25928,
+    "name": "Musterkötter, Paul"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25907,
+    "name": "Musterkötter, Rita"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25822,
+    "name": "Musterkötter, Sven"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25818,
+    "name": "Musterkötter, Theresa"
+   },
+   {
+    "departments": "",
+    "membership_id": 25993,
+    "name": "Platzhalter-Berg, Anke"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25908,
+    "name": "Platzhalter-Berg, Emil"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25954,
+    "name": "Platzhalter-Berg, Felix"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25831,
+    "name": "Platzhalter-Berg, Gregor"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25896,
+    "name": "Platzhalter-Berg, Gregor"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25952,
+    "name": "Platzhalter-Berg, Klara"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25853,
+    "name": "Platzhalter-Berg, Malte"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25958,
+    "name": "Platzhalter-Berg, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25781,
+    "name": "Platzhalter-Berg, Walter"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25797,
+    "name": "Probandt, Albert"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25889,
+    "name": "Probandt, Britta"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25785,
+    "name": "Probandt, Eva"
+   },
+   {
+    "departments": "",
+    "membership_id": 25992,
+    "name": "Probandt, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25875,
+    "name": "Probandt, Ida"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25859,
+    "name": "Probandt, Ingo"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25981,
+    "name": "Probandt, Ingo"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25839,
+    "name": "Probandt, Klara"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25881,
+    "name": "Probandt, Klara"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25872,
+    "name": "Probandt, Nils"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25821,
+    "name": "Probandt, Timo"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25918,
+    "name": "Probandt, Timo"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25860,
+    "name": "Probandt, Ulrich"
+   },
+   {
+    "departments": "",
+    "membership_id": 25991,
+    "name": "Probst-Erfunden, Dennis"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25979,
+    "name": "Probst-Erfunden, Julia"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25959,
+    "name": "Probst-Erfunden, Luise"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25933,
+    "name": "Probst-Erfunden, Malte"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25812,
+    "name": "Probst-Erfunden, Nils"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25903,
+    "name": "Probst-Erfunden, Nils"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25810,
+    "name": "Probst-Erfunden, Timo"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25790,
+    "name": "Probst-Erfunden, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25787,
+    "name": "Pseudonymer, Albert"
+   },
+   {
+    "departments": "",
+    "membership_id": 25994,
+    "name": "Pseudonymer, Albert"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25816,
+    "name": "Pseudonymer, Dennis"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25792,
+    "name": "Pseudonymer, Jakob"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25793,
+    "name": "Pseudonymer, Jakob"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25929,
+    "name": "Pseudonymer, Kurt"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25946,
+    "name": "Pseudonymer, Rita"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25799,
+    "name": "Pseudonymer, Viktor"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25932,
+    "name": "Pseudonymer, Yannick"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25923,
+    "name": "Schablonenkamp, Albert"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25916,
+    "name": "Schablonenkamp, Carsten"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25931,
+    "name": "Schablonenkamp, Frieda"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25977,
+    "name": "Schablonenkamp, Frieda"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25936,
+    "name": "Schablonenkamp, Gregor"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25880,
+    "name": "Schablonenkamp, Ingo"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25784,
+    "name": "Schablonenkamp, Jakob"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25973,
+    "name": "Schablonenkamp, Jakob"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25867,
+    "name": "Schablonenkamp, Ludwig"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25891,
+    "name": "Schablonenkamp, Ludwig"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25877,
+    "name": "Schablonenkamp, Malte"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25829,
+    "name": "Schablonenkamp, Mia"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25905,
+    "name": "Schablonenkamp, Nora"
+   },
+   {
+    "departments": "",
+    "membership_id": 25990,
+    "name": "Schablonenkamp, Oskar"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25835,
+    "name": "Schablonenkamp, Theresa"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26002,
+    "name": "Schreiber, Sonja"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25975,
+    "name": "Simulanski, Albert"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25934,
+    "name": "Simulanski, Anke"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25861,
+    "name": "Simulanski, Bruno"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25900,
+    "name": "Simulanski, Carsten"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25854,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25951,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "",
+    "membership_id": 25987,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25848,
+    "name": "Simulanski, Felix"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25782,
+    "name": "Simulanski, Hanna"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25911,
+    "name": "Simulanski, Hannes"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25941,
+    "name": "Simulanski, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25873,
+    "name": "Simulanski, Klara"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25840,
+    "name": "Simulanski, Ludwig"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25924,
+    "name": "Simulanski, Sven"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25806,
+    "name": "Simulanski, Viktor"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25849,
+    "name": "Skizzenbach, Bruno"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25808,
+    "name": "Skizzenbach, Felix"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25857,
+    "name": "Skizzenbach, Gregor"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25909,
+    "name": "Skizzenbach, Julia"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25823,
+    "name": "Skizzenbach, Ludwig"
+   },
+   {
+    "departments": "",
+    "membership_id": 25995,
+    "name": "Skizzenbach, Timo"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25948,
+    "name": "Testermann, Gregor"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25902,
+    "name": "Testermann, Hannes"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25962,
+    "name": "Testermann, Klara"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25863,
+    "name": "Testermann, Nils"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25961,
+    "name": "Testermann, Nora"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25837,
+    "name": "Testermann, Oskar"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25917,
+    "name": "Testermann, Paula"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25883,
+    "name": "Testermann, Svenja"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25945,
+    "name": "Testermann, Walter"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25937,
+    "name": "Vorlagenberg, Dennis"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25921,
+    "name": "Vorlagenberg, Ida"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25858,
+    "name": "Vorlagenberg, Klara"
+   },
+   {
+    "departments": "",
+    "membership_id": 25986,
+    "name": "Vorlagenberg, Ludwig"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25855,
+    "name": "Vorlagenberg, Luise"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25819,
+    "name": "Vorlagenberg, Oskar"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25940,
+    "name": "Vorlagenberg, Oskar"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25947,
+    "name": "Vorlagenberg, Sven"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25935,
+    "name": "Vorlagenberg, Ulrich"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26000,
+    "name": "Vorstand, Vera"
+   }
+  ],
+  "scope": "all",
+  "summary": {
+   "guests": 0,
+   "maybe": 0,
+   "no": 0,
+   "open": 212,
+   "persons": 0,
+   "yes": 0
+  }
+ },
+ {
+  "capacity": 40,
+  "event_id": 2218,
+  "items": [
+   {
+    "club_number": "2106",
+    "departments": "Batterie Donnerhall",
+    "guests": 1,
+    "membership_id": 25886,
+    "name": "Annahmer, Anke",
+    "note": "Kuchen",
+    "source": "board",
+    "status": "yes",
+    "updated_at": "2026-11-28T20:24:35.575351Z"
+   }
+  ],
+  "open": [
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25972,
+    "name": "Annahmer, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25841,
+    "name": "Annahmer, Dennis"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25791,
+    "name": "Annahmer, Emil"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25876,
+    "name": "Annahmer, Hannes"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25795,
+    "name": "Annahmer, Jakob"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25895,
+    "name": "Annahmer, Kurt"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25850,
+    "name": "Annahmer, Nils"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25798,
+    "name": "Annahmer, Theresa"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25824,
+    "name": "Annahmer, Ulrich"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25825,
+    "name": "Annahmer, Ulrich"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25901,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25967,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25982,
+    "name": "Annahmer, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25809,
+    "name": "Annahmer, Walter"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25844,
+    "name": "Ausdenk, Bruno"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25890,
+    "name": "Ausdenk, Carsten"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25828,
+    "name": "Ausdenk, Felix"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25800,
+    "name": "Ausdenk, Greta"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25888,
+    "name": "Ausdenk, Luise"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25801,
+    "name": "Ausgedachtler, Albert"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25930,
+    "name": "Ausgedachtler, Bruno"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25794,
+    "name": "Ausgedachtler, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25843,
+    "name": "Ausgedachtler, Carsten"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25899,
+    "name": "Ausgedachtler, Dennis"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25963,
+    "name": "Ausgedachtler, Hanna"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25838,
+    "name": "Ausgedachtler, Hannes"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25953,
+    "name": "Ausgedachtler, Hannes"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25783,
+    "name": "Ausgedachtler, Ida"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25827,
+    "name": "Ausgedachtler, Klara"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25957,
+    "name": "Ausgedachtler, Kurt"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25869,
+    "name": "Ausgedachtler, Paula"
+   },
+   {
+    "departments": "",
+    "membership_id": 25985,
+    "name": "Ausgedachtler, Sven"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25789,
+    "name": "Ausgedachtler, Walter"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25980,
+    "name": "Beispielhoff, Bruno"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25919,
+    "name": "Beispielhoff, Dennis"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25866,
+    "name": "Beispielhoff, Frieda"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25852,
+    "name": "Beispielhoff, Hannes"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25942,
+    "name": "Beispielhoff, Klara"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25971,
+    "name": "Beispielhoff, Klara"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25814,
+    "name": "Beispielhoff, Ludwig"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25803,
+    "name": "Beispielhoff, Nora"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25884,
+    "name": "Beispielhoff, Oskar"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25817,
+    "name": "Beispielhoff, Paul"
+   },
+   {
+    "departments": "",
+    "membership_id": 25989,
+    "name": "Beispielhoff, Robert"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25983,
+    "name": "Beispielhoff, Sven"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25871,
+    "name": "Beispielhoff, Yannick"
+   },
+   {
+    "departments": "",
+    "membership_id": 25999,
+    "name": "Entwurfner, Anke"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25964,
+    "name": "Entwurfner, Carsten"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25842,
+    "name": "Entwurfner, Jakob"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25894,
+    "name": "Entwurfner, Nils"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25786,
+    "name": "Entwurfner, Oskar"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25914,
+    "name": "Entwurfner, Paul"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25862,
+    "name": "Entwurfner, Rita"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25968,
+    "name": "Entwurfner, Sven"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25826,
+    "name": "Entwurfner, Ulrich"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25927,
+    "name": "Erdachtberg, Gregor"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25893,
+    "name": "Erdachtberg, Hannes"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25897,
+    "name": "Erdachtberg, Hannes"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25811,
+    "name": "Erdachtberg, Mia"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25868,
+    "name": "Exemplarius, Felix"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25847,
+    "name": "Exemplarius, Hanna"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25944,
+    "name": "Exemplarius, Hanna"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25796,
+    "name": "Exemplarius, Hannes"
+   },
+   {
+    "departments": "",
+    "membership_id": 25988,
+    "name": "Exemplarius, Jakob"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25920,
+    "name": "Exemplarius, Malte"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25805,
+    "name": "Exemplarius, Nils"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25815,
+    "name": "Exemplarius, Robert"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25820,
+    "name": "Exemplarius, Sven"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25913,
+    "name": "Exemplarius, Sven"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25926,
+    "name": "Fiktiwski, Bruno"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25836,
+    "name": "Fiktiwski, Carsten"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25856,
+    "name": "Fiktiwski, Dana"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25906,
+    "name": "Fiktiwski, Felix"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25955,
+    "name": "Fiktiwski, Ingo"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25898,
+    "name": "Fiktiwski, Jakob"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25984,
+    "name": "Fiktiwski, Jakob"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25804,
+    "name": "Fiktiwski, Mia"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25910,
+    "name": "Fiktiwski, Paul"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25978,
+    "name": "Fiktiwski, Rita"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25904,
+    "name": "Fiktiwski, Robert"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25846,
+    "name": "Fiktiwski, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26001,
+    "name": "Kassenprüfer, Karl"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25864,
+    "name": "Modellhaus, Albert"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25950,
+    "name": "Modellhaus, Carsten"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25865,
+    "name": "Modellhaus, Gregor"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25970,
+    "name": "Modellhaus, Gregor"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25922,
+    "name": "Modellhaus, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25874,
+    "name": "Modellhaus, Ingo"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25813,
+    "name": "Modellhaus, Nils"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25974,
+    "name": "Modellhaus, Oskar"
+   },
+   {
+    "departments": "",
+    "membership_id": 25997,
+    "name": "Modellhaus, Robert"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25965,
+    "name": "Modellhaus, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25807,
+    "name": "Musterfeld, Britta"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25878,
+    "name": "Musterfeld, Britta"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25879,
+    "name": "Musterfeld, Carsten"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25882,
+    "name": "Musterfeld, Felix"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25939,
+    "name": "Musterfeld, Frieda"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25870,
+    "name": "Musterfeld, Greta"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25833,
+    "name": "Musterfeld, Mia"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25912,
+    "name": "Musterkötter, Anke"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25938,
+    "name": "Musterkötter, Britta"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25943,
+    "name": "Musterkötter, Carsten"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25949,
+    "name": "Musterkötter, Dana"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25925,
+    "name": "Musterkötter, Eva"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25885,
+    "name": "Musterkötter, Ida"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25845,
+    "name": "Musterkötter, Julia"
+   },
+   {
+    "departments": "",
+    "membership_id": 25998,
+    "name": "Musterkötter, Kurt"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25832,
+    "name": "Musterkötter, Malte"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25887,
+    "name": "Musterkötter, Malte"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25802,
+    "name": "Musterkötter, Nils"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25915,
+    "name": "Musterkötter, Nils"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25851,
+    "name": "Musterkötter, Nora"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25928,
+    "name": "Musterkötter, Paul"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25907,
+    "name": "Musterkötter, Rita"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25822,
+    "name": "Musterkötter, Sven"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25818,
+    "name": "Musterkötter, Theresa"
+   },
+   {
+    "departments": "",
+    "membership_id": 25993,
+    "name": "Platzhalter-Berg, Anke"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25908,
+    "name": "Platzhalter-Berg, Emil"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25954,
+    "name": "Platzhalter-Berg, Felix"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25831,
+    "name": "Platzhalter-Berg, Gregor"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25896,
+    "name": "Platzhalter-Berg, Gregor"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25952,
+    "name": "Platzhalter-Berg, Klara"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25853,
+    "name": "Platzhalter-Berg, Malte"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25958,
+    "name": "Platzhalter-Berg, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25781,
+    "name": "Platzhalter-Berg, Walter"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25797,
+    "name": "Probandt, Albert"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25889,
+    "name": "Probandt, Britta"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25785,
+    "name": "Probandt, Eva"
+   },
+   {
+    "departments": "",
+    "membership_id": 25992,
+    "name": "Probandt, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25875,
+    "name": "Probandt, Ida"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25859,
+    "name": "Probandt, Ingo"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25981,
+    "name": "Probandt, Ingo"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25839,
+    "name": "Probandt, Klara"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25881,
+    "name": "Probandt, Klara"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25872,
+    "name": "Probandt, Nils"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25821,
+    "name": "Probandt, Timo"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25918,
+    "name": "Probandt, Timo"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25860,
+    "name": "Probandt, Ulrich"
+   },
+   {
+    "departments": "",
+    "membership_id": 25991,
+    "name": "Probst-Erfunden, Dennis"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25979,
+    "name": "Probst-Erfunden, Julia"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25959,
+    "name": "Probst-Erfunden, Luise"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25933,
+    "name": "Probst-Erfunden, Malte"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25812,
+    "name": "Probst-Erfunden, Nils"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25903,
+    "name": "Probst-Erfunden, Nils"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25810,
+    "name": "Probst-Erfunden, Timo"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25790,
+    "name": "Probst-Erfunden, Viktor"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25787,
+    "name": "Pseudonymer, Albert"
+   },
+   {
+    "departments": "",
+    "membership_id": 25994,
+    "name": "Pseudonymer, Albert"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25816,
+    "name": "Pseudonymer, Dennis"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25792,
+    "name": "Pseudonymer, Jakob"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25793,
+    "name": "Pseudonymer, Jakob"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25929,
+    "name": "Pseudonymer, Kurt"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25946,
+    "name": "Pseudonymer, Rita"
+   },
+   {
+    "departments": "Grenadierzug Treue Kameraden",
+    "membership_id": 25799,
+    "name": "Pseudonymer, Viktor"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25932,
+    "name": "Pseudonymer, Yannick"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25923,
+    "name": "Schablonenkamp, Albert"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25916,
+    "name": "Schablonenkamp, Carsten"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25931,
+    "name": "Schablonenkamp, Frieda"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25977,
+    "name": "Schablonenkamp, Frieda"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25936,
+    "name": "Schablonenkamp, Gregor"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25880,
+    "name": "Schablonenkamp, Ingo"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25784,
+    "name": "Schablonenkamp, Jakob"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25973,
+    "name": "Schablonenkamp, Jakob"
+   },
+   {
+    "departments": "Zug Fröhliche Runde",
+    "membership_id": 25867,
+    "name": "Schablonenkamp, Ludwig"
+   },
+   {
+    "departments": "Batterie Donnerhall",
+    "membership_id": 25891,
+    "name": "Schablonenkamp, Ludwig"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25877,
+    "name": "Schablonenkamp, Malte"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25829,
+    "name": "Schablonenkamp, Mia"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25905,
+    "name": "Schablonenkamp, Nora"
+   },
+   {
+    "departments": "",
+    "membership_id": 25990,
+    "name": "Schablonenkamp, Oskar"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25835,
+    "name": "Schablonenkamp, Theresa"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26002,
+    "name": "Schreiber, Sonja"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25975,
+    "name": "Simulanski, Albert"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25934,
+    "name": "Simulanski, Anke"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25861,
+    "name": "Simulanski, Bruno"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25900,
+    "name": "Simulanski, Carsten"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25854,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25951,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "",
+    "membership_id": 25987,
+    "name": "Simulanski, Emil"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25848,
+    "name": "Simulanski, Felix"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 25782,
+    "name": "Simulanski, Hanna"
+   },
+   {
+    "departments": "Reiterzug Steigbügel",
+    "membership_id": 25911,
+    "name": "Simulanski, Hannes"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25941,
+    "name": "Simulanski, Hannes"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25873,
+    "name": "Simulanski, Klara"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25840,
+    "name": "Simulanski, Ludwig"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25924,
+    "name": "Simulanski, Sven"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25806,
+    "name": "Simulanski, Viktor"
+   },
+   {
+    "departments": "Jägerzug Hörnerklang",
+    "membership_id": 25849,
+    "name": "Skizzenbach, Bruno"
+   },
+   {
+    "departments": "Grenadierzug Frohsinn",
+    "membership_id": 25808,
+    "name": "Skizzenbach, Felix"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25857,
+    "name": "Skizzenbach, Gregor"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25909,
+    "name": "Skizzenbach, Julia"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25823,
+    "name": "Skizzenbach, Ludwig"
+   },
+   {
+    "departments": "",
+    "membership_id": 25995,
+    "name": "Skizzenbach, Timo"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25948,
+    "name": "Testermann, Gregor"
+   },
+   {
+    "departments": "Batterie Pulverdampf",
+    "membership_id": 25902,
+    "name": "Testermann, Hannes"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25962,
+    "name": "Testermann, Klara"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25863,
+    "name": "Testermann, Nils"
+   },
+   {
+    "departments": "Tambourkorps Musterstadt",
+    "membership_id": 25961,
+    "name": "Testermann, Nora"
+   },
+   {
+    "departments": "Jägerzug Waldeslust",
+    "membership_id": 25837,
+    "name": "Testermann, Oskar"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25917,
+    "name": "Testermann, Paula"
+   },
+   {
+    "departments": "Zug Gut Schuss",
+    "membership_id": 25883,
+    "name": "Testermann, Svenja"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25945,
+    "name": "Testermann, Walter"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25937,
+    "name": "Vorlagenberg, Dennis"
+   },
+   {
+    "departments": "Reiterzug Hufeisen",
+    "membership_id": 25921,
+    "name": "Vorlagenberg, Ida"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25858,
+    "name": "Vorlagenberg, Klara"
+   },
+   {
+    "departments": "",
+    "membership_id": 25986,
+    "name": "Vorlagenberg, Ludwig"
+   },
+   {
+    "departments": "Jägerzug Edelweiß",
+    "membership_id": 25855,
+    "name": "Vorlagenberg, Luise"
+   },
+   {
+    "departments": "Jägerzug Grünröcke",
+    "membership_id": 25819,
+    "name": "Vorlagenberg, Oskar"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25940,
+    "name": "Vorlagenberg, Oskar"
+   },
+   {
+    "departments": "Zug Zehner",
+    "membership_id": 25947,
+    "name": "Vorlagenberg, Sven"
+   },
+   {
+    "departments": "Zug Ins Schwarze",
+    "membership_id": 25935,
+    "name": "Vorlagenberg, Ulrich"
+   },
+   {
+    "departments": "Grenadierzug Eichenlaub",
+    "membership_id": 26000,
+    "name": "Vorstand, Vera"
+   }
+  ],
+  "scope": "all",
+  "summary": {
+   "guests": 1,
+   "maybe": 0,
+   "no": 0,
+   "open": 211,
+   "persons": 2,
+   "yes": 1
+  }
+ }
+]
+
+export const termine: (EventDetail)[] = [
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [],
+  "can_edit": false,
+  "can_hide": false,
+  "cancel_note": "",
+  "category": {
+   "color": "#6a4f8f",
+   "id": 583,
+   "name": "Geselliges"
+  },
+  "changed_at": null,
+  "department_id": 2612,
+  "description": "",
+  "directions": "",
+  "ends_at": "2026-01-20T22:00:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "hide_end_time": false,
+  "id": 2226,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "department",
+  "location": "",
+  "longitude": null,
+  "map_links": {},
+  "owner": "Jägerzug Grünröcke",
+  "programme": "",
+  "registration": null,
+  "repeat": "monthly",
+  "repeat_interval": 1,
+  "repeat_label": "monatlich",
+  "repeat_until": null,
+  "rsvp": {
+   "capacity": null,
+   "deadline": null,
+   "enabled": false,
+   "guests_allowed": false,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": ""
+  },
+  "source": null,
+  "starts_at": "2026-01-20T19:00:00Z",
+  "title": "Zugabend",
+  "video": null,
+  "video_url": "",
+  "visibility": "members",
+  "visibility_label": "Mitglieder"
+ },
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [],
+  "bookings": [],
+  "can_circular": false,
+  "can_create_helper_plan": true,
+  "can_edit": true,
+  "can_hide": false,
+  "can_link_project": true,
+  "cancel_note": "",
+  "category": {
+   "color": "#2f5f8f",
+   "id": 579,
+   "name": "Versammlung"
+  },
+  "changed_at": null,
+  "circulars": [],
+  "created_at": "2026-11-28T20:24:31.995808Z",
+  "created_by": "",
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2026-01-08T20:30:00Z",
+  "exceptions": [
+   {
+    "ends_at": null,
+    "is_cancelled": true,
+    "note": "Halle belegt",
+    "original_start": "2026-12-08T18:30:00Z",
+    "starts_at": null
+   },
+   {
+    "ends_at": "2027-01-09T20:30:00Z",
+    "is_cancelled": false,
+    "note": "einen Tag später",
+    "original_start": "2027-01-08T18:30:00Z",
+    "starts_at": "2027-01-09T18:30:00Z"
+   }
+  ],
+  "from_mail": false,
+  "helper_plans": [],
+  "hide_end_time": false,
+  "id": 2217,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "club",
+  "location": "",
+  "longitude": null,
+  "map_links": {},
+  "meeting": null,
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": null,
+  "registration": {
+   "can_setup": true,
+   "enabled": false
+  },
+  "remind_days": null,
+  "reminded_at": null,
+  "repeat": "monthly",
+  "repeat_interval": 1,
+  "repeat_label": "monatlich",
+  "repeat_until": "2027-09-24",
+  "rsvp": {
+   "capacity": null,
+   "deadline": null,
+   "enabled": false,
+   "guests_allowed": false,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": ""
+  },
+  "share_defaults": {
+   "down": true,
+   "up": false
+  },
+  "share_down": null,
+  "share_up": null,
+  "source": null,
+  "starts_at": "2026-01-08T18:30:00Z",
+  "title": "Sitzung der Korpsführer",
+  "video": null,
+  "video_available": false,
+  "video_url": "",
+  "visibility": "board",
+  "visibility_label": "nur Vorstand"
+ },
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [],
+  "bookings": [],
+  "can_circular": false,
+  "can_create_helper_plan": true,
+  "can_edit": true,
+  "can_hide": false,
+  "can_link_project": true,
+  "cancel_note": "",
+  "category": null,
+  "changed_at": null,
+  "circulars": [],
+  "created_at": "2026-11-28T20:24:34.614387Z",
+  "created_by": "Vera Vorstand",
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2026-11-04T20:30:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "helper_plans": [],
+  "hide_end_time": false,
+  "id": 2230,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "club",
+  "location": "Schützenhaus",
+  "longitude": null,
+  "map_links": {},
+  "meeting": {
+   "id": 206,
+   "status_label": "Protokoll freigegeben"
+  },
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": null,
+  "registration": {
+   "can_setup": true,
+   "enabled": false
+  },
+  "remind_days": null,
+  "reminded_at": null,
+  "repeat": "none",
+  "repeat_interval": 1,
+  "repeat_label": "einmalig",
+  "repeat_until": null,
+  "rsvp": {
+   "capacity": null,
+   "deadline": null,
+   "enabled": false,
+   "guests_allowed": false,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": ""
+  },
+  "share_defaults": {
+   "down": true,
+   "up": false
+  },
+  "share_down": null,
+  "share_up": null,
+  "source": null,
+  "starts_at": "2026-11-04T18:30:00Z",
+  "title": "Vorstandssitzung",
+  "video": null,
+  "video_available": false,
+  "video_url": "",
+  "visibility": "board",
+  "visibility_label": "nur Vorstand"
+ },
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [],
+  "bookings": [],
+  "can_create_helper_plan": true,
+  "can_edit": false,
+  "can_hide": true,
+  "can_link_project": false,
+  "cancel_note": "",
+  "category": {
+   "color": "#b5462f",
+   "id": 580,
+   "name": "Fest"
+  },
+  "changed_at": null,
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2026-12-18T20:00:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "helper_plans": [],
+  "hide_end_time": false,
+  "id": 2231,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "club",
+  "location": "Musterhalle",
+  "longitude": null,
+  "map_links": {},
+  "meeting": null,
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": null,
+  "registration": null,
+  "repeat": "none",
+  "repeat_interval": 1,
+  "repeat_label": "einmalig",
+  "repeat_until": null,
+  "rsvp": {
+   "capacity": null,
+   "deadline": null,
+   "enabled": false,
+   "guests_allowed": false,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": ""
+  },
+  "source": {
+   "kind": "ical",
+   "kind_label": "Kalender-Abo (iCal)",
+   "name": "Bezirksverband"
+  },
+  "starts_at": "2026-12-18T18:00:00Z",
+  "title": "Bezirksversammlung",
+  "video": null,
+  "video_url": "",
+  "visibility": "members",
+  "visibility_label": "Mitglieder"
+ },
+ {
+  "address": "Am Schützenplatz 3, 12345 Musterstadt",
+  "all_day": false,
+  "attachments": [],
+  "bookings": [],
+  "can_circular": true,
+  "can_create_helper_plan": true,
+  "can_edit": true,
+  "can_hide": false,
+  "can_link_project": true,
+  "cancel_note": "",
+  "category": {
+   "color": "#2f5f8f",
+   "id": 579,
+   "name": "Versammlung"
+  },
+  "changed_at": null,
+  "circulars": [],
+  "created_at": "2026-11-28T20:24:31.988899Z",
+  "created_by": "",
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2027-03-06T21:00:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "helper_plans": [],
+  "hide_end_time": false,
+  "id": 2215,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "club",
+  "location": "Schützenhaus",
+  "longitude": null,
+  "map_links": {
+   "google": "https://www.google.com/maps/dir/?api=1&destination=Sch%C3%BCtzenhaus%2C+Am+Sch%C3%BCtzenplatz+3%2C+12345+Musterstadt",
+   "osm": "https://www.openstreetmap.org/search?query=Am+Sch%C3%BCtzenplatz+3%2C+12345+Musterstadt"
+  },
+  "meeting": {
+   "id": 205,
+   "status_label": "in Vorbereitung"
+  },
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": null,
+  "registration": {
+   "can_setup": true,
+   "enabled": false
+  },
+  "remind_days": 2,
+  "reminded_at": null,
+  "repeat": "none",
+  "repeat_interval": 1,
+  "repeat_label": "einmalig",
+  "repeat_until": null,
+  "rsvp": {
+   "can_enter": true,
+   "can_view_list": true,
+   "capacity": null,
+   "deadline": null,
+   "enabled": true,
+   "guests_allowed": false,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": "",
+   "summary": {
+    "guests": 0,
+    "maybe": 0,
+    "no": 0,
+    "persons": 0,
+    "yes": 0
+   }
+  },
+  "share_defaults": {
+   "down": true,
+   "up": false
+  },
+  "share_down": null,
+  "share_up": null,
+  "source": null,
+  "starts_at": "2027-03-06T18:00:00Z",
+  "title": "Generalversammlung",
+  "video": null,
+  "video_available": false,
+  "video_url": "",
+  "visibility": "members",
+  "visibility_label": "Mitglieder"
+ },
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [
+   {
+    "available": true,
+    "content_type": "image/jpeg",
+    "document": null,
+    "file_name": "foto.jpg",
+    "id": 74,
+    "kind": "file",
+    "name": "foto.jpg",
+    "on_website": false,
+    "size": 8228,
+    "url": "/api/orgs/2606/events/2218/attachments/74/"
+   },
+   {
+    "available": true,
+    "content_type": "application/pdf",
+    "document": 514,
+    "file_name": "Antreteplan-Parade.pdf",
+    "id": 75,
+    "kind": "document",
+    "name": "Antreteplan Parade",
+    "on_website": false,
+    "size": 1786,
+    "url": "/api/orgs/2606/events/2218/attachments/75/"
+   }
+  ],
+  "bookings": [
+   {
+    "id": 66,
+    "item": "Vereinsfahne von 1923",
+    "status_label": "bestätigt"
+   }
+  ],
+  "can_circular": true,
+  "can_create_helper_plan": true,
+  "can_edit": true,
+  "can_hide": false,
+  "can_link_project": true,
+  "cancel_note": "",
+  "category": {
+   "color": "#6a4f8f",
+   "id": 583,
+   "name": "Geselliges"
+  },
+  "changed_at": "2026-11-28T20:24:35.270308Z",
+  "circulars": [
+   {
+    "id": 107,
+    "sent_at": null,
+    "status": "draft",
+    "status_label": "Entwurf",
+    "subject": "Biwak am 23.05.2027"
+   }
+  ],
+  "created_at": "2026-11-28T20:24:31.998708Z",
+  "created_by": "",
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2027-05-23T13:00:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "helper_plans": [
+   {
+    "id": 6,
+    "status_label": "in Vorbereitung",
+    "title": "Thekendienst"
+   }
+  ],
+  "hide_end_time": false,
+  "id": 2218,
+  "is_cancelled": false,
+  "latitude": 51.2,
+  "level": "club",
+  "location": "Festwiese",
+  "longitude": 6.7,
+  "map_links": {
+   "google": "https://www.google.com/maps/dir/?api=1&destination=51.20000%2C6.70000",
+   "osm": "https://www.openstreetmap.org/directions?route=%3B51.20000%2C6.70000"
+  },
+  "meeting": null,
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": {
+   "id": 109,
+   "name": "Biwak"
+  },
+  "registration": {
+   "can_setup": true,
+   "enabled": false
+  },
+  "remind_days": 3,
+  "reminded_at": null,
+  "repeat": "none",
+  "repeat_interval": 1,
+  "repeat_label": "einmalig",
+  "repeat_until": null,
+  "rsvp": {
+   "can_enter": true,
+   "can_view_list": true,
+   "capacity": 40,
+   "deadline": "2027-05-21T09:00:00Z",
+   "enabled": true,
+   "free": 38,
+   "guests_allowed": true,
+   "max_guests": 10,
+   "maybe_allowed": true,
+   "note_allowed": true,
+   "note_question": "Was bringst du mit?",
+   "summary": {
+    "guests": 1,
+    "maybe": 0,
+    "no": 0,
+    "persons": 2,
+    "yes": 1
+   }
+  },
+  "share_defaults": {
+   "down": true,
+   "up": false
+  },
+  "share_down": false,
+  "share_up": true,
+  "source": null,
+  "starts_at": "2027-05-23T10:00:00Z",
+  "title": "Biwak",
+  "video": null,
+  "video_available": false,
+  "video_url": "",
+  "visibility": "public",
+  "visibility_label": "nach außen öffentlich",
+  "web_page": {
+   "id": 917,
+   "is_published": false,
+   "title": "Biwak"
+  }
+ },
+ {
+  "address": "",
+  "all_day": false,
+  "attachments": [],
+  "bookings": [],
+  "can_circular": true,
+  "can_create_helper_plan": true,
+  "can_edit": true,
+  "can_hide": false,
+  "can_link_project": true,
+  "cancel_note": "",
+  "category": {
+   "color": "#3f6f2f",
+   "id": 582,
+   "name": "Schießen"
+  },
+  "changed_at": null,
+  "circulars": [],
+  "created_at": "2026-11-28T20:24:31.992574Z",
+  "created_by": "",
+  "department_id": null,
+  "description": "",
+  "directions": "",
+  "ends_at": "2027-06-20T17:00:00Z",
+  "exceptions": [],
+  "from_mail": false,
+  "helper_plans": [],
+  "hide_end_time": false,
+  "id": 2216,
+  "is_cancelled": false,
+  "latitude": null,
+  "level": "club",
+  "location": "Schießstand am Schützenhaus",
+  "longitude": null,
+  "map_links": {},
+  "meeting": null,
+  "owner": "Schützenverein Musterstadt 1823 e.V.",
+  "programme": "",
+  "project": null,
+  "registration": {
+   "can_setup": true,
+   "enabled": false
+  },
+  "remind_days": null,
+  "reminded_at": null,
+  "repeat": "none",
+  "repeat_interval": 1,
+  "repeat_label": "einmalig",
+  "repeat_until": null,
+  "rsvp": {
+   "can_enter": true,
+   "can_view_list": true,
+   "capacity": null,
+   "deadline": null,
+   "enabled": true,
+   "guests_allowed": true,
+   "max_guests": 10,
+   "maybe_allowed": false,
+   "note_allowed": true,
+   "note_question": "",
+   "summary": {
+    "guests": 0,
+    "maybe": 0,
+    "no": 0,
+    "persons": 0,
+    "yes": 0
+   }
+  },
+  "share_defaults": {
+   "down": true,
+   "up": false
+  },
+  "share_down": null,
+  "share_up": null,
+  "source": null,
+  "starts_at": "2027-06-20T12:00:00Z",
+  "title": "Königsschießen",
+  "video": null,
+  "video_available": false,
+  "video_url": "",
+  "visibility": "public",
+  "visibility_label": "nach außen öffentlich",
+  "web_page": null
+ }
+]
+
+export const veroeffentlichung: (Publication)[] = [
+ {
+  "ics_url": "http://testserver/api/public/calendar/u0rUZIgZtVfKiyvUp_capdeplbtK0Sqi/termine.ics",
+  "is_public": true,
+  "json_url": "http://testserver/api/public/calendar/u0rUZIgZtVfKiyvUp_capdeplbtK0Sqi/"
+ }
+]
