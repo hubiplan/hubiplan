@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
 import { GENDERS, LEGAL_FORMS, memberApi, memberName, todayIso } from '../../api/members.ts'
 import type { Duplicate, Gender, MemberKind } from '../../api/members.ts'
-import { orgApi, unitName } from '../../api/orgs.ts'
-import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
+import { unitName } from '../../api/orgs.ts'
+import { errorMessage, formatDate, useForm } from '../../components/forms.ts'
 import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { TitleField } from '../../components/TitleField.tsx'
@@ -13,6 +13,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { PageHeader, Segmented } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
+import { useDepartmentChoices, useMemberTypes } from '../../components/masterData.ts'
 
 type Step = 'person' | 'details'
 
@@ -21,8 +22,8 @@ export function AdmitPage() {
   const terms = useTerms()
   const fed = !!terms.dv_has
   const navigate = useNavigate()
-  const types = useLoad(() => memberApi.types(org.id), [org.id])
-  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const types = useMemberTypes(org.id)
+  const departments = useDepartmentChoices(org.id)
   const [step, setStep] = useState<Step>('person')
   const previousStep = useRef(step)
   const personForm = useRef<HTMLFormElement>(null)

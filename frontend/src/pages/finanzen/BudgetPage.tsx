@@ -19,6 +19,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
 import { Term } from '../../learning/Aids.tsx'
+import { useFinanceCategories } from '../../components/masterData.ts'
 
 interface Draft extends BudgetLineInput {
   key: string
@@ -79,7 +80,7 @@ export function BudgetPage({ canEdit }: { canEdit: boolean }) {
   const [adopting, setAdopting] = useState(false)
   const [adoptedOn, setAdoptedOn] = useState(todayIso())
   const [adoptedBy, setAdoptedBy] = useState('')
-  const categories = useLoad(() => financeApi.categories(org.id), [org.id])
+  const categories = useFinanceCategories(org.id)
   const departments = useLoad(
     () => (org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
     [org.id, org.type],

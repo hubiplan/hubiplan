@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { exchangeApi, waitFor } from '../../api/exchange.ts'
 import type { ImportJob, ImportTarget } from '../../api/exchange.ts'
-import { memberApi } from '../../api/members.ts'
 import { orgApi, unitName } from '../../api/orgs.ts'
 import {
   errorMessage,
@@ -22,6 +21,7 @@ import { t } from '../../i18n/index.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { importChecks } from '../../learning/checks.ts'
+import { useDepartmentChoices, useMemberTypes } from '../../components/masterData.ts'
 
 const EXIT_REASONS = [
   { value: 'exit', label: t('Austritt') },
@@ -503,8 +503,8 @@ function ValueMappings({
   const tm = useTerms()
   const mapped = new Set(Object.values(mapping).map((tmx) => tmx.replace(/_\d$/, '')))
   const needed = targets.filter((tmx) => tmx.value_mapped && mapped.has(tmx.key))
-  const types = useLoad(() => memberApi.types(orgId), [orgId])
-  const departments = useLoad(() => orgApi.departmentChoices(orgId), [orgId])
+  const types = useMemberTypes(orgId)
+  const departments = useDepartmentChoices(orgId)
   const roles = useLoad(() => orgApi.roles(orgId).catch(() => []), [orgId])
   if (needed.length === 0) return null
   const choices: Record<string, { value: string; label: string }[]> = {

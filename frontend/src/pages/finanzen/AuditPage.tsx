@@ -21,6 +21,7 @@ import { Checklist } from '../../learning/Checklist.tsx'
 import { auditCloseChecks } from '../../learning/checks.ts'
 import { t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 function resultOptions(): { value: AuditResult; label: string }[] {
   return [
@@ -687,7 +688,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
 export function AuditPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const [params, setParams] = useSearchParams()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const audits = useLoad(() => financeApi.audits(org.id), [org.id])
   const [creating, setCreating] = useState(false)
   const selected = Number(params.get('pruefung') ?? '') || null

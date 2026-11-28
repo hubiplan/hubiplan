@@ -15,6 +15,7 @@ import { HowTo, Term } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
 import { t, tc } from '../../i18n/index.ts'
 import { TaxSignal } from './TaxPage.tsx'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 /** Steuerliche Bereiche und ihre Begriffe im Glossar */
 const AREA_TERMS: Record<string, TermKey> = {
@@ -28,7 +29,7 @@ const AREA_TERMS: Record<string, TermKey> = {
 function useFinanceYear() {
   const org = useActiveOrg()
   const [year, setYear] = useState<number | null>(null)
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const current = year ?? settings.data?.current_year ?? null
   const overview = useLoad(
     () => (current === null ? Promise.resolve(null) : financeApi.overview(org.id, current)),

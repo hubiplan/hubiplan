@@ -14,16 +14,17 @@ import { HouseholdFeeRulesCard } from './HouseholdFeeRules.tsx'
 import { FeeProofDiscountsCard } from './FeeProofDiscounts.tsx'
 import { WorkHoursCard } from './WorkHours.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { useBillingSettings } from '../../components/masterData.ts'
 
-function useBillingSettings() {
+function useOrgBillingSettings() {
   const org = useActiveOrg()
-  const settings = useLoad(() => billingApi.settings(org.id), [org.id])
+  const settings = useBillingSettings(org.id)
   return { org, settings }
 }
 
 /** Beitragssätze: je Mitgliedsart (Verein) bzw. je gemeldetem Mitglied (Dachverband) und Altersstufen. */
 export function FeeRulesPage() {
-  const { org, settings } = useBillingSettings()
+  const { org, settings } = useOrgBillingSettings()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />
   const s = settings.data
@@ -51,7 +52,7 @@ export function FeeRulesPage() {
 }
 
 export function DunningLevelsPage() {
-  const { org, settings } = useBillingSettings()
+  const { org, settings } = useOrgBillingSettings()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />
   return <DunningLevelsCard orgId={org.id} canEdit={settings.data.can_edit} />
@@ -59,7 +60,7 @@ export function DunningLevelsPage() {
 
 /** Abrechnungsrhythmus, Konto und Kategorie, Rechnungstexte, Umsatzsteuer, SEPA. */
 export function BillingSettingsPage() {
-  const { org, settings } = useBillingSettings()
+  const { org, settings } = useOrgBillingSettings()
   const { refresh } = useOrg()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />

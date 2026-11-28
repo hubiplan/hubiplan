@@ -11,6 +11,7 @@ import { Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { closingChecks } from '../../learning/checks.ts'
 import { t } from '../../i18n/index.ts'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 function todayIso(): string {
   const d = new Date()
@@ -20,7 +21,7 @@ function todayIso(): string {
 export function ClosingsPage() {
   const org = useActiveOrg()
   const { data, error, reload, setData } = useLoad(() => financeApi.closings(org.id), [org.id])
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const [lockDate, setLockDate] = useState('')
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)

@@ -56,6 +56,7 @@ import { MusicTab } from './MusicTab.tsx'
 import { AtAGlance } from './AtAGlance.tsx'
 import { MemberHeader } from './MemberHeader.tsx'
 import { MemberBookings } from '../bookings/MemberBookings.tsx'
+import { useDepartmentChoices, useMemberTypes } from '../../components/masterData.ts'
 
 type Tab =
   | 'stammdaten'
@@ -490,7 +491,7 @@ function MembershipTab({
 }) {
   const tm = useTerms()
   const [error, setError] = useState<string | null>(null)
-  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const departments = useDepartmentChoices(org.id)
   const precision = org.date_precision
   const [editingDepartment, setEditingDepartment] = useState<number | null>(null)
   const [correcting, setCorrecting] = useState<number | null>(null)
@@ -1030,7 +1031,7 @@ function AddPeriod({
   onAdded: () => Promise<void>
 }) {
   const [open, setOpen] = useState(false)
-  const types = useLoad(() => memberApi.types(org.id), [org.id])
+  const types = useMemberTypes(org.id)
   const empty = { entry_date: '', exit_date: '', exit_reason: 'exit', member_type: '' }
   const form = useForm(empty)
   // Nachtrag vor dem Speichern nicht unbemerkt verlieren (UX-Audit 31.10. W01)
@@ -1238,7 +1239,7 @@ function RolesTab({
   reload: () => Promise<void>
 }) {
   const canEditRoles = org.permissions.includes(PERM.rolesManage)
-  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const departments = useDepartmentChoices(org.id)
   // Vorstandsrollen besetzen im selben Dialog wie unter Ämter (Rollen-Vorschlag R2)
   const [assigning, setAssigning] = useState(false)
   const roles = useLoad(

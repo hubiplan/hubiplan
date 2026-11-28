@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import * as api from '../api/auth.ts'
 import type { User } from '../api/auth.ts'
 import { nextAuthGeneration, sessionLostListeners } from '../api/client.ts'
+import { clearShared } from '../components/shared.ts'
 import { bindUndoToUser, clearUndo } from '../components/undo.ts'
 import { lang, switchLanguage, t } from '../i18n/index.ts'
 import {
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event.key !== 'hubiplan.stand.user') return
       revision.current += 1
       clearUndo()
+      clearShared()
       suspendStandUser()
       putUser(null)
       setOffline(false)
@@ -136,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Wirft, wenn der Server die Abmeldung ablehnt: dann bleibt man sichtbar angemeldet.
     await api.logout()
     clearUndo()
+    clearShared()
     clearStandCache()
     setUser(null)
     return true

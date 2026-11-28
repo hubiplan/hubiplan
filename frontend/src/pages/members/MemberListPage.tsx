@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { cardApi } from '../../api/cards.ts'
 import { GENDERS, memberApi, memberName } from '../../api/members.ts'
 import type { ListParams, MemberRow, Page } from '../../api/members.ts'
-import { orgApi, PERM, unitName } from '../../api/orgs.ts'
+import { PERM, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, formatMemberDate, useLoad } from '../../components/forms.ts'
 import type { DatePrecision } from '../../components/forms.ts'
 import { Freshness, LoadError, Loading } from '../../components/ui.tsx'
@@ -20,6 +20,7 @@ import { SideSheet } from '../../components/liste/SideSheet.tsx'
 import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
 import { rememberOrder } from '../../components/liste/recordOrder.ts'
 import { PageNav } from '../../components/ListControls.tsx'
+import { useDepartmentChoices, useMemberTypes } from '../../components/masterData.ts'
 
 interface Column {
   key: string
@@ -146,8 +147,8 @@ export function MemberListPage() {
   // Für welche Auswahl die angezeigten Treffer gelten (NMF-05)
   const [loadedFor, setLoadedFor] = useState<string | null>(null)
   const query = JSON.stringify(params)
-  const types = useLoad(() => memberApi.types(org.id), [org.id])
-  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const types = useMemberTypes(org.id)
+  const departments = useDepartmentChoices(org.id)
   // Mehrere Ebenen (z. B. Korps und Züge): Spalte und Filter nennen alle Bezeichnungen.
   const unitTerms = levelTerms(departments.data ?? [], terms)
   const awardsOn = org.modules.includes('awards')

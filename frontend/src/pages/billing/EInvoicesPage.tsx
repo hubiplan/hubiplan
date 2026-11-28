@@ -20,6 +20,7 @@ import { t } from '../../i18n/index.ts'
 import { emptyParty, PartyFields } from './PartyFields.tsx'
 import { InvoiceDocumentsPanel } from './InvoiceDocumentsPanel.tsx'
 import { PageNav } from '../../components/ListControls.tsx'
+import { useBillingSettings } from '../../components/masterData.ts'
 
 const blankLine = (): CommercialLine => ({
   text: '',
@@ -364,7 +365,7 @@ export function CommercialForm({
 }) {
   const org = useActiveOrg()
   const partners = useLoad(() => einvoiceApi.partners(org.id), [org.id])
-  const settings = useLoad(() => billingApi.settings(org.id), [org.id])
+  const settings = useBillingSettings(org.id)
   const projects = useLoad(
     () =>
       org.modules.includes('finance') && org.permissions.includes('finance.view')

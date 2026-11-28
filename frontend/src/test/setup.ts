@@ -3,6 +3,7 @@ import { webcrypto } from 'node:crypto'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach, beforeAll, vi } from 'vitest'
 import { retry } from '../api/client.ts'
+import { clearShared } from '../components/shared.ts'
 import { preloadPages } from '../lazyPages.ts'
 import '../App.tsx'
 
@@ -32,6 +33,8 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  // gemeinsame Stammdaten nicht in den nächsten Test mitnehmen
+  clearShared()
   // gemerkte Ansichten (z. B. Kalender) nicht in den nächsten Test mitnehmen
   try {
     localStorage.clear()

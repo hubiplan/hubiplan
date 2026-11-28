@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { bankApi } from '../../api/bank.ts'
 import type { BankLine, BankLineStatus, BankStatement } from '../../api/bank.ts'
-import { euro, financeApi } from '../../api/finance.ts'
+import { euro } from '../../api/finance.ts'
 import type { Account, Category } from '../../api/finance.ts'
 import type { MemberRow } from '../../api/members.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -19,6 +19,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { BankAccessCard } from './BankAccess.tsx'
+import { useFinanceAccounts, useFinanceCategories } from '../../components/masterData.ts'
 
 type Message = { kind: 'success' | 'error'; text: string } | null
 
@@ -29,8 +30,8 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
     () => bankApi.statements(org.id, statementPage),
     [org.id, statementPage],
   )
-  const accounts = useLoad(() => financeApi.accounts(org.id), [org.id])
-  const categories = useLoad(() => financeApi.categories(org.id), [org.id])
+  const accounts = useFinanceAccounts(org.id)
+  const categories = useFinanceCategories(org.id)
   const [selected, setSelected] = useState<number | null>(null)
   const [message, setMessage] = useState<Message>(null)
   const list = statements.data?.results ?? []

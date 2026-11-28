@@ -14,6 +14,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 function methodOptions(): { value: AssetMethod; label: string }[] {
   return [
@@ -234,7 +235,7 @@ function AssetForm({
 export function AssetsPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const [params, setParams] = useSearchParams()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const [year, setYear] = useState<number | null>(null)
   const current = year ?? settings.data?.current_year ?? null
   const register = useLoad(

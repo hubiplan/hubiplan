@@ -6,11 +6,12 @@ import { memberApi, todayIso } from '../../api/members.ts'
 import type { MemberDetail } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
-import { formatDate, useForm, useLoad } from '../../components/forms.ts'
+import { formatDate, useForm } from '../../components/forms.ts'
 import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { useMemberTypes } from '../../components/masterData.ts'
 
 type Action = 'type' | 'exit' | 'reentry' | null
 
@@ -25,7 +26,7 @@ export function MembershipActions({
   onChanged: (m: MemberDetail) => void
 }) {
   const [action, setAction] = useState<Action>(null)
-  const types = useLoad(() => memberApi.types(org.id), [org.id])
+  const types = useMemberTypes(org.id)
   const available = types.data?.filter((tm) => !tm.is_archived) ?? []
   const ready = !types.error && available.length > 0
   const canSetup = org.permissions.includes(PERM.orgEdit)

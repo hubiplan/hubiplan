@@ -6,10 +6,11 @@ import { useLoad } from '../../components/forms.ts'
 import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 export function UseOfFundsPage() {
   const org = useActiveOrg()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const [year, setYear] = useState<number | null>(null)
   const current = year ?? settings.data?.current_year ?? null
   const report = useLoad(

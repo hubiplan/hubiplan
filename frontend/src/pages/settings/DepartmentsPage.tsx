@@ -38,6 +38,7 @@ import type { MemberRow } from '../../api/members.ts'
 import { confirmEndHolder, UnitRoleDialog, UnitRolesTable } from '../../components/UnitRoles.tsx'
 import type { UnitHolder, UnitRole } from '../../components/UnitRoles.tsx'
 import { lang, t, tn } from '../../i18n/index.ts'
+import { useDepartmentChoices } from '../../components/masterData.ts'
 
 export function DepartmentsPage() {
   const { can } = useOrg()
@@ -48,7 +49,7 @@ function DepartmentRolesPage() {
   const org = useActiveOrg()
   const { can } = useOrg()
   const terms = useTerms()
-  const { data, error, reload } = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const { data, error, reload } = useDepartmentChoices(org.id)
   const catalog = useLoad(
     () => orgApi.catalog('department', org.id),
     [org.id, org.modules.join(',')],

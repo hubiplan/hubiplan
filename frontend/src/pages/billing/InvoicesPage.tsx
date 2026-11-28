@@ -30,6 +30,7 @@ import { Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { PageNav } from '../../components/ListControls.tsx'
 import { useRevealFocus } from '../../components/revealFocus.ts'
+import { useBillingSettings } from '../../components/masterData.ts'
 
 /** Mitglieder als Rechnungsempfänger gibt es nur mit dem Modul (Dachverbände führen sie anders). */
 function hasMembersModule(org: { type: string; modules: string[] }): boolean {
@@ -53,7 +54,7 @@ export function InvoicesPage() {
   const tm = useTerms()
   const org = useActiveOrg()
   const [params, setParams] = useSearchParams()
-  const settings = useLoad(() => billingApi.settings(org.id), [org.id])
+  const settings = useBillingSettings(org.id)
   // Untereinheiten haben keine Beitragsläufe
   const runs = useLoad(
     () => (org.type === 'unit' ? Promise.resolve([]) : billingApi.runs(org.id)),

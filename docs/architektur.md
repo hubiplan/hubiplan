@@ -74,6 +74,27 @@ React mit TypeScript. Jede Seite hält ihren Zustand selbst; es gibt keine Zusta
 
 Seiten rufen die Schnittstelle nur über `api/` auf, nie mit `fetch` direkt.
 
+### Dateigröße
+
+Neue Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen: Komponenten je Thema
+in eigene Dateien, Lade- und Regelteile in Hooks. Die größeren aus dem Bestand stehen in
+`src/test/grosse-dateien.json` und werden nach und nach geteilt
+(`src/test/Dateigroesse.test.ts`).
+
+### Stammdaten gemeinsam laden
+
+Einstellungen und Auswahllisten, die viele Seiten brauchen (Kasseneinstellungen, Konten,
+Kategorien, Mitgliedsarten, Untereinheiten), lädt `components/masterData.ts` über den
+gemeinsamen Zwischenspeicher `useShared` (`components/shared.ts`): Beim Seitenwechsel sind sie
+sofort da, mehrere Bausteine laden sie nur einmal. Der Speicher ist bewusst eng gehalten:
+
+- nur im Arbeitsspeicher der Seite, nie im Browserspeicher;
+- nach jeder erfolgreichen ändernden Anfrage, beim Abmelden und beim Kontowechsel leer;
+- nach einer Minute wird neu geladen;
+- nur für Listen und Einstellungen zum Auswählen, nicht für Personen- oder Finanzdaten.
+
+Alles andere lädt weiter `useLoad` je Seite. Der Server prüft jede Eingabe unabhängig davon.
+
 ### Adressen der Schnittstelle
 
 `backend/config/api_routen.json` listet alle Adressen des Servers unter `api/` und `_allauth/`.

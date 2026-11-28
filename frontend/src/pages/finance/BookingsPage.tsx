@@ -51,6 +51,11 @@ import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageNav } from '../../components/ListControls.tsx'
 import { SuggestInput } from '../../components/SuggestInput.tsx'
+import {
+  useFinanceAccounts,
+  useFinanceCategories,
+  useFinanceSettings,
+} from '../../components/masterData.ts'
 
 /** Wer das Geld bekommt (Ausgabe) bzw. zahlt (Einnahme). */
 function partnerLabel(kind: BookingKind): string {
@@ -78,9 +83,9 @@ export function BookingsPage() {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.financeEdit)
   const [params, setParams] = useSearchParams()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
-  const accounts = useLoad(() => financeApi.accounts(org.id), [org.id])
-  const categories = useLoad(() => financeApi.categories(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
+  const accounts = useFinanceAccounts(org.id)
+  const categories = useFinanceCategories(org.id)
   const projects = useLoad(() => financeApi.projects(org.id), [org.id])
   const departments = useLoad(
     () => (org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
