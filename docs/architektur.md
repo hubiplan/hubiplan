@@ -20,10 +20,16 @@ Django mit Django REST Framework. Jeder Fachbereich ist eine eigene Django-App.
 | `tasks.py` | Hintergrundaufgaben; rufen dieselben Dienste auf wie die Views |
 | `urls.py` | Adressen des Bereichs, eingebunden in `config/api_urls.py` |
 
-**Regel:** Fachlogik steht nicht in Views. Was eine Datenbanktransaktion öffnet
-(`transaction.atomic`), mehrere Objekte zusammen ändert oder auch von einer Hintergrundaufgabe,
-der App-Schnittstelle oder der MCP-Schnittstelle gebraucht wird, gehört in `services.py` oder
-ein Fachmodul des Bereichs. So lässt es sich ohne HTTP testen und wiederverwenden.
+**Regel:** Fachlogik steht nicht in Views. Abläufe, die mehrere Objekte zusammen ändern,
+Berechnungen und alles, was auch eine Hintergrundaufgabe, die App-Schnittstelle oder die
+MCP-Schnittstelle braucht, gehören in `services.py` oder ein Fachmodul des Bereichs. So lässt
+es sich ohne HTTP testen und wiederverwenden.
+
+Die View bleibt der Ort für die Klammer um den ganzen Vorgang: Eine ändernde View-Methode
+läuft in einer Transaktion (`@transaction.atomic`), damit Fachänderung und Protokolleintrag
+gemeinsam gespeichert werden oder gar nicht. Dienste prüfen keine Rechte; sie bekommen die
+Organisation übergeben und werden nur von Stellen aufgerufen, die Rechte und Zeilenschutz
+schon geprüft haben.
 
 Jede Anfrage innerhalb einer Organisation läuft über `core/api_base.py` (`OrgScopedMixin`):
 Organisation laden, Rechte prüfen, erst dann den Zeilenschutz der Datenbank setzen.
@@ -44,11 +50,9 @@ Braucht eine tiefere Schicht etwas aus einer höheren, meldet sich die höhere b
 
 ### Wächter
 
-`backend/tests/test_architektur.py` hält den heutigen Stand fest
-(`backend/tests/data/architektur_stand.json`):
-
-- Importe gegen die Schichtrichtung: Es dürfen keine neuen dazukommen.
-- Transaktionen in View-Dateien je Bereich: Die Zahl darf nicht steigen.
+`backend/tests/test_architektur.py` hält den heutigen Stand der Importe gegen die
+Schichtrichtung fest (`backend/tests/data/architektur_stand.json`): Es dürfen keine neuen
+dazukommen.
 
 Der Bestand ist Altlast und wird Bereich für Bereich abgebaut. Wer ihn verbessert, schreibt
 ihn neu, damit die Verbesserung hält:

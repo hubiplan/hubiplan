@@ -1,11 +1,8 @@
 """Messwerte zur Architektur (docs/architektur.md), ohne Django lauffähig.
 
-Zwei Zahlen hält ``tests/data/architektur_stand.json`` als Bestand fest:
+``tests/data/architektur_stand.json`` hält als Bestand fest:
 
 - ``rueckwaerts``: Importe gegen die Schichtrichtung (untere Schicht importiert obere).
-- ``transaktionen_in_views``: wie oft View-Dateien eines Bereichs selbst eine
-  Datenbanktransaktion öffnen (``transaction.atomic``). Fachlogik mit eigener Transaktion
-  gehört in ``services.py`` oder ein Fachmodul.
 
 Der Bestand darf nur kleiner werden. Nach einer Verbesserung neu schreiben::
 
@@ -81,26 +78,8 @@ def rueckwaerts() -> list[str]:
     )
 
 
-def ist_view_datei(datei: Path) -> bool:
-    return "views" in datei.stem
-
-
-def transaktionen_in_views() -> dict[str, int]:
-    """Je Bereich: Zahl der ``transaction.atomic`` in View-Dateien (nur Bereiche über 0)."""
-    zahlen: dict[str, int] = {}
-    for bereich in bereiche():
-        n = sum(
-            datei.read_text(encoding="utf-8").count("transaction.atomic")
-            for datei in _dateien(bereich)
-            if ist_view_datei(datei)
-        )
-        if n:
-            zahlen[bereich] = n
-    return zahlen
-
-
 def messen() -> dict:
-    return {"rueckwaerts": rueckwaerts(), "transaktionen_in_views": transaktionen_in_views()}
+    return {"rueckwaerts": rueckwaerts()}
 
 
 def bestand() -> dict:
