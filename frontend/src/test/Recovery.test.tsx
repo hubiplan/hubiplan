@@ -13,7 +13,7 @@ import { fakeApi } from './fakeApi.ts'
 describe('Ladefehler gezielt wiederholen', () => {
   it('unterscheidet eine fehlgeschlagene Zugangsermittlung und Geräteliste von einer leeren Liste', async () => {
     fakeApi({})
-    vi.spyOn(devicesApi, 'hasPortal')
+    vi.spyOn(devicesApi, 'mayConnect')
       .mockRejectedValueOnce(new ApiError(503, { detail: 'Zugang nicht ermittelbar.' }))
       .mockResolvedValue(true)
     vi.spyOn(devicesApi, 'list')

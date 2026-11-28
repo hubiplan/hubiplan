@@ -15,7 +15,7 @@ Wege zum Schlüssel:
 |---|---|
 | QR-Code | Im Browser unter „Mein Konto › App & andere Instanzen › App auf dem Telefon“ `POST /api/app/v1/pairing/` (nur mit Sitzung). Der QR-Code enthält `https://<Instanz>/app/verbinden#code=<Code>`, 10 Minuten gültig, einmal nutzbar. Die App schickt `POST /api/app/v1/pair/` mit `{"code", "name", "platform", "app_version"}`. Der Browser fragt `GET /api/app/v1/pairing/<id>/` alle 3 Sekunden ab und zeigt nach dem Scannen „Verbunden: <Gerät>“. Die App zeigt vor dem Verbinden die Adresse der Instanz und fragt nach. |
 | Anmeldelink | Wie oben, aber `{"login_link": "<Token aus /anmelden/link/<Token>>"}`. Nicht für Vorstände und Konten mit 2FA (wie im Browser). |
-| Passkey | `POST /api/app/v1/passkey/begin/` (ohne Anmeldung) liefert `challenge_id`, `options` (WebAuthn-JSON wie `publicKey` für `navigator.credentials.get`, `userVerification` immer `required`) und `expires_in` (300 s). Die App lässt das Telefon einen Passkey für `options.rpId` (Adresse der Instanz) wählen und schickt `POST /api/app/v1/passkey/` mit `{"challenge_id", "credential", "name", "platform", "app_version", "device_key"}`; `credential` wie im Browser (`id`, `rawId`, `type`, `response` mit `clientDataJSON`, `authenticatorData`, `signature`, `userHandle`). Jede Aufgabe gilt einmal. Fehler: 400 (`passkey_expired`, `passkey_failed`), 403 ohne Mitgliederbereich, 404 wenn Passkeys aus sind. |
+| Passkey | `POST /api/app/v1/passkey/begin/` (ohne Anmeldung) liefert `challenge_id`, `options` (WebAuthn-JSON wie `publicKey` für `navigator.credentials.get`, `userVerification` immer `required`) und `expires_in` (300 s). Die App lässt das Telefon einen Passkey für `options.rpId` (Adresse der Instanz) wählen und schickt `POST /api/app/v1/passkey/` mit `{"challenge_id", "credential", "name", "platform", "app_version", "device_key"}`; `credential` wie im Browser (`id`, `rawId`, `type`, `response` mit `clientDataJSON`, `authenticatorData`, `signature`, `userHandle`). Jede Aufgabe gilt einmal. Fehler: 400 (`passkey_expired`, `passkey_failed`), 403 ohne Mitgliederbereich und ohne Rolle, 404 wenn Passkeys aus sind. |
 | Passwort (+2FA) | allauth headless, Client `app`: `POST /_allauth/app/v1/auth/login`, ggf. `/auth/2fa/authenticate`; mit dem `session_token` dann `POST /api/app/v1/devices/` (Kopfzeile `X-Session-Token`). Die Sitzung wird danach gelöscht. |
 
 Antwort jeweils `201` mit `token`, `device`, `user`.
@@ -88,7 +88,20 @@ Der Schlüssel verfällt
 - beim Abmelden des Geräts (`DELETE /api/app/v1/devices/<id>/`, auch im Browser),
 - nach 180 Tagen ohne Nutzung,
 - bei Passwortänderung oder -rücksetzung,
-- wenn der letzte Zugang zum Mitgliederbereich entfernt wird.
+- wenn der letzte Zugang zum Mitgliederbereich entfernt wird oder die letzte Rolle endet und
+  danach weder ein Zugang noch etwas zu verwalten übrig ist.
+
+### Konten ohne Mitgliederbereich (Funktion `app-nur-verwaltung`)
+
+Verbinden darf ein Konto mit Zugang zum Mitgliederbereich oder mit etwas zu verwalten
+(`units` oder `departments` in `GET /api/app/v1/admin/` nicht leer), also auch ein Kassierer ohne
+eigene Mitgliedschaft oder ein Konto in einer Einheit, die nur das Kassenbuch nutzt. Reine
+Plattformkonten ohne Rolle in einer Einheit nicht. `GET /api/app/v1/me/` meldet dazu `admin`
+(wahr: etwas zu verwalten); `portal` darf dann leer sein, und die App zeigt nur die Verwaltung.
+`/api/me/contexts/` nennt in `app`, ob das Konto die App verbinden darf. Mit dem
+Geräteschlüssel allein liest ein solches Konto nichts aus der Einheit; die Verwaltung verlangt
+wie immer den Vorstandsschlüssel. Ältere Apps zeigen solchen Konten nach dem Verbinden nur den
+Hinweis auf den fehlenden Mitgliederbereich.
 
 Höchstens 10 aktive Geräte je Konto; beim elften fällt das am längsten ungenutzte weg.
 

@@ -24,7 +24,9 @@ Mit Passkey: Hast du im Browser einen Passkey eingerichtet, tippe in der App auf
 
 Mit E-Mail und Passwort: Tippe in der App auf „Mit E-Mail und Passwort anmelden“ und gib die Adresse deines Vereins, deine E-Mail und dein Passwort ein. Passwortmanager (z. B. von Google oder Bitwarden) bieten das Ausfüllen an und können die Anmeldung speichern.
 
-Siehst du unter „Mein Konto › App & andere Instanzen“ statt des Knopfs **App verbinden** nur einen Hinweis, hat dein Konto noch keinen Zugang zum Mitgliederbereich: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben.
+Siehst du unter „Mein Konto › App & andere Instanzen“ statt des Knopfs **App verbinden** nur einen Hinweis, gibt es für dein Konto in der App noch nichts: Es hat weder Zugang zum Mitgliederbereich noch eine Rolle in der Verwaltung. Für den Mitgliederbereich muss es mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss ihn eingeschaltet haben.
+
+Hast du eine Rolle, aber keinen Mitgliederbereich (zum Beispiel als Kassierer, der selbst kein Mitglied ist, oder wenn dein Verein nur das Kassenbuch nutzt), verbindest du die App genauso. Sie zeigt dann die Verwaltung, die du wie gewohnt mit dem zweiten Faktor freischaltest.
 
 Das Gerät erscheint danach in der Liste. Verlierst du das Handy, meldest du es dort mit **Abmelden** ab.
 

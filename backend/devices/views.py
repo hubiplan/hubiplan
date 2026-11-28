@@ -40,6 +40,7 @@ from portal.models import hash_token as link_hash
 from portal.views import portal_summary
 
 from . import devicekey, notify, webpush
+from .access import NOTHING_FOR_APP, manages_in_app, may_connect
 from .auth import DeviceTokenAuthentication
 from .models import (
     CHALLENGE_PATTERN,
@@ -244,13 +245,8 @@ class PairingCodeView(APIView):
         key = f"app:pairing:{request.user.pk}"
         if too_many(key, RATE[0], RATE[1]):
             raise TooMany(key)
-        if not portal_services.portal_accesses(request.user):
-            raise ValidationError(
-                gettext(
-                    "Die App gibt es für den Mitgliederbereich. Für dieses Konto ist kein "
-                    "Mitgliederbereich freigeschaltet."
-                )
-            )
+        if not may_connect(request.user):
+            raise ValidationError(gettext(NOTHING_FOR_APP))
         now = timezone.now()
         # Ältere offene Codes gelten nicht mehr
         PairingCode.objects.filter(user=request.user, used_at__isnull=True).update(used_at=now)
@@ -349,10 +345,8 @@ class PairView(APIView):
                             "anmelden."
                         )
                     )
-                if not portal_services.portal_accesses(user):
-                    raise PermissionDenied(
-                        gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-                    )
+                if not may_connect(user):
+                    raise PermissionDenied(gettext(NOTHING_FOR_APP))
                 device, token = _create_device(user, v)
                 item.used_at = timezone.now()
                 fields = ["used_at"]
@@ -406,10 +400,8 @@ class DeviceListView(APIView):
         data = DeviceSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         set_rls(None, request.user.pk)
-        if not portal_services.portal_accesses(request.user):
-            raise PermissionDenied(
-                gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-            )
+        if not may_connect(request.user):
+            raise PermissionDenied(gettext(NOTHING_FOR_APP))
         device, token = _create_device(request.user, data.validated_data)
         # Die Sitzung der Anmeldung wird nicht mehr gebraucht
         request.auth.delete()
@@ -466,6 +458,9 @@ class MeView(APIView):
                 },
                 "device": device_data(request.auth, request.auth),
                 "portal": [portal_summary(a) for a in portal_services.portal_accesses(user)],
+                # Neu: Konto hat in der App etwas zu verwalten. Mit leerem ``portal`` zeigt die
+                # App dann nur die Verwaltung (Funktion „app-nur-verwaltung“)
+                "admin": manages_in_app(user),
             }
         )
 
