@@ -45,6 +45,8 @@ export interface Occurrence {
   own: boolean
   can_edit: boolean
   rsvp_enabled: boolean
+  /** Anmeldeschluss, nur bei Terminen mit Rückmeldung */
+  rsvp_deadline: string | null
   /** Videoraum (Nextcloud Talk) */
   video?: VideoRoomInfo | null
   /** Fremder Kalender (Vereinsplaner, iCal), aus dem der Termin stammt */
@@ -151,6 +153,8 @@ export interface Attachment {
   available?: boolean
   /** Bei öffentlichen Terminen auch auf der Webseite angeboten */
   on_website?: boolean
+  /** Verknüpftes Dokument der Ablage, sonst null */
+  document?: number | null
   url: string
 }
 
@@ -237,6 +241,13 @@ export interface EventDetail {
   bookings?: { id: number; item: string; status_label: string }[]
   remind_days?: number | null
   reminded_at?: string | null
+  /** Wer den Termin wann angelegt hat (nur Bearbeitende); leer bei Terminen ohne Person */
+  created_by?: string
+  created_at?: string
+  /** Videolink aus einer Einladung oder von Hand eingetragen */
+  video_url: string
+  /** Aus einer weitergeleiteten Einladung (E-Mail) entstanden */
+  from_mail: boolean
   /** Weitergabe nach oben/unten: Angabe am Termin, null = Voreinstellung (nur Bearbeiter) */
   share_up?: boolean | null
   share_down?: boolean | null

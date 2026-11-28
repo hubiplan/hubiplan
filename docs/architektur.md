@@ -121,8 +121,9 @@ den Antworten passen. Die Typprüfung der Oberfläche meldet dann jedes
 Feld, das der Server liefert und der Typ nicht kennt, jedes Pflichtfeld, das fehlt, und jede
 falsche Art. Damit die Antworten jedes Feld zeigen, füllt `backend/tests/feldabgleich_<bereich>.py`
 den Demoverein über die Schnittstelle; Felder ohne Beispiel stehen mit Grund in `OHNE_BEISPIEL`.
-Bisher abgeglichen: Mitglieder (Arten, Liste, Akte, Ansprechpartner). Nach einer Änderung an
-diesen Antworten:
+Bisher abgeglichen: Mitglieder (Arten, Liste, Akte, Ansprechpartner) und Termine (Kategorien,
+Liste, Termin, Rückmeldungen, fremde Kalender, Veröffentlichung, Weitergabe). Nach einer Änderung
+an diesen Antworten:
 
 ```bash
 cd backend && FELDABGLEICH_SCHREIBEN=1 pytest tests/test_feldabgleich.py

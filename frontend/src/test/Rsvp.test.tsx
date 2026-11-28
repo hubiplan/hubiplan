@@ -49,6 +49,8 @@ function detail(rsvp: Record<string, unknown>, over: Record<string, unknown> = {
     cancel_note: '',
     attachments: [],
     exceptions: [],
+    video_url: '',
+    from_mail: false,
     rsvp: {
       enabled: true,
       deadline: `${day(8)}T23:59:00+01:00`,
