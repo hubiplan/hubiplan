@@ -13,7 +13,7 @@ import type {
 import { errorMessage, useLoad } from '../components/forms.ts'
 import { useImageCrop } from '../components/ImageCrop.tsx'
 import { Alert, Checkbox, Field, SelectField, Loading } from '../components/ui.tsx'
-import { LetterPreview } from './settings/LetterheadSettingsPage.tsx'
+import { LetterPreview } from './settings/LetterPreview.tsx'
 import { t } from '../i18n/index.ts'
 
 const PRIVATE: ContactKey[] = ['own_email', 'own_phone', 'own_address']

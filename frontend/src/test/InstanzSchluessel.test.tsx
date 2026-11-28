@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { InstanceKeysBox } from '../pages/platform/PlatformPages.tsx'
+import { InstanceKeysBox } from '../pages/platform/PlatformSettingsPage.tsx'
 import type { InstanceKeys } from '../api/peering.ts'
 import { fakeApi } from './fakeApi.ts'
 

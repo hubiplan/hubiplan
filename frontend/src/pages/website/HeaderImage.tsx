@@ -8,8 +8,8 @@ import type { HeaderImageValue, WebsiteImage } from '../../api/website.ts'
 import { useLoad } from '../../components/forms.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
-import { ImageChoice } from './images.tsx'
-import type { Unit } from './images.tsx'
+import { ImageChoice } from './ImageChoice.tsx'
+import type { Unit } from './imagesHelpers.ts'
 
 /** Höchstens so viele Kopfbilder (wie im Server, website/models.py) */
 export const MAX_HEADER_IMAGES = 10

@@ -1,4 +1,4 @@
-// Hilfen für die Bilder der Webseite (Übersicht, Bearbeiten, Auswahl in images.tsx).
+// Hilfen für die Bilder der Webseite (Übersicht, Bearbeiten, Auswahl: ImagesPage.tsx, ImageEditDialog.tsx, ImagePicker.tsx).
 import { useEffect, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
 import { ApiError } from '../../api/client.ts'

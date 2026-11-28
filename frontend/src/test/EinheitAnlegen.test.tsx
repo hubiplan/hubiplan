@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
-import { PlatformOrgsPage } from '../pages/platform/PlatformPages.tsx'
+import { PlatformOrgsPage } from '../pages/platform/PlatformOrgsPage.tsx'
 import { fakeApi, testUser } from './fakeApi.ts'
 
 const session = () => ({

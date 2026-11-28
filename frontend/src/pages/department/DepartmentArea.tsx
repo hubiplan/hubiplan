@@ -11,7 +11,7 @@ import type { DeptMember, DeptRole, DeptSummary, Holder } from '../../api/portal
 import { AccessPanel } from '../../components/AccessPanel.tsx'
 import { CardPanel } from '../../components/CardPanel.tsx'
 import { cardApi, cardBase } from '../../api/cards.ts'
-import { ExportSection } from '../../components/DataTransfer.tsx'
+import { ExportSection } from '../../components/ExportSection.tsx'
 import {
   errorMessage,
   formatDate,
