@@ -104,6 +104,7 @@ class DignitySerializer(serializers.ModelSerializer):
             # Webseite #149: Adresse auf der Webseite; leer = aus dem Namen
             "web_slug",
             "web_slug_auto",
+            "version",
         ]
         read_only_fields = ["web_slug_auto"]
         extra_kwargs = {"web_slug": {"required": False, "allow_blank": True, "max_length": 80}}
@@ -249,6 +250,7 @@ class ReignSerializer(serializers.ModelSerializer):
             "origin_text",
             "companions",
             "photo",
+            "version",
         ]
 
     def get_photo(self, obj) -> dict | None:

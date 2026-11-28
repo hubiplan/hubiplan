@@ -89,6 +89,7 @@ def holder_entry(a: RoleAssignment) -> dict:
         "current": a.valid_until is None or a.valid_until >= today(),
         "former_entry": a.is_former_entry,
         "name_public": a.name_public,
+        "version": a.version,
     }
 
 

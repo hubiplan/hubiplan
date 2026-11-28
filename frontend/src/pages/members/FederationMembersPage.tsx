@@ -387,7 +387,11 @@ function FederationMasterData({
   const auto = useAutoSave(
     form,
     (_changes, values) => api.patch<FedDetail>(`${base(orgId)}/members/${member.id}/`, values),
-    { enabled: !member.readonly, onSaved: (saved) => onSaved(saved as FedDetail) },
+    {
+      enabled: !member.readonly,
+      version: member.version,
+      onSaved: (saved) => onSaved(saved as FedDetail),
+    },
   )
   return (
     <form

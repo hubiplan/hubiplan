@@ -24,6 +24,7 @@ from . import services
 from .models import Membership, MembershipPeriod, MemberTypeAssignment, today
 from .personsearch import name_ids, ordered
 from .serializers import MemberUpdateSerializer, member_detail
+from .update import check_member_version
 from .views import MemberPagination, member_rows
 
 
@@ -181,6 +182,10 @@ class FederationMemberDetailView(_FederationMixin, APIView):
                     "eine Korrektur vorschlagen."
                 )
             )
+        # Gleichzeitiges Bearbeiten: dieselbe Fassung wie in der Akte des Vereins
+        Membership.objects.select_for_update().filter(pk=m.pk).first()
+        m.refresh_from_db(fields=["version"])
+        check_member_version(request, m)
         data = MemberUpdateSerializer(data=request.data, partial=True)
         data.is_valid(raise_exception=True)
         values = data.validated_data
@@ -200,6 +205,7 @@ class FederationMemberDetailView(_FederationMixin, APIView):
         changes.pop("person", None)
         if not changes:
             raise serializers.ValidationError(gettext("Keine Änderungen."))
+        m.save(update_fields=["version", "updated_at"])
         changes["geändert durch Dachverband"] = [None, self.org.name]
         record(self.org, request.user, "update", m, changes, person=person)
         record(m.organization, request.user, "update", m, changes, person=person)

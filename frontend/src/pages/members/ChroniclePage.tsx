@@ -4,7 +4,7 @@ import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { EmptyList } from '../../components/EmptyList.tsx'
 import { useEffect, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { newRequestKey } from '../../api/client.ts'
+import { newRequestKey, sendingVersion } from '../../api/client.ts'
 import { honorsApi } from '../../api/honors.ts'
 import type {
   Companion,
@@ -94,7 +94,7 @@ function ReignsPanel() {
     })
     if (!ok) return
     try {
-      await honorsApi.deleteReign(org.id, r.id)
+      await sendingVersion(r.version, () => honorsApi.deleteReign(org.id, r.id))
       await reigns.reload()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -426,7 +426,7 @@ function ReignForm({
   const auto = useAutoSave(
     form,
     (_changes, values) => honorsApi.updateReign(org.id, reign!.id, values),
-    { enabled: reign !== null },
+    { enabled: reign !== null, version: reign?.version },
   )
 
   async function changePhoto(file: File | null) {
@@ -806,7 +806,9 @@ function DignitiesPanel() {
     })
     if (!ok) return
     try {
-      await honorsApi.deleteDignity(org.id, d.id, d.reign_count > 0)
+      await sendingVersion(d.version, () =>
+        honorsApi.deleteDignity(org.id, d.id, d.reign_count > 0),
+      )
       await reload()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -993,7 +995,7 @@ function DignityForm({
   const auto = useAutoSave(
     form,
     (changes) => honorsApi.updateDignity(org.id, dignity!.id, changes),
-    { enabled: dignity !== null },
+    { enabled: dignity !== null, version: dignity?.version },
   )
   return (
     <form

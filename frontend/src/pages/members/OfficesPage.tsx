@@ -3,7 +3,7 @@
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { Fragment, useState } from 'react'
 import { Route, Routes, useSearchParams } from 'react-router-dom'
-import { newRequestKey } from '../../api/client.ts'
+import { newRequestKey, sendingVersion } from '../../api/client.ts'
 import { memberApi, todayIso } from '../../api/members.ts'
 import { officesApi } from '../../api/offices.ts'
 import type { Office, OfficeEntryInput, OfficeHolder, OfficeImportRow } from '../../api/offices.ts'
@@ -123,7 +123,7 @@ function HoldersPanel() {
     })
     if (!ok) return
     try {
-      await officesApi.remove(org.id, r.id)
+      await sendingVersion(r.version, () => officesApi.remove(org.id, r.id))
       await offices.reload()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -350,6 +350,7 @@ function EntryForm({
     (_changes, values) => officesApi.update(org.id, entry!.id, values),
     {
       enabled: entry !== null,
+      version: entry?.version,
     },
   )
 
