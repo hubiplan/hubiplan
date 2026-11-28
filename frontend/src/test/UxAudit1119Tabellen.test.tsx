@@ -37,7 +37,12 @@ const WITHOUT_SORT = [
   'pages/competitions/MemberTab.tsx',
   'pages/competitions/ResultsPanel.tsx',
   'pages/competitions/Shootoffs.tsx',
+  // Keine neuen Tabellen: Meldereihenfolge und Fassungen einer Meldung standen bisher in
+  // EntriesPage.tsx und fielen dort nicht auf, weil die Datei auch die Ausschreibungsliste
+  // mit Suche und Sortierung enthielt. Beide haben eine feste Reihenfolge.
+  'pages/entries/EntryBlocks.tsx',
   'pages/entries/EntryResults.tsx',
+  'pages/entries/EntrySubmit.tsx',
   'pages/events/EventsPage.tsx',
   'pages/finance/BankAccess.tsx',
   'pages/finance/CashCountsPage.tsx',
