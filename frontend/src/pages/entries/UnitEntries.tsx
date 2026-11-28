@@ -15,7 +15,7 @@ import {
 import { DataTable } from '../../components/DataTable.tsx'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError, Loading } from '../../components/ui.tsx'
-import { EntryPanel } from './EntriesPage.tsx'
+import { EntryPanel } from './EntryPanel.tsx'
 import { t, tn } from '../../i18n/index.ts'
 
 /** Eingang des Veranstalters: je angeschriebene Untereinheit der Stand der Meldung. */
