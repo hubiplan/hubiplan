@@ -61,6 +61,8 @@ class Device(models.Model):
     push_endpoint = models.URLField(max_length=1000, blank=True)
     push_p256dh = models.CharField(max_length=200, blank=True)
     push_auth = models.CharField(max_length=100, blank=True)
+    # Hinweise der Verwaltung („Zu erledigen“) auf diesem Gerät; Schalter in der App unter „Ich“
+    admin_push = models.BooleanField(default=True, db_default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_seen_at = models.DateTimeField(default=timezone.now)
     revoked_at = models.DateTimeField(null=True, blank=True)

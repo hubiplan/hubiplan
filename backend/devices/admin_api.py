@@ -53,7 +53,7 @@ from audit.log import current_via
 from changes import tracking
 from core.api_base import OrgScopedMixin
 from core.ratelimit import TooMany, too_many
-from members.open_tasks import booking_tasks, event_tasks, member_tasks
+from members.open_tasks import booking_tasks, event_tasks, incoming_tasks, member_tasks
 from organizations import menu_layout
 
 from . import browser_unlock
@@ -401,6 +401,8 @@ class AdminTasksView(AdminScopedMixin, APIView):
 
             items += application_tasks(request.user, org, perms)
         items += booking_tasks(org, perms)
+        # Rechnungseingang: auch in Einheiten, die nur das Kassenbuch nutzen
+        items += incoming_tasks(org, perms)
         from todos.open_tasks import todo_tasks
 
         items += todo_tasks(request.user, org, perms)

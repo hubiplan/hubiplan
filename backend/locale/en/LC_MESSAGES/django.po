@@ -18421,3 +18421,21 @@ msgstr "The chair and the minute taker must be confirmed by two different people
 #: backend/locale/en/LC_MESSAGES/django.po
 msgid "Protokolle bestätigen zwei verschiedene Personen"
 msgstr "Minutes are confirmed by two different people"
+
+msgid "Neue Eingangsrechnung"
+msgstr "New incoming invoice"
+
+msgid "Neue Datenänderung"
+msgstr "New data change"
+
+msgid "Neue Kündigung"
+msgstr "New cancellation"
+
+msgid "Neues Foto zur Freigabe"
+msgstr "New photo to approve"
+
+msgid "Neuer Mitgliedsantrag"
+msgstr "New membership application"
+
+msgid "Neue Belegungsanfrage"
+msgstr "New booking request"

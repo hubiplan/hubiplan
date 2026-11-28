@@ -97,6 +97,8 @@ def device_data(device: Device, current: Device | None = None) -> dict:
         "platform": device.platform,
         "app_version": device.app_version,
         "push": device.push_kind,
+        # Neu: Hinweise der Verwaltung auf diesem Gerät (devices/current/push/admin/)
+        "admin_push": device.admin_push,
         "created_at": device.created_at,
         "last_seen_at": device.last_seen_at,
         "current": current is not None and current.pk == device.pk,
@@ -552,6 +554,25 @@ class PushView(APIView):
         device.push_kind = Device.Push.NONE
         device.push_endpoint = device.push_p256dh = device.push_auth = ""
         device.save(update_fields=["push_kind", "push_endpoint", "push_p256dh", "push_auth"])
+        return Response(device_data(device, device))
+
+
+class AdminPushSerializer(serializers.Serializer):
+    enabled = serializers.BooleanField()
+
+
+class AdminPushView(APIView):
+    """App: Hinweise der Verwaltung („Zu erledigen“) auf diesem Gerät ein- oder ausschalten."""
+
+    authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        data = AdminPushSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        device: Device = request.auth
+        device.admin_push = data.validated_data["enabled"]
+        device.save(update_fields=["admin_push"])
         return Response(device_data(device, device))
 
 

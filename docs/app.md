@@ -207,6 +207,20 @@ freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.
   `{"v":1,"t":"order","access":…,"id":<Sammelbestellung>,"title":…,"text":<Frist>,"from":…}`
   (Bestellungen unter `GET /api/portal/<Zugang>/orders/` öffnen).
 
+### Push für die Verwaltung (Funktion `app-push-verwaltung`)
+
+Wartet in einer Einheit etwas Neues unter „Zu erledigen“, bekommen die Konten mit dem passenden
+Recht dort einen Hinweis, auch ohne Mitgliederbereich:
+`{"v":1,"t":"admin","unit":<Einheit>,"kind":…,"title":…,"text":<Name der Einheit>}`.
+`kind` heißt wie die Art unter „Zu erledigen“: `incoming_review` (Rechnungseingang, Recht
+`finance.edit`), `change_request`, `cancellation`, `application` (`members.edit`), `photo`
+(`photos.manage`), `booking` (`bookings.edit`). Der Hinweis nennt keine Namen und keine Beträge;
+gelesen wird in der freigeschalteten Verwaltung. Je Konto und Einheit höchstens ein Hinweis in
+zwei Minuten; wer den Eintrag selbst angelegt hat, bekommt keinen. Die Rechte werden beim Senden
+geprüft. Schalter je Gerät: `PUT /api/app/v1/devices/current/push/admin/` mit `{"enabled": bool}`
+(Geräteschlüssel), Stand in `device.admin_push` (Vorgabe an). `GET admin/u/<Einheit>/tasks/` nennt
+neu auch `incoming_review`.
+
 ## Google-Push über das Push-Gateway (Schritt A6)
 
 Die Play-Fassung der App nutzt Firebase Cloud Messaging (FCM), wenn keine UnifiedPush-App
