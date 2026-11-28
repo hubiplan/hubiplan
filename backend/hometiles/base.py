@@ -129,7 +129,7 @@ def run(tiles: list[Tile], ctx, user, scope: str, keys: set[str] | None = None) 
                 content = None
         reason = content.reason if content else ""
         always = False
-        if state == AUTO and tile.default_on is not None:
+        if tile.default_on is not None:
             try:
                 always = bool(tile.default_on(ctx))
             except Exception:  # pragma: no cover
@@ -141,6 +141,7 @@ def run(tiles: list[Tile], ctx, user, scope: str, keys: set[str] | None = None) 
                 "description": tile.description(),
                 "state": state,
                 "urgent": bool(reason),
+                "default_on": always,
                 "shown": state == ON or (state == AUTO and (bool(reason) or always)),
                 "content": content.data() if content else None,
             }

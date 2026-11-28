@@ -67,6 +67,7 @@ export function tileBlocks(data: HomeTilesData | null): HomeBlock[] {
     label: tile.title,
     optional: true,
     urgent: tile.urgent,
+    byDefault: !!tile.default_on,
     render: () => <TileCard tile={tile} />,
   }))
 }

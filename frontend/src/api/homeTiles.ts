@@ -34,6 +34,8 @@ export interface HomeTile {
   description: string
   state: TileState
   urgent: boolean
+  /** Bei „bei Anlass“ auch ohne Anlass zu sehen (z. B. Kasse im reinen Kassenbuch) */
+  default_on?: boolean
   shown: boolean
   /** null bei „nie“ */
   content: TileContent | null

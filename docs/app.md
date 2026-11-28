@@ -516,7 +516,7 @@ höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` o
   Geräteschlüssel: `GET /api/portal/<Zugang>/home-tiles/` für Mitglieder und
   `GET /api/app/v1/admin/u/<Einheit>/home-tiles/` für die Verwaltung (nicht in Untereinheiten).
   Antwort `scope` und `tiles`, je Kachel `key`, `title`, `description`, `state`
-  (`auto`/`on`/`off`), `urgent` (gerade ein Anlass), `shown` und `content` (`figures`, `rows`,
+  (`auto`/`on`/`off`), `urgent` (gerade ein Anlass), `default_on`, `shown` und `content` (`figures`, `rows`,
   `text`, `link`, `link_label`, `reason`; `null` bei `off`). `PUT` mit `key` und `state`
   speichert die Wahl, die auch für die Startseite im Browser gilt, und antwortet wie GET.
 - Sammelbestellungen (Modul `orders`) im Mitgliederbereich, auch mit dem Geräteschlüssel:
