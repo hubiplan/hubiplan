@@ -480,6 +480,8 @@ class Template:
     org_type: str
     add: tuple[str, ...] = ()
     remove: tuple[str, ...] = ()
+    # Nur diese Module statt der Vorgabe (z. B. reines Kassenbuch)
+    only: tuple[str, ...] = ()
     # Bezeichnung der Untereinheiten: Einzahl, Mehrzahl, Genus (leer: unverändert)
     units: tuple[str, str, str] | None = None
 
@@ -537,6 +539,13 @@ TEMPLATES: tuple[Template, ...] = (
         remove=("events", "awards"),
     ),
     Template(
+        # Nur die Kasse: Konten, Buchungen, Belege, Abschluss; Geschäftspartner über das Recht
+        "cashbook",
+        gettext_noop("Kassenbuch (nur Kasse)"),
+        "club",
+        only=("finance",),
+    ),
+    Template(
         "federation",
         gettext_noop("Dachverband"),
         "federation",
@@ -547,7 +556,8 @@ TEMPLATES: tuple[Template, ...] = (
 
 def template_modules(template: Template) -> list[str]:
     """Module einer Vorlage: Vorgabe plus Zusätze, ohne Gestrichenes, mit Voraussetzungen."""
-    wanted = (set(DEFAULT_IDS) | set(template.add)) - set(template.remove)
+    start = set(template.only) if template.only else set(DEFAULT_IDS)
+    wanted = (start | set(template.add)) - set(template.remove)
     ids = without_dependents(with_requirements(wanted))
     return sorted(m for m in ids if template.org_type in MODULE_BY_ID[m].org_types)
 

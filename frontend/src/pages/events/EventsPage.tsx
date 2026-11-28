@@ -17,6 +17,7 @@ import { Why } from '../../learning/Aids.tsx'
 import { ExternalCalendarsPanel } from './ExternalCalendarsPanel.tsx'
 import { t } from '../../i18n/index.ts'
 import { eventAccess } from './sections.ts'
+import { NoAccessPage } from '../NoticePages.tsx'
 import { eventSetupTabs } from './setup.ts'
 
 export function EventsPage() {
@@ -30,6 +31,10 @@ export function EventsPage() {
     base = calendarBase.dept(activeDept.id)
   } else if (activePortal) {
     base = calendarBase.portal(activePortal.id)
+  }
+  // Ohne Modul Termine keine Kalenderseite mit Ladefehler (alte Lesezeichen)
+  if (active && (active.type === 'club' || active.type === 'federation')) {
+    if (!active.modules.includes('events')) return <NoAccessPage reason="right" />
   }
   const manage = access?.manage ?? false
   const categories = access?.categories ?? false

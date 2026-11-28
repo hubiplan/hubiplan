@@ -108,40 +108,59 @@ export interface NavItem {
  * Arbeitsgruppen von Finanzen nach dem Jahreslauf (Konzept S-01, UX-Audit 08.11. W-03).
  * Reihenfolge = Reihenfolge in der Seitenleiste.
  */
-export function financeGroups(): Record<
-  'billing' | 'payments' | 'booking' | 'closing' | 'setup',
-  NavGroup
-> {
+export function financeGroups(
+  a?: FinanceAccess,
+): Record<'billing' | 'payments' | 'booking' | 'closing' | 'setup', NavGroup> {
+  // Mit Zugang nennen die Beschreibungen nur, was eingeschaltet ist (z. B. nur Kasse);
+  // ohne Zugang (Hilfe) gilt der volle Text
+  const full = !a
   return {
     billing: {
       key: 'abrechnen',
       label: t('Beiträge & Rechnungen'),
       to: '/finanzen/abrechnen',
-      text: t('Beiträge abrechnen, Rechnungen schreiben und mahnen, eingehende Rechnungen prüfen.'),
+      text:
+        full || a.billing
+          ? t('Beiträge abrechnen, Rechnungen schreiben und mahnen, eingehende Rechnungen prüfen.')
+          : t('Eingehende Rechnungen prüfen und bezahlen.'),
     },
     payments: {
       key: 'zahlungen',
       label: t('Zahlungen'),
       to: '/finanzen/zahlungen',
-      text: t('Lastschriften einziehen, Kontoauszüge abgleichen und Auszahlungen bündeln.'),
+      text:
+        full || a.sepa || a.payouts || a.expenses
+          ? t('Lastschriften einziehen, Kontoauszüge abgleichen und Auszahlungen bündeln.')
+          : t('Kontoauszüge einlesen und Umsätze zuordnen.'),
     },
     booking: {
       key: 'buchen',
       label: tc('Finanzen', 'Buchen'),
       to: '/finanzen/buchen',
-      text: t('Einnahmen und Ausgaben erfassen, Kasse zählen, Rücklagen und Anlagen führen.'),
+      text:
+        full || a.cashCounts || a.reserves
+          ? t('Einnahmen und Ausgaben erfassen, Kasse zählen, Rücklagen und Anlagen führen.')
+          : t(
+              'Einnahmen und Ausgaben erfassen, Quittungen ausstellen und Veranstaltungen abrechnen.',
+            ),
     },
     closing: {
       key: 'abschliessen',
       label: t('Auswerten & abschließen'),
       to: '/finanzen/abschliessen',
-      text: t('Zahlen auswerten, Steuern prüfen, Zuwendungen bestätigen und das Jahr abschließen.'),
+      text:
+        full || a.tax || a.donations
+          ? t('Zahlen auswerten, Steuern prüfen, Zuwendungen bestätigen und das Jahr abschließen.')
+          : t('Zahlen auswerten, Haushalt planen und das Jahr abschließen.'),
     },
     setup: {
       key: 'einrichten',
       label: t('Einrichten'),
       to: '/finanzen/einrichtung',
-      text: t('Grundlagen festlegen: Beitragssätze, Mahnstufen, Konten, Kategorien und Partner.'),
+      text:
+        full || a.billing
+          ? t('Grundlagen festlegen: Beitragssätze, Mahnstufen, Konten, Kategorien und Partner.')
+          : t('Grundlagen festlegen: Konten, Kategorien und Partner.'),
     },
   }
 }
@@ -153,7 +172,7 @@ export function financeGroups(): Record<
  */
 export function financeSections(a: FinanceAccess): NavItem[] {
   if (!a.finance && !a.billing && !a.expenses) return []
-  const g = financeGroups()
+  const g = financeGroups(a)
   const items = (group: NavGroup, list: (NavItem | false)[]): NavItem[] =>
     list.filter((i): i is NavItem => !!i).map((i) => ({ ...i, group }))
   return [

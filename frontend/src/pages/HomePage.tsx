@@ -31,6 +31,7 @@ import { tileBlocks } from '../components/home/TileCard.tsx'
 import { homeTilesApi } from '../api/homeTiles.ts'
 import { useLoad } from '../components/forms.ts'
 import { locale, t } from '../i18n/index.ts'
+import { modules } from '../modules.tsx'
 
 /** Rechte, mit denen es etwas zu erledigen geben kann (Entscheidungen, überfällige Rechnungen) */
 const TASK_PERMS = [
@@ -185,6 +186,9 @@ function OrgHome({ org }: { org: OrgSummary }) {
     org.permissions.includes(PERM.membersView)
   const catalog = actionCatalog(org)
   const dept = activeDept
+  const hasAreas = modules.some(
+    (m) => m.area !== 'start' && m.visible(org, { dept: null, portal: null }),
+  )
   // Kacheln bei Anlass (backend/hometiles); ohne Antwort einfach ohne sie
   const tiles = useLoad(() => homeTilesApi.org(org.id), [org.id])
   return (
@@ -255,6 +259,8 @@ function OrgHome({ org }: { org: OrgSummary }) {
         {!upcoming &&
           !people &&
           catalog.length === 0 &&
+          // Nur lesen (z. B. Kassenprüfer): Bereiche stehen im Menü, also kein Platzhalter
+          !hasAreas &&
           (user?.mfa_overdue ? (
             // VW-37: ruhende Rechte ohne Platzhalter, mit dem einen nächsten Schritt
             <div className="card tile" data-testid="mfa-schritt">
