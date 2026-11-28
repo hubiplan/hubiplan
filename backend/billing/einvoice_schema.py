@@ -116,8 +116,11 @@ class CommercialInvoiceSerializer(serializers.Serializer):
                 gettext("Das Leistungsende liegt vor dem Leistungsbeginn.")
             )
         seller = attrs["seller"]
+        categories = {line["tax_category"] for line in attrs["lines"]}
+        # Was beim Rechnungssteller fehlt, auf einmal nennen statt je Speicherversuch eine Meldung
+        missing = []
         if not (seller["vat_id"] or seller["identifier"]):
-            raise serializers.ValidationError(
+            missing.append(
                 gettext(
                     "Beim Rechnungssteller fehlt eine Kennung: Bitte die USt-IdNr. oder das Feld "
                     "„Eindeutige Geschäftspartnerkennung“ ausfüllen, zum Beispiel mit der "
@@ -125,22 +128,23 @@ class CommercialInvoiceSerializer(serializers.Serializer):
                 )
             )
         if not seller["contact"] or not seller["phone"]:
-            raise serializers.ValidationError(
+            missing.append(
                 gettext(
                     "Für XRechnung fehlen Kontaktperson oder Telefonnummer des Rechnungsstellers."
                 )
             )
-        categories = {line["tax_category"] for line in attrs["lines"]}
+        if categories != {"O"} and not (seller["vat_id"] or seller["tax_number"]):
+            missing.append(
+                gettext("Bitte Steuernummer oder USt-IdNr. des Rechnungsstellers angeben.")
+            )
+        if missing:
+            raise serializers.ValidationError(missing)
         if "O" in categories and len(categories) > 1:
             raise serializers.ValidationError(
                 gettext(
                     "Nicht steuerbare Positionen dürfen hier nicht mit anderen "
                     "Steuerkategorien kombiniert werden."
                 )
-            )
-        if categories != {"O"} and not (seller["vat_id"] or seller["tax_number"]):
-            raise serializers.ValidationError(
-                gettext("Bitte Steuernummer oder USt-IdNr. des Rechnungsstellers angeben.")
             )
         if "O" in categories and (seller["vat_id"] or attrs["buyer"]["vat_id"]):
             raise serializers.ValidationError(
