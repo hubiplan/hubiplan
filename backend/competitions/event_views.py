@@ -20,7 +20,8 @@ from events.models import Event, EventResponse
 from members.personsearch import ordered
 
 from .models import Competition
-from .views import _Mixin, create_starter
+from .starters import create_starter
+from .views import _Mixin
 
 
 def calendar_on(org) -> bool:

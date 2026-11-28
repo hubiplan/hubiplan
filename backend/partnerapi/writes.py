@@ -568,7 +568,7 @@ class ResultsWriteView(WriteMixin, PartnerView):
     )
     def post(self, request, competition_id: str):
         from competitions.models import Scoring
-        from competitions.views import create_starter, set_score
+        from competitions.starters import create_starter, set_score
 
         def action():
             ser = PartnerResultsInputSerializer(data=request.data)

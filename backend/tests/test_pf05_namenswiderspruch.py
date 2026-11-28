@@ -108,7 +108,7 @@ def test_ohne_geburtsdatum_wie_minderjaehrig():
 
 def test_gaeste_nur_volljaehrig_mit_namen():
     """FF-24 (c): Gäste erscheinen nur mit Namen, wenn der Verein „volljährig“ angibt."""
-    from competitions.views import create_starter, update_starter
+    from competitions.starters import create_starter, update_starter
 
     club = make_org("Verein Gäste")
     user = None
@@ -150,7 +150,7 @@ def test_bestehende_gaeste_starten_als_nicht_angegeben():
 
 def test_nachtragen_auch_abgeschlossen_einzeln_und_gesammelt(api):
     """Gäste und freie Pfandgewinner: Liste, einzeln, „alle“; auch nach dem Abschluss."""
-    from competitions.views import delete_starter
+    from competitions.starters import delete_starter
 
     from .factories import give_role, make_user
 

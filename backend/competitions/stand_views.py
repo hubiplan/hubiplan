@@ -26,22 +26,11 @@ from core.tenancy import rls_bypass, unit_context
 
 from . import services
 from .models import Competition, StandAccess, hash_token
+from .shootoffs import create_shootoff, list_shootoffs, update_shootoff, update_shootoff_entry
+from .starters import _starters_with_values, _units, unit_members
+from .sync import _jsonable, sync
 from .target_views import detect_photo, photo_rate
-from .views import (
-    MODULE,
-    CompetitionSerializer,
-    ScoringSerializer,
-    _jsonable,
-    _Mixin,
-    _starters_with_values,
-    _units,
-    create_shootoff,
-    list_shootoffs,
-    sync,
-    unit_members,
-    update_shootoff,
-    update_shootoff_entry,
-)
+from .views import MODULE, CompetitionSerializer, ScoringSerializer, _Mixin
 
 
 def _access_data(a: StandAccess) -> dict:

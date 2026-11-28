@@ -31,7 +31,7 @@ from billing import services as billing_services
 from billing import views as billing_views
 from billing.models import Invoice
 from changes import idempotency
-from finance import services
+from finance import receipts, services, year_closing
 from finance import views as finance_views
 from finance.models import Account, Booking
 from finance.serializers import BookingSerializer
@@ -61,7 +61,7 @@ class AppBookingView(AppAdminAccess, finance_views.FinanceMixin, APIView):
         data = BookingSerializer(data=values, context={"org": self.org, "request": request})
         data.is_valid(raise_exception=True)
         date = data.validated_data["date"]
-        finance_views._ensure_open(self.org, self.org.fiscal_year_of(date))
+        year_closing._ensure_open(self.org, self.org.fiscal_year_of(date))
         year = self.org.fiscal_year_of(date)
         booking = data.save(
             organization=self.org,
@@ -69,9 +69,9 @@ class AppBookingView(AppAdminAccess, finance_views.FinanceMixin, APIView):
             number=services.next_number(self.org.pk, year),
             created_by=request.user,
         )
-        finance_views.cash_ok([booking.account, booking.to_account], booking.date)
+        year_closing.cash_ok([booking.account, booking.to_account], booking.date)
         record(self.org, request.user, "create", booking, diff({}, snapshot(booking)))
-        finance_views.attach_receipt(self.org, booking, upload, request.user)
+        receipts.attach_receipt(self.org, booking, upload, request.user)
         claim.remember({"id": booking.pk})
         return Response(self._data(booking), status=status.HTTP_201_CREATED)
 

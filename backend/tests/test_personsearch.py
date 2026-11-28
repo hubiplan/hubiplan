@@ -59,7 +59,7 @@ def test_suche_erhaelt_oder_mit_email_nummern_und_woertern(orgs):
 
 
 def test_varianten_und_limit_erst_nach_suche(orgs):
-    from competitions.views import _umlaut_variants
+    from competitions.starters import _umlaut_variants
 
     first = make_member(orgs["c"], "Anna", "Müller")
     make_member(orgs["c"], "Berta", "Mueller")

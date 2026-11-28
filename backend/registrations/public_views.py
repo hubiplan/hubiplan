@@ -286,7 +286,7 @@ class ScanCashView(_Public):
     def post(self, request, token: str):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
-        from billing.views import _as_drf
+        from billing.sending import _as_drf
 
         from . import scanning
 
