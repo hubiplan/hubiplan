@@ -222,6 +222,10 @@ class TestStorno:
 
         with transaction.atomic():
             services.close_year(club, last_year, None)
+        # Am Tag der Erfassung, aber im abgeschlossenen Jahr: weder änderbar noch löschbar,
+        # damit die Maske nichts anbietet, was der Server ablehnt. Storno geht weiter.
+        data = c.get(f"{fin}/bookings/{b.pk}/").json()
+        assert data["fixed"] is True and data["deletable"] is False
         resp = c.post(f"{fin}/bookings/{b.pk}/storno/", {"reason": "falsch"}, content_type=JSON)
         assert resp.status_code == 201, resp.json()
         assert Booking.objects.get(cancels=b).year == club.fiscal_year_of(heute())

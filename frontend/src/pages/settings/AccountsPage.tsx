@@ -232,9 +232,13 @@ export function AccountsPage() {
         )}
         {canSend && (
           <p className="muted small">
-            {t(
-              'Konten mit Rolle bekommen eine neue Einladung, solange sie noch kein Passwort festgelegt haben. Konten für den Mitgliederbereich bekommen einen neuen Anmeldelink.',
-            )}
+            {org.modules.includes('members')
+              ? t(
+                  'Konten mit Rolle bekommen eine neue Einladung, solange sie noch kein Passwort festgelegt haben. Konten für den Mitgliederbereich bekommen einen neuen Anmeldelink.',
+                )
+              : t(
+                  'Konten mit Rolle bekommen eine neue Einladung, solange sie noch kein Passwort festgelegt haben.',
+                )}
           </p>
         )}
         {message && <Alert kind={message.kind}>{message.text}</Alert>}
