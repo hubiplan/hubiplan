@@ -7,7 +7,7 @@ routen: [/plattform]
 stichworte: [platform, create club, umbrella association, enable modules, self-update]
 ---
 
-Platform administration creates clubs and umbrella associations on this HUBIplan instance and enables modules. When creating one, a person receives the “board” role with all rights and then manages roles and users themselves.
+Platform administration creates clubs and umbrella associations on this HUBIplan instance and enables modules. When creating one, a person receives the “board” role with all rights and then manages roles and users themselves. Under **Set board** you enter the email address and, for a new account, the first name and surname; an existing account keeps its name.
 
 In the list of units, each unit shows the number of enabled modules (“12 modules”); click it to see them one by one.
 

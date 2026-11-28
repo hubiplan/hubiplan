@@ -775,10 +775,10 @@ export const platformApi = {
   create: (data: Partial<PlatformOrg>) => api.post<PlatformOrg>('/api/platform/orgs/', data),
   update: (id: number, data: Partial<PlatformOrg>) =>
     api.patch<PlatformOrg>(`/api/platform/orgs/${id}/`, data),
-  addBoard: (id: number, email: string) =>
+  addBoard: (id: number, email: string, name?: { first_name: string; last_name: string }) =>
     api.post<{ email: string; role: string; invited: boolean; new_account: boolean }>(
       `/api/platform/orgs/${id}/board/`,
-      { email },
+      { email, ...name },
     ),
   settings: () => api.get<PlatformSettings>('/api/platform/settings/'),
   addresses: () => api.get<InstanceAddress[]>('/api/platform/addresses/'),

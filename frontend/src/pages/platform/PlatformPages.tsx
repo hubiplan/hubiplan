@@ -257,6 +257,7 @@ function PlatformOrgForm({
   const directory = useLoad(() => moduleApi.directory(), [])
   const allModules = flatModules(directory.data)
   const [board, setBoard] = useState('')
+  const [boardName, setBoardName] = useState({ first_name: '', last_name: '' })
   const [boardResult, setBoardResult] = useState<string | null>(null)
   const tm = buildTerms(v.label, v.label_plural, v.label_gender, v.label_genitive)
   // Unter einer übergeordneten Einheit führen Einheiten immer eigene Mitglieder
@@ -301,7 +302,11 @@ function PlatformOrgForm({
     ev.preventDefault()
     if (!org) return
     const res = await form.submit(
-      () => platformApi.addBoard(org.id, board),
+      () =>
+        platformApi.addBoard(org.id, board, {
+          first_name: boardName.first_name.trim(),
+          last_name: boardName.last_name.trim(),
+        }),
       t('Vorstand zugeordnet.'),
     )
     if (res) {
@@ -320,6 +325,7 @@ function PlatformOrgForm({
               ),
       )
       setBoard('')
+      setBoardName({ first_name: '', last_name: '' })
     }
   }
 
@@ -607,13 +613,27 @@ function PlatformOrgForm({
               { diesem: tm.diesem },
             )}
           </p>
-          <Field
-            label={t('E-Mail-Adresse')}
-            type="email"
-            required
-            value={board}
-            onChange={(ev) => setBoard(ev.target.value)}
-          />
+          <div className="grid-2">
+            <Field
+              label={t('E-Mail-Adresse')}
+              type="email"
+              required
+              value={board}
+              hint={t('Gibt es noch kein Konto, wird eines angelegt.')}
+              onChange={(ev) => setBoard(ev.target.value)}
+            />
+            <Field
+              label={t('Vorname')}
+              value={boardName.first_name}
+              hint={t('Nur für ein neues Konto; ein bestehendes behält seinen Namen.')}
+              onChange={(ev) => setBoardName((n) => ({ ...n, first_name: ev.target.value }))}
+            />
+            <Field
+              label={t('Nachname')}
+              value={boardName.last_name}
+              onChange={(ev) => setBoardName((n) => ({ ...n, last_name: ev.target.value }))}
+            />
+          </div>
           {boardResult && <Alert kind="info">{boardResult}</Alert>}
           <button type="submit" className="button button-primary">
             {t('Zuordnen')}

@@ -81,6 +81,34 @@ describe('Einheit anlegen auf der Plattform', () => {
     expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
   })
 
+  it('fragt beim Vorstand auch den Namen für ein neues Konto', async () => {
+    const calls = fakeApi({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'GET /api/platform/orgs/': () => ({ status: 200, body: [bund] }),
+      'GET /api/platform/orgs/7/erase-state/': () => ({ status: 200, body: eraseState() }),
+      'POST /api/platform/orgs/7/board/': () => ({
+        status: 201,
+        body: { email: 'erika@example.org', role: 'Vorstand', invited: true, new_account: true },
+      }),
+    })
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }))
+    await user.type(await screen.findByLabelText(/E-Mail-Adresse/), 'erika@example.org')
+    await user.type(screen.getByLabelText(/Vorname/), 'Erika')
+    await user.type(screen.getByLabelText(/Nachname/), 'Muster')
+    await user.click(screen.getByRole('button', { name: 'Zuordnen' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'POST /api/platform/orgs/7/board/')).toBe(true),
+    )
+    const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/board/')
+    expect(JSON.parse(String(post?.init?.body))).toEqual({
+      email: 'erika@example.org',
+      first_name: 'Erika',
+      last_name: 'Muster',
+    })
+  })
+
   it('nennt bei einer leeren Einheit keine Wartezeit', async () => {
     fakeApi({
       'GET /_allauth/browser/v1/auth/session': session,

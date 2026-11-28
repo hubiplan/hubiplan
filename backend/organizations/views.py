@@ -639,6 +639,9 @@ class PlatformOrganizationViewSet(
 
 class BoardMemberSerializer(serializers.Serializer):
     email = serializers.EmailField()
+    # Name für ein neues Konto; ein bestehendes Konto behält seinen Namen
+    first_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
+    last_name = serializers.CharField(required=False, allow_blank=True, max_length=150)
 
 
 def _tell_board(org, user, role_name: str, actor) -> None:
@@ -710,7 +713,9 @@ class PlatformBoardView(APIView):
         user, created = User.objects.get_or_create(email=email)
         if created:
             user.set_unusable_password()
-            user.save(update_fields=["password"])
+            user.first_name = data.validated_data.get("first_name", "").strip()
+            user.last_name = data.validated_data.get("last_name", "").strip()
+            user.save(update_fields=["password", "first_name", "last_name"])
         with tenant_context(org.pk):
             role, _ = Role.objects.get_or_create(
                 organization=org,
