@@ -4,6 +4,7 @@ import { api } from './client.ts'
 export type QualificationStatus = 'valid' | 'expiring' | 'expired'
 
 export interface QualificationType {
+  version?: number
   id: number
   name: string
   description: string
@@ -19,6 +20,7 @@ export interface QualificationType {
 }
 
 export interface Qualification {
+  version?: number
   id: number
   kind: number
   kind_name: string

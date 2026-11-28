@@ -5,6 +5,7 @@ import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { PERM } from '../../api/orgs.ts'
+import { sendingVersion } from '../../api/client.ts'
 import { qualificationApi } from '../../api/qualifications.ts'
 import type { QualificationType } from '../../api/qualifications.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -195,7 +196,7 @@ export function QualificationTypesPage() {
     if (!ok) return
     setMessage(null)
     try {
-      await qualificationApi.deleteType(org.id, k.id)
+      await sendingVersion(k.version, () => qualificationApi.deleteType(org.id, k.id))
       setMessage({ kind: 'success', text: t('„{name}“ wurde gelöscht.', { name: k.name }) })
       await reload()
     } catch (err) {
@@ -307,7 +308,9 @@ export function QualificationTypesPage() {
                 () =>
                   editing === 'new'
                     ? qualificationApi.createType(org.id, draft)
-                    : qualificationApi.updateType(org.id, editing.id, draft),
+                    : sendingVersion(editing.version, () =>
+                        qualificationApi.updateType(org.id, editing.id, draft),
+                      ),
                 t('„{name}“ wurde gespeichert.', { name: draft.name }),
               )
               if (ok) setEditing(null)

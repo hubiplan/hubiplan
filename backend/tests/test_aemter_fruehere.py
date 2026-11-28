@@ -76,6 +76,7 @@ class TestErfassen:
                 "current": False,
                 "former_entry": True,
                 "name_public": False,
+                "version": 1,
             }
         ]
 

@@ -16,8 +16,13 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from core.versioning import Versioned
 
-class QualificationType(models.Model):
+
+class QualificationType(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
@@ -64,8 +69,11 @@ class QualificationType(models.Model):
         super().save(*args, **kwargs)
 
 
-class Qualification(models.Model):
+class Qualification(Versioned):
     """Nachweis einer Person: erworben (bzw. eingesehen) am, gültig bis."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
