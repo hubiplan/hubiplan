@@ -4,7 +4,7 @@
 import { NextcloudSave } from '../../components/NextcloudFiles.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { cashCountApi, DENOMINATIONS, euro, financeApi, parseAmount } from '../../api/finance.ts'
+import { cashCountApi, DENOMINATIONS, euro, parseAmount } from '../../api/finance.ts'
 import type { CashCount, CashCountInput } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
@@ -12,6 +12,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { useFinanceAccounts, useFinanceCategories } from '../../components/masterData.ts'
 
 function todayIso(): string {
   const d = new Date()
@@ -158,8 +159,8 @@ function CashCountForm({
   onSaved: (saved: CashCount) => Promise<void>
 }) {
   const org = useActiveOrg()
-  const accounts = useLoad(() => financeApi.accounts(org.id), [org.id])
-  const categories = useLoad(() => financeApi.categories(org.id), [org.id])
+  const accounts = useFinanceAccounts(org.id)
+  const categories = useFinanceCategories(org.id)
   const cashAccounts = (accounts.data ?? []).filter((a) => a.kind === 'cash' && a.is_active)
   const [account, setAccount] = useState('')
   const [date, setDate] = useState(todayIso)

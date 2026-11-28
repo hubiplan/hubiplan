@@ -7,13 +7,13 @@ import { ApiError } from '../../api/client.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
 import { feeProofApi } from '../../api/feeProofs.ts'
 import type { DiscountInput, ProofDiscount } from '../../api/feeProofs.ts'
-import { memberApi } from '../../api/members.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
 import { Why } from '../../learning/Aids.tsx'
+import { useMemberTypes } from '../../components/masterData.ts'
 
 const DEFAULT_KINDS = [
   'Immatrikulationsbescheinigung',
@@ -68,7 +68,7 @@ function deadlineText(d: ProofDiscount): string {
 export function FeeProofDiscountsCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
   const list = useLoad(() => feeProofApi.discounts(orgId), [orgId])
   const settings = useLoad(() => feeProofApi.settings(orgId), [orgId])
-  const types = useLoad(() => memberApi.types(orgId), [orgId])
+  const types = useMemberTypes(orgId)
   const [editing, setEditing] = useState<number | 'new' | null>(null)
   const [draft, setDraft] = useState<Draft>(emptyDraft())
   const [errors, setErrors] = useState<Record<string, string>>({})

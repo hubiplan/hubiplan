@@ -4,7 +4,7 @@ import type { FormEvent } from 'react'
 import { memberApi } from '../../api/members.ts'
 import type { MemberType, TypeUsage } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
-import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { errorMessage, useAutoSave, useForm } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { fillTerms, useTerms } from '../../org/terms.ts'
@@ -12,13 +12,14 @@ import { Term, Why } from '../../learning/Aids.tsx'
 import { SortHint } from '../../components/Sortable.tsx'
 import { useSortable } from '../../components/useSortable.tsx'
 import { t } from '../../i18n/index.ts'
+import { useMemberTypes } from '../../components/masterData.ts'
 
 export function MemberTypesPage() {
   const org = useActiveOrg()
   const editable = org.permissions.includes(PERM.orgEdit)
   const terms = useTerms()
   const fed = !!terms.dv_has
-  const { data, error, reload } = useLoad(() => memberApi.types(org.id), [org.id])
+  const { data, error, reload } = useMemberTypes(org.id)
   const [editing, setEditing] = useState<MemberType | 'new' | null>(null)
   const [removing, setRemoving] = useState<{ type: MemberType; usage: TypeUsage } | null>(null)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)

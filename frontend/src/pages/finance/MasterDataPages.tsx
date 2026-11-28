@@ -19,6 +19,11 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import {
+  useFinanceAccounts,
+  useFinanceCategories,
+  useFinanceSettings,
+} from '../../components/masterData.ts'
 
 /** Aktuelles Jahr, beim Öffnen eines Formulars ermittelt (nicht beim Laden der Seite). */
 function thisYear() {
@@ -32,9 +37,9 @@ export function AccountsPage() {
   const { refresh } = useOrg()
   const canEdit = org.permissions.includes(PERM.financeEdit)
   const [switchError, setSwitchError] = useState<string | null>(null)
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const datevOn = !!settings.data?.datev_enabled
-  const { data, error, reload } = useLoad(() => financeApi.accounts(org.id), [org.id])
+  const { data, error, reload } = useFinanceAccounts(org.id)
   const [editing, setEditing] = useState<Account | 'new' | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
@@ -382,8 +387,8 @@ const CATEGORY_KIND = {
 export function CategoriesPage() {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.financeEdit)
-  const { data, error, reload } = useLoad(() => financeApi.categories(org.id), [org.id])
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const { data, error, reload } = useFinanceCategories(org.id)
+  const settings = useFinanceSettings(org.id)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [removing, setRemoving] = useState<{ category: Category; usage: CategoryUsage } | null>(
     null,

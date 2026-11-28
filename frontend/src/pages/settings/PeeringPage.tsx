@@ -1,8 +1,8 @@
 // Einstellungen › Verbund: Kopplungen mit Einheiten auf anderen HUBIplan-Instanzen.
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
-import { memberApi, todayIso } from '../../api/members.ts'
-import { orgApi, PERM } from '../../api/orgs.ts'
+import { todayIso } from '../../api/members.ts'
+import { PERM } from '../../api/orgs.ts'
 import { transferApi } from '../../api/datatransfer.ts'
 import { levelsOf, peeringApi } from '../../api/peering.ts'
 import type {
@@ -22,6 +22,7 @@ import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../c
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { useDepartmentChoices, useMemberTypes } from '../../components/masterData.ts'
 
 const KIND_LABELS: Record<string, string> = {
   get 'coupling.accept'() {
@@ -261,7 +262,7 @@ function SpinOffCard({ onChange }: { onChange: () => void }) {
   const org = useActiveOrg()
   const canExport = org.permissions.includes(PERM.dataExport)
   const { data, reload } = useLoad(() => peeringApi.spinOffs(org.id), [org.id])
-  const units = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const units = useDepartmentChoices(org.id)
   const [unit, setUnit] = useState('')
   const [way, setWay] = useState<'keep' | 'move'>('keep')
   const [cutoff, setCutoff] = useState('')
@@ -1659,7 +1660,7 @@ function RegisterCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
 function TransferCard({ coupling, onChange }: { coupling: Coupling; onChange: () => void }) {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.membersEdit)
-  const { data: types } = useLoad(() => memberApi.types(org.id), [org.id])
+  const { data: types } = useMemberTypes(org.id)
   const [form, setForm] = useState({
     last_name: '',
     first_name: '',

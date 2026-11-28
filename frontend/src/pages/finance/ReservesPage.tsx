@@ -3,7 +3,7 @@
 // Geschäftsjahr und sind nach dessen Abschluss gesperrt.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { euro, financeApi, parseAmount, RESERVE_KINDS, reserveApi } from '../../api/finance.ts'
+import { euro, parseAmount, RESERVE_KINDS, reserveApi } from '../../api/finance.ts'
 import type { Reserve, ReserveKind } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
@@ -11,6 +11,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { EmptyList } from '../../components/EmptyList.tsx'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 function todayIso(): string {
   const d = new Date()
@@ -116,7 +117,7 @@ export function ReservesPage({ canEdit }: { canEdit: boolean }) {
 // Mittelverwendungsrechnung (Konzept vereinskasse-steuern, S5)
 function ReserveLimitsCard({ version }: { version: number }) {
   const org = useActiveOrg()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   const [year, setYear] = useState<number | null>(null)
   const current = year ?? settings.data?.current_year ?? null
   const limits = useLoad(

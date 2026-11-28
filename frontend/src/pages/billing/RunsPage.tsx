@@ -16,11 +16,12 @@ import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { feeRunChecks } from '../../learning/checks.ts'
 import { t, tn } from '../../i18n/index.ts'
+import { useBillingSettings } from '../../components/masterData.ts'
 
 export function RunsPage() {
   const tm = useTerms()
   const org = useActiveOrg()
-  const settings = useLoad(() => billingApi.settings(org.id), [org.id])
+  const settings = useBillingSettings(org.id)
   const runs = useLoad(() => billingApi.runs(org.id), [org.id])
   const [creating, setCreating] = useState(false)
 

@@ -7,6 +7,7 @@ import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
+import { useMemberTypes } from '../../components/masterData.ts'
 
 /** Wechselanfragen: eingegangene beantworten, gestellte verfolgen. */
 export function TransfersPage() {
@@ -100,7 +101,7 @@ function IncomingItem({
   canEdit: boolean
   onDone: () => Promise<void>
 }) {
-  const types = useLoad(() => memberApi.types(orgId), [orgId])
+  const types = useMemberTypes(orgId)
   const [newType, setNewType] = useState('')
   const [response, setResponse] = useState('')
   const [error, setError] = useState<string | null>(null)

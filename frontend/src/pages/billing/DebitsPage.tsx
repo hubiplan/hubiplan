@@ -3,7 +3,7 @@ import { todayIso } from '../../api/members.ts'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { billingApi, sepaApi } from '../../api/billing.ts'
+import { sepaApi } from '../../api/billing.ts'
 import type { DebitProposals, DebitRun, Mandate } from '../../api/billing.ts'
 import { ApiError } from '../../api/client.ts'
 import { euro } from '../../api/finance.ts'
@@ -19,6 +19,7 @@ import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { debitChecks } from '../../learning/checks.ts'
 import { t } from '../../i18n/index.ts'
+import { useBillingSettings } from '../../components/masterData.ts'
 
 /** So viele Läufe zeigt die Seite zunächst; ältere erst auf Wunsch. */
 const RUNS_SHOWN = 10
@@ -392,7 +393,7 @@ export function MandatesPage() {
 }
 
 function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
-  const settings = useLoad(() => billingApi.settings(orgId), [orgId])
+  const settings = useBillingSettings(orgId)
   const [term, setTerm] = useState('')
   const [search, setSearch] = useState('')
   const { data, error, reload } = useLoad(

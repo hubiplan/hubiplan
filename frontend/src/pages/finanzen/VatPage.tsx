@@ -7,6 +7,7 @@ import { Alert, Checkbox, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
+import { useFinanceSettings } from '../../components/masterData.ts'
 
 function periodOptions(): { value: VatPeriod; label: string }[] {
   return [
@@ -26,7 +27,7 @@ function currentIndex(period: VatPeriod): number {
 
 export function VatPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
-  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const settings = useFinanceSettings(org.id)
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />
   return <VatReportView canEdit={canEdit} s={settings.data} reloadSettings={settings.reload} />
