@@ -92,3 +92,11 @@ describe('Hilfe im reinen Kassenbuch', () => {
     expect(inReach({ routes: ['/mein-bereich', '/termine'] }, none)).toBe(true)
   })
 })
+
+describe('Finanzgruppen im reinen Kassenbuch', () => {
+  it('heißen ohne Beiträge nur „Rechnungen“', () => {
+    const a = financeAccess(NUR_KASSE as unknown as OrgSummary)
+    expect(financeGroups(a).billing.label).toBe('Rechnungen')
+    expect(financeGroups().billing.label).toBe('Beiträge & Rechnungen')
+  })
+})

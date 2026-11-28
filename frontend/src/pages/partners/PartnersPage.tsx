@@ -370,6 +370,7 @@ function PartnerForm({
   const access = partnerAccess(org.permissions)
   const canEdit = access.edit
   const financeOn = org.modules.includes('finance') && org.permissions.includes('finance.view')
+  const hasWebsite = org.modules.includes('website')
   const [value, setValue] = useState<PartnerInput>(() =>
     partner
       ? {
@@ -641,29 +642,32 @@ function PartnerForm({
           />
         </fieldset>
       ) : null}
-      <fieldset disabled={disabled} className="subcard">
-        <legend>{t('Webseite')}</legend>
-        <Checkbox
-          label={t('Darf auf unserer Webseite als Partner oder Sponsor genannt werden')}
-          checked={!!value.website_consent}
-          disabled={disabled}
-          onChange={(website_consent) => setValue((cur) => ({ ...cur, website_consent }))}
-        />
-        {value.website_consent && (
-          <Field
-            label={t('Link auf der Webseite')}
-            type="url"
-            hint={t('Leer: die Webseite des Partners')}
-            value={value.website_url ?? ''}
-            onChange={(e) => setValue((cur) => ({ ...cur, website_url: e.target.value }))}
+      {/* Ohne Webseite keine Nennung als Sponsor; eine gespeicherte Einwilligung bleibt sichtbar */}
+      {(hasWebsite || !!value.website_consent) && (
+        <fieldset disabled={disabled} className="subcard">
+          <legend>{t('Webseite')}</legend>
+          <Checkbox
+            label={t('Darf auf unserer Webseite als Partner oder Sponsor genannt werden')}
+            checked={!!value.website_consent}
+            disabled={disabled}
+            onChange={(website_consent) => setValue((cur) => ({ ...cur, website_consent }))}
           />
-        )}
-        <p className="muted small">
-          {t(
-            'Die Einwilligung bitte schriftlich festhalten. Das Logo wählt ihr im Webseiten-Abschnitt „Partner und Sponsoren“.',
+          {value.website_consent && (
+            <Field
+              label={t('Link auf der Webseite')}
+              type="url"
+              hint={t('Leer: die Webseite des Partners')}
+              value={value.website_url ?? ''}
+              onChange={(e) => setValue((cur) => ({ ...cur, website_url: e.target.value }))}
+            />
           )}
-        </p>
-      </fieldset>
+          <p className="muted small">
+            {t(
+              'Die Einwilligung bitte schriftlich festhalten. Das Logo wählt ihr im Webseiten-Abschnitt „Partner und Sponsoren“.',
+            )}
+          </p>
+        </fieldset>
+      )}
       <fieldset disabled={disabled} className="subcard">
         <legend>{t('Notizen')}</legend>
         <TextArea

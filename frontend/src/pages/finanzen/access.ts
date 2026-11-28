@@ -117,7 +117,8 @@ export function financeGroups(
   return {
     billing: {
       key: 'abrechnen',
-      label: t('Beiträge & Rechnungen'),
+      // Ohne Beiträge und Rechnungen stehen hier nur eingehende Rechnungen
+      label: full || a.billing ? t('Beiträge & Rechnungen') : t('Rechnungen'),
       to: '/finanzen/abrechnen',
       text:
         full || a.billing
