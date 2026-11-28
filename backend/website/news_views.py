@@ -7,12 +7,14 @@ from __future__ import annotations
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import diff, record, snapshot
+from core.versioning import lock_and_check
 
 from . import news, services
 from .content_views import _ContentMixin
@@ -46,6 +48,10 @@ class NewsListView(_ContentMixin, APIView):
         return Response(news.admin_data(post), status=status.HTTP_201_CREATED)
 
 
+# Gleichzeitiges Bearbeiten (core/versioning.py)
+NEWS_STALE = gettext_lazy("Der Beitrag wurde inzwischen geändert. Bitte neu laden.")
+
+
 class _NewsMixin(_ContentMixin):
     def news_post(self) -> NewsPost:
         return get_object_or_404(
@@ -64,6 +70,7 @@ class NewsDetailView(_NewsMixin, APIView):
     @transaction.atomic
     def put(self, request, org_id: int, pk: int):
         post = self.news_post()
+        lock_and_check(request, post, NEWS_STALE)
         before = snapshot(post)
         try:
             changed = news.apply(post, request.data)
@@ -81,6 +88,7 @@ class NewsDetailView(_NewsMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         post = self.news_post()
+        lock_and_check(request, post, NEWS_STALE)
         record(self.org, request.user, "delete", post, {"Beitrag": [str(post), None]})
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -92,6 +100,7 @@ class NewsPublishView(_NewsMixin, APIView):
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
         post = self.news_post()
+        lock_and_check(request, post, NEWS_STALE)
         post.publish(request.user)
         record(self.org, request.user, "update", post, {"veröffentlicht": [None, str(post)]})
         return Response(news.admin_data(post))
@@ -99,6 +108,7 @@ class NewsPublishView(_NewsMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         post = self.news_post()
+        lock_and_check(request, post, NEWS_STALE)
         if post.is_published:
             post.unpublish(request.user)
             record(self.org, request.user, "update", post, {"veröffentlicht": [str(post), None]})

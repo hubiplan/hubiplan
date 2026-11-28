@@ -93,8 +93,16 @@ Versammlungen, Haushaltsplan, Rechnungsposten, Belegungen, Umfragen, Pflichten, 
 2026 auch Stammdaten und Kontakt eines Mitglieds (Verein und Abteilungsbereich), Termine
 (Ändern, Löschen), Buchungen im Kassenbuch (Ändern, Löschen, Storno, Aufteilen), die übrigen
 Teile der Mitgliedsakte (Ansprechpartner, Rechnungsanschrift, Zeiträume, Zuordnung zu
-Untereinheiten), Haushalte, Rechnungen (Ändern, Löschen, Festschreiben; auch E-Rechnungen)
-sowie Geschäftspartner mit Ansprechpartnern und Vereinbarungen.
+Untereinheiten), Haushalte, Rechnungen (Ändern, Löschen, Festschreiben; auch E-Rechnungen),
+Geschäftspartner mit Ansprechpartnern und Vereinbarungen, Rundschreiben (Ändern, Löschen,
+Versenden) und Mailverteiler, auf der Webseite Seiten, Beiträge unter „Aktuelles“ und Alben
+(Ändern, Löschen, Veröffentlichen) sowie Wertungen, Schießdurchgänge und Wanderpokale.
+
+Bewusst ohne Fassung bleiben Formulare, die nur das gerade geänderte Feld speichern und deren
+Datensatz auch von Abläufen fortgeschrieben wird (Stammdaten eines Wettbewerbs, Ausschreibung
+und ihre Bausteine, Abrechnungseinstellungen), sowie Eingaben aus einzelnen Werten (Ergebnisse,
+Meldungen zu einer Ausschreibung, Schalter). Dort überschreiben sich zwei Personen nur, wenn
+sie denselben Wert ändern.
 
 ## Rückgängig und Wiederherstellen
 

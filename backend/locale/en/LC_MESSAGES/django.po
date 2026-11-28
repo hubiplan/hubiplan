@@ -8444,6 +8444,15 @@ msgstr "End"
 msgid "Die Buchung wurde inzwischen geändert. Bitte neu laden."
 msgstr "The booking has been changed in the meantime. Please reload."
 
+msgid "Das Rundschreiben wurde inzwischen geändert. Bitte neu laden."
+msgstr "The circular has been changed in the meantime. Please reload."
+
+msgid "Die Seite wurde inzwischen geändert. Bitte neu laden."
+msgstr "The page has been changed in the meantime. Please reload."
+
+msgid "Das Album wurde inzwischen geändert. Bitte neu laden."
+msgstr "The album has been changed in the meantime. Please reload."
+
 msgid "Die Rechnung wurde inzwischen geändert. Bitte neu laden."
 msgstr "The invoice has been changed in the meantime. Please reload."
 

@@ -25,3 +25,5 @@ Untereinheiten: Mit **Gehört zu** erscheint ein Beitrag auf der Seite einer Unt
 Entwurf und Veröffentlichen: Änderungen speichern sich von selbst im Entwurf; die Vorschau der Webseite zeigt ihn schon. Besucher sehen den Beitrag erst nach **Veröffentlichen**, spätere Änderungen erst nach erneutem Veröffentlichen. **Veröffentlichung zurücknehmen** nimmt den Beitrag von der Webseite, ohne ihn zu löschen. Ein verbundener KI-Assistent legt Beiträge nur als Entwurf an.
 
 „Aktuelles“ muss unter Menü und Seiten eingeschaltet sein.
+
+Hat inzwischen jemand anderes denselben Beitrag geändert, meldet HUBIplan „Der Beitrag wurde inzwischen geändert. Bitte neu laden.“ und speichert oder veröffentlicht deinen Stand nicht.

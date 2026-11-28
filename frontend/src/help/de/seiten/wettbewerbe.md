@@ -43,6 +43,8 @@ Auch Zug- und Mannschaftswertungen zeigen nur ihre Preisplätze, ebenso bei
 
 Ergebnisse stehen unter einer lesbaren Adresse aus Titel und Jahr, etwa `/ergebnisse/vereinsmeisterschaft-2027/`. Unter **Adresse auf der Webseite** lässt sie sich selbst wählen; leer folgt sie wieder dem Titel. Frühere Adressen leiten weiter.
 
+Ändern zwei Personen gleichzeitig dieselbe Wertung, denselben Durchgang oder Wanderpokal, gilt die zuerst gespeicherte Änderung; die zweite Person sieht „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“
+
 ## Persönliche Ergebnisse an gekoppelte Vereine
 
 Unter **Auswertung** → **Ergebnisfreigabe an gekoppelte Vereine** können Verwalter

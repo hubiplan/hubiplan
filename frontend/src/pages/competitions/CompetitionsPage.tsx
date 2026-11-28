@@ -1,4 +1,5 @@
 // Wettbewerbe: Liste, Einrichten (Grunddaten, Wertungen), Erfassen und Auswertung.
+import { sendingVersion } from '../../api/client.ts'
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -995,10 +996,12 @@ function ScoringCard({
     )
       return
     const saved = await form.submit(() =>
-      competitionsApi.updateScoring(org, comp.id, scoring.id, {
-        ...changes,
-        confirm_recalculation: !!needsConfirmation && rulesChanged,
-      }),
+      sendingVersion(scoring.version, () =>
+        competitionsApi.updateScoring(org, comp.id, scoring.id, {
+          ...changes,
+          confirm_recalculation: !!needsConfirmation && rulesChanged,
+        }),
+      ),
     )
     if (saved) onRemoved()
   }
@@ -1012,7 +1015,9 @@ function ScoringCard({
     })
     if (!ok) return
     await form.submit(async () => {
-      await competitionsApi.removeScoring(org, comp.id, scoring.id)
+      await sendingVersion(scoring.version, () =>
+        competitionsApi.removeScoring(org, comp.id, scoring.id),
+      )
       onRemoved()
     })
   }

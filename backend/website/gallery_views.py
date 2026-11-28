@@ -5,7 +5,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin
 from core.reorder import reorder_response
+from core.versioning import lock_and_check
 
 from . import gallery
 from .content_models import ALBUM_ORDERS, DEFAULT_ALBUM_ORDER, IMAGE_ORDERS, GalleryAlbum
@@ -73,6 +74,7 @@ class AlbumSerializer(ModelCleanMixin, serializers.ModelSerializer):
 def album_data(org_id: int, album: GalleryAlbum, *, full: bool = False) -> dict:
     data = {
         "id": album.pk,
+        "version": album.version,
         "parent": album.parent_id,
         "title": album.title,
         "slug": album.slug,
@@ -95,6 +97,10 @@ def album_data(org_id: int, album: GalleryAlbum, *, full: bool = False) -> dict:
         first = album.cover or next(iter(gallery.album_images(album)[:1]), None)
         data["cover_url"] = image_data(org_id, first)["small_url"] if first else None
     return data
+
+
+# Gleichzeitiges Bearbeiten (core/versioning.py)
+ALBUM_STALE = gettext_lazy("Das Album wurde inzwischen geändert. Bitte neu laden.")
 
 
 class _AlbumMixin(_ContentMixin):
@@ -175,6 +181,7 @@ class AlbumDetailView(_AlbumMixin, APIView):
     @transaction.atomic
     def put(self, request, org_id: int, pk: int):
         album = self.album()
+        lock_and_check(request, album, ALBUM_STALE)
         before = snapshot(album)
         ser = AlbumSerializer(
             album, data=request.data, partial=True, context={"website": album.website}
@@ -196,6 +203,7 @@ class AlbumDetailView(_AlbumMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         album = self.album()
+        lock_and_check(request, album, ALBUM_STALE)
         for child in album.children.all():
             record(self.org, request.user, "delete", child, {"Album": [str(child), None]})
         record(self.org, request.user, "delete", album, {"Album": [str(album), None]})

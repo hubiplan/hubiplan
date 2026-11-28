@@ -3,6 +3,7 @@
 // Fassungen lassen sich zurückholen. Bilder verwaltet Webseite › Bilder (images.tsx).
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { sendingVersion } from '../../api/client.ts'
 import { Link, useSearchParams } from 'react-router-dom'
 import { contentApi } from '../../api/website.ts'
 import type {
@@ -416,6 +417,7 @@ function TextForm({
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(text)
   const auto = useAutoSave(form, (changes) => contentApi.save(org.id, text.id, changes), {
+    version: text.version,
     onSaved: (saved) => setCurrent(saved as WebsiteText),
   })
   const images = useLoad(() => contentApi.images(org.id), [org.id])
@@ -434,7 +436,10 @@ function TextForm({
     setMessage(null)
     if (!(await auto.flush())) return
     try {
-      onSaved(await action())
+      // Veröffentlichen und Zurückholen gelten für die Fassung, die hier offen ist
+      const result = await sendingVersion(auto.version(), action)
+      auto.resetVersion(result.version)
+      onSaved(result)
     } catch (err) {
       setMessage(errorMessage(err))
     }
@@ -449,7 +454,7 @@ function TextForm({
     })
     if (!ok) return
     try {
-      await contentApi.remove(org.id, text.id)
+      await sendingVersion(auto.version(), () => contentApi.remove(org.id, text.id))
       onDeleted()
     } catch (err) {
       setMessage(errorMessage(err))

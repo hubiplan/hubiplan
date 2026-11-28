@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { Link } from 'react-router-dom'
 import {
   competitionsApi,
@@ -154,10 +155,12 @@ function ProgramCard({
     )
       return
     const saved = await form.submit(() =>
-      competitionsApi.updateProgram(org, comp.id, program.id, {
-        ...changes,
-        confirm_recalculation: needsConfirmation && conditionsChanged,
-      }),
+      sendingVersion(program.version, () =>
+        competitionsApi.updateProgram(org, comp.id, program.id, {
+          ...changes,
+          confirm_recalculation: needsConfirmation && conditionsChanged,
+        }),
+      ),
     )
     if (saved) reload()
   }
@@ -173,7 +176,9 @@ function ProgramCard({
     )
       return
     try {
-      await competitionsApi.removeProgram(org, comp.id, program.id)
+      await sendingVersion(program.version, () =>
+        competitionsApi.removeProgram(org, comp.id, program.id),
+      )
       reload()
     } catch (err) {
       form.setMessage({ kind: 'error', text: errorMessage(err) })

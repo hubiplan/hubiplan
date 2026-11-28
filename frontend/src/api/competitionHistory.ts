@@ -105,6 +105,8 @@ export interface TrophyHolder {
 }
 
 export interface Trophy {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   description: string

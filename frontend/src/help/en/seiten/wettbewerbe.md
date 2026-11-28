@@ -35,6 +35,8 @@ The results page shows the latest published competition directly; older competit
 
 Results appear under a readable address made from title and year, such as `/ergebnisse/vereinsmeisterschaft-2027/`. You can choose it yourself under **Address on the website**; left empty, it follows the title again. Earlier addresses redirect.
 
+If two people change the same ranking, shooting round or challenge trophy at the same time, the change saved first applies; the second person sees “The entry has been changed in the meantime. Please reload.”
+
 ## Personal results for connected clubs
 
 Under **Evaluation** → **Result approval for connected clubs**, administrators with both

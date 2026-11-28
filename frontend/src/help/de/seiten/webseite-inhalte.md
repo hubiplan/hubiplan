@@ -36,6 +36,8 @@ Mit **Einleitung für einen Bereich** schreibt ihr einen kurzen Text, auf Wunsch
 
 Ob die Webseite unter dem Bild oben und im Bilderkarussell die Bildunterschrift zeigt, legst du je Text mit **Bildunterschriften auf der Webseite zeigen** fest. Ohne Haken (Standard) stehen die Bilder ohne Unterschrift da; die Beschreibung für Screenreader bleibt erhalten.
 
+Hat inzwischen jemand anderes oder der KI-Assistent dieselbe Seite geändert, speichert HUBIplan deine Eingabe nicht und meldet „Die Seite wurde inzwischen geändert. Bitte neu laden.“ Das gilt auch für das Veröffentlichen.
+
 ## Chronik als Zeitleiste
 
 Im Text „Chronik“ steht oben eine kurze Einleitung, darunter die **Zeitleiste**. Jedes Ereignis hat ein Jahr oder einen Zeitraum (z. B. 1939 bis 1948), eine Überschrift, höchstens 400 Zeichen Text und auf Wunsch bis zu sechs Bilder, etwa Plakate aus mehreren Jahren. Auf der Webseite stehen sie klein nebeneinander; im großen Fenster blätterst du durch sie. Unter „Bildposition“ legst du je Ereignis fest, ob die Bilder links, rechts oder groß unter dem Text stehen; automatisch wechseln sie von Eintrag zu Eintrag die Seite.

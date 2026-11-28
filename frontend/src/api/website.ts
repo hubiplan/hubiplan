@@ -719,6 +719,8 @@ function imageForm(data: ImageUpload): FormData {
 }
 
 export interface WebsiteTextSummary {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   kind: TextKind
   kind_label: string
@@ -905,6 +907,8 @@ export type ImageSort =
 export type AlbumSort = 'manual' | 'date_desc' | 'date' | 'title' | 'title_desc'
 
 export interface GalleryAlbum {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   parent: number | null
   title: string
@@ -1172,6 +1176,8 @@ export interface NewsVideo {
 }
 
 export interface NewsPost {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   slug: string
   title: string

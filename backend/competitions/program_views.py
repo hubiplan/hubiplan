@@ -37,6 +37,7 @@ class ProgramSerializer(serializers.ModelSerializer):
             "target_info",
             "has_results",
             "confirm_recalculation",
+            "version",
         ]
         read_only_fields = ["competition", "sort_order"]
 

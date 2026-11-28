@@ -250,6 +250,7 @@ class ScoringSerializer(serializers.ModelSerializer):
             "target_info",
             "confirm_recalculation",
             "has_results",
+            "version",
         ]
         read_only_fields = ["competition"]
 
