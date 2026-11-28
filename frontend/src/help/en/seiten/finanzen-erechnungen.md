@@ -15,7 +15,10 @@ Choose the tax treatment explicitly. Exempt, zero-rated and outside the scope of
 are different categories. Exempt, reverse-charge and out-of-scope items require a
 reason. XRechnung requires the supplier's contact name and phone number.
 Without a VAT identifier, the supplier needs a unique business partner identifier,
-such as the supplier number agreed with the customer.
+such as the register number of the association, the tax number or the supplier number
+agreed with the customer. A new service invoice comes prefilled with the club's address,
+contact, identifier and IBAN as far as they are in the settings; if the identifier is
+missing, the message on saving names the field.
 
 ## In detail
 

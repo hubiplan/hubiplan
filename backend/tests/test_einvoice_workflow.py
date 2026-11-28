@@ -424,3 +424,26 @@ def test_module_boundaries(c, base, club, payload):
     club.save(update_fields=["enabled_modules"])
     assert c.get(f"{base}/partners/").status_code == 200
     assert c.get(f"/api/orgs/{club.pk}/finance/incoming/").status_code == 404
+
+
+def test_rechnungssteller_vorbelegt_und_klare_meldung(c, base, club, payload, setup):
+    """Leistungsrechnung im neuen Verein: Anschrift und IBAN kommen aus den Angaben des
+    Vereins, und ohne Kennung sagt die Meldung, welches Feld fehlt."""
+    club.street, club.postal_code, club.city = "Musterweg 3", "12345", "Musterstadt"
+    club.save(update_fields=["street", "postal_code", "city"])
+    data = c.get(f"{base}/settings/").json()
+    seller = data["einvoice_seller"]
+    assert (seller["street"], seller["postcode"], seller["city"]) == (
+        "Musterweg 3",
+        "12345",
+        "Musterstadt",
+    )
+    assert seller["name"] and seller["country"] == "DE"
+    assert data["einvoice_iban"] == "DE89370400440532013000"
+
+    ohne = {**payload, "seller": {**payload["seller"], "vat_id": "", "identifier": ""}}
+    response = c.post(
+        f"{base}/electronic/", ohne, content_type=JSON, HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4())
+    )
+    assert response.status_code == 400
+    assert "Eindeutige Geschäftspartnerkennung" in response.content.decode()

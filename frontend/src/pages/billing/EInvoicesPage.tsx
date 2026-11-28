@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
 import { newRequestKey } from '../../api/client.ts'
@@ -416,8 +416,27 @@ export function CommercialForm({
   const [error, setError] = useState('')
   const update = <K extends keyof CommercialInput>(key: K, data: CommercialInput[K]) =>
     setValue({ ...value, [key]: data })
-  const [initial] = useState(() => JSON.stringify(value))
+  const [initial, setInitial] = useState(() => JSON.stringify(value))
   useDraftGuard(JSON.stringify(value) !== initial)
+  // Neue Rechnung: Rechnungssteller und IBAN aus den Angaben des Vereins vorbelegen, solange
+  // noch nichts eingetragen ist. Zählt nicht als ungespeicherte Änderung.
+  const prefilled = useRef(false)
+  const suggestion = settings.data?.einvoice_seller
+  const suggestedIban = settings.data?.einvoice_iban ?? ''
+  useEffect(() => {
+    if (prefilled.current || invoice || !suggestion) return
+    prefilled.current = true
+    setValue((v) => {
+      if (JSON.stringify(v) !== initial) return v
+      const next = {
+        ...v,
+        seller: seed?.seller ?? { ...emptyParty(), ...suggestion },
+        iban: v.iban || suggestedIban,
+      }
+      setInitial(JSON.stringify(next))
+      return next
+    })
+  }, [suggestion, suggestedIban, invoice, initial, seed])
   const lineChange = (index: number, patch: Partial<CommercialLine>) =>
     update(
       'lines',

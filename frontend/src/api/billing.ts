@@ -1,5 +1,6 @@
 // Beiträge und Rechnungen: Beitragsregeln, Beitragsläufe, Rechnungen, Zahlungen.
 import { api, newRequestKey } from './client.ts'
+import type { Party } from './einvoices.ts'
 import type { Page, PickedMember } from './members.ts'
 import type { DeptTerms } from '../org/terms.ts'
 
@@ -41,6 +42,9 @@ export interface BillingSettings {
   einvoice_phone: string
   einvoice_email: string
   einvoice_identifier: string
+  /** Vorbelegung für den Rechnungssteller einer Leistungsrechnung (nur lesend) */
+  einvoice_seller?: Party
+  einvoice_iban?: string
   rhythms: { value: Rhythm; label: string }[]
   accounts: { id: number; name: string; kind: string; has_iban: boolean }[]
   categories: { id: number; name: string }[]

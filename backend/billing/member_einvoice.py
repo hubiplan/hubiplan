@@ -63,7 +63,11 @@ def applies(invoice, cfg) -> bool:
     )
 
 
-def _seller(org, cfg, taxable: bool) -> dict:
+def seller_suggestion(org, cfg) -> dict:
+    """Rechnungssteller aus Impressum, Kontakt und Beitragseinstellungen, so weit vorhanden.
+
+    Vorbelegung für die Leistungsrechnung und Grundlage für Rechnungen an Mitglieder; prüft
+    nichts."""
     from organizations.models import Imprint
     from organizations.serializers import effective_contact
 
@@ -88,17 +92,40 @@ def _seller(org, cfg, taxable: bool) -> dict:
         )
     if not identifier:
         identifier = tax_number or cfg.creditor_id
+    return {
+        "name": (imprint.name if imprint and imprint.name else org.name)[:200],
+        "street": street,
+        "address_extra": address_extra[:200],
+        "postcode": postcode,
+        "city": city,
+        "country": "DE",
+        "email": email or "",
+        "vat_id": vat_id,
+        "tax_number": tax_number,
+        "contact": name[:100],
+        "phone": phone or "",
+        "identifier": identifier[:100],
+        "endpoint_id": "",
+        "endpoint_scheme": "EM",
+    }
+
+
+def _seller(org, cfg, taxable: bool) -> dict:
+    seller = seller_suggestion(org, cfg)
     if not taxable:
         # Ohne steuerbare Posten (Kategorie O) verbietet EN 16931 die USt-IdNr. (BR-O-02)
-        vat_id = ""
+        seller["vat_id"] = ""
     missing = [
         label
         for label, value in (
-            (gettext("Anschrift des Vereins"), street and postcode and city),
-            (gettext("E-Mail für Rechnungsfragen"), email),
-            (gettext("Ansprechpartner für Rechnungsfragen"), name),
-            (gettext("Telefon für Rechnungsfragen"), phone),
-            (gettext("Kennung des Rechnungsstellers"), vat_id or identifier),
+            (
+                gettext("Anschrift des Vereins"),
+                seller["street"] and seller["postcode"] and seller["city"],
+            ),
+            (gettext("E-Mail für Rechnungsfragen"), seller["email"]),
+            (gettext("Ansprechpartner für Rechnungsfragen"), seller["contact"]),
+            (gettext("Telefon für Rechnungsfragen"), seller["phone"]),
+            (gettext("Kennung des Rechnungsstellers"), seller["vat_id"] or seller["identifier"]),
         )
         if not value
     ]
@@ -108,22 +135,7 @@ def _seller(org, cfg, taxable: bool) -> dict:
                 fields=", ".join(missing)
             )
         )
-    return {
-        "name": (imprint.name if imprint and imprint.name else org.name)[:200],
-        "street": street,
-        "address_extra": address_extra[:200],
-        "postcode": postcode,
-        "city": city,
-        "country": "DE",
-        "email": email,
-        "vat_id": vat_id,
-        "tax_number": tax_number,
-        "contact": name[:100],
-        "phone": phone,
-        "identifier": identifier[:100],
-        "endpoint_id": "",
-        "endpoint_scheme": "EM",
-    }
+    return seller
 
 
 def _payer_source(org, invoice):
