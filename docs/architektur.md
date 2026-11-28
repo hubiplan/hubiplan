@@ -109,14 +109,21 @@ cd backend && python manage.py api_routen config/api_routen.json
 ### Öffentliche Schnittstelle der Vereinswebseite
 
 Die Vereinswebseite (`hubiplan-website`) liest nur `/api/public/site/v1/…` und testet gegen eine
-nachgebildete Schnittstelle. `backend/config/webseite_schnittstelle.json` hält deshalb fest,
-welche Felder jede dieser Antworten hat (Feldnamen und Arten der Werte für den Demoverein, keine
-Inhalte). `backend/tests/test_webseite_form.py` hält die Datei aktuell; die Webseite
-prüft ihre Nachbildung gegen eine Kopie. Wer eine Antwort ändert, schreibt die Datei neu und
-zieht die Kopie in `hubiplan-website` nach:
+nachgebildete Schnittstelle. Damit beide zusammenpassen, hält der Server zwei Dateien fest:
+
+- `backend/config/webseite_schnittstelle.json`: welche Felder jede dieser Antworten hat
+  (Feldnamen und Arten der Werte, keine Inhalte). Die Webseite prüft ihre Nachbildung dagegen.
+- `backend/config/webseite_antworten.json`: die echten Antworten aller Adressen für fünf
+  Beispiele (Demoverein, Prüfverein, dessen Vorschau, Demokapelle, leerer Verein). Die Webseite
+  zeichnet daraus in ihren Tests jede Seite.
+
+Der Prüfverein (`backend/tests/webseite_pruefverein.py`) ist der Demoverein, in dem jedes Feld
+belegt ist und jede Art von Abschnitt vorkommt. `backend/tests/test_webseite_form.py` hält die
+Dateien aktuell und schlägt fehl, wenn die Schnittstelle ein Feld liefert, das kein Beispiel
+belegt: Ein neues Feld braucht also gleich ein Beispiel im Prüfverein. Wer eine Antwort ändert,
+schreibt beide Dateien neu und zieht die Kopien in `hubiplan-website` nach (dort
+`scripts/schnittstelle.sh`):
 
 ```bash
 cd backend && WEBSEITE_SCHNITTSTELLE_SCHREIBEN=1 pytest tests/test_webseite_form.py
 ```
-
-Adressen unter `ohne_beispiel` belegt der Demoverein noch nicht; sie sind dort ungeprüft.

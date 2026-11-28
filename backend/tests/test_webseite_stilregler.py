@@ -268,3 +268,13 @@ def test_lange_listen_zweispaltig():
     """Webseite #145: lange, schmale Tabellen wahlweise zweispaltig; ohne Wahl untereinander."""
     assert style.OPTIONS["long_tables"] == ("rows", "columns")
     assert style.defaults("classic")["long_tables"] == "rows"
+
+
+def test_kontaktangaben_neben_dem_formular(club, site, client_web):
+    """Die Webseite kennt den Regler seit dem UX-Audit vom 16.11.; ohne ihn hier ließ er sich
+    in HUBIplan nicht ausschalten (aufgefallen im Abgleich der Schnittstelle)."""
+    assert style.OPTIONS["contact_details"] is bool
+    assert style.defaults("classic")["contact_details"] is True
+    assert put(client_web, club, {"style": {"contact_details": False}}).status_code == 200
+    site.refresh_from_db()
+    assert site.style["contact_details"] is False

@@ -451,6 +451,13 @@ function ROWS(): Row[] {
       ),
     },
     {
+      key: 'contact_details',
+      label: t('Kontaktangaben neben dem Formular'),
+      hint: t(
+        'Neben dem Kontaktformular stehen Anschrift, Telefon und E-Mail aus den Vereinsdaten. Ausgeschaltet zeigt die Seite nur das Formular.',
+      ),
+    },
+    {
       key: 'footer',
       label: t('Farbe'),
       options: { dark: t('dunkel'), light: t('hell'), color: t('farbig') },
@@ -652,6 +659,7 @@ export function AREAS(): Area[] {
           ],
         },
         { id: 'chronik', title: t('Chronik'), slots: [s('timeline_chapter')] },
+        { id: 'kontakt', title: t('Kontakt'), slots: [s('contact_details')] },
         {
           id: 'ergebnisse',
           title: t('Ergebnisse'),

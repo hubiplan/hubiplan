@@ -36,113 +36,39 @@
    "content_language": "text",
    "design": "text",
    "design_catalog": {
-    "classic": {
+    "*": {
      "hint": "text",
      "hint_en": "text",
      "label": "text",
      "label_en": "text",
      "roles": {
+      "band": {
+       "?": "fehlt",
+       "?liste": [
+        "zahl"
+       ]
+      },
+      "band2": {
+       "?": "fehlt",
+       "?liste": [
+        "zahl"
+       ]
+      },
       "date": [
        "zahl"
       ],
-      "footer": [
-       "zahl"
-      ],
-      "header": [
-       "zahl"
-      ],
-      "line": [
-       "zahl"
-      ],
-      "nav": [
-       "zahl"
-      ]
-     }
-    },
-    "festive": {
-     "hint": "text",
-     "hint_en": "text",
-     "label": "text",
-     "label_en": "text",
-     "roles": {
-      "date": [
-       "zahl"
-      ],
-      "footer": [
-       "zahl"
-      ],
-      "header": [
-       "zahl"
-      ],
-      "line": [
-       "zahl"
-      ],
-      "nav": [
-       "zahl"
-      ]
-     }
-    },
-    "newspaper": {
-     "hint": "text",
-     "hint_en": "text",
-     "label": "text",
-     "label_en": "text",
-     "roles": {
-      "date": [
-       "zahl"
-      ],
-      "footer": "text",
-      "header": [
-       "zahl"
-      ],
-      "line": [
-       "zahl"
-      ],
-      "nav": [
-       "zahl"
-      ]
-     }
-    },
-    "sidebar": {
-     "hint": "text",
-     "hint_en": "text",
-     "label": "text",
-     "label_en": "text",
-     "roles": {
-      "date": [
-       "zahl"
-      ],
-      "footer": "text",
-      "header": [
-       "zahl"
-      ],
-      "line": [
-       "zahl"
-      ],
-      "nav": [
-       "zahl"
-      ]
-     }
-    },
-    "stage": {
-     "hint": "text",
-     "hint_en": "text",
-     "label": "text",
-     "label_en": "text",
-     "roles": {
-      "band": [
-       "zahl"
-      ],
-      "band2": [
-       "zahl"
-      ],
-      "date": [
-       "zahl"
-      ],
-      "footer": [
-       "zahl"
-      ],
-      "header": "text",
+      "footer": {
+       "?": "text",
+       "?liste": [
+        "zahl"
+       ]
+      },
+      "header": {
+       "?": "text",
+       "?liste": [
+        "zahl"
+       ]
+      },
       "line": [
        "zahl"
       ],
@@ -152,158 +78,712 @@
      }
     }
    },
-   "design_packages": {},
+   "design_packages": {
+    "*": {
+     "hash": "text",
+     "label": "text"
+    }
+   },
    "designs": {
-    "classic": {
-     "date": {
+    "*": {
+     "background": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
-     "footer": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "header": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "line": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "nav": {
-      "color": "text",
-      "on_color": "text"
-     }
-    },
-    "festive": {
-     "date": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "footer": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "header": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "line": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "nav": {
-      "color": "text",
-      "on_color": "text"
-     }
-    },
-    "newspaper": {
-     "date": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "footer": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "header": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "line": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "nav": {
-      "color": "text",
-      "on_color": "text"
-     }
-    },
-    "sidebar": {
-     "date": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "footer": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "header": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "line": {
-      "color": "text",
-      "on_color": "text"
-     },
-     "nav": {
-      "color": "text",
-      "on_color": "text"
-     }
-    },
-    "stage": {
      "band": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
      "band2": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
      "date": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
      "footer": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
      "header": {
+      "?": "fehlt",
       "color": "text",
+      "gradient": {
+       "?": "fehlt",
+       "direction": "text",
+       "from": "text",
+       "to": "text"
+      },
       "on_color": "text"
      },
      "line": {
+      "?": "fehlt",
+      "color": "text",
+      "gradient": {
+       "?": "fehlt",
+       "direction": "text",
+       "from": "text",
+       "to": "text"
+      },
+      "on_color": "text"
+     },
+     "muted": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      },
      "nav": {
+      "?": "fehlt",
+      "color": "text",
+      "on_color": "text"
+     },
+     "surface": {
+      "?": "fehlt",
+      "color": "text",
+      "on_color": "text"
+     },
+     "text": {
+      "?": "fehlt",
       "color": "text",
       "on_color": "text"
      }
     }
    },
-   "email": "text",
-   "fee_rules_preview_url": "null",
-   "fee_rules_url": "null",
-   "founding_deed_preview_url": "null",
-   "founding_deed_url": "null",
+   "email": "null|text",
+   "fee_rules_preview_url": "null|text",
+   "fee_rules_url": "null|text",
+   "founding_deed_preview_url": "null|text",
+   "founding_deed_url": "null|text",
    "founding_year": "zahl",
-   "gradients": [],
+   "frame_origins": {
+    "?": "fehlt",
+    "?liste": [
+     "text"
+    ]
+   },
+   "gradients": [
+    {
+     "colors": [
+      "text"
+     ],
+     "direction": "text",
+     "on_color": "text"
+    }
+   ],
    "greeting": {
-    "gallery": [],
+    "?": "null",
+    "gallery": [
+     {
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     }
+    ],
     "gallery_interval": "zahl",
     "gallery_random": "bool",
-    "image": "null",
+    "image": {
+     "?": "null",
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    },
     "show_captions": "bool",
     "text": "text",
     "title": "text"
    },
    "has_history_text": "bool",
    "has_offices": "bool",
-   "header_image": "null",
-   "header_image_narrow": "null",
-   "header_images": [],
-   "header_images_narrow": [],
+   "header_image": {
+    "?": "null",
+    "alt": "text",
+    "caption": "text",
+    "credit": "text",
+    "height": "zahl",
+    "key": "text",
+    "small_url": "text",
+    "url": "text",
+    "width": "zahl"
+   },
+   "header_image_narrow": {
+    "?": "null",
+    "alt": "text",
+    "caption": "text",
+    "credit": "text",
+    "height": "zahl",
+    "key": "text",
+    "small_url": "text",
+    "url": "text",
+    "width": "zahl"
+   },
+   "header_images": [
+    {
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    }
+   ],
+   "header_images_narrow": [
+    {
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    }
+   ],
    "home": [
     "text"
    ],
    "home_layout": [
     {
+     "address": "fehlt|text",
+     "after_text": "fehlt|text",
+     "album": {
+      "?": "fehlt",
+      "slug": "text",
+      "title": "text"
+     },
+     "albums": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "albums": "zahl",
+        "cover": {
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "date": "text",
+        "images": "zahl",
+        "slug": "text",
+        "title": "text",
+        "year": "zahl"
+       }
+      ]
+     },
+     "align": "fehlt|text",
      "bg": "text",
+     "bic": "fehlt|text",
+     "buttons": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "label": "text",
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        }
+       }
+      ]
+     },
+     "category": "fehlt|text",
+     "channel": "fehlt|text",
      "column": "text",
+     "columns": "fehlt|zahl",
+     "competition": {
+      "?": "fehlt",
+      "aliases": [
+       "text"
+      ],
+      "date": "text",
+      "discipline": "text",
+      "final": "bool",
+      "id": "text",
+      "live": "bool",
+      "location": "text",
+      "occasion": "text",
+      "organizer": "text",
+      "own": "bool",
+      "prizes": [
+       {
+        "award": "text",
+        "fallen": "bool",
+        "name": "text",
+        "shot": "zahl",
+        "unit": "text",
+        "winner": "text"
+       }
+      ],
+      "provisional": "bool",
+      "scorings": [
+       {
+        "rows": [
+         {
+          "name": "text",
+          "place": "zahl",
+          "prize": "bool",
+          "unit": "fehlt|text",
+          "unit_slug": "text",
+          "value": "text"
+         }
+        ],
+        "scoring": "text"
+       }
+      ],
+      "slug": "text",
+      "status": "text",
+      "title": "text",
+      "url": "text",
+      "version": "text",
+      "year": "zahl"
+     },
+     "days": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "day": "text",
+        "items": [
+         {
+          "text": "text",
+          "time": "text"
+         }
+        ]
+       }
+      ]
+     },
+     "directions": "fehlt|text",
+     "entries": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "text": "text",
+        "title": "text",
+        "until": "zahl",
+        "year": "zahl"
+       }
+      ]
+     },
+     "event": {
+      "?": "fehlt",
+      "address": "text",
+      "all_day": "bool",
+      "attachments": [
+       {
+        "kind": "text",
+        "name": "text",
+        "url": "text"
+       }
+      ],
+      "category": "text",
+      "color": "text",
+      "description": "text",
+      "ends_at": "text",
+      "hide_end_time": "bool",
+      "id": "text",
+      "is_cancelled": "bool",
+      "location": "text",
+      "note": "text",
+      "owner": "null",
+      "page": "text",
+      "performance_kind": "text",
+      "programme": "text",
+      "registration": {
+       "can_join": "bool",
+       "closes_at": "text",
+       "closes_text": "text",
+       "free": "zahl",
+       "opens_at": "text",
+       "prices": [
+        {
+         "amount": "text",
+         "name": "text",
+         "name_en": "text",
+         "step": "text",
+         "until_date": "text"
+        }
+       ],
+       "state": "text",
+       "state_text": "text",
+       "url": "text",
+       "waitlist": "bool"
+      },
+      "starts_at": "text",
+      "title": "text",
+      "unit": "text"
+     },
+     "events": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "address": "text",
+        "all_day": "bool",
+        "attachments": [
+         {
+          "kind": "text",
+          "name": "text",
+          "url": "text"
+         }
+        ],
+        "category": "text",
+        "color": "text",
+        "description": "text",
+        "ends_at": "text",
+        "hide_end_time": "bool",
+        "id": "text",
+        "is_cancelled": "bool",
+        "location": "text",
+        "note": "text",
+        "owner": "null",
+        "page": "text",
+        "performance_kind": "text",
+        "programme": "text",
+        "registration": {
+         "can_join": "bool",
+         "closes_at": "text",
+         "closes_text": "text",
+         "free": "zahl",
+         "opens_at": "text",
+         "prices": [
+          {
+           "amount": "text",
+           "name": "text",
+           "name_en": "text",
+           "step": "text",
+           "until_date": "text"
+          }
+         ],
+         "state": "text",
+         "state_text": "text",
+         "url": "text",
+         "waitlist": "bool"
+        },
+        "starts_at": "text",
+        "title": "text",
+        "unit": "text"
+       }
+      ]
+     },
+     "file_type": "fehlt|text",
+     "goal": "fehlt|null|zahl",
+     "head": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "height": "fehlt|text",
+     "hero_kicker": "fehlt|text",
+     "hero_titles": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "holder": "fehlt|text",
+     "honors": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "current": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ],
+        "current_year": "bool",
+        "id": "text",
+        "name": "text",
+        "name_plural": "text",
+        "reigns": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ]
+       }
+      ]
+     },
+     "iban": "fehlt|text",
+     "image": {
+      "?": "fehlt|null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "images": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "alt": "text",
+        "caption": "text",
+        "credit": "text",
+        "height": "zahl",
+        "key": "text",
+        "small_url": "text",
+        "url": "text",
+        "width": "zahl"
+       }
+      ]
+     },
+     "items": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "answer": "fehlt|text",
+        "caption": "fehlt|text",
+        "day": "fehlt|text",
+        "file_type": "fehlt|text",
+        "image": {
+         "?": "fehlt|null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "label": "fehlt|text",
+        "name": "fehlt|text",
+        "note": "fehlt|text",
+        "placeholder": "fehlt|text",
+        "question": "fehlt|text",
+        "size": "fehlt|zahl",
+        "text": "fehlt|text",
+        "time": "fehlt|text",
+        "title": "fehlt|text",
+        "url": "fehlt|text",
+        "value": "fehlt|text",
+        "when": "fehlt|text"
+       }
+      ]
+     },
      "key": "text",
      "kind": "text",
+     "label": "fehlt|text",
+     "line": "fehlt|text",
+     "login_url": "fehlt|text",
+     "mark": {
+      "?": "fehlt|text",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "name": "fehlt|text",
+     "percent": "fehlt|null|zahl",
+     "placeholder": "fehlt|text",
+     "posts": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "account": "text",
+        "comment_count": "fehlt|null|zahl",
+        "comments": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "author": "text",
+           "published_at": "text",
+           "text": "text"
+          }
+         ]
+        },
+        "date": "fehlt|text",
+        "excerpt": "fehlt|text",
+        "has_more": "bool|fehlt",
+        "id": "text",
+        "images": [
+         {
+          "alt": "text",
+          "caption": "fehlt|text",
+          "credit": "fehlt|text",
+          "height": "zahl",
+          "is_video": "bool|fehlt",
+          "key": "fehlt|text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         }
+        ],
+        "kind": "text",
+        "kind_label": "text",
+        "likes": "fehlt|null|zahl",
+        "media_type": "text",
+        "permalink": "null|text",
+        "published_at": "text",
+        "slug": "fehlt|text",
+        "text": "text",
+        "title": "fehlt|text",
+        "unit": "fehlt|null",
+        "videos": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "image": {
+            "alt": "text",
+            "caption": "text",
+            "credit": "text",
+            "height": "zahl",
+            "key": "text",
+            "small_url": "text",
+            "url": "text",
+            "width": "zahl"
+           },
+           "title": "text",
+           "url": "text"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "purpose": "fehlt|text",
+     "qr": "bool|fehlt",
+     "raised": "fehlt|null|zahl",
+     "roles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "contact_form": "bool",
+        "email": "text",
+        "holders": [
+         {
+          "address": {
+           "city": "text",
+           "postal_code": "text",
+           "street": "text"
+          },
+          "email": "text",
+          "name": "text",
+          "phone": "text",
+          "photo_url": "text"
+         }
+        ],
+        "id": "text",
+        "name": "text",
+        "vacant": "bool"
+       }
+      ]
+     },
+     "route_url": "fehlt|text",
+     "rows": {
+      "?": "fehlt",
+      "?liste": [
+       [
+        "text"
+       ]
+      ]
+     },
+     "side": "fehlt|text",
+     "size": "fehlt|text|zahl",
+     "store_url": "fehlt|text",
+     "style": "fehlt|text",
+     "target": {
+      "?": "fehlt|text",
+      "key": "text",
+      "label": "text"
+     },
+     "text": "fehlt|text",
+     "tiles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "button": "text",
+        "image": {
+         "?": "null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        },
+        "text": "text",
+        "title": "text"
+       }
+      ]
+     },
+     "title": "fehlt|text",
+     "unit": {
+      "?": "fehlt",
+      "name": "text",
+      "slug": "text"
+     },
+     "url": "fehlt|text",
      "width": "text"
     }
    ],
@@ -317,7 +797,7 @@
      }
     ],
     "honorary": "bool",
-    "honorary_label": "null",
+    "honorary_label": "null|text",
     "label": "text"
    },
    "hubiplan_imprint": {
@@ -326,7 +806,22 @@
    },
    "icon": "bool",
    "imprint_url": "text",
-   "intros": {},
+   "intros": {
+    "*": {
+     "image": {
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "text": "text",
+     "title": "text"
+    }
+   },
    "language": "text",
    "layouts": {
     "board": "text",
@@ -334,8 +829,12 @@
     "gallery": "text",
     "units": "text"
    },
-   "logo_url": "null",
-   "member_of": "null",
+   "logo_url": "null|text",
+   "member_of": {
+    "?": "null",
+    "name": "text",
+    "website": "text"
+   },
    "menu": [
     {
      "slug": "text",
@@ -343,33 +842,56 @@
     }
    ],
    "name": "text",
-   "names": {},
+   "names": {
+    "*": "text"
+   },
    "nav": [
     {
+     "button": "bool|fehlt",
      "children": {
       "?": "fehlt",
-      "form": [
+      "?liste": [
        {
-        "id": "text",
+        "id": "fehlt|text",
         "key": "text",
-        "label": "text"
+        "label": "text",
+        "slug": "fehlt|text",
+        "url": "fehlt|text"
        }
       ]
      },
+     "event": "bool|fehlt",
      "heading": "bool|fehlt",
      "key": "text",
      "label": "text",
-     "slug": "fehlt|text"
+     "place": "fehlt|text",
+     "slug": "fehlt|text",
+     "url": "fehlt|text"
     }
    ],
-   "notice": "null",
+   "notice": {
+    "?": "null",
+    "button": "text",
+    "date": "text",
+    "icon": "text",
+    "place": "text",
+    "style": "text",
+    "target": {
+     "?": "null",
+     "key": "text",
+     "label": "fehlt|text",
+     "slug": "fehlt|text",
+     "url": "fehlt|text"
+    },
+    "text": "text"
+   },
    "palette": [
     {
      "color": "text",
      "on_color": "text"
     }
    ],
-   "phone": "null",
+   "phone": "null|text",
    "posts": {
     "facebook": "bool",
     "instagram": "bool",
@@ -388,9 +910,81 @@
     }
    ],
    "state": "text",
-   "statute_preview_url": "text",
-   "statute_url": "text",
-   "style": {},
+   "statute_preview_url": "null|text",
+   "statute_url": "null|text",
+   "style": {
+    "address": "fehlt|text",
+    "background": "fehlt|text",
+    "buttons": "fehlt|text",
+    "cards": "fehlt|text",
+    "carousel": "fehlt|text",
+    "carousel_controls": "fehlt|text",
+    "contact_details": "bool|fehlt",
+    "contrast": "bool|fehlt",
+    "corners": "fehlt|text",
+    "dark": "fehlt|text",
+    "date": "fehlt|text",
+    "date_text": "fehlt|text",
+    "font": "fehlt|text",
+    "font_family": "fehlt|text",
+    "footer": "fehlt|text",
+    "footer_align": "fehlt|text",
+    "footer_founded": "bool|fehlt",
+    "footer_layout": "fehlt|text",
+    "footer_line": "fehlt|text",
+    "footer_name": "bool|fehlt",
+    "header_bg": "fehlt|text",
+    "header_height": "fehlt|text",
+    "heading_align": "fehlt|text",
+    "heading_font": "fehlt|text",
+    "heading_font_family": "fehlt|text",
+    "heading_size": "fehlt|text",
+    "headings": "fehlt|text",
+    "hero": "fehlt|text",
+    "hero_focus": "fehlt|text",
+    "hero_name": "bool|fehlt",
+    "hero_shade": "fehlt|text",
+    "hero_side": "fehlt|text",
+    "hero_stage_width": "fehlt|text",
+    "hero_text": "fehlt|text",
+    "hero_tint": "fehlt|text",
+    "hero_width": "fehlt|text",
+    "honorary_layout": "fehlt|text",
+    "honors_layout": "fehlt|text",
+    "image_frame": "bool|fehlt",
+    "images": "fehlt|text",
+    "leading": "fehlt|text",
+    "line": "fehlt|text",
+    "logo": "bool|fehlt",
+    "logo_pos": "fehlt|text",
+    "long_tables": "fehlt|text",
+    "motion": "fehlt|text",
+    "name": "bool|fehlt",
+    "nav": "fehlt|text",
+    "nav_active": "fehlt|text",
+    "nav_case": "fehlt|text",
+    "nav_mobile": "fehlt|text",
+    "nav_size": "fehlt|text",
+    "nav_start": "bool|fehlt",
+    "page_title": "fehlt|text",
+    "person_cards": "fehlt|text",
+    "portrait_placeholder": "fehlt|text",
+    "ranking": "fehlt|text",
+    "script_greeting": "bool|fehlt",
+    "search": "fehlt|text",
+    "section_bg": "fehlt|text",
+    "sections": "fehlt|text",
+    "size": "fehlt|text",
+    "spacing": "fehlt|text",
+    "sticky": "bool|fehlt",
+    "stripes": "bool|fehlt",
+    "tile_ratio": "fehlt|text",
+    "timeline_chapter": "fehlt|text",
+    "title_size": "fehlt|text",
+    "to_top": "bool|fehlt",
+    "unit_title": "fehlt|text",
+    "width": "fehlt|text"
+   },
    "theme": {
     "accent": "text",
     "on_accent": "text",
@@ -401,10 +995,20 @@
    "unit_label_plural": "text",
    "units": [
     {
-     "founding_year": "zahl",
+     "founding_year": "null|zahl",
      "has_events": "bool",
-     "image": "null",
-     "logo_url": "null",
+     "image": {
+      "?": "null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "logo_url": "null|text",
      "name": "text",
      "parent": "null|text",
      "short_name": "text",
@@ -420,23 +1024,45 @@
       {
        "current": "bool",
        "from": "text",
+       "instrument": "fehlt|text",
        "name": "text",
-       "photo_url": "null",
+       "photo_url": "null|text",
        "until": "null|text"
       }
      ],
      "role": "text"
     }
    ],
-   "honorary": [],
-   "roles": [
+   "honorary": [
     {
-     "contact_form": "bool",
-     "email": "null",
+     "heading": "text",
      "holders": [
       {
        "name": "text",
-       "photo_url": "null"
+       "photo_url": "null|text",
+       "title": "fehlt|text"
+      }
+     ],
+     "title": "text"
+    }
+   ],
+   "roles": [
+    {
+     "contact_form": "bool",
+     "email": "null|text",
+     "holders": [
+      {
+       "address": {
+        "?": "fehlt",
+        "city": "text",
+        "postal_code": "text",
+        "street": "text"
+       },
+       "email": "fehlt|text",
+       "instrument": "fehlt|text",
+       "name": "text",
+       "phone": "fehlt|text",
+       "photo_url": "null|text"
       }
      ],
      "id": "text",
@@ -448,8 +1074,23 @@
   "bookings/": {
    "end": "text",
    "ics_url": "text",
-   "items": [],
-   "occurrences": [],
+   "items": [
+    {
+     "area": "bool",
+     "id": "text",
+     "kind": "text",
+     "title": "text"
+    }
+   ],
+   "occurrences": [
+    {
+     "all_day": "bool",
+     "ends_at": "text",
+     "item": "text",
+     "starts_at": "text",
+     "title": "text"
+    }
+   ],
    "start": "text"
   },
   "contact/": {
@@ -466,17 +1107,43 @@
     }
    ]
   },
+  "design/<key>/": {
+   "css": "text",
+   "hash": "text",
+   "key": "text",
+   "label": "text",
+   "layout": "text",
+   "templates": {},
+   "version": "zahl"
+  },
   "documents/": {
-   "documents": []
+   "documents": [
+    {
+     "date": "text",
+     "id": "text",
+     "kind": "text",
+     "preview_url": "text",
+     "size": "zahl",
+     "source": "text",
+     "title": "text",
+     "url": "text"
+    }
+   ]
   },
   "events/": {
    "events": [
     {
      "address": "text",
      "all_day": "bool",
-     "attachments": [],
-     "category": "text",
-     "color": "text",
+     "attachments": [
+      {
+       "kind": "text",
+       "name": "text",
+       "url": "text"
+      }
+     ],
+     "category": "null|text",
+     "color": "null|text",
      "description": "text",
      "ends_at": "text",
      "hide_end_time": "bool",
@@ -484,44 +1151,129 @@
      "is_cancelled": "bool",
      "location": "text",
      "note": "text",
-     "owner": "null",
-     "page": "null",
-     "performance_kind": "null",
+     "owner": "null|text",
+     "page": "null|text",
+     "performance_kind": "null|text",
      "programme": "text",
-     "registration": "null",
+     "registration": {
+      "?": "null",
+      "can_join": "bool",
+      "closes_at": "text",
+      "closes_text": "text",
+      "free": "zahl",
+      "opens_at": "text",
+      "prices": [
+       {
+        "amount": "text",
+        "name": "text",
+        "name_en": "text",
+        "step": "text",
+        "until_date": "text"
+       }
+      ],
+      "state": "text",
+      "state_text": "text",
+      "url": "text",
+      "waitlist": "bool"
+     },
      "starts_at": "text",
      "title": "text",
-     "unit": "null"
+     "unit": "null|text"
     }
    ],
    "ics_url": "text"
   },
   "galleries/": {
-   "albums": []
+   "albums": [
+    {
+     "albums": "zahl",
+     "cover": {
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "date": "text",
+     "images": "zahl",
+     "slug": "text",
+     "title": "text",
+     "year": "zahl"
+    }
+   ]
+  },
+  "galleries/<slug>/": {
+   "albums": [
+    {
+     "albums": "zahl",
+     "cover": {
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "date": "text",
+     "images": "zahl",
+     "slug": "text",
+     "title": "text",
+     "year": "zahl"
+    }
+   ],
+   "date": "text",
+   "description": "text",
+   "images": [
+    {
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    }
+   ],
+   "parent": {
+    "?": "null",
+    "slug": "text",
+    "title": "text"
+   },
+   "slug": "text",
+   "title": "text",
+   "year": "zahl"
   },
   "honors/": {
    "dignities": [
     {
-     "aliases": [],
+     "aliases": [
+      "text"
+     ],
      "current": [
       {
        "companions": [
         {
          "label": "text",
          "name": "text",
-         "photo_url": "null"
+         "photo_url": "null|text"
         }
        ],
-       "from": "null",
+       "from": "null|text",
        "holder": {
         "name": "text",
-        "photo_url": "null"
+        "photo_url": "null|text"
        },
        "note": "text",
        "period": "text",
-       "photo_url": "null",
+       "photo_url": "null|text",
        "times": "zahl",
-       "until": "null",
+       "until": "null|text",
        "year": "zahl"
       }
      ],
@@ -529,25 +1281,26 @@
      "id": "text",
      "name": "text",
      "name_plural": "text",
+     "owner": "fehlt|text",
      "reigns": [
       {
        "companions": [
         {
          "label": "text",
          "name": "text",
-         "photo_url": "null"
+         "photo_url": "null|text"
         }
        ],
-       "from": "null",
+       "from": "null|text",
        "holder": {
         "name": "text",
-        "photo_url": "null"
+        "photo_url": "null|text"
        },
        "note": "text",
        "period": "text",
-       "photo_url": "null",
+       "photo_url": "null|text",
        "times": "zahl",
-       "until": "null",
+       "until": "null|text",
        "year": "zahl"
       }
      ],
@@ -585,14 +1338,16 @@
     "website": "text"
    },
    "external_url": "text",
-   "image_credits": [],
+   "image_credits": [
+    "text"
+   ],
    "inherited": "bool",
    "is_platform": "bool",
    "mode": "text",
    "owner": "text",
    "owner_label": "text",
    "privacy": {
-    "generated_at": "text",
+    "generated_at": "null|text",
     "mode": "text",
     "text": "text",
     "url": "text"
@@ -608,20 +1363,1251 @@
    "product": "text",
    "version": "text"
   },
+  "join/": {
+   "form_url": "text",
+   "intro": "text",
+   "sepa": "text",
+   "types": [
+    {
+     "fee": "text",
+     "id": "zahl",
+     "label": "text",
+     "organizations": "bool",
+     "text": "text"
+    }
+   ],
+   "units": [
+    {
+     "id": "zahl",
+     "name": "text"
+    }
+   ]
+  },
+  "members/<slug>/": {
+   "members": [
+    {
+     "instrument": "fehlt|text",
+     "name": "text",
+     "photo_url": "null|text",
+     "since": "zahl"
+    }
+   ],
+   "title": "text"
+  },
+  "memorial/": {
+   "intro": {
+    "event": "null",
+    "image": {
+     "?": "null",
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    },
+    "sections": [
+     {
+      "address": "fehlt|text",
+      "after_text": "fehlt|text",
+      "album": {
+       "?": "fehlt",
+       "slug": "text",
+       "title": "text"
+      },
+      "albums": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "albums": "zahl",
+         "cover": {
+          "alt": "text",
+          "caption": "text",
+          "credit": "text",
+          "height": "zahl",
+          "key": "text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         },
+         "date": "text",
+         "images": "zahl",
+         "slug": "text",
+         "title": "text",
+         "year": "zahl"
+        }
+       ]
+      },
+      "align": "fehlt|text",
+      "bg": "text",
+      "bic": "fehlt|text",
+      "buttons": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "label": "text",
+         "target": {
+          "?": "null",
+          "key": "text",
+          "label": "fehlt|text",
+          "slug": "fehlt|text",
+          "url": "fehlt|text"
+         }
+        }
+       ]
+      },
+      "category": "fehlt|text",
+      "channel": "fehlt|text",
+      "column": "text",
+      "columns": "fehlt|zahl",
+      "competition": {
+       "?": "fehlt",
+       "aliases": [
+        "text"
+       ],
+       "date": "text",
+       "discipline": "text",
+       "final": "bool",
+       "id": "text",
+       "live": "bool",
+       "location": "text",
+       "occasion": "text",
+       "organizer": "text",
+       "own": "bool",
+       "prizes": [
+        {
+         "award": "text",
+         "fallen": "bool",
+         "name": "text",
+         "shot": "zahl",
+         "unit": "text",
+         "winner": "text"
+        }
+       ],
+       "provisional": "bool",
+       "scorings": [
+        {
+         "rows": [
+          {
+           "name": "text",
+           "place": "zahl",
+           "prize": "bool",
+           "unit": "fehlt|text",
+           "unit_slug": "text",
+           "value": "text"
+          }
+         ],
+         "scoring": "text"
+        }
+       ],
+       "slug": "text",
+       "status": "text",
+       "title": "text",
+       "url": "text",
+       "version": "text",
+       "year": "zahl"
+      },
+      "days": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "day": "text",
+         "items": [
+          {
+           "text": "text",
+           "time": "text"
+          }
+         ]
+        }
+       ]
+      },
+      "directions": "fehlt|text",
+      "entries": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "text": "text",
+         "title": "text",
+         "until": "zahl",
+         "year": "zahl"
+        }
+       ]
+      },
+      "event": {
+       "?": "fehlt",
+       "address": "text",
+       "all_day": "bool",
+       "attachments": [
+        {
+         "kind": "text",
+         "name": "text",
+         "url": "text"
+        }
+       ],
+       "category": "text",
+       "color": "text",
+       "description": "text",
+       "ends_at": "text",
+       "hide_end_time": "bool",
+       "id": "text",
+       "is_cancelled": "bool",
+       "location": "text",
+       "note": "text",
+       "owner": "null",
+       "page": "text",
+       "performance_kind": "text",
+       "programme": "text",
+       "registration": {
+        "can_join": "bool",
+        "closes_at": "text",
+        "closes_text": "text",
+        "free": "zahl",
+        "opens_at": "text",
+        "prices": [
+         {
+          "amount": "text",
+          "name": "text",
+          "name_en": "text",
+          "step": "text",
+          "until_date": "text"
+         }
+        ],
+        "state": "text",
+        "state_text": "text",
+        "url": "text",
+        "waitlist": "bool"
+       },
+       "starts_at": "text",
+       "title": "text",
+       "unit": "text"
+      },
+      "events": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "address": "text",
+         "all_day": "bool",
+         "attachments": [
+          {
+           "kind": "text",
+           "name": "text",
+           "url": "text"
+          }
+         ],
+         "category": "text",
+         "color": "text",
+         "description": "text",
+         "ends_at": "text",
+         "hide_end_time": "bool",
+         "id": "text",
+         "is_cancelled": "bool",
+         "location": "text",
+         "note": "text",
+         "owner": "null",
+         "page": "text",
+         "performance_kind": "text",
+         "programme": "text",
+         "registration": {
+          "can_join": "bool",
+          "closes_at": "text",
+          "closes_text": "text",
+          "free": "zahl",
+          "opens_at": "text",
+          "prices": [
+           {
+            "amount": "text",
+            "name": "text",
+            "name_en": "text",
+            "step": "text",
+            "until_date": "text"
+           }
+          ],
+          "state": "text",
+          "state_text": "text",
+          "url": "text",
+          "waitlist": "bool"
+         },
+         "starts_at": "text",
+         "title": "text",
+         "unit": "text"
+        }
+       ]
+      },
+      "file_type": "fehlt|text",
+      "goal": "fehlt|null|zahl",
+      "head": {
+       "?": "fehlt",
+       "?liste": [
+        "text"
+       ]
+      },
+      "height": "fehlt|text",
+      "hero_kicker": "fehlt|text",
+      "hero_titles": {
+       "?": "fehlt",
+       "?liste": [
+        "text"
+       ]
+      },
+      "holder": "fehlt|text",
+      "honors": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "current": [
+          {
+           "companions": [
+            {
+             "label": "text",
+             "name": "text",
+             "photo_url": "text"
+            }
+           ],
+           "from": "null|text",
+           "holder": {
+            "name": "text",
+            "photo_url": "text"
+           },
+           "note": "text",
+           "period": "text",
+           "photo_url": "null|text",
+           "times": "zahl",
+           "until": "null|text",
+           "year": "zahl"
+          }
+         ],
+         "current_year": "bool",
+         "id": "text",
+         "name": "text",
+         "name_plural": "text",
+         "reigns": [
+          {
+           "companions": [
+            {
+             "label": "text",
+             "name": "text",
+             "photo_url": "text"
+            }
+           ],
+           "from": "null|text",
+           "holder": {
+            "name": "text",
+            "photo_url": "text"
+           },
+           "note": "text",
+           "period": "text",
+           "photo_url": "null|text",
+           "times": "zahl",
+           "until": "null|text",
+           "year": "zahl"
+          }
+         ]
+        }
+       ]
+      },
+      "iban": "fehlt|text",
+      "image": {
+       "?": "fehlt|null",
+       "alt": "text",
+       "caption": "text",
+       "credit": "text",
+       "height": "zahl",
+       "key": "text",
+       "small_url": "text",
+       "url": "text",
+       "width": "zahl"
+      },
+      "images": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        }
+       ]
+      },
+      "items": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "answer": "fehlt|text",
+         "caption": "fehlt|text",
+         "day": "fehlt|text",
+         "file_type": "fehlt|text",
+         "image": {
+          "?": "fehlt|null",
+          "alt": "text",
+          "caption": "text",
+          "credit": "text",
+          "height": "zahl",
+          "key": "text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         },
+         "label": "fehlt|text",
+         "name": "fehlt|text",
+         "note": "fehlt|text",
+         "placeholder": "fehlt|text",
+         "question": "fehlt|text",
+         "size": "fehlt|zahl",
+         "text": "fehlt|text",
+         "time": "fehlt|text",
+         "title": "fehlt|text",
+         "url": "fehlt|text",
+         "value": "fehlt|text",
+         "when": "fehlt|text"
+        }
+       ]
+      },
+      "key": "text",
+      "kind": "text",
+      "label": "fehlt|text",
+      "line": "fehlt|text",
+      "login_url": "fehlt|text",
+      "mark": {
+       "?": "fehlt|text",
+       "alt": "text",
+       "caption": "text",
+       "credit": "text",
+       "height": "zahl",
+       "key": "text",
+       "small_url": "text",
+       "url": "text",
+       "width": "zahl"
+      },
+      "name": "fehlt|text",
+      "percent": "fehlt|null|zahl",
+      "placeholder": "fehlt|text",
+      "posts": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "account": "text",
+         "comment_count": "fehlt|null|zahl",
+         "comments": {
+          "?": "fehlt",
+          "?liste": [
+           {
+            "author": "text",
+            "published_at": "text",
+            "text": "text"
+           }
+          ]
+         },
+         "date": "fehlt|text",
+         "excerpt": "fehlt|text",
+         "has_more": "bool|fehlt",
+         "id": "text",
+         "images": [
+          {
+           "alt": "text",
+           "caption": "fehlt|text",
+           "credit": "fehlt|text",
+           "height": "zahl",
+           "is_video": "bool|fehlt",
+           "key": "fehlt|text",
+           "small_url": "text",
+           "url": "text",
+           "width": "zahl"
+          }
+         ],
+         "kind": "text",
+         "kind_label": "text",
+         "likes": "fehlt|null|zahl",
+         "media_type": "text",
+         "permalink": "null|text",
+         "published_at": "text",
+         "slug": "fehlt|text",
+         "text": "text",
+         "title": "fehlt|text",
+         "unit": "fehlt|null",
+         "videos": {
+          "?": "fehlt",
+          "?liste": [
+           {
+            "image": {
+             "alt": "text",
+             "caption": "text",
+             "credit": "text",
+             "height": "zahl",
+             "key": "text",
+             "small_url": "text",
+             "url": "text",
+             "width": "zahl"
+            },
+            "title": "text",
+            "url": "text"
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "purpose": "fehlt|text",
+      "qr": "bool|fehlt",
+      "raised": "fehlt|null|zahl",
+      "roles": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "contact_form": "bool",
+         "email": "text",
+         "holders": [
+          {
+           "address": {
+            "city": "text",
+            "postal_code": "text",
+            "street": "text"
+           },
+           "email": "text",
+           "name": "text",
+           "phone": "text",
+           "photo_url": "text"
+          }
+         ],
+         "id": "text",
+         "name": "text",
+         "vacant": "bool"
+        }
+       ]
+      },
+      "route_url": "fehlt|text",
+      "rows": {
+       "?": "fehlt",
+       "?liste": [
+        [
+         "text"
+        ]
+       ]
+      },
+      "side": "fehlt|text",
+      "size": "fehlt|text|zahl",
+      "store_url": "fehlt|text",
+      "style": "fehlt|text",
+      "target": {
+       "?": "fehlt|text",
+       "key": "text",
+       "label": "text"
+      },
+      "text": "fehlt|text",
+      "tiles": {
+       "?": "fehlt",
+       "?liste": [
+        {
+         "button": "text",
+         "image": {
+          "?": "null",
+          "alt": "text",
+          "caption": "text",
+          "credit": "text",
+          "height": "zahl",
+          "key": "text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         },
+         "target": {
+          "?": "null",
+          "key": "text",
+          "label": "fehlt|text",
+          "slug": "fehlt|text",
+          "url": "fehlt|text"
+         },
+         "text": "text",
+         "title": "text"
+        }
+       ]
+      },
+      "title": "fehlt|text",
+      "unit": {
+       "?": "fehlt",
+       "name": "text",
+       "slug": "text"
+      },
+      "url": "fehlt|text",
+      "width": "text"
+     }
+    ],
+    "show_captions": "bool",
+    "slug": "text",
+    "text": "text",
+    "timeline": [],
+    "timeline_newest_first": "bool",
+    "title": "text",
+    "updated_at": "text"
+   },
+   "members": [
+    {
+     "died": "zahl",
+     "name": "text",
+     "photo_url": "null|text",
+     "since": "zahl"
+    }
+   ]
+  },
+  "pages/<slug>/": {
+   "event": {
+    "?": "null",
+    "address": "text",
+    "all_day": "bool",
+    "attachments": [
+     {
+      "kind": "text",
+      "name": "text",
+      "url": "text"
+     }
+    ],
+    "description": "text",
+    "directions": "text",
+    "ended": "bool",
+    "ends_at": "text",
+    "hide_end_time": "bool",
+    "is_cancelled": "bool",
+    "location": "text",
+    "programme": "text",
+    "registration": {
+     "can_join": "bool",
+     "cancel_text": "text",
+     "closes_at": "text",
+     "closes_text": "text",
+     "free": "zahl",
+     "opens_at": "text",
+     "prices": [
+      {
+       "amount": "text",
+       "name": "text",
+       "name_en": "text",
+       "step": "text",
+       "until_date": "text"
+      }
+     ],
+     "state": "text",
+     "state_text": "text",
+     "terms": "text",
+     "url": "text",
+     "waitlist": "bool"
+    },
+    "starts_at": "text",
+    "title": "text"
+   },
+   "image": {
+    "?": "null",
+    "alt": "text",
+    "caption": "text",
+    "credit": "text",
+    "height": "zahl",
+    "key": "text",
+    "small_url": "text",
+    "url": "text",
+    "width": "zahl"
+   },
+   "sections": [
+    {
+     "address": "fehlt|text",
+     "after_text": "fehlt|text",
+     "album": {
+      "?": "fehlt",
+      "slug": "text",
+      "title": "text"
+     },
+     "albums": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "albums": "zahl",
+        "cover": {
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "date": "text",
+        "images": "zahl",
+        "slug": "text",
+        "title": "text",
+        "year": "zahl"
+       }
+      ]
+     },
+     "align": "fehlt|text",
+     "bg": "text",
+     "bic": "fehlt|text",
+     "buttons": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "label": "text",
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        }
+       }
+      ]
+     },
+     "category": "fehlt|text",
+     "channel": "fehlt|text",
+     "column": "text",
+     "columns": "fehlt|zahl",
+     "competition": {
+      "?": "fehlt",
+      "aliases": [
+       "text"
+      ],
+      "date": "text",
+      "discipline": "text",
+      "final": "bool",
+      "id": "text",
+      "live": "bool",
+      "location": "text",
+      "occasion": "text",
+      "organizer": "text",
+      "own": "bool",
+      "prizes": [
+       {
+        "award": "text",
+        "fallen": "bool",
+        "name": "text",
+        "shot": "zahl",
+        "unit": "text",
+        "winner": "text"
+       }
+      ],
+      "provisional": "bool",
+      "scorings": [
+       {
+        "rows": [
+         {
+          "name": "text",
+          "place": "zahl",
+          "prize": "bool",
+          "unit": "fehlt|text",
+          "unit_slug": "text",
+          "value": "text"
+         }
+        ],
+        "scoring": "text"
+       }
+      ],
+      "slug": "text",
+      "status": "text",
+      "title": "text",
+      "url": "text",
+      "version": "text",
+      "year": "zahl"
+     },
+     "days": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "day": "text",
+        "items": [
+         {
+          "text": "text",
+          "time": "text"
+         }
+        ]
+       }
+      ]
+     },
+     "directions": "fehlt|text",
+     "entries": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "text": "text",
+        "title": "text",
+        "until": "zahl",
+        "year": "zahl"
+       }
+      ]
+     },
+     "event": {
+      "?": "fehlt",
+      "address": "text",
+      "all_day": "bool",
+      "attachments": [
+       {
+        "kind": "text",
+        "name": "text",
+        "url": "text"
+       }
+      ],
+      "category": "text",
+      "color": "text",
+      "description": "text",
+      "ends_at": "text",
+      "hide_end_time": "bool",
+      "id": "text",
+      "is_cancelled": "bool",
+      "location": "text",
+      "note": "text",
+      "owner": "null",
+      "page": "text",
+      "performance_kind": "text",
+      "programme": "text",
+      "registration": {
+       "can_join": "bool",
+       "closes_at": "text",
+       "closes_text": "text",
+       "free": "zahl",
+       "opens_at": "text",
+       "prices": [
+        {
+         "amount": "text",
+         "name": "text",
+         "name_en": "text",
+         "step": "text",
+         "until_date": "text"
+        }
+       ],
+       "state": "text",
+       "state_text": "text",
+       "url": "text",
+       "waitlist": "bool"
+      },
+      "starts_at": "text",
+      "title": "text",
+      "unit": "text"
+     },
+     "events": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "address": "text",
+        "all_day": "bool",
+        "attachments": [
+         {
+          "kind": "text",
+          "name": "text",
+          "url": "text"
+         }
+        ],
+        "category": "text",
+        "color": "text",
+        "description": "text",
+        "ends_at": "text",
+        "hide_end_time": "bool",
+        "id": "text",
+        "is_cancelled": "bool",
+        "location": "text",
+        "note": "text",
+        "owner": "null",
+        "page": "text",
+        "performance_kind": "text",
+        "programme": "text",
+        "registration": {
+         "can_join": "bool",
+         "closes_at": "text",
+         "closes_text": "text",
+         "free": "zahl",
+         "opens_at": "text",
+         "prices": [
+          {
+           "amount": "text",
+           "name": "text",
+           "name_en": "text",
+           "step": "text",
+           "until_date": "text"
+          }
+         ],
+         "state": "text",
+         "state_text": "text",
+         "url": "text",
+         "waitlist": "bool"
+        },
+        "starts_at": "text",
+        "title": "text",
+        "unit": "text"
+       }
+      ]
+     },
+     "file_type": "fehlt|text",
+     "goal": "fehlt|null|zahl",
+     "head": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "height": "fehlt|text",
+     "hero_kicker": "fehlt|text",
+     "hero_titles": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "holder": "fehlt|text",
+     "honors": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "current": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ],
+        "current_year": "bool",
+        "id": "text",
+        "name": "text",
+        "name_plural": "text",
+        "reigns": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ]
+       }
+      ]
+     },
+     "iban": "fehlt|text",
+     "image": {
+      "?": "fehlt|null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "images": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "alt": "text",
+        "caption": "text",
+        "credit": "text",
+        "height": "zahl",
+        "key": "text",
+        "small_url": "text",
+        "url": "text",
+        "width": "zahl"
+       }
+      ]
+     },
+     "items": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "answer": "fehlt|text",
+        "caption": "fehlt|text",
+        "day": "fehlt|text",
+        "file_type": "fehlt|text",
+        "image": {
+         "?": "fehlt|null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "label": "fehlt|text",
+        "name": "fehlt|text",
+        "note": "fehlt|text",
+        "placeholder": "fehlt|text",
+        "question": "fehlt|text",
+        "size": "fehlt|zahl",
+        "text": "fehlt|text",
+        "time": "fehlt|text",
+        "title": "fehlt|text",
+        "url": "fehlt|text",
+        "value": "fehlt|text",
+        "when": "fehlt|text"
+       }
+      ]
+     },
+     "key": "text",
+     "kind": "text",
+     "label": "fehlt|text",
+     "line": "fehlt|text",
+     "login_url": "fehlt|text",
+     "mark": {
+      "?": "fehlt|text",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "name": "fehlt|text",
+     "percent": "fehlt|null|zahl",
+     "placeholder": "fehlt|text",
+     "posts": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "account": "text",
+        "comment_count": "fehlt|null|zahl",
+        "comments": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "author": "text",
+           "published_at": "text",
+           "text": "text"
+          }
+         ]
+        },
+        "date": "fehlt|text",
+        "excerpt": "fehlt|text",
+        "has_more": "bool|fehlt",
+        "id": "text",
+        "images": [
+         {
+          "alt": "text",
+          "caption": "fehlt|text",
+          "credit": "fehlt|text",
+          "height": "zahl",
+          "is_video": "bool|fehlt",
+          "key": "fehlt|text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         }
+        ],
+        "kind": "text",
+        "kind_label": "text",
+        "likes": "fehlt|null|zahl",
+        "media_type": "text",
+        "permalink": "null|text",
+        "published_at": "text",
+        "slug": "fehlt|text",
+        "text": "text",
+        "title": "fehlt|text",
+        "unit": "fehlt|null",
+        "videos": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "image": {
+            "alt": "text",
+            "caption": "text",
+            "credit": "text",
+            "height": "zahl",
+            "key": "text",
+            "small_url": "text",
+            "url": "text",
+            "width": "zahl"
+           },
+           "title": "text",
+           "url": "text"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "purpose": "fehlt|text",
+     "qr": "bool|fehlt",
+     "raised": "fehlt|null|zahl",
+     "roles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "contact_form": "bool",
+        "email": "text",
+        "holders": [
+         {
+          "address": {
+           "city": "text",
+           "postal_code": "text",
+           "street": "text"
+          },
+          "email": "text",
+          "name": "text",
+          "phone": "text",
+          "photo_url": "text"
+         }
+        ],
+        "id": "text",
+        "name": "text",
+        "vacant": "bool"
+       }
+      ]
+     },
+     "route_url": "fehlt|text",
+     "rows": {
+      "?": "fehlt",
+      "?liste": [
+       [
+        "text"
+       ]
+      ]
+     },
+     "side": "fehlt|text",
+     "size": "fehlt|text|zahl",
+     "store_url": "fehlt|text",
+     "style": "fehlt|text",
+     "target": {
+      "?": "fehlt|text",
+      "key": "text",
+      "label": "text"
+     },
+     "text": "fehlt|text",
+     "tiles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "button": "text",
+        "image": {
+         "?": "null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        },
+        "text": "text",
+        "title": "text"
+       }
+      ]
+     },
+     "title": "fehlt|text",
+     "unit": {
+      "?": "fehlt",
+      "name": "text",
+      "slug": "text"
+     },
+     "url": "fehlt|text",
+     "width": "text"
+    }
+   ],
+   "show_captions": "bool",
+   "slug": "text",
+   "text": "text",
+   "timeline": [
+    {
+     "image": {
+      "?": "null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "image_position": "text",
+     "images": [
+      {
+       "alt": "text",
+       "caption": "text",
+       "credit": "text",
+       "height": "zahl",
+       "key": "text",
+       "small_url": "text",
+       "url": "text",
+       "width": "zahl"
+      }
+     ],
+     "kind": "text",
+     "text": "text",
+     "title": "text",
+     "until": "null|zahl",
+     "year": "zahl"
+    }
+   ],
+   "timeline_newest_first": "bool",
+   "title": "text",
+   "updated_at": "text"
+  },
   "posts/": {
    "more": "bool",
    "page": "zahl",
    "posts": [
     {
      "account": "text",
-     "comment_count": "null",
-     "comments": [],
+     "comment_count": "fehlt|null|zahl",
+     "comments": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "author": "text",
+        "published_at": "text",
+        "text": "text"
+       }
+      ]
+     },
+     "date": "fehlt|text",
+     "excerpt": "fehlt|text",
+     "has_more": "bool|fehlt",
      "id": "text",
      "images": [
       {
        "alt": "text",
+       "caption": "fehlt|text",
+       "credit": "fehlt|text",
        "height": "zahl",
-       "is_video": "bool",
+       "is_video": "bool|fehlt",
+       "key": "fehlt|text",
        "small_url": "text",
        "url": "text",
        "width": "zahl"
@@ -629,21 +2615,100 @@
      ],
      "kind": "text",
      "kind_label": "text",
-     "likes": "null",
+     "likes": "fehlt|null|zahl",
      "media_type": "text",
-     "permalink": "text",
+     "permalink": "null|text",
      "published_at": "text",
-     "text": "text"
+     "slug": "fehlt|text",
+     "text": "text",
+     "title": "fehlt|text",
+     "unit": "fehlt|null|text",
+     "videos": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "image": {
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "title": "text",
+        "url": "text"
+       }
+      ]
+     }
     }
    ]
   },
+  "posts/eigene/<slug>/": {
+   "post": {
+    "account": "text",
+    "date": "text",
+    "excerpt": "text",
+    "has_more": "bool",
+    "id": "text",
+    "images": [
+     {
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     }
+    ],
+    "kind": "text",
+    "kind_label": "text",
+    "media_type": "text",
+    "permalink": "null",
+    "published_at": "text",
+    "slug": "text",
+    "text": "text",
+    "title": "text",
+    "unit": "null|text",
+    "videos": [
+     {
+      "image": {
+       "alt": "text",
+       "caption": "text",
+       "credit": "text",
+       "height": "zahl",
+       "key": "text",
+       "small_url": "text",
+       "url": "text",
+       "width": "zahl"
+      },
+      "title": "text",
+      "url": "text"
+     }
+    ]
+   }
+  },
   "repertoire/": {
-   "pieces": []
+   "pieces": [
+    {
+     "composer": "text",
+     "title": "text"
+    }
+   ]
+  },
+  "resolve/": {
+   "key": "text",
+   "version": "zahl"
   },
   "results/": {
    "competitions": [
     {
-     "aliases": [],
+     "aliases": [
+      "text"
+     ],
      "date": "text",
      "discipline": "text",
      "final": "bool",
@@ -653,32 +2718,92 @@
      "occasion": "text",
      "organizer": "text",
      "own": "bool",
+     "prizes": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "award": "text",
+        "fallen": "bool",
+        "name": "text",
+        "shot": "zahl",
+        "unit": "text",
+        "winner": "text"
+       }
+      ]
+     },
      "provisional": "bool",
+     "scorings": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "rows": [
+         {
+          "club": "fehlt|text",
+          "name": "text",
+          "place": "zahl",
+          "prize": "bool",
+          "unit": "fehlt|text",
+          "unit_slug": "text",
+          "value": "text"
+         }
+        ],
+        "scoring": "text"
+       }
+      ]
+     },
      "slug": "text",
      "status": "text",
      "title": "text",
      "url": "text",
+     "version": "fehlt|text",
      "year": "zahl"
     }
    ],
    "poll_seconds": "zahl",
-   "series": [
-    {
-     "aliases": [],
-     "id": "text",
-     "name": "text",
-     "slug": "text",
-     "url": "text"
-    }
-   ],
-   "trophies": []
+   "series": {
+    "?": "fehlt",
+    "?liste": [
+     {
+      "aliases": [
+       "text"
+      ],
+      "id": "text",
+      "name": "text",
+      "slug": "text",
+      "url": "text"
+     }
+    ]
+   },
+   "trophies": {
+    "?": "fehlt",
+    "?liste": [
+     {
+      "description": "text",
+      "holders": [
+       {
+        "kept": "bool",
+        "name": "text",
+        "year": "zahl"
+       }
+      ],
+      "name": "text"
+     }
+    ]
+   }
   },
   "results/<token>/": {
-   "aliases": [],
+   "aliases": [
+    "text"
+   ],
    "date": "text",
    "depth": "text",
    "description": "text",
-   "details": [],
+   "details": [
+    {
+     "label": "text",
+     "value": "text"
+    }
+   ],
    "discipline": "text",
    "final": "bool",
    "id": "text",
@@ -687,8 +2812,17 @@
    "occasion": "text",
    "organizer": "text",
    "own": "bool",
-   "poll_seconds": "null",
-   "prizes": [],
+   "poll_seconds": "null|zahl",
+   "prizes": [
+    {
+     "award": "text",
+     "fallen": "bool",
+     "name": "text",
+     "shot": "fehlt|zahl",
+     "unit": "fehlt|text",
+     "winner": "fehlt|text"
+    }
+   ],
    "provisional": "bool",
    "scorings": [
     {
@@ -698,6 +2832,7 @@
      "name": "text",
      "rows": [
       {
+       "club": "fehlt|text",
        "name": "text",
        "place": "zahl",
        "prize": "bool",
@@ -712,7 +2847,12 @@
    "slug": "text",
    "status": "text",
    "title": "text",
-   "titles": [],
+   "titles": [
+    {
+     "name": "text",
+     "title": "text"
+    }
+   ],
    "url": "text",
    "version": "text",
    "version_url": "text",
@@ -724,12 +2864,20 @@
    "version": "text"
   },
   "results/series/<token>/": {
-   "aliases": [],
+   "aliases": [
+    "text"
+   ],
    "description": "text",
    "id": "text",
    "name": "text",
    "slug": "text",
-   "titles": [],
+   "titles": [
+    {
+     "name": "text",
+     "title": "text",
+     "year": "zahl"
+    }
+   ],
    "years": [
     {
      "depth": "text",
@@ -753,6 +2901,8 @@
    "query": "text",
    "results": [
     {
+     "area": "fehlt|text",
+     "date": "fehlt|text",
      "id": "fehlt|text",
      "key": "fehlt|text",
      "kind": "text",
@@ -766,10 +2916,20 @@
   "units/": {
    "units": [
     {
-     "founding_year": "zahl",
+     "founding_year": "null|zahl",
      "has_events": "bool",
-     "image": "null",
-     "logo_url": "null",
+     "image": {
+      "?": "null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "logo_url": "null|text",
      "name": "text",
      "parent": "null|text",
      "short_name": "text",
@@ -779,28 +2939,45 @@
   },
   "units/<slug>/": {
    "events_url": "text",
-   "founding_year": "zahl",
-   "gallery": [],
+   "founding_year": "null|zahl",
+   "gallery": [
+    {
+     "alt": "text",
+     "caption": "text",
+     "credit": "text",
+     "height": "zahl",
+     "key": "text",
+     "small_url": "text",
+     "url": "text",
+     "width": "zahl"
+    }
+   ],
    "gallery_interval": "zahl",
    "gallery_random": "bool",
    "has_events": "bool",
-   "homepage": "null",
-   "homepage_image": "null",
+   "homepage": "null|text",
+   "homepage_image": "null|text",
    "honors": [
     {
      "current": [
       {
-       "companions": [],
-       "from": "null",
+       "companions": [
+        {
+         "label": "text",
+         "name": "text",
+         "photo_url": "text"
+        }
+       ],
+       "from": "null|text",
        "holder": {
         "name": "text",
-        "photo_url": "null"
+        "photo_url": "null|text"
        },
        "note": "text",
        "period": "text",
-       "photo_url": "null",
+       "photo_url": "null|text",
        "times": "zahl",
-       "until": "null",
+       "until": "null|text",
        "year": "zahl"
       }
      ],
@@ -810,26 +2987,42 @@
      "name_plural": "text",
      "reigns": [
       {
-       "companions": [],
-       "from": "null",
+       "companions": [
+        {
+         "label": "text",
+         "name": "text",
+         "photo_url": "text"
+        }
+       ],
+       "from": "null|text",
        "holder": {
         "name": "text",
-        "photo_url": "null"
+        "photo_url": "null|text"
        },
        "note": "text",
        "period": "text",
-       "photo_url": "null",
+       "photo_url": "null|text",
        "times": "zahl",
-       "until": "null",
+       "until": "null|text",
        "year": "zahl"
       }
      ]
     }
    ],
-   "image": "null",
-   "logo_url": "null",
+   "image": {
+    "?": "null",
+    "alt": "text",
+    "caption": "text",
+    "credit": "text",
+    "height": "zahl",
+    "key": "text",
+    "small_url": "text",
+    "url": "text",
+    "width": "zahl"
+   },
+   "logo_url": "null|text",
    "name": "text",
-   "parent": "null",
+   "parent": "null|text",
    "posts": {
     "facebook": "bool",
     "instagram": "bool",
@@ -838,11 +3031,19 @@
    "roles": [
     {
      "contact_form": "bool",
-     "email": "null",
+     "email": "null|text",
      "holders": [
       {
+       "address": {
+        "?": "fehlt",
+        "city": "text",
+        "postal_code": "text",
+        "street": "text"
+       },
+       "email": "fehlt|text",
        "name": "text",
-       "photo_url": "null"
+       "phone": "fehlt|text",
+       "photo_url": "null|text"
       }
      ],
      "id": "text",
@@ -852,25 +3053,547 @@
    ],
    "sections": [
     {
+     "address": "fehlt|text",
+     "after_text": "fehlt|text",
+     "album": {
+      "?": "fehlt",
+      "slug": "text",
+      "title": "text"
+     },
+     "albums": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "albums": "zahl",
+        "cover": {
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "date": "text",
+        "images": "zahl",
+        "slug": "text",
+        "title": "text",
+        "year": "zahl"
+       }
+      ]
+     },
+     "align": "fehlt|text",
      "bg": "text",
+     "bic": "fehlt|text",
+     "buttons": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "label": "text",
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        }
+       }
+      ]
+     },
+     "category": "fehlt|text",
+     "channel": "fehlt|text",
      "column": "text",
+     "columns": "fehlt|zahl",
+     "competition": {
+      "?": "fehlt",
+      "aliases": [
+       "text"
+      ],
+      "date": "text",
+      "discipline": "text",
+      "final": "bool",
+      "id": "text",
+      "live": "bool",
+      "location": "text",
+      "occasion": "text",
+      "organizer": "text",
+      "own": "bool",
+      "prizes": [
+       {
+        "award": "text",
+        "fallen": "bool",
+        "name": "text",
+        "shot": "zahl",
+        "unit": "text",
+        "winner": "text"
+       }
+      ],
+      "provisional": "bool",
+      "scorings": [
+       {
+        "rows": [
+         {
+          "name": "text",
+          "place": "zahl",
+          "prize": "bool",
+          "unit": "fehlt|text",
+          "unit_slug": "text",
+          "value": "text"
+         }
+        ],
+        "scoring": "text"
+       }
+      ],
+      "slug": "text",
+      "status": "text",
+      "title": "text",
+      "url": "text",
+      "version": "text",
+      "year": "zahl"
+     },
+     "days": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "day": "text",
+        "items": [
+         {
+          "text": "text",
+          "time": "text"
+         }
+        ]
+       }
+      ]
+     },
+     "directions": "fehlt|text",
+     "entries": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "text": "text",
+        "title": "text",
+        "until": "zahl",
+        "year": "zahl"
+       }
+      ]
+     },
+     "event": {
+      "?": "fehlt",
+      "address": "text",
+      "all_day": "bool",
+      "attachments": [
+       {
+        "kind": "text",
+        "name": "text",
+        "url": "text"
+       }
+      ],
+      "category": "text",
+      "color": "text",
+      "description": "text",
+      "ends_at": "text",
+      "hide_end_time": "bool",
+      "id": "text",
+      "is_cancelled": "bool",
+      "location": "text",
+      "note": "text",
+      "owner": "null",
+      "page": "text",
+      "performance_kind": "text",
+      "programme": "text",
+      "registration": {
+       "can_join": "bool",
+       "closes_at": "text",
+       "closes_text": "text",
+       "free": "zahl",
+       "opens_at": "text",
+       "prices": [
+        {
+         "amount": "text",
+         "name": "text",
+         "name_en": "text",
+         "step": "text",
+         "until_date": "text"
+        }
+       ],
+       "state": "text",
+       "state_text": "text",
+       "url": "text",
+       "waitlist": "bool"
+      },
+      "starts_at": "text",
+      "title": "text",
+      "unit": "text"
+     },
+     "events": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "address": "text",
+        "all_day": "bool",
+        "attachments": [
+         {
+          "kind": "text",
+          "name": "text",
+          "url": "text"
+         }
+        ],
+        "category": "text",
+        "color": "text",
+        "description": "text",
+        "ends_at": "text",
+        "hide_end_time": "bool",
+        "id": "text",
+        "is_cancelled": "bool",
+        "location": "text",
+        "note": "text",
+        "owner": "null",
+        "page": "text",
+        "performance_kind": "text",
+        "programme": "text",
+        "registration": {
+         "can_join": "bool",
+         "closes_at": "text",
+         "closes_text": "text",
+         "free": "zahl",
+         "opens_at": "text",
+         "prices": [
+          {
+           "amount": "text",
+           "name": "text",
+           "name_en": "text",
+           "step": "text",
+           "until_date": "text"
+          }
+         ],
+         "state": "text",
+         "state_text": "text",
+         "url": "text",
+         "waitlist": "bool"
+        },
+        "starts_at": "text",
+        "title": "text",
+        "unit": "text"
+       }
+      ]
+     },
+     "file_type": "fehlt|text",
+     "goal": "fehlt|null|zahl",
+     "head": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "height": "fehlt|text",
+     "hero_kicker": "fehlt|text",
+     "hero_titles": {
+      "?": "fehlt",
+      "?liste": [
+       "text"
+      ]
+     },
+     "holder": "fehlt|text",
+     "honors": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "current": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ],
+        "current_year": "bool",
+        "id": "text",
+        "name": "text",
+        "name_plural": "text",
+        "reigns": [
+         {
+          "companions": [
+           {
+            "label": "text",
+            "name": "text",
+            "photo_url": "text"
+           }
+          ],
+          "from": "null|text",
+          "holder": {
+           "name": "text",
+           "photo_url": "text"
+          },
+          "note": "text",
+          "period": "text",
+          "photo_url": "null|text",
+          "times": "zahl",
+          "until": "null|text",
+          "year": "zahl"
+         }
+        ]
+       }
+      ]
+     },
+     "iban": "fehlt|text",
+     "image": {
+      "?": "fehlt|null",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "images": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "alt": "text",
+        "caption": "text",
+        "credit": "text",
+        "height": "zahl",
+        "key": "text",
+        "small_url": "text",
+        "url": "text",
+        "width": "zahl"
+       }
+      ]
+     },
+     "items": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "answer": "fehlt|text",
+        "caption": "fehlt|text",
+        "day": "fehlt|text",
+        "file_type": "fehlt|text",
+        "image": {
+         "?": "fehlt|null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "label": "fehlt|text",
+        "name": "fehlt|text",
+        "note": "fehlt|text",
+        "placeholder": "fehlt|text",
+        "question": "fehlt|text",
+        "size": "fehlt|zahl",
+        "text": "fehlt|text",
+        "time": "fehlt|text",
+        "title": "fehlt|text",
+        "url": "fehlt|text",
+        "value": "fehlt|text",
+        "when": "fehlt|text"
+       }
+      ]
+     },
      "key": "text",
      "kind": "text",
+     "label": "fehlt|text",
+     "line": "fehlt|text",
+     "login_url": "fehlt|text",
+     "mark": {
+      "?": "fehlt|text",
+      "alt": "text",
+      "caption": "text",
+      "credit": "text",
+      "height": "zahl",
+      "key": "text",
+      "small_url": "text",
+      "url": "text",
+      "width": "zahl"
+     },
+     "name": "fehlt|text",
+     "percent": "fehlt|null|zahl",
+     "placeholder": "fehlt|text",
+     "posts": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "account": "text",
+        "comment_count": "fehlt|null|zahl",
+        "comments": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "author": "text",
+           "published_at": "text",
+           "text": "text"
+          }
+         ]
+        },
+        "date": "fehlt|text",
+        "excerpt": "fehlt|text",
+        "has_more": "bool|fehlt",
+        "id": "text",
+        "images": [
+         {
+          "alt": "text",
+          "caption": "fehlt|text",
+          "credit": "fehlt|text",
+          "height": "zahl",
+          "is_video": "bool|fehlt",
+          "key": "fehlt|text",
+          "small_url": "text",
+          "url": "text",
+          "width": "zahl"
+         }
+        ],
+        "kind": "text",
+        "kind_label": "text",
+        "likes": "fehlt|null|zahl",
+        "media_type": "text",
+        "permalink": "null|text",
+        "published_at": "text",
+        "slug": "fehlt|text",
+        "text": "text",
+        "title": "fehlt|text",
+        "unit": "fehlt|null",
+        "videos": {
+         "?": "fehlt",
+         "?liste": [
+          {
+           "image": {
+            "alt": "text",
+            "caption": "text",
+            "credit": "text",
+            "height": "zahl",
+            "key": "text",
+            "small_url": "text",
+            "url": "text",
+            "width": "zahl"
+           },
+           "title": "text",
+           "url": "text"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "purpose": "fehlt|text",
+     "qr": "bool|fehlt",
+     "raised": "fehlt|null|zahl",
+     "roles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "contact_form": "bool",
+        "email": "text",
+        "holders": [
+         {
+          "address": {
+           "city": "text",
+           "postal_code": "text",
+           "street": "text"
+          },
+          "email": "text",
+          "name": "text",
+          "phone": "text",
+          "photo_url": "text"
+         }
+        ],
+        "id": "text",
+        "name": "text",
+        "vacant": "bool"
+       }
+      ]
+     },
+     "route_url": "fehlt|text",
+     "rows": {
+      "?": "fehlt",
+      "?liste": [
+       [
+        "text"
+       ]
+      ]
+     },
+     "side": "fehlt|text",
+     "size": "fehlt|text|zahl",
+     "store_url": "fehlt|text",
+     "style": "fehlt|text",
+     "target": {
+      "?": "fehlt|text",
+      "key": "text",
+      "label": "text"
+     },
+     "text": "fehlt|text",
+     "tiles": {
+      "?": "fehlt",
+      "?liste": [
+       {
+        "button": "text",
+        "image": {
+         "?": "null",
+         "alt": "text",
+         "caption": "text",
+         "credit": "text",
+         "height": "zahl",
+         "key": "text",
+         "small_url": "text",
+         "url": "text",
+         "width": "zahl"
+        },
+        "target": {
+         "?": "null",
+         "key": "text",
+         "label": "fehlt|text",
+         "slug": "fehlt|text",
+         "url": "fehlt|text"
+        },
+        "text": "text",
+        "title": "text"
+       }
+      ]
+     },
+     "title": "fehlt|text",
+     "unit": {
+      "?": "fehlt",
+      "name": "text",
+      "slug": "text"
+     },
+     "url": "fehlt|text",
      "width": "text"
     }
    ],
    "short_name": "text",
    "show_captions": "bool",
    "slug": "text",
-   "social": [],
+   "social": [
+    {
+     "display": "text",
+     "kind": "text",
+     "label": "text",
+     "url": "text"
+    }
+   ],
    "text": "text",
    "title": "text"
   }
  },
- "ohne_beispiel": [
-  "galleries/<slug>/",
-  "join/",
-  "memorial/",
-  "pages/<slug>/"
- ]
+ "ohne_beispiel": []
 }
