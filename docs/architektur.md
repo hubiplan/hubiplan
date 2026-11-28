@@ -105,3 +105,18 @@ oder entfernt, erzeugt die Liste neu:
 ```bash
 cd backend && python manage.py api_routen config/api_routen.json
 ```
+
+### Öffentliche Schnittstelle der Vereinswebseite
+
+Die Vereinswebseite (`hubiplan-website`) liest nur `/api/public/site/v1/…` und testet gegen eine
+nachgebildete Schnittstelle. `backend/config/webseite_schnittstelle.json` hält deshalb fest,
+welche Felder jede dieser Antworten hat (Feldnamen und Arten der Werte für den Demoverein, keine
+Inhalte). `backend/tests/test_webseite_form.py` hält die Datei aktuell; die Webseite
+prüft ihre Nachbildung gegen eine Kopie. Wer eine Antwort ändert, schreibt die Datei neu und
+zieht die Kopie in `hubiplan-website` nach:
+
+```bash
+cd backend && WEBSEITE_SCHNITTSTELLE_SCHREIBEN=1 pytest tests/test_webseite_form.py
+```
+
+Adressen unter `ohne_beispiel` belegt der Demoverein noch nicht; sie sind dort ungeprüft.
