@@ -977,6 +977,8 @@ class MyContextsView(APIView):
     """Abteilungen mit Rechten und Mitgliedschaften im Mitgliederbereich."""
 
     def get(self, request):
+        from devices.access import may_connect
+
         return Response(
             {
                 "departments": [
@@ -987,6 +989,8 @@ class MyContextsView(APIView):
                     )
                 ],
                 "portal": [portal_summary(a) for a in services.portal_accesses(request.user)],
+                # Darf das Konto die App verbinden (Mitgliederbereich oder etwas zu verwalten)?
+                "app": may_connect(request.user),
             }
         )
 

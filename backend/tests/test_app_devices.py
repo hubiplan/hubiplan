@@ -178,9 +178,12 @@ class TestVerbinden:
         )
         assert pair(new).status_code == 404
 
-    def test_qr_code_nur_mit_mitgliederbereich(self, cal, api, board_a):
-        resp = api(board_a).post(f"{APP}pairing/")
-        assert resp.status_code == 400
+    def test_qr_code_nur_mit_mitgliederbereich_oder_rolle(self, cal, api, board_a):
+        # Konto ohne Mitgliederbereich und ohne Rolle: nichts für die App
+        nobody = make_user("niemand@example.org")
+        assert api(nobody).post(f"{APP}pairing/").status_code == 400
+        # Vorstand ohne eigene Mitgliedschaft: App für die Verwaltung (test_app_nur_verwaltung)
+        assert api(board_a).post(f"{APP}pairing/").status_code == 201
 
     def test_qr_code_nur_im_browser(self, token):
         # Mit dem Geräteschlüssel lässt sich kein weiterer Code erzeugen

@@ -24,7 +24,9 @@ With a passkey: If you have set up a passkey in the browser, tap “Sign in with
 
 With email and password: In the app, tap “Sign in with email and password” and enter your club’s address, your email and your password. Password managers (e.g. from Google or Bitwarden) offer to fill in the fields and can save the sign-in.
 
-If you only see a note under “My account › App & other instances” instead of the **Connect app** button, your account has no access to the member area yet: it must be linked to your membership, and your club must have switched on the member area.
+If you only see a note under “My account › App & other instances” instead of the **Connect app** button, there is nothing in the app for your account yet: it has neither access to the member area nor a role in the administration. For the member area it must be linked to your membership, and your club must have switched it on.
+
+If you have a role but no member area (for example as a treasurer who is not a member, or when your club only uses the cash book), you connect the app in the same way. It then shows the administration, which you unlock with your second factor as usual.
 
 The device then appears in the list. If you lose your phone, sign it out there with **Sign out**.
 

@@ -40,6 +40,7 @@ from portal.models import hash_token as link_hash
 from portal.views import portal_summary
 
 from . import devicekey, notify, webpush
+from .access import NOTHING_FOR_APP, manages_in_app, may_connect
 from .auth import DeviceTokenAuthentication
 from .models import (
     CHALLENGE_PATTERN,
@@ -96,6 +97,8 @@ def device_data(device: Device, current: Device | None = None) -> dict:
         "platform": device.platform,
         "app_version": device.app_version,
         "push": device.push_kind,
+        # Neu: Hinweise der Verwaltung auf diesem Gerät (devices/current/push/admin/)
+        "admin_push": device.admin_push,
         "created_at": device.created_at,
         "last_seen_at": device.last_seen_at,
         "current": current is not None and current.pk == device.pk,
@@ -244,13 +247,8 @@ class PairingCodeView(APIView):
         key = f"app:pairing:{request.user.pk}"
         if too_many(key, RATE[0], RATE[1]):
             raise TooMany(key)
-        if not portal_services.portal_accesses(request.user):
-            raise ValidationError(
-                gettext(
-                    "Die App gibt es für den Mitgliederbereich. Für dieses Konto ist kein "
-                    "Mitgliederbereich freigeschaltet."
-                )
-            )
+        if not may_connect(request.user):
+            raise ValidationError(gettext(NOTHING_FOR_APP))
         now = timezone.now()
         # Ältere offene Codes gelten nicht mehr
         PairingCode.objects.filter(user=request.user, used_at__isnull=True).update(used_at=now)
@@ -349,10 +347,8 @@ class PairView(APIView):
                             "anmelden."
                         )
                     )
-                if not portal_services.portal_accesses(user):
-                    raise PermissionDenied(
-                        gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-                    )
+                if not may_connect(user):
+                    raise PermissionDenied(gettext(NOTHING_FOR_APP))
                 device, token = _create_device(user, v)
                 item.used_at = timezone.now()
                 fields = ["used_at"]
@@ -406,10 +402,8 @@ class DeviceListView(APIView):
         data = DeviceSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         set_rls(None, request.user.pk)
-        if not portal_services.portal_accesses(request.user):
-            raise PermissionDenied(
-                gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-            )
+        if not may_connect(request.user):
+            raise PermissionDenied(gettext(NOTHING_FOR_APP))
         device, token = _create_device(request.user, data.validated_data)
         # Die Sitzung der Anmeldung wird nicht mehr gebraucht
         request.auth.delete()
@@ -466,6 +460,9 @@ class MeView(APIView):
                 },
                 "device": device_data(request.auth, request.auth),
                 "portal": [portal_summary(a) for a in portal_services.portal_accesses(user)],
+                # Neu: Konto hat in der App etwas zu verwalten. Mit leerem ``portal`` zeigt die
+                # App dann nur die Verwaltung (Funktion „app-nur-verwaltung“)
+                "admin": manages_in_app(user),
             }
         )
 
@@ -557,6 +554,25 @@ class PushView(APIView):
         device.push_kind = Device.Push.NONE
         device.push_endpoint = device.push_p256dh = device.push_auth = ""
         device.save(update_fields=["push_kind", "push_endpoint", "push_p256dh", "push_auth"])
+        return Response(device_data(device, device))
+
+
+class AdminPushSerializer(serializers.Serializer):
+    enabled = serializers.BooleanField()
+
+
+class AdminPushView(APIView):
+    """App: Hinweise der Verwaltung („Zu erledigen“) auf diesem Gerät ein- oder ausschalten."""
+
+    authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        data = AdminPushSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        device: Device = request.auth
+        device.admin_push = data.validated_data["enabled"]
+        device.save(update_fields=["admin_push"])
         return Response(device_data(device, device))
 
 

@@ -438,6 +438,22 @@ describe('Startseite selbst zusammenstellen', () => {
     ])
   })
 
+  it('zeigt eine Kachel mit Vorgabe des Servers auch ohne Anlass, außer bei „nie“', () => {
+    const tiles = [
+      {
+        key: 'kasse',
+        label: 'Kasse',
+        optional: true,
+        urgent: false,
+        byDefault: true,
+        render: () => null,
+      },
+    ]
+    expect(placeBlocks(tiles).map((b) => [b.shown, b.choice])).toEqual([[true, 'auto']])
+    const off = placeBlocks(tiles, { order: [], hidden: ['kasse'], wide: [], shown: [] })
+    expect(off.map((b) => [b.shown, b.choice])).toEqual([[false, 'off']])
+  })
+
   it('zeigt Kacheln bei Anlass nur mit Anlass oder eigener Wahl', () => {
     const tiles = [
       { key: 'a', label: 'A', render: () => null },

@@ -39,6 +39,8 @@ export interface HomeBlock {
   optional?: boolean
   /** Es gibt gerade einen Anlass */
   urgent?: boolean
+  /** Ohne eigene Wahl auch ohne Anlass sichtbar (Vorgabe des Servers) */
+  byDefault?: boolean
   render: () => ReactNode
 }
 
@@ -85,7 +87,9 @@ export function placeBlocks(blocks: HomeBlock[], layout?: HomeLayout | null): Pl
     return {
       ...b,
       choice,
-      shown: b.optional ? choice === 'on' || (choice === 'auto' && !!b.urgent) : !hidden.has(key),
+      shown: b.optional
+        ? choice === 'on' || (choice === 'auto' && (!!b.urgent || !!b.byDefault))
+        : !hidden.has(key),
       cols: size ? clampCols(size.w) : isWide ? GRID_COLUMNS : GRID_COLUMNS / 2,
       rows: size?.h ? clampRows(size.h) : null,
     }

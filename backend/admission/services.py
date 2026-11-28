@@ -370,6 +370,10 @@ def board_recipients(org, form: ApplicationForm) -> list[str]:
 
 def notify_board(app: Application) -> None:
     org = app.organization
+    # App der Zuständigen: Hinweis ohne Namen (devices/admin_push.py)
+    from devices import admin_push
+
+    admin_push.announce(org.pk, "application")
     with tenant_context(org.pk):
         form = form_for(org)
         emails = board_recipients(org, form)

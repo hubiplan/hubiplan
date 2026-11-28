@@ -234,4 +234,5 @@ def test_kasse_ohne_mitglieder_von_anfang_an(api, club, board_a):
     club.save(update_fields=["enabled_modules"])
     kasse = tiles(api(board_a), url)["kasse"]
     assert kasse["state"] == "auto" and kasse["shown"] is True
+    assert kasse["default_on"] is True and kasse["urgent"] is False
     assert kasse["content"]["reason"] == ""

@@ -2114,10 +2114,11 @@ msgstr ""
 "HUBIplan has therefore signed out the device; please connect the app again."
 
 msgid ""
-"Die App gibt es für den Mitgliederbereich. Für dieses Konto ist kein "
-"Mitgliederbereich freigeschaltet."
+"Für dieses Konto gibt es in der App nichts: Es hat weder Zugang zum "
+"Mitgliederbereich noch etwas zu verwalten."
 msgstr ""
-"The app is for the member area. No member area is enabled for this account."
+"There is nothing in the app for this account: it has neither access to the "
+"member area nor anything to manage."
 
 msgid "Bitte den QR-Code scannen oder einen Anmeldelink öffnen."
 msgstr "Please scan the QR code or open a sign-in link."
@@ -2129,9 +2130,6 @@ msgid ""
 "Für dieses Konto bitte mit Passwort oder QR-Code aus „Mein Konto“ anmelden."
 msgstr ""
 "For this account please sign in with password or QR code from “My account”."
-
-msgid "Für dieses Konto ist kein Mitgliederbereich freigeschaltet."
-msgstr "No member area is enabled for this account."
 
 msgid "Geräte werden in der App angemeldet."
 msgstr "Devices are signed in within the app."
@@ -18423,3 +18421,21 @@ msgstr "The chair and the minute taker must be confirmed by two different people
 #: backend/locale/en/LC_MESSAGES/django.po
 msgid "Protokolle bestätigen zwei verschiedene Personen"
 msgstr "Minutes are confirmed by two different people"
+
+msgid "Neue Eingangsrechnung"
+msgstr "New incoming invoice"
+
+msgid "Neue Datenänderung"
+msgstr "New data change"
+
+msgid "Neue Kündigung"
+msgstr "New cancellation"
+
+msgid "Neues Foto zur Freigabe"
+msgstr "New photo to approve"
+
+msgid "Neuer Mitgliedsantrag"
+msgstr "New membership application"
+
+msgid "Neue Belegungsanfrage"
+msgstr "New booking request"

@@ -50,8 +50,8 @@ from rest_framework.views import APIView
 
 from accounts import passkeys
 from core.tenancy import set_rls
-from portal import services as portal_services
 
+from .access import NOTHING_FOR_APP, may_connect
 from .views import DeviceSerializer, _create_device, _limit, _paired
 
 logger = logging.getLogger(__name__)
@@ -259,10 +259,8 @@ class PasskeyLoginView(APIView):
         data.is_valid(raise_exception=True)
         v = data.validated_data
         user, authenticator = verify(request, v["challenge_id"], v["credential"])
-        if not portal_services.portal_accesses(user):
-            raise PermissionDenied(
-                gettext("Für dieses Konto ist kein Mitgliederbereich freigeschaltet.")
-            )
+        if not may_connect(user):
+            raise PermissionDenied(gettext(NOTHING_FOR_APP))
         with transaction.atomic():
             authenticator.record_usage()
             device, token = _create_device(user, v)

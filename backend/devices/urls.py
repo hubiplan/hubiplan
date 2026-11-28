@@ -14,6 +14,11 @@ urlpatterns = [
     path("passkey/", passkey.PasskeyLoginView.as_view(), name="app-passkey"),
     path("devices/", views.DeviceListView.as_view(), name="app-devices"),
     path("devices/current/push/", views.PushView.as_view(), name="app-device-push"),
+    path(
+        "devices/current/push/admin/",
+        views.AdminPushView.as_view(),
+        name="app-device-push-admin",
+    ),
     path("devices/current/key/", views.DeviceKeyView.as_view(), name="app-device-key"),
     path("devices/current/renew/", views.DeviceRenewView.as_view(), name="app-device-renew"),
     path("devices/<int:pk>/", views.DeviceDetailView.as_view(), name="app-device"),

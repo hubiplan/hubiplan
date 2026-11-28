@@ -45,11 +45,17 @@ def app_accesses(membership_ids) -> dict[int, int]:
     return {m: a for m, a, u in rows if u in with_push}
 
 
-def send_to_user(user_id: int, data: dict, *, urgent: bool = True) -> int:
-    """Nachricht an alle Push-Geräte eines Kontos; gibt die Zahl der zugestellten zurück."""
+def send_to_user(user_id: int, data: dict, *, urgent: bool = True, admin: bool = False) -> int:
+    """Nachricht an alle Push-Geräte eines Kontos; gibt die Zahl der zugestellten zurück.
+
+    ``admin``: Hinweis der Verwaltung, nur an Geräte mit eingeschaltetem Schalter dafür.
+    """
     delivered = 0
     with rls_bypass():
-        devices = list(push_devices([user_id]))
+        found = push_devices([user_id])
+        if admin:
+            found = found.filter(admin_push=True)
+        devices = list(found)
     for device in devices:
         try:
             limit = (

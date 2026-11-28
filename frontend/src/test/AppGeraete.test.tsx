@@ -27,6 +27,19 @@ describe('App auf dem Telefon (Mein Konto)', () => {
     expect(calls.map((c) => c.key)).not.toContain('GET /api/app/v1/devices/')
   })
 
+  it('mit Rolle ohne Mitgliederbereich: verbinden möglich', async () => {
+    fakeApi({
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: { departments: [], portal: [], app: true },
+      }),
+      'GET /api/app/v1/devices/': () => ({ status: 200, body: [] }),
+    })
+    render(<AppDevicesCard />)
+    expect(await screen.findByRole('button', { name: 'App verbinden' })).toBeInTheDocument()
+    expect(screen.queryByText(/noch keinen Zugang/)).toBeNull()
+  })
+
   it('QR-Code erzeugen und Gerät abmelden', async () => {
     let devices = [device]
     const calls = fakeApi({

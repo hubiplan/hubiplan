@@ -15,7 +15,7 @@ function formatDate(value: string): string {
 
 // Mein Konto: HUBIplan-App mit dem Konto verbinden und Geräte abmelden.
 export function AppDevicesCard() {
-  const access = useLoad(() => devicesApi.hasPortal(), [])
+  const access = useLoad(() => devicesApi.mayConnect(), [])
   const list = useQueryLoad(() => devicesApi.list(), [access.data], access.data === true)
   const devices = list.data ?? []
   const load = list.reload
@@ -75,7 +75,7 @@ export function AppDevicesCard() {
         <h2>{t('App auf dem Telefon')}</h2>
         <p className="muted">
           {t(
-            'Die App zeigt deinen Mitgliederbereich. Dein Konto hat noch keinen Zugang dazu: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben. Wende dich dafür an deinen Vorstand.',
+            'Die App zeigt deinen Mitgliederbereich und, mit einer Rolle, die Verwaltung. Dein Konto hat noch keinen Zugang dazu: Für den Mitgliederbereich muss es mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss ihn eingeschaltet haben. Wende dich dafür an deinen Vorstand.',
           )}
         </p>
       </section>

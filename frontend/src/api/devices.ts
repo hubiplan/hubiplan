@@ -43,6 +43,9 @@ export const devicesApi = {
   // Verwaltung der iPhone-App im Browser freischalten (devices/browser_unlock.py)
   browserUnlock: (ticket: string, confirm: boolean) =>
     api.post<BrowserUnlock>('/api/app/v1/admin/unlock/browser/confirm/', { ticket, confirm }),
-  hasPortal: () =>
-    api.get<{ portal: unknown[] }>('/api/me/contexts/').then((c) => c.portal.length > 0),
+  // Mitgliederbereich oder etwas zu verwalten; ältere Server melden nur den Mitgliederbereich
+  mayConnect: () =>
+    api
+      .get<{ portal: unknown[]; app?: boolean }>('/api/me/contexts/')
+      .then((c) => c.app ?? c.portal.length > 0),
 }

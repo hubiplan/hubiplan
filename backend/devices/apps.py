@@ -10,3 +10,6 @@ class DevicesConfig(AppConfig):
         from . import auth, signals  # noqa: F401  (auth: OpenAPI-Erweiterungen)
 
         signals.connect()
+        from . import admin_push
+
+        admin_push.connect()

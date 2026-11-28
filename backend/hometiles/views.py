@@ -5,7 +5,7 @@ unter ``/api/app/v1/admin/u/<Einheit>/home-tiles/``) und ``/api/portal/<Zugang>/
 GET liefert alle Kacheln, die die Person haben darf, in fester Reihenfolge::
 
     {"scope": "o12", "tiles": [{"key", "title", "description", "state": "auto|on|off",
-      "urgent", "shown", "content": {"figures", "rows", "text", "link", "link_label",
+      "urgent", "default_on", "shown", "content": {"figures", "rows", "text", "link", "link_label",
       "reason"} | null}]}
 
 PUT ``{"key": …, "state": "auto|on|off"}`` speichert die Auswahl einer Kachel. Teil der

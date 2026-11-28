@@ -25,7 +25,8 @@ lassen sich dort wie die übrigen Blöcke verschieben und verbreitern.
   `GET/PUT /api/app/v1/admin/u/<Einheit>/home-tiles/` (Untereinheiten haben keine Kacheln).
 - Mitgliederbereich: `GET/PUT /api/portal/<Zugang>/home-tiles/`.
 - `GET` liefert `scope` und `tiles` in fester Reihenfolge, je Kachel `key`, `title`,
-  `description`, `state`, `urgent`, `shown` und `content` (`figures` mit `label`/`value`/`tone`,
+  `description`, `state`, `urgent`, `default_on` (bei „bei Anlass“ auch ohne Anlass zu sehen),
+  `shown` und `content` (`figures` mit `label`/`value`/`tone`,
   `rows` mit `title`/`detail`/`link`/`tone`, `text`, `link`, `link_label`, `reason`).
   `tone` ist leer, `good`, `warn` oder `bad`; Verweise sind Pfade auf der eigenen Instanz.
   `?keys=a,b` beschränkt die Antwort.
