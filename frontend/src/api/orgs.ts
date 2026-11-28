@@ -701,6 +701,9 @@ export const orgApi = {
       valid_from?: string
       valid_until?: string | null
       member?: number | null
+      /** Name für ein neues Konto ohne Mitgliedsakte */
+      first_name?: string
+      last_name?: string
       /** laufende Amtszeiten anderer Personen in dieser Rolle zum Vortag beenden */
       end_previous?: boolean
     },

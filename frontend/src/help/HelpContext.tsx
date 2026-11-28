@@ -8,7 +8,7 @@ import { helpApi } from '../api/help.ts'
 import type { OrgHelp } from '../api/help.ts'
 import { lang } from '../i18n/index.ts'
 import { useOptionalOrg } from '../org/OrgContext.tsx'
-import { loadHelp, missingRights, visibleFor } from './content.ts'
+import { inReach, loadHelp, missingRights, visibleFor } from './content.ts'
 import type { HelpEntry } from './content.ts'
 import { helpShortcutEnabled } from './shortcut.ts'
 
@@ -94,13 +94,27 @@ export function HelpProvider({ children }: { children: ReactNode }) {
     (e: HelpEntry) => {
       const perms: readonly string[] = active?.permissions ?? dept?.permissions ?? []
       const isPlatform = active?.type === 'platform'
+      // Ohne gewählte Einheit (nur Mitgliederbereich oder Abteilung) gilt nichts als abgeschaltet
+      const reach = inReach(e, {
+        // Vorstände lesen die Mitglieder-Anleitungen mit, solange der Verein den Bereich hat
+        portal:
+          !orgState || orgState.portal.length > 0 || !active || active.modules.includes('portal'),
+        dept:
+          !orgState ||
+          orgState.departments.length > 0 ||
+          !active ||
+          active.modules.includes('members'),
+        units: !active || active.type !== 'club' || active.units_in_menu !== false,
+        cashCounts: !active || active.type === 'platform' || !!active.cash_counts_enabled,
+      })
+      if (!reach) return false
       return visibleFor(
         e,
         (m) => (m === 'platform' ? isPlatform : !!active?.modules?.includes(m)),
         (r) => (r === 'platform.manage' ? isPlatform : perms.includes(r)),
       )
     },
-    [active, dept],
+    [active, dept, orgState],
   )
   const missing = useCallback(
     (e: HelpEntry) => {

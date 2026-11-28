@@ -49,6 +49,11 @@ def _cash_available(ctx: OrgContext) -> bool:
     return ctx.club_like and module_on(ctx.org, "finance") and ctx.has("finance.view")
 
 
+def _cash_default(ctx: OrgContext) -> bool:
+    """Ohne Mitglieder und Termine ist die Kasse die Hauptsache: Kontostände von Anfang an."""
+    return not module_on(ctx.org, "members") and not module_on(ctx.org, "events")
+
+
 def _cash(ctx: OrgContext) -> Content:
     from billing.models import Invoice
     from finance.models import Account
@@ -566,6 +571,7 @@ TILES: list[Tile] = [
         lambda: gettext("Kontostände, offene Forderungen, fällige Lastschrift"),
         _cash_available,
         _cash,
+        _cash_default,
     ),
     Tile(
         "anmeldungen",

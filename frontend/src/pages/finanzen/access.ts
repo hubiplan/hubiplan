@@ -69,7 +69,9 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     financeEdit: finance && has(PERM.financeEdit),
     billing,
     billingEdit: billing && has(PERM.billingEdit),
-    feeRuns: billing && org.type !== 'unit',
+    // Ohne Mitglieder gibt es im Verein niemanden für Beitragsläufe und Beitragssätze
+    feeRuns:
+      billing && org.type !== 'unit' && (org.type !== 'club' || org.modules.includes('members')),
     sepa: billing && org.type !== 'unit' && !!org.sepa_enabled,
     received: org.type === 'club' && !!org.parent_name && (finance || billing),
     receivedLabel:
@@ -117,7 +119,8 @@ export function financeGroups(
   return {
     billing: {
       key: 'abrechnen',
-      label: t('Beiträge & Rechnungen'),
+      // Ohne Beiträge und Rechnungen stehen hier nur eingehende Rechnungen
+      label: full || a.billing ? t('Beiträge & Rechnungen') : t('Rechnungen'),
       to: '/finanzen/abrechnen',
       text:
         full || a.billing

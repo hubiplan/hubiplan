@@ -153,6 +153,7 @@ class TestBerechtigungen:
         assert resp.status_code == 201
         data = resp.json()
         assert data["user_email"] == "neu@example.org"
+        assert data["user_name"] == ""
         # Neues Konto ohne Startpasswort: Einladung per Mail (Gesamtaudit 31.10.b, Frage 2)
         assert data["new_account"] is True and "initial_password" not in data
         assert not RoleAssignment.objects.get(pk=data["id"]).user.has_usable_password()
@@ -160,6 +161,22 @@ class TestBerechtigungen:
         new_user = RoleAssignment.objects.get(pk=data["id"]).user
         orgs_seen = api(new_user).get("/api/me/organizations/").json()
         assert orgs_seen[0]["permissions"] == ["export.lists", "export.run", MEMBERS_VIEW]
+
+    def test_neues_konto_mit_name(self, api, orgs, board_a, board_b):
+        """Ohne Mitgliedsakte bekommt ein neues Konto seinen Namen beim Besetzen."""
+        role = Role.objects.get(organization=orgs["a"])
+        c = api(board_a)
+        url = f"/api/orgs/{orgs['a'].pk}/assignments/"
+        body = {"email": "pruefer@example.org", "role": role.pk}
+        resp = c.post(url, {**body, "first_name": "Petra", "last_name": "Prüfer"}, JSON)
+        assert resp.status_code == 201, resp.content
+        assert resp.json()["user_name"] == "Petra Prüfer"
+        # Ein bestehendes Konto behält seinen Namen
+        before = board_b.get_full_name()
+        resp = c.post(url, {"email": board_b.email, "role": role.pk, "first_name": "Anders"}, JSON)
+        assert resp.status_code == 201, resp.content
+        board_b.refresh_from_db()
+        assert board_b.get_full_name() == before
 
     def test_bestehendes_konto_kein_neues_passwort(self, api, orgs, board_a, board_b):
         role = Role.objects.get(organization=orgs["a"])

@@ -49,6 +49,8 @@ export interface ModuleTemplate {
     label_en: string
     plural_en: string
   } | null
+  /** false: Menüpunkt für Untereinheiten ausblenden (z. B. reines Kassenbuch) */
+  units_in_menu?: boolean
 }
 
 export const moduleApi = {

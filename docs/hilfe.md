@@ -30,6 +30,13 @@ braucht eines der Rechte (`rechte`) in der gewählten Einheit. In der Ansicht al
 Rechte der Ansicht ([ansicht-als-rolle.md](ansicht-als-rolle.md)); die Hilfe zeigt dann, was diese
 Rolle sieht.
 
+Einträge ohne eigenes Modul hängen an ihrem Bereich (`inReach` in `src/help/content.ts`): Hilfen,
+deren Routen alle unter `/mein-bereich` liegen, erscheinen nur mit eigenem Mitgliederbereich oder
+eingeschaltetem Modul Mitgliederbereich; unter `/abteilung` nur mit Rolle in einer Untereinheit
+oder Modul Mitglieder; unter `/untereinheiten` nur mit dem Menüpunkt; unter
+`/finanzen/kassenzaehlung` nur mit dem Zusatz Zählprotokoll. So bleibt die Hilfe in einem reinen
+Kassenbuch bei der Kasse.
+
 ## Texte pflegen
 
 Jede Anleitung und jede Seitenhilfe ist eine Markdown-Datei, je Sprache eine, mit gleichem Namen:

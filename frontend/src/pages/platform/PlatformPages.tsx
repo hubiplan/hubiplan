@@ -238,8 +238,8 @@ function PlatformOrgForm({
     form.set('released_modules', tpl.modules)
     if (tpl.org_type === 'federation' && v.keeps_members && v.federation === null) setKeeps(false)
     if (tpl.org_type === 'club' && !v.keeps_members) setKeeps(true)
-    setUnitLabels(
-      tpl.units
+    setUnitLabels({
+      ...(tpl.units
         ? {
             department_label: tpl.units.label,
             department_label_plural: tpl.units.plural,
@@ -247,8 +247,10 @@ function PlatformOrgForm({
             department_label_en: tpl.units.label_en,
             department_label_plural_en: tpl.units.plural_en,
           }
-        : {},
-    )
+        : {}),
+      // Reines Kassenbuch: kein Menüpunkt für Untereinheiten (Einstellungen › Bezeichnungen)
+      ...(tpl.units_in_menu === false ? { units_in_menu: false } : {}),
+    })
   }
   const v = form.values
   const e = form.errors

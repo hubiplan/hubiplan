@@ -1,6 +1,7 @@
 ---
 key: guide.surveys_dates
 titel: Einen Termin finden
+modul: surveys
 routen: [/umfragen]
 reihe: 50
 stichworte: [Terminfindung, Termin finden, Umfrage, Doodle]

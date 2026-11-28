@@ -9,6 +9,7 @@ import type { ImportPreview, TransferBase, TransferJob } from '../api/datatransf
 import { errorMessage, formatDateTime, useForm, useLoad, useUnmountSignal } from './forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from './ui.tsx'
 import { fillTerms, useTerms } from '../org/terms.ts'
+import { useOrg } from '../org/OrgContext.tsx'
 import { t } from '../i18n/index.ts'
 import { Why } from '../learning/Aids.tsx'
 
@@ -32,6 +33,9 @@ export function ExportSection({
   organizations?: { id: number; name: string; display_name?: string; type_label: string }[]
 }) {
   const tm = useTerms()
+  const { active } = useOrg()
+  // Ohne Mitglieder (z. B. reines Kassenbuch) nennt der Text nur, was es gibt
+  const hasMembers = !active || active.type === 'platform' || active.modules.includes('members')
   const jobs = useLoad(() => transferApi.exports(base), [JSON.stringify(base)])
   const [withFiles, setWithFiles] = useState(false)
   const [target, setTarget] = useState('')
@@ -68,10 +72,14 @@ export function ExportSection({
       <h2>{t('Vollständiger Export')}</h2>
       <Why k="full_export" />
       <p className="muted small">
-        {t(
-          'Alle Daten als eine Datei: Stammdaten, Rollen, Mitgliedsarten, Zusatzfelder, {pl}, Mitglieder mit allen Zeiträumen, Kasse, Beiträge und Rechnungen sowie die Satzung. Benutzerkonten und Passwörter sind nicht enthalten. Jeder Export wird protokolliert, die Datei wird nach 7 Tagen gelöscht.',
-          { pl: tm.pl },
-        )}
+        {hasMembers
+          ? t(
+              'Alle Daten als eine Datei: Stammdaten, Rollen, Mitgliedsarten, Zusatzfelder, {pl}, Mitglieder mit allen Zeiträumen, Kasse, Beiträge und Rechnungen sowie die Satzung. Benutzerkonten und Passwörter sind nicht enthalten. Jeder Export wird protokolliert, die Datei wird nach 7 Tagen gelöscht.',
+              { pl: tm.pl },
+            )
+          : t(
+              'Alle Daten als eine Datei: Stammdaten, Rollen, Kasse mit Belegen, Geschäftspartner und alles Weitere, was ihr eingeschaltet habt. Benutzerkonten und Passwörter sind nicht enthalten. Jeder Export wird protokolliert, die Datei wird nach 7 Tagen gelöscht.',
+            )}
       </p>
       <div className="filters">
         {organizations && (

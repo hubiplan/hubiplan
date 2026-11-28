@@ -19,6 +19,8 @@ Nach einem Wechsel der Auswahl werden die bisherigen Ergebnisse ausgeblendet, bi
 
 ## Im Einzelnen
 
+Ohne das Modul Mitglieder und ohne Untereinheiten steht hier stattdessen **Rechnung an Geschäftspartner**; sie führt zu den Leistungsrechnungen, und Beitragsläufe und Beitragssätze entfallen.
+
 Bei Schlussrechnungen siehst du die angerechneten Anzahlungen und den verbleibenden
 offenen Betrag. Eine verrechnete Anzahlungsrechnung hat den Status „Abgerechnet“.
 Ihre Zahlungseingänge bleiben in der Kasse erhalten. Vor dem Entfernen dieser Zahlungen

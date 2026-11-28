@@ -938,6 +938,7 @@ class PlatformOrganizationSerializer(
             "department_label_gender",
             "department_label_en",
             "department_label_plural_en",
+            "units_in_menu",
             "founding_year",
             "street",
             "address_extra",

@@ -5,6 +5,7 @@ import App from '../App.tsx'
 import type { OrgSummary } from '../api/orgs.ts'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
+import { inReach } from '../help/content.ts'
 import { financeAccess, financeGroups, financeSections } from '../pages/finanzen/access.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
@@ -63,5 +64,60 @@ describe('Nur Kassenbuch', () => {
     expect(
       screen.queryByText(/noch keine Bereiche für dich freigeschaltet/),
     ).not.toBeInTheDocument()
+  })
+})
+
+describe('Hilfe im reinen Kassenbuch', () => {
+  const none = { portal: false, dept: false, units: false, cashCounts: false }
+  const all = { portal: true, dept: true, units: true, cashCounts: true }
+
+  it('lässt Hilfen zu Bereichen weg, die es nicht gibt', () => {
+    for (const routes of [
+      ['/mein-bereich/ausweis'],
+      ['/mein-bereich/daten', '/mein-bereich'],
+      ['/abteilung'],
+      ['/untereinheiten'],
+      ['/finanzen/kassenzaehlung'],
+    ]) {
+      expect(inReach({ routes }, none)).toBe(false)
+      expect(inReach({ routes }, all)).toBe(true)
+    }
+  })
+
+  it('zeigt alles andere unverändert', () => {
+    expect(inReach({ routes: ['/finanzen/kassenbuch'] }, none)).toBe(true)
+    expect(inReach({ routes: ['/mein-konto/app'] }, none)).toBe(true)
+    expect(inReach({ routes: [] }, none)).toBe(true)
+    // Gemischte Routen gehören nicht nur zu dem Bereich
+    expect(inReach({ routes: ['/mein-bereich', '/termine'] }, none)).toBe(true)
+  })
+})
+
+describe('Finanzgruppen im reinen Kassenbuch', () => {
+  it('heißen ohne Beiträge nur „Rechnungen“', () => {
+    const a = financeAccess(NUR_KASSE as unknown as OrgSummary)
+    expect(financeGroups(a).billing.label).toBe('Rechnungen')
+    expect(financeGroups().billing.label).toBe('Beiträge & Rechnungen')
+  })
+})
+
+describe('Kasse mit Rechnungen, ohne Mitglieder', () => {
+  const org = testOrg({
+    id: 7,
+    parent_name: '',
+    modules: ['finance', 'billing'],
+    permissions: ['finance.view', 'billing.view', 'billing.edit'],
+  })
+
+  it('blendet Beitragsläufe und Beitragssätze aus, Rechnungen bleiben', () => {
+    const labels = financeSections(financeAccess(org as unknown as OrgSummary)).map((s) => s.label)
+    expect(labels).toContain('Rechnungen')
+    expect(labels).toContain('Leistungsrechnungen')
+    expect(labels).not.toContain('Beitragsläufe')
+    expect(labels).not.toContain('Beitragssätze')
+    const mit = testOrg({ ...org, modules: ['finance', 'billing', 'members'] })
+    expect(
+      financeSections(financeAccess(mit as unknown as OrgSummary)).map((s) => s.label),
+    ).toContain('Beitragsläufe')
   })
 })

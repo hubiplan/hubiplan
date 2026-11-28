@@ -14,7 +14,7 @@ stichworte: [home page, tiles, when relevant, member area, quick actions, order,
 5. Click **Done**.
 6. For the quick actions, choose up to six actions you need often under **Customise**.
 
-Tiles start out as **when relevant**: they appear by themselves when something is coming up, for example when an account is overdrawn, a survey is running, an event with registration is getting close or the annual headcount report is due in January. When nothing is going on, they stay hidden. **Always** shows a tile even without a reason, **never** hides it even when there is one. You only see tiles you have the permissions for.
+Tiles start out as **when relevant**: they appear by themselves when something is coming up, for example when an account is overdrawn, a survey is running, an event with registration is getting close or the annual headcount report is due in January. When nothing is going on, they stay hidden. In a unit without members and events (a plain cash book), “Finances at a glance” is there from the start. **Always** shows a tile even without a reason, **never** hides it even when there is one. You only see tiles you have the permissions for.
 
 The home page in the member area can be customised the same way. There are tiles for open work hours, unanswered surveys, new noticeboard posts, your own registrations, running group orders and, with shooting sports, your own shooting record. The apps show the same tiles as an overview; a choice made in the app also applies in the browser and vice versa.
 

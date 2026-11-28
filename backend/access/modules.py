@@ -484,6 +484,8 @@ class Template:
     only: tuple[str, ...] = ()
     # Bezeichnung der Untereinheiten: Einzahl, Mehrzahl, Genus (leer: unverändert)
     units: tuple[str, str, str] | None = None
+    # Menüpunkt für Untereinheiten zeigen (Organization.units_in_menu)
+    units_in_menu: bool = True
 
 
 TEMPLATES: tuple[Template, ...] = (
@@ -544,6 +546,7 @@ TEMPLATES: tuple[Template, ...] = (
         gettext_noop("Kassenbuch (nur Kasse)"),
         "club",
         only=("finance",),
+        units_in_menu=False,
     ),
     Template(
         "federation",
@@ -588,6 +591,7 @@ def templates() -> list[dict]:
             "org_type": tpl.org_type,
             "modules": template_modules(tpl),
             "units": _template_units(tpl),
+            "units_in_menu": tpl.units_in_menu,
         }
         for tpl in TEMPLATES
     ]

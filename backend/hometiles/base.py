@@ -72,6 +72,8 @@ class Tile:
     available: Callable[[object], bool]
     # (Kontext) -> Content | None
     build: Callable[[object], Content | None]
+    # (Kontext) -> bool: bei „bei Anlass“ auch ohne Anlass zeigen (z. B. reines Kassenbuch)
+    default_on: Callable[[object], bool] | None = None
 
 
 def state_of(user, scope: str, key: str) -> str:
@@ -126,6 +128,12 @@ def run(tiles: list[Tile], ctx, user, scope: str, keys: set[str] | None = None) 
                 logger.exception("Kachel %s: Inhalt fehlgeschlagen", tile.key)
                 content = None
         reason = content.reason if content else ""
+        always = False
+        if state == AUTO and tile.default_on is not None:
+            try:
+                always = bool(tile.default_on(ctx))
+            except Exception:  # pragma: no cover
+                logger.exception("Kachel %s: Vorgabe fehlgeschlagen", tile.key)
         out.append(
             {
                 "key": tile.key,
@@ -133,7 +141,7 @@ def run(tiles: list[Tile], ctx, user, scope: str, keys: set[str] | None = None) 
                 "description": tile.description(),
                 "state": state,
                 "urgent": bool(reason),
-                "shown": state == ON or (state == AUTO and bool(reason)),
+                "shown": state == ON or (state == AUTO and (bool(reason) or always)),
                 "content": content.data() if content else None,
             }
         )
