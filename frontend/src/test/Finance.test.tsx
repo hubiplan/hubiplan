@@ -409,6 +409,30 @@ describe('Kasse', () => {
     expect(screen.queryByRole('button', { name: 'Neu nummerieren' })).not.toBeInTheDocument()
   })
 
+  it('nennt ohne Zwei-Faktor-Anmeldung den Grund, auch wenn noch kein Konto angelegt ist', async () => {
+    fakeApi({
+      [SESSION]: () => ({
+        status: 200,
+        body: {
+          status: 200,
+          data: { user: { ...testUser, mfa_required_by: '2026-12-31T00:00:00Z' } },
+        },
+      }),
+      // Der Server zieht das Recht zu buchen ohne zweiten Faktor ab
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ modules: ['finance'], permissions: ['finance.view'] })],
+      }),
+      [`GET ${F}/settings/`]: () => ({ status: 200, body: { ...settings, can_edit: false } }),
+      [`GET ${F}/accounts/`]: () => ({ status: 200, body: [] }),
+      [`GET ${F}/categories/`]: () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/departments/': () => ({ status: 200, body: [] }),
+    })
+    renderApp('/finanzen/kassenbuch')
+    expect(await screen.findByTestId('buchen-ruht')).toBeInTheDocument()
+    expect(screen.queryByText(/zuerst ein Konto eingerichtet/)).not.toBeInTheDocument()
+  })
+
   it('lässt den Verein die steuerlichen Bereiche selbst einschalten', async () => {
     const calls = fakeApi({
       [SESSION]: loggedIn,
