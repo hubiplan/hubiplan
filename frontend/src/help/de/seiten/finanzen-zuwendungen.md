@@ -13,6 +13,8 @@ Eine ausgestellte Bestätigung schützt auch die zugehörige Buchung im Kassenbu
 
 Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode-Schreibvarianten werden vereinheitlicht; „ß“ und „ss“ gelten dabei als gleich. Andere gewählte Filter gelten weiterhin.
 
+Hat inzwischen jemand anderes dieselbe Zuwendung geändert oder gelöscht, meldet HUBIplan „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“
+
 ## Im Einzelnen
 
 Für Spenden bis 300 € reicht dem Finanzamt der Kontoauszug zusammen mit einem Beleg des Vereins (vereinfachter Zuwendungsnachweis). Sind die Angaben zur Steuerbegünstigung vollständig, gibt es unter Finanzen › Einrichten › Zuwendungen im Abschnitt **Spenden bis 300 €** diesen Beleg als PDF und als Text für die Webseite. Er nennt Bescheid, Zwecke, Spendenkonto und ob er auch für Mitgliedsbeiträge gilt.

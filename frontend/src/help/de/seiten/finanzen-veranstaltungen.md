@@ -11,6 +11,8 @@ Für ein Fest oder ein anderes Projekt fasst ihr hier alle zugehörigen Buchunge
 
 Unter **geplante Einnahmen (optional)** und **geplante Ausgaben (optional)** tragt ihr ein, womit ihr rechnet. Die Auswertung zeigt dann bei Einnahmen, Ausgaben und Ergebnis den Plan daneben. Den Plan für das ganze Jahr führt ihr unter Finanzen › Auswerten & abschließen › Haushaltsplan.
 
+Hat inzwischen jemand anderes dieselbe Veranstaltung geändert oder gelöscht, meldet HUBIplan „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“
+
 ## Reihen
 
 Eine Reihe fasst wiederkehrende Veranstaltungen zusammen, z. B. „Sommerfest“. Die Reihe wählst du beim Bearbeiten einer Veranstaltung unter **Reihe (optional)**; so vergleichst du die Jahre miteinander.

@@ -96,11 +96,13 @@ Teile der Mitgliedsakte (Ansprechpartner, Rechnungsanschrift, Zeiträume, Zuordn
 Untereinheiten), Haushalte, Rechnungen (Ändern, Löschen, Festschreiben; auch E-Rechnungen),
 Geschäftspartner mit Ansprechpartnern und Vereinbarungen, Rundschreiben (Ändern, Löschen,
 Versenden) und Mailverteiler, auf der Webseite Seiten, Beiträge unter „Aktuelles“ und Alben
-(Ändern, Löschen, Veröffentlichen) sowie Wertungen, Schießdurchgänge und Wanderpokale.
+(Ändern, Löschen, Veröffentlichen), Wertungen, Schießdurchgänge und Wanderpokale, in der Kasse
+Veranstaltungen, Anlagen und Zuwendungen, außerdem Chronik (Würden und Amtszeiten), frühere
+Amtsinhaber unter „Ämter“, Verbandsmitglieder und Qualifikationen samt ihren Arten.
 
 Bewusst ohne Fassung bleiben Formulare, die nur das gerade geänderte Feld speichern und deren
 Datensatz auch von Abläufen fortgeschrieben wird (Stammdaten eines Wettbewerbs, Ausschreibung
-und ihre Bausteine, Abrechnungseinstellungen), sowie Eingaben aus einzelnen Werten (Ergebnisse,
+und ihre Bausteine, Abrechnungseinstellungen, Kategorien und Konten der Kasse), sowie Eingaben aus einzelnen Werten (Ergebnisse,
 Meldungen zu einer Ausschreibung, Schalter). Dort überschreiben sich zwei Personen nur, wenn
 sie denselben Wert ändern.
 
