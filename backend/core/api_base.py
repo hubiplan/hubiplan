@@ -17,6 +17,7 @@ from audit.log import diff, record, snapshot
 from organizations.models import Organization
 
 from .tenancy import federation_access, scope_of, set_rls
+from .versioning import check_request
 
 
 def has_needed(perms: set[str], needed: str | tuple[str, ...] | None) -> bool:
@@ -77,8 +78,18 @@ class OrgScopedMixin:
 class AuditMixin:
     """Schreibt Anlegen, Ändern und Löschen ins Änderungsprotokoll."""
 
+    # Gesetzt (übersetzbarer Text): Ändern und Löschen prüfen die mitgeschickte Fassung des
+    # Datensatzes und lehnen mit diesem Text ab, wenn er inzwischen geändert wurde
+    # (core/versioning.py). Das Modell erbt dafür von ``Versioned``.
+    version_conflict = None
+
     def audit_org(self, instance):
         return self.org
+
+    def _check_version(self, instance) -> None:
+        """Nach dem Sperren und Neulesen aufrufen."""
+        if self.version_conflict:
+            check_request(self.request, instance, self.version_conflict)
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -97,7 +108,9 @@ class AuditMixin:
 
     def perform_update(self, serializer):
         with transaction.atomic():
-            if self._lock_and_refresh(serializer.instance):
+            changed = self._lock_and_refresh(serializer.instance)
+            self._check_version(serializer.instance)
+            if changed:
                 serializer = self._revalidate(serializer)
             self._update(serializer)
 
@@ -135,6 +148,9 @@ class AuditMixin:
 
     @transaction.atomic
     def perform_destroy(self, instance):
+        if self.version_conflict:
+            self._lock_and_refresh(instance)
+            self._check_version(instance)
         record(
             self.audit_org(instance),
             self.request.user,

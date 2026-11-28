@@ -56,6 +56,35 @@ Verleihung einer Ehrung, Qualifikationen, Ende einer Ermäßigung, Zahler im Hau
 Formulare der Finanzen (Spenden, Auslagen, Kassenprüfung, Anlagen, Haushaltsplan). Die App nutzt
 Bearbeiten-Dialoge mit „Speichern“; jede Änderung ist dort rückgängig zu machen.
 
+## Gleichzeitiges Bearbeiten
+
+Bearbeiten zwei Personen denselben Datensatz, darf die zweite nicht stillschweigend den Stand
+der ersten überschreiben. Dafür tragen die Datensätze eine Fassung (`version`), die bei jeder
+Änderung hochzählt. Wer ändert oder löscht, schickt die Fassung mit, die er geladen hat; passt
+sie nicht mehr, antwortet der Server mit 409 und „… wurde inzwischen geändert. Bitte neu
+laden.“ Das Formular zeigt die Meldung an, die eigene Eingabe ist nach dem Neuladen noch
+einmal zu machen.
+
+- Baustein: `backend/core/versioning.py` (`Versioned`, `check_request`). Modelle erben von
+  `Versioned` und nennen `version` in `derived_fields`: Die Fassung steht nicht im
+  Änderungsprotokoll, und „Rückgängig“ setzt sie nie zurück (jedes Speichern zählt hoch, auch
+  das Zurückspielen).
+- `ModelViewSet` mit `AuditMixin`: `version_conflict = gettext_lazy("…")` setzen, dann prüfen
+  Ändern und Löschen von selbst. Eigene Ansichten sperren die Zeile, lesen frisch und rufen
+  `check_request(request, obj, text)` auf.
+- Die Fassung steht in der Antwort (`version`) und kommt im Rumpf zurück (`PATCH`, `DELETE`,
+  Aktionen wie `storno/`), bei `DELETE` ohne Rumpf auch als `?version=`.
+- Ohne mitgeschickte Fassung prüft der Server nicht. So arbeiten ältere Apps weiter; für sie
+  gilt bis zum Update „wer zuletzt speichert, gewinnt“.
+- Oberfläche: Das Formular merkt sich die Fassung beim Öffnen und übernimmt nach jedem eigenen
+  Speichern die neue aus der Antwort. Eine im Hintergrund neu geladene Liste zählt nicht, denn
+  das Formular zeigt weiter den geöffneten Stand.
+
+Mit Fassung: Aufgaben, Material, Pinnwand, Dienstplan, Training, Auslagen, Bestellungen,
+Versammlungen, Haushaltsplan, Rechnungsposten, Belegungen, Umfragen, Pflichten, seit November
+2026 auch Stammdaten und Kontakt eines Mitglieds (Verein und Abteilungsbereich), Termine
+(Ändern, Löschen) und Buchungen im Kassenbuch (Ändern, Löschen, Storno, Aufteilen).
+
 ## Rückgängig und Wiederherstellen
 
 - Jede ändernde API-Anfrage ergibt ein Änderungspaket (`changes.ChangeSet`) mit

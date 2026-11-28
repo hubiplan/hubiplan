@@ -340,6 +340,8 @@ export interface BillingAddress {
 
 export interface MemberDetail {
   id: number
+  /** Fassung gegen gleichzeitiges Bearbeiten; geht beim Ändern der Stammdaten mit. */
+  version?: number
   person_id: number
   kind?: MemberKind
   billing_address?: BillingAddress | null

@@ -57,7 +57,7 @@ from .serializers import (
     member_detail,
 )
 from .summary import member_summary
-from .update import update_member
+from .update import check_member_version, update_member
 
 
 class _ClubMixin(OrgScopedMixin):
@@ -266,6 +266,7 @@ class MemberDetailView(_ClubMixin, APIView):
             organization=self.org,
             pk=self.kwargs["pk"],
         )
+        check_member_version(request, membership)
         data = MemberUpdateSerializer(data=request.data, partial=True)
         data.is_valid(raise_exception=True)
         if membership.managed_by_id:

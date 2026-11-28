@@ -206,6 +206,7 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
     can_edit = viewer.can_edit(event)
     data = {
         "id": event.pk,
+        "version": event.version,
         "title": event.title,
         "description": event.description,
         "location": event.location,

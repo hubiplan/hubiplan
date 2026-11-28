@@ -21,6 +21,8 @@ After you change the selection, previous results are hidden until the new reques
 
 If loading accounts or categories fails, **Reload** retries locally. Booking details you have already entered are retained when a refresh fails.
 
+If two people edit the same booking, the change saved first applies. The second person sees “The booking has been changed in the meantime. Please reload.” and opens the booking again after reloading the page. This also applies to deleting, cancelling and splitting.
+
 **Split** (split booking): If one payment belongs to several categories or tax areas, for example the caterer's settlement with drinks, admission and advertising, open the booking and choose **Split**. Each part gets a category, an amount and optionally an event and a description. Together the parts must add up exactly to the amount. Each part becomes a booking of its own with its own number. Date, account and payee or payer apply to all parts; receipts and the bank transaction stay with the first part. Splitting works as long as the booking is not locked and does not belong to a cancellation, a signed receipt, an invoice payment or a donation.
 
 **Business partners**: in the payee or payer field your business partners (Administration › Business partners) come first. If you pick one, the booking is linked to it and an empty category gets its default category. You can still change the name freely. If the partner is marked as an artist, the expense counts for the artists' social insurance levy.

@@ -892,7 +892,7 @@ export function EventDialog({
                   )
                     return
                   try {
-                    await eventApi.remove(base, data.id)
+                    await eventApi.remove(base, data.id, data.version)
                     onChanged()
                     onClose()
                   } catch (err) {

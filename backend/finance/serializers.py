@@ -275,8 +275,9 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "earmark_name",
             "vat_rate",
             "input_tax_share",
+            "version",
         ]
-        read_only_fields = ["year", "cancel_reason"]
+        read_only_fields = ["year", "cancel_reason", "version"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
 
     def get_invoice(self, obj) -> dict | None:

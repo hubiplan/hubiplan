@@ -21,6 +21,8 @@ Nach einem Wechsel der Auswahl werden die bisherigen Ergebnisse ausgeblendet, bi
 
 Schlägt das Laden der Konten oder Kategorien fehl, bietet **Erneut laden** einen lokalen Wiederholungsweg. Bereits eingegebene Buchungsangaben bleiben bei einer fehlgeschlagenen Aktualisierung erhalten.
 
+Bearbeiten zwei Personen dieselbe Buchung, gilt die Änderung, die zuerst gespeichert wurde. Die zweite Person sieht „Die Buchung wurde inzwischen geändert. Bitte neu laden.“ und öffnet die Buchung nach dem Neuladen der Seite noch einmal. Das gilt auch für Löschen, Stornieren und Aufteilen.
+
 **Aufteilen** (Splitbuchung): Gehört eine Zahlung zu mehreren Kategorien oder steuerlichen Bereichen, etwa die Abrechnung des Festwirts mit Getränken, Eintritt und Bandenwerbung, öffne die Buchung und wähle **Aufteilen**. Jeder Teil bekommt Kategorie, Betrag und auf Wunsch Veranstaltung und Text. Zusammen müssen die Teile genau den Betrag ergeben. Jeder Teil wird eine eigene Buchung mit eigener Nummer. Datum, Konto und Empfänger bzw. Zahler gelten für alle Teile, Belege und Kontoumsatz bleiben beim ersten Teil. Aufteilen geht, solange die Buchung nicht festgeschrieben ist und nicht zu einem Storno, einer Quittung, einer Rechnungszahlung oder einer Zuwendung gehört.
 
 **Geschäftspartner**: Beim Feld Empfänger bzw. Zahler stehen eure Geschäftspartner (Verwaltung › Geschäftspartner) zuerst. Wählt ihr einen aus, wird die Buchung mit ihm verknüpft, und eine leere Kategorie bekommt seine Standardkategorie. Den Namen könnt ihr trotzdem frei ändern. Ist der Partner als künstlerisch tätig gekennzeichnet, zählt die Ausgabe für die Künstlersozialabgabe.

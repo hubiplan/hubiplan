@@ -236,10 +236,21 @@ export function EventForm({
 
   // Bestehende Termine speichern automatisch (ohne Mail), neue erst mit „Termin anlegen“
   const lastSaved = useRef<EventDetail | null>(null)
+  // Fassung des geöffneten Termins: Der Server lehnt ab, wenn inzwischen jemand anderes
+  // gespeichert hat, statt dessen Änderungen mit dem Stand dieses Formulars zu überschreiben.
+  const version = useRef(event?.version)
   const auto = useAutoSave(
     form,
-    (_changes, values) =>
-      eventApi.update(base, event!.id, { ...toInput(values, withUnit), notify: false }),
+    async (_changes, values) => {
+      const saved = await eventApi.update(
+        base,
+        event!.id,
+        { ...toInput(values, withUnit), notify: false },
+        version.current,
+      )
+      version.current = saved.version
+      return saved
+    },
     {
       enabled: !!event,
       onSaved: (saved) => {

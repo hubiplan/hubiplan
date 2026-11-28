@@ -8444,6 +8444,13 @@ msgstr "End"
 msgid "Die Buchung wurde inzwischen geändert. Bitte neu laden."
 msgstr "The booking has been changed in the meantime. Please reload."
 
+msgid "Die Mitgliedsdaten wurden inzwischen geändert. Bitte neu laden."
+msgstr "The member data has been changed in the meantime. Please reload."
+
+msgctxt "kalender"
+msgid "Der Termin wurde inzwischen geändert. Bitte neu laden."
+msgstr "The event has been changed in the meantime. Please reload."
+
 msgid "Belegt"
 msgstr "Booked"
 

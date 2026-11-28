@@ -803,6 +803,7 @@ def member_detail(membership: Membership, org) -> dict:
     )
     return {
         "id": membership.pk,
+        "version": membership.version,
         "person_id": person.pk,
         "kind": person.kind,
         "last_name": person.last_name,

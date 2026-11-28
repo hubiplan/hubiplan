@@ -14,12 +14,16 @@ from django.utils.translation import gettext, gettext_lazy
 from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.i18n import date_text
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 from .base import Account, Category, VatRate
 
 
-class Booking(models.Model):
+class Booking(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     class Kind(models.TextChoices):
         INCOME = "income", gettext_lazy("Einnahme")
         EXPENSE = "expense", gettext_lazy("Ausgabe")

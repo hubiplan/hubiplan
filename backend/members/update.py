@@ -11,6 +11,7 @@ from django.utils.translation import gettext
 from rest_framework import serializers
 
 from audit.log import diff, record, snapshot
+from core.versioning import check_request
 from organizations.models import Organization
 from organizations.terms import fill
 
@@ -87,4 +88,16 @@ def update_member(org: Organization, membership: Membership, values: dict, user)
     changes.pop("person", None)
     if changes:
         record(org, user, "update", membership, changes, person=person)
+        # Name und Kontakt stehen an der Person: Die Fassung der Mitgliedschaft zählt trotzdem
+        # hoch, damit ein zweites offenes Formular die Änderung bemerkt (core/versioning.py).
+        membership.save(update_fields=["version", "updated_at"])
     return changes
+
+
+def stale_message() -> str:
+    return gettext("Die Mitgliedsdaten wurden inzwischen geändert. Bitte neu laden.")
+
+
+def check_member_version(request, membership: Membership) -> None:
+    """Mitgeschickte Fassung prüfen; die Mitgliedschaft ist gesperrt und frisch gelesen."""
+    check_request(request, membership, stale_message())

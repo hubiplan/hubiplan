@@ -101,6 +101,8 @@ export interface EInvoiceSuggestion {
 
 export interface Booking {
   id: number
+  /** Fassung gegen gleichzeitiges Bearbeiten; geht bei jeder Änderung mit. */
+  version?: number
   year: number
   number: number
   display_number: string
@@ -877,7 +879,9 @@ export const financeApi = {
     api.post<Booking>(`${base(org)}/bookings/`, data),
   updateBooking: (org: number, id: number, data: Record<string, unknown>) =>
     api.patch<Booking>(`${base(org)}/bookings/${id}/`, data),
-  deleteBooking: (org: number, id: number) => api.del(`${base(org)}/bookings/${id}/`),
+  /** `version`: geladene Fassung; der Server lehnt ab, wenn inzwischen geändert wurde. */
+  deleteBooking: (org: number, id: number, version?: number) =>
+    api.delWith<unknown>(`${base(org)}/bookings/${id}/`, { version }),
   assets: (org: number, year: number) =>
     api.get<AssetRegister>(`${base(org)}/assets/?jahr=${year}`),
   assetsXlsxUrl: (org: number, year: number) => `${base(org)}/assets/?jahr=${year}&als=xlsx`,
@@ -906,10 +910,10 @@ export const financeApi = {
   auditPdfUrl: (org: number, id: number) => `${base(org)}/audits/${id}/pdf/`,
   auditMeetings: (org: number) =>
     api.get<{ id: number; title: string; date: string }[]>(`${base(org)}/audits/meetings/`),
-  splitBooking: (org: number, id: number, parts: SplitPart[]) =>
-    api.post<Booking[]>(`${base(org)}/bookings/${id}/split/`, { parts }),
-  stornoBooking: (org: number, id: number, reason: string) =>
-    api.post<Booking>(`${base(org)}/bookings/${id}/storno/`, { reason }),
+  splitBooking: (org: number, id: number, parts: SplitPart[], version?: number) =>
+    api.post<Booking[]>(`${base(org)}/bookings/${id}/split/`, { parts, version }),
+  stornoBooking: (org: number, id: number, reason: string, version?: number) =>
+    api.post<Booking>(`${base(org)}/bookings/${id}/storno/`, { reason, version }),
   renumber: (org: number, year: number) =>
     api.post<{ changed: number }>(`${base(org)}/bookings/renumber/`, { year }),
 

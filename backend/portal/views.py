@@ -53,6 +53,7 @@ from members.models import (
 )
 from members.personsearch import ordered
 from members.serializers import MemberUpdateSerializer, TitleField
+from members.update import check_member_version
 from members.views import (
     MemberPagination,
     _ClubMixin,
@@ -494,6 +495,7 @@ def dept_member_detail(org, membership: Membership, with_access: bool) -> dict:
     first = membership.periods.order_by("entry_date").first()
     data = {
         "id": membership.pk,
+        "version": membership.version,
         "kind": person.kind,
         "display_name": person.display_name,
         "last_name": person.last_name,
@@ -529,6 +531,10 @@ class DepartmentMemberDetailView(DepartmentScopedMixin, APIView):
     @transaction.atomic
     def patch(self, request, dept_id: int, pk: int):
         membership = self.get_member(pk)
+        # Sperren und Fassung frisch lesen: zwei gleichzeitige Änderungen nacheinander prüfen
+        list(Membership.objects.select_for_update().filter(pk=membership.pk).values_list("pk"))
+        membership.refresh_from_db(fields=["version"])
+        check_member_version(request, membership)
         data = MemberUpdateSerializer(data=request.data, partial=True)
         data.is_valid(raise_exception=True)
         values = dict(data.validated_data)

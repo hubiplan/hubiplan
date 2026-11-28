@@ -27,6 +27,7 @@ from core.encfields import (
     EncryptedEmailField,
     EncryptedJSONField,
 )
+from core.versioning import Versioned
 
 
 def today() -> datetime.date:
@@ -409,8 +410,11 @@ class MemberType(models.Model):
         super().save(*args, **kwargs)
 
 
-class Membership(models.Model):
+class Membership(Versioned):
     """Person in einem Verein. Die Zeiträume stehen in ``MembershipPeriod``."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization",

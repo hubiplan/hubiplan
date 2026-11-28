@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -238,6 +238,33 @@ export function MemberFilePage() {
   )
 }
 
+/** Felder des Stammdatenformulars, wie sie in der geladenen Akte stehen. */
+function masterFields(m: MemberDetail) {
+  const c = m.contact
+  const o = m.organization
+  return {
+    last_name: m.last_name,
+    first_name: m.first_name,
+    birth_date: m.birth_date ?? '',
+    gender: m.gender ?? '',
+    title: m.title ?? '',
+    name_suffix: o?.name_suffix ?? '',
+    legal_form: o?.legal_form ?? '',
+    legal_form_other: o?.legal_form_other ?? '',
+    register: o?.register ?? '',
+    vat_id: o?.vat_id ?? '',
+    website: o?.website ?? '',
+    size: o?.size != null ? String(o.size) : '',
+    club_number: m.club_number,
+    email: c?.email ?? '',
+    phone: c?.phone ?? '',
+    street: c?.street ?? '',
+    postal_code: c?.postal_code ?? '',
+    city: c?.city ?? '',
+    country: c?.country ?? 'Deutschland',
+  }
+}
+
 function MasterData({
   org,
   member,
@@ -250,37 +277,31 @@ function MasterData({
   onSaved: (m: MemberDetail) => void
 }) {
   const tm = useTerms()
-  const c = member.contact
-  const o = member.organization
   const organization = member.kind === 'organization'
-  const form = useForm({
-    last_name: member.last_name,
-    first_name: member.first_name,
-    birth_date: member.birth_date ?? '',
-    gender: member.gender ?? '',
-    title: member.title ?? '',
-    name_suffix: o?.name_suffix ?? '',
-    legal_form: o?.legal_form ?? '',
-    legal_form_other: o?.legal_form_other ?? '',
-    register: o?.register ?? '',
-    vat_id: o?.vat_id ?? '',
-    website: o?.website ?? '',
-    size: o?.size != null ? String(o.size) : '',
-    club_number: member.club_number,
-    email: c?.email ?? '',
-    phone: c?.phone ?? '',
-    street: c?.street ?? '',
-    postal_code: c?.postal_code ?? '',
-    city: c?.city ?? '',
-    country: c?.country ?? 'Deutschland',
-  })
+  const form = useForm(masterFields(member))
+  // Fassung der geladenen Akte: Sie geht mit jeder Änderung an den Server, der ablehnt, wenn
+  // inzwischen jemand anderes gespeichert hat. Lädt die Akte aus anderem Grund neu (Foto,
+  // Ansprechpartner), gilt die neue Fassung nur, wenn die Felder hier noch dazu passen.
+  const version = useRef(member.version)
+  const shown = useRef(JSON.stringify(masterFields(member)))
+  useEffect(() => {
+    if (JSON.stringify(masterFields(member)) === shown.current) version.current = member.version
+  }, [member])
   const v = form.values
   const e = form.errors
   const auto = useAutoSave(
     form,
     // Nur Geändertes senden: Der Server ergänzt neue Kontaktdaten selbst, und so
     // überschreibt ein veralteter Stand keine gleichzeitige Änderung anderer Felder.
-    (changes) => memberApi.update(org.id, member.id, changes),
+    async (changes) => {
+      const saved = await memberApi.update(org.id, member.id, {
+        ...changes,
+        version: version.current,
+      })
+      version.current = saved.version
+      shown.current = JSON.stringify(masterFields(saved))
+      return saved
+    },
     { enabled: canEdit, onSaved: (saved) => onSaved(saved as MemberDetail) },
   )
 

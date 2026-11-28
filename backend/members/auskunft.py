@@ -363,7 +363,7 @@ def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | byte
     files["fotolinks.json"] = _dump(_rows(PhotoUploadLink.objects.filter(**mine)))
     files["kasse.json"] = _dump(
         {
-            "buchungen": _rows(Booking.objects.filter(**mine)),
+            "buchungen": _rows(Booking.objects.filter(**mine), {"version"}),
             "quittungen": _rows(CashReceipt.objects.filter(**mine)),
             "zuwendungsbestaetigungen": _rows(DonationStatement.objects.filter(**mine)),
         }
@@ -632,7 +632,7 @@ def build(membership: Membership, org) -> bytes:
     files: dict[str, str | bytes] = {}
 
     akte = member_detail(membership, org)
-    for key in ("exit_reasons", "contact_shared", "photo", "other_memberships"):
+    for key in ("exit_reasons", "contact_shared", "photo", "other_memberships", "version"):
         akte.pop(key, None)
     files["akte.json"] = _dump(akte)
 
