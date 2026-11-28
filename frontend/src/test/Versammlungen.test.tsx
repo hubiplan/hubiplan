@@ -99,7 +99,12 @@ const attendance = {
 
 let agendaVersion = 0
 
-function show(permissions: string[], path = '/versammlungen', current: object = meeting) {
+function show(
+  permissions: string[],
+  path = '/versammlungen',
+  current: object = meeting,
+  list: object[] = [meeting],
+) {
   const api = fakeApi({
     'GET /_allauth/browser/v1/auth/session': () => ({
       status: 200,
@@ -109,7 +114,7 @@ function show(permissions: string[], path = '/versammlungen', current: object = 
       status: 200,
       body: [testOrg({ modules: ['meetings'], permissions })],
     }),
-    'GET /api/orgs/7/meetings/': () => ({ status: 200, body: [meeting] }),
+    'GET /api/orgs/7/meetings/': () => ({ status: 200, body: list }),
     'GET /api/orgs/7/meetings/kinds/': () => ({ status: 200, body: [kind] }),
     'GET /api/orgs/7/meetings/5/': () => ({ status: 200, body: current }),
     'POST /api/orgs/7/meetings/5/minutes/confirm/': () => ({
@@ -181,6 +186,33 @@ describe('Versammlungen', () => {
     ).toBeInTheDocument()
     expect(await screen.findByText('Jahreshauptversammlung 2099')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Neue Versammlung' })).not.toBeInTheDocument()
+  })
+
+  it('durchsucht und sortiert lange Listen', async () => {
+    // Suchfeld erst ab mehr als 20 Zeilen; die Reihenfolge des Servers bleibt bis zum Klick
+    const many = Array.from({ length: 22 }, (_, i) => ({
+      ...meeting,
+      id: 100 + i,
+      title:
+        i === 7 ? 'Sondersitzung Festzelt' : `Vorstandssitzung ${String(22 - i).padStart(2, '0')}`,
+      starts_at: `2099-02-${String(i + 1).padStart(2, '0')}T18:00:00Z`,
+    }))
+    show(['meetings.view'], '/versammlungen', meeting, many)
+    const card = (await screen.findByRole('heading', { name: 'Anstehend' })).closest('section')!
+    const titles = () =>
+      within(card)
+        .getAllByRole('row')
+        .slice(1)
+        .map((r) => within(r).getAllByRole('cell')[1].textContent)
+    await waitFor(() => expect(titles()).toHaveLength(22))
+    expect(titles()[0]).toBe('Vorstandssitzung 22')
+    fireEvent.click(within(card).getByRole('button', { name: /Versammlung/ }))
+    expect(titles()[0]).toBe('Sondersitzung Festzelt')
+    expect(titles()[1]).toBe('Vorstandssitzung 01')
+    fireEvent.change(within(card).getByRole('searchbox', { name: 'Anstehend durchsuchen' }), {
+      target: { value: 'festzelt' },
+    })
+    expect(titles()).toEqual(['Sondersitzung Festzelt'])
   })
 
   it('ändert die Reihenfolge der Tagesordnung', async () => {
