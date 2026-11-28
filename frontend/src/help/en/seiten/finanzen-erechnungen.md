@@ -17,8 +17,10 @@ reason. XRechnung requires the supplier's contact name and phone number.
 Without a VAT identifier, the supplier needs a unique business partner identifier,
 such as the register number of the association, the tax number or the supplier number
 agreed with the customer. A new service invoice comes prefilled with the club's address,
-contact, identifier and IBAN as far as they are in the settings; if the identifier is
-missing, the message on saving names the field.
+contact, identifier and IBAN as far as they are in the settings; if something is
+missing, the message on saving lists all missing details at once. Store contact person,
+phone, identifier and tax number permanently under Finances › Set up › Invoice & payment
+(“Supplier details”).
 
 ## In detail
 

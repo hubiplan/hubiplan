@@ -447,3 +447,26 @@ def test_rechnungssteller_vorbelegt_und_klare_meldung(c, base, club, payload, se
     )
     assert response.status_code == 400
     assert "Eindeutige Geschäftspartnerkennung" in response.content.decode()
+
+
+def test_fehlende_angaben_des_rechnungsstellers_auf_einmal(c, base, payload):
+    """Kennung, Kontakt und Steuernummer fehlen: eine Antwort nennt alles, nicht je Versuch eins."""
+    seller = {
+        **payload["seller"],
+        "vat_id": "",
+        "identifier": "",
+        "tax_number": "",
+        "contact": "",
+        "phone": "",
+    }
+    response = c.post(
+        f"{base}/electronic/",
+        {**payload, "seller": seller},
+        content_type=JSON,
+        HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+    )
+    assert response.status_code == 400
+    text = response.content.decode()
+    assert "Eindeutige Geschäftspartnerkennung" in text
+    assert "Kontaktperson oder Telefonnummer" in text
+    assert "Steuernummer oder USt-IdNr." in text

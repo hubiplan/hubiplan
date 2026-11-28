@@ -20,7 +20,7 @@ Ohne USt-IdNr. muss der Rechnungssteller eine eindeutige Geschäftspartnerkennun
 angeben, beispielsweise die Vereinsregisternummer, die Steuernummer oder seine mit dem
 Kunden vereinbarte Lieferantennummer. Bei einer neuen Leistungsrechnung sind Anschrift,
 Kontakt, Kennung und IBAN des Vereins vorbelegt, so weit sie in den Einstellungen stehen;
-fehlt die Kennung, nennt die Meldung beim Speichern das Feld.
+fehlt etwas, nennt die Meldung beim Speichern alle fehlenden Angaben auf einmal. Kontaktperson, Telefon, Kennung und Steuernummer hinterlegt ihr dauerhaft unter Finanzen › Einrichten › Rechnung & Zahlung („Angaben des Rechnungsstellers“).
 
 ## Im Einzelnen
 
