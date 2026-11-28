@@ -27,7 +27,8 @@ from core.tenancy import rls_bypass
 
 from . import design_packages
 from .models import DesignPackage
-from .views import _WebsiteMixin, can_import_designs
+from .options import can_import_designs
+from .views import _WebsiteMixin
 
 IN_USE = gettext_noop(
     "Eine Webseite nutzt dieses Design noch. Bitte dort zuerst ein anderes wählen."

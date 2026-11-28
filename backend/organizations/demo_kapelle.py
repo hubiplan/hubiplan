@@ -468,7 +468,7 @@ def _website(club) -> None:
     from website.content_models import GalleryAlbum, GalleryItem, WebsiteImage, WebsiteText
     from website.menu import HISTORY_SLUG, MEMORIAL_SLUG
     from website.models import DesignPackage, PublicationConsent, Website, WebsiteDomain
-    from website.views import set_header_image
+    from website.options import set_header_image
 
     website = Website.objects.filter(organization=club).first()
     if website is None:
