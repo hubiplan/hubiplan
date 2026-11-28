@@ -492,7 +492,7 @@ export function CategoriesPage() {
           <Why k="tax_areas" />
         </>
       )}
-      {canEdit && <CategoryTemplates onApplied={reload} />}
+      {canEdit && <CategoryTemplates onApplied={reload} startOpen={data.length === 0} />}
       {removing && (
         <div className="subcard" role="dialog" aria-label={t('Kategorie entfernen')}>
           {removing.usage.deletable ? (
@@ -946,10 +946,17 @@ function DatevSettings({
 }
 
 // Vorlagen für Kategorien (Konzept vereinskasse-steuern, S8): legt fehlende Kategorien eines
-// Schützen-, Sport- oder Musikvereins mit steuerlichem Bereich an, ändert nie bestehende.
-function CategoryTemplates({ onApplied }: { onApplied: () => Promise<unknown> }) {
+// Vereins (allgemein, Schützen, Sport, Musik) mit steuerlichem Bereich an, ändert nie bestehende.
+// Ohne jede Kategorie steht die Vorlage gleich offen: Ohne Kategorien lässt sich nichts buchen.
+function CategoryTemplates({
+  onApplied,
+  startOpen = false,
+}: {
+  onApplied: () => Promise<unknown>
+  startOpen?: boolean
+}) {
   const org = useActiveOrg()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(startOpen)
   const templates = useLoad(
     () => (open ? financeApi.categoryTemplates(org.id) : Promise.resolve(null)),
     [org.id, open],

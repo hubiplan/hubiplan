@@ -17,7 +17,10 @@ steuerbar sind unterschiedliche Angaben. Bei Befreiung, Reverse Charge oder
 Nichtsteuerbarkeit ist ein Grund erforderlich. Die Kontaktdaten des Rechnungsstellers
 einschließlich Kontaktperson und Telefon werden für XRechnung benötigt.
 Ohne USt-IdNr. muss der Rechnungssteller eine eindeutige Geschäftspartnerkennung
-angeben, beispielsweise seine mit dem Kunden vereinbarte Lieferantennummer.
+angeben, beispielsweise die Vereinsregisternummer, die Steuernummer oder seine mit dem
+Kunden vereinbarte Lieferantennummer. Bei einer neuen Leistungsrechnung sind Anschrift,
+Kontakt, Kennung und IBAN des Vereins vorbelegt, so weit sie in den Einstellungen stehen;
+fehlt die Kennung, nennt die Meldung beim Speichern das Feld.
 
 ## Im Einzelnen
 

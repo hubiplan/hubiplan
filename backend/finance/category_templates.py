@@ -1,9 +1,9 @@
 """Vorlagen für Kategorien (Konzept vereinskasse-steuern, S8).
 
-Damit ein neuer Verein nicht bei null anfängt: übliche Kategorien eines Schützen-, Sport- oder
-Musikvereins mit steuerlichem Bereich, Spenden- und Künstlerhonorar-Kennzeichen. Eine
-Vorlage legt nur fehlende Kategorien an und ändert nie bestehende. DATEV-Konten setzt die
-Steuerberatung, weil der Kontenrahmen je Kanzlei abweicht.
+Damit ein neuer Verein nicht bei null anfängt: übliche Kategorien eines Vereins allgemein oder
+eines Schützen-, Sport- oder Musikvereins mit steuerlichem Bereich, Spenden- und
+Künstlerhonorar-Kennzeichen. Eine Vorlage legt nur fehlende Kategorien an und ändert nie
+bestehende. DATEV-Konten setzt die Steuerberatung, weil der Kontenrahmen je Kanzlei abweicht.
 
 Sponsoring: Nennt der Verein den Sponsor nur (ohne Hervorhebung oder Werbeleistung), gehören
 die Einnahmen zur Vermögensverwaltung; aktive Werbung (Bande, Anzeige, Trikot) ist
@@ -45,6 +45,17 @@ COMMON = [
 ]
 
 TEMPLATES = {
+    # Zuerst die neutrale Vorlage: Sie ist die Vorauswahl und passt auch für ein reines Kassenbuch
+    "allgemein": (
+        gettext_lazy("Allgemeiner Verein"),
+        [
+            (gettext_lazy("Veranstaltungen"), BOTH, PURPOSE, ()),
+            (gettext_lazy("Miete und Nebenkosten"), OUT, IDEAL, ()),
+            (gettext_lazy("Anschaffungen"), OUT, IDEAL, ()),
+            (gettext_lazy("Reisekosten"), OUT, IDEAL, ()),
+            (gettext_lazy("Sonstiges"), BOTH, IDEAL, ()),
+        ],
+    ),
     "schuetzen": (
         gettext_lazy("Schützenverein"),
         [

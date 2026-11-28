@@ -119,7 +119,9 @@ class CommercialInvoiceSerializer(serializers.Serializer):
         if not (seller["vat_id"] or seller["identifier"]):
             raise serializers.ValidationError(
                 gettext(
-                    "Ohne USt-IdNr. ist eine eindeutige Kennung des Rechnungsstellers erforderlich."
+                    "Beim Rechnungssteller fehlt eine Kennung: Bitte die USt-IdNr. oder das Feld "
+                    "„Eindeutige Geschäftspartnerkennung“ ausfüllen, zum Beispiel mit der "
+                    "Vereinsregisternummer oder der Steuernummer."
                 )
             )
         if not seller["contact"] or not seller["phone"]:

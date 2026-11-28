@@ -359,11 +359,14 @@ class TestPlattform:
         assert Role.objects.filter(organization=new, name="Vorstand").exists()
 
         resp = c.post(
-            f"/api/platform/orgs/{new.pk}/board/", {"email": "chef@example.org"}, content_type=JSON
+            f"/api/platform/orgs/{new.pk}/board/",
+            {"email": "chef@example.org", "first_name": " Erika ", "last_name": "Muster"},
+            content_type=JSON,
         )
         assert resp.status_code == 201
         assert resp.json()["new_account"] is True
         chef = RoleAssignment.objects.get(user__email="chef@example.org").user
+        assert (chef.first_name, chef.last_name) == ("Erika", "Muster")
         assert api(chef).get(f"/api/orgs/{new.pk}/roles/").status_code == 200
 
     def test_verein_ohne_dachverband(self, api, platform_admin, db):

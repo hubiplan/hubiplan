@@ -5707,9 +5707,13 @@ msgid "Das Leistungsende liegt vor dem Leistungsbeginn."
 msgstr "The service end precedes the service start."
 
 msgid ""
-"Ohne USt-IdNr. ist eine eindeutige Kennung des Rechnungsstellers "
-"erforderlich."
-msgstr "Without a VAT identifier, a unique supplier identifier is required."
+"Beim Rechnungssteller fehlt eine Kennung: Bitte die USt-IdNr. oder das Feld "
+"„Eindeutige Geschäftspartnerkennung“ ausfüllen, zum Beispiel mit der "
+"Vereinsregisternummer oder der Steuernummer."
+msgstr ""
+"The supplier has no identifier: please fill in the VAT ID or the field "
+"“Unique business partner identifier”, for example with the register number "
+"of the association or the tax number."
 
 msgid ""
 "Für XRechnung fehlen Kontaktperson oder Telefonnummer des Rechnungsstellers."
@@ -9844,6 +9848,18 @@ msgstr "Clubhouse catering"
 
 msgid "Musikverein"
 msgstr "Music club"
+
+msgid "Veranstaltungen"
+msgstr "Events"
+
+msgid "Miete und Nebenkosten"
+msgstr "Rent and utilities"
+
+msgid "Anschaffungen"
+msgstr "Purchases"
+
+msgid "Reisekosten"
+msgstr "Travel expenses"
 
 msgid "Konzerte Eintritt"
 msgstr "Concert admission"

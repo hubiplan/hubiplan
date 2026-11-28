@@ -7,7 +7,7 @@ routen: [/plattform]
 stichworte: [Plattform, Verein anlegen, Dachverband, Module freischalten, Selbstupdate]
 ---
 
-Die Plattform-Verwaltung legt Vereine und Dachverbände auf dieser HUBIplan-Instanz an und schaltet Module frei. Beim Anlegen bekommt eine Person die Rolle „Vorstand“ mit allen Rechten und verwaltet danach selbst Rollen und Benutzer.
+Die Plattform-Verwaltung legt Vereine und Dachverbände auf dieser HUBIplan-Instanz an und schaltet Module frei. Beim Anlegen bekommt eine Person die Rolle „Vorstand“ mit allen Rechten und verwaltet danach selbst Rollen und Benutzer. Unter **Vorstand festlegen** gebt ihr die E-Mail-Adresse an und für ein neues Konto auch Vor- und Nachname; ein bestehendes Konto behält seinen Namen.
 
 In der Liste der Einheiten steht je Einheit die Zahl der freigeschalteten Module („12 Module“); ein Klick darauf zeigt sie einzeln.
 

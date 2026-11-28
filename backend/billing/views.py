@@ -34,7 +34,7 @@ from organizations.models import Department, Organization
 from organizations.terms import department_terms, fill
 from outbox import mail
 
-from . import pdf, sepa, services, units
+from . import member_einvoice, pdf, sepa, services, units
 from .archive import archived_cancellation, archived_dunning, archived_pdf, documents_purged
 from .models import (
     AgeRate,
@@ -110,6 +110,15 @@ class BillingMixin(OrgScopedMixin):
 
 
 class BillingSettingsView(BillingMixin, APIView):
+    def _iban(self, cfg) -> str:
+        """IBAN des Beitragskontos, sonst die des einzigen Kontos mit IBAN."""
+        if cfg.account_id and cfg.account.iban:
+            return cfg.account.iban.replace(" ", "").upper()
+        ibans = [
+            a.iban for a in Account.objects.filter(organization=self.org, is_active=True) if a.iban
+        ]
+        return ibans[0].replace(" ", "").upper() if len(ibans) == 1 else ""
+
     def data(self):
         cfg = services.settings_for(self.org)
         today = timezone.localdate()
@@ -127,6 +136,10 @@ class BillingSettingsView(BillingMixin, APIView):
                 if c.allows("income")
             ],
             "current_year": year,
+            # Vorbelegung des Rechnungsstellers einer Leistungsrechnung (Anschrift, Kontakt,
+            # Kennung, IBAN), so weit im Verein hinterlegt
+            "einvoice_seller": member_einvoice.seller_suggestion(self.org, cfg),
+            "einvoice_iban": self._iban(cfg),
             "years": [
                 {"year": y, "label": self.org.fiscal_label(y)} for y in (year - 1, year, year + 1)
             ],
