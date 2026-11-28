@@ -1,4 +1,4 @@
-// Erzeugt von backend/tests/test_feldabgleich.py, nicht von Hand ändern.
+// Erzeugt von scripts/feldabgleich.mjs aus backend/config/feldabgleich, nicht von Hand ändern.
 // Echte Antworten des Servers (Demoverein, erfundene Daten). Meldet die Typprüfung
 // hier einen Fehler, passen Server und Typ nicht zusammen: den Typ in
 // src/api/members.ts anpassen (oder den Server).
@@ -34,8 +34,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22638,
-   "member_type": 551,
+   "id": 6335,
+   "member_type": 2989,
    "member_type_name": "aktiv",
    "reported": true,
    "valid_from": "2021-12-01",
@@ -45,8 +45,8 @@ export const akten: (MemberDetail)[] = [
    {
     "department_name": "Art",
     "ended": [],
-    "id": 8401,
-    "role": 8335,
+    "id": 3920,
+    "role": 3903,
     "role_name": "Adjutant",
     "valid_from": "2021-12-01",
     "valid_until": "2026-11-28"
@@ -54,9 +54,9 @@ export const akten: (MemberDetail)[] = [
   ],
   "departments": [
    {
-    "department": 2286,
+    "department": 9299,
     "department_name": "Batterie Donnerhall",
-    "id": 18322,
+    "id": 4064,
     "valid_from": "2021-12-01",
     "valid_until": null
    }
@@ -105,10 +105,10 @@ export const akten: (MemberDetail)[] = [
     {
      "display_title": "Ehrenhauptmann",
      "fee_text": "",
-     "id": 277,
+     "id": 39,
      "note": "Beschluss der Versammlung",
      "owner_name": "SV Musterstadt",
-     "title": 142,
+     "title": 23,
      "title_name": "Ehrenmitglied",
      "valid_from": "2025-10-24",
      "valid_until": null,
@@ -118,12 +118,12 @@ export const akten: (MemberDetail)[] = [
   },
   "households": [
    {
-    "id": 10,
+    "id": 46,
     "kind": "family",
     "name": "Familie Muster",
     "others": [
      {
-      "member_id": 22724,
+      "member_id": 7109,
       "name": "Carsten Annahmer",
       "role": ""
      }
@@ -132,7 +132,7 @@ export const akten: (MemberDetail)[] = [
     "since": "2025-10-24"
    }
   ],
-  "id": 22638,
+  "id": 7023,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Annahmer",
@@ -146,18 +146,18 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22638,
+    "id": 6942,
     "note": ""
    }
   ],
-  "person_id": 22638,
+  "person_id": 7042,
   "photo": {
    "approved": {
     "source": "board",
     "source_label": "Vorstand",
-    "thumbnail_url": "/api/orgs/2272/members/22638/photo/?status=approved&v=1795890059&size=thumb",
-    "uploaded_at": "2026-11-28T18:20:59.854330Z",
-    "url": "/api/orgs/2272/members/22638/photo/?status=approved&v=1795890059"
+    "thumbnail_url": "/api/orgs/9285/members/7023/photo/?status=approved&v=1795893642&size=thumb",
+    "uploaded_at": "2026-11-28T19:20:42.905079Z",
+    "url": "/api/orgs/9285/members/7023/photo/?status=approved&v=1795893642"
    },
    "pending": null
   },
@@ -183,8 +183,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22638,
-    "member_type": 551,
+    "id": 6335,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "2021-12-01",
@@ -211,8 +211,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22724,
-   "member_type": 551,
+   "id": 6421,
+   "member_type": 2989,
    "member_type_name": "aktiv",
    "reported": true,
    "valid_from": "2019-02-01",
@@ -221,9 +221,9 @@ export const akten: (MemberDetail)[] = [
   "department_roles": [],
   "departments": [
    {
-    "department": 2294,
+    "department": 9307,
     "department_name": "Tambour",
-    "id": 18408,
+    "id": 4150,
     "valid_from": "2019-02-01",
     "valid_until": null
    }
@@ -265,17 +265,17 @@ export const akten: (MemberDetail)[] = [
   "federation": null,
   "first_name": "Carsten",
   "gender": "männlich",
-  "greetings_opt_out_at": "2026-11-28T18:20:59.556952Z",
+  "greetings_opt_out_at": "2026-11-28T19:20:42.480299Z",
   "honorary_titles": {
    "federation": [],
    "own": [
     {
      "display_title": "",
      "fee_text": "",
-     "id": 278,
+     "id": 40,
      "note": "",
      "owner_name": "SV Musterstadt",
-     "title": 142,
+     "title": 23,
      "title_name": "Ehrenmitglied",
      "valid_from": "2025-10-24",
      "valid_until": "2026-11-28",
@@ -285,12 +285,12 @@ export const akten: (MemberDetail)[] = [
   },
   "households": [
    {
-    "id": 10,
+    "id": 46,
     "kind": "family",
     "name": "Familie Muster",
     "others": [
      {
-      "member_id": 22638,
+      "member_id": 7023,
       "name": "Anke Annahmer",
       "role": ""
      }
@@ -299,8 +299,8 @@ export const akten: (MemberDetail)[] = [
     "since": "2025-10-24"
    }
   ],
-  "id": 22724,
-  "info_opt_out_at": "2026-11-28T18:20:59.553878Z",
+  "id": 7109,
+  "info_opt_out_at": "2026-11-28T19:20:42.474420Z",
   "kind": "person",
   "last_name": "Annahmer",
   "managed_by": null,
@@ -313,19 +313,19 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22724,
+    "id": 7028,
     "note": ""
    }
   ],
-  "person_id": 22724,
+  "person_id": 7128,
   "photo": {
    "approved": null,
    "pending": {
     "source": "board",
     "source_label": "Vorstand",
-    "thumbnail_url": "/api/orgs/2272/members/22724/photo/?status=pending&v=1795890059&size=thumb",
-    "uploaded_at": "2026-11-28T18:20:59.867977Z",
-    "url": "/api/orgs/2272/members/22724/photo/?status=pending&v=1795890059"
+    "thumbnail_url": "/api/orgs/9285/members/7109/photo/?status=pending&v=1795893642&size=thumb",
+    "uploaded_at": "2026-11-28T19:20:42.928570Z",
+    "url": "/api/orgs/9285/members/7109/photo/?status=pending&v=1795893642"
    }
   },
   "photo_consent_at": null,
@@ -350,8 +350,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22724,
-    "member_type": 551,
+    "id": 6421,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "2019-02-01",
@@ -378,8 +378,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22593,
-   "member_type": 551,
+   "id": 6290,
+   "member_type": 2989,
    "member_type_name": "aktiv",
    "reported": true,
    "valid_from": "1983-04-01",
@@ -389,8 +389,8 @@ export const akten: (MemberDetail)[] = [
    {
     "department_name": "Jägerzug Hörnerklang",
     "ended": [],
-    "id": 8384,
-    "role": 8318,
+    "id": 3903,
+    "role": 3886,
     "role_name": "Kassierer",
     "valid_from": "2016-01-01",
     "valid_until": "2026-11-28"
@@ -398,9 +398,9 @@ export const akten: (MemberDetail)[] = [
   ],
   "departments": [
    {
-    "department": 2280,
+    "department": 9293,
     "department_name": "Jägerzug Hörnerklang",
-    "id": 18277,
+    "id": 4019,
     "valid_from": "1983-04-01",
     "valid_until": "2026-11-28"
    }
@@ -445,7 +445,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22593,
+  "id": 6978,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Annahmer",
@@ -459,11 +459,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": "2026-11-28",
     "exit_reason": "exit",
     "exit_reason_label": "Austritt",
-    "id": 22593,
+    "id": 6897,
     "note": "auf eigenen Wunsch"
    }
   ],
-  "person_id": 22593,
+  "person_id": 6997,
   "photo": {
    "approved": null,
    "pending": null
@@ -490,8 +490,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22593,
-    "member_type": 551,
+    "id": 6290,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "1983-04-01",
@@ -505,7 +505,7 @@ export const akten: (MemberDetail)[] = [
   "birth_year_only": false,
   "board_roles": [
    {
-    "id": 8437,
+    "id": 3956,
     "role_name": "Vizepräsident",
     "valid_from": "2019-03-01",
     "valid_until": null
@@ -522,7 +522,7 @@ export const akten: (MemberDetail)[] = [
   },
   "contact_for": [
    {
-    "member_id": 22755,
+    "member_id": 7140,
     "name": "Bäckerei Muster GmbH"
    }
   ],
@@ -530,8 +530,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22543,
-   "member_type": 554,
+   "id": 6240,
+   "member_type": 2992,
    "member_type_name": "Jungschütze",
    "reported": true,
    "valid_from": "2019-09-01",
@@ -540,9 +540,9 @@ export const akten: (MemberDetail)[] = [
   "department_roles": [],
   "departments": [
    {
-    "department": 2274,
+    "department": 9287,
     "department_name": "Grenadierzug Eichenlaub",
-    "id": 18227,
+    "id": 3969,
     "valid_from": "2019-09-01",
     "valid_until": null
    }
@@ -590,7 +590,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22543,
+  "id": 6928,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Annahmer",
@@ -604,11 +604,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22543,
+    "id": 6847,
     "note": ""
    }
   ],
-  "person_id": 22543,
+  "person_id": 6947,
   "photo": {
    "approved": null,
    "pending": null
@@ -635,8 +635,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22543,
-    "member_type": 554,
+    "id": 6240,
+    "member_type": 2992,
     "member_type_name": "Jungschütze",
     "reported": true,
     "valid_from": "2019-09-01",
@@ -663,8 +663,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": false,
-   "id": 22628,
-   "member_type": 552,
+   "id": 6325,
+   "member_type": 2990,
    "member_type_name": "passiv",
    "reported": true,
    "valid_from": "2021-05-01",
@@ -674,8 +674,8 @@ export const akten: (MemberDetail)[] = [
    {
     "department_name": "Zug Gut Schuss",
     "ended": [],
-    "id": 8399,
-    "role": 8333,
+    "id": 3918,
+    "role": 3901,
     "role_name": "Kassierer",
     "valid_from": "2021-05-01",
     "valid_until": null
@@ -683,9 +683,9 @@ export const akten: (MemberDetail)[] = [
   ],
   "departments": [
    {
-    "department": 2284,
+    "department": 9297,
     "department_name": "Zug Gut Schuss",
-    "id": 18312,
+    "id": 4054,
     "valid_from": "2021-05-01",
     "valid_until": null
    }
@@ -733,7 +733,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22628,
+  "id": 7013,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Annahmer",
@@ -747,11 +747,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22628,
+    "id": 6932,
     "note": ""
    }
   ],
-  "person_id": 22628,
+  "person_id": 7032,
   "photo": {
    "approved": null,
    "pending": null
@@ -778,8 +778,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": false,
-    "id": 22628,
-    "member_type": 552,
+    "id": 6325,
+    "member_type": 2990,
     "member_type_name": "passiv",
     "reported": true,
     "valid_from": "2021-05-01",
@@ -812,11 +812,11 @@ export const akten: (MemberDetail)[] = [
     "first_name": "",
     "function": "Geschäftsführung",
     "gender": "",
-    "id": 13,
+    "id": 20,
     "is_guardian": false,
     "is_primary": true,
     "last_name": "",
-    "linked_member": 22543,
+    "linked_member": 6928,
     "member_access": false,
     "phone": "",
     "receives_invoices": true,
@@ -834,7 +834,7 @@ export const akten: (MemberDetail)[] = [
     "first_name": "Maria",
     "function": "Buchhaltung",
     "gender": "",
-    "id": 14,
+    "id": 21,
     "is_guardian": false,
     "is_primary": false,
     "last_name": "Muster",
@@ -851,8 +851,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22755,
-   "member_type": 551,
+   "id": 6452,
+   "member_type": 2989,
    "member_type_name": "aktiv",
    "reported": true,
    "valid_from": "2025-10-24",
@@ -903,7 +903,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22755,
+  "id": 7140,
   "info_opt_out_at": null,
   "kind": "organization",
   "last_name": "Bäckerei Muster GmbH",
@@ -926,11 +926,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22755,
+    "id": 7059,
     "note": ""
    }
   ],
-  "person_id": 22755,
+  "person_id": 7159,
   "photo": {
    "approved": null,
    "pending": null
@@ -952,8 +952,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22755,
-    "member_type": 551,
+    "id": 6452,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "2025-10-24",
@@ -967,7 +967,7 @@ export const akten: (MemberDetail)[] = [
   "birth_year_only": false,
   "board_roles": [
    {
-    "id": 8441,
+    "id": 3960,
     "role_name": "Präsident",
     "valid_from": "2003-03-01",
     "valid_until": "2011-02-28"
@@ -987,8 +987,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22555,
-   "member_type": 551,
+   "id": 6252,
+   "member_type": 2989,
    "member_type_name": "aktiv",
    "reported": true,
    "valid_from": "2021-05-01",
@@ -997,9 +997,9 @@ export const akten: (MemberDetail)[] = [
   "department_roles": [],
   "departments": [
    {
-    "department": 2275,
+    "department": 9288,
     "department_name": "Grenadierzug Treue Kameraden",
-    "id": 18239,
+    "id": 3981,
     "valid_from": "2021-05-01",
     "valid_until": null
    }
@@ -1047,7 +1047,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22555,
+  "id": 6940,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Beispielhoff",
@@ -1061,11 +1061,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22555,
+    "id": 6859,
     "note": ""
    }
   ],
-  "person_id": 22555,
+  "person_id": 6959,
   "photo": {
    "approved": null,
    "pending": null
@@ -1092,8 +1092,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22555,
-    "member_type": 551,
+    "id": 6252,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "2021-05-01",
@@ -1120,8 +1120,8 @@ export const akten: (MemberDetail)[] = [
   "contact_shared": true,
   "current_type": {
    "active": true,
-   "id": 22629,
-   "member_type": 554,
+   "id": 6326,
+   "member_type": 2992,
    "member_type_name": "Jungschütze",
    "reported": true,
    "valid_from": "2025-03-01",
@@ -1130,9 +1130,9 @@ export const akten: (MemberDetail)[] = [
   "department_roles": [],
   "departments": [
    {
-    "department": 2284,
+    "department": 9297,
     "department_name": "Zug Gut Schuss",
-    "id": 18313,
+    "id": 4055,
     "valid_from": "2025-03-01",
     "valid_until": null
    }
@@ -1180,7 +1180,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22629,
+  "id": 7014,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Schablonenkamp",
@@ -1194,11 +1194,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": null,
     "exit_reason": "",
     "exit_reason_label": "",
-    "id": 22629,
+    "id": 6933,
     "note": ""
    }
   ],
-  "person_id": 22629,
+  "person_id": 7033,
   "photo": {
    "approved": null,
    "pending": null
@@ -1212,7 +1212,7 @@ export const akten: (MemberDetail)[] = [
    "account": {
     "app": false,
     "has_access": true,
-    "last_login": "2026-11-28T18:20:59.822352Z",
+    "last_login": "2026-11-28T19:20:42.870772Z",
     "mfa": false
    },
    "invoices": {
@@ -1225,8 +1225,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22629,
-    "member_type": 554,
+    "id": 6326,
+    "member_type": 2992,
     "member_type_name": "Jungschütze",
     "reported": true,
     "valid_from": "2025-03-01",
@@ -1255,9 +1255,9 @@ export const akten: (MemberDetail)[] = [
   "department_roles": [],
   "departments": [
    {
-    "department": 2294,
+    "department": 9307,
     "department_name": "Tambour",
-    "id": 18412,
+    "id": 4154,
     "valid_from": "1982-11-01",
     "valid_until": "1993-01-23"
    }
@@ -1302,7 +1302,7 @@ export const akten: (MemberDetail)[] = [
    "own": []
   },
   "households": [],
-  "id": 22728,
+  "id": 7113,
   "info_opt_out_at": null,
   "kind": "person",
   "last_name": "Ausdenk",
@@ -1316,11 +1316,11 @@ export const akten: (MemberDetail)[] = [
     "exit_date": "1993-01-23",
     "exit_reason": "strike_off",
     "exit_reason_label": "Streichung",
-    "id": 22728,
+    "id": 7032,
     "note": ""
    }
   ],
-  "person_id": 22728,
+  "person_id": 7132,
   "photo": {
    "approved": null,
    "pending": null
@@ -1347,8 +1347,8 @@ export const akten: (MemberDetail)[] = [
   "type_history": [
    {
     "active": true,
-    "id": 22728,
-    "member_type": 551,
+    "id": 6425,
+    "member_type": 2989,
     "member_type_name": "aktiv",
     "reported": true,
     "valid_from": "1982-11-01",
@@ -1370,11 +1370,11 @@ export const ansprechpartner: (ContactPerson[])[] = [
    "first_name": "",
    "function": "Geschäftsführung",
    "gender": "",
-   "id": 13,
+   "id": 20,
    "is_guardian": false,
    "is_primary": true,
    "last_name": "",
-   "linked_member": 22543,
+   "linked_member": 6928,
    "member_access": false,
    "phone": "",
    "receives_invoices": true,
@@ -1392,7 +1392,7 @@ export const ansprechpartner: (ContactPerson[])[] = [
    "first_name": "Maria",
    "function": "Buchhaltung",
    "gender": "",
-   "id": 14,
+   "id": 21,
    "is_guardian": false,
    "is_primary": false,
    "last_name": "Muster",
@@ -1411,7 +1411,7 @@ export const ansprechpartner: (ContactPerson[])[] = [
 export const liste: (Page<MemberRow>)[] = [
  {
   "count": 213,
-  "next": "http://testserver/api/orgs/2272/members/?page=2",
+  "next": "http://testserver/api/orgs/9285/members/?page=2",
   "previous": null,
   "results": [
    {
@@ -1432,20 +1432,20 @@ export const liste: (Page<MemberRow>)[] = [
     ],
     "households": [
      {
-      "id": 10,
+      "id": 46,
       "kind": "family",
       "name": "Familie Muster",
       "role": ""
      }
     ],
-    "id": 22638,
+    "id": 7023,
     "kind": "person",
     "last_name": "Annahmer",
     "member_number": null,
     "member_type": "aktiv",
     "name_suffix": "",
     "phone": "01234 733722",
-    "photo_url": "/api/orgs/2272/members/22638/photo/?size=thumb&v=1795890059",
+    "photo_url": "/api/orgs/9285/members/7023/photo/?size=thumb&v=1795893642",
     "postal_code": "12345",
     "status": "active",
     "street": "Kirchstraße 70",
@@ -1469,13 +1469,13 @@ export const liste: (Page<MemberRow>)[] = [
     ],
     "households": [
      {
-      "id": 10,
+      "id": 46,
       "kind": "family",
       "name": "Familie Muster",
       "role": ""
      }
     ],
-    "id": 22724,
+    "id": 7109,
     "kind": "person",
     "last_name": "Annahmer",
     "member_number": null,
@@ -1501,7 +1501,7 @@ export const liste: (Page<MemberRow>)[] = [
     "gender": "",
     "honorary_titles": [],
     "households": [],
-    "id": 22755,
+    "id": 7140,
     "kind": "organization",
     "last_name": "Bäckerei Muster GmbH",
     "member_number": null,
@@ -1518,8 +1518,8 @@ export const liste: (Page<MemberRow>)[] = [
  },
  {
   "count": 213,
-  "next": "http://testserver/api/orgs/2272/members/?page=3",
-  "previous": "http://testserver/api/orgs/2272/members/",
+  "next": "http://testserver/api/orgs/9285/members/?page=3",
+  "previous": "http://testserver/api/orgs/9285/members/",
   "results": []
  },
  {
@@ -1540,7 +1540,7 @@ export const liste: (Page<MemberRow>)[] = [
     "gender": "weiblich",
     "honorary_titles": [],
     "households": [],
-    "id": 22728,
+    "id": 7113,
     "kind": "person",
     "last_name": "Ausdenk",
     "member_number": null,
@@ -1568,7 +1568,7 @@ export const mitgliedsarten: (MemberType[])[] = [
   {
    "active": true,
    "counts_for_duration": true,
-   "id": 551,
+   "id": 2989,
    "in_use": true,
    "is_archived": false,
    "name": "aktiv",
@@ -1578,7 +1578,7 @@ export const mitgliedsarten: (MemberType[])[] = [
   {
    "active": false,
    "counts_for_duration": true,
-   "id": 552,
+   "id": 2990,
    "in_use": true,
    "is_archived": false,
    "name": "passiv",
@@ -1588,7 +1588,7 @@ export const mitgliedsarten: (MemberType[])[] = [
   {
    "active": false,
    "counts_for_duration": true,
-   "id": 553,
+   "id": 2991,
    "in_use": true,
    "is_archived": false,
    "name": "Ehrenmitglied",
@@ -1598,7 +1598,7 @@ export const mitgliedsarten: (MemberType[])[] = [
   {
    "active": true,
    "counts_for_duration": true,
-   "id": 554,
+   "id": 2992,
    "in_use": true,
    "is_archived": false,
    "name": "Jungschütze",

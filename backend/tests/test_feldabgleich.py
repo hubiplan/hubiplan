@@ -1,10 +1,14 @@
 """Die Antworten für den Feldabgleich mit der Web-Oberfläche sind aktuell.
 
 Schlägt ``test_antworten_sind_aktuell`` fehl, liefert der Server in diesem Bereich ein Feld
-neu, nicht mehr oder in anderer Art. Dann die Dateien neu schreiben und die Typen der
-Oberfläche anpassen, bis ``npm run typecheck`` im Ordner ``frontend`` wieder grün ist::
+neu, nicht mehr oder in anderer Art. Dann die Antworten neu schreiben, daraus die Konstanten der
+Oberfläche erzeugen und deren Typen anpassen, bis ``npm run typecheck`` wieder grün ist::
 
-    FELDABGLEICH_SCHREIBEN=1 pytest tests/test_feldabgleich.py
+    FELDABGLEICH_SCHREIBEN=1 pytest tests/test_feldabgleich.py      (im Ordner backend)
+    node scripts/feldabgleich.mjs && npm run typecheck              (im Ordner frontend)
+
+Dass die Konstanten der Oberfläche zu den Antworten passen, prüft dort
+``src/test/Feldabgleich.test.ts``.
 """
 
 import os
@@ -22,11 +26,10 @@ def test_antworten_sind_aktuell(bereich):
     datei = fa.ZIEL / f"{bereich}.json"
     if os.environ.get("FELDABGLEICH_SCHREIBEN"):
         fa.ZIEL.mkdir(parents=True, exist_ok=True)
-        datei.write_text(fa.als_json(daten), encoding="utf-8")
-        (fa.ZIEL / f"{bereich}.ts").write_text(fa.als_typescript(bereich, daten), encoding="utf-8")
+        datei.write_text(fa.als_json(bereich, daten), encoding="utf-8")
     alt = fa.aus_json(datei.read_text(encoding="utf-8"))
     assert fa.formen(alt) == fa.formen(daten), (
-        f"frontend/src/test/feldabgleich/{bereich}.json ist veraltet (siehe Kopf dieses Tests)"
+        f"backend/config/feldabgleich/{bereich}.json ist veraltet (siehe Kopf dieses Tests)"
     )
 
 
@@ -36,10 +39,3 @@ def test_kein_feld_ohne_beispiel(bereich):
     (``tests/feldabgleich_<bereich>.py``) oder mit Grund in ``OHNE_BEISPIEL`` eintragen."""
     daten = fa.aus_json((fa.ZIEL / f"{bereich}.json").read_text(encoding="utf-8"))
     assert set(fa.luecken(daten)) == set(fa.OHNE_BEISPIEL[bereich])
-
-
-@pytest.mark.parametrize("bereich", sorted(fa.BEREICHE))
-def test_typescript_passt_zu_den_daten(bereich):
-    daten = fa.aus_json((fa.ZIEL / f"{bereich}.json").read_text(encoding="utf-8"))
-    erzeugt = (fa.ZIEL / f"{bereich}.ts").read_text(encoding="utf-8")
-    assert erzeugt == fa.als_typescript(bereich, daten)

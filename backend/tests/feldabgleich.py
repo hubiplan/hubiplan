@@ -27,7 +27,8 @@ from organizations.models import Organization
 
 from .webseite_form import form, vereinen
 
-ZIEL = Path(__file__).resolve().parents[2] / "frontend" / "src" / "test" / "feldabgleich"
+# Die Antworten liegen beim Server; die Testumgebung des Servers sieht den Ordner frontend nicht.
+ZIEL = Path(__file__).resolve().parents[1] / "config" / "feldabgleich"
 
 
 @dataclass(frozen=True)
@@ -159,37 +160,15 @@ def formen(daten: dict[str, tuple[str, list]]) -> dict:
     return {name: [typ, form(antworten)] for name, (typ, antworten) in daten.items()}
 
 
-def als_json(daten: dict[str, tuple[str, list]]) -> str:
+def als_json(bereich: str, daten: dict[str, tuple[str, list]]) -> str:
+    """Antworten je Abruf mit dem Typ der Oberfläche und der Datei, in der er steht."""
+    quelle = BEREICHE[bereich][0]
     inhalt = {
-        name: {"typ": typ, "antworten": antworten} for name, (typ, antworten) in daten.items()
+        name: {"typ": typ, "quelle": quelle, "antworten": antworten}
+        for name, (typ, antworten) in daten.items()
     }
     return json.dumps(inhalt, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
 
 
 def aus_json(text: str) -> dict[str, tuple[str, list]]:
     return {name: (e["typ"], e["antworten"]) for name, e in json.loads(text).items()}
-
-
-def als_typescript(bereich: str, daten: dict[str, tuple[str, list]]) -> str:
-    """Die Antworten als Konstanten mit Typangabe; ``tsc`` prüft sie gegen die Typen."""
-    quelle = BEREICHE[bereich][0]
-    typen = sorted(
-        {
-            teil
-            for typ, _antworten in daten.values()
-            for teil in typ.replace("[]", "").replace("<", " ").replace(">", " ").split()
-        }
-    )
-    zeilen = [
-        "// Erzeugt von backend/tests/test_feldabgleich.py, nicht von Hand ändern.",
-        "// Echte Antworten des Servers (Demoverein, erfundene Daten). Meldet die Typprüfung",
-        "// hier einen Fehler, passen Server und Typ nicht zusammen: den Typ in",
-        f"// {quelle.replace('../../', 'src/')} anpassen (oder den Server).",
-        f"import type {{ {', '.join(typen)} }} from '{quelle}'",
-        "",
-    ]
-    for name, (typ, antworten) in sorted(daten.items()):
-        inhalt = json.dumps(antworten, ensure_ascii=False, indent=1, sort_keys=True)
-        zeilen.append(f"export const {name}: ({typ})[] = {inhalt}")
-        zeilen.append("")
-    return "\n".join(zeilen)
