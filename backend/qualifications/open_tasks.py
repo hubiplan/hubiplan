@@ -13,8 +13,8 @@ from .models import Qualification
 
 
 def qualification_tasks(org, perms: set[str]) -> list[dict]:
+    from members.listing import member_queryset
     from members.models import today
-    from members.views import member_queryset
 
     if MEMBERS_EDIT not in perms or not services.module_on(org) or not org.keeps_members:
         return []

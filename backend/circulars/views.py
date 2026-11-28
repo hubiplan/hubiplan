@@ -822,7 +822,7 @@ class _Search(APIView):
                 federation_queryset(self.org).filter(is_current=True), {"suche": query}
             )
         else:
-            from members.views import filter_members
+            from members.listing import filter_members
 
             qs = filter_members(
                 rcp.club_base(self.org, self.dept), {"suche": query, "status": "alle"}, self.org

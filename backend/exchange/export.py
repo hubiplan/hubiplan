@@ -24,7 +24,7 @@ from core.logobox import logo_size
 from customfields.models import FieldValue, format_year_range
 from customfields.views import definitions_for
 from members.duration import jubilees_between
-from members.views import filter_members, member_queryset, member_rows
+from members.listing import filter_members, member_queryset, member_rows
 from organizations.models import Organization
 from organizations.terms import fill
 from organizations.theme import effective_theme
