@@ -20,7 +20,7 @@ def is_unit(org) -> bool:
 
 
 def _members(unit, params: dict):
-    from members.views import filter_members, member_queryset
+    from members.listing import filter_members, member_queryset
 
     area = unit.organization
     qs = member_queryset(area)

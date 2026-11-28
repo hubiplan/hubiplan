@@ -28,7 +28,7 @@ HORIZON_DAYS = 366
 
 def due(on: datetime.date) -> list[tuple[Qualification, object]]:
     """(Nachweis, Mitgliedschaft) mit fälliger Erinnerung."""
-    from members.views import member_queryset
+    from members.listing import member_queryset
     from organizations.models import Organization
 
     result = []

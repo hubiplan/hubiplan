@@ -29,9 +29,9 @@ from core.api_base import OrgScopedMixin, has_needed
 from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from members.federation_views import federation_queryset, filter_federation
+from members.listing import filter_members, member_queryset
 from members.models import Membership
 from members.personsearch import ordered
-from members.views import filter_members, member_queryset
 from portal.views import DepartmentScopedMixin, _portal_access
 
 from . import apple, services, wallet

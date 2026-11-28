@@ -73,3 +73,14 @@ React mit TypeScript. Jede Seite hält ihren Zustand selbst; es gibt keine Zusta
 | `auth/`, `org/`, `help/`, `learning/` | die vier globalen Zustände (React-Kontexte) |
 
 Seiten rufen die Schnittstelle nur über `api/` auf, nie mit `fetch` direkt.
+
+### Adressen der Schnittstelle
+
+`backend/config/api_routen.json` listet alle Adressen des Servers unter `api/` und `_allauth/`.
+Ein Backend-Test hält die Liste aktuell, und `frontend/src/test/ApiAdressen.test.ts` prüft, dass
+es jede Adresse gibt, die die API-Schicht aufruft. Wer im Server eine Adresse ergänzt, umbenennt
+oder entfernt, erzeugt die Liste neu:
+
+```bash
+cd backend && python manage.py api_routen config/api_routen.json
+```

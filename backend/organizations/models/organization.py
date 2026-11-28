@@ -1,223 +1,31 @@
-"""Organisationseinheiten: ein Baum von Einheiten unter der Plattform.
-
-Jede Einheit ist eine ``Organization``. Wie sie heißt (z. B. „Verein“, „Zug“),
-legt sie selbst fest (``label``-Felder). Technisch gibt es noch drei Arten
-(``type``): Einheiten mit eigenem Datenbereich (``federation``, ``club``) und
-Untereinheiten (``unit``, früher „Abteilung“), deren Daten im Bereich der
-Einheit ``organization`` liegen.
-"""
+"""Einheiten: Organisation, Untereinheit und deren Rollen."""
 
 from __future__ import annotations
 
-import datetime
 import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from access.models import Role
 
-from .theme import validate_hex_color
-
-MAX_LOGO_BYTES = 2 * 1024 * 1024
-
-
-def validate_logo(file) -> None:
-    if file and file.size > MAX_LOGO_BYTES:
-        raise ValidationError(gettext("Das Logo darf höchstens 2 MB groß sein."))
-
-
-def logo_path(instance, filename: str) -> str:
-    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "png"
-    if ext not in {"png", "jpg", "jpeg", "webp"}:
-        ext = "png"  # nie eine Endung, die der Webserver als Seite ausliefert
-    prefix = "abteilungen" if getattr(instance, "type", "") == "unit" else "organisationen"
-    stamp = timezone.now().strftime("%Y%m%d%H%M%S")
-    return f"logos/{prefix}/{instance.pk or 'neu'}-{stamp}.{ext}"
-
-
-def logo_dark_path(instance, filename: str) -> str:
-    """Wie ``logo_path``, mit „dunkel“ im Namen, damit beide Logos nie gleich heißen."""
-    path = logo_path(instance, filename)
-    folder, name = path.rsplit("/", 1)
-    return f"{folder}/{name.split('-', 1)[0]}-dunkel-{name.split('-', 1)[1]}"
-
-
-def brand_icon_path(instance, filename: str) -> str:
-    stamp = timezone.now().strftime("%Y%m%d%H%M%S")
-    return f"marke/symbol-{stamp}.png"
-
-
-def homepage_image_path(instance, filename: str) -> str:
-    stamp = timezone.now().strftime("%Y%m%d%H%M%S")
-    return f"homepages/{instance.pk or 'neu'}-{stamp}.jpg"
-
-
-def default_jubilee_years() -> list[int]:
-    return [10, 25, 40, 50, 60]
-
-
-def default_unit_jubilee_years() -> list[int]:
-    return [10, 25, 50, 60, 75, 100, 125, 150, 175, 200]
-
-
-class DatePrecision(models.TextChoices):
-    """Wie genau Mitgliedschaften angezeigt und Jubiläen berechnet werden.
-
-    Gespeichert wird immer tagesgenau; die Genauigkeit wirkt nur auf Anzeige
-    und Berechnung.
-    """
-
-    DAY = "day", gettext_lazy("tagesgenau")
-    MONTH = "month", gettext_lazy("monatsgenau")
-    YEAR = "year", gettext_lazy("jahresgenau")
-
-
-def founding_year_validators():
-    return [MinValueValidator(800), MaxValueValidator(2100)]
-
-
-SHORT_NAME_MAX = 50
-
-# Arbeitsbereich einer Untereinheit: diese Module sind immer eingeschaltet
-WORKSPACE_MODULES = frozenset({"finance", "billing"})
-
-# Vorgabe für die Bezeichnung neuer Einheiten (Einzahl, Mehrzahl, Genus, Genitiv);
-# jede Einheit kann sie in der App ändern.
-DEFAULT_LABELS = {
-    "platform": ("Plattform", "Plattformen", "f", ""),
-    "federation": ("Dachverband", "Dachverbände", "m", "Dachverbands"),
-    "club": ("Verein", "Vereine", "m", "Vereins"),
-}
-# Vorgabe für die Bezeichnung der Untereinheiten (``department_label*``)
-DEFAULT_CHILD_LABELS = {
-    "platform": ("Einheit", "Einheiten", "f", ""),
-    "federation": ("Verein", "Vereine", "m", "Vereins"),
-    "unit": ("Gruppe", "Gruppen", "f", ""),
-}
-
-
-class ShortNameMixin:
-    """Optionaler Kurzname für enge Stellen (Navigation, Listen, Auswahlfelder).
-
-    Dokumente (Rechnungen, PDFs, Ausweise, Mails) verwenden immer den
-    vollständigen Namen ``name``.
-    """
-
-    @property
-    def display_name(self) -> str:
-        return self.short_name or self.name
-
-
-class ThemeFields(models.Model):
-    """Erscheinungsbild: leer bedeutet „von der übergeordneten Ebene erben“."""
-
-    primary_color = models.CharField(
-        "Primärfarbe", max_length=7, blank=True, validators=[validate_hex_color]
-    )
-    accent_color = models.CharField(
-        "Akzentfarbe", max_length=7, blank=True, validators=[validate_hex_color]
-    )
-    # Namen und weitere Farben der Palette (Ralf 2026-10-31, bis sechs Farben)
-    primary_color_name = models.CharField("Name der Hauptfarbe", max_length=30, blank=True)
-    accent_color_name = models.CharField("Name der Zweitfarbe", max_length=30, blank=True)
-    extra_colors = models.JSONField("weitere Farben", default=list, blank=True)
-    # Wofür Haupt- und Zweitfarbe da sind (Farbblatt, Ralf 10.11.2026); weitere Farben
-    # tragen das in extra_colors[].use
-    primary_color_use = models.CharField(
-        "Verwendung der Hauptfarbe", max_length=60, blank=True, db_default=""
-    )
-    accent_color_use = models.CharField(
-        "Verwendung der Zweitfarbe", max_length=60, blank=True, db_default=""
-    )
-    # Bis zu zwei benannte Verläufe aus Palettenplätzen (Ralf 10.11.2026):
-    # [{name, from, to, direction}]
-    gradients = models.JSONField("Verläufe", default=list, blank=True, db_default=[])
-    # Wofür eine Palettenfarbe da ist (Ralf 13.11.2026): {rolle: platz} mit den Rollen
-    # text, muted, surface, background (theme.PALETTE_ROLES); Webseite › Gestaltung nimmt sie
-    # als Vorgabe, mit palette_roles_in_app auch die HUBIplan-Oberfläche im hellen Modus
-    palette_roles = models.JSONField("Farbrollen", default=dict, blank=True, db_default={})
-    palette_roles_in_app = models.BooleanField(
-        "Farbrollen auch in HUBIplan", default=False, db_default=False
-    )
-    logo = models.ImageField(
-        "Logo/Wappen", upload_to=logo_path, blank=True, validators=[validate_logo]
-    )
-    # Zweites Logo für den Dunkelmodus (Ralf 10.11.2026). Leer: das helle Logo gilt auch dunkel
-    logo_dark = models.ImageField(
-        "Logo/Wappen für den Dunkelmodus",
-        upload_to=logo_dark_path,
-        blank=True,
-        # Rückweg: der Stand davor legt Einheiten ohne diese Spalte an
-        db_default="",
-        validators=[validate_logo],
-    )
-    # Quadratisches Symbol für Browser-Tab und Handy, wenn die Einheit eine eigene Adresse
-    # hat (White Label W7). Leer: Wappen quadratisch, sonst Symbol der Instanz
-    brand_icon = models.ImageField("Symbol", upload_to=brand_icon_path, blank=True, db_default="")
-
-    class Meta:
-        abstract = True
-
-
-class FiscalYearFields(models.Model):
-    """Geschäftsjahr: Beginn als Tag und Monat, es dauert immer zwölf Monate.
-
-    Ein Geschäftsjahr heißt nach dem Kalenderjahr, in dem es beginnt. Beginnt es
-    nicht am 1. Januar, wird es als „2025/26“ angezeigt.
-    """
-
-    fiscal_start_month = models.PositiveSmallIntegerField(
-        "Geschäftsjahr beginnt im Monat",
-        default=1,
-        validators=[MinValueValidator(1), MaxValueValidator(12)],
-    )
-    fiscal_start_day = models.PositiveSmallIntegerField(
-        "Geschäftsjahr beginnt am Tag",
-        default=1,
-        validators=[MinValueValidator(1), MaxValueValidator(31)],
-    )
-
-    class Meta:
-        abstract = True
-
-    def clean(self):
-        super().clean()
-        try:
-            datetime.date(2001, self.fiscal_start_month, self.fiscal_start_day)
-        except ValueError as exc:
-            raise ValidationError(
-                {
-                    "fiscal_start_day": gettext(
-                        "Diesen Tag gibt es in dem Monat nicht (in jedem Jahr)."
-                    )
-                }
-            ) from exc
-
-    @property
-    def fiscal_is_calendar(self) -> bool:
-        return self.fiscal_start_month == 1 and self.fiscal_start_day == 1
-
-    def fiscal_start(self, year: int) -> datetime.date:
-        return datetime.date(year, self.fiscal_start_month, self.fiscal_start_day)
-
-    def fiscal_range(self, year: int) -> tuple[datetime.date, datetime.date]:
-        """Erster Tag und letzter Tag des Geschäftsjahres ``year``."""
-        start = self.fiscal_start(year)
-        end = self.fiscal_start(year + 1) - datetime.timedelta(days=1)
-        return start, end
-
-    def fiscal_year_of(self, day: datetime.date) -> int:
-        return day.year if day >= self.fiscal_start(day.year) else day.year - 1
-
-    def fiscal_label(self, year: int) -> str:
-        if self.fiscal_is_calendar:
-            return str(year)
-        return f"{year}/{(year + 1) % 100:02d}"
+from .fields import (
+    DEFAULT_CHILD_LABELS,
+    DEFAULT_LABELS,
+    SHORT_NAME_MAX,
+    WORKSPACE_MODULES,
+    DatePrecision,
+    FiscalYearFields,
+    ShortNameMixin,
+    ThemeFields,
+    default_jubilee_years,
+    default_unit_jubilee_years,
+    founding_year_validators,
+    homepage_image_path,
+)
 
 
 class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
@@ -665,7 +473,7 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         self._loaded_active = self.is_active
         self._loaded_portal = (self.member_portal_enabled, "portal" in (self.enabled_modules or []))
         if active_changed and self.type in (self.Type.FEDERATION, self.Type.CLUB, self.Type.UNIT):
-            from .activity import cascade_active
+            from ..activity import cascade_active
 
             cascade_active(self)
 
@@ -773,7 +581,7 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
 
     def parent_error(self) -> str | None:
         """Prüft die übergeordnete Einheit einer Untereinheit (Datenbereich, Kreis, Tiefe)."""
-        from .tree import MAX_DEPTH
+        from ..tree import MAX_DEPTH
 
         if self.parent_id == self.organization_id:
             return None
@@ -794,7 +602,7 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
             node = node.parent
         if self.pk:
             # Beim Umhängen wandern die Untereinheiten mit
-            from .tree import UnitTree
+            from ..tree import UnitTree
 
             tree = UnitTree.of(self.organization_id)
             depth += max((tree.depth(i) for i in tree.subtree(self.pk)), default=0) - (
@@ -858,93 +666,6 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     def platform(cls) -> Organization:
         org, _ = cls.objects.get_or_create(type=cls.Type.PLATFORM, defaults={"name": "HUBIplan"})
         return org
-
-
-class PlatformSettings(models.Model):
-    """Globale Einstellungen der Plattform (genau ein Datensatz)."""
-
-    class PersonData(models.TextChoices):
-        SHARED = "shared", gettext_lazy("gemeinsam gepflegt")
-        PER_CLUB = "per_club", gettext_lazy("eigene Kopie je Verein")
-
-    person_data_mode = models.CharField(
-        "Personendaten bei mehreren Vereinen",
-        max_length=10,
-        choices=PersonData.choices,
-        default=PersonData.SHARED,
-    )
-    deletion_period_months = models.PositiveSmallIntegerField(
-        "Löschfrist nach Austritt (Monate)",
-        default=24,
-        validators=[MinValueValidator(1), MaxValueValidator(600)],
-    )
-    # Schutz vor zu frühem Löschen (Fachfrage FQ10): Eine verkürzte Frist gilt erst nach
-    # DELETION_SHORTEN_GRACE_DAYS Tagen; bis dahin zählt die vorige, längere Frist.
-    deletion_period_previous = models.PositiveSmallIntegerField(
-        "vorige Löschfrist (Monate)", null=True, blank=True
-    )
-    deletion_period_changed_at = models.DateTimeField(
-        "Löschfrist verkürzt am", null=True, blank=True
-    )
-    # Verbund: Einheiten dieser Instanz dürfen sich mit Einheiten auf anderen
-    # HUBIplan-Instanzen koppeln. Aus: alles wie bisher auf einer Instanz.
-    peering_enabled = models.BooleanField("Kopplung mit anderen Instanzen", default=False)
-    peering_allowed_hosts = models.TextField(
-        "erlaubte Instanzen (leer = alle)",
-        blank=True,
-        help_text="Domains, eine je Zeile, z. B. verband.example.org",
-    )
-    # Verbund Schritt 7: Personen melden sich hier mit ihrem Zugang einer gekoppelten
-    # Instanz an (nach eigener Verknüpfung). Aus: nur Zugänge dieser Instanz.
-    peering_login = models.BooleanField("Anmeldung über gekoppelte Instanzen", default=False)
-    # Gesamtaudit 15.11., MCP-09: Speicher für Webseitenbilder je Einheit (MB, 0 = ohne Grenze)
-    website_image_quota_mb = models.PositiveIntegerField(
-        "Speicher für Webseitenbilder je Einheit (MB)", default=2048, db_default=2048
-    )
-    # White Label W2: quadratisches Symbol der Instanz für Browser-Tab und Handy (PWA).
-    # Leer: das H-Zeichen von HUBIplan (konzepte/white-label.md)
-    brand_icon = models.ImageField(
-        "Symbol der Instanz", upload_to=brand_icon_path, blank=True, db_default=""
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Plattform-Einstellungen"
-        verbose_name_plural = "Plattform-Einstellungen"
-
-    def __str__(self) -> str:
-        return "Plattform-Einstellungen"
-
-    @classmethod
-    def load(cls) -> PlatformSettings:
-        obj, _ = cls.objects.get_or_create(pk=1)
-        return obj
-
-    def shorter_from(self) -> datetime.datetime | None:
-        """Ab wann eine verkürzte Löschfrist gilt (None: keine Verkürzung ausstehend)."""
-        if self.deletion_period_previous is None or self.deletion_period_changed_at is None:
-            return None
-        start = self.deletion_period_changed_at + datetime.timedelta(
-            days=DELETION_SHORTEN_GRACE_DAYS
-        )
-        return start if timezone.now() < start else None
-
-    def effective_deletion_months(self) -> int:
-        """Die Frist, nach der gerade gelöscht wird: während der Schonfrist die längere."""
-        if self.shorter_from() is not None:
-            return max(self.deletion_period_months, self.deletion_period_previous or 0)
-        return self.deletion_period_months
-
-    def set_deletion_period(self, months: int) -> None:
-        """Frist ändern; eine Verkürzung gilt erst nach der Schonfrist (Fachfrage FQ10)."""
-        effective = self.effective_deletion_months()
-        if months < effective:
-            self.deletion_period_previous = effective
-            self.deletion_period_changed_at = timezone.now()
-        elif months >= effective:
-            self.deletion_period_previous = None
-            self.deletion_period_changed_at = None
-        self.deletion_period_months = months
 
 
 # Eine verkürzte Löschfrist gilt erst nach so vielen Tagen (Zeit zum Bemerken und Sichern)
@@ -1059,292 +780,3 @@ class DepartmentRole(Role):
         verbose_name_plural = "Rollen der Untereinheiten"
         ordering = ["position", "name"]
         default_manager_name = "objects"
-
-
-def new_imprint_key() -> str:
-    import secrets
-
-    return secrets.token_urlsafe(6)
-
-
-class Imprint(models.Model):
-    """Impressum und Datenschutzhinweise einer Einheit oder der Plattform.
-
-    Leere Felder werden aus den Stammdaten der Einheit ergänzt (Name, Anschrift,
-    Kontakt) und bei den Vertretungsberechtigten aus den Rollen mit dem Kennzeichen
-    „vertritt die Einheit“. Wie das Impressum nach außen aussieht, berechnet
-    ``organizations.imprint``.
-    """
-
-    class Mode(models.TextChoices):
-        INHERIT = "inherit", gettext_lazy("von der übergeordneten Einheit übernehmen")
-        OWN = "own", gettext_lazy("eigenes Impressum")
-        LINK = "link", gettext_lazy("auf eigenes Impressum verlinken")
-
-    class PrivacyMode(models.TextChoices):
-        TEXT = "text", gettext_lazy("Text in HUBIplan")
-        LINK = "link", gettext_lazy("auf eigene Seite verlinken")
-
-    organization = models.OneToOneField(
-        Organization, on_delete=models.CASCADE, related_name="imprint"
-    )
-    # Fester Teil der öffentlichen Adresse (/impressum/<key>); ändert sich nie
-    public_key = models.CharField(max_length=20, unique=True, default=new_imprint_key)
-    mode = models.CharField("Impressum", max_length=10, choices=Mode.choices)
-    external_url = models.URLField("Adresse des eigenen Impressums", blank=True)
-    name = models.CharField(
-        "Name bzw. Firma", max_length=200, blank=True, help_text="Leer: Name der Einheit."
-    )
-    legal_form = models.CharField(
-        "Rechtsform", max_length=100, blank=True, help_text="z. B. eingetragener Verein"
-    )
-    street = models.CharField("Straße und Hausnummer", max_length=200, blank=True)
-    address_extra = models.CharField(
-        "Adresszusatz",
-        max_length=200,
-        blank=True,
-        default="",
-        db_default="",
-        help_text="z. B. c/o Firma oder Gebäude; steht über Straße und Hausnummer.",
-    )
-    postal_code = models.CharField("PLZ", max_length=10, blank=True)
-    city = models.CharField("Ort", max_length=100, blank=True)
-    representatives = models.TextField(
-        "Vertretungsberechtigt",
-        blank=True,
-        help_text="Leer: aus den Rollen mit dem Kennzeichen „vertritt die Einheit“.",
-    )
-    email = models.EmailField("E-Mail", blank=True)
-    phone = models.CharField("Telefon", max_length=50, blank=True)
-    # Nur eingetragene Einheiten (e.V., bei der Plattform z. B. GmbH) haben
-    # Registerangaben; dann gehören Registergericht und -nummer ins Impressum.
-    registered = models.BooleanField(
-        "im Register eingetragen",
-        default=False,
-        help_text="z. B. eingetragener Verein (e.V.) im Vereinsregister",
-    )
-    register_court = models.CharField("Registergericht", max_length=100, blank=True)
-    register_number = models.CharField("Registernummer", max_length=50, blank=True)
-    vat_id = models.CharField("Umsatzsteuer-Identifikationsnummer", max_length=30, blank=True)
-    responsible = models.TextField(
-        "Verantwortlich nach § 18 Abs. 2 MStV", blank=True, help_text="Name und Anschrift"
-    )
-    data_protection_officer = models.TextField("Datenschutzbeauftragte(r)", blank=True)
-    extra_text = models.TextField("Weitere Angaben", blank=True)
-    privacy_mode = models.CharField(
-        "Datenschutzhinweise",
-        max_length=10,
-        choices=PrivacyMode.choices,
-        default=PrivacyMode.TEXT,
-    )
-    # privacy_text ist der Entwurf; öffentlich gilt erst die veröffentlichte Fassung
-    # (UI-Audit 29.10. NAF-02)
-    privacy_text = models.TextField("Entwurf der Datenschutzhinweise", blank=True)
-    privacy_published_text = models.TextField("Veröffentlichte Datenschutzhinweise", blank=True)
-    privacy_published_at = models.DateTimeField("Datenschutzhinweise veröffentlicht am", null=True)
-    privacy_url = models.URLField("Adresse der Datenschutzhinweise", blank=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Impressum"
-        verbose_name_plural = "Impressen"
-
-    def __str__(self) -> str:
-        return f"Impressum {self.organization}"
-
-    def clean(self) -> None:
-        errors = {}
-        if self.mode == self.Mode.LINK and not self.external_url:
-            errors["external_url"] = gettext("Bitte die Adresse des Impressums angeben.")
-        if self.mode == self.Mode.INHERIT and self.organization.type == Organization.Type.PLATFORM:
-            errors["mode"] = gettext("Die Plattform braucht ein eigenes Impressum.")
-        if self.privacy_mode == self.PrivacyMode.LINK and not self.privacy_url:
-            errors["privacy_url"] = gettext("Bitte die Adresse der Datenschutzhinweise angeben.")
-        if errors:
-            raise ValidationError(errors)
-
-    @staticmethod
-    def default_mode(org: Organization) -> str:
-        """Untereinheiten übernehmen, alle anderen haben ein eigenes Impressum."""
-        if org.type == Organization.Type.UNIT:
-            return Imprint.Mode.INHERIT
-        return Imprint.Mode.OWN
-
-
-class SocialLink(models.Model):
-    """Social-Media-Kanal einer Einheit (Stammdaten, z. B. für Briefvorlage und Webseite)."""
-
-    class Kind(models.TextChoices):
-        FACEBOOK = "facebook", gettext_lazy("Facebook")
-        INSTAGRAM = "instagram", gettext_lazy("Instagram")
-        YOUTUBE = "youtube", gettext_lazy("YouTube")
-        TIKTOK = "tiktok", gettext_lazy("TikTok")
-        X = "x", gettext_lazy("X")
-        MASTODON = "mastodon", gettext_lazy("Mastodon")
-        BLUESKY = "bluesky", gettext_lazy("Bluesky")
-        THREADS = "threads", gettext_lazy("Threads")
-        WHATSAPP = "whatsapp", gettext_lazy("WhatsApp-Kanal")
-        LINKEDIN = "linkedin", gettext_lazy("LinkedIn")
-        OTHER = "other", gettext_lazy("Sonstiges")
-
-    organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name="social_links"
-    )
-    kind = models.CharField("Art", max_length=20, choices=Kind.choices)
-    url = models.URLField("Adresse")
-    label = models.CharField(
-        "Anzeigename",
-        max_length=100,
-        blank=True,
-        help_text="Kurz, z. B. @hubertus1920; leer: aus der Adresse.",
-    )
-    position = models.PositiveSmallIntegerField("Reihenfolge", default=0)
-
-    class Meta:
-        verbose_name = "Social-Media-Kanal"
-        verbose_name_plural = "Social-Media-Kanäle"
-        ordering = ["position", "pk"]
-
-    def __str__(self) -> str:
-        return f"{self.get_kind_display()}: {self.display}"
-
-    @property
-    def display(self) -> str:
-        """Anzeigename oder die Adresse ohne https:// und www."""
-        if self.label.strip():
-            return self.label.strip()
-        text = self.url.split("://", 1)[-1]
-        text = text[4:] if text.startswith("www.") else text
-        return text.rstrip("/")
-
-
-class InstanceAddress(models.Model):
-    """Weitere Adresse der Instanz für eine Einheit (White Label W7).
-
-    Wer HUBIplan über diese Adresse aufruft, sieht auf der Anmeldeseite Name, Farben, Wappen
-    und Symbol der Einheit; nach der Anmeldung ist sie vorausgewählt.
-    """
-
-    hostname = models.CharField("Adresse", max_length=253, unique=True)
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="instance_addresses",
-        verbose_name="Einheit",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["hostname"]
-        verbose_name = "Adresse der Instanz"
-        verbose_name_plural = "Adressen der Instanz"
-
-    def __str__(self) -> str:
-        return self.hostname
-
-
-class HelpFeedback(models.Model):
-    """Antwort auf „Hat das geholfen?“ unter einer Anleitung oder Seitenhilfe.
-
-    Bewusst ohne Person, Einheit und Adresse: nur der Hilfetext, die Sprache, die Fassung,
-    Ja oder Nein, ein freiwilliger Satz und der Tag (docs/hilfe.md).
-    """
-
-    key = models.CharField("Hilfetext", max_length=80)
-    language = models.CharField("Sprache", max_length=5)
-    version = models.CharField("Fassung", max_length=40, blank=True)
-    helpful = models.BooleanField("hat geholfen")
-    comment = models.CharField("Was hat gefehlt?", max_length=300, blank=True)
-    day = models.DateField("Tag")
-
-    class Meta:
-        ordering = ["-day", "-id"]
-        indexes = [models.Index(fields=["key"], name="helpfeedback_key")]
-        verbose_name = "Rückmeldung zur Hilfe"
-        verbose_name_plural = "Rückmeldungen zur Hilfe"
-
-    def __str__(self) -> str:
-        return f"{self.key}: {'ja' if self.helpful else 'nein'}"
-
-
-class HelpSearchMiss(models.Model):
-    """Suchwörter der Hilfe ohne Treffer, gezählt je Sprache; ohne Person und Einheit."""
-
-    term = models.CharField("Suchwörter", max_length=60)
-    language = models.CharField("Sprache", max_length=5)
-    count = models.PositiveIntegerField("Anzahl", default=1)
-    last_day = models.DateField("zuletzt am")
-
-    class Meta:
-        ordering = ["-count", "term"]
-        constraints = [
-            models.UniqueConstraint(fields=["term", "language"], name="helpsearchmiss_einmalig")
-        ]
-        verbose_name = "Suche in der Hilfe ohne Treffer"
-        verbose_name_plural = "Suchen in der Hilfe ohne Treffer"
-
-    def __str__(self) -> str:
-        return f"{self.term} ({self.count})"
-
-
-class CspReport(models.Model):
-    """Vom Browser gemeldeter Verstoß gegen die Inhaltsregeln (CSP) der Oberfläche.
-
-    Gezählt je Regel, blockierter Herkunft und Seite; ohne Person, Einheit und Adresse des
-    Aufrufers (docs/betrieb.md, „Meldungen des Browsers“).
-    """
-
-    directive = models.CharField("Regel", max_length=40)
-    blocked = models.CharField("blockiert", max_length=120)
-    page = models.CharField("Seite", max_length=120)
-    count = models.PositiveIntegerField("Anzahl", default=1)
-    first_day = models.DateField("zuerst am")
-    last_day = models.DateField("zuletzt am")
-    version = models.CharField("Fassung", max_length=40, blank=True)
-
-    class Meta:
-        ordering = ["-last_day", "-count", "directive"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["directive", "blocked", "page"], name="cspreport_einmalig"
-            )
-        ]
-        verbose_name = "Meldung des Browsers (CSP)"
-        verbose_name_plural = "Meldungen des Browsers (CSP)"
-
-    def __str__(self) -> str:
-        return f"{self.directive} {self.blocked} ({self.count})"
-
-
-class DecoyHit(models.Model):
-    """Auslösung eines Köders (``organizations.decoys``): Jemand hat Köderdaten benutzt.
-
-    Gezählt je Art, Köder, Angabe und Tag. Ohne Mandantentrennung, nur für die Plattform.
-    """
-
-    class Kind(models.TextChoices):
-        MAIL_IN = "mail_in", gettext_lazy("Mail an die Köderadresse")
-        MAIL_OUT = "mail_out", gettext_lazy("eigene Mail an die Köderadresse")
-        LOGIN = "login", gettext_lazy("Anmeldeversuch")
-        LOOKUP = "lookup", gettext_lazy("Abruf über die Schnittstelle")
-
-    kind = models.CharField("Art", max_length=10, choices=Kind.choices)
-    # Nummer der Köder-Mitgliedschaft; bewusst kein Fremdschlüssel (bleibt nach dem Löschen)
-    membership_id = models.BigIntegerField("Köder", null=True, blank=True)
-    detail = models.CharField("Angabe", max_length=200, blank=True)
-    day = models.DateField("Tag")
-    count = models.PositiveIntegerField("Anzahl", default=1)
-    last_at = models.DateTimeField("zuletzt", default=timezone.now)
-
-    class Meta:
-        ordering = ["-last_at", "-id"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["kind", "membership_id", "detail", "day"], name="decoyhit_einmalig"
-            )
-        ]
-        verbose_name = "Köder-Auslösung"
-        verbose_name_plural = "Köder-Auslösungen"
-
-    def __str__(self) -> str:
-        return f"{self.kind} {self.day} ({self.count})"
