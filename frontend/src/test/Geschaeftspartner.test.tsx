@@ -92,7 +92,8 @@ function show(permissions: string[], body: unknown[] = [partner]) {
     }),
     'GET /api/me/organizations/': () => ({
       status: 200,
-      body: [testOrg({ permissions })],
+      // Mit Webseite: die Akte zeigt die Einwilligung zur Nennung als Partner oder Sponsor
+      body: [testOrg({ permissions, modules: ['members', 'awards', 'honors', 'website'] })],
     }),
     'GET /api/orgs/7/billing/partners/': () => ({ status: 200, body }),
     'GET /api/orgs/7/finance/categories/': () => ({ status: 200, body: [] }),
