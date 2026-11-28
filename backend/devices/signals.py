@@ -48,9 +48,12 @@ def _on_role_changed(sender, instance, **kwargs):
     # Nur wenn es überhaupt ein Gerät gibt, damit die Rollenverwaltung nicht langsamer wird
     from django.db import transaction
 
+    from accounts.models import User
+
     from .models import Device
 
-    user = instance.user
+    # Wird das Konto selbst gelöscht, fallen seine Rollen mit weg: Dann ist nichts abzumelden
+    user = User.objects.filter(pk=instance.user_id).first() if instance.user_id else None
     if user is None or not Device.objects.filter(user=user, revoked_at__isnull=True).exists():
         return
 

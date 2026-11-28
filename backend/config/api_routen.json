@@ -246,6 +246,7 @@
 "^api/app/v1/devices/([0-9]+)/admin/$",
 "^api/app/v1/devices/current/key/$",
 "^api/app/v1/devices/current/push/$",
+"^api/app/v1/devices/current/push/admin/$",
 "^api/app/v1/devices/current/renew/$",
 "^api/app/v1/instance/$",
 "^api/app/v1/me/$",
