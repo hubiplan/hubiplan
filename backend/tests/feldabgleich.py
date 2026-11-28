@@ -4,8 +4,9 @@ Die Web-Oberfläche beschreibt die Antworten des Servers von Hand als TypeScript
 (``frontend/src/api/*.ts``). Damit beide zusammenpassen, ruft dieser Abgleich je Bereich die
 Adressen für den Demoverein ab und hält echte Antworten in
 ``backend/config/feldabgleich/<bereich>.json`` aktuell. Die Oberfläche erzeugt daraus Daten mit
-Typangabe (``frontend/scripts/feldabgleich.mjs``). Ihre Typprüfung (``tsc``) meldet dann jedes Feld, das der Server liefert und der Typ nicht kennt, jedes Pflichtfeld,
-das der Server nicht liefert, und jede falsche Art (auch ``null``).
+Typangabe (``frontend/scripts/feldabgleich.mjs``). Ihre Typprüfung (``tsc``) meldet dann jedes
+Feld, das der Server liefert und der Typ nicht kennt, jedes Pflichtfeld, das der Server nicht
+liefert, und jede falsche Art (auch ``null``).
 
 Aufgenommen werden nur so viele Antworten, wie nötig sind, um jede Ausprägung zu zeigen
 (jedes Feld, jede Art eines Werts). Die Daten sind die erfundenen des Demovereins.
