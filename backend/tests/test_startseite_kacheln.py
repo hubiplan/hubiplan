@@ -236,3 +236,15 @@ def test_kasse_ohne_mitglieder_von_anfang_an(api, club, board_a):
     assert kasse["state"] == "auto" and kasse["shown"] is True
     assert kasse["default_on"] is True and kasse["urgent"] is False
     assert kasse["content"]["reason"] == ""
+
+
+def test_kasse_auch_fuer_konten_mit_leserecht(api, club):
+    """Reines Kassenbuch: Wer nur lesen darf (z. B. Kassenprüfung), hat die Kasse auf der
+    Startseite und damit einen Einstieg, auch ohne Anlass."""
+    club.enabled_modules = ["finance"]
+    club.save(update_fields=["enabled_modules"])
+    pruefer = make_user("pruefer@example.org")
+    give_role(pruefer, club, permissions=["finance.view"], name="Kassenprüfung")
+    kasse = tiles(api(pruefer), f"/api/orgs/{club.pk}/home-tiles/")["kasse"]
+    assert kasse["state"] == "auto" and kasse["shown"] is True and kasse["default_on"] is True
+    assert kasse["content"]["link"] == "/finanzen"
