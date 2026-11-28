@@ -11,7 +11,8 @@ protokolliert noch von „Rückgängig“ auf einen alten Wert zurückgesetzt.
 
 from __future__ import annotations
 
-from django.db import models
+from django.db import connection, models
+from django.utils.translation import gettext
 from rest_framework.exceptions import APIException
 
 MISSING = object()
@@ -64,3 +65,19 @@ def check_version(instance, sent, message) -> None:
 
 def check_request(request, instance, message) -> None:
     check_version(instance, sent_version(request), message)
+
+
+def stale_text() -> str:
+    """Allgemeine Meldung, wenn eine Ansicht keinen eigenen Text hat."""
+    return gettext("Der Eintrag wurde inzwischen geändert. Bitte neu laden.")
+
+
+def lock_and_check(request, instance, message=None) -> None:
+    """Für eigene Ansichten, gleich nach dem Laden des Datensatzes und vor dem Prüfen der
+    Eingaben: Zeile sperren (innerhalb einer Transaktion), frisch lesen und die mitgeschickte
+    Fassung prüfen. Danach überschreibt die Anfrage keinen Stand, den sie nicht kennt."""
+    if connection.in_atomic_block:
+        manager = type(instance)._base_manager
+        list(manager.select_for_update().filter(pk=instance.pk).values_list("pk"))
+    instance.refresh_from_db()
+    check_request(request, instance, message or stale_text())

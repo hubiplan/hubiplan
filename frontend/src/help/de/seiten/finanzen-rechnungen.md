@@ -32,3 +32,5 @@ Stornieren: In der Rechnung stornierst du mit **Stornieren**. Dafür ist ein Gru
 Auch eine bezahlte Rechnung lässt sich stornieren. Die Zahlungen bleiben dann als Guthaben an der Rechnung stehen. **Erstatten** storniert die Zahlungen in der Kasse mit heutigem Datum; den Betrag überweist du danach zurück. **Verrechnen** schiebt die Zahlungen auf eine offene Rechnung desselben Empfängers.
 
 **Stornieren und neu anlegen** storniert die Rechnung und öffnet gleich eine Kopie als neuen Entwurf. So korrigierst du eine falsche Rechnung in einem Schritt. Rechnungen aus einem Beitragslauf berechnest du stattdessen im Beitragslauf neu.
+
+Bearbeiten zwei Personen denselben Entwurf, gilt die zuerst gespeicherte Änderung. Die zweite Person sieht „Die Rechnung wurde inzwischen geändert. Bitte neu laden.“ und lädt die Seite neu. Das gilt auch für Festschreiben und Löschen.

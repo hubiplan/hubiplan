@@ -31,3 +31,5 @@ Cancelling: in the invoice, choose **Cancel invoice** and give a reason. HUBIpla
 Paid invoices can be cancelled too. The payments then remain on the invoice as a credit. **Refund** reverses the payments in the cash book with today's date; then transfer the amount back. **Offset** moves the payments to an open invoice to the same recipient.
 
 **Cancel and create again** cancels the invoice and opens a copy as a new draft, so you correct a wrong invoice in one step. Invoices from a fee run are recalculated in the fee run instead.
+
+If two people edit the same draft, the change saved first applies. The second person sees “The invoice has been changed in the meantime. Please reload.” and reloads the page. This also applies to finalising and deleting.

@@ -105,13 +105,16 @@ function FeesForm({
 
   const auto = useAutoSave(
     form,
-    (_changes, values) =>
+    // Nur geänderte Zeilen: Wer gleichzeitig eine andere Mitgliedsart ändert, bleibt erhalten
+    (changes, values) =>
       billingApi.saveFees(
         orgId,
-        rows.map((r) => {
-          const raw = values[String(r.member_type)]?.trim() ?? ''
-          return { member_type: r.member_type, amount: raw ? parseAmount(raw) : null }
-        }),
+        rows
+          .filter((r) => String(r.member_type) in changes)
+          .map((r) => {
+            const raw = values[String(r.member_type)]?.trim() ?? ''
+            return { member_type: r.member_type, amount: raw ? parseAmount(raw) : null }
+          }),
       ),
     { enabled: canEdit, onSaved: (result) => onSaved(result as FeeRateRow[]) },
   )
@@ -528,15 +531,21 @@ function SettingsCard({
 
   const auto = useAutoSave(
     form,
-    (_changes, values) =>
-      billingApi.updateSettings(orgId, {
+    // Nur geänderte Felder: Wer gleichzeitig ein anderes Feld ändert, bleibt erhalten
+    (changes, values) => {
+      const all: Partial<BillingSettings> = {
         ...values,
         due_days: Number(values.due_days) || 0,
         account: values.account ? Number(values.account) : null,
         category: values.category ? Number(values.category) : null,
         vat_rate: parseAmount(values.vat_rate) || '19',
         prenotification_days: Number(values.prenotification_days) || 14,
-      }),
+      }
+      return billingApi.updateSettings(
+        orgId,
+        Object.fromEntries(Object.entries(all).filter(([key]) => key in changes)),
+      )
+    },
     { enabled: canEdit, onSaved: (result) => onSaved(result as BillingSettings) },
   )
 

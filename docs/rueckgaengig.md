@@ -69,21 +69,32 @@ einmal zu machen.
   `Versioned` und nennen `version` in `derived_fields`: Die Fassung steht nicht im
   Änderungsprotokoll, und „Rückgängig“ setzt sie nie zurück (jedes Speichern zählt hoch, auch
   das Zurückspielen).
-- `ModelViewSet` mit `AuditMixin`: `version_conflict = gettext_lazy("…")` setzen, dann prüfen
-  Ändern und Löschen von selbst. Eigene Ansichten sperren die Zeile, lesen frisch und rufen
-  `check_request(request, obj, text)` auf.
+- `ModelViewSet` mit `AuditMixin`: Ändern und Löschen prüfen von selbst, sobald das Modell von
+  `Versioned` erbt; `version_conflict = gettext_lazy("…")` gibt der Meldung einen eigenen
+  Wortlaut. Eigene Ansichten rufen `lock_and_check(request, obj)` auf (sperrt, liest frisch,
+  prüft) oder nach eigener Sperre `check_request(request, obj, text)`.
 - Die Fassung steht in der Antwort (`version`) und kommt im Rumpf zurück (`PATCH`, `DELETE`,
-  Aktionen wie `storno/`), bei `DELETE` ohne Rumpf auch als `?version=`.
+  Aktionen wie `storno/` oder `finalize/`), bei `DELETE` ohne Rumpf auch als `?version=`.
 - Ohne mitgeschickte Fassung prüft der Server nicht. So arbeiten ältere Apps weiter; für sie
   gilt bis zum Update „wer zuletzt speichert, gewinnt“.
 - Oberfläche: Das Formular merkt sich die Fassung beim Öffnen und übernimmt nach jedem eigenen
   Speichern die neue aus der Antwort. Eine im Hintergrund neu geladene Liste zählt nicht, denn
-  das Formular zeigt weiter den geöffneten Stand.
+  das Formular zeigt weiter den geöffneten Stand. Autospeichernde Formulare nennen die Fassung
+  als Option (`useAutoSave(form, save, { version: eintrag.version })`), Dialoge und Knöpfe
+  umschließen ihre Anfrage mit `sendingVersion(eintrag.version, () => api…)`
+  (`frontend/src/api/client.ts`). Steht die neue Fassung nicht oben in der Antwort, nennt
+  `nextVersion` die Stelle.
+- Tabellen, die als Liste gespeichert werden (Beitragssätze, Arbeitsstunden), und die
+  Abrechnungseinstellungen schicken nur geänderte Zeilen und Felder. Zwei Personen
+  überschreiben sich dort nur, wenn sie denselben Wert ändern.
 
 Mit Fassung: Aufgaben, Material, Pinnwand, Dienstplan, Training, Auslagen, Bestellungen,
 Versammlungen, Haushaltsplan, Rechnungsposten, Belegungen, Umfragen, Pflichten, seit November
 2026 auch Stammdaten und Kontakt eines Mitglieds (Verein und Abteilungsbereich), Termine
-(Ändern, Löschen) und Buchungen im Kassenbuch (Ändern, Löschen, Storno, Aufteilen).
+(Ändern, Löschen), Buchungen im Kassenbuch (Ändern, Löschen, Storno, Aufteilen), die übrigen
+Teile der Mitgliedsakte (Ansprechpartner, Rechnungsanschrift, Zeiträume, Zuordnung zu
+Untereinheiten), Haushalte, Rechnungen (Ändern, Löschen, Festschreiben; auch E-Rechnungen)
+sowie Geschäftspartner mit Ansprechpartnern und Vereinbarungen.
 
 ## Rückgängig und Wiederherstellen
 

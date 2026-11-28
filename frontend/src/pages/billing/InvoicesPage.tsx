@@ -8,7 +8,7 @@ import type { ActiveFilter } from '../../components/liste/FilterChips.tsx'
 import { ViewPicker } from '../../components/liste/ViewPicker.tsx'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { billingApi } from '../../api/billing.ts'
-import { ApiError, newRequestKey } from '../../api/client.ts'
+import { ApiError, newRequestKey, sendingVersion } from '../../api/client.ts'
 import type { BillingSettings, Invoice, InvoiceRow } from '../../api/billing.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
 import type { PickedMember } from '../../api/members.ts'
@@ -870,7 +870,10 @@ function InvoiceDetail({
               className="button button-primary"
               disabled={busy}
               onClick={() =>
-                void act(() => billingApi.finalize(org.id, inv.id), t('Festgeschrieben.'))
+                void act(
+                  () => sendingVersion(inv.version, () => billingApi.finalize(org.id, inv.id)),
+                  t('Festgeschrieben.'),
+                )
               }
             >
               {t('Festschreiben')}
@@ -887,7 +890,12 @@ function InvoiceDetail({
                     confirmLabel: t('Löschen'),
                   })
                 )
-                  void act(() => billingApi.deleteInvoice(org.id, inv.id), '', true)
+                  void act(
+                    () =>
+                      sendingVersion(inv.version, () => billingApi.deleteInvoice(org.id, inv.id)),
+                    '',
+                    true,
+                  )
               }}
             >
               {t('Löschen')}
@@ -1230,7 +1238,7 @@ function InvoiceForm({
       )
       return saved
     },
-    { enabled: invoice !== null },
+    { enabled: invoice !== null, version: invoice?.version },
   )
 
   async function save(e: FormEvent) {

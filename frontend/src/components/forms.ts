@@ -1,6 +1,6 @@
 // Hilfsfunktionen und Hooks für Formulare und Datenabruf.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ApiError } from '../api/client.ts'
+import { ApiError, sendingVersion, versionOf } from '../api/client.ts'
 import { registerLeave } from './leaveGuard.ts'
 import { locale, t } from '../i18n/index.ts'
 
@@ -156,6 +156,10 @@ export type AutoSave = {
   flush: () => Promise<boolean>
   /** Setzt die Eingaben auf den zuletzt gespeicherten Stand zurück (nur mit setValues). */
   discard?: () => void
+  /** Fassung des Datensatzes nach dem letzten eigenen Speichern (nur mit Option `version`). */
+  version: () => number | undefined
+  /** Fassung neu setzen, wenn der Datensatz außerhalb des Autospeicherns gespeichert wurde. */
+  resetVersion: (version: number | undefined) => void
 }
 
 /**
@@ -167,6 +171,11 @@ export type AutoSave = {
  * Verlassen der Seite wird noch Offenes sofort gespeichert; solange etwas nicht
  * gespeichert ist (auch nach einem Fehler), warnt der Browser vor dem Schließen.
  *
+ * Gleichzeitiges Bearbeiten: Mit `version` (Fassung des geöffneten Datensatzes) geht die
+ * Fassung mit jeder Speicheranfrage mit, und jede Antwort mit `version` zählt sie weiter. Der
+ * Server lehnt ab, wenn inzwischen jemand anderes gespeichert hat. Es zählt der Stand beim
+ * Öffnen des Formulars; später neu geladene Listen ändern ihn nicht.
+ *
  * `flush()` wartet auf eine laufende Anfrage und speichert danach den aktuellen
  * Stand. Es liefert erst dann true, wenn wirklich alles gespeichert ist; nach
  * einem Fehler false. „Schließen“ und „Versenden“ dürfen nur bei true weitermachen.
@@ -174,19 +183,38 @@ export type AutoSave = {
 export function useAutoSave<T extends object>(
   form: AutoSaveForm<T>,
   save: (changes: Partial<T>, values: T) => Promise<unknown>,
-  options: { enabled?: boolean; delay?: number; onSaved?: (result: unknown) => void } = {},
+  options: {
+    enabled?: boolean
+    delay?: number
+    onSaved?: (result: unknown) => void
+    /** Fassung des geöffneten Datensatzes (gleichzeitiges Bearbeiten, docs/rueckgaengig.md) */
+    version?: number
+    /** Neue Fassung aus der Antwort, wenn sie nicht als `version` oben in der Antwort steht */
+    nextVersion?: (body: unknown) => number | undefined
+  } = {},
 ): AutoSave {
   const { enabled = true, delay = 700 } = options
   const [state, setState] = useState<SaveState>('idle')
   const [error, setError] = useState<string | null>(null)
   const saved = useRef<T>(form.values)
-  const latest = useRef({ values: form.values, save, onSaved: options.onSaved })
+  const version = useRef(options.version)
+  const latest = useRef({
+    values: form.values,
+    save,
+    onSaved: options.onSaved,
+    nextVersion: options.nextVersion,
+  })
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const running = useRef<Promise<boolean> | null>(null)
   const mounted = useRef(true)
 
   useEffect(() => {
-    latest.current = { values: form.values, save, onSaved: options.onSaved }
+    latest.current = {
+      values: form.values,
+      save,
+      onSaved: options.onSaved,
+      nextVersion: options.nextVersion,
+    }
   })
 
   const changes = useCallback((): Partial<T> => {
@@ -206,7 +234,16 @@ export function useAutoSave<T extends object>(
     }
     setState('saving')
     try {
-      const result = await latest.current.save(sent, latest.current.values)
+      let answer: unknown
+      const result = await sendingVersion(
+        version.current,
+        () => latest.current.save(sent, latest.current.values),
+        (body) => {
+          answer = body
+        },
+      )
+      const next = (latest.current.nextVersion ?? versionOf)(answer)
+      if (version.current !== undefined && next !== undefined) version.current = next
       saved.current = { ...saved.current, ...sent }
       form.setErrors((e) => {
         const rest = { ...e }
@@ -310,7 +347,16 @@ export function useAutoSave<T extends object>(
     })
   }, [enabled, flush, changes, discard, setValues])
 
-  return { state, error, flush, discard: setValues ? discard : undefined }
+  return {
+    state,
+    error,
+    flush,
+    discard: setValues ? discard : undefined,
+    version: () => version.current,
+    resetVersion: (next) => {
+      version.current = next
+    },
+  }
 }
 
 export function formatDate(value: string | null): string {

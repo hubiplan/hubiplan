@@ -23,6 +23,8 @@ export interface HouseholdMember {
 }
 
 export interface Household {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   kind: HouseholdKind
   name: string

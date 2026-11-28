@@ -4,6 +4,7 @@ import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { RecordPager } from '../../components/liste/RecordPager.tsx'
 import { GENDERS, LEGAL_FORMS, isMinor, memberApi, todayIso } from '../../api/members.ts'
+import { sendingVersion } from '../../api/client.ts'
 import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
@@ -601,7 +602,11 @@ function MembershipTab({
                             confirmLabel: t('Löschen'),
                           })
                         ) {
-                          void run(() => memberApi.deletePeriod(org.id, member.id, p.id))
+                          void run(() =>
+                            sendingVersion(p.version, () =>
+                              memberApi.deletePeriod(org.id, member.id, p.id),
+                            ),
+                          )
                         }
                       }}
                     >
@@ -852,10 +857,12 @@ function EditDepartmentMembership({
   async function save(ev: FormEvent) {
     ev.preventDefault()
     const saved = await form.submit(async () => {
-      const result = await memberApi.updateDepartment(orgId, memberId, membership.id, {
-        valid_from: form.values.valid_from,
-        valid_until: form.values.valid_until || null,
-      })
+      const result = await sendingVersion(membership.version, () =>
+        memberApi.updateDepartment(orgId, memberId, membership.id, {
+          valid_from: form.values.valid_from,
+          valid_until: form.values.valid_until || null,
+        }),
+      )
       await reload()
       return result
     })
@@ -980,12 +987,14 @@ function CorrectPeriod({
     )
       return
     const ok = await form.submit(() =>
-      memberApi.correctPeriod(org.id, member.id, {
-        period: periodId,
-        entry_date: form.values.entry_date,
-        exit_date: exit,
-        exit_reason: exit ? form.values.exit_reason : '',
-      }),
+      sendingVersion(period?.version, () =>
+        memberApi.correctPeriod(org.id, member.id, {
+          period: periodId,
+          entry_date: form.values.entry_date,
+          exit_date: exit,
+          exit_reason: exit ? form.values.exit_reason : '',
+        }),
+      ),
     )
     if (ok) await onDone()
   }

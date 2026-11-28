@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion } from '../../api/client.ts'
 import { householdApi } from '../../api/households.ts'
 import type {
   Household,
@@ -263,7 +263,7 @@ function HouseholdCard({
     })
     if (!ok) return
     await run(
-      () => householdApi.remove(orgId, household.id),
+      () => sendingVersion(household.version, () => householdApi.remove(orgId, household.id)),
       t('„{name}“ gelöscht.', { name: household.name }),
     )
   }
@@ -383,7 +383,9 @@ function Rename({
   async function submit(e: FormEvent) {
     e.preventDefault()
     try {
-      await householdApi.update(orgId, household.id, { name })
+      await sendingVersion(household.version, () =>
+        householdApi.update(orgId, household.id, { name }),
+      )
       onDone(true)
     } catch (err) {
       setError(errorMessage(err))

@@ -16,16 +16,20 @@ from core.encfields import (
     EncryptedTextField,
 )
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 
-class BusinessPartner(models.Model):
+class BusinessPartner(Versioned):
     """Geschäftspartner: Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste.
 
     Konzept konzepte/geschaeftspartner.md (P1). ``details`` folgt dem Schema der
     E-Rechnung (Anschrift, E-Mail, Steuerangaben); für eine Rechnung wird es dort
     vollständig geprüft. ``is_customer``/``is_supplier`` folgen aus ``roles``.
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Kind(models.TextChoices):
         COMPANY = "company", gettext_lazy("Firma")
@@ -135,8 +139,11 @@ class BusinessPartner(models.Model):
         super().save(*args, **kwargs)
 
 
-class PartnerContact(models.Model):
+class PartnerContact(Versioned):
     """Ansprechpartner bei einem Geschäftspartner (P1), wie ``members.ContactPerson``."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -222,12 +229,15 @@ class PartnerFieldValue(models.Model):
         return f"{self.definition}: {self.value}"
 
 
-class PartnerAgreement(models.Model):
+class PartnerAgreement(Versioned):
     """Sponsoring- oder Rahmenvereinbarung mit einem Geschäftspartner (P4).
 
     ``tax_kind`` hält fest, wie die Einnahme steuerlich einzuordnen ist: bloße Nennung
     (ideeller Bereich bzw. Vermögensverwaltung) oder aktive Werbung (wirtschaftlicher
     Geschäftsbetrieb). Mit Enddatum legt HUBIplan eine Aufgabe zur Verlängerung an."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Kind(models.TextChoices):
         SPONSORING = "sponsoring", gettext_lazy("Sponsoring")

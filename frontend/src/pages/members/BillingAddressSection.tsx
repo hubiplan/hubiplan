@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion, versionOf } from '../../api/client.ts'
 import { memberApi } from '../../api/members.ts'
 import type { BillingAddress, MemberDetail } from '../../api/members.ts'
 import { errorMessage, useAutoSave } from '../../components/forms.ts'
@@ -45,7 +45,11 @@ export function BillingAddressSection({
     { values: v, setErrors, setValues: setV },
     async (_changes, values) =>
       onSaved(await memberApi.setBillingAddress(orgId, member.id, values)),
-    { enabled: editing && autoSaving },
+    {
+      enabled: editing && autoSaving,
+      version: current?.version,
+      nextVersion: (body) => versionOf((body as MemberDetail | undefined)?.billing_address),
+    },
   )
 
   async function save(ev: FormEvent) {
@@ -53,7 +57,9 @@ export function BillingAddressSection({
     if (autoSaving) return
     setBusy(true)
     try {
-      onSaved(await memberApi.setBillingAddress(orgId, member.id, v))
+      const saved = await memberApi.setBillingAddress(orgId, member.id, v)
+      auto.resetVersion(saved.billing_address?.version)
+      onSaved(saved)
       setErrors({})
       setEditing(false)
     } catch (err) {
@@ -76,7 +82,12 @@ export function BillingAddressSection({
     })
     if (!ok) return
     try {
-      onSaved(await memberApi.removeBillingAddress(orgId, member.id))
+      onSaved(
+        await sendingVersion(auto.version(), () =>
+          memberApi.removeBillingAddress(orgId, member.id),
+        ),
+      )
+      auto.resetVersion(undefined)
       setV(EMPTY)
     } catch (err) {
       setErrors({ detail: errorMessage(err) })
@@ -130,6 +141,7 @@ export function BillingAddressSection({
                 onClick={() => {
                   setV(current ?? EMPTY)
                   setAutoSaving(!!current)
+                  auto.resetVersion(current?.version)
                   setEditing(true)
                 }}
               >

@@ -4,7 +4,7 @@ import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { GENDERS, memberApi } from '../../api/members.ts'
 import type { ContactPerson, ContactPersonInput, Gender, MemberRow } from '../../api/members.ts'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion } from '../../api/client.ts'
 import { errorMessage, formatDate, useAutoSave } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Segmented } from '../../components/PageHeader.tsx'
@@ -58,7 +58,7 @@ export function ContactPersons({
     })
     if (!ok) return
     try {
-      await memberApi.deleteContact(orgId, memberId, c.id)
+      await sendingVersion(c.version, () => memberApi.deleteContact(orgId, memberId, c.id))
       setError(null)
       onChange()
     } catch (err) {
@@ -256,6 +256,7 @@ function ContactForm({
       changed.current = true
     },
     {
+      version: contact?.version,
       enabled:
         !!contact && (linked ? !!(picked?.id ?? linkedAtStart) : v.last_name.trim().length > 0),
     },

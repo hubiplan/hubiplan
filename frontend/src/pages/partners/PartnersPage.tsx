@@ -3,7 +3,7 @@
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { saveBlob } from '../../api/client.ts'
+import { saveBlob, sendingVersion } from '../../api/client.ts'
 import { financeApi } from '../../api/finance.ts'
 import { PARTNER_KINDS, PARTNER_ROLES, partnerApi, partnerFieldApi } from '../../api/partners.ts'
 import type {
@@ -417,6 +417,7 @@ function PartnerForm({
     (changes) => partnerApi.save(org.id, changes, partner!.id),
     {
       enabled: !!partner && canEdit,
+      version: partner?.version,
       onSaved: () => onChanged?.(),
     },
   )
@@ -720,7 +721,9 @@ function PartnerForm({
               if (!yes) return
               setError('')
               try {
-                await partnerApi.remove(org.id, partner.id)
+                await sendingVersion(auto.version() ?? partner.version, () =>
+                  partnerApi.remove(org.id, partner.id),
+                )
                 onSaved()
               } catch (err) {
                 setError(errorMessage(err))
@@ -823,11 +826,13 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
   const save = async () => {
     setError('')
     try {
-      const saved = await partnerApi.saveContact(
-        org.id,
-        partner.id,
-        draft,
-        editing === 'new' ? undefined : (editing ?? undefined),
+      const saved = await sendingVersion(items.find((c) => c.id === editing)?.version, () =>
+        partnerApi.saveContact(
+          org.id,
+          partner.id,
+          draft,
+          editing === 'new' ? undefined : (editing ?? undefined),
+        ),
       )
       const rest = items
         .filter((c) => c.id !== saved.id)
@@ -880,7 +885,9 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
                     )
                       return
                     try {
-                      await partnerApi.removeContact(org.id, partner.id, c.id)
+                      await sendingVersion(c.version, () =>
+                        partnerApi.removeContact(org.id, partner.id, c.id),
+                      )
                       setItems(items.filter((x) => x.id !== c.id))
                     } catch (err) {
                       setError(errorMessage(err))

@@ -36,7 +36,7 @@ class HouseholdSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Household
-        fields = ["id", "kind", "name", "note", "members", "created_at", "updated_at"]
+        fields = ["id", "kind", "name", "note", "members", "version", "created_at", "updated_at"]
         read_only_fields = ["id", "members", "created_at", "updated_at"]
 
     def validate_name(self, value):
