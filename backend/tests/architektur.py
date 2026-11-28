@@ -24,7 +24,7 @@ STAND = Path(__file__).resolve().parent / "data" / "architektur_stand.json"
 KERN = {"core"}
 GRUNDLAGEN = {"access", "accounts", "audit", "organizations"}
 # Führen Fachmodule zusammen (Adressen, Schnittstellen nach außen, Datenübernahme)
-ZUSAMMENFUEHRUNG = {"config", "datatransfer", "mcpserver", "partnerapi"}
+ZUSAMMENFUEHRUNG = {"config", "datatransfer", "demodaten", "mcpserver", "partnerapi"}
 
 
 def bereiche() -> list[str]:
