@@ -115,9 +115,7 @@ class BillingSettingsView(BillingMixin, APIView):
         if cfg.account_id and cfg.account.iban:
             return cfg.account.iban.replace(" ", "").upper()
         ibans = [
-            a.iban
-            for a in Account.objects.filter(organization=self.org, is_active=True)
-            if a.iban
+            a.iban for a in Account.objects.filter(organization=self.org, is_active=True) if a.iban
         ]
         return ibans[0].replace(" ", "").upper() if len(ibans) == 1 else ""
 
