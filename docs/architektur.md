@@ -74,6 +74,13 @@ React mit TypeScript. Jede Seite hält ihren Zustand selbst; es gibt keine Zusta
 
 Seiten rufen die Schnittstelle nur über `api/` auf, nie mit `fetch` direkt.
 
+### Dateigröße
+
+Neue Dateien unter `pages/` und `components/` haben höchstens 800 Zeilen: Komponenten je Thema
+in eigene Dateien, Lade- und Regelteile in Hooks. Die größeren aus dem Bestand stehen in
+`src/test/grosse-dateien.json` und werden nach und nach geteilt
+(`src/test/Dateigroesse.test.ts`).
+
 ### Stammdaten gemeinsam laden
 
 Einstellungen und Auswahllisten, die viele Seiten brauchen (Kasseneinstellungen, Konten,
