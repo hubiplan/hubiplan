@@ -39,7 +39,7 @@ urlpatterns = [
     # Anmeldung, Abmeldung, 2FA (allauth headless, eigene OpenAPI-Doku unter
     # /_allauth/openapi.html)
     path("_allauth/", include("allauth.headless.urls")),
-    path("api/", include("core.urls")),
+    path("api/", include("config.api_urls")),
     # Passkeys in der Android-App: welche Apps diese Adresse nutzen dürfen (devices/passkey.py)
     path(".well-known/assetlinks.json", app_passkey.assetlinks, name="assetlinks"),
     # Meldestelle für Sicherheitslücken (RFC 9116, core/securitytxt.py)

@@ -1,4 +1,4 @@
-"""Adressen von Würden und Chronik (eingebunden in core/urls.py)."""
+"""Adressen von Würden und Chronik (eingebunden in config/api_urls.py)."""
 
 from django.urls import path
 from rest_framework.routers import SimpleRouter

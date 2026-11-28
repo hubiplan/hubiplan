@@ -1,4 +1,4 @@
-"""Adressen der Wettbewerbe (eingebunden in core/urls.py)."""
+"""Adressen der Wettbewerbe (eingebunden in config/api_urls.py)."""
 
 from django.urls import path
 from rest_framework.routers import SimpleRouter

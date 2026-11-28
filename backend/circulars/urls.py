@@ -1,4 +1,4 @@
-"""Adressen der Rundschreiben (eingebunden in core/urls.py)."""
+"""Adressen der Rundschreiben (eingebunden in config/api_urls.py)."""
 
 from django.urls import path
 
