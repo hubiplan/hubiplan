@@ -90,15 +90,14 @@ const WITHOUT_SEARCH = [
   'pages/settings/RolesPage.tsx',
   'pages/surveys/SurveyParts.tsx',
   'pages/surveys/SurveysPage.tsx',
-  // Keine neuen Tabellen: Diese standen bisher in einer größeren Datei, die an anderer Stelle
-  // Suche hatte, und fielen deshalb nicht auf. Seit der Teilung der großen Dateien stehen sie
-  // einzeln hier; wer eine davon anfasst, prüft, ob sie Suche braucht.
+  // Beim Teilen der großen Dateien sichtbar geworden und einzeln geprüft (28.11.2026):
+  // Alters- und Größenstufen eines Beitrags: wenige Zeilen in fester Reihenfolge
   'pages/billing/FeeRulesPage.tsx',
-  'pages/billing/InvoiceDetail.tsx',
+  // Veranstaltungen einer Reihe und ihr Vergleich: Auswertung mit Summen
   'pages/finance/ProjectsPage.tsx',
+  // Arten von Versammlungen: von Natur aus kurz
   'pages/meetings/KindsCard.tsx',
-  'pages/meetings/MeetingsPage.tsx',
-  'pages/orders/Campaign.tsx',
+  // Umsatz eines Partners je Geschäftsjahr: Auswertung, eine Zeile je Jahr
   'pages/partners/PartnerForm.tsx',
 ]
 

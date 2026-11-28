@@ -123,6 +123,30 @@ describe('Stornorechnung', () => {
     expect(JSON.parse(String(post?.init?.body))).toEqual({ reason: 'Größe falsch' })
   })
 
+  it('sortiert die Posten nach Betrag', async () => {
+    fakeApi(
+      routes({
+        ...invoice,
+        lines: [
+          { id: 1, text: 'Uniform', detail: '', amount: '80.00', vat_rate: null },
+          { id: 2, text: 'Abzeichen', detail: '', amount: '5.00', vat_rate: null },
+          { id: 3, text: 'Hut', detail: '', amount: '30.00', vat_rate: null },
+        ],
+      } as Invoice),
+    )
+    show()
+    const user = userEvent.setup()
+    const head = await screen.findByRole('button', { name: /Betrag/ })
+    const table = head.closest('table')!
+    const texts = () =>
+      within(table.querySelector('tbody')!)
+        .getAllByRole('row')
+        .map((r) => within(r).getAllByRole('cell')[0].textContent)
+    expect(texts()).toEqual(['Uniform', 'Abzeichen', 'Hut'])
+    await user.click(head)
+    expect(texts()).toEqual(['Abzeichen', 'Hut', 'Uniform'])
+  })
+
   it('zeigt Stornobeleg und Guthaben mit Erstatten und Verrechnen', async () => {
     fakeApi(routes(cancelled))
     show()

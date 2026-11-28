@@ -12,6 +12,8 @@ import { locale, t } from '../../i18n/index.ts'
 import { StatusBadge } from './StatusBadge.tsx'
 import { PaymentForm } from './PaymentForm.tsx'
 import { InvoiceForm } from './InvoiceForm.tsx'
+import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 
 export function InvoiceDetail({
   id,
@@ -36,6 +38,12 @@ export function InvoiceDetail({
   const [busy, setBusy] = useState(false)
   const canEdit = settings.can_edit
 
+  // Sammelrechnungen haben eine Zeile je Mitglied: ab 20 Zeilen mit Suche, immer sortierbar
+  const lineSearch = useRowSearch(inv?.lines ?? [], (l) => `${l.text} ${l.detail}`, t('Posten'))
+  const lineSort = useRowSort(lineSearch.shown, {
+    text: (l) => l.text,
+    amount: (l) => Number(l.amount),
+  })
   if (error) return <Alert kind="error">{error}</Alert>
   if (!inv) return <Loading />
 
@@ -234,16 +242,17 @@ export function InvoiceDetail({
           )}
         </dl>
       </div>
+      {lineSearch.field}
       <table className="table">
         <thead>
           <tr>
-            <th>{collective ? t('Mitglied') : t('Posten')}</th>
+            {lineSort.head('text', collective ? t('Mitglied') : t('Posten'))}
             <th />
-            <th className="num">{t('Betrag')}</th>
+            {lineSort.head('amount', t('Betrag'), { className: 'num' })}
           </tr>
         </thead>
         <tbody>
-          {inv.lines.map((l) => (
+          {lineSort.rows.map((l) => (
             <tr key={l.id}>
               <td>{l.text}</td>
               <td className="muted small">

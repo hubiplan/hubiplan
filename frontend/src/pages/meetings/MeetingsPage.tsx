@@ -18,6 +18,8 @@ import { NoAccessPage } from '../NoticePages.tsx'
 import { MeetingDetail } from './MeetingDetail.tsx'
 import { statusLabel, when } from './meetingsHelpers.ts'
 import { KindsCard } from './KindsCard.tsx'
+import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 
 export function MeetingsPage() {
   const { active, activeDept } = useOrg()
@@ -192,23 +194,35 @@ function MeetingTable({
   rows: Meeting[]
   open: (m: Meeting) => void
 }) {
+  const search = useRowSearch(
+    rows,
+    (m) => `${when(m)} ${m.title} ${m.kind_name} ${statusLabel(m.status)}`,
+    title,
+  )
+  const sort = useRowSort(search.shown, {
+    date: (m) => m.starts_at,
+    title: (m) => m.title,
+    kind: (m) => m.kind_name,
+    status: (m) => statusLabel(m.status),
+  })
   return (
     <section className="card">
       <h2>{title}</h2>
+      {search.field}
       {rows.length === 0 ? (
         <p className="muted">{empty}</p>
       ) : (
         <table className="table">
           <thead>
             <tr>
-              <th>{t('Datum')}</th>
-              <th>{t('Versammlung')}</th>
-              <th>{t('Art')}</th>
-              <th>{t('Stand')}</th>
+              {sort.head('date', t('Datum'))}
+              {sort.head('title', t('Versammlung'))}
+              {sort.head('kind', t('Art'))}
+              {sort.head('status', t('Stand'))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((m) => (
+            {sort.rows.map((m) => (
               <tr key={m.id}>
                 <td>{when(m)}</td>
                 <td>

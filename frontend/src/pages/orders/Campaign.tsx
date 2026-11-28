@@ -13,6 +13,8 @@ import { OrderForm, OrderLines } from './OrderForm.tsx'
 import { limitText, priceText, stateLabel } from './format.ts'
 import './orders.css'
 import { CampaignEditor } from './CampaignEditor.tsx'
+import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 
 export function Campaign({
   base,
@@ -36,6 +38,17 @@ export function Campaign({
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const c = data && data.id === id ? data : loaded.data
+  const orderSearch = useRowSearch(
+    c?.orders ?? [],
+    (o) => `${o.name} ${o.number ?? ''} ${o.note ?? ''}`,
+    t('Bestellungen'),
+  )
+  const orderSort = useRowSort(orderSearch.shown, {
+    name: (o) => o.name ?? '',
+    total: (o) => amount(o.total ?? '') ?? 0,
+    invoice: (o) => o.invoice?.number ?? '',
+    handed: (o) => (o.handed_out ? 1 : 0),
+  })
   if (loaded.error) return <p role="alert">{loaded.error}</p>
   if (!c) return <Loading />
   const prices = !c.club_pays
@@ -326,19 +339,20 @@ export function Campaign({
           <p className="muted">{t('Noch keine Bestellungen.')}</p>
         ) : (
           <div className="table-scroll">
+            {orderSearch.field}
             <table className="table">
               <thead>
                 <tr>
-                  <th scope="col">{t('Name')}</th>
+                  {orderSort.head('name', t('Name'))}
                   <th scope="col">{t('Bestellt')}</th>
-                  {prices && <th scope="col">{t('Summe')}</th>}
-                  {prices && <th scope="col">{t('Rechnung')}</th>}
-                  <th scope="col">{t('Ausgegeben')}</th>
+                  {prices && orderSort.head('total', t('Summe'))}
+                  {prices && orderSort.head('invoice', t('Rechnung'))}
+                  {orderSort.head('handed', t('Ausgegeben'))}
                   {c.can_edit && <th scope="col">{t('Aktionen')}</th>}
                 </tr>
               </thead>
               <tbody>
-                {c.orders.map((o) => (
+                {orderSort.rows.map((o) => (
                   <tr key={o.id}>
                     <td>
                       {o.name}

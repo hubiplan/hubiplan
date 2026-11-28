@@ -13,6 +13,8 @@ import { amountText, euro } from './format.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { ExpensesPage } from './ExpensesPage.tsx'
 import { todayIso } from './expensesHelpers.ts'
+import { useRowSearch } from '../../components/RowSearch.tsx'
+import { useRowSort } from '../../components/RowSort.tsx'
 
 /** Unterseiten unter /finanzen/auslagen */
 export function ExpensesArea({ canPay }: { canPay: boolean }) {
@@ -36,6 +38,16 @@ function TransfersPage({ canPay }: { canPay: boolean }) {
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState('')
   const [notice, setNotice] = useState('')
+  const runSearch = useRowSearch(
+    load.data?.runs ?? [],
+    (r) => `${formatDate(r.created_at)} ${r.items.map((i) => i.number).join(' ')} ${r.reference}`,
+    t('Sammelüberweisungen'),
+  )
+  const runSort = useRowSort(runSearch.shown, {
+    created: (r) => r.created_at,
+    execution: (r) => r.execution_date,
+    total: (r) => Number(r.total),
+  })
   if (load.error) return <LoadError message={load.error} onRetry={load.reload} />
   const data = load.data
   if (!data) return <Loading />
@@ -129,19 +141,20 @@ function TransfersPage({ canPay }: { canPay: boolean }) {
       </section>
       {data.runs.length > 0 && (
         <div className="card table-wrap">
+          {runSearch.field}
           <table>
             <thead>
               <tr>
-                <th>{t('Angelegt')}</th>
-                <th>{t('Ausführung')}</th>
+                {runSort.head('created', t('Angelegt'))}
+                {runSort.head('execution', t('Ausführung'))}
                 <th>{t('Auslagen')}</th>
-                <th>{t('Summe')}</th>
+                {runSort.head('total', t('Summe'))}
                 <th>{t('Stand')}</th>
                 <th>{t('Aktionen')}</th>
               </tr>
             </thead>
             <tbody>
-              {data.runs.map((run_) => (
+              {runSort.rows.map((run_) => (
                 <tr key={run_.id}>
                   <td>{formatDate(run_.created_at)}</td>
                   <td>{formatDate(run_.execution_date)}</td>

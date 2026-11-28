@@ -94,16 +94,15 @@ const WITHOUT_SORT = [
   'pages/settings/InvoiceList.tsx',
   'pages/settings/RolesPage.tsx',
   'pages/surveys/SurveyParts.tsx',
-  // Keine neuen Tabellen: Diese standen bisher in einer größeren Datei, die an anderer Stelle
-  // Sortieren hatte, und fielen deshalb nicht auf. Seit der Teilung der großen Dateien stehen sie
-  // einzeln hier; wer eine davon anfasst, prüft, ob sie Sortieren braucht.
+  // Beim Teilen der großen Dateien sichtbar geworden und einzeln geprüft (28.11.2026):
+  // Alters- und Größenstufen eines Beitrags: die Reihenfolge der Stufen ist die Regel
   'pages/billing/FeeRulesPage.tsx',
-  'pages/billing/InvoiceDetail.tsx',
-  'pages/expenses/ExpensesArea.tsx',
+  // Bescheinigungen blättert der Server (neueste zuerst); Zwecke sind eine kurze Liste mit Summen
   'pages/finance/DonationsArea.tsx',
+  // Spenden blättert und filtert der Server (neueste zuerst); nur die sichtbare Seite zu sortieren führte in die Irre
   'pages/finance/DonationsList.tsx',
+  // Schichten eines Dienstes in zeitlicher Folge
   'pages/helpers/DutyCard.tsx',
-  'pages/orders/Campaign.tsx',
 ]
 
 function sources(dir: string): string[] {
