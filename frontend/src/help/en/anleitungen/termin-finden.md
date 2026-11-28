@@ -1,6 +1,7 @@
 ---
 key: guide.surveys_dates
 titel: Find a date
+modul: surveys
 routen: [/umfragen]
 reihe: 50
 stichworte: [Date finder, Find a date, Survey, Doodle]

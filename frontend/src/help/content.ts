@@ -147,6 +147,34 @@ export function visibleFor(
   return entry.rights.length === 0 || entry.rights.some(hasRight)
 }
 
+/** Was die Person an Arbeitsbereichen und Schaltern hat (für Einträge ohne eigenes Modul). */
+export interface HelpSetting {
+  /** Eigener Mitgliederbereich vorhanden oder Modul Mitgliederbereich an */
+  portal: boolean
+  /** Rolle in einer Untereinheit vorhanden oder Modul Mitglieder an */
+  dept: boolean
+  /** Menüpunkt für Untereinheiten sichtbar (Einstellungen › Bezeichnungen) */
+  units: boolean
+  /** Zusatzfunktion Zählprotokoll eingeschaltet */
+  cashCounts: boolean
+}
+
+const under = (route: string, base: string) => route === base || route.startsWith(`${base}/`)
+
+/**
+ * Gehört der Eintrag zu einem Bereich, den es für diese Person gar nicht gibt? Hilfen zu
+ * „Mein Bereich“ nur mit Mitgliederbereich, zur Abteilung nur mit Rolle dort, zu Untereinheiten
+ * nur mit dem Menüpunkt, zur Kassenzählung nur mit dem Zusatz (z. B. reines Kassenbuch).
+ */
+export function inReach(entry: Pick<HelpEntry, 'routes'>, s: HelpSetting): boolean {
+  const all = (base: string) => entry.routes.length > 0 && entry.routes.every((r) => under(r, base))
+  if (all('/mein-bereich')) return s.portal
+  if (all('/abteilung')) return s.dept
+  if (all('/untereinheiten')) return s.units
+  if (all('/finanzen/kassenzaehlung')) return s.cashCounts
+  return true
+}
+
 /** Fehlende Rechte für einen Eintrag, dessen Modul freigeschaltet ist („Warum sehe ich das
  *  nicht?“). Leer, wenn der Eintrag sichtbar ist oder sein Modul fehlt. */
 export function missingRights(
