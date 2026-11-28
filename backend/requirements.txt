@@ -500,9 +500,9 @@ et-xmlfile==2.0.0 \
     --hash=sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa \
     --hash=sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54
     # via openpyxl
-factur-x==7.9 \
-    --hash=sha256:a91b66e48b51de0b2075d52091e794ed254585553daa5bfbd37041a166e296ae \
-    --hash=sha256:c4f8cc09dfc52007f6ff20c770a8e68cb02d87360d10851d75d1db5cbb1df1af
+factur-x==7.10 \
+    --hash=sha256:e109f80cb96de1f0fee34a3e2b835e43b7116bcdd4b572bb0851f1e6f4244c63 \
+    --hash=sha256:ed54ecdc62457e0da5fe507783042558921ff55917e3f99ce0a514490e9cd949
     # via -r requirements.in
 fido2==2.2.1 \
     --hash=sha256:85787428a94c3f8eaf72f0ff30afba983b559a1b1b795c93318c81b4ad4062c4 \
@@ -1316,6 +1316,8 @@ typing-extensions==4.16.0 \
     #   anyio
     #   click-repl
     #   enum-tools
+    #   psycopg
+    #   referencing
 tzdata==2026.6 \
     --hash=sha256:0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec \
     --hash=sha256:85d2cd9c09f81f0bb29db27759fc83af4f1e620efb814f8c5bf8b4cc4feece6d
