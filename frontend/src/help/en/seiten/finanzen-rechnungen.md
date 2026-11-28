@@ -19,6 +19,8 @@ After you change the selection, previous results are hidden until the new reques
 
 ## In detail
 
+Without the members module and without sub-units you find **Invoice to business partner** here instead; it leads to the service invoices, and fee runs and fee rates are not shown.
+
 Final invoices show credited advances and the remaining outstanding amount. A credited
 advance invoice is marked “Settled”. Its receipts remain in the cashbook. Cancel the
 associated final invoice before removing those payments. A final invoice fully covered

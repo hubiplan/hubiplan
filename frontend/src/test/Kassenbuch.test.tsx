@@ -100,3 +100,24 @@ describe('Finanzgruppen im reinen Kassenbuch', () => {
     expect(financeGroups().billing.label).toBe('Beiträge & Rechnungen')
   })
 })
+
+describe('Kasse mit Rechnungen, ohne Mitglieder', () => {
+  const org = testOrg({
+    id: 7,
+    parent_name: '',
+    modules: ['finance', 'billing'],
+    permissions: ['finance.view', 'billing.view', 'billing.edit'],
+  })
+
+  it('blendet Beitragsläufe und Beitragssätze aus, Rechnungen bleiben', () => {
+    const labels = financeSections(financeAccess(org as unknown as OrgSummary)).map((s) => s.label)
+    expect(labels).toContain('Rechnungen')
+    expect(labels).toContain('Leistungsrechnungen')
+    expect(labels).not.toContain('Beitragsläufe')
+    expect(labels).not.toContain('Beitragssätze')
+    const mit = testOrg({ ...org, modules: ['finance', 'billing', 'members'] })
+    expect(
+      financeSections(financeAccess(mit as unknown as OrgSummary)).map((s) => s.label),
+    ).toContain('Beitragsläufe')
+  })
+})

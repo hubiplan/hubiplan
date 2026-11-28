@@ -31,6 +31,11 @@ import { locale, t } from '../../i18n/index.ts'
 import { PageNav } from '../../components/ListControls.tsx'
 import { useRevealFocus } from '../../components/revealFocus.ts'
 
+/** Mitglieder als Rechnungsempfänger gibt es nur mit dem Modul (Dachverbände führen sie anders). */
+function hasMembersModule(org: { type: string; modules: string[] }): boolean {
+  return org.type !== 'club' || org.modules.includes('members')
+}
+
 export function StatusBadge({
   row,
 }: {
@@ -110,6 +115,12 @@ export function InvoicesPage() {
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
   if (!settings.data) return <Loading />
   const s = settings.data
+  // Empfänger der einfachen Rechnung: Mitglieder (Modul an) oder Untereinheiten
+  const subUnitCount = (s.units ?? (s.org_type === 'federation' ? s.clubs : []))?.length ?? 0
+  const hasRecipients =
+    s.org_type === 'unit' ||
+    ((s.keeps_members ?? s.org_type !== 'federation') && hasMembersModule(org)) ||
+    subUnitCount > 0
   const statusLabels: Record<string, string> = {
     draft: t('Entwürfe'),
     open: t('offen'),
@@ -227,7 +238,7 @@ export function InvoicesPage() {
             {t('Beitragsläufe nicht geladen, erneut laden')}
           </button>
         )}
-        {s.can_edit && !creating && (
+        {s.can_edit && !creating && hasRecipients && (
           <button
             type="button"
             className="button button-ghost push-right"
@@ -235,6 +246,15 @@ export function InvoicesPage() {
           >
             {t('Neue Rechnung')}
           </button>
+        )}
+        {/* Ohne Mitglieder und Untereinheiten gehen Rechnungen an Geschäftspartner */}
+        {s.can_edit && !creating && !hasRecipients && (
+          <Link
+            className="button button-ghost push-right"
+            to="/finanzen/rechnungen/leistungen?rechnung=neu"
+          >
+            {t('Rechnung an Geschäftspartner')}
+          </Link>
         )}
       </div>
 
@@ -1093,7 +1113,7 @@ function InvoiceForm({
     [org.id],
   )
   // Für alle Einheiten gleich: an ein Mitglied (wenn sie eigene führt) oder an eine Untereinheit
-  const canMember = settings.keeps_members ?? !federation
+  const canMember = (settings.keeps_members ?? !federation) && (unit || hasMembersModule(org))
   const subUnits = unit ? [] : (settings.units ?? (federation ? settings.clubs : []))
   const initialUnit = invoice?.club ?? invoice?.department ?? null
   const [kind, setKind] = useState<'member' | 'unit'>(() => {
