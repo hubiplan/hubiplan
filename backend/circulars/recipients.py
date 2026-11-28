@@ -196,7 +196,7 @@ def _current(model, **kwargs):
 
 
 def club_base(club: Organization, department=None):
-    from members.views import member_queryset
+    from members.listing import member_queryset
 
     qs = member_queryset(club).filter(is_current=True, purged_at__isnull=True)
     if department is not None:
@@ -567,7 +567,7 @@ def event_base(circular: Circular, base, filters: dict):
 
 
 def club_candidates(circular: Circular) -> tuple[list[Candidate], dict[int, int]]:
-    from members.views import member_rows
+    from members.listing import member_rows
 
     club = circular.organization
     filters = dict(circular.filters or {})
@@ -593,7 +593,7 @@ def club_candidates(circular: Circular) -> tuple[list[Candidate], dict[int, int]
 
 def department_role_candidates(circular: Circular) -> list[Candidate]:
     """Verein an die Abteilungen: aktuelle Inhaber von Abteilungsrollen."""
-    from members.views import member_rows
+    from members.listing import member_rows
 
     club = circular.organization
     filters = circular.filters or {}
@@ -627,7 +627,7 @@ def club_role_candidates(circular: Circular) -> list[Candidate]:
     Inhaber sind Benutzerkonten, oft mit Mitgliedsakte: Mit Akte zählt die Akte
     (Brief, Mitgliederbereich); fehlt dort die Mail, geht sie an die Adresse des Kontos.
     """
-    from members.views import member_rows
+    from members.listing import member_rows
 
     club = circular.organization
     filters = circular.filters or {}

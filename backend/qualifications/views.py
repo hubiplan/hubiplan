@@ -298,7 +298,7 @@ class OverviewView(_ModuleMixin, OrgScopedMixin, APIView):
     read_permission = MEMBERS_VIEW
 
     def get(self, request, org_id: int):
-        from members.views import member_queryset
+        from members.listing import member_queryset
 
         # Von den Nachweisen ausgehen und nur deren Inhaber laden: Früher wurden erst alle
         # aktuellen Mitglieder samt entschlüsselter Personendaten geholt, auch wenn nur

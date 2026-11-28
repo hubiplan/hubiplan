@@ -806,7 +806,7 @@ def fix_json_ids(name: str, obj, ids: IdMap) -> None:
         }
 
 
-# Filter gespeicherter Exportvorlagen, die Nummern tragen (members.views.filter_members)
+# Filter gespeicherter Exportvorlagen, die Nummern tragen (members.listing.filter_members)
 EXPORT_FILTER_TARGETS = {
     "art": "member_type",
     "abteilung": "department",
