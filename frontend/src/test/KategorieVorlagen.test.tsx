@@ -24,7 +24,7 @@ const cat = (name: string, exists: boolean) => ({
 })
 
 describe('Kategorie-Vorlagen', () => {
-  it('legt die fehlenden Kategorien einer Vorlage an', async () => {
+  it('öffnet die Vorlage ohne Kategorien von selbst und legt die fehlenden an', async () => {
     let applied = false
     const calls = fakeApi({
       [SESSION]: loggedIn,
@@ -67,8 +67,9 @@ describe('Kategorie-Vorlagen', () => {
       </MemoryRouter>,
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Vorlage übernehmen' }))
+    // Ohne jede Kategorie steht die Vorlage gleich offen
     expect(await screen.findByText('Konzerte Eintritt')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Vorlage übernehmen' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '2 Kategorien anlegen' }))
     expect(await screen.findByText('2 Kategorien angelegt.')).toBeInTheDocument()
     expect(calls.some((c) => c.key === `POST ${F}/categories/templates/`)).toBe(true)

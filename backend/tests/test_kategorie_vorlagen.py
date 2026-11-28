@@ -45,3 +45,18 @@ def test_vorlage_legt_nur_fehlende_an(api, board_a, club):
         assert Category.objects.filter(organization=club).count() == count
 
     assert c.post(url, {"template": "unbekannt"}, JSON).status_code == 400
+
+
+def test_neutrale_vorlage_steht_vorn(api, board_a, club):
+    """Ein Verein ohne Sparte (z. B. reines Kassenbuch) bekommt eine allgemeine Vorlage."""
+    c = api(board_a)
+    url = f"/api/orgs/{club.pk}/finance/categories/templates/"
+    listing = c.get(url).json()
+    assert listing[0]["key"] == "allgemein"
+    names = [x["name"] for x in listing[0]["categories"]]
+    assert {"Spenden", "Bankgebühren", "Miete und Nebenkosten", "Sonstiges"} <= set(names)
+    resp = c.post(url, {"template": "allgemein"}, JSON)
+    assert resp.status_code == 201, resp.content
+    with tenant_context(club.pk):
+        assert Category.objects.get(organization=club, name="Sonstiges").kind == "both"
+        assert not Category.objects.filter(organization=club, name="Schießstand").exists()

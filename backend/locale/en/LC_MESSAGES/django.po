@@ -9845,6 +9845,18 @@ msgstr "Clubhouse catering"
 msgid "Musikverein"
 msgstr "Music club"
 
+msgid "Veranstaltungen"
+msgstr "Events"
+
+msgid "Miete und Nebenkosten"
+msgstr "Rent and utilities"
+
+msgid "Anschaffungen"
+msgstr "Purchases"
+
+msgid "Reisekosten"
+msgstr "Travel expenses"
+
 msgid "Konzerte Eintritt"
 msgstr "Concert admission"
 
