@@ -9481,6 +9481,9 @@ msgstr "Sports club"
 msgid "Förderverein"
 msgstr "Support association"
 
+msgid "Kassenbuch (nur Kasse)"
+msgstr "Cash book (cash only)"
+
 msgid "Abteilungen"
 msgstr "Departments"
 

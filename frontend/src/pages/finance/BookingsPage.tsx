@@ -344,6 +344,7 @@ export function BookingsPage() {
             key={typeof editing === 'string' ? `${editing}-${version}` : editing.id}
             orgId={org.id}
             isClub={org.type === 'club'}
+            hasMembers={org.modules.includes('members')}
             booking={typeof editing === 'string' ? null : editing}
             kind={typeof editing === 'string' ? editing : editing.kind}
             accounts={accounts.data}
@@ -637,6 +638,7 @@ function today(): string {
 function BookingForm({
   orgId,
   isClub,
+  hasMembers,
   booking,
   kind,
   vatRegistered,
@@ -650,6 +652,8 @@ function BookingForm({
 }: {
   orgId: number
   isClub: boolean
+  /** Modul Mitglieder an: Buchung lässt sich einem Mitglied zuordnen */
+  hasMembers: boolean
   booking: Booking | null
   kind: BookingKind
   accounts: Account[]
@@ -1142,14 +1146,17 @@ function BookingForm({
               </SelectField>
             </div>
           )}
-          {kind !== 'transfer' && isClub && (
+          {kind !== 'transfer' && isClub && (hasMembers || departments.length > 0) && (
             <details className="booking-assign" open={assignedOpen}>
               <summary>
-                {t('Mitglied oder {sg} zuordnen', { sg: tm.sg })}{' '}
+                {hasMembers
+                  ? t('Mitglied oder {sg} zuordnen', { sg: tm.sg })
+                  : t('{sg} zuordnen', { sg: tm.sg })}{' '}
                 <span className="muted">{t('(optional)')}</span>
               </summary>
               <div className="grid-2">
-                <MemberPicker orgId={orgId} value={member} onChange={pickMember} />
+                {/* Ohne Modul Mitglieder gibt es keine Mitgliedersuche (sonst 404) */}
+                {hasMembers && <MemberPicker orgId={orgId} value={member} onChange={pickMember} />}
                 {departments.length > 0 && (
                   <SelectField
                     label={t('{sg} (optional)', { sg: tm.sg })}
