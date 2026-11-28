@@ -38,7 +38,7 @@ lassen sich dort wie die übrigen Blöcke verschieben und verbreitern.
 
 | Schlüssel | Inhalt | Anlass | Voraussetzung |
 |---|---|---|---|
-| `kasse` | Kontostände, offene Forderungen, fällige Lastschrift | Konto im Minus oder Lastschrift fällig | Modul Finanzen, `finance.view` |
+| `kasse` | Kontostände, offene Forderungen, fällige Lastschrift | Konto im Minus oder Lastschrift fällig; ohne die Module Mitglieder und Termine (reines Kassenbuch) auch ohne Anlass (`Tile.default_on`) | Modul Finanzen, `finance.view` |
 | `anmeldungen` | Angemeldet, freie Plätze, Warteliste je Veranstaltung | Veranstaltung in höchstens 14 Tagen | Modul Anmeldungen, `registrations.view` |
 | `verein-zahlen` | Mitglieder, Eintritte, Austritte im Geschäftsjahr | Januar (Stichtagsmeldung) | Verein, Modul Mitglieder, `members.view` |
 | `belegung` | Belegung der nächsten sieben Tage | heute oder morgen belegt | Modul Belegung, Leserecht |

@@ -12,6 +12,6 @@ Under **Show** you pick a filter: **with permissions**, **never signed in**, **i
 
 ## In detail
 
-Below, **Terms of office** lists all roles per account with their period. There you resend the invitation to a single person, reset two-factor sign-in or change the period. Roles are assigned under Members › Offices.
+Below, **Terms of office** lists all roles per account with their period. There you resend the invitation to a single person, reset two-factor sign-in or change the period. Roles are assigned under Members › Offices. Without the members module (for example in a plain cash book) you assign them here under **Assign role**: enter e-mail address, first name and surname and choose the role. If there is no account yet, one is created with this name and invited.
 
 You only see accounts with roles with role “read”. With the “Member accounts” area you see the member area accounts.

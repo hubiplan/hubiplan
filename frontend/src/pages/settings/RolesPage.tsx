@@ -157,7 +157,14 @@ export function UsersCard({
 }) {
   const { refresh } = useOrg()
   const [today] = useState(todayIso)
-  const form = useForm({ email: '', role: roles[0]?.id ?? 0, valid_from: today, valid_until: '' })
+  const form = useForm({
+    email: '',
+    first_name: '',
+    last_name: '',
+    role: roles[0]?.id ?? 0,
+    valid_from: today,
+    valid_until: '',
+  })
   const [created, setCreated] = useState<{ email: string; invited: boolean } | null>(null)
   const [showAll, setShowAll] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -169,6 +176,8 @@ export function UsersCard({
       () =>
         orgApi.createAssignment(orgId, {
           email: form.values.email,
+          first_name: form.values.first_name.trim(),
+          last_name: form.values.last_name.trim(),
           role: Number(form.values.role),
           valid_from: form.values.valid_from,
           valid_until: form.values.valid_until || null,
@@ -178,7 +187,7 @@ export function UsersCard({
     )) as Assignment | undefined
     if (result) {
       if (result.new_account) setCreated({ email: result.user_email, invited: !!result.invited })
-      form.setValues((v) => ({ ...v, email: '' }))
+      form.setValues((v) => ({ ...v, email: '', first_name: '', last_name: '' }))
       await onChange()
       await refresh()
     }
@@ -267,6 +276,19 @@ export function UsersCard({
               error={form.errors.email}
               hint={t('Gibt es noch kein Konto, wird eines angelegt.')}
               onChange={(e) => form.set('email', e.target.value)}
+            />
+            <Field
+              label={t('Vorname')}
+              value={form.values.first_name}
+              error={form.errors.first_name}
+              hint={t('Nur für ein neues Konto; ein bestehendes behält seinen Namen.')}
+              onChange={(e) => form.set('first_name', e.target.value)}
+            />
+            <Field
+              label={t('Nachname')}
+              value={form.values.last_name}
+              error={form.errors.last_name}
+              onChange={(e) => form.set('last_name', e.target.value)}
             />
             <SelectField
               label={t('Rolle')}

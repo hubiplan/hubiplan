@@ -3006,6 +3006,8 @@
   "auf Konto": "to account",
   "Belegnummer/Referenz": "Document number/reference",
   "Mitglied oder {sg} zuordnen": "Assign member or {sg}",
+  "Nur für ein neues Konto; ein bestehendes behält seinen Namen.": "Only for a new account; an existing one keeps its name.",
+  "Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit. Rollen besetzt ihr weiter unten unter „Rolle besetzen“; gibt es zur E-Mail-Adresse noch kein Konto, wird eines angelegt.": "An account is a person’s login. This list shows all accounts with roles in this unit. You fill roles further down under “Assign role”; if there is no account for the e-mail address yet, one is created.",
   "{sg} zuordnen": "Assign {sg}",
   "{sg} (optional)": "{sg} (optional)",
   "Finanzen → Einrichtung → Kategorien": "Finance → Setup → Categories",

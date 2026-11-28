@@ -12,6 +12,6 @@ Unter **Zeigen** wählst du einen Filter: **mit Rechten**, **nie angemeldet**, *
 
 ## Im Einzelnen
 
-Darunter stehen unter **Amtszeiten** alle Rollen je Konto mit Zeitraum. Dort sendest du einer einzelnen Person die Einladung erneut, setzt die Zwei-Faktor-Anmeldung zurück oder änderst den Zeitraum. Rollen besetzt ihr unter Mitglieder › Ämter.
+Darunter stehen unter **Amtszeiten** alle Rollen je Konto mit Zeitraum. Dort sendest du einer einzelnen Person die Einladung erneut, setzt die Zwei-Faktor-Anmeldung zurück oder änderst den Zeitraum. Rollen besetzt ihr unter Mitglieder › Ämter. Ohne das Modul Mitglieder (etwa im reinen Kassenbuch) besetzt ihr sie hier unter **Rolle besetzen**: E-Mail-Adresse, Vorname und Nachname eintragen, Rolle wählen. Gibt es noch kein Konto, wird eines mit diesem Namen angelegt und eingeladen.
 
 Konten mit Rollen siehst du nur mit Rollen „lesen“. Mit dem Bereich „Zugänge der Mitglieder“ siehst du die Konten für den Mitgliederbereich.

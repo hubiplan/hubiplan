@@ -56,6 +56,8 @@ def test_vorlagen(orgs, api, board_a):
     assert "events" not in by_id["support"]["modules"]
     # Reines Kassenbuch: nur die Kasse, ohne Mitglieder
     assert by_id["cashbook"]["modules"] == ["finance"]
+    assert by_id["cashbook"]["units_in_menu"] is False
+    assert by_id["general"]["units_in_menu"] is True
     # Jede Vorlage nennt nur Module, die es für ihre Art von Einheit gibt
     for tpl in TEMPLATES:
         assert template_modules(tpl)

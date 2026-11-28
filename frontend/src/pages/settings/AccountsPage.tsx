@@ -50,6 +50,9 @@ export function AccountsPage() {
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const canSend = can(PERM.loginsEdit) || can(PERM.rolesManage)
   const canOpen = can(PERM.membersView)
+  // Ohne Mitglieder (z. B. reines Kassenbuch) keine Verweise auf Ämter, Akte und Mitgliederbereich
+  const hasMembers = org.modules.includes('members')
+  const hasPortal = org.modules.includes('portal')
 
   const test = FILTERS.find((f) => f.value === filter)!.test
   const search = useRowSearch(
@@ -110,9 +113,13 @@ export function AccountsPage() {
         <h2>{t('Konten')}</h2>
         <Why k="account_review" />
         <p className="muted small">
-          {t(
-            'Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit und alle, die den Mitgliederbereich nutzen dürfen. Rollen besetzt ihr unter Mitglieder › Ämter, einzelne Konten bearbeitet ihr in der Mitgliederakte.',
-          )}
+          {hasMembers
+            ? t(
+                'Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit und alle, die den Mitgliederbereich nutzen dürfen. Rollen besetzt ihr unter Mitglieder › Ämter, einzelne Konten bearbeitet ihr in der Mitgliederakte.',
+              )
+            : t(
+                'Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit. Rollen besetzt ihr weiter unten unter „Rolle besetzen“; gibt es zur E-Mail-Adresse noch kein Konto, wird eines angelegt.',
+              )}
         </p>
         <SelectField
           label={t('Zeigen')}
@@ -149,7 +156,7 @@ export function AccountsPage() {
                 {sorting.head('name', t('Name'))}
                 {sorting.head('email', t('E-Mail-Adresse'))}
                 {sorting.head('roles', t('Rollen'))}
-                {sorting.head('area', t('Mitgliederbereich'))}
+                {hasPortal && sorting.head('area', t('Mitgliederbereich'))}
                 {sorting.head('login', t('Letzte Anmeldung'))}
                 {sorting.head('mfa', t('Zwei-Faktor'))}
               </tr>
@@ -178,7 +185,11 @@ export function AccountsPage() {
                   <td>
                     {a.roles.length > 0 ? a.roles.join(', ') : <span className="muted">–</span>}
                   </td>
-                  <td>{a.member_area ? t('freigeschaltet') : <span className="muted">–</span>}</td>
+                  {hasPortal && (
+                    <td>
+                      {a.member_area ? t('freigeschaltet') : <span className="muted">–</span>}
+                    </td>
+                  )}
                   <td>
                     {a.last_login ? (
                       formatDateTime(a.last_login)

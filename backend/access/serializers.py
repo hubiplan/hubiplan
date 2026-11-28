@@ -88,6 +88,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
         help_text="Beim Besetzen die laufenden Amtszeiten anderer Personen in dieser Rolle "
         "zum Vortag beenden.",
     )
+    # Name für ein neues Konto ohne Mitgliedsakte (z. B. Kassenprüfer im reinen Kassenbuch);
+    # ein bestehendes Konto behält seinen Namen
+    first_name = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, max_length=150
+    )
+    last_name = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, max_length=150
+    )
     ended = serializers.SerializerMethodField()
     person_name = serializers.SerializerMethodField()
     member_record = serializers.SerializerMethodField()
@@ -116,6 +124,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "has_mfa",
             "awaiting_password",
             "end_previous",
+            "first_name",
+            "last_name",
             "ended",
         ]
 
@@ -211,11 +221,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
             validated_data["person"] = person
         end_previous = validated_data.pop("end_previous", False)
         email = validated_data.pop("email").lower()
+        first_name = validated_data.pop("first_name", "").strip()
+        last_name = validated_data.pop("last_name", "").strip()
         user, created = User.objects.get_or_create(email=email)
         if created:
             # Kein Startpasswort mehr: die Person legt ihr Passwort über die Einladung fest
             user.set_unusable_password()
-            user.save(update_fields=["password"])
+            user.first_name, user.last_name = first_name, last_name
+            user.save(update_fields=["password", "first_name", "last_name"])
         assignment = RoleAssignment.objects.create(user=user, **validated_data)
         assignment._new_account = created
         assignment._ended = self._end_previous(assignment) if end_previous else []

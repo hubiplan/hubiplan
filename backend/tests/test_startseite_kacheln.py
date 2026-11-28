@@ -224,3 +224,14 @@ def test_training_und_schiessnachweis(api, club, board_a, monkeypatch):
     club.enabled_modules = [x for x in club.enabled_modules if x != "shooting"]
     club.save()
     assert "schiessnachweis" not in tiles(api(user), f"/api/portal/{access.pk}/home-tiles/")
+
+
+def test_kasse_ohne_mitglieder_von_anfang_an(api, club, board_a):
+    """Reines Kassenbuch: Kontostände stehen ohne Anlass auf der Startseite."""
+    url = f"/api/orgs/{club.pk}/home-tiles/"
+    assert tiles(api(board_a), url)["kasse"]["shown"] is False
+    club.enabled_modules = ["finance"]
+    club.save(update_fields=["enabled_modules"])
+    kasse = tiles(api(board_a), url)["kasse"]
+    assert kasse["state"] == "auto" and kasse["shown"] is True
+    assert kasse["content"]["reason"] == ""
