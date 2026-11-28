@@ -3,7 +3,7 @@
     python manage.py seed_demoverein [--password PASSWORT] [--reset-passwords]
 
 Legt „Schützenverein Musterstadt 1823 e.V.“ mit Korps, Zügen, Mitgliedern und Daten für
-alle Module an (Inhalt: ``organizations/demo_korps.py``). Wiederholbar; vorhandene Daten
+alle Module an (Inhalt: ``demodaten/korps.py``). Wiederholbar; vorhandene Daten
 und andere Organisationen (z. B. aus ``seed_testdata``) bleiben unverändert.
 
 Ohne --password wird ein zufälliges Passwort für die neuen Testzugänge erzeugt und einmal
@@ -18,7 +18,7 @@ from django.db import transaction
 
 from accounts.models import generate_initial_password
 from core.tenancy import rls_bypass
-from organizations import demo_korps
+from demodaten import korps
 
 
 class Command(BaseCommand):
@@ -35,9 +35,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         password = options["password"] or generate_initial_password()
         with transaction.atomic(), rls_bypass():
-            result = demo_korps.seed(password, reset=options["reset_passwords"])
+            result = korps.seed(password, reset=options["reset_passwords"])
         self.stdout.write(self.style.SUCCESS(f"Demoverein angelegt: {result['club'].name}"))
-        lines = ["Testzugänge:", *(f"  {e}" for e in demo_korps.all_emails())]
+        lines = ["Testzugänge:", *(f"  {e}" for e in korps.all_emails())]
         if (result["created"] or options["reset_passwords"]) and not options["password"]:
             lines.append(f"Passwort: {password}")
         elif not options["password"]:

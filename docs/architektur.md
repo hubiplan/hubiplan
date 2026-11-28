@@ -43,7 +43,7 @@ Von unten nach oben; eine Schicht importiert nur gleiche und tiefere:
 | Kern | `core` | Mandantentrennung, Verschlüsselung, Dateien, gemeinsame Bausteine |
 | Grundlagen | `organizations`, `accounts`, `access`, `audit` | Einheiten, Konten, Rechte, Protokoll |
 | Fachmodule | alle übrigen | Mitglieder, Kasse, Termine … |
-| Zusammenführung | `config`, `datatransfer`, `mcpserver`, `partnerapi` | Adressen, Schnittstellen nach außen, Datenübernahme |
+| Zusammenführung | `config`, `datatransfer`, `demodaten`, `mcpserver`, `partnerapi` | Adressen, Schnittstellen nach außen, Datenübernahme, Demovereine |
 
 Braucht eine tiefere Schicht etwas aus einer höheren, meldet sich die höhere bei ihr an
 (Verzeichnis, Signal, Rückruf), statt dass die tiefere sie importiert.

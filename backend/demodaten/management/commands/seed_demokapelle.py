@@ -3,7 +3,7 @@
     python manage.py seed_demokapelle [--password PASSWORT] [--reset-passwords]
 
 Legt „Musikkapelle Musterdorf 2009 e.V.“ mit Musikern, Vorstand, Terminen und einer
-Webseite mit Kopfbild und Galerie an (Inhalt: ``organizations/demo_kapelle.py``).
+Webseite mit Kopfbild und Galerie an (Inhalt: ``demodaten/kapelle.py``).
 Wiederholbar; vorhandene Daten und andere Organisationen bleiben unverändert.
 
 Ohne --password wird ein zufälliges Passwort für die neuen Testzugänge erzeugt und einmal
@@ -18,7 +18,7 @@ from django.db import transaction
 
 from accounts.models import generate_initial_password
 from core.tenancy import rls_bypass
-from organizations import demo_kapelle
+from demodaten import kapelle
 
 
 class Command(BaseCommand):
@@ -35,9 +35,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         password = options["password"] or generate_initial_password()
         with transaction.atomic(), rls_bypass():
-            result = demo_kapelle.seed(password, reset=options["reset_passwords"])
+            result = kapelle.seed(password, reset=options["reset_passwords"])
         self.stdout.write(self.style.SUCCESS(f"Demoverein angelegt: {result['club'].name}"))
-        lines = ["Testzugänge:", *(f"  {e}" for e in demo_kapelle.all_emails())]
+        lines = ["Testzugänge:", *(f"  {e}" for e in kapelle.all_emails())]
         if (result["created"] or options["reset_passwords"]) and not options["password"]:
             lines.append(f"Passwort: {password}")
         elif not options["password"]:

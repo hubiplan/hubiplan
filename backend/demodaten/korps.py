@@ -49,8 +49,7 @@ from access.models import Role, RoleAssignment
 from accounts.models import User
 from members import services as member_services
 from members.models import DepartmentRoleHolder, ExitReason, Gender, Membership, MemberType
-
-from .models import Department, DepartmentRole, Organization, SocialLink
+from organizations.models import Department, DepartmentRole, Organization, SocialLink
 
 CLUB_NAME = "Schützenverein Musterstadt 1823 e.V."
 SLUG = "sv-musterstadt"
@@ -1015,10 +1014,10 @@ def _circulars(club) -> None:
 
 
 def _imprint(club) -> None:
-    from .imprint import ensure
-    from .imprint_generator import privacy_for
-    from .imprint_seed import _untouched
-    from .models import Imprint
+    from organizations.imprint import ensure
+    from organizations.imprint_generator import privacy_for
+    from organizations.imprint_seed import _untouched
+    from organizations.models import Imprint
 
     imprint = ensure(club)
     if not _untouched(imprint):

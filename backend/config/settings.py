@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     "accounts",
     "core",
     "organizations",
+    "demodaten",
     "access",
     "audit",
     "members",

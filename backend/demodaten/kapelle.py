@@ -45,9 +45,9 @@ from members.models import (
     Membership,
     MemberType,
 )
+from organizations.models import Organization
 
-from . import demo_korps
-from .models import Organization
+from . import korps
 
 CLUB_NAME = "Musikkapelle Musterdorf 2009 e.V."
 SLUG = "mk-musterdorf"
@@ -211,8 +211,8 @@ def _member_types(club) -> list[MemberType]:
 
 def _admit(club, member_type, rnd, number, entry_from=2009) -> Membership | None:
     female = rnd.random() < 0.45
-    first = rnd.choice(demo_korps.FIRST_F if female else demo_korps.FIRST_M)
-    last = rnd.choice(demo_korps.LAST)
+    first = rnd.choice(korps.FIRST_F if female else korps.FIRST_M)
+    last = rnd.choice(korps.LAST)
     birth = datetime.date(rnd.randint(1950, 2010), rnd.randint(1, 12), rnd.randint(1, 28))
     entry = datetime.date(rnd.randint(max(entry_from, birth.year + 10), 2025), 1, 1)
     slug = last.lower().replace("ö", "oe").replace("-", "")
@@ -228,7 +228,7 @@ def _admit(club, member_type, rnd, number, entry_from=2009) -> Membership | None
                 "entry_date": entry,
                 "club_number": str(number),
                 "email": f"{first.lower()}.{slug}{number}@{DOMAIN}",
-                "street": f"{rnd.choice(demo_korps.STREETS)} {rnd.randint(1, 80)}",
+                "street": f"{rnd.choice(korps.STREETS)} {rnd.randint(1, 80)}",
                 "postal_code": POSTAL_CODE,
                 "city": CITY,
                 "departments": [],

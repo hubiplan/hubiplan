@@ -37,7 +37,7 @@ from access.catalog import (
 from access.models import Role, RoleAssignment
 from accounts.models import User, generate_initial_password
 from core.tenancy import rls_bypass
-from organizations.demo import remove_legacy_demo
+from demodaten.altdaten import remove_legacy_demo
 from organizations.models import Department, DepartmentRole, Organization
 
 FEDERATION_NAME = "Bürger-Schützenverein Neuss-Grimlinghausen von 1855 e.V."
