@@ -226,7 +226,7 @@ def _club_frame(org, request) -> dict:
     """Logo der Einheit (geerbt wie in der Anmeldung) und Adresse ihrer öffentlichen Webseite."""
     from organizations.theme import effective_theme
     from website.models import Website
-    from website.views import site_url
+    from website.options import site_url
 
     logo = effective_theme(org.ancestors())["logo_url"]
     if logo and request is not None and logo.startswith("/"):

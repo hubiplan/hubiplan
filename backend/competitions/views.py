@@ -8,14 +8,12 @@ Name, Untereinheit und Startnummer. Lesen darf, wer eines der beiden Rechte hat.
 from __future__ import annotations
 
 import datetime
-import uuid
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Count, F, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -44,15 +42,33 @@ from .models import (
     Competition,
     Hit,
     Placing,
-    Presence,
     Prize,
     Score,
     Scoring,
     ShootOff,
-    ShootOffEntry,
     Starter,
     Team,
 )
+from .shootoffs import (
+    create_shootoff,
+    delete_shootoff,
+    list_shootoffs,
+    update_shootoff,
+    update_shootoff_entry,
+)
+from .starters import (
+    _person_name,
+    _starter_data,
+    _starters_with_values,
+    _umlaut_variants,
+    _units,
+    create_starter,
+    delete_starter,
+    set_score,
+    unit_members,
+    update_starter,
+)
+from .sync import _jsonable, sync
 
 MODULE = "competitions"
 
@@ -85,10 +101,6 @@ class _Mixin(OrgScopedMixin):
 
     def competition(self, pk) -> Competition:
         return get_object_or_404(Competition, pk=pk, organization=self.org)
-
-
-def _units(org) -> list[Department]:
-    return list(Department.objects.filter(organization=org).order_by("sort_order", "name"))
 
 
 # --- Wettbewerbe ---
@@ -685,28 +697,6 @@ class ScoringViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
             Competition.objects.filter(pk=sc.competition_id).update(generation=F("generation") + 1)
 
 
-# --- Starter ---
-
-
-def _starter_data(s: Starter, value_by_scoring: dict | None = None) -> dict:
-    return {
-        "id": s.pk,
-        "name": s.name,
-        "club": s.club,
-        "guest": s.is_guest,
-        "adult": s.guest_adult,
-        "membership": s.membership_id,
-        "unit": s.unit_id,
-        "unit_name": s.unit.name if s.unit_id else "",
-        "number": s.number,
-        "out_of_competition": s.out_of_competition,
-        "presence": s.presence,
-        "drawn_how": s.drawn_how,
-        "key": str(s.client_key) if s.client_key else None,
-        "values": value_by_scoring or {},
-    }
-
-
 class StartersView(_Mixin, APIView):
     """GET: Starter mit Werten · POST: Mitglied (membership) oder Gast (name, club) hinzufügen."""
 
@@ -719,100 +709,6 @@ class StartersView(_Mixin, APIView):
         comp = self.competition(competition_id)
         s = create_starter(self.org, request.user, comp, request.data)
         return Response(_starter_data(s), status=status.HTTP_201_CREATED)
-
-
-def _open_for_entries(comp: Competition) -> None:
-    if comp.status == Competition.Status.FINAL:
-        raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
-
-
-@transaction.atomic
-def create_starter(org, user, comp: Competition, data, merged: list | None = None) -> Starter:
-    """Mitglied (``membership``) oder Gast (``name``, ``club``) als Starter anlegen.
-    ``client_key``: Kennung vom Gerät (Offline-Betrieb); ein zweites Senden liefert
-    denselben Starter zurück. Mit ``merged`` (Abgleich mehrerer Tablets): hat ein anderes
-    Gerät das Mitglied schon angelegt, gilt die Kennung als zweiter Name dieses Starters,
-    und die folgenden Eingaben des Geräts landen dort (Ralf 2026-11-01)."""
-    _open_for_entries(comp)
-    key = _uuid(data.get("client_key"))
-    if key:
-        same = Starter.objects.filter(competition=comp, client_key=key).select_related("unit")
-        if same.exists():
-            return same.get()
-        alias = comp.starters.filter(aliases__contains=[str(key)]).first()
-        if alias:
-            return alias
-    unit = _unit_or_none(org, data.get("unit"))
-    if data.get("membership"):
-        m = (
-            Membership.objects.filter(
-                organization=org, pk=data["membership"], purged_at__isnull=True
-            )
-            .select_related("person")
-            .first()
-        )
-        if m is None:
-            raise ValidationError({"membership": gettext("Unbekanntes Mitglied.")})
-        existing = comp.starters.filter(membership=m).first()
-        if existing and key and merged is not None:
-            existing.aliases = [*existing.aliases, str(key)]
-            existing.save(update_fields=["aliases", "updated_at"])
-            merged.append(existing)
-            return existing
-        if existing:
-            raise ValidationError(
-                {"membership": gettext("{x} ist schon eingetragen.").format(x=_person_name(m))}
-            )
-        s = Starter(
-            organization=org,
-            competition=comp,
-            membership=m,
-            name=_person_name(m),
-            unit_id=unit.pk if unit else services.default_unit(org, m, comp.date),
-        )
-    else:
-        name = str(data.get("name", "")).strip()[:200]
-        if not name:
-            raise ValidationError({"name": gettext("Bitte einen Namen angeben.")})
-        s = Starter(
-            organization=org,
-            competition=comp,
-            name=name,
-            club=str(data.get("club", "")).strip()[:200],
-            guest_adult=bool(data.get("adult", False)),
-            unit_id=unit.pk if unit else None,
-        )
-    s.number = str(data.get("number", "") or "").strip()[:20]
-    s.client_key = key
-    try:
-        with transaction.atomic():
-            s.save()
-            record(org, user, "create", s, diff({}, snapshot(s)))
-    except IntegrityError as exc:
-        raise ValidationError({"membership": gettext("Schon eingetragen.")}) from exc
-    return Starter.objects.select_related("unit").get(pk=s.pk)
-
-
-def _uuid(raw):
-    if not raw:
-        return None
-    try:
-        return uuid.UUID(str(raw))
-    except ValueError as exc:
-        raise ValidationError({"client_key": gettext("Ungültige Kennung.")}) from exc
-
-
-def _person_name(m: Membership) -> str:
-    return f"{m.person.first_name} {m.person.last_name}".strip()
-
-
-def _unit_or_none(org, raw):
-    if raw in (None, "", 0, "0"):
-        return None
-    unit = Department.objects.filter(organization=org, pk=raw).first()
-    if unit is None:
-        raise ValidationError({"unit": gettext("Unbekannte Untereinheit.")})
-    return unit
 
 
 class StarterView(_Mixin, APIView):
@@ -835,82 +731,6 @@ class StarterView(_Mixin, APIView):
     def delete(self, request, org_id: int, competition_id: int, pk: int):
         delete_starter(self.org, request.user, self._get(competition_id, pk))
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@transaction.atomic
-def delete_starter(org, user, s: Starter) -> None:
-    """Starter mit seinen Werten entfernen. Schüsse und Pfänder beim Vogelschießen behalten
-    den Namen."""
-    _open_for_entries(s.competition)
-    record(org, user, "delete", s, diff(snapshot(s), {}))
-    # Pfänder behalten den Namen als freien Gewinner; die Angabe „volljährig“ des Gastes geht
-    # mit (Mitglieder: nicht angegeben, der Verein trägt es bei Bedarf nach)
-    if s.is_guest and s.guest_adult:
-        Prize.objects.filter(winner=s).update(winner_adult=True)
-    s.delete()
-
-
-@transaction.atomic
-def update_starter(org, user, s: Starter, data) -> None:
-    _open_for_entries(s.competition)
-    before = snapshot(s)
-    if "unit" in data:
-        unit = _unit_or_none(org, data["unit"])
-        s.unit_id = unit.pk if unit else None
-    if "number" in data:
-        s.number = str(data["number"] or "").strip()[:20]
-        if s.competition.form == Competition.Form.BIRD and s.number:
-            n = bird.lot(s.number)
-            if n is None:
-                raise ValidationError({"number": gettext("Losnummer: bitte eine ganze Zahl ab 1.")})
-            other = s.competition.starters.exclude(pk=s.pk).filter(number=str(n)).first()
-            if other:
-                raise ValidationError(
-                    {"number": gettext("Nummer {n} hat schon {name}.").format(n=n, name=other.name)}
-                )
-            s.number = str(n)
-            s.drawn_how = s.drawn_how or "hut"
-    if "presence" in data:
-        if data["presence"] not in Presence.values:
-            raise ValidationError({"presence": gettext("Unbekannte Angabe.")})
-        s.presence = data["presence"]
-    if "out_of_competition" in data:
-        s.out_of_competition = bool(data["out_of_competition"])
-    if s.is_guest:
-        if "name" in data:
-            name = str(data["name"] or "").strip()[:200]
-            if not name:
-                raise ValidationError({"name": gettext("Bitte einen Namen angeben.")})
-            s.name = name
-        if "club" in data:
-            s.club = str(data["club"] or "").strip()[:200]
-        if "adult" in data:
-            s.guest_adult = bool(data["adult"])
-    s.save()
-    changes = diff(before, snapshot(s))
-    if changes:
-        record(org, user, "update", s, changes)
-
-
-def _decimal(raw, field: str) -> Decimal | None:
-    if raw in (None, ""):
-        return None
-    try:
-        value = Decimal(str(raw).replace(",", ".").strip())
-    except InvalidOperation as exc:
-        raise ValidationError({field: gettext("Bitte eine Zahl eingeben.")}) from exc
-    if not value.is_finite() or value < 0 or value >= Decimal("10000000"):
-        raise ValidationError({field: gettext("Bitte eine gültige Zahl eingeben.")})
-    return value
-
-
-def _check_decimals(value: Decimal, decimals: int, field: str):
-    if value != value.quantize(Decimal(1).scaleb(-decimals)):
-        raise ValidationError(
-            {field: gettext("Höchstens {decimals} Nachkommastellen.").format(decimals=decimals)}
-            if decimals
-            else {field: gettext("Bitte eine ganze Zahl eingeben.")}
-        )
 
 
 class ScoreView(_Mixin, APIView):
@@ -936,47 +756,6 @@ class ScoreView(_Mixin, APIView):
         )
 
 
-@transaction.atomic
-def set_score(org, user, comp, scoring, starter, raw, at=None, *, from_hits=False):
-    """Wert setzen (leer: löschen). ``at``: Zeitpunkt der Eingabe auf dem Gerät. Wurde der
-    Wert auf dem Server danach geändert, gilt die spätere Eingabe; zurück kommt dann der
-    gültige Wert und ``True`` (Konflikt)."""
-    comp = Competition.objects.select_for_update().get(pk=comp.pk)
-    scoring.refresh_from_db()
-    _open_for_entries(comp)
-    value = _decimal(raw, "value")
-    existing = Score.objects.select_for_update().filter(scoring=scoring, starter=starter).first()
-    if at is not None and existing and existing.updated_at > at and existing.value != value:
-        return existing.value, True
-    if value is None:
-        if existing:
-            record(org, user, "delete", existing, diff(snapshot(existing), {}))
-            existing.delete()
-        return None, False
-    _check_decimals(value, scoring.decimals, "value")
-    if scoring.max_value is not None and value > scoring.max_value:
-        raise ValidationError(
-            {"value": gettext("Höchstens {x}.").format(x=services.fmt(scoring.max_value, 0))}
-        )
-    if existing:
-        before = snapshot(existing)
-        existing.value = value
-        existing.from_hits = from_hits
-        existing.save()
-        changes = diff(before, snapshot(existing))
-        if changes:
-            record(org, user, "update", existing, changes)
-    else:
-        existing = Score.objects.create(
-            organization=org, scoring=scoring, starter=starter, value=value, from_hits=from_hits
-        )
-        record(org, user, "create", existing, diff({}, snapshot(existing)))
-    if comp.status == Competition.Status.PREPARATION:
-        comp.status = Competition.Status.RUNNING
-        comp.save(update_fields=["status", "updated_at"])
-    return value, False
-
-
 class SyncView(_Mixin, APIView):
     """POST {ops: [...]}: Eingaben aus dem Offline-Betrieb des Standmodus nachreichen.
 
@@ -993,292 +772,6 @@ class SyncView(_Mixin, APIView):
         comp = self.competition(competition_id)
         data = request.data
         return Response(sync(self.org, request.user, comp, data.get("ops"), data.get("generation")))
-
-
-RESET_NOTE = "Der Wettbewerb wurde zurückgesetzt, die Eingabe ist verworfen."
-
-
-@transaction.atomic
-def sync(org, user, comp: Competition, ops, generation=None) -> dict:
-    """Eingaben aus dem Standmodus nachreichen (auch für den Standzugang). ``generation``:
-    der Stand des Zurücksetzens, den das Gerät kennt; passt er nicht, stammen die Eingaben
-    von vor dem Zurücksetzen und werden verworfen."""
-    comp = Competition.objects.select_for_update().get(pk=comp.pk)
-    ops = ops or []
-    if not isinstance(ops, list) or len(ops) > 2000:
-        raise ValidationError(gettext("Höchstens 2000 Eingaben auf einmal."))
-    results, conflicts = [], []
-    stale = generation is not None and str(generation) != str(comp.generation)
-    for op in ops:
-        if stale:
-            results.append({"ok": False, "error": RESET_NOTE})
-            continue
-        try:
-            if not isinstance(op, dict):
-                raise TypeError
-            with transaction.atomic():
-                results.append(_apply_op(org, user, comp, op, conflicts))
-        except (ValidationError, NotFound) as exc:
-            results.append({"ok": False, "error": _message(exc)})
-        except (
-            Starter.DoesNotExist,
-            Scoring.DoesNotExist,
-            Prize.DoesNotExist,
-            ShootOff.DoesNotExist,
-            ValueError,
-            TypeError,
-        ):
-            results.append({"ok": False, "error": "Ungültige Eingabe."})
-    comp.refresh_from_db()
-    keys = {
-        str(k): pk
-        for pk, k in comp.starters.filter(client_key__isnull=False).values_list("pk", "client_key")
-    }
-    for pk, aliases in comp.starters.exclude(aliases=[]).values_list("pk", "aliases"):
-        keys.update({str(a): pk for a in aliases})
-    out = {
-        "results": results,
-        "conflicts": conflicts,
-        "keys": keys,
-        "starters": _starters_with_values(comp),
-        "status": comp.status,
-        "generation": comp.generation,
-    }
-    if comp.form == Competition.Form.BIRD:
-        out["bird"] = _jsonable(bird.state(comp))
-    else:
-        out["shootoffs"] = list_shootoffs(comp)
-        shootoff_keys = {}
-        for pk, key, aliases in ShootOff.objects.filter(scoring__competition=comp).values_list(
-            "pk", "client_key", "aliases"
-        ):
-            if key:
-                shootoff_keys[str(key)] = pk
-            shootoff_keys.update({str(a): pk for a in aliases or []})
-        out["shootoff_keys"] = shootoff_keys
-    return out
-
-
-def _starter_ref(comp, ref) -> Starter:
-    if isinstance(ref, int) or (isinstance(ref, str) and ref.isdigit()):
-        return Starter.objects.get(pk=int(ref), competition=comp)
-    key = _uuid(ref)
-    if key is None:  # sonst träfe client_key=None jeden Starter ohne Gerätekennung
-        raise Starter.DoesNotExist
-    found = Starter.objects.filter(client_key=key, competition=comp).first()
-    return found or Starter.objects.get(competition=comp, aliases__contains=[str(key)])
-
-
-def _apply_op(org, user, comp, op, conflicts) -> dict:
-    kind = op.get("op")
-    if kind == "starter":
-        merged: list = []
-        s = create_starter(org, user, comp, op, merged)
-        if merged:
-            conflicts.append(
-                {
-                    "starter": s.pk,
-                    "name": s.name,
-                    "note": "war schon von einem anderen Gerät eingetragen, zusammengeführt",
-                }
-            )
-        return {"ok": True, "starter": s.pk}
-    if kind == "starter_update":
-        s = _starter_ref(comp, op.get("starter"))
-        update_starter(org, user, s, op)
-        return {"ok": True}
-    if kind == "starter_delete":
-        try:
-            s = _starter_ref(comp, op.get("starter"))
-        except Starter.DoesNotExist:
-            return {"ok": True}  # schon entfernt (zweites Senden vom Gerät)
-        delete_starter(org, user, s)
-        return {"ok": True}
-    if kind == "score":
-        s = _starter_ref(comp, op.get("starter"))
-        scoring = Scoring.objects.get(
-            pk=op.get("scoring"), competition=comp, kind=Scoring.Kind.INDIVIDUAL
-        )
-        at = parse_datetime(str(op.get("at") or "")) if op.get("at") else None
-        value, conflict = set_score(org, user, comp, scoring, s, op.get("value"), at)
-        if conflict:
-            conflicts.append(
-                {"starter": s.pk, "name": s.name, "scoring": scoring.pk, "value": str(value)}
-            )
-        return {"ok": True}
-    if kind == "hits":
-        from . import target_views
-
-        s = _starter_ref(comp, op.get("starter"))
-        scoring = Scoring.objects.get(
-            pk=op.get("scoring"), competition=comp, kind=Scoring.Kind.INDIVIDUAL
-        )
-        at = parse_datetime(str(op.get("at") or "")) if op.get("at") else None
-        data = target_views.set_hits(
-            org,
-            user,
-            comp,
-            scoring,
-            s,
-            op.get("hits"),
-            op.get("source"),
-            at=at,
-            sample_keys=op.get("samples"),
-        )
-        if data.get("conflict"):
-            conflicts.append(
-                {
-                    "starter": s.pk,
-                    "name": s.name,
-                    "note": "Treffer wurden auf einem anderen Gerät später geändert, diese gelten",
-                }
-            )
-        return {"ok": True}
-    if kind == "shot":
-        s = _starter_ref(comp, op.get("starter"))
-        hits = op.get("hits") or []
-        if not isinstance(hits, list):
-            raise TypeError
-        shot = bird.fire(
-            org,
-            user,
-            comp,
-            s,
-            hits,
-            at=bird.parse_at(op.get("at")),
-            client_key=bird.parse_key(op.get("client_key")),
-        )
-        return {"ok": True, "shot": shot.number}
-    if kind == "undo":
-        bird.undo(org, user, comp, client_key=bird.parse_key(op.get("client_key")))
-        return {"ok": True}
-    if kind in ("shootoff", "shootoff_rules", "shootoff_value", "shootoff_member"):
-        return _shootoff_op(org, user, comp, kind, op, conflicts)
-    if kind == "draw":
-        s = _starter_ref(comp, op.get("starter"))
-        how = op.get("how") if op.get("how") in ("hut", "digital") else "hut"
-        number, note = bird.draw(org, user, comp, s, op.get("number"), how)
-        if note:
-            conflicts.append({"starter": s.pk, "name": s.name, "number": number, "note": note})
-        return {"ok": True, "number": number}
-    raise ValidationError(gettext("Unbekannte Eingabe."))
-
-
-def _shootoff_ref(comp, ref) -> ShootOff:
-    qs = ShootOff.objects.filter(scoring__competition=comp)
-    if isinstance(ref, int) or (isinstance(ref, str) and ref.isdigit()):
-        return qs.get(pk=int(ref))
-    key = _uuid(ref)
-    if key is None:
-        raise ShootOff.DoesNotExist
-    return qs.filter(client_key=key).first() or qs.get(aliases__contains=[str(key)])
-
-
-def _shootoff_op(org, user, comp, kind, op, conflicts) -> dict:
-    """Stechen aus der Warteschlange eines Geräts (auch ohne Empfang erfasst)."""
-    if kind == "shootoff":
-        key = _uuid(op.get("client_key"))
-        if key is None:
-            raise ValidationError(gettext("Gerätekennung fehlt."))
-        try:
-            return {"ok": True, "shootoff": _shootoff_ref(comp, str(key)).pk}
-        except ShootOff.DoesNotExist:
-            pass  # noch nicht angekommen
-        keys = sorted(op.get("keys") or [])
-        rules = {k: op[k] for k in ("shots", "counted_shots") if k in op}
-        try:
-            data = create_shootoff(
-                org, user, comp, {"scoring": op.get("scoring"), "keys": keys, **rules}
-            )
-            ShootOff.objects.filter(pk=data["id"]).update(client_key=key)
-            return {"ok": True, "shootoff": data["id"]}
-        except ValidationError:
-            # Ein anderes Gerät hat dieses Stechen schon angelegt: zusammenführen
-            so = (
-                ShootOff.objects.filter(scoring_id=op.get("scoring"), scoring__competition=comp)
-                .order_by("-number")
-                .prefetch_related("entries")
-                .first()
-            )
-            if so is None or sorted(e.key for e in so.entries.all()) != keys:
-                raise
-            so.aliases = [*so.aliases, str(key)]
-            so.save(update_fields=["aliases"])
-            wanted = (
-                rules.get("shots", so.shots),
-                rules.get("counted_shots", so.counted_shots),
-            )
-            note = "war schon von einem anderen Gerät angelegt, zusammengeführt"
-            if wanted != (so.shots, so.counted_shots):
-                note += "; dort gelten andere Regeln, bitte prüfen"
-            conflicts.append({"name": f"{so.number}. Stechen", "note": note})
-            return {"ok": True, "shootoff": so.pk}
-    so = _shootoff_ref(comp, op.get("shootoff"))
-    if kind == "shootoff_rules":
-        rules = {k: op[k] for k in ("shots", "counted_shots") if k in op}
-        update_shootoff(org, user, comp, so.pk, rules)
-        return {"ok": True}
-    entry = so.entries.all()
-    entry = next((e for e in entry if e.key == op.get("key")), None)
-    if entry is None:
-        raise ValidationError(gettext("Unbekannter Teilnehmer im Stechen."))
-    if kind == "shootoff_member":
-        update_shootoff_entry(org, user, comp, entry.pk, {"membership": op.get("membership")})
-        return {"ok": True}
-    # Wert: die spätere Eingabe gilt, wie bei den Ergebnissen
-    at = parse_datetime(str(op.get("at") or "")) if op.get("at") else None
-    new = _decimal(op.get("value"), "value")
-    if at is not None and entry.value is not None and at < entry.updated_at and entry.value != new:
-        conflicts.append(
-            {
-                "name": f"{entry.name} ({so.number}. Stechen)",
-                "value": str(entry.value),
-                "note": "ein anderes Gerät hat später einen Wert eingetragen, der gilt",
-            }
-        )
-        return {"ok": True}
-    update_shootoff_entry(org, user, comp, entry.pk, {"value": op.get("value")})
-    return {"ok": True}
-
-
-def _message(exc) -> str:
-    detail = getattr(exc, "detail", str(exc))
-    if isinstance(detail, dict):
-        detail = next(iter(detail.values()), "")
-    if isinstance(detail, list):
-        detail = detail[0] if detail else ""
-    return str(detail)
-
-
-def _starters_with_values(comp) -> list[dict]:
-    values: dict[int, dict] = {}
-    latest: dict[int, datetime.datetime] = {}
-    for sc in Score.objects.filter(scoring__competition=comp):
-        values.setdefault(sc.starter_id, {})[str(sc.scoring_id)] = str(sc.value)
-        if sc.starter_id not in latest or sc.updated_at > latest[sc.starter_id]:
-            latest[sc.starter_id] = sc.updated_at
-    hits: dict[int, dict] = {}
-    program_scorings = {}
-    for scoring_id, program_id in comp.scorings.values_list("pk", "program_id"):
-        if program_id:
-            program_scorings.setdefault(program_id, []).append(scoring_id)
-    for h in Hit.objects.filter(
-        Q(program__competition=comp) | Q(scoring__competition=comp)
-    ).order_by("number"):
-        ids = program_scorings.get(h.program_id, [h.scoring_id])
-        for scoring_id in ids:
-            hits.setdefault(h.starter_id, {}).setdefault(str(scoring_id), []).append(
-                {"x": str(h.x), "y": str(h.y), "spot": h.spot}
-            )
-    out = []
-    for s in ordered(comp.starters.select_related("unit"), "name", "pk"):
-        data = _starter_data(s, values.get(s.pk))
-        # Trefferpunkte je Wertung (Antippen am Stand: vorhandene Treffer weiter bearbeiten)
-        data["hits"] = hits.get(s.pk, {})
-        # Zuletzt erfasst über alle Geräte (Standmodus, Standzugang, Verwaltung)
-        data["scored_at"] = latest[s.pk].isoformat() if s.pk in latest else None
-        out.append(data)
-    return out
 
 
 class MemberListView(_Mixin, APIView):
@@ -1351,16 +844,6 @@ class CandidatesView(_Mixin, APIView):
         return Response(out)
 
 
-def _umlaut_variants(word: str) -> set[str]:
-    """„muel“ findet „Müller“, „Müller“ auch „Mueller“."""
-    w = word.lower()
-    pairs = (("ae", "ä"), ("oe", "ö"), ("ue", "ü"), ("ss", "ß"))
-    out = {w}
-    for a, b in pairs:
-        out |= {v.replace(a, b) for v in list(out)} | {v.replace(b, a) for v in list(out)}
-    return out
-
-
 class StandingsView(_Mixin, APIView):
     def get(self, request, org_id: int, competition_id: int):
         comp = self.competition(competition_id)
@@ -1374,16 +857,6 @@ class VersionView(_Mixin, APIView):
 
     def get(self, request, org_id: int, competition_id: int):
         return Response({"version": services.version(self.competition(competition_id))})
-
-
-def _jsonable(obj):
-    if isinstance(obj, Decimal):
-        return str(obj)
-    if isinstance(obj, dict):
-        return {k: _jsonable(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_jsonable(v) for v in obj]
-    return obj
 
 
 class StatusView(_Mixin, APIView):
@@ -1556,200 +1029,6 @@ class CopyView(_Mixin, APIView):
             )
         record(self.org, request.user, "create", comp, diff({}, snapshot(comp)))
         return Response({"id": comp.pk}, status=status.HTTP_201_CREATED)
-
-
-# --- Stechen ---
-
-
-def _shootoff_data(so: ShootOff) -> dict:
-    return {
-        "id": so.pk,
-        "scoring": so.scoring_id,
-        "number": so.number,
-        "shots": so.shots,
-        "counted_shots": so.counted_shots,
-        "entries": [
-            {
-                "id": e.pk,
-                "key": e.key,
-                "starter": e.starter_id,
-                "unit": e.unit_id,
-                "membership": e.membership_id,
-                "name": e.name,
-                "value": None if e.value is None else str(e.value),
-            }
-            for e in so.entries.all()
-        ],
-    }
-
-
-def _shootoff_rules(data, defaults: tuple) -> tuple:
-    """Schüsse und davon gewertet fürs Stechen; vor Ort festgelegt (Ralf 2026-11-01), sonst
-    wie im vorigen Stechen oder wie unter „Einrichten“ vorgeschlagen."""
-    shots = bird._positive(data["shots"], "shots") if "shots" in data else defaults[0]  # noqa: SLF001
-    counted = (
-        bird._positive(data["counted_shots"], "counted_shots")  # noqa: SLF001
-        if "counted_shots" in data
-        else defaults[1]
-    )
-    if shots and counted and counted > shots:
-        raise ValidationError({"counted_shots": gettext("Höchstens so viele wie Schüsse.")})
-    return shots, counted
-
-
-def _not_final(comp: Competition) -> None:
-    if comp.status == Competition.Status.FINAL:
-        raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
-
-
-# Stechen: angemeldet (Org-API) und über den Standzugang (stand_views) gleich
-
-
-def list_shootoffs(comp: Competition) -> list:
-    qs = ShootOff.objects.filter(scoring__competition=comp).prefetch_related("entries")
-    return [_shootoff_data(so) for so in qs.order_by("scoring_id", "number")]
-
-
-@transaction.atomic
-def create_shootoff(org, user, comp: Competition, data) -> dict:
-    if comp.status == Competition.Status.FINAL:
-        raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
-    scoring = get_object_or_404(Scoring, pk=data.get("scoring"), competition=comp)
-    keys = data.get("keys") or []
-    standings = services.standings(comp)
-    block = next(s for s in standings["scorings"] if s["scoring"] == scoring.pk)
-    group = next(
-        (t for t in block["open"] if sorted(t["keys"]) == sorted(keys) and t["shootoff"] is None),
-        None,
-    )
-    if group is None:
-        raise ValidationError(gettext("Für diese Gruppe ist kein Stechen nötig."))
-    number = (scoring.shootoffs.aggregate(m=Max("number"))["m"] or 0) + 1
-    previous = scoring.shootoffs.order_by("-number").first()
-    defaults = (
-        (previous.shots, previous.counted_shots)
-        if previous
-        else (scoring.shootoff_shots, scoring.shootoff_counted)
-    )
-    shots, counted = _shootoff_rules(data, defaults)
-    so = ShootOff.objects.create(
-        organization=org,
-        scoring=scoring,
-        number=number,
-        shots=shots,
-        counted_shots=counted,
-    )
-    rows = {r["key"]: r for r in block["rows"]}
-    for key in group["keys"]:
-        if key.startswith("u"):
-            row = rows[key]
-            best = Starter.objects.filter(pk=row.get("best_starter")).first()
-            ShootOffEntry.objects.create(
-                organization=org,
-                shootoff=so,
-                unit_id=int(key[1:]),
-                membership=best.membership if best else None,
-                name=best.name if best else "",
-            )
-        else:
-            starter = Starter.objects.get(pk=int(key[1:]), competition=comp)
-            ShootOffEntry.objects.create(
-                organization=org, shootoff=so, starter=starter, name=starter.name
-            )
-    record(org, user, "create", so, diff({}, snapshot(so)))
-    so = ShootOff.objects.prefetch_related("entries").get(pk=so.pk)
-    return _shootoff_data(so)
-
-
-@transaction.atomic
-def update_shootoff(org, user, comp: Competition, pk: int, data) -> dict:
-    if comp.status == Competition.Status.FINAL:
-        raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
-    so = get_object_or_404(ShootOff, pk=pk, scoring__competition=comp)
-    if so.entries.filter(value__isnull=False).exists():
-        raise ValidationError(gettext("Es sind schon Werte eingetragen; erst die Werte löschen."))
-    before = snapshot(so)
-    so.shots, so.counted_shots = _shootoff_rules(data, (so.shots, so.counted_shots))
-    so.save(update_fields=["shots", "counted_shots"])
-    record(org, user, "update", so, diff(before, snapshot(so)))
-    so = ShootOff.objects.prefetch_related("entries").get(pk=so.pk)
-    return _shootoff_data(so)
-
-
-@transaction.atomic
-def delete_shootoff(org, user, comp: Competition, pk: int) -> None:
-    if comp.status == Competition.Status.FINAL:
-        raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
-    so = get_object_or_404(ShootOff, pk=pk, scoring__competition=comp)
-    if so.scoring.shootoffs.filter(number__gt=so.number).exists():
-        raise ValidationError(gettext("Erst das spätere Stechen entfernen."))
-    record(org, user, "delete", so, diff(snapshot(so), {}))
-    so.delete()
-
-
-@transaction.atomic
-def update_shootoff_entry(org, user, comp: Competition, pk: int, data) -> dict:
-    _not_final(comp)
-    entry = get_object_or_404(
-        ShootOffEntry.objects.select_related("shootoff__scoring__source"),
-        pk=pk,
-        shootoff__scoring__competition=comp,
-    )
-    before = snapshot(entry)
-    scoring = entry.shootoff.scoring
-    if "value" in data:
-        value = _decimal(data["value"], "value")
-        if value is not None:
-            metric = scoring.source if scoring.kind == Scoring.Kind.UNIT else scoring
-            _check_decimals(value, metric.decimals, "value")
-            per_shot = scoring.max_per_shot or metric.max_per_shot
-            count = entry.shootoff.counted_shots or entry.shootoff.shots
-            if per_shot is not None and count and value > per_shot * count:
-                raise ValidationError(
-                    {"value": gettext("Höchstens {x}.").format(x=services.fmt(per_shot * count, 0))}
-                )
-        entry.value = value
-    if entry.unit_id and "membership" in data:
-        if data["membership"]:
-            m = (
-                Membership.objects.filter(
-                    organization=org, pk=data["membership"], purged_at__isnull=True
-                )
-                .select_related("person")
-                .first()
-            )
-            if m is None:
-                raise ValidationError({"membership": gettext("Unbekanntes Mitglied.")})
-            entry.membership = m
-            entry.name = _person_name(m)
-        else:
-            entry.membership = None
-            entry.name = str(data.get("name") or "").strip()[:200]
-    entry.save()
-    changes = diff(before, snapshot(entry))
-    if changes:
-        record(org, user, "update", entry, changes)
-    return _shootoff_data(ShootOff.objects.prefetch_related("entries").get(pk=entry.shootoff_id))
-
-
-def unit_members(org, comp: Competition, raw_unit) -> list:
-    """Mitglieder einer Untereinheit am Wettbewerbstag (Schütze im Stechen)."""
-    from members.models import DepartmentMembership
-
-    unit = _unit_or_none(org, raw_unit)
-    if unit is None:
-        return []
-    on = comp.date
-    ids = (
-        DepartmentMembership.objects.filter(organization=org, department=unit, valid_from__lte=on)
-        .exclude(valid_until__lt=on)
-        .values_list("membership_id", flat=True)
-    )
-    rows = Membership.objects.filter(pk__in=ids, purged_at__isnull=True).select_related("person")
-    return sorted(
-        ({"membership": m.pk, "name": _person_name(m)} for m in rows),
-        key=lambda r: r["name"],
-    )
 
 
 class ShootOffsView(_Mixin, APIView):

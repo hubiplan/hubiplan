@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import datetime
-import mimetypes
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -23,7 +22,6 @@ from rest_framework.views import APIView
 from access.catalog import FINANCE_EDIT, FINANCE_VIEW, ROLES_MANAGE
 from access.modules import module_on
 from audit.log import diff, record, snapshot
-from core import filecheck
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.files import delete_on_commit
 from members.personsearch import name_ids
@@ -42,6 +40,13 @@ from .models import (
     TaxArea,
     YearClosing,
 )
+from .receipts import (
+    MAX_RECEIPT_BYTES,
+    QUITTUNG_LOCKED,
+    _quittung_of,
+    attach_receipt,
+    receipt_deletable,
+)
 from .serializers import (
     AccountSerializer,
     BookingSerializer,
@@ -51,19 +56,7 @@ from .serializers import (
     ReceiptSerializer,
     SplitPartSerializer,
 )
-
-MAX_RECEIPT_BYTES = 15 * 1024 * 1024
-RECEIPT_TYPES = {
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/heic",
-    "image/heif",
-    # E-Rechnungen (XRechnung, reines XML)
-    "application/xml",
-    "text/xml",
-}
+from .year_closing import _ensure_open, cash_ok, closing_checks
 
 
 def _count(model, field: str):
@@ -686,27 +679,6 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             cash_ok(accounts, since)
 
 
-def cash_ok(accounts, since) -> None:
-    """Barkasse nie unter null (siehe services.ensure_cash_ok), als API-Fehler."""
-    try:
-        services.ensure_cash_ok(accounts, since)
-    except DjangoValidationError as exc:
-        raise serializers.ValidationError(" ".join(exc.messages)) from exc
-
-
-QUITTUNG_LOCKED = (
-    "Die Buchung gehört zu einer unterschriebenen Quittung und lässt sich nicht ändern oder "
-    "löschen. Bitte die Quittung stornieren."
-)
-
-
-def _quittung_of(booking: Booking):
-    """Quittung, zu der die Buchung gehört (Abschluss oder Storno), sonst None."""
-    from .models import CashReceipt
-
-    return CashReceipt.objects.filter(Q(booking=booking) | Q(cancel_booking=booking)).first()
-
-
 def _date_param(value):
     import datetime
 
@@ -728,88 +700,6 @@ class ReceiptUploadView(FinanceMixin, APIView):
         _ensure_open(self.org, booking.year)
         receipt = attach_receipt(self.org, booking, request.FILES.get("file"), request.user)
         return Response(ReceiptSerializer(receipt).data, status=status.HTTP_201_CREATED)
-
-
-def attach_receipt(org, booking: Booking, upload, user) -> Receipt:
-    """Beleg prüfen, speichern und protokollieren (Browser und App)."""
-    if upload is None:
-        raise serializers.ValidationError({"file": gettext("Bitte eine Datei wählen.")})
-    if upload.size > MAX_RECEIPT_BYTES:
-        raise serializers.ValidationError({"file": gettext("Die Datei ist größer als 15 MB.")})
-    content_type = (upload.content_type or mimetypes.guess_type(upload.name)[0] or "").lower()
-    if content_type not in RECEIPT_TYPES:
-        raise serializers.ValidationError(
-            {
-                "file": gettext(
-                    "Erlaubt sind PDF, Fotos (JPEG, PNG, WebP, HEIC) und E-Rechnungen (XML)."
-                )
-            }
-        )
-    head = upload.read(16)
-    upload.seek(0)
-    if content_type == "application/pdf" and not head.startswith(b"%PDF"):
-        raise serializers.ValidationError({"file": gettext("Die Datei ist kein PDF.")})
-    if content_type.startswith("image/") and not filecheck.is_image(head):
-        # Nicht nur der Angabe des Geräts trauen
-        raise serializers.ValidationError({"file": filecheck.image_message()})
-    info: dict = {}
-    if content_type in ("application/pdf", "application/xml", "text/xml"):
-        from . import einvoice
-
-        data = upload.read()
-        upload.seek(0)
-        try:
-            found = einvoice.read(data, content_type)
-        except einvoice.EInvoiceError as exc:
-            raise serializers.ValidationError({"file": str(exc)}) from exc
-        if found:
-            info = einvoice.as_json(found)
-        if content_type != "application/pdf":
-            content_type = "application/xml"
-    name = upload.name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:200]
-    receipt = Receipt(
-        organization=org,
-        booking=booking,
-        name=name,
-        content_type=content_type,
-        size=upload.size,
-        uploaded_by=user,
-        einvoice=info,
-    )
-    receipt.file.save(_safe_name(name), upload, save=False)
-    receipt.save()
-    record(
-        org,
-        user,
-        "create",
-        receipt,
-        {"Beleg": [None, f"{name} zu Buchung {booking.display_number}"]},
-    )
-    return receipt
-
-
-# Versehentlich hochgeladene Datei: nur kurz danach und nur von derselben Person löschbar
-RECEIPT_DELETE_MINUTES = 15
-
-
-def receipt_deletable(receipt: Receipt, user) -> bool:
-    if receipt.uploaded_by_id is None or receipt.uploaded_by_id != getattr(user, "pk", None):
-        return False
-    if timezone.now() - receipt.created_at > datetime.timedelta(minutes=RECEIPT_DELETE_MINUTES):
-        return False
-    return not services.fixed_reason(receipt.booking)
-
-
-def _ensure_open(org, year: int) -> None:
-    try:
-        services.ensure_open(org, year=year)
-    except DjangoValidationError as exc:
-        raise serializers.ValidationError(" ".join(exc.messages)) from exc
-
-
-def _safe_name(name: str) -> str:
-    keep = "".join(c if c.isalnum() or c in ".-_" else "_" for c in name)
-    return keep[-80:] or "beleg"
 
 
 class EInvoiceReadView(FinanceMixin, APIView):
@@ -1343,52 +1233,6 @@ class FinanceSettingsView(FinanceMixin, APIView):
                 {"year": y, "label": self.org.fiscal_label(y)} for y in services.years(self.org)
             ],
         }
-
-
-def closing_checks(org, year: int, start, last) -> dict:
-    """Zahlen für die Prüfliste vor dem Jahresabschluss (blockieren nie)."""
-    from billing.models import DebitRun, Invoice
-
-    bookings = Booking.objects.filter(organization=org, year=year).exclude(
-        kind=Booking.Kind.TRANSFER
-    )
-    checks = {
-        "bookings": bookings.count(),
-        "without_receipt": bookings.exclude(
-            pk__in=Receipt.objects.filter(organization=org, hidden_at__isnull=True).values(
-                "booking_id"
-            )
-        )
-        .exclude(
-            split_of__in=Receipt.objects.filter(organization=org, hidden_at__isnull=True).values(
-                "booking_id"
-            )
-        )
-        .count(),
-        "tax_areas_enabled": org.tax_areas_on,
-        "categories_without_area": (
-            bookings.filter(category__isnull=False, category__tax_area="")
-            .values("category")
-            .distinct()
-            .count()
-            if org.tax_areas_on
-            else 0
-        ),
-    }
-    if "billing" in (org.enabled_modules or []):
-        checks["open_invoices"] = Invoice.objects.filter(
-            organization=org,
-            status=Invoice.Status.OPEN,
-            date__gte=start,
-            date__lte=last,
-        ).count()
-        checks["unbooked_debit_runs"] = DebitRun.objects.filter(
-            organization=org,
-            status=DebitRun.Status.CREATED,
-            collection_date__gte=start,
-            collection_date__lte=last,
-        ).count()
-    return checks
 
 
 class RetentionView(FinanceMixin, APIView):

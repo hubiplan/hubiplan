@@ -15,7 +15,8 @@ from audit.log import diff, record, snapshot
 
 from . import bird
 from .models import Competition, Prize, Starter
-from .views import _jsonable, _Mixin
+from .sync import _jsonable
+from .views import _Mixin
 
 
 class _BirdMixin(_Mixin):

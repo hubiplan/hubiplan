@@ -29,7 +29,8 @@ from audit.log import diff, record, snapshot
 
 from . import samples, services, targets, tiebreak
 from .models import Hit, PhotoSample, PhotoSampleConsent, Scoring, Starter
-from .views import _Mixin, _open_for_entries, set_score
+from .starters import _open_for_entries, set_score
+from .views import _Mixin
 
 # Treffer weiter draußen sind sicher Tippfehler (größte Scheibe: 50 cm)
 MAX_MM = Decimal(1000)

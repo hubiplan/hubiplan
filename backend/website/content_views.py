@@ -27,7 +27,8 @@ from .content_models import (
     WebsiteText,
 )
 from .home import has_custom, normalize_page, normalize_unit
-from .views import _WebsiteMixin, page_section_options, unit_section_options
+from .options import page_section_options, unit_section_options
+from .views import _WebsiteMixin
 
 
 class _ContentMixin(_WebsiteMixin):

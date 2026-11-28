@@ -77,7 +77,7 @@ def test_quittung_kommt_mit(c, q, club, bestand):
         assert cancelled.cancel_booking.organization == target
         assert cancelled.cancel_document is not None
         # Schutz der Buchung gilt auch nach dem Umzug
-        from finance.views import _quittung_of
+        from finance.receipts import _quittung_of
 
         assert _quittung_of(first.booking) == first
         assert Booking.objects.filter(organization=target).count() == 4

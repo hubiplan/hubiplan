@@ -31,9 +31,9 @@ DAYS_AHEAD = 120
 def _events(request, access) -> tuple[dict | None, int]:
     """Nächster Termin und Zahl der Termine, die noch auf eine Rückmeldung warten."""
     from events import services
+    from events.data import occurrence_data
     from events.models import EventResponse
     from events.recurrence import occurrences
-    from events.views import occurrence_data
     from members.models import DepartmentMembership, today
     from oidc import nc_talk
 

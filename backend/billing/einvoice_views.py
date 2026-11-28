@@ -43,8 +43,9 @@ from .models import (
 
 # Geschäftspartner: billing/partners.py (Konzept P1)
 from .partners import PartnerSerializer, PartnerViewSet  # noqa: F401
+from .sending import _as_drf
 from .serializers import InvoiceDetailSerializer
-from .views import InvoicePagination, InvoiceViewSet, _as_drf
+from .views import InvoicePagination, InvoiceViewSet
 
 
 def file_response(data, content_type, filename):

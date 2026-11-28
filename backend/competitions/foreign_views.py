@@ -16,7 +16,8 @@ from rest_framework.views import APIView
 from audit.log import diff, record, snapshot
 
 from .models import Competition, Placing, Scoring, Starter, Team
-from .views import _check_decimals, _decimal, _Mixin
+from .starters import _check_decimals, _decimal
+from .views import _Mixin
 
 
 def _team_data(t: Team) -> dict:
