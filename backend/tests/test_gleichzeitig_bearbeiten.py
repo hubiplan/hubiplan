@@ -11,7 +11,7 @@ from django.utils import timezone
 from audit.models import AuditEntry
 from core.tenancy import rls_bypass, tenant_context
 from events.models import Event
-from finance.models import Account, Booking
+from finance.models import Account, Booking, Category
 from members.models import Membership
 
 from .factories import make_member
@@ -166,9 +166,11 @@ def buchung(club):
         konto = Account.objects.create(
             organization=club, name="Kasse", kind="cash", opening_date=datetime.date(2020, 1, 1)
         )
+        spenden = Category.objects.create(organization=club, name="Spenden", kind="income")
         return Booking.objects.create(
             organization=club,
             account=konto,
+            category=spenden,
             year=club.fiscal_year_of(heute),
             number=1,
             date=heute,
