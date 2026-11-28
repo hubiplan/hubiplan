@@ -309,9 +309,57 @@ export function statusMessage(status: number): string {
   )
 }
 
+// Gleichzeitiges Bearbeiten (docs/rueckgaengig.md): Ein Formular nennt hier die Fassung des
+// Datensatzes, den es geöffnet hat. Die nächste ändernde Anfrage, die innerhalb von `action`
+// beginnt, schickt sie als `version` mit; der Server lehnt ab, wenn inzwischen jemand anderes
+// gespeichert hat. Listen (PUT mit Feld) bleiben, wie sie sind; die hier genannte Fassung
+// ersetzt ein `version` im Rumpf (etwa aus einem mitgeschickten ganzen Datensatz). `answered` bekommt die Antwort genau dieser
+// Anfrage: Daraus liest das Formular die neue Fassung, auch wenn `action` nichts zurückgibt.
+let pendingVersion: number | undefined
+let pendingAnswer: ((body: unknown) => void) | undefined
+
+export function sendingVersion<T>(
+  version: number | undefined,
+  action: () => T,
+  answered?: (body: unknown) => void,
+): T {
+  pendingVersion = version
+  pendingAnswer = version === undefined ? undefined : answered
+  try {
+    return action()
+  } finally {
+    pendingVersion = undefined
+    pendingAnswer = undefined
+  }
+}
+
+/** Fassung aus einer Antwort, wenn sie den gespeicherten Datensatz selbst zeigt. */
+export function versionOf(body: unknown): number | undefined {
+  const version = (body as { version?: unknown } | null | undefined)?.version
+  return typeof version === 'number' ? version : undefined
+}
+
+function withVersion(method: Method, data: unknown): unknown {
+  if (method === 'GET' || pendingVersion === undefined) return data
+  const version = pendingVersion
+  pendingVersion = undefined
+  if (data === undefined || data === null) return { version }
+  if (typeof FormData !== 'undefined' && data instanceof FormData) {
+    data.set('version', String(version))
+    return data
+  }
+  if (typeof data === 'object' && !Array.isArray(data)) return { ...data, version }
+  return data
+}
+
 async function call<T>(method: Method, url: string, data?: unknown, key?: string): Promise<T> {
+  // Vor dem ersten await: Die Fassung gilt für die Anfrage, die jetzt beginnt
+  const answered = method === 'GET' ? undefined : pendingAnswer
+  if (answered) pendingAnswer = undefined
+  data = withVersion(method, data)
   const { status, body } = await request<T>(method, url, data, key)
   if (status >= 400) throw new ApiError(status, body)
+  answered?.(body)
   return body
 }
 

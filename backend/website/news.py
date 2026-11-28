@@ -191,6 +191,7 @@ def admin_data(post: NewsPost) -> dict:
     """Für die Verwaltung und die KI-Schnittstelle (Entwurf und Stand)."""
     return {
         "id": post.pk,
+        "version": post.version,
         "slug": post.slug,
         "title": post.title,
         "date": post.date.isoformat(),

@@ -110,6 +110,8 @@ export interface ContactData {
 
 export interface DeptMember {
   id: number
+  /** Fassung gegen gleichzeitiges Bearbeiten; geht beim Ändern mit. */
+  version?: number
   /** „organization“ bei Organisationsmitgliedern (Ansprechpartner-Zugang) */
   kind?: 'person' | 'organization'
   display_name?: string
@@ -295,8 +297,9 @@ export const portalApi = {
     return api.get<Page<MemberRow>>(`${dept(id)}/members/?${q}`)
   },
   deptMember: (id: number, member: number) => api.get<DeptMember>(`${dept(id)}/members/${member}/`),
-  updateDeptMember: (id: number, member: number, data: Record<string, string>) =>
-    api.patch<DeptMember>(`${dept(id)}/members/${member}/`, data),
+  /** `version`: geladene Fassung; der Server lehnt ab, wenn inzwischen geändert wurde. */
+  updateDeptMember: (id: number, member: number, data: Record<string, string>, version?: number) =>
+    api.patch<DeptMember>(`${dept(id)}/members/${member}/`, { ...data, version }),
   sendDeptAccess: (id: number, member: number, transfer = false) =>
     api.post<{ access: AccessInfo; sent: 'link' | 'password' }>(
       `${dept(id)}/members/${member}/access/`,

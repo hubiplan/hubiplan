@@ -5,7 +5,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -17,6 +17,7 @@ from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin
 from core.reorder import reorder_response
+from core.versioning import lock_and_check
 
 from . import content, services, timeline
 from .content_models import (
@@ -93,6 +94,7 @@ def area_label(website, slug: str) -> str:
 def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
     data = {
         "id": t.pk,
+        "version": t.version,
         "kind": t.kind,
         "kind_label": t.get_kind_display(),
         "department": t.department_id,
@@ -394,6 +396,10 @@ class PageOrderView(_ContentMixin, APIView):
         return reorder_response(request, self.org, pages, "menu_position")
 
 
+# Gleichzeitiges Bearbeiten (core/versioning.py)
+TEXT_STALE = gettext_lazy("Die Seite wurde inzwischen geändert. Bitte neu laden.")
+
+
 class _TextMixin(_ContentMixin):
     chronicle_ok = True
 
@@ -417,6 +423,7 @@ class TextDetailView(_TextMixin, APIView):
     @transaction.atomic
     def put(self, request, org_id: int, pk: int):
         text = self.text()
+        lock_and_check(request, text, TEXT_STALE)
         before = snapshot(text)
         data = request.data
         if self.via_chronicle:
@@ -434,6 +441,7 @@ class TextDetailView(_TextMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         text = self.text()
+        lock_and_check(request, text, TEXT_STALE)
         if self.via_chronicle:
             raise NotFound()
         if text.kind == WebsiteText.Kind.GREETING:
@@ -449,6 +457,7 @@ class TextPublishView(_TextMixin, APIView):
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
         text = self.text()
+        lock_and_check(request, text, TEXT_STALE)
         content.publish(text, request.user)
         record(self.org, request.user, "update", text, {"veröffentlicht": [None, str(text)]})
         return Response(text_data(self.org.pk, text, full=True))
@@ -456,6 +465,7 @@ class TextPublishView(_TextMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         text = self.text()
+        lock_and_check(request, text, TEXT_STALE)
         if text.is_published:
             content.unpublish(text, request.user)
             record(self.org, request.user, "update", text, {"veröffentlicht": [str(text), None]})
@@ -468,6 +478,7 @@ class TextRestoreView(_TextMixin, APIView):
     @transaction.atomic
     def post(self, request, org_id: int, pk: int, rev: int):
         text = self.text()
+        lock_and_check(request, text, TEXT_STALE)
         revision = get_object_or_404(WebsiteRevision, text=text, pk=rev)
         content.restore(text, revision, request.user)
         record(

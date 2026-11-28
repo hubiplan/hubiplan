@@ -32,6 +32,8 @@ For lists to role holders the event is “board only”, otherwise visible to me
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
 
+If two people edit the same draft or mailing list, the change saved first applies. The second person sees “The circular has been changed in the meantime. Please reload.” and reloads the page. Sending also only works for the version you currently see.
+
 ## Circular for an event
 
 You create a circular about an event in the open event with **Write a circular about it** in the button bar; it is then listed there under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply. For an event with registrations, an information letter goes to the registrants, including guests (see Events).

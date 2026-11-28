@@ -15,6 +15,7 @@ from access.catalog import MEMBERS_EDIT, MEMBERS_VIEW, ORG_EDIT
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
+from core.versioning import lock_and_check
 from members.models import Membership, today
 from organizations.models import Organization
 
@@ -49,6 +50,7 @@ class TypeSerializer(serializers.ModelSerializer):
             "is_archived",
             "sort_order",
             "in_use",
+            "version",
         ]
         read_only_fields = ["is_archived", "sort_order"]
 
@@ -136,6 +138,7 @@ class TypeViewSet(_ModuleMixin, OrgScopedMixin, AuditMixin, viewsets.ModelViewSe
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_destroy(self, instance):
+        lock_and_check(self.request, instance)
         record(self.org, self.request.user, "delete", instance, diff(snapshot(instance), {}))
         instance.delete()
 
@@ -185,6 +188,7 @@ class RecordSerializer(serializers.ModelSerializer):
             "note",
             "status",
             "current",
+            "version",
         ]
 
     def get_fields(self):
@@ -269,6 +273,7 @@ class MemberRecordViewSet(_ModuleMixin, OrgScopedMixin, viewsets.ModelViewSet):
 
     @transaction.atomic
     def perform_update(self, serializer):
+        lock_and_check(self.request, serializer.instance)
         before = snapshot(serializer.instance)
         old_end = serializer.instance.valid_until
         instance = serializer.save()
@@ -282,6 +287,7 @@ class MemberRecordViewSet(_ModuleMixin, OrgScopedMixin, viewsets.ModelViewSet):
 
     @transaction.atomic
     def perform_destroy(self, instance):
+        lock_and_check(self.request, instance)
         self._record("delete", instance, diff(snapshot(instance), {}))
         instance.delete()
 

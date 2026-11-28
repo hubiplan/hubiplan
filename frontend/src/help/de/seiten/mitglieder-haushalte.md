@@ -19,6 +19,8 @@ Mit **Haushalt anlegen** gibst du einen Namen ein, z. B. „Familie Muster“. �
 
 **Vorschläge suchen** zeigt aktuelle Mitglieder mit derselben Anschrift, die noch nicht zusammen in einem Haushalt sind. Mit **Als Haushalt anlegen** übernimmst du einen Vorschlag; Mitglieder, die schon zu einem anderen Haushalt gehören, bleiben dort.
 
+Hat inzwischen jemand anderes denselben Haushalt umbenannt oder gelöscht, meldet HUBIplan „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“
+
 ## Ein Brief statt vier
 
 Ein Rundschreiben an Mitglieder fasst die Briefe an einen Haushalt mit gleicher Anschrift zu einem Brief zusammen, ebenso Mails an dieselbe Adresse. Das Schreiben geht an den ersten Erwachsenen, im Anschriftfeld steht z. B. „Familie Erika und Max Muster“, die Anrede lautet „Sehr geehrte Familie Muster“ bzw. „Liebe Familie Muster“. Wer anders wohnt oder eine eigene Mailadresse hat, bekommt sein eigenes Schreiben. Abschalten lässt sich das je Rundschreiben unter **Empfänger**. Rundschreiben zu einem Termin (mit Rückmeldelink je Person) und Schreiben mit {Mitgliedsjahre} oder {Jubiläumsjahre} gehen weiter einzeln.

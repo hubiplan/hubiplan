@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { competitionsApi, type CompetitionDetail, type Scoring } from '../../api/competitions.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useForm, useLoad } from '../../components/forms.ts'
@@ -97,10 +98,12 @@ export function ScoringCard({
     )
       return
     const saved = await form.submit(() =>
-      competitionsApi.updateScoring(org, comp.id, scoring.id, {
-        ...changes,
-        confirm_recalculation: !!needsConfirmation && rulesChanged,
-      }),
+      sendingVersion(scoring.version, () =>
+        competitionsApi.updateScoring(org, comp.id, scoring.id, {
+          ...changes,
+          confirm_recalculation: !!needsConfirmation && rulesChanged,
+        }),
+      ),
     )
     if (saved) onRemoved()
   }
@@ -114,7 +117,9 @@ export function ScoringCard({
     })
     if (!ok) return
     await form.submit(async () => {
-      await competitionsApi.removeScoring(org, comp.id, scoring.id)
+      await sendingVersion(scoring.version, () =>
+        competitionsApi.removeScoring(org, comp.id, scoring.id),
+      )
       onRemoved()
     })
   }

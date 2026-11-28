@@ -247,6 +247,8 @@ export interface Payment {
 }
 
 export interface InvoiceRow {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   document_kind?: 'invoice' | 'advance' | 'final'
   prepaid?: string
   id: number

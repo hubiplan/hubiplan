@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import { partnerApi } from '../../api/partners.ts'
@@ -29,11 +30,13 @@ export function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEd
   const save = async () => {
     setError('')
     try {
-      const saved = await partnerApi.saveContact(
-        org.id,
-        partner.id,
-        draft,
-        editing === 'new' ? undefined : (editing ?? undefined),
+      const saved = await sendingVersion(items.find((c) => c.id === editing)?.version, () =>
+        partnerApi.saveContact(
+          org.id,
+          partner.id,
+          draft,
+          editing === 'new' ? undefined : (editing ?? undefined),
+        ),
       )
       const rest = items
         .filter((c) => c.id !== saved.id)
@@ -86,7 +89,9 @@ export function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEd
                     )
                       return
                     try {
-                      await partnerApi.removeContact(org.id, partner.id, c.id)
+                      await sendingVersion(c.version, () =>
+                        partnerApi.removeContact(org.id, partner.id, c.id),
+                      )
                       setItems(items.filter((x) => x.id !== c.id))
                     } catch (err) {
                       setError(errorMessage(err))

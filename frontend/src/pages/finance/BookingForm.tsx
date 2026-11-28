@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { earmarkApi } from '../../api/donations.ts'
@@ -183,10 +183,21 @@ export function BookingForm({
     }
   }
 
+  // Fassung der geöffneten Buchung: Sie geht mit jeder Änderung an den Server, der ablehnt,
+  // wenn inzwischen jemand anderes gespeichert hat. Nur eigene Antworten zählen sie hoch; die
+  // Liste lädt im Hintergrund neu, das Formular zeigt aber weiter den geöffneten Stand.
+  const fassung = useRef(booking?.version)
   // Bestehende Buchungen speichern automatisch, neue erst mit „Buchen“
   const auto = useAutoSave(
     { values: { ...v, membership: member?.id ?? null, partner }, setErrors: form.setErrors },
-    (_changes, values) => financeApi.updateBooking(orgId, booking!.id, payloadOf(values)),
+    async (_changes, values) => {
+      const saved = await financeApi.updateBooking(orgId, booking!.id, {
+        ...payloadOf(values),
+        version: fassung.current,
+      })
+      fassung.current = saved.version
+      return saved
+    },
     {
       enabled: booking !== null && canEdit,
       onSaved: (saved) => onSaved(saved as Booking, false),
@@ -252,7 +263,7 @@ export function BookingForm({
       }))
     )
       return
-    const ok = await form.submit(() => financeApi.deleteBooking(orgId, booking.id))
+    const ok = await form.submit(() => financeApi.deleteBooking(orgId, booking.id, fassung.current))
     if (ok !== undefined) onClose()
   }
 
@@ -267,7 +278,9 @@ export function BookingForm({
       confirmLabel: t('Stornieren'),
     })
     if (reason === null) return
-    const saved = await form.submit(() => financeApi.stornoBooking(orgId, booking.id, reason))
+    const saved = await form.submit(() =>
+      financeApi.stornoBooking(orgId, booking.id, reason, fassung.current),
+    )
     if (saved) onSaved(saved as Booking, false)
   }
 
@@ -673,8 +686,10 @@ export function BookingForm({
           booking={booking}
           categories={usable}
           projects={usableProjects}
+          version={() => fassung.current}
           onCancel={() => setSplitting(false)}
           onDone={(lead) => {
+            fassung.current = lead.version
             setSplitting(false)
             onSaved(lead, false)
           }}

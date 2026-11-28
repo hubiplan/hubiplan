@@ -2,6 +2,8 @@
 import { api } from './client.ts'
 
 export interface Dignity {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   unit: number | null
@@ -34,6 +36,8 @@ export interface Companion {
 }
 
 export interface Reign {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   dignity: number
   dignity_name: string

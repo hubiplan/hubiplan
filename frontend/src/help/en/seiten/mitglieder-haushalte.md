@@ -19,6 +19,8 @@ With **Create household** you enter a name, e.g. “Muster family”. **Add memb
 
 **Find suggestions** shows current members with the same address who are not yet together in a household. **Create as household** takes over a suggestion; members who already belong to another household stay there.
 
+If someone else has renamed or deleted the same household in the meantime, HUBIplan reports “The entry has been changed in the meantime. Please reload.”
+
 ## One letter instead of four
 
 A circular to members combines the letters to a household at the same address into one letter, and likewise emails to the same address. It goes to the first adult; the address block reads e.g. “Familie Erika und Max Muster” and the salutation “Sehr geehrte Familie Muster” or “Liebe Familie Muster” (letters stay in the club language). Anyone who lives elsewhere or has their own email address gets their own copy. You can switch this off per circular under **Recipient**. Circulars for an event (with a reply link per person) and texts with {Mitgliedsjahre} or {Jubiläumsjahre} still go out individually.

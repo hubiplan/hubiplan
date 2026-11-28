@@ -98,6 +98,7 @@ class PartnerContactSerializer(serializers.ModelSerializer):
             "receives_invoices",
             "receives_mail",
             "notes",
+            "version",
         ]
 
 
@@ -157,6 +158,7 @@ class PartnerSerializer(serializers.ModelSerializer):
             "is_active",
             "contacts",
             "updated_at",
+            "version",
         ]
         read_only_fields = ["id", "name", "updated_at"]
 

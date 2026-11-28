@@ -8,16 +8,21 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext, gettext_lazy
 
+from core.versioning import Versioned
+
 from .base import TaxArea
 from .bookings import Booking
 
 
-class FixedAsset(models.Model):
+class FixedAsset(Versioned):
     """Anlage im Anlagenverzeichnis (Konzept vereinskasse-steuern, Abschnitt 5).
 
     Die Abschreibung (AfA) erscheint nur in der steuerlichen Auswertung, nie im Kassenbuch:
     Das Kassenbuch bleibt eine reine Zahlungsrechnung. Verknüpft mit der Ausgabe der
     Anschaffung (Beleg) und optional mit dem Gegenstand im Inventar."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Method(models.TextChoices):
         NONE = "none", gettext_lazy("keine Abschreibung (nur Verzeichnis)")

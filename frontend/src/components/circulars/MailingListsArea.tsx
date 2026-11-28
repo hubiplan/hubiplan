@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { sendingVersion } from '../../api/client.ts'
 import { circularApi, mailingListApi, type CircularAudience } from '../../api/circulars.ts'
 import type {
   CircularBase,
@@ -234,6 +235,7 @@ function ListPage({
         key={`r${pattern.data.id}`}
         base={base}
         patternId={pattern.data.id}
+        patternVersion={pattern.data.version}
         options={options.data}
         initial={{
           kind: pattern.data.kind,
@@ -296,6 +298,7 @@ function ListSettings({
   const options = initial.sender_options ?? []
   const [error, setError] = useState<string | null>(null)
   const auto = useAutoSave(form, (changes) => mailingListApi.update(base, initial.id, changes), {
+    version: initial.version,
     onSaved: (result) => {
       setAddress((result as MailingList).address)
       setAliasAddresses((result as MailingList).alias_addresses ?? [])
@@ -352,7 +355,7 @@ function ListSettings({
     })
     if (!ok) return
     try {
-      await mailingListApi.remove(base, initial.id)
+      await sendingVersion(auto.version(), () => mailingListApi.remove(base, initial.id))
       navigate(root)
     } catch (err) {
       setError(errorMessage(err))
@@ -579,11 +582,13 @@ type RecipientValues = {
 function ListRecipients({
   base,
   patternId,
+  patternVersion,
   options,
   initial,
 }: {
   base: CircularBase
   patternId: number
+  patternVersion?: number
   options: CircularOptions
   initial: RecipientValues
 }) {
@@ -591,6 +596,7 @@ function ListRecipients({
   const { values: v, errors, set } = form
   const [version, setVersion] = useState(0)
   const auto = useAutoSave(form, (changes) => circularApi.update(base, patternId, changes), {
+    version: patternVersion,
     onSaved: () => setVersion((n) => n + 1),
   })
   const kinds = options.kinds.filter((k) => k.value !== 'short')

@@ -212,7 +212,16 @@ class TrophySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trophy
-        fields = ["id", "name", "description", "keep_after", "is_archived", "on_website", "holders"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "keep_after",
+            "is_archived",
+            "on_website",
+            "holders",
+            "version",
+        ]
 
     def get_holders(self, obj) -> list:
         return awards.trophy_holders(obj)

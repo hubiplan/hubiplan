@@ -44,6 +44,8 @@ The event dialog first asks for title, time and place, then category and **Who s
 
 When editing, the dialog saves every change straight away: **Done** at the bottom takes you back to the event view, **Close** at the top closes the dialog. In the **Place** field, typing, a click or the down arrow opens the list of saved places; choose with the arrow keys and Enter, Esc closes only the list. “public” means visible on the website and without signing in. Inside HUBIplan the members of the level that creates the event see it; other units only see it if it is passed on upwards or downwards.
 
+If someone else has changed the event in the meantime, your change is not saved and the dialog reports “The event has been changed in the meantime. Please reload.” Close the dialog, open the event again and enter your change once more.
+
 “board only” events are seen by members with a board role in the unit: in the administration, under **My events** and in the app. They are not included in the personal calendar subscription; for them there is the separate **Board subscription** under Events › Calendar subscription.
 
 Under **Directions** you enter notes such as parking or the entrance. Without further details the links **Route in OpenStreetMap** and **Route in Google Maps** lead to the address. If the address is not enough (meadow, hut in the woods), enter **Latitude** and **Longitude** or paste a link from OpenStreetMap or Google Maps under **Take point from map link**. Directions and route links appear in the event, in the emails, on the reply page and in the calendar subscription; no map is embedded. If you pick a saved place, the event copies its address, directions and point.

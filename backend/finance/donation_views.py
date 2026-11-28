@@ -225,6 +225,7 @@ class DonationSerializer(serializers.ModelSerializer):
             "statement",
             "statement_number",
             "created_at",
+            "version",
         ]
         read_only_fields = ["booking", "statement", "created_at"]
         extra_kwargs = {"donor_name": {"required": False, "allow_blank": True}}

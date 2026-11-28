@@ -62,6 +62,7 @@ class FixedAssetSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "disposed_on",
             "note",
             "values",
+            "version",
         ]
 
     def get_booking_number(self, obj) -> str | None:

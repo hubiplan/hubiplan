@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { euro, financeApi } from '../../api/finance.ts'
@@ -38,7 +39,7 @@ export function ProjectDetail() {
   // Ohne Rückfrage: Löschen lässt sich rückgängig machen (UX-Audit VW-23)
   async function remove() {
     try {
-      await financeApi.deleteProject(org.id, d.id)
+      await sendingVersion(d.version, () => financeApi.deleteProject(org.id, d.id))
       navigate('/finanzen/veranstaltungen')
     } catch (err) {
       setError(errorMessage(err))

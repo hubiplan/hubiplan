@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import record
+from core.versioning import lock_and_check
 
 from . import services, workflows
 from .models import ExitReason, Membership, MemberType, Person, TransferRequest
@@ -132,6 +133,7 @@ class CorrectPeriodView(_WorkflowView):
         before = membership.periods.filter(pk=v["period"]).first()
         if before is None:
             raise serializers.ValidationError({"period": gettext("Zeitraum nicht gefunden.")})
+        lock_and_check(request, before)
         old = (before.entry_date, before.exit_date, before.get_exit_reason_display())
         period = workflows.correct_period(
             membership,

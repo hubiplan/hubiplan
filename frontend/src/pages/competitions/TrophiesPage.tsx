@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { historyApi, type Trophy } from '../../api/competitionHistory.ts'
@@ -30,7 +31,7 @@ export function TrophiesPage() {
 
   async function update(tr: Trophy, changes: Partial<Trophy>) {
     try {
-      await historyApi.trophies.update(org.id, tr.id, changes)
+      await sendingVersion(tr.version, () => historyApi.trophies.update(org.id, tr.id, changes))
       reload()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -45,7 +46,7 @@ export function TrophiesPage() {
       confirmLabel: t('Löschen'),
     })
     if (!ok) return
-    await historyApi.trophies.remove(org.id, tr.id)
+    await sendingVersion(tr.version, () => historyApi.trophies.remove(org.id, tr.id))
     reload()
   }
 

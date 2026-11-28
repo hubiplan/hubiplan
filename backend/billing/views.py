@@ -11,7 +11,7 @@ from django.db.models import Count, F, Q, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
@@ -25,6 +25,7 @@ from access.catalog import BILLING_EDIT, BILLING_VIEW, FINANCE_VIEW
 from audit.log import diff, record, snapshot
 from changes import idempotency
 from core.api_base import OrgScopedMixin
+from core.versioning import check_request, lock_and_check
 from finance import services as finance_services
 from finance.models import Account, Category
 from members.models import Membership, MemberType
@@ -661,6 +662,10 @@ class InvoicePagination(PageNumberPagination):
     max_page_size = 1000
 
 
+# Gleichzeitiges Bearbeiten (core/versioning.py)
+INVOICE_STALE = gettext_lazy("Die Rechnung wurde inzwischen geändert. Bitte neu laden.")
+
+
 class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
     pagination_class = InvoicePagination
     http_method_names = ["get", "post", "patch", "delete"]
@@ -916,6 +921,7 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
         claim = idempotency.claim(request, f"billing.invoice.{invoice.pk}")
         if claim.done:
             return self._detail(invoice)
+        check_request(request, invoice, INVOICE_STALE)
         ser = InvoiceInputSerializer(data=request.data, partial=True)
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
@@ -948,6 +954,7 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
     @transaction.atomic
     def destroy(self, request, org_id: int, pk: int):
         invoice = self._locked_object()
+        check_request(request, invoice, INVOICE_STALE)
         if invoice.status != Invoice.Status.DRAFT:
             raise serializers.ValidationError(
                 gettext(
@@ -972,6 +979,8 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
     @transaction.atomic
     def finalize(self, request, org_id: int, pk: int):
         invoice = self.get_object()
+        # Festschreiben nur in der Fassung, die die Person gesehen hat
+        lock_and_check(request, invoice, INVOICE_STALE)
         try:
             services.finalize(invoice)
         except DjangoValidationError as exc:

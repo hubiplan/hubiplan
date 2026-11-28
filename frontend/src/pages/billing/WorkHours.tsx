@@ -68,19 +68,26 @@ function WorkHoursForm({
   const values = form.values
   const auto = useAutoSave(
     form,
-    (_changes, v) =>
+    // Nur Geändertes: Wer gleichzeitig eine andere Mitgliedsart ändert, bleibt erhalten
+    (changes, v) =>
       billingApi.saveWorkHours(orgId, {
-        min_age: v.min_age?.trim() ? Number(v.min_age) : null,
-        max_age: v.max_age?.trim() ? Number(v.max_age) : null,
-        rows: data.rows.map((r) => {
-          const h = v[`hours-${r.member_type}`]?.trim() ?? ''
-          const rate = v[`rate-${r.member_type}`]?.trim() ?? ''
-          return {
-            member_type: r.member_type,
-            hours: h ? parseAmount(h) : null,
-            rate: rate ? parseAmount(rate) : null,
-          }
-        }),
+        ...('min_age' in changes || 'max_age' in changes
+          ? {
+              min_age: v.min_age?.trim() ? Number(v.min_age) : null,
+              max_age: v.max_age?.trim() ? Number(v.max_age) : null,
+            }
+          : {}),
+        rows: data.rows
+          .filter((r) => `hours-${r.member_type}` in changes || `rate-${r.member_type}` in changes)
+          .map((r) => {
+            const h = v[`hours-${r.member_type}`]?.trim() ?? ''
+            const rate = v[`rate-${r.member_type}`]?.trim() ?? ''
+            return {
+              member_type: r.member_type,
+              hours: h ? parseAmount(h) : null,
+              rate: rate ? parseAmount(rate) : null,
+            }
+          }),
       }),
     { enabled: canEdit, onSaved: (result) => onSaved(result as WorkHours) },
   )

@@ -82,7 +82,11 @@ export function ProjectForm({
   const auto = useAutoSave(
     form,
     (_changes, values) => financeApi.updateProject(org.id, project!.id, payloadOf(values)),
-    { enabled: project !== null, onSaved: (saved) => onSaved(saved as Project, false) },
+    {
+      enabled: project !== null,
+      version: project?.version,
+      onSaved: (saved) => onSaved(saved as Project, false),
+    },
   )
 
   async function save(e: FormEvent) {

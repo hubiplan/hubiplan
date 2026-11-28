@@ -34,6 +34,7 @@ from core.encfields import (
     EncryptedTextField,
 )
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
@@ -44,7 +45,10 @@ MAX_SHORT_BODY = 500
 MAX_SHORT_PER_DAY = 10
 
 
-class Circular(models.Model):
+class Circular(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     class Kind(models.TextChoices):
         INFO = "info", gettext_lazy("Information")
         NOTICE = "notice", gettext_lazy("Vereinsmitteilung")
@@ -275,13 +279,16 @@ class CircularTemplate(models.Model):
 LOCAL_PART_MAX = 64
 
 
-class MailingList(models.Model):
+class MailingList(Versioned):
     """Verteiler-Adresse: Mails an ``<adresse>@<Verteiler-Domain>`` werden zum Rundschreiben.
 
     Empfänger, Art und Empfängerkreis stehen in einem Muster-Rundschreiben
     (``pattern``, bleibt immer Entwurf). So gelten dieselben Filter und dieselbe
     Vorschau wie beim Rundschreiben in der Oberfläche.
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Mode(models.TextChoices):
         CONFIRM = "confirm", gettext_lazy("Absender bestätigt per Link")

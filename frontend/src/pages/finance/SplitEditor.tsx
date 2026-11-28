@@ -25,6 +25,7 @@ export function SplitEditor({
   booking,
   categories,
   projects,
+  version,
   onDone,
   onCancel,
 }: {
@@ -32,6 +33,8 @@ export function SplitEditor({
   booking: Booking
   categories: Category[]
   projects: Project[]
+  /** Fassung, die das Formular der Buchung zuletzt vom Server bekommen hat. */
+  version?: () => number | undefined
   onDone: (lead: Booking) => void
   onCancel: () => void
 }) {
@@ -67,6 +70,7 @@ export function SplitEditor({
           project: r.project ? Number(r.project) : null,
           text: r.text,
         })),
+        version ? version() : booking.version,
       )
       onDone(result[0])
     } catch (err) {

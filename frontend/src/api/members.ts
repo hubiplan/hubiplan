@@ -257,6 +257,8 @@ export interface Contact {
 }
 
 export interface Period {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   entry_date: string
   exit_date: string | null
@@ -276,6 +278,8 @@ export interface TypeAssignment {
 }
 
 export interface DepartmentMembership {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   department: number
   department_name: string
@@ -296,6 +300,8 @@ export interface DepartmentRoleHolder {
 
 /** Ansprechpartner eines Organisationsmitglieds (frei erfasst oder ein Mitglied) */
 export interface ContactPerson {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   /** Mitgliedschaft der verknüpften Person in diesem Verein */
   linked_member: number | null
@@ -329,6 +335,8 @@ export type ContactPersonInput = Partial<
 
 /** Abweichende Rechnungsanschrift und Rechnungsangaben (alle Mitglieder) */
 export interface BillingAddress {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   name: string
   attention: string
   street: string
@@ -342,6 +350,8 @@ export interface BillingAddress {
 
 export interface MemberDetail {
   id: number
+  /** Fassung gegen gleichzeitiges Bearbeiten; geht beim Ändern der Stammdaten mit. */
+  version?: number
   person_id: number
   kind?: MemberKind
   billing_address?: BillingAddress | null

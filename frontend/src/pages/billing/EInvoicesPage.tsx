@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
-import { newRequestKey } from '../../api/client.ts'
+import { newRequestKey, sendingVersion } from '../../api/client.ts'
 import { einvoiceApi } from '../../api/einvoices.ts'
 import type {
   CommercialInput,
@@ -260,7 +260,11 @@ function CommercialDetail({
             <button
               className="button button-primary"
               disabled={busy}
-              onClick={() => void act(() => billingApi.finalize(org.id, id))}
+              onClick={() =>
+                void act(() =>
+                  sendingVersion(invoice.version, () => billingApi.finalize(org.id, id)),
+                )
+              }
             >
               {t('Prüfen und festschreiben')}
             </button>
@@ -452,7 +456,9 @@ export function CommercialForm({
         try {
           const saved = saveDraft
             ? await saveDraft(value, requestKey)
-            : await einvoiceApi.save(org.id, value, requestKey, invoice?.id)
+            : await sendingVersion(invoice?.version, () =>
+                einvoiceApi.save(org.id, value, requestKey, invoice?.id),
+              )
           onSaved(saved.id)
         } catch (err) {
           setError(errorMessage(err))

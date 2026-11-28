@@ -120,6 +120,8 @@ export type ScoringKind = 'einzel' | 'einheit' | 'mannschaft'
 export type TeamMode = 'beste' | 'summe' | 'durchschnitt'
 
 export interface Scoring {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   program?: number | null
   has_results?: boolean
   confirm_recalculation?: boolean
@@ -277,6 +279,8 @@ export interface CompetitionDetail extends Competition {
 }
 
 export interface ShootingProgram {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   competition: number
   name: string

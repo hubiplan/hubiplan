@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
@@ -519,7 +520,10 @@ export function InvoiceDetail({
               className="button button-primary"
               disabled={busy}
               onClick={() =>
-                void act(() => billingApi.finalize(org.id, inv.id), t('Festgeschrieben.'))
+                void act(
+                  () => sendingVersion(inv.version, () => billingApi.finalize(org.id, inv.id)),
+                  t('Festgeschrieben.'),
+                )
               }
             >
               {t('Festschreiben')}
@@ -536,7 +540,12 @@ export function InvoiceDetail({
                     confirmLabel: t('Löschen'),
                   })
                 )
-                  void act(() => billingApi.deleteInvoice(org.id, inv.id), '', true)
+                  void act(
+                    () =>
+                      sendingVersion(inv.version, () => billingApi.deleteInvoice(org.id, inv.id)),
+                    '',
+                    true,
+                  )
               }}
             >
               {t('Löschen')}

@@ -2,7 +2,7 @@ import { NextcloudPick } from '../NextcloudFiles.tsx'
 import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion } from '../../api/client.ts'
 import { baseUrl, circularApi, emptySelections } from '../../api/circulars.ts'
 import { showNotice } from '../undo.ts'
 import type {
@@ -68,6 +68,7 @@ export function DraftEditor({
   // Nach jedem Speichern die Empfängerliste neu laden
   const [version, setVersion] = useState(0)
   const auto = useAutoSave(form, (changes) => circularApi.update(base, initial.id, changes), {
+    version: initial.version,
     onSaved: () => setVersion((n) => n + 1),
   })
   const fileInput = useRef<HTMLInputElement>(null)
@@ -146,7 +147,7 @@ export function DraftEditor({
         danger: false,
       })
       if (!ok) return
-      await circularApi.send(base, initial.id)
+      await sendingVersion(auto.version(), () => circularApi.send(base, initial.id))
       await onSent()
     })
   }
@@ -193,7 +194,7 @@ export function DraftEditor({
     )
       return
     await act(async () => {
-      await circularApi.remove(base, initial.id)
+      await sendingVersion(auto.version(), () => circularApi.remove(base, initial.id))
       showNotice(baseUrl(base), t('Entwurf gelöscht.'))
       navigate(root)
     })

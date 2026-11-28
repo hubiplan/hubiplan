@@ -35,6 +35,8 @@ If the photo is not there yet, leave the picture empty in **Text with image** or
 
 For each text, **Show image captions on the website** decides whether the website shows the caption below the image at the top and in the image carousel. Without the tick (the default) the images appear without a caption; the description for screen readers stays.
 
+If someone else or the AI assistant has changed the same page in the meantime, HUBIplan does not save your entry and reports “The page has been changed in the meantime. Please reload.” This also applies to publishing.
+
 ## Chronicle as a timeline
 
 The “Chronik” text has a short introduction at the top and the timeline below it (box **Timeline**). Each event has a year or a period (e.g. 1939 to 1948), a heading, at most 400 characters of text and, if you like, up to six pictures, such as posters from several years. On the website they appear small side by side; in the large view you can page through them.

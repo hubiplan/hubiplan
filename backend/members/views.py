@@ -26,6 +26,7 @@ from audit.models import AuditEntry
 from changes import idempotency
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
+from core.versioning import Versioned, lock_and_check
 from organizations.models import Organization
 from organizations.terms import fill
 
@@ -57,7 +58,7 @@ from .serializers import (
     member_detail,
 )
 from .summary import member_summary
-from .update import update_member
+from .update import check_member_version, update_member
 
 
 class _ClubMixin(OrgScopedMixin):
@@ -266,6 +267,7 @@ class MemberDetailView(_ClubMixin, APIView):
             organization=self.org,
             pk=self.kwargs["pk"],
         )
+        check_member_version(request, membership)
         data = MemberUpdateSerializer(data=request.data, partial=True)
         data.is_valid(raise_exception=True)
         if membership.managed_by_id:
@@ -327,7 +329,13 @@ class _MemberChildMixin(_ClubMixin):
             person=membership.person,
         )
 
+    def _check_version(self, instance) -> None:
+        """Gleichzeitiges Bearbeiten: veraltete Fassung abweisen (core/versioning.py)."""
+        if isinstance(instance, Versioned):
+            lock_and_check(self.request, instance)
+
     def perform_update(self, serializer):
+        self._check_version(serializer.instance)
         before = snapshot(serializer.instance)
         instance = serializer.save()
         changes = diff(before, snapshot(instance))
@@ -342,6 +350,7 @@ class _MemberChildMixin(_ClubMixin):
             )
 
     def perform_destroy(self, instance):
+        self._check_version(instance)
         record(
             self.org,
             self.request.user,
@@ -499,6 +508,8 @@ class BillingAddressView(_ClubMixin, APIView):
             pk=pk,
         )
         instance = BillingAddress.objects.filter(membership=membership).first()
+        if instance is not None:
+            lock_and_check(request, instance)
         before = snapshot(instance) if instance else {}
         data = BillingAddressSerializer(instance, data=request.data, partial=instance is not None)
         data.is_valid(raise_exception=True)
@@ -520,6 +531,7 @@ class BillingAddressView(_ClubMixin, APIView):
         )
         instance = BillingAddress.objects.filter(membership=membership).first()
         if instance is not None:
+            lock_and_check(request, instance)
             record(
                 self.org,
                 request.user,

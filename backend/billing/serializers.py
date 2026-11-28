@@ -367,6 +367,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "overdue",
             "dunning_level",
             "dunned_at",
+            "version",
         ]
 
     def get_overdue(self, obj) -> bool:

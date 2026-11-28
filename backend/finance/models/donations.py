@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 from .bookings import Booking
@@ -124,8 +125,11 @@ class DonationStatement(models.Model):
         return f"ZB-{self.year}-{self.seq:04d}"
 
 
-class Donation(models.Model):
+class Donation(Versioned):
     """Eine Zuwendung (Geld, Mitgliedsbeitrag oder Sache), bestätigt oder noch offen."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Kind(models.TextChoices):
         MONEY = "money", gettext_lazy("Geldzuwendung")

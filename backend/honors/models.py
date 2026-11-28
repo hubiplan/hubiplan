@@ -19,12 +19,16 @@ from django.utils.translation import gettext
 from core.encfields import EncryptedCharField
 from core.plural import guess_plural  # noqa: F401  (hier weiter importierbar)
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from core.webslug import WebSlugMixin
 from exchange.models import private_storage
 
 
-class Dignity(WebSlugMixin, models.Model):
+class Dignity(WebSlugMixin, Versioned):
     """Würde einer Einheit; ``unit`` ist die Untereinheit (leer: die Einheit selbst)."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -83,8 +87,11 @@ class Dignity(WebSlugMixin, models.Model):
         return Dignity.objects.filter(organization_id=self.organization_id)
 
 
-class Reign(models.Model):
+class Reign(Versioned):
     """Regentschaft: wer in welchem Jahr, welchen Jahren oder welchem Zeitraum eine Würde trug."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

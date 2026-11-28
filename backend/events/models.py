@@ -28,6 +28,7 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 from organizations.terms import fill
 
@@ -62,7 +63,10 @@ class EventCategory(models.Model):
         return self.name
 
 
-class Event(models.Model):
+class Event(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     class Visibility(models.TextChoices):
         PUBLIC = "public", gettext_lazy("nach außen öffentlich")
         MEMBERS = "members", gettext_lazy("Mitglieder")

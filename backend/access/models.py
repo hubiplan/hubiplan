@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 
 from core.encfields import EncryptedCharField
+from core.versioning import Versioned
 
 from .catalog import DEPARTMENT_CODES, codes_for, normalize
 
@@ -178,12 +179,15 @@ def protect_unit_holders(collector, field, sub_objs, using):
     models.CASCADE(collector, field, sub_objs, using)
 
 
-class RoleAssignment(models.Model):
+class RoleAssignment(Versioned):
     """Benutzer bzw. Mitglied hat eine Rolle von … bis … Daraus entsteht die Historie.
 
     Rollen einer Einheit gehen an Benutzerkonten (``user``, optional mit Akte
     ``person``), Rollen von Untereinheiten an Mitgliedschaften (``membership``).
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="role_assignments"

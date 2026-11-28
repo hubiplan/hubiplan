@@ -360,7 +360,9 @@ der App-Schnittstelle:** Felder nur abwärtskompatibel ändern (neue Felder ja, 
 entfernen nein), sonst brechen ältere Apps.
 
 - Mitglieder: `members/` (Suche, seitenweise), `members/duplicates/`, `members/admit/` (mit
-  `Idempotency-Key`), `members/<id>/` (GET/PATCH),
+  `Idempotency-Key`), `members/<id>/` (GET/PATCH; die Antwort trägt `version`, die App schickt
+  sie beim PATCH mit und bekommt 409, wenn inzwischen jemand anderes gespeichert hat, siehe
+  [rueckgaengig.md](rueckgaengig.md), „Gleichzeitiges Bearbeiten“),
   `history/`, `change-type/`, `exit/`, `reentry/`, `fields/`, `photo/` (+ `approve/`,
   `rotate/`, `consent/`), `card/`, Unterobjekte `members/<id>/periods|departments|
   department-roles|honorary-titles/`. Organisationsmitglieder: Liste mit `typ=person|organisation`
@@ -391,7 +393,8 @@ Ebenfalls wie im Browser unter `/api/orgs/<Einheit>/events/…`, Lesen für alle
 Vorstandsschlüssel, Ändern nur mit `events.manage`:
 
 - `events/` (GET mit `from`/`to` oder `upcoming=1`; POST legt an, `notify` lädt per Mail ein),
-  `events/<id>/` (GET/PATCH/DELETE; Absagen mit `is_cancelled` und `cancel_note`),
+  `events/<id>/` (GET/PATCH/DELETE; Absagen mit `is_cancelled` und `cancel_note`; `version`
+  aus der Antwort geht bei PATCH und DELETE mit, 409 bei veraltetem Stand),
   `events/<id>/occurrence/` (einzelnen Serientermin absagen oder zurücksetzen),
   `events/<id>/notify/` (Mail über Änderung oder Absage).
 - Rückmeldungen: `events/<id>/responses/` (GET: `summary` mit Zusagen, Absagen, Begleitung,

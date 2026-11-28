@@ -18,6 +18,7 @@ from rest_framework.response import Response
 
 from audit.log import record
 from changes import idempotency
+from core.versioning import check_request
 from finance import einvoice
 from finance.models import Booking, Category, Project, Receipt
 from finance.services import lock_bank_sources
@@ -45,7 +46,7 @@ from .models import (
 from .partners import PartnerSerializer, PartnerViewSet  # noqa: F401
 from .sending import _as_drf
 from .serializers import InvoiceDetailSerializer
-from .views import InvoicePagination, InvoiceViewSet
+from .views import INVOICE_STALE, InvoicePagination, InvoiceViewSet
 
 
 def file_response(data, content_type, filename):
@@ -182,6 +183,7 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
     @transaction.atomic
     def partial_update(self, request, org_id, pk):
         invoice = self._locked_object()
+        check_request(request, invoice, INVOICE_STALE)
         if invoice.status != Invoice.Status.DRAFT:
             raise serializers.ValidationError(
                 gettext("Festgeschriebene E-Rechnungen sind unveränderbar.")

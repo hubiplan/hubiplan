@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { financeApi } from '../../api/finance.ts'
@@ -113,6 +114,7 @@ export function PartnerForm({
     (changes) => partnerApi.save(org.id, changes, partner!.id),
     {
       enabled: !!partner && canEdit,
+      version: partner?.version,
       onSaved: () => onChanged?.(),
     },
   )
@@ -416,7 +418,9 @@ export function PartnerForm({
               if (!yes) return
               setError('')
               try {
-                await partnerApi.remove(org.id, partner.id)
+                await sendingVersion(auto.version() ?? partner.version, () =>
+                  partnerApi.remove(org.id, partner.id),
+                )
                 onSaved()
               } catch (err) {
                 setError(errorMessage(err))

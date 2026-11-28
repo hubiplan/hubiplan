@@ -2,7 +2,7 @@
 // Zeitraum, Leistung, Gegenleistung, steuerlicher Einordnung, Erinnerung und Dankesbrief.
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
-import { saveBlob } from '../../api/client.ts'
+import { saveBlob, sendingVersion } from '../../api/client.ts'
 import {
   AGREEMENT_BENEFITS,
   AGREEMENT_KINDS,
@@ -91,11 +91,13 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
   const save = async () => {
     setError('')
     try {
-      const saved = await partnerApi.saveAgreement(
-        org.id,
-        partner.id,
-        draft,
-        editing === 'new' ? undefined : (editing ?? undefined),
+      const saved = await sendingVersion(list.find((a) => a.id === editing)?.version, () =>
+        partnerApi.saveAgreement(
+          org.id,
+          partner.id,
+          draft,
+          editing === 'new' ? undefined : (editing ?? undefined),
+        ),
       )
       setItems([saved, ...list.filter((a) => a.id !== saved.id)])
       setEditing(null)
@@ -218,7 +220,9 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
                     )
                       return
                     try {
-                      await partnerApi.removeAgreement(org.id, partner.id, a.id)
+                      await sendingVersion(a.version, () =>
+                        partnerApi.removeAgreement(org.id, partner.id, a.id),
+                      )
                       setItems(list.filter((x) => x.id !== a.id))
                     } catch (err) {
                       setError(errorMessage(err))

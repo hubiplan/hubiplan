@@ -25,3 +25,5 @@ Sub-units: with **Belongs to**, a post appears on the page of a sub-unit instead
 Draft and publishing: changes are saved automatically in the draft; the website preview already shows it. Visitors see the post only after **Publish**, later changes only after publishing again. **Withdraw publication** takes the post off the website without deleting it. A connected AI assistant only creates posts as drafts.
 
 “News” must be switched on under Menu and pages.
+
+If someone else has changed the same post in the meantime, HUBIplan reports “The post has been changed in the meantime. Please reload.” and does not save or publish your version.

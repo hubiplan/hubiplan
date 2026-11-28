@@ -159,7 +159,7 @@ export function InvoiceForm({
       )
       return saved
     },
-    { enabled: invoice !== null },
+    { enabled: invoice !== null, version: invoice?.version },
   )
 
   async function save(e: FormEvent) {

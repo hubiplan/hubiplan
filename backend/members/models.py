@@ -27,6 +27,7 @@ from core.encfields import (
     EncryptedEmailField,
     EncryptedJSONField,
 )
+from core.versioning import Versioned
 
 
 def today() -> datetime.date:
@@ -409,8 +410,11 @@ class MemberType(models.Model):
         super().save(*args, **kwargs)
 
 
-class Membership(models.Model):
+class Membership(Versioned):
     """Person in einem Verein. Die Zeiträume stehen in ``MembershipPeriod``."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -505,8 +509,11 @@ class ExitReason(models.TextChoices):
     TRANSFER = "transfer", gettext_lazy("Wechsel in anderen Verein")
 
 
-class MembershipPeriod(models.Model):
+class MembershipPeriod(Versioned):
     """Ein Zeitraum der Mitgliedschaft. Wiedereintritt = neuer Zeitraum."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -561,8 +568,11 @@ class MemberTypeAssignment(models.Model):
         return f"{self.member_type} ab {self.valid_from:%d.%m.%Y}"
 
 
-class DepartmentMembership(models.Model):
+class DepartmentMembership(Versioned):
     """Zugehörigkeit zu einer Abteilung (optional), mit Zeitraum."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -606,7 +616,7 @@ class DepartmentRoleHolder(RoleAssignment):
         default_manager_name = "objects"
 
 
-class ContactPerson(models.Model):
+class ContactPerson(Versioned):
     """Ansprechpartner eines Organisationsmitglieds (Konzept juristische Personen, J2).
 
     Gilt je Mitgliedschaft: Dieselbe Firma kann in zwei Vereinen verschiedene
@@ -614,6 +624,9 @@ class ContactPerson(models.Model):
     wird er verknüpft (``person``); Name und Kontakt kommen dann aus seiner Akte.
     Beim Entfernen wird die Zeile gelöscht; eingefrorene Namen in Belegen bleiben.
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -689,7 +702,7 @@ class ContactPerson(models.Model):
         return with_title(self.title, self.first_name, self.last_name)
 
 
-class BillingAddress(models.Model):
+class BillingAddress(Versioned):
     """Abweichende Rechnungsanschrift und Rechnungsangaben einer Mitgliedschaft
     (Konzept juristische Personen, J3; für alle Mitglieder, z. B. Eltern für ein Kind).
 
@@ -697,6 +710,9 @@ class BillingAddress(models.Model):
     Rechnungs-E-Mail, Bestellnummer und Leitweg-ID gelten auch ohne eigene Anschrift.
     Briefe, Rundschreiben und Einladungen gehen nie an diese Anschrift.
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -727,13 +743,16 @@ class BillingAddress(models.Model):
         return bool(self.city.strip() or self.street.strip())
 
 
-class Household(models.Model):
+class Household(Versioned):
     """Haushalt einer Familie oder Firma, die mehrere Mitglieder des Vereins verbindet
     (Konzept Familien, Haushalte und Firmen, H1). Briefe an einen Familienhaushalt mit
     gleicher Anschrift gehen als ein Brief; Beitrag und Zahler folgen in H2.
 
     Gilt je Verein. Haushaltsmitglieder sind nur Mitgliedschaften; die Zugehörigkeit hat
     Zeiträume (``HouseholdMember``), damit nichts überschrieben wird."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Kind(models.TextChoices):
         FAMILY = "family", gettext_lazy("Familie/Haushalt")

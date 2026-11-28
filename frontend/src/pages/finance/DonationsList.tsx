@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { Fragment, useState } from 'react'
 import { donationApi } from '../../api/donations.ts'
@@ -170,7 +171,13 @@ export function DonationsList({ canEdit }: { canEdit: boolean }) {
       confirmLabel: t('Löschen'),
       danger: true,
     })
-    if (ok) await run(async () => (await donationApi.remove(org.id, d.id), t('Gelöscht.')))
+    if (ok)
+      await run(
+        async () => (
+          await sendingVersion(d.version, () => donationApi.remove(org.id, d.id)),
+          t('Gelöscht.')
+        ),
+      )
   }
 
   const count = list.data?.count ?? 0

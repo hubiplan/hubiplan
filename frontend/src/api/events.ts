@@ -182,6 +182,8 @@ export interface VideoRoomInfo {
 
 export interface EventDetail {
   id: number
+  /** Fassung gegen gleichzeitiges Bearbeiten; geht beim Ändern und Löschen mit. */
+  version?: number
   /** Videoraum (Nextcloud Talk): Link und Passwort */
   video?: VideoRoomInfo | null
   /** Nur wer den Termin bearbeitet: Videoraum lässt sich anlegen */
@@ -389,9 +391,11 @@ export const eventApi = {
     api.get<EventList>(`${base}events/?from=${from}&to=${to}&upcoming=1`),
   get: (base: CalendarBase, id: number) => api.get<EventDetail>(`${base}events/${id}/`),
   create: (base: CalendarBase, data: EventInput) => api.post<EventDetail>(`${base}events/`, data),
-  update: (base: CalendarBase, id: number, data: Partial<EventInput>) =>
-    api.patch<EventDetail>(`${base}events/${id}/`, data),
-  remove: (base: CalendarBase, id: number) => api.del(`${base}events/${id}/`),
+  /** `version`: geladene Fassung; der Server lehnt ab, wenn inzwischen geändert wurde. */
+  update: (base: CalendarBase, id: number, data: Partial<EventInput>, version?: number) =>
+    api.patch<EventDetail>(`${base}events/${id}/`, { ...data, version }),
+  remove: (base: CalendarBase, id: number, version?: number) =>
+    api.delWith<unknown>(`${base}events/${id}/`, { version }),
   setProject: (base: CalendarBase, id: number, data: { project?: number | null; create?: true }) =>
     api.post<EventDetail>(`${base}events/${id}/project/`, data),
   notify: (base: CalendarBase, id: number, kind: 'change' | 'cancel') =>

@@ -68,6 +68,8 @@ export interface CircularFilters {
 }
 
 export interface CircularSummary {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   subject: string
   kind: CircularKind
@@ -366,6 +368,8 @@ export interface InboundEntry {
 }
 
 export interface MailingList {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   local_part: string

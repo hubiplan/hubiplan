@@ -18,3 +18,5 @@ Nachweis verlängert.
 
 „Bald“ heißt: innerhalb der Tage, die bei der Art als Erinnerung eingestellt sind. Abgelaufene
 und bald ablaufende Nachweise stehen außerdem auf der Startseite unter „Zu erledigen“.
+
+Hat inzwischen jemand anderes denselben Nachweis geändert oder gelöscht, meldet HUBIplan „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“

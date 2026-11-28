@@ -15,6 +15,7 @@ export interface OfficeHolder {
   former_entry: boolean
   /** freier Name darf auf der Webseite erscheinen (nur mit Häkchen) */
   name_public: boolean
+  version?: number
 }
 
 export interface Office {

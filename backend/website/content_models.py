@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 from .models import Website
@@ -59,7 +60,10 @@ RESERVED_SLUGS = frozenset(
 )
 
 
-class WebsiteText(models.Model):
+class WebsiteText(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     class Kind(models.TextChoices):
         GREETING = "greeting", gettext_lazy("Begrüßung (Startseite)")
         PAGE = "page", gettext_lazy("Textseite")
@@ -372,7 +376,10 @@ DEFAULT_IMAGE_ORDER = "taken"
 DEFAULT_ALBUM_ORDER = "date_desc"
 
 
-class GalleryAlbum(models.Model):
+class GalleryAlbum(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )

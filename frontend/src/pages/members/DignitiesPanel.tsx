@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { EmptyList } from '../../components/EmptyList.tsx'
 import { useState } from 'react'
@@ -65,7 +66,9 @@ export function DignitiesPanel() {
     })
     if (!ok) return
     try {
-      await honorsApi.deleteDignity(org.id, d.id, d.reign_count > 0)
+      await sendingVersion(d.version, () =>
+        honorsApi.deleteDignity(org.id, d.id, d.reign_count > 0),
+      )
       await reload()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -252,7 +255,7 @@ function DignityForm({
   const auto = useAutoSave(
     form,
     (changes) => honorsApi.updateDignity(org.id, dignity!.id, changes),
-    { enabled: dignity !== null },
+    { enabled: dignity !== null, version: dignity?.version },
   )
   return (
     <form

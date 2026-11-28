@@ -113,7 +113,7 @@ export function ReignForm({
   const auto = useAutoSave(
     form,
     (_changes, values) => honorsApi.updateReign(org.id, reign!.id, values),
-    { enabled: reign !== null },
+    { enabled: reign !== null, version: reign?.version },
   )
 
   async function changePhoto(file: File | null) {

@@ -1,5 +1,5 @@
 // Abteilungsbereich: was Inhaber von Abteilungsrollen sehen und tun dürfen.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SortHint } from '../../components/Sortable.tsx'
 import { useSortable } from '../../components/useSortable.tsx'
 import type { FormEvent } from 'react'
@@ -348,16 +348,21 @@ function DeptMemberForm({
   const form = useForm(memberValues(member))
   const { values: v, errors, set } = form
 
+  // Fassung des geöffneten Mitglieds: Der Server lehnt ab, wenn inzwischen jemand anderes
+  // gespeichert hat. Nur eigene Antworten zählen sie hoch.
+  const version = useRef(member.version)
   // Speichert automatisch; Kontaktdaten gehören zusammen und gehen gemeinsam raus
   const auto = useAutoSave(
     form,
-    (changes, values) => {
+    async (changes, values) => {
       const payload: Record<string, string> = { ...changes }
       if (CONTACT_KEYS.some((k) => k in changes)) {
         for (const k of CONTACT_KEYS) payload[k] = values[k]
       }
       if (!payload.email) delete payload.email
-      return portalApi.updateDeptMember(dept.id, member.id, payload)
+      const saved = await portalApi.updateDeptMember(dept.id, member.id, payload, version.current)
+      version.current = saved.version
+      return saved
     },
     { enabled: canEdit, onSaved: (saved) => onSaved(saved as DeptMember) },
   )

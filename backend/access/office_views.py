@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from audit.log import diff, record, snapshot
 from changes import idempotency
 from core.api_base import OrgScopedMixin
+from core.versioning import check_request, stale_text
 from members.models import Membership, Person
 from organizations.models import Department, Organization
 
@@ -109,6 +110,7 @@ class OfficeEntryView(_OfficesMixin, APIView):
     @transaction.atomic
     def put(self, request, org_id: int, pk: int):
         entry = self.entry(pk)
+        check_request(request, entry, stale_text())
         ser = EntrySerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         d = ser.validated_data
@@ -136,6 +138,7 @@ class OfficeEntryView(_OfficesMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         entry = self.entry(pk)
+        check_request(request, entry, stale_text())
         record(
             self.org,
             request.user,

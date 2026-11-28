@@ -19,6 +19,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from core.tenancy import rls_bypass
+from core.versioning import Versioned
 
 from .models import Membership
 
@@ -118,6 +119,9 @@ def _row(obj, exclude: set[str] | frozenset = frozenset()) -> dict:
     data = {}
     for field in obj._meta.concrete_fields:
         if field.name in exclude or field.name in SECRET:
+            continue
+        # Technischer Zähler gegen gleichzeitiges Bearbeiten, keine Angabe zur Person
+        if field.name == "version" and isinstance(obj, Versioned):
             continue
         if isinstance(field, models.FileField | models.BinaryField):
             continue
@@ -363,7 +367,7 @@ def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | byte
     files["fotolinks.json"] = _dump(_rows(PhotoUploadLink.objects.filter(**mine)))
     files["kasse.json"] = _dump(
         {
-            "buchungen": _rows(Booking.objects.filter(**mine)),
+            "buchungen": _rows(Booking.objects.filter(**mine), {"version"}),
             "quittungen": _rows(CashReceipt.objects.filter(**mine)),
             "zuwendungsbestaetigungen": _rows(DonationStatement.objects.filter(**mine)),
         }
@@ -632,7 +636,7 @@ def build(membership: Membership, org) -> bytes:
     files: dict[str, str | bytes] = {}
 
     akte = member_detail(membership, org)
-    for key in ("exit_reasons", "contact_shared", "photo", "other_memberships"):
+    for key in ("exit_reasons", "contact_shared", "photo", "other_memberships", "version"):
         akte.pop(key, None)
     files["akte.json"] = _dump(akte)
 

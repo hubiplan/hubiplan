@@ -61,3 +61,5 @@ This lists all companies, authorities, associations and people outside the membe
 
 - You can only delete a partner as long as it is not used anywhere. Otherwise untick **Active**.
 - If a partner is also a member, for example a company as a supporting member, please do not create it twice. Only store private persons as far as you need them for a contract.
+
+If someone else has changed the same partner, contact or agreement in the meantime, HUBIplan does not save your entry and reports “The entry has been changed in the meantime. Please reload.” Then reload the page.

@@ -29,6 +29,7 @@ from core.api_base import OrgScopedMixin
 from core.files import delete_on_commit
 from core.listing import page_of
 from core.tenancy import rls_bypass, scope_of, set_rls
+from core.versioning import lock_and_check
 from members.models import Membership, MemberType
 from members.personsearch import ordered
 from organizations.imprint import ensure as ensure_imprint
@@ -286,6 +287,7 @@ def summary_data(c: Circular) -> dict:
         "created_by": user_name(c.created_by),
         "created_at": c.created_at,
         "updated_at": c.updated_at,
+        "version": c.version,
         "sent_at": c.sent_at,
         "sent_by": user_name(c.sent_by),
         "event": event_summary(c.event) if c.event_id else None,
@@ -380,6 +382,16 @@ class _CircularMixin:
 
     def is_pattern(self, circular: Circular) -> bool:
         return MailingList.objects.filter(pattern=circular).exists()
+
+    def check_version(self, circular: Circular) -> None:
+        """Gleichzeitiges Bearbeiten: veraltete Fassung abweisen (core/versioning.py)."""
+        lock_and_check(
+            self.request,
+            circular,
+            None
+            if self.is_pattern(circular)
+            else gettext("Das Rundschreiben wurde inzwischen geändert. Bitte neu laden."),
+        )
 
     def get_draft(self, pk: int) -> Circular:
         circular = self.get_circular(pk)
@@ -764,6 +776,7 @@ class _Detail(APIView):
     @transaction.atomic
     def patch(self, request, pk: int, **kwargs):
         circular = self.get_editable(pk)
+        self.check_version(circular)
         ser = CircularWriteSerializer(
             circular, data=request.data, partial=True, context={"org": self.org, "dept": self.dept}
         )
@@ -774,6 +787,7 @@ class _Detail(APIView):
     @transaction.atomic
     def delete(self, request, pk: int, **kwargs):
         circular = self.get_draft(pk)
+        self.check_version(circular)
         if self.is_pattern(circular):
             raise serializers.ValidationError(gettext("Bitte den Verteiler selbst löschen."))
         self.audit("delete", circular, {"Betreff": [circular.subject, None]})
@@ -847,6 +861,8 @@ class _Send(APIView):
             raise serializers.ValidationError(
                 gettext("Das ist die Empfängerauswahl eines Verteilers.")
             )
+        # Versenden nur in der Fassung, die die Person gesehen hat
+        self.check_version(circular)
         services.apply_list(circular)
         self.check_audience(circular)
         counts = services.start_sending(circular, request.user)
@@ -1135,6 +1151,7 @@ def mailing_list_data(ml: MailingList) -> dict:
             else None
         ),
         "pattern_id": pattern.pk,
+        "version": ml.version,
         "kind": pattern.kind,
         "kind_label": pattern.get_kind_display(),
         "audience": pattern.audience,
@@ -1237,6 +1254,7 @@ class _ListDetail(_ListsMixin, APIView):
     @transaction.atomic
     def patch(self, request, list_id: int, **kwargs):
         ml = self.get_list(list_id)
+        lock_and_check(request, ml)
         before = {
             "local_part": ml.local_part,
             "aliases": list(ml.aliases or []),
@@ -1265,6 +1283,7 @@ class _ListDetail(_ListsMixin, APIView):
     @transaction.atomic
     def delete(self, request, list_id: int, **kwargs):
         ml = self.get_list(list_id)
+        lock_and_check(request, ml)
         self.audit("delete", ml, {"Verteiler": [ml.local_part, None]})
         # Mit dem Muster geht auch der Verteiler (CASCADE)
         ml.pattern.delete()

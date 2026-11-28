@@ -3,6 +3,7 @@
 // zeigt eigene Beiträge nach Datum gemischt mit denen aus Instagram und Facebook.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { sendingVersion } from '../../api/client.ts'
 import { contentApi, newsApi } from '../../api/website.ts'
 import type { NewsPost, NewsVideo, WebsiteImage } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -181,6 +182,7 @@ function NewsForm({
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(post)
   const auto = useAutoSave(form, (changes) => newsApi.save(org.id, post.id, changes), {
+    version: post.version,
     onSaved: (saved) => setCurrent(saved as NewsPost),
   })
   const images = useLoad(() => contentApi.images(org.id), [org.id])
@@ -192,7 +194,10 @@ function NewsForm({
     setMessage(null)
     if (!(await auto.flush())) return
     try {
-      setCurrent(await action())
+      // Veröffentlichen und Zurücknehmen gelten für die Fassung, die hier offen ist
+      const result = await sendingVersion(auto.version(), action)
+      auto.resetVersion(result.version)
+      setCurrent(result)
       onSaved()
     } catch (err) {
       setMessage(errorMessage(err))
@@ -208,7 +213,7 @@ function NewsForm({
     })
     if (!ok) return
     try {
-      await newsApi.remove(org.id, post.id)
+      await sendingVersion(auto.version(), () => newsApi.remove(org.id, post.id))
       onDeleted()
     } catch (err) {
       setMessage(errorMessage(err))

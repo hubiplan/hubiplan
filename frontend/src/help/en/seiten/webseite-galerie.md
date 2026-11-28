@@ -18,3 +18,5 @@ Photos: “Upload photos” takes many photos at once; you can also drag them on
 Sorting: by default the gallery sorts images by date taken and albums by date (newest first). Choose “custom order” to sort by dragging. The cover is the chosen image, otherwise the first one.
 
 Visibility: an album appears on the website only with “Show on the website”; a sub-album only if its parent album is shown as well. The “Gallery” section must also be switched on under “Menu and pages”. Only show photos of recognisable people with their consent.
+
+If someone else has changed the same album in the meantime, HUBIplan reports “The album has been changed in the meantime. Please reload.”

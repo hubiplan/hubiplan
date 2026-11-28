@@ -16,6 +16,7 @@ from core.encfields import (
     EncryptedTextField,
 )
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from exchange.models import private_storage
 
 from .settings import ZERO, FeeRun
@@ -54,7 +55,10 @@ def invoice_pdf_path(instance, filename: str) -> str:
     return f"rechnungen/{instance.organization_id}/{instance.pk}-{filename}"
 
 
-class Invoice(models.Model):
+class Invoice(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     class Status(models.TextChoices):
         DRAFT = "draft", gettext_lazy("Entwurf")
         OPEN = "open", gettext_lazy("offen")

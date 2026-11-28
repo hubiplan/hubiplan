@@ -14,6 +14,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext
 
+from core.versioning import Versioned
+
 from .content_models import MAX_TITLE, SLUG_RE
 
 MAX_NEWS_BODY = 20_000
@@ -22,7 +24,10 @@ MAX_NEWS_VIDEOS = 6
 MAX_VIDEO_TITLE = 120
 
 
-class NewsPost(models.Model):
+class NewsPost(Versioned):
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
+
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )

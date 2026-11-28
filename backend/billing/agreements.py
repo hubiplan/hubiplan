@@ -71,6 +71,7 @@ class AgreementSerializer(serializers.ModelSerializer):
             "thanked_at",
             "notes",
             "updated_at",
+            "version",
         ]
         read_only_fields = [
             "id",

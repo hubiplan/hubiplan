@@ -4,7 +4,7 @@ import { EditAt, editKey } from '../../components/EditInPlace.tsx'
 import { EmptyList } from '../../components/EmptyList.tsx'
 import { useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { newRequestKey } from '../../api/client.ts'
+import { newRequestKey, sendingVersion } from '../../api/client.ts'
 import { honorsApi } from '../../api/honors.ts'
 import type { ImportRow, Reign, SharedDignity } from '../../api/honors.ts'
 import { PERM } from '../../api/orgs.ts'
@@ -70,7 +70,7 @@ function ReignsPanel() {
     })
     if (!ok) return
     try {
-      await honorsApi.deleteReign(org.id, r.id)
+      await sendingVersion(r.version, () => honorsApi.deleteReign(org.id, r.id))
       await reigns.reload()
     } catch (err) {
       setMessage(errorMessage(err))

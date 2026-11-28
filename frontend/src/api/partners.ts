@@ -49,6 +49,8 @@ export interface PartnerBank {
 }
 
 export interface PartnerContact {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   last_name: string
   first_name: string
@@ -62,6 +64,8 @@ export interface PartnerContact {
 }
 
 export interface BusinessPartner {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   kind: PartnerKind
@@ -116,6 +120,8 @@ export const AGREEMENT_BENEFITS = [
 export type AgreementBenefit = (typeof AGREEMENT_BENEFITS)[number]
 
 export interface PartnerAgreement {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   kind: AgreementKind
   title: string

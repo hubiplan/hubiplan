@@ -26,3 +26,5 @@ renew the certificate.
 
 “Soon” means: within the days set as reminder for the type. Expired and soon-expiring
 certificates are also listed on the home page under “To do”.
+
+If someone else has changed or deleted the same record in the meantime, HUBIplan reports “The entry has been changed in the meantime. Please reload.”

@@ -319,6 +319,7 @@ class PeriodSerializer(serializers.ModelSerializer):
             "exit_reason_label",
             "note",
             "member_type",
+            "version",
         ]
 
     def create(self, validated_data):
@@ -442,7 +443,7 @@ class DepartmentMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DepartmentMembership
-        fields = ["id", "department", "department_name", "valid_from", "valid_until"]
+        fields = ["id", "department", "department_name", "valid_from", "valid_until", "version"]
 
     def validate(self, attrs):
         membership: Membership = self.context["membership"]
@@ -578,6 +579,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "member_access",
             "is_guardian",
             "since",
+            "version",
         ]
 
     def _contact(self, obj):
@@ -670,6 +672,7 @@ class BillingAddressSerializer(serializers.ModelSerializer):
             "email",
             "order_reference",
             "leitweg_id",
+            "version",
         ]
 
     def validate(self, attrs):
@@ -803,6 +806,7 @@ def member_detail(membership: Membership, org) -> dict:
     )
     return {
         "id": membership.pk,
+        "version": membership.version,
         "person_id": person.pk,
         "kind": person.kind,
         "last_name": person.last_name,

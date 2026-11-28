@@ -1,3 +1,4 @@
+import { sendingVersion } from '../../api/client.ts'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { donationApi, earmarkApi } from '../../api/donations.ts'
@@ -104,7 +105,8 @@ export function DonationForm({
     setFailure(null)
     const data = { ...v, amount: parseAmount(amountText) }
     try {
-      if (initial) await donationApi.update(org.id, initial.id, data)
+      if (initial)
+        await sendingVersion(initial.version, () => donationApi.update(org.id, initial.id, data))
       else await donationApi.create(org.id, data)
       setSaved(true)
       await onDone(initial ? t('Zuwendung geändert.') : t('Zuwendung erfasst.'))

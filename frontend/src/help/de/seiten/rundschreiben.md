@@ -32,6 +32,8 @@ Der Termin ist bei Verteilern an Rolleninhaber „nur Vorstand“, sonst für Mi
 
 Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.
 
+Bearbeiten zwei Personen denselben Entwurf oder Verteiler, gilt die zuerst gespeicherte Änderung. Die zweite Person sieht „Das Rundschreiben wurde inzwischen geändert. Bitte neu laden.“ und lädt die Seite neu. Auch versendet wird nur der Stand, den du gerade siehst.
+
 ## Rundschreiben zu einem Termin
 
 Ein Rundschreiben zu einem Termin legst du im geöffneten Termin mit **Rundschreiben dazu schreiben** in der Knopfleiste an; danach steht es dort unter **Zu diesem Termin**. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung. Bei einem Termin mit Anmeldung geht ein Infoschreiben an die Angemeldeten, auch an Gäste (siehe Termine).

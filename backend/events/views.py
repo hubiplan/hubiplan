@@ -19,7 +19,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, pgettext
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -32,6 +32,7 @@ from audit.log import diff, record, snapshot
 from core.api_base import OrgScopedMixin, has_needed
 from core.listing import page_of
 from core.tenancy import rls_bypass, scope_of, set_rls
+from core.versioning import check_request
 from members.models import DepartmentMembership, Membership, today
 from oidc import nc_talk
 from organizations.models import Organization
@@ -145,6 +146,18 @@ class _CalendarMixin:
         event = self.visible_event(pk)
         if not self.viewer.can_edit(event):
             raise PermissionDenied(gettext("Diesen Termin kannst du hier nicht bearbeiten."))
+        return event
+
+    def own_event_for_change(self, pk: int) -> Event:
+        """Termin zum Ändern oder Löschen: Zeile sperren, dann frisch lesen und die
+        mitgeschickte Fassung prüfen (core/versioning.py). In einer Transaktion aufrufen."""
+        list(Event._base_manager.select_for_update().filter(pk=pk).values_list("pk"))
+        event = self.own_event(pk)
+        check_request(
+            self.request,
+            event,
+            pgettext("kalender", "Der Termin wurde inzwischen geändert. Bitte neu laden."),
+        )
         return event
 
 
@@ -402,7 +415,7 @@ class _EventDetail(APIView):
 
     @transaction.atomic
     def patch(self, request, pk: int, **kwargs):
-        event = self.own_event(pk)
+        event = self.own_event_for_change(pk)
         meeting = getattr(event, "meeting", None)
         if meeting is not None and meeting.status == meeting.Status.DONE:
             raise serializers.ValidationError(
@@ -467,7 +480,7 @@ class _EventDetail(APIView):
 
     @transaction.atomic
     def delete(self, request, pk: int, **kwargs):
-        event = self.own_event(pk)
+        event = self.own_event_for_change(pk)
         if hasattr(event, "meeting"):
             raise serializers.ValidationError(
                 {

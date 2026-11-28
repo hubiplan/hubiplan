@@ -10,7 +10,7 @@ from django.db.models import Count, ProtectedError, Q
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
@@ -291,6 +291,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         "Beiträge → Rechnungen entfernen."
     )
     pagination_class = BookingPagination
+    version_conflict = gettext_lazy("Die Buchung wurde inzwischen geändert. Bitte neu laden.")
 
     def get_queryset(self):
         qs = Booking.objects.filter(organization=self.org).select_related(
@@ -458,6 +459,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         """Storno mit Pflicht-Grund: Gegenbuchung im laufenden Jahr, Buchung bleibt."""
         booking = self.get_object()
         self._lock_and_refresh(booking)
+        self._check_version(booking)
         try:
             counter = services.cancel_booking(booking, request.user, request.data.get("reason"))
         except DjangoValidationError as exc:
@@ -486,6 +488,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         """Splitbuchung: {parts: [{category, amount, project?, text?}, …]}."""
         booking = self.get_object()
         self._lock_and_refresh(booking)
+        self._check_version(booking)
         raw = request.data.get("parts")
         if not isinstance(raw, list):
             raise serializers.ValidationError({"parts": gettext("Bitte die Teile angeben.")})
@@ -545,7 +548,9 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             years.add(self.org.fiscal_year_of(serializer.validated_data["date"]))
         for year in sorted(years):
             services.lock_year_shared(self.org, year)
-        if self._lock_and_refresh(serializer.instance):
+        stale = self._lock_and_refresh(serializer.instance)
+        self._check_version(serializer.instance)
+        if stale:
             serializer = self._revalidate(serializer)
         instance = serializer.instance
         changed = {k for k, v in serializer.validated_data.items() if v != getattr(instance, k)}
@@ -631,6 +636,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     @transaction.atomic
     def perform_destroy(self, instance):
         self._lock_and_refresh(instance)
+        self._check_version(instance)
         self._donation_editable(instance)
         self._open(year=instance.year)
         if _quittung_of(instance) is not None:

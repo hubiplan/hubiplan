@@ -20,6 +20,7 @@ from django.utils.translation import gettext_lazy
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.privatefiles import PrivateFileField
+from core.versioning import Versioned
 from core.webslug import WebSlugMixin
 from exchange.models import private_storage
 
@@ -172,8 +173,11 @@ class Competition(WebSlugMixin, models.Model):
         return Competition.objects.filter(organization_id=self.organization_id)
 
 
-class ShootingProgram(models.Model):
+class ShootingProgram(Versioned):
     """Gemeinsame Schießbedingungen und Treffergrundlage mehrerer Wertungen."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name="programs")
@@ -194,8 +198,11 @@ class ShootingProgram(models.Model):
         return self.name
 
 
-class Scoring(models.Model):
+class Scoring(Versioned):
     """Wertung: eine Rangliste innerhalb des Wettbewerbs."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Kind(models.TextChoices):
         INDIVIDUAL = "einzel", gettext_lazy("Einzelwertung")
@@ -784,9 +791,12 @@ class PhotoSample(models.Model):
         return f"Spiegelausschnitt {self.target}"
 
 
-class Trophy(models.Model):
+class Trophy(Versioned):
     """Wanderpokal: eigener Gegenstand der Einheit mit wechselnden Inhabern, nicht an eine
     Reihe gebunden. Optional geht er nach n Gewinnen in Folge in den Besitz über."""
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

@@ -12,7 +12,7 @@ import type {
   ImageSort,
   WebsiteImage,
 } from '../../api/website.ts'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion } from '../../api/client.ts'
 import { PERM } from '../../api/orgs.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
@@ -261,7 +261,7 @@ function AlbumEditor({
   async function apply(patch: AlbumDraft, done?: string) {
     setMessage(null)
     try {
-      const saved = await galleryApi.save(org.id, id, patch)
+      const saved = await sendingVersion(data?.version, () => galleryApi.save(org.id, id, patch))
       album.setData(saved)
       onChanged()
       if (done) setMessage({ kind: 'success', text: done })
@@ -331,7 +331,7 @@ function AlbumEditor({
     })
     if (!ok) return
     try {
-      await galleryApi.remove(org.id, id)
+      await sendingVersion(data?.version, () => galleryApi.remove(org.id, id))
       onBack()
     } catch (err) {
       setMessage({ kind: 'error', text: errorMessage(err) })

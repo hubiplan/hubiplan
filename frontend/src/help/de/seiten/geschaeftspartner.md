@@ -61,3 +61,5 @@ Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitglied
 
 - Löschen geht nur, solange ein Partner nirgends verwendet wird. Sonst entfernt ihr den Haken **Aktiv**.
 - Ist ein Partner auch Mitglied, etwa eine Firma als Fördermitglied, legt ihn bitte nicht doppelt an. Privatpersonen speichert ihr nur, soweit ihr sie für einen Vertrag braucht.
+
+Hat inzwischen jemand anderes denselben Partner, Ansprechpartner oder dieselbe Vereinbarung geändert, speichert HUBIplan deine Eingabe nicht und meldet „Der Eintrag wurde inzwischen geändert. Bitte neu laden.“ Lade dann die Seite neu.

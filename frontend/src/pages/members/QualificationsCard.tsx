@@ -5,6 +5,7 @@ import { EditAt } from '../../components/EditInPlace.tsx'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { todayIso } from '../../api/members.ts'
+import { sendingVersion } from '../../api/client.ts'
 import { addMonths, qualificationApi } from '../../api/qualifications.ts'
 import type {
   Qualification,
@@ -189,7 +190,10 @@ export function QualificationsCard({
       message: t('Nur für falsche Einträge. Bei einer Verlängerung besser „verlängern“ wählen.'),
       confirmLabel: t('Löschen'),
     })
-    if (ok) await run(() => qualificationApi.deleteRecord(orgId, memberId, q.id))
+    if (ok)
+      await run(() =>
+        sendingVersion(q.version, () => qualificationApi.deleteRecord(orgId, memberId, q.id)),
+      )
   }
 
   function line(q: Qualification) {
@@ -217,7 +221,11 @@ export function QualificationsCard({
               busy={busy}
               onCancel={() => setEditing(null)}
               onSave={(data) =>
-                run(() => qualificationApi.updateRecord(orgId, memberId, q.id, data)).then((ok) => {
+                run(() =>
+                  sendingVersion(q.version, () =>
+                    qualificationApi.updateRecord(orgId, memberId, q.id, data),
+                  ),
+                ).then((ok) => {
                   if (ok) setEditing(null)
                   return ok
                 })

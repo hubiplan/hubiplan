@@ -15,7 +15,8 @@ export const akten: (MemberDetail)[] = [
    "name": "Muster GmbH",
    "order_reference": "B-1",
    "postal_code": "12345",
-   "street": "Musterweg 1"
+   "street": "Musterweg 1",
+   "version": 1
   },
   "birth_date": "2003-07-08",
   "birth_year_only": false,
@@ -58,7 +59,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Batterie Donnerhall",
     "id": 4064,
     "valid_from": "2021-12-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -147,7 +149,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 6942,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7042,
@@ -190,7 +193,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2021-12-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -225,7 +229,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Tambour",
     "id": 4150,
     "valid_from": "2019-02-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -314,7 +319,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 7028,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7128,
@@ -357,7 +363,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2019-02-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -402,7 +409,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Jägerzug Hörnerklang",
     "id": 4019,
     "valid_from": "1983-04-01",
-    "valid_until": "2026-11-28"
+    "valid_until": "2026-11-28",
+    "version": 1
    }
   ],
   "duration": {
@@ -460,7 +468,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "exit",
     "exit_reason_label": "Austritt",
     "id": 6897,
-    "note": "auf eigenen Wunsch"
+    "note": "auf eigenen Wunsch",
+    "version": 1
    }
   ],
   "person_id": 6997,
@@ -497,7 +506,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "1983-04-01",
     "valid_until": "2026-11-28"
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -544,7 +554,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Grenadierzug Eichenlaub",
     "id": 3969,
     "valid_from": "2019-09-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -605,7 +616,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 6847,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 6947,
@@ -642,7 +654,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2019-09-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -687,7 +700,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Zug Gut Schuss",
     "id": 4054,
     "valid_from": "2021-05-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -748,7 +762,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 6932,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7032,
@@ -785,7 +800,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2021-05-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -823,7 +839,8 @@ export const akten: (MemberDetail)[] = [
     "receives_mail": true,
     "represents": true,
     "since": "2025-10-24",
-    "title": ""
+    "title": "",
+    "version": 1
    },
    {
     "access_email": "",
@@ -845,7 +862,8 @@ export const akten: (MemberDetail)[] = [
     "receives_mail": true,
     "represents": true,
     "since": null,
-    "title": ""
+    "title": "",
+    "version": 1
    }
   ],
   "contact_shared": true,
@@ -927,7 +945,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 7059,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7159,
@@ -959,7 +978,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2025-10-24",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -1001,7 +1021,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Grenadierzug Treue Kameraden",
     "id": 3981,
     "valid_from": "2021-05-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -1062,7 +1083,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 6859,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 6959,
@@ -1099,7 +1121,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2021-05-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -1134,7 +1157,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Zug Gut Schuss",
     "id": 4055,
     "valid_from": "2025-03-01",
-    "valid_until": null
+    "valid_until": null,
+    "version": 1
    }
   ],
   "duration": {
@@ -1195,7 +1219,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "",
     "exit_reason_label": "",
     "id": 6933,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7033,
@@ -1232,7 +1257,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "2025-03-01",
     "valid_until": null
    }
-  ]
+  ],
+  "version": 1
  },
  {
   "billing_address": null,
@@ -1259,7 +1285,8 @@ export const akten: (MemberDetail)[] = [
     "department_name": "Tambour",
     "id": 4154,
     "valid_from": "1982-11-01",
-    "valid_until": "1993-01-23"
+    "valid_until": "1993-01-23",
+    "version": 1
    }
   ],
   "duration": {
@@ -1317,7 +1344,8 @@ export const akten: (MemberDetail)[] = [
     "exit_reason": "strike_off",
     "exit_reason_label": "Streichung",
     "id": 7032,
-    "note": ""
+    "note": "",
+    "version": 1
    }
   ],
   "person_id": 7132,
@@ -1354,7 +1382,8 @@ export const akten: (MemberDetail)[] = [
     "valid_from": "1982-11-01",
     "valid_until": "1993-01-23"
    }
-  ]
+  ],
+  "version": 1
  }
 ]
 
@@ -1381,7 +1410,8 @@ export const ansprechpartner: (ContactPerson[])[] = [
    "receives_mail": true,
    "represents": true,
    "since": "2025-10-24",
-   "title": ""
+   "title": "",
+   "version": 1
   },
   {
    "access_email": "",
@@ -1403,7 +1433,8 @@ export const ansprechpartner: (ContactPerson[])[] = [
    "receives_mail": true,
    "represents": true,
    "since": null,
-   "title": ""
+   "title": "",
+   "version": 1
   }
  ]
 ]
