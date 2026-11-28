@@ -5720,6 +5720,13 @@ msgid ""
 msgstr "XRechnung requires the supplier’s contact name and phone number."
 
 msgid ""
+"Dauerhaft hinterlegen lassen sich diese Angaben unter Finanzen › Einrichten › "
+"Rechnung & Zahlung."
+msgstr ""
+"You can store these details permanently under Finance › Set up › Invoice & "
+"payment."
+
+msgid ""
 "Nicht steuerbare Positionen dürfen hier nicht mit anderen Steuerkategorien "
 "kombiniert werden."
 msgstr "Out-of-scope items cannot be combined with other tax categories here."

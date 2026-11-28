@@ -138,6 +138,12 @@ class CommercialInvoiceSerializer(serializers.Serializer):
                 gettext("Bitte Steuernummer oder USt-IdNr. des Rechnungsstellers angeben.")
             )
         if missing:
+            missing.append(
+                gettext(
+                    "Dauerhaft hinterlegen lassen sich diese Angaben unter Finanzen › Einrichten › "
+                    "Rechnung & Zahlung."
+                )
+            )
             raise serializers.ValidationError(missing)
         if "O" in categories and len(categories) > 1:
             raise serializers.ValidationError(

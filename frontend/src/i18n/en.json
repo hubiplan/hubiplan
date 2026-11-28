@@ -11332,5 +11332,7 @@
   "Mit der HUBIplan-App für Android hast du die Verwaltung auf dem Telefon: zum Beispiel das Kassenbuch mit Buchungen und Belegfotos und, was gerade zu erledigen ist. Die Verwaltung schaltest du in der App mit deinem zweiten Faktor frei.": "With the HUBIplan app for Android you have the administration on your phone: for example the cash book with bookings and receipt photos, and what currently needs attention. You unlock the administration in the app with your second factor.",
   "Konten mit Rolle bekommen eine neue Einladung, solange sie noch kein Passwort festgelegt haben.": "Accounts with a role get a new invitation as long as they have not set a password yet.",
   "Rechnungen schreiben und mahnen, eingehende Rechnungen prüfen.": "Write invoices and send reminders, check incoming invoices.",
-  "Grundlagen festlegen: Mahnstufen, Konten, Kategorien und Partner.": "Set the basics: reminder levels, accounts, categories and partners."
+  "Grundlagen festlegen: Mahnstufen, Konten, Kategorien und Partner.": "Set the basics: reminder levels, accounts, categories and partners.",
+  "Angaben des Rechnungsstellers": "Supplier details",
+  "Leistungsrechnungen und E-Rechnungen brauchen eine Kontaktperson mit Telefon, eine Kennung und die Steuernummer. Hier hinterlegt, sind sie in jeder neuen Rechnung vorbelegt.": "Service invoices and e-invoices need a contact person with phone number, an identifier and the tax number. Once stored here, they are prefilled in every new invoice."
 }

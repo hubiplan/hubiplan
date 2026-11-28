@@ -687,22 +687,21 @@ function SettingsCard({
             />
           </div>
           {v.vat_enabled && (
-            <>
-              <Field
-                label={t('üblicher Steuersatz (%)')}
-                inputMode="decimal"
-                value={v.vat_rate}
-                error={form.errors.vat_rate}
-                onChange={(e) => form.set('vat_rate', e.target.value)}
-              />
-              <Field
-                label={t('Steuernummer oder USt-IdNr.')}
-                value={v.tax_number}
-                error={form.errors.tax_number}
-                onChange={(e) => form.set('tax_number', e.target.value)}
-              />
-            </>
+            <Field
+              label={t('üblicher Steuersatz (%)')}
+              inputMode="decimal"
+              value={v.vat_rate}
+              error={form.errors.vat_rate}
+              onChange={(e) => form.set('vat_rate', e.target.value)}
+            />
           )}
+          {/* Auch ohne ausgewiesene Umsatzsteuer nötig: Leistungs- und E-Rechnungen nennen sie */}
+          <Field
+            label={t('Steuernummer oder USt-IdNr.')}
+            value={v.tax_number}
+            error={form.errors.tax_number}
+            onChange={(e) => form.set('tax_number', e.target.value)}
+          />
         </div>
         <p className="muted small">
           {t(
@@ -711,45 +710,49 @@ function SettingsCard({
         </p>
         {settings.org_type !== 'unit' && (
           <>
+            <h3>{t('Angaben des Rechnungsstellers')}</h3>
+            <p className="muted small">
+              {t(
+                'Leistungsrechnungen und E-Rechnungen brauchen eine Kontaktperson mit Telefon, eine Kennung und die Steuernummer. Hier hinterlegt, sind sie in jeder neuen Rechnung vorbelegt.',
+              )}
+            </p>
+            <div className="grid-2">
+              <Field
+                label={t('Ansprechpartner für Rechnungsfragen')}
+                value={v.einvoice_contact}
+                error={form.errors.einvoice_contact}
+                hint={t('leer: Kontakt des Vereins')}
+                onChange={(e) => form.set('einvoice_contact', e.target.value)}
+              />
+              <Field
+                label={t('Telefon für Rechnungsfragen')}
+                value={v.einvoice_phone}
+                error={form.errors.einvoice_phone}
+                hint={t('leer: Kontakt des Vereins')}
+                onChange={(e) => form.set('einvoice_phone', e.target.value)}
+              />
+              <Field
+                label={t('E-Mail für Rechnungsfragen')}
+                type="email"
+                value={v.einvoice_email}
+                error={form.errors.einvoice_email}
+                hint={t('leer: Kontakt des Vereins')}
+                onChange={(e) => form.set('einvoice_email', e.target.value)}
+              />
+              <Field
+                label={t('Kennung des Rechnungsstellers')}
+                value={v.einvoice_identifier}
+                error={form.errors.einvoice_identifier}
+                hint={t('z. B. Vereinsregisternummer; leer: aus dem Impressum')}
+                onChange={(e) => form.set('einvoice_identifier', e.target.value)}
+              />
+            </div>
             <h3>{t('E-Rechnung für Behörden')}</h3>
             <Checkbox
               label={t('Rechnungen an Mitglieder mit Leitweg-ID als E-Rechnung (XRechnung)')}
               checked={v.einvoice_members}
               onChange={(val) => form.set('einvoice_members', val)}
             />
-            {v.einvoice_members && (
-              <div className="grid-2">
-                <Field
-                  label={t('Ansprechpartner für Rechnungsfragen')}
-                  value={v.einvoice_contact}
-                  error={form.errors.einvoice_contact}
-                  hint={t('leer: Kontakt des Vereins')}
-                  onChange={(e) => form.set('einvoice_contact', e.target.value)}
-                />
-                <Field
-                  label={t('Telefon für Rechnungsfragen')}
-                  value={v.einvoice_phone}
-                  error={form.errors.einvoice_phone}
-                  hint={t('leer: Kontakt des Vereins')}
-                  onChange={(e) => form.set('einvoice_phone', e.target.value)}
-                />
-                <Field
-                  label={t('E-Mail für Rechnungsfragen')}
-                  type="email"
-                  value={v.einvoice_email}
-                  error={form.errors.einvoice_email}
-                  hint={t('leer: Kontakt des Vereins')}
-                  onChange={(e) => form.set('einvoice_email', e.target.value)}
-                />
-                <Field
-                  label={t('Kennung des Rechnungsstellers')}
-                  value={v.einvoice_identifier}
-                  error={form.errors.einvoice_identifier}
-                  hint={t('z. B. Vereinsregisternummer; leer: aus dem Impressum')}
-                  onChange={(e) => form.set('einvoice_identifier', e.target.value)}
-                />
-              </div>
-            )}
             <p className="muted small">
               {t(
                 'Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.',
