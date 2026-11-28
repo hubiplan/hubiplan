@@ -19,7 +19,7 @@ such as the register number of the association, the tax number or the supplier n
 agreed with the customer. A new service invoice comes prefilled with the club's address,
 contact, identifier and IBAN as far as they are in the settings; if something is
 missing, the message on saving lists all missing details at once. Store contact person,
-phone, identifier and tax number permanently under Finance › Set up › Invoice & payment
+phone, identifier and tax number permanently under Finances › Set up › Invoice & payment
 (“Supplier details”).
 
 ## In detail

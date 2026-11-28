@@ -5723,7 +5723,7 @@ msgid ""
 "Dauerhaft hinterlegen lassen sich diese Angaben unter Finanzen › Einrichten › "
 "Rechnung & Zahlung."
 msgstr ""
-"You can store these details permanently under Finance › Set up › Invoice & "
+"You can store these details permanently under Finances › Set up › Invoice & "
 "payment."
 
 msgid ""
