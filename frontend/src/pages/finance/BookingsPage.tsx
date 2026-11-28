@@ -83,8 +83,9 @@ const NEW_KIND: Record<string, BookingKind> = {
 export function BookingsPage() {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.financeEdit)
-  // Ohne Zwei-Faktor-Anmeldung ruht das Buchen: Grund nennen statt Knopf, der scheitert
-  const paused = useBookingPaused() && canEdit
+  // Ohne Zwei-Faktor-Anmeldung zieht der Server das Recht zu buchen ab: Grund nennen, statt
+  // die Seite nur als „nur lesen“ zu zeigen
+  const paused = useBookingPaused() && !canEdit
   const [params, setParams] = useSearchParams()
   const settings = useFinanceSettings(org.id)
   const accounts = useFinanceAccounts(org.id)
@@ -286,6 +287,8 @@ export function BookingsPage() {
   const pages = data ? Math.max(1, Math.ceil(data.count / 100)) : 1
 
   if (accounts.data.length === 0) {
+    // Ohne zweiten Faktor lässt sich auch kein Konto anlegen: zuerst dorthin führen
+    if (paused) return <MfaBookingNotice />
     return (
       <div className="card empty-state">
         <p>
@@ -324,7 +327,7 @@ export function BookingsPage() {
       {/* Seitenkopf (S-05, W-14): ein Knopf „Neue Buchung“ mit Auswahl, Sammelaktion im Menü */}
       <PageActions
         primary={
-          canEdit && !paused && editing === null
+          canEdit && editing === null
             ? {
                 label: t('Neue Buchung'),
                 items: [

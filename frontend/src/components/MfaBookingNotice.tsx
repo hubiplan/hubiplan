@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuthOptional } from '../auth/AuthContext.tsx'
 import { t } from '../i18n/index.ts'
 
-/** Ruht das Buchen für dieses Konto, weil die Zwei-Faktor-Anmeldung fehlt? */
+/** Fehlt dem Konto die Zwei-Faktor-Anmeldung? Dann zieht der Server das Recht zu buchen ab. */
 export function useBookingPaused(): boolean {
   const user = useAuthOptional()?.user
   return !!user?.mfa_required_by
@@ -15,7 +15,7 @@ export function MfaBookingNotice() {
     <div className="alert alert-info" role="status" data-testid="buchen-ruht">
       <p>
         {t(
-          'Buchen geht erst mit Zwei-Faktor-Anmeldung: Sie schützt die Kasse, falls ein Passwort in falsche Hände gerät. Das Einrichten dauert zwei Minuten, danach kannst du sofort buchen.',
+          'Ohne Zwei-Faktor-Anmeldung ruht das Buchen in der Kasse: Sie schützt die Kasse, falls ein Passwort in falsche Hände gerät. Das Einrichten dauert zwei Minuten; wer buchen darf, kann danach sofort loslegen.',
         )}
       </p>
       <div className="button-row">

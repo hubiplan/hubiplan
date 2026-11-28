@@ -40,6 +40,20 @@ describe('Einstieg in die Zwei-Faktor-Anmeldung', () => {
     await waitFor(() => expect(screen.queryByText(/Hallo Karla/)).toBeNull())
   })
 
+  it('liest das Konto nach dem Laden der Einheiten neu, weil die Frist erst dann entsteht', async () => {
+    window.sessionStorage.clear()
+    let calls = 0
+    const session = () => {
+      calls += 1
+      const data = calls === 1 ? { ...user, mfa_required_by: undefined } : user
+      return { status: 200, body: { status: 200, data: { user: data } } }
+    }
+    fakeApi({ [SESSION]: session, 'GET /api/me/organizations/': orgs })
+    show('/')
+    await waitFor(() => expect(window.localStorage.getItem('hubiplan.2fa-gefuehrt:41')).toBe('1'))
+    expect(calls).toBe(2)
+  })
+
   it('nennt den Grund, warum das Buchen ruht, und führt zur Einrichtung', async () => {
     function Probe() {
       return useBookingPaused() ? <MfaBookingNotice /> : <p>frei</p>

@@ -10,6 +10,7 @@ import { PageSlotProvider } from './PageHeader.tsx'
 import { confirmLeave } from './leaveGuard.ts'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
+import { getSession } from '../api/auth.ts'
 import { bottomNavIds, modules } from '../modules.tsx'
 import { areaOf, arrangedAreas } from '../menuLayout.ts'
 import { NewMenu } from './NewMenu.tsx'
@@ -70,7 +71,7 @@ const OTHER_PAGES: Record<string, string> = {
 }
 
 export function Layout() {
-  const { user, logout } = useAuth()
+  const { user, logout, setUser } = useAuth()
   const {
     orgs,
     departments,
@@ -91,6 +92,25 @@ export function Layout() {
   // Nicht bei schon ruhenden Rechten: Dort nennt die Startseite selbst den nächsten Schritt
   const mfaDue = !!user?.mfa_required_by && !user?.mfa_overdue
   const userId = user?.id
+  // Die Frist entsteht erst, wenn der Server zum ersten Mal Rechte des Kontos prüft, also nach
+  // der Anmeldung: Sind die Einheiten geladen, das Konto einmal je Sitzung neu lesen, sonst
+  // greift die Führung erst beim nächsten Laden
+  const mfaKnown = !!user?.mfa_required_by
+  useEffect(() => {
+    if (loading || !userId || mfaKnown) return
+    const key = `${MFA_GUIDE_KEY}-gelesen:${userId}`
+    try {
+      if (window.sessionStorage.getItem(key)) return
+      window.sessionStorage.setItem(key, '1')
+    } catch {
+      return
+    }
+    void getSession()
+      .then((next) => {
+        if (next?.id === userId && next.mfa_required_by) setUser(next)
+      })
+      .catch(() => undefined)
+  }, [loading, userId, mfaKnown, setUser])
   useEffect(() => {
     if (!mfaDue || !userId || pathname !== '/' || user?.must_change_password) return
     const key = `${MFA_GUIDE_KEY}:${userId}`
