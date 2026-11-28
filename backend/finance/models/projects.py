@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext, gettext_lazy
 
+from core.versioning import Versioned
+
 
 class ProjectSeries(models.Model):
     """Reihe wiederkehrender Veranstaltungen (z. B. das jährliche Schützenfest),
@@ -30,13 +32,16 @@ class ProjectSeries(models.Model):
         return self.name
 
 
-class Project(models.Model):
+class Project(Versioned):
     """Veranstaltung: bündelt Einnahmen und Ausgaben für eine eigene Auswertung.
 
     Die Buchungen bleiben normale Buchungen im Kassenbuch. Termine im Kalender
     können auf die Veranstaltung verweisen (``events.Event.project``), müssen es
     aber nicht.
     """
+
+    # Fassung zählt nur hoch: nicht protokollieren, nicht zurückspielen (core/versioning.py)
+    derived_fields = ("version",)
 
     class Status(models.TextChoices):
         PLANNED = "planned", gettext_lazy("geplant")

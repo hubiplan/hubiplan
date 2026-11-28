@@ -15,7 +15,7 @@ import type {
   Earmark,
   GoodsOrigin,
 } from '../../api/donations.ts'
-import { ApiError } from '../../api/client.ts'
+import { ApiError, sendingVersion } from '../../api/client.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
 import type { MemberRow } from '../../api/members.ts'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
@@ -262,7 +262,13 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
       confirmLabel: t('Löschen'),
       danger: true,
     })
-    if (ok) await run(async () => (await donationApi.remove(org.id, d.id), t('Gelöscht.')))
+    if (ok)
+      await run(
+        async () => (
+          await sendingVersion(d.version, () => donationApi.remove(org.id, d.id)),
+          t('Gelöscht.')
+        ),
+      )
   }
 
   const count = list.data?.count ?? 0
@@ -534,7 +540,8 @@ function DonationForm({
     setFailure(null)
     const data = { ...v, amount: parseAmount(amountText) }
     try {
-      if (initial) await donationApi.update(org.id, initial.id, data)
+      if (initial)
+        await sendingVersion(initial.version, () => donationApi.update(org.id, initial.id, data))
       else await donationApi.create(org.id, data)
       setSaved(true)
       await onDone(initial ? t('Zuwendung geändert.') : t('Zuwendung erfasst.'))

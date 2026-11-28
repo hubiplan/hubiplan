@@ -485,6 +485,7 @@ class ProjectSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "event_count",
             "plan_income",
             "plan_expense",
+            "version",
         ]
         extra_kwargs = {
             "plan_income": {"min_value": Decimal("0")},

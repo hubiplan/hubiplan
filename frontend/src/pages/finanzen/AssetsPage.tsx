@@ -1,5 +1,6 @@
 // Finanzen › Buchen › Anlagen: Anlagenverzeichnis mit Abschreibung (AfA).
 // Die AfA erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.
+import { sendingVersion } from '../../api/client.ts'
 import { EditAt, EditSlot, editKey } from '../../components/EditInPlace.tsx'
 import { useRowSort } from '../../components/RowSort.tsx'
 import { Fragment, useState } from 'react'
@@ -84,7 +85,7 @@ function AssetForm({
     }
     const saved = await form.submit(() =>
       asset
-        ? financeApi.updateAsset(org.id, asset.id, payload)
+        ? sendingVersion(asset.version, () => financeApi.updateAsset(org.id, asset.id, payload))
         : financeApi.createAsset(org.id, payload),
     )
     if (saved) onDone()
@@ -278,7 +279,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
     })
     if (!ok) return
     try {
-      await financeApi.deleteAsset(org.id, asset.id)
+      await sendingVersion(asset.version, () => financeApi.deleteAsset(org.id, asset.id))
       register.reload()
     } catch (err) {
       setError(errorMessage(err))

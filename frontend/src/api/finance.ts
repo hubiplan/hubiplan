@@ -204,6 +204,8 @@ export type AssetMethod = 'none' | 'gwg' | 'pool' | 'linear'
 
 /** Anlage im Anlagenverzeichnis, mit Werten des gewählten Geschäftsjahres */
 export interface FixedAsset {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   acquired_on: string
@@ -406,6 +408,8 @@ export interface BookingFilter {
 export type ProjectStatus = 'planned' | 'running' | 'done'
 
 export interface Project {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   starts_on: string
@@ -451,6 +455,8 @@ export interface Sums {
 }
 
 export interface ProjectEvaluation {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   name: string
   starts_on: string

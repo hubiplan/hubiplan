@@ -24,6 +24,8 @@ export interface DonationSettings {
 }
 
 export interface Donation {
+  /** Fassung gegen gleichzeitiges Bearbeiten */
+  version?: number
   id: number
   date: string
   kind: DonationKind

@@ -105,6 +105,7 @@ def _evaluation(project: Project) -> dict:
 
     return {
         "id": project.pk,
+        "version": project.version,
         "name": project.name,
         "starts_on": project.starts_on,
         "ends_on": project.ends_on,

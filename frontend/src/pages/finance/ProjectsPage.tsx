@@ -1,5 +1,6 @@
 // Finanzen › Veranstaltungen: Einnahmen und Ausgaben einer Veranstaltung bündeln,
 // Termine verknüpfen und das Ergebnis auswerten; Reihen über mehrere Jahre vergleichen.
+import { sendingVersion } from '../../api/client.ts'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
@@ -251,7 +252,11 @@ function ProjectForm({
   const auto = useAutoSave(
     form,
     (_changes, values) => financeApi.updateProject(org.id, project!.id, payloadOf(values)),
-    { enabled: project !== null, onSaved: (saved) => onSaved(saved as Project, false) },
+    {
+      enabled: project !== null,
+      version: project?.version,
+      onSaved: (saved) => onSaved(saved as Project, false),
+    },
   )
 
   async function save(e: FormEvent) {
@@ -414,7 +419,7 @@ function ProjectDetail() {
   // Ohne Rückfrage: Löschen lässt sich rückgängig machen (UX-Audit VW-23)
   async function remove() {
     try {
-      await financeApi.deleteProject(org.id, d.id)
+      await sendingVersion(d.version, () => financeApi.deleteProject(org.id, d.id))
       navigate('/finanzen/veranstaltungen')
     } catch (err) {
       setError(errorMessage(err))
