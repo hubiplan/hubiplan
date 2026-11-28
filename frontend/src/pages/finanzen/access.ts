@@ -120,12 +120,15 @@ export function financeGroups(
     billing: {
       key: 'abrechnen',
       // Ohne Beiträge und Rechnungen stehen hier nur eingehende Rechnungen
-      label: full || a.billing ? t('Beiträge & Rechnungen') : t('Rechnungen'),
+      // Rechnungen ohne Mitglieder: keine Beiträge, also auch nicht davon reden
+      label: full || a.feeRuns ? t('Beiträge & Rechnungen') : t('Rechnungen'),
       to: '/finanzen/abrechnen',
       text:
-        full || a.billing
+        full || a.feeRuns
           ? t('Beiträge abrechnen, Rechnungen schreiben und mahnen, eingehende Rechnungen prüfen.')
-          : t('Eingehende Rechnungen prüfen und bezahlen.'),
+          : a.billing
+            ? t('Rechnungen schreiben und mahnen, eingehende Rechnungen prüfen.')
+            : t('Eingehende Rechnungen prüfen und bezahlen.'),
     },
     payments: {
       key: 'zahlungen',
@@ -161,9 +164,11 @@ export function financeGroups(
       label: t('Einrichten'),
       to: '/finanzen/einrichtung',
       text:
-        full || a.billing
+        full || a.feeRuns
           ? t('Grundlagen festlegen: Beitragssätze, Mahnstufen, Konten, Kategorien und Partner.')
-          : t('Grundlagen festlegen: Konten, Kategorien und Partner.'),
+          : a.billing
+            ? t('Grundlagen festlegen: Mahnstufen, Konten, Kategorien und Partner.')
+            : t('Grundlagen festlegen: Konten, Kategorien und Partner.'),
     },
   }
 }

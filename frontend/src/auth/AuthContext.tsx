@@ -170,6 +170,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // oxlint-disable-next-line react/only-export-components
+/** Wie useAuth, aber ohne Fehler außerhalb des AuthProvider (kleine Hinweise in Seiten) */
+export function useAuthOptional(): AuthState | null {
+  return useContext(AuthContext)
+}
+
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error(t('useAuth muss innerhalb von AuthProvider genutzt werden.'))

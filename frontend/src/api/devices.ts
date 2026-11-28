@@ -44,8 +44,9 @@ export const devicesApi = {
   browserUnlock: (ticket: string, confirm: boolean) =>
     api.post<BrowserUnlock>('/api/app/v1/admin/unlock/browser/confirm/', { ticket, confirm }),
   // Mitgliederbereich oder etwas zu verwalten; ältere Server melden nur den Mitgliederbereich
-  mayConnect: () =>
+  // „admin“: nur etwas zu verwalten, kein Mitgliederbereich (anderer Einleitungstext)
+  mayConnect: (): Promise<boolean | 'admin'> =>
     api
       .get<{ portal: unknown[]; app?: boolean }>('/api/me/contexts/')
-      .then((c) => c.app ?? c.portal.length > 0),
+      .then((c) => (c.portal.length > 0 ? true : c.app ? 'admin' : false)),
 }

@@ -38,6 +38,9 @@ describe('App auf dem Telefon (Mein Konto)', () => {
     render(<AppDevicesCard />)
     expect(await screen.findByRole('button', { name: 'App verbinden' })).toBeInTheDocument()
     expect(screen.queryByText(/noch keinen Zugang/)).toBeNull()
+    // Der Einleitungstext beschreibt die Verwaltung, nicht Termine und Zusagen
+    expect(screen.getByText(/die Verwaltung auf dem Telefon/)).toBeInTheDocument()
+    expect(screen.queryByText(/sagst mit einem Fingertipp zu oder ab/)).toBeNull()
   })
 
   it('QR-Code erzeugen und Gerät abmelden', async () => {

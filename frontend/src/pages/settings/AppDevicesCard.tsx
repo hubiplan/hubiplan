@@ -125,9 +125,13 @@ export function AppDevicesCard() {
     <div className="card">
       <h2>{t('App auf dem Telefon')}</h2>
       <p className="muted small">
-        {t(
-          'Mit der HUBIplan-App für Android siehst du Termine im Kalender deines Telefons, sagst mit einem Fingertipp zu oder ab und bekommst Mitteilungen deines Vereins.',
-        )}
+        {access.data === 'admin'
+          ? t(
+              'Mit der HUBIplan-App für Android hast du die Verwaltung auf dem Telefon: zum Beispiel das Kassenbuch mit Buchungen und Belegfotos und, was gerade zu erledigen ist. Die Verwaltung schaltest du in der App mit deinem zweiten Faktor frei.',
+            )
+          : t(
+              'Mit der HUBIplan-App für Android siehst du Termine im Kalender deines Telefons, sagst mit einem Fingertipp zu oder ab und bekommst Mitteilungen deines Vereins.',
+            )}
       </p>
       <HowTo k="how_app_devices" />
       {error && (

@@ -549,6 +549,14 @@ TEMPLATES: tuple[Template, ...] = (
         units_in_menu=False,
     ),
     Template(
+        # Wie das Kassenbuch, dazu steuerliche Bereiche, Rücklagen und Spendenbescheinigungen
+        "cashbook_nonprofit",
+        gettext_noop("Kassenbuch für gemeinnützige Vereine"),
+        "club",
+        only=("finance", "tax", "donations"),
+        units_in_menu=False,
+    ),
+    Template(
         "federation",
         gettext_noop("Dachverband"),
         "federation",

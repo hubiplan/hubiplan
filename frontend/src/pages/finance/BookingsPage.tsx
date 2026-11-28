@@ -41,6 +41,7 @@ import {
   SelectField,
   Loading,
 } from '../../components/ui.tsx'
+import { MfaBookingNotice, useBookingPaused } from '../../components/MfaBookingNotice.tsx'
 import { PageActions } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { SplitEditor } from './SplitEditor.tsx'
@@ -82,6 +83,8 @@ const NEW_KIND: Record<string, BookingKind> = {
 export function BookingsPage() {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.financeEdit)
+  // Ohne Zwei-Faktor-Anmeldung ruht das Buchen: Grund nennen statt Knopf, der scheitert
+  const paused = useBookingPaused() && canEdit
   const [params, setParams] = useSearchParams()
   const settings = useFinanceSettings(org.id)
   const accounts = useFinanceAccounts(org.id)
@@ -321,7 +324,7 @@ export function BookingsPage() {
       {/* Seitenkopf (S-05, W-14): ein Knopf „Neue Buchung“ mit Auswahl, Sammelaktion im Menü */}
       <PageActions
         primary={
-          canEdit && editing === null
+          canEdit && !paused && editing === null
             ? {
                 label: t('Neue Buchung'),
                 items: [
@@ -338,6 +341,7 @@ export function BookingsPage() {
             year !== 'alle' && { label: t('Neu nummerieren'), onClick: () => void renumber() },
         ]}
       />
+      {paused && <MfaBookingNotice />}
       {openedId !== null && editing === null && missing && (
         <Alert kind="error">
           {t('Die Buchung lässt sich nicht öffnen:')} {missing}

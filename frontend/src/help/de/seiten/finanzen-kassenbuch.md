@@ -9,6 +9,8 @@ stichworte: [Buchung, Beleg, Einnahme, Ausgabe, Kasse, Splitbuchung, Aufteilen]
 
 Im Kassenbuch steht jede Einnahme und Ausgabe mit Datum, Konto, Kategorie und Beleg. Buchungen eines abgeschlossenen Zeitraums lassen sich nicht mehr ändern, nur mit einer Gegenbuchung berichtigen. So bleibt das Kassenbuch prüfbar.
 
+Buchen setzt die Zwei-Faktor-Anmeldung voraus. Fehlt sie, zeigt die Seite statt **Neue Buchung** einen Hinweis mit dem Weg zur Einrichtung; ein neues Konto wird nach der ersten Anmeldung einmal direkt dorthin geführt. Lesen geht auch ohne.
+
 Buchungen mit Belegen nur stornieren. Importierte Kontoauszüge bleiben erhalten; unbenötigte Umsätze ignorieren. Gebuchte Kategorien für neue Zuordnungen archivieren und eine neue Kategorie anlegen. Mahnungen behalten ihre archivierte Fassung.
 
 Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode-Schreibvarianten werden vereinheitlicht; „ß“ und „ss“ gelten dabei als gleich. Andere gewählte Filter gelten weiterhin.

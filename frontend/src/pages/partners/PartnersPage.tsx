@@ -634,12 +634,15 @@ function PartnerForm({
               })}
             </p>
           )}
-          <Checkbox
-            label={t('Künstler/Publizist (zählt für die Künstlersozialabgabe)')}
-            checked={!!value.artist}
-            disabled={moneyDisabled}
-            onChange={(artist) => setValue((cur) => ({ ...cur, artist }))}
-          />
+          {/* Künstlersozialabgabe gehört zum Modul Steuern; ein gesetztes Kennzeichen bleibt sichtbar */}
+          {(org.modules.includes('tax') || !!value.artist) && (
+            <Checkbox
+              label={t('Künstler/Publizist (zählt für die Künstlersozialabgabe)')}
+              checked={!!value.artist}
+              disabled={moneyDisabled}
+              onChange={(artist) => setValue((cur) => ({ ...cur, artist }))}
+            />
+          )}
         </fieldset>
       ) : null}
       {/* Ohne Webseite keine Nennung als Sponsor; eine gespeicherte Einwilligung bleibt sichtbar */}

@@ -9486,6 +9486,9 @@ msgstr "Support association"
 msgid "Kassenbuch (nur Kasse)"
 msgstr "Cash book (cash only)"
 
+msgid "Kassenbuch für gemeinnützige Vereine"
+msgstr "Cash book for non-profit clubs"
+
 msgid "Abteilungen"
 msgstr "Departments"
 

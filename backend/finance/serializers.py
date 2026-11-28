@@ -286,15 +286,26 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             return None
         return {"id": payment.invoice_id, "number": payment.invoice.display_number}
 
+    def _year_closed(self, obj) -> bool:
+        """Abgeschlossenes Geschäftsjahr; je Antwort und Jahr nur einmal gefragt."""
+        from . import services
+
+        cache = self.root.__dict__.setdefault("_closed_years", {})
+        key = (obj.organization_id, obj.year)
+        if key not in cache:
+            cache[key] = services.is_closed(obj.organization, obj.year)
+        return cache[key]
+
     def get_fixed(self, obj) -> bool:
         from . import services
 
-        return bool(services.fixed_reason(obj))
+        # Im abgeschlossenen Jahr lässt sich nichts mehr ändern, auch nicht am Tag der Erfassung
+        return bool(services.fixed_reason(obj)) or self._year_closed(obj)
 
     def get_deletable(self, obj) -> bool:
         from . import services
 
-        return services.deletable(obj)
+        return services.deletable(obj) and not self._year_closed(obj)
 
     def get_cancels(self, obj) -> dict | None:
         if not obj.cancels_id:

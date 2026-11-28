@@ -9,6 +9,8 @@ stichworte: [booking, receipt, income, expense, cash, split booking, split]
 
 The cash book records every income and expense with date, account, category and receipt. Bookings in a closed period can no longer be changed, only corrected with a reversing entry. This keeps the cash book auditable.
 
+Booking requires two-factor sign-in. Without it, the page shows a note with the way to set it up instead of **New entry**; a new account is taken there once after the first sign-in. Reading works without it.
+
 Cancel bookings with receipts instead of deleting them. Imported bank statements are retained; ignore unwanted transactions. Archive used categories and create a new category for new assignments. Reminders retain their archived version.
 
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
