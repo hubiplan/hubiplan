@@ -49,6 +49,8 @@ import { atMost, BP_MEDIUM } from '../theme/breakpoints.ts'
 const ADMIN_KEY = 'hubiplan.verwaltung'
 /** Merkt je Gerät, ob das Bereichsmenü eingeklappt ist */
 const MENU_KEY = 'hubiplan.bereichsmenue'
+// Je Konto gemerkt: einmal zur Einrichtung der Zwei-Faktor-Anmeldung geführt
+const MFA_GUIDE_KEY = 'hubiplan.2fa-gefuehrt'
 
 // Seiten außerhalb der Bereiche in der Seitenleiste
 const OTHER_PAGES: Record<string, string> = {
@@ -84,6 +86,22 @@ export function Layout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [navOpen, setNavOpen] = useState(false)
+  // Pflicht-2FA: ein neues Konto mit heiklen Rechten einmal von der Startseite direkt zur
+  // Einrichtung führen, statt es erst beim Buchen scheitern zu lassen. Danach bleibt der Hinweis.
+  // Nicht bei schon ruhenden Rechten: Dort nennt die Startseite selbst den nächsten Schritt
+  const mfaDue = !!user?.mfa_required_by && !user?.mfa_overdue
+  const userId = user?.id
+  useEffect(() => {
+    if (!mfaDue || !userId || pathname !== '/' || user?.must_change_password) return
+    const key = `${MFA_GUIDE_KEY}:${userId}`
+    try {
+      if (window.localStorage.getItem(key)) return
+      window.localStorage.setItem(key, '1')
+    } catch {
+      return // Ohne Speicher nicht bei jedem Aufruf umleiten
+    }
+    navigate('/mein-konto/anmeldung#zwei-faktor')
+  }, [mfaDue, userId, pathname, navigate, user?.must_change_password])
   // Bereichsmenü neben der Bereichsleiste: einklappbar, damit breite Listen mehr Platz haben
   const [menuClosed, setMenuClosed] = useState(() => {
     try {

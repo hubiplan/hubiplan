@@ -11327,5 +11327,6 @@
   "Eigene": "Own",
   "Protokolle bestätigen zwei verschiedene Personen": "Minutes are confirmed by two different people",
   "Leitung und Protokollführung bestätigen ein Protokoll dann nicht mit demselben Konto. Ausschalten, wenn der Verein nur ein Konto für den Vorstand hat.": "The chair and the minute taker then cannot confirm minutes with the same account. Turn off if the club has only one account for the board.",
-  "Die beiden Bestätigungen kommen von zwei verschiedenen Personen.": "The two confirmations come from two different people."
+  "Die beiden Bestätigungen kommen von zwei verschiedenen Personen.": "The two confirmations come from two different people.",
+  "Buchen geht erst mit Zwei-Faktor-Anmeldung: Sie schützt die Kasse, falls ein Passwort in falsche Hände gerät. Das Einrichten dauert zwei Minuten, danach kannst du sofort buchen.": "Booking requires two-factor sign-in: it protects the cash book if a password falls into the wrong hands. Setting it up takes two minutes, and you can book right afterwards."
 }
