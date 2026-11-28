@@ -29,6 +29,7 @@ from cards import views as card_views
 from changes import views as change_views
 from circulars import urls as circular_urls
 from competitions import urls as competition_urls
+from core import views
 from customfields import views as field_views
 from datatransfer import views as transfer_views
 from documents import views as doc_views
@@ -135,8 +136,6 @@ from todos import views as todo_views
 from todos.event_links import EventChoicesView
 from training import urls as training_urls
 from website import urls as website_urls
-
-from . import views
 
 org_router = SimpleRouter()
 org_router.register("departments", org_views.DepartmentViewSet, basename="department")

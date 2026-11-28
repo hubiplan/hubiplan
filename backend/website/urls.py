@@ -1,4 +1,4 @@
-"""Adressen der Webseite (eingebunden in core/urls.py)."""
+"""Adressen der Webseite (eingebunden in config/api_urls.py)."""
 
 from django.urls import path
 

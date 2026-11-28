@@ -535,6 +535,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | Datei | Inhalt |
 | --- | --- |
 | [docs/konzept.md](docs/konzept.md) | Konzept in Kurzfassung: Ebenen, Rollen, Mitgliedschaften |
+| [docs/architektur.md](docs/architektur.md) | Aufbau von Server und Web-Oberfläche, Schichten, Regeln für neuen Code |
 | [docs/begriffe.md](docs/begriffe.md) | Begriffe in Oberfläche, App und Hilfe |
 | [docs/module.md](docs/module.md) | Module: Freigabe, Einschalten, Vorlagen |
 | [docs/berechtigungen.md](docs/berechtigungen.md) | Rollen: Bereiche mit drei Stufen, Zusatzrechte |

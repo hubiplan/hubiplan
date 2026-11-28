@@ -1,4 +1,4 @@
-"""Adressen der Meldungen (eingebunden in core/urls.py).
+"""Adressen der Meldungen (eingebunden in config/api_urls.py).
 
 Die Pfade der Meldung gibt es dreimal (Schritt 3): für die Einheit selbst, für den
 Veranstalter, der die Meldung einer Untereinheit bearbeitet (``entries/units/<unit>/``), und

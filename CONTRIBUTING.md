@@ -37,6 +37,9 @@ Hinweise zum Stil:
 - Oberfläche, Dokumentation und Commit-Nachrichten sind **deutsch**, in einfacher Sprache.
 - Neue Funktionen allgemein halten: HUBIplan soll für Vereine jeder Art passen, nicht nur
   für eine Vereinsform. Besonderheiten gehören hinter Schalter oder Einstellungen.
+- Fachlogik gehört im Backend in `services.py` oder ein Fachmodul, nicht in Views; Bereiche
+  importieren nur gleiche und tiefere Schichten. `backend/tests/test_architektur.py` prüft das
+  ([docs/architektur.md](docs/architektur.md)).
 - Neue Abhängigkeiten müssen mit der AGPL-3.0 verträglich sein (z. B. MIT, BSD, Apache-2.0,
   LGPL, MPL-2.0). Nicht möglich: GPL-2.0-only, SSPL, „nur nicht-kommerziell“, proprietär.
   Siehe [docs/lizenzen.md](docs/lizenzen.md).
